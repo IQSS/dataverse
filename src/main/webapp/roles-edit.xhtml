@@ -1,0 +1,68 @@
+<div 
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp"> 
+        <p:fragment autoUpdate="true" rendered="#{rolePermissionFragment.dvObject!=null}">
+            <p:panel id="editRolePanel" styleClass="panelLayoutBlock" widgetVar="editRole" visible="false" toggleable="true" closable="true" toggleSpeed="0" closeSpeed="0">
+                <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
+                    <div class="row form-horizontal">
+                        <div class="col-xs-6 form-group">
+                            <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the role.">Role Name</label>
+                            <div class="col-sm-9">
+                                <p:panelGrid columns="2">
+                                    <p:inputText id="roleName" value="#{rolePermissionFragment.role.name}"/>
+                                    <p:message for="roleName"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 form-group">
+                            <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the alias.">Identifier</label>
+                            <div class="col-sm-9">
+                                <p:panelGrid columns="2">
+                                    <p:inputText id="roleAlias" value="#{rolePermissionFragment.role.alias}"/>
+                                    <p:message for="roleAlias"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 form-group">
+                            <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Describe the role (1000 characters max).">Description</label>
+                            <div class="col-sm-9">
+                                <p:panelGrid columns="2">
+                                    <h:panelGroup>
+                                        <p:inputTextarea id="roleDescription" value="#{rolePermissionFragment.role.description}"
+                                                         rows="5" cols="50" counter="counter" maxlength="1000"
+                                                         counterTemplate="{0} characters remaining" autoResize="false"/>
+                                        <h:outputText id="counter" style="display:block;"/>
+                                    </h:panelGroup>
+                                    <p:message for="roleDescription"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                    </div>
+                </p:panel>
+                <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="Role Permissions" toggleable="true">
+                    <h:selectManyCheckbox value="#{rolePermissionFragment.selectedPermissions}"
+                                          layout="pageDirection">
+                        <f:selectItems value="#{rolePermissionFragment.permissions}" var="pmsn"
+                                       itemLabel="#{pmsn.humanName} &lt;span class=&quot;label label-default&quot;&gt;#{pmsn.name()}&lt;/span&gt;"
+                                       itemValue="#{pmsn.name()}" itemLabelEscaped="false"
+                                       />
+                    </h:selectManyCheckbox>
+                </p:panel>
+                <p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
+                    <p:commandLink styleClass="btn btn-default" 
+                                   value="Save Role" 
+                                   actionListener="#{rolePermissionFragment.updateRole}"
+                                   update="rolePanel"
+                                   oncomplete="editRole.close();roles.show();"
+                                   style="color:black;margin-right:0.5em;"/>                       
+                    <button type="button" style="color:black;margin-right:0.5em;" class="btn btn-default" onclick="editRole.close();
+                                    roles.show();" value="Cancel">Cancel</button>
+                </p:panel>
+            </p:panel>
+        </p:fragment>
+    </p:dialog>
+</div>

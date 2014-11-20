@@ -1,0 +1,80 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui">
+
+    <div class="form-group clearfix">
+        <label for="valueY" class="col-sm-3 control-label">
+            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
+                Inherit
+            </a>
+        </label>
+        <div class="col-sm-9">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" value="" checked="checked"/>
+                    Sure, why not?
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group clearfix">
+        <label for="accessRadios" class="col-sm-3 control-label">
+            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
+                Access
+            </a>
+        </label>
+        <div class="col-sm-9">
+            <div class="radio">
+                <label>
+                    <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
+                    Assign
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
+                    Open
+                </label>
+            </div>
+            <div id="openAccessOptions" style="margin-left:2em;">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" value="" checked="checked"/>
+                            Dataverses
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" value="" checked="checked"/>
+                            Datasets
+                    </label>
+                </div>
+                <div id="openAccessDatasetsOptions" style="margin-left:2em;">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="openAccessDatasetsRadios" id="openAccessDatasetsRadios1" value="option1" checked="checked"/>
+                                Level 1 <span class="text-muted">You do this, and this, and this.</span>
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="openAccessDatasetsRadios" id="openAccessDatasetsRadios2" value="option2"/>
+                                Level 2 <span class="text-muted">You do this, and this, and this.</span>
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="openAccessDatasetsRadios" id="openAccessDatasetsRadios3" value="option3"/>
+                                Level 3 <span class="text-muted">You do this, and this, and this.</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
