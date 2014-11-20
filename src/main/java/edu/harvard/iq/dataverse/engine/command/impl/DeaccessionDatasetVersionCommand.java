@@ -20,7 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author skraffmiller
  */
-@RequiredPermissions(Permission.DeaccessionDataset)
+@RequiredPermissions(Permission.PublishDataset)
 public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
 
 
