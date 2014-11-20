@@ -12,12 +12,14 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author gdurand
  */
 @ViewScoped
+@Named
 public class PermissionsWrapper {
     
     @EJB
@@ -34,7 +36,7 @@ public class PermissionsWrapper {
     }
     
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
-        return permissionService.userOn(u, ds).has(Permission.ManageDataversePermissions);
+        return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
     }
     
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
