@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.api.dto;
 
 import com.google.gson.Gson;
@@ -32,6 +27,7 @@ public class DatasetVersionDTO {
     String createTime;
     String archiveTime;
     Map<String,MetadataBlockDTO> metadataBlocks;
+    List<FileMetadataDTO> fileMetadatas;
 
     public String getArchiveNote() {
         return archiveNote;
@@ -123,127 +119,9 @@ public class DatasetVersionDTO {
     
     
     
-     public static class FieldDTO {
-        public  FieldDTO(){}
-       
-        String typeName;
-        Boolean multiple;
-        String typeClass;
-        // The contents of value depend on the field attributes
-        // if single/primitive, value is a String
-        // if multiple, value is a JSonArray
-        //      multiple/primitive: each JSonArray element will contain String
-        //      multiple/compound: each JSonArray element will contain Set of FieldDTOs
-        // 
-        JsonElement value;
-        
-        String getSinglePrimitive() {
-            return value.getAsString();
-        }
-        
-        public List<String> getMultiplePrimitive() {
-            List<String> values = new ArrayList<>();
-            Iterator<JsonElement> iter =  value.getAsJsonArray().iterator();
-            while (iter.hasNext()) {
-                values.add(iter.next().getAsString());
-                
-            }
-            return values;
-        }
-        
-         public List<FieldDTO> getSingleCompound() {
-             Gson gson = new Gson();
-             JsonObject elem = (JsonObject) value;
-             ArrayList<FieldDTO> elemFields = new ArrayList<FieldDTO>();
-
-             Set<Entry<String, JsonElement>> set = elem.entrySet();
-
-             Iterator<Entry<String, JsonElement>> setIter = set.iterator();
-             while (setIter.hasNext()) {
-                 Entry<String, JsonElement> entry = setIter.next();
-                 FieldDTO field = gson.fromJson(entry.getValue(), FieldDTO.class);
-                 elemFields.add(field);
-             }
-             return elemFields;
-         }
-        
-        public ArrayList<ArrayList<FieldDTO>> getMultipleCompound() {
-            Gson gson = new Gson();
-            ArrayList<ArrayList<FieldDTO>> fields = new ArrayList<ArrayList<FieldDTO>>();            
-            JsonArray array = value.getAsJsonArray();
-            
-            Iterator<JsonElement> iter = array.iterator();
-            while (iter.hasNext()) {
-                JsonObject elem = (JsonObject)iter.next();
-                ArrayList<FieldDTO> elemFields = new ArrayList<FieldDTO>();
-                fields.add(elemFields);                
-                Set<Entry<String, JsonElement>> set = elem.entrySet();
-               
-                Iterator<Entry<String, JsonElement>> setIter = set.iterator();
-                while(setIter.hasNext()) {
-                    Entry<String,JsonElement> entry = setIter.next();
-                    FieldDTO field = gson.fromJson(entry.getValue(), FieldDTO.class);
-                    elemFields.add(field);
-                }
-            }
-            
-            return fields;
-        }
-        
-        public Object getConvertedValue() {
-            if (multiple) {
-                if (typeClass.equals("compound")) {
-                    return getMultipleCompound();
-                } else {
-                    return getMultiplePrimitive();
-                } 
-               
-            } else {
-                  if (typeClass.equals("compound")) {
-                    return getSingleCompound();
-                } else {
-                    return getSinglePrimitive();
-                } 
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "FieldDTO{" + "typeName=" + typeName + ", multiple=" + multiple + ", typeClass=" + typeClass + ", value=" + getConvertedValue() + '}';      
-        }
-        
-     }
      
-     public static class MetadataBlockDTO {
-         String displayName;
-         List<FieldDTO> fields;
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public void setDisplayName(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public List<FieldDTO> getFields() {
-            return fields;
-        }
-
-        public void setFields(List<FieldDTO> fields) {
-            this.fields = fields;
-        }
-
-        @Override
-        public String toString() {
-            return "MetadataBlockDTO{" + "displayName=" + displayName + ", fields=" + fields + '}';
-        }
-     }
-
-    @Override
-    public String toString() {
-        return "DataSetVersionDTO: {" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + minorVersionNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", metadataBlocks=" + metadataBlocks + '}';
-    }
+     
+    
      
     
  
