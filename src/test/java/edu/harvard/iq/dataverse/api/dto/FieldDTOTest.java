@@ -68,6 +68,7 @@ public class FieldDTOTest {
      */
     @Test
     public void testMultipleVocab() {
+        Gson gson = new Gson();
         FieldDTO astroType = new FieldDTO();
         astroType.setTypeName("astroType");
         ArrayList<String> value = new ArrayList<>();
@@ -75,7 +76,12 @@ public class FieldDTOTest {
         value.add("Mosaic");
         value.add("EventList");
         astroType.setMultipleVocab(value);
+        
         Assert.assertEquals(value, astroType.getMultipleVocab());
+        String jsonStr = gson.toJson(astroType);
+        FieldDTO astroType2 = gson.fromJson(jsonStr, FieldDTO.class);
+        Assert.assertEquals(astroType, astroType2);
+        
     }
 
     /**
@@ -98,9 +104,9 @@ public class FieldDTOTest {
           
         HashSet<FieldDTO> author2Fields = new HashSet<>();
         
-        author2Fields.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top"));
-        author2Fields.add(FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ellenId"));
-        author2Fields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
+        author2Fields.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Bottom"));
+        author2Fields.add(FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ernieId"));
+        author2Fields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "DAISY"));
        
         List<HashSet<FieldDTO>> authorList = new ArrayList<>();
         authorList.add(author1Fields);

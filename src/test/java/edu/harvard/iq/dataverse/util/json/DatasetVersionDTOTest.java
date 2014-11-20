@@ -90,8 +90,7 @@ public class DatasetVersionDTOTest {
             
             JsonElement expected = gson.toJsonTree(expectedDTO, FieldDTO.class);
             JsonElement result = gson.toJsonTree(authorDTO);
-            System.out.println(expected);
-            System.out.println(result);
+            
             Assert.assertEquals(expected, result);
             
         } catch (IOException e) {
