@@ -215,7 +215,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse = null;
 
         List<String> filterQueriesFinal = new ArrayList<>();
-        if ( dataverseAlias != null){
+        if (dataverseAlias != null) {
             this.dataverse = dataverseService.findByAlias(dataverseAlias);
             dataverseId = dataverse.getId();
         }
@@ -320,18 +320,18 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
                     String parentId = solrSearchResult.getParent().get("id");
-                    if (parentId != null){
+                    if (parentId != null) {
                         Dataverse parentDataverseInCard = dataverseService.find(Long.parseLong(parentId));
                         solrSearchResult.setDataverseParentAlias(parentDataverseInCard.getAlias());
                     }
-                    
+
                     if (dataverseInCard != null) {
                         //Omit deaccessioned datasets
                         List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId(), true);
                         solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
-                        solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());                        
+                        solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
@@ -341,9 +341,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
                             if (datasetVersion.isDeaccessioned()) {
                                 solrSearchResult.setDeaccessionedState(true);
                             }
-                            String citation = datasetVersion.getCitation();
-                            if (citation != null) {
-                                solrSearchResult.setCitation(citation);
+                            try {
+                                String citation = datasetVersion.getCitation();
+                                if (citation != null) {
+                                    solrSearchResult.setCitation(citation);
+                                }
+                            } catch (Exception ex) {
+                                logger.info("Caught exception trying to call datasetVersion.getCitation() on " + datasetVersion.getId());
                             }
                         }
                     }
@@ -453,7 +457,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         // being explicit about the user, could just call permissionService.on(dataverse)
 
         // TODO: decide on rules for this button and check actual permissions
-        return session.getUser() != null && (session.getUser() != GuestUser.get() );
+        return session.getUser() != null && (session.getUser() != GuestUser.get());
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
@@ -837,7 +841,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean userLoggedIn() {
-        return ( session.getUser() != GuestUser.get() );
+        return (session.getUser() != GuestUser.get());
     }
 
     public boolean publishedSelected() {
@@ -948,31 +952,31 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (fileId == null) {
             return false;
         }
-        
+
         DataFile datafile = dataFileService.find(fileId);
-        
+
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
             return false;
         }
-        
+
         return datafile.isTabularData();
     }
-    
+
     public String tabularDataDisplayInfo(Long fileId) {
         String ret = "";
-        
+
         if (fileId == null) {
             return "";
         }
-        
+
         DataFile datafile = dataFileService.find(fileId);
-        
+
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
             return "";
         }
-        
+
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
             DataTable datatable = datafile.getDataTable();
             String unf = datatable.getUnf();
@@ -986,39 +990,39 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 ret = ret.concat("; ");
             }
             if (unf != null && !unf.equals("")) {
-                ret = ret.concat("UNF: "+unf);
+                ret = ret.concat("UNF: " + unf);
             }
-        }        
-        
-        return ret; 
+        }
+
+        return ret;
     }
-    
+
     public String dataFileSizeDisplay(Long fileId) {
         DataFile datafile = dataFileService.find(fileId);
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
             return "";
         }
-        
+
         if (datafile.getFilesize() > -1) {
-            return " Size: "+datafile.getFilesize()+" bytes.";
+            return " Size: " + datafile.getFilesize() + " bytes.";
         }
-        
+
         return "";
     }
-    
+
     public String dataFileMD5Display(Long fileId) {
         DataFile datafile = dataFileService.find(fileId);
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
             return "";
         }
-        
+
         if (datafile.getmd5() != null && datafile.getmd5() != "") {
-            return " MD5: "+datafile.getmd5()+" ";
+            return " MD5: " + datafile.getmd5() + " ";
         }
-        
+
         return "";
     }
-    
+
 }
