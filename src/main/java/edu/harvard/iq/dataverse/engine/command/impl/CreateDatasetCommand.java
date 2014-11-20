@@ -44,7 +44,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     public Dataset execute(CommandContext ctxt) throws CommandException {
         
         // Test for duplicate identifier
-        if (!ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()) ) {
+        if (!ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with idenfidier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);

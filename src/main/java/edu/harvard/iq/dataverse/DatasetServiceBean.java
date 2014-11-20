@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.OutputStream;
+import static java.lang.Math.max;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,6 +28,7 @@ import javax.persistence.Query;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import org.apache.commons.lang.RandomStringUtils;
 
 /**
  *
@@ -34,15 +36,15 @@ import javax.xml.stream.XMLStreamWriter;
  */
 @Stateless
 @Named
-public class DatasetServiceBean implements java.io.Serializable  {
+public class DatasetServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-    
+
     @EJB
     DOIEZIdServiceBean doiEZIdServiceBean;
-    
+
     @EJB
     SettingsServiceBean settingsService;
 
@@ -86,53 +88,85 @@ public class DatasetServiceBean implements java.io.Serializable  {
      * dataset! See https://redmine.hmdc.harvard.edu/issues/3988
      */
     public Dataset findByGlobalId(String globalId) {
-        Dataset foundDataset = null;
-        if (globalId != null) {
-            Query query = em.createQuery("select object(o) from Dataset as o order by o.id");
-            List<Dataset> datasets = query.getResultList();
-            for (Dataset dataset : datasets) {
-                if (globalId.equals(dataset.getGlobalId())) {
-                    foundDataset = dataset;
+
+        String protocol = "";
+        String authority = "";
+        String identifier = "";
+        int index1 = globalId.indexOf(':');
+        String nonNullDefaultIfKeyNotFound = ""; 
+        String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
+        int index2 = globalId.indexOf(separator, index1 + 1);
+        int index3 = 0;
+        if (index1 == -1) {
+            throw new EJBException("Error parsing identifier: " + globalId + ". ':' not found in string");
+        } else {
+            protocol = globalId.substring(0, index1);
+        }
+        if (index2 == -1 ) {
+            throw new EJBException("Error parsing identifier: " + globalId + ". Second separator not found in string");
+        } else {
+            if (index2 != -1) {
+                authority = globalId.substring(index1 + 1, index2);
+            }
+        }
+        if (protocol.equals("doi")) {
+
+            index3 = globalId.indexOf(separator, index2 + 1);
+            if (index3 == -1 ) {
+                identifier = globalId.substring(index2 + 1).toUpperCase();
+            } else {
+                if (index3 > -1) {
+                    authority = globalId.substring(index1 + 1, index3);
+                    identifier = globalId.substring(index3 + 1).toUpperCase();
                 }
             }
+        } else {
+            identifier = globalId.substring(index2 + 1).toUpperCase();
+        }
+        String queryStr = "SELECT s from Dataset s where s.identifier = :identifier  and s.protocol= :protocol and s.authority= :authority";
+        Dataset foundDataset = null;
+        try {
+            Query query = em.createQuery(queryStr);
+            query.setParameter("identifier", identifier);
+            query.setParameter("protocol", protocol);
+            query.setParameter("authority", authority);
+            foundDataset = (Dataset) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            System.out.print("no ds found: " + globalId);
+            // DO nothing, just return null.
         }
         return foundDataset;
     }
 
-
-    
-    public String generateIdentifierSequence(String protocol, String authority) {
+    public String generateIdentifierSequence(String protocol, String authority, String separator) {
 
         String identifier = null;
         do {
-            identifier = ((Long) em.createNativeQuery("select nextval('identifier_id_seq')").getSingleResult()).toString();
-
-        } while (!isUniqueIdentifier(identifier, protocol, authority));
+            identifier = RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isUniqueIdentifier(identifier, protocol, authority, separator));
 
         return identifier;
-
     }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network)
-     * alos check for duplicate in EZID if needed
+     * for any other study in this Dataverse Network) alos check for duplicate
+     * in EZID if needed
      */
-    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority) {
+    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority, String separator) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
         query += " and d.protocol ='" + protocol + "'";
         query += " and d.authority = '" + authority + "'";
         boolean u = em.createQuery(query).getResultList().size() == 0;
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        if (doiProvider.equals("EZID")){
-            if( !doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol,  authority,  userIdentifier).isEmpty()){
+        if (doiProvider.equals("EZID")) {
+            if (!doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol, authority, separator, userIdentifier).isEmpty()) {
                 u = false;
             }
         }
         return u;
     }
-
 
     public String getRISFormat(DatasetVersion version) {
         String publisher = version.getRootDataverseNameforCitation();
@@ -191,7 +225,7 @@ public class DatasetServiceBean implements java.io.Serializable  {
 
         //<ref-type name="Dataset">59</ref-type> - How do I get that and xmlw.write it?
         xmlw.writeStartElement("ref-type");
-        xmlw.writeAttribute("name","Dataset");
+        xmlw.writeAttribute("name", "Dataset");
         xmlw.writeCharacters(version.getDataset().getId().toString());
         xmlw.writeEndElement(); // ref-type
 
@@ -212,13 +246,13 @@ public class DatasetServiceBean implements java.io.Serializable  {
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
-        String sectionString ="";
-        if (version.getDataset().isReleased()){
+        String sectionString = "";
+        if (version.getDataset().isReleased()) {
             sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getDataset().getPublicationDate());
         } else {
             sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getLastUpdateTime());
         }
-        
+
         xmlw.writeCharacters(sectionString);
         xmlw.writeEndElement(); // publisher
 
@@ -321,53 +355,4 @@ public class DatasetServiceBean implements java.io.Serializable  {
              */
         }
     }
-
-    /*
-     public Study getStudyByGlobalId(String identifier) {
-     String protocol = null;
-     String authority = null;
-     String studyId = null;
-     int index1 = identifier.indexOf(':');
-     int index2 = identifier.indexOf('/');
-     int index3 = 0;
-     if (index1 == -1) {
-     throw new EJBException("Error parsing identifier: " + identifier + ". ':' not found in string");
-     } else {
-     protocol = identifier.substring(0, index1);
-     }
-     if (index2 == -1) {
-     throw new EJBException("Error parsing identifier: " + identifier + ". '/' not found in string");
-
-     } else {
-     authority = identifier.substring(index1 + 1, index2);
-     }
-     if (protocol.equals("doi")){
-     index3 = identifier.indexOf('/', index2 + 1 );
-     if (index3== -1){
-     studyId = identifier.substring(index2 + 1).toUpperCase();  
-     } else {
-     authority = identifier.substring(index1 + 1, index3);
-     studyId = identifier.substring(index3 + 1).toUpperCase();  
-     }
-     }  else {
-     studyId = identifier.substring(index2 + 1).toUpperCase(); 
-     }      
-
-     String queryStr = "SELECT s from Study s where s.studyId = :studyId  and s.protocol= :protocol and s.authority= :authority";
-
-     Study study = null;
-     try {
-     Query query = em.createQuery(queryStr);
-     query.setParameter("studyId", studyId);
-     query.setParameter("protocol", protocol);
-     query.setParameter("authority", authority);
-     study = (Study) query.getSingleResult();
-     } catch (javax.persistence.NoResultException e) {
-     // DO nothing, just return null.
-     }
-     return study;
-     }
-     */
-
-
 }

@@ -90,9 +90,11 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         String nonNullDefaultIfKeyNotFound = "";
                         String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
                         String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+                        String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
                         dataset.setProtocol(protocol);
-                        dataset.setAuthority(authority);                        
-                        dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority));
+                        dataset.setAuthority(authority); 
+                        dataset.setDoiSeparator(separator);
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority, separator));
 
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 

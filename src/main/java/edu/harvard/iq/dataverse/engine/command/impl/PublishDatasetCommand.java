@@ -48,9 +48,9 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
         /* make an attempt to register if not registered*/
         String nonNullDefaultIfKeyNotFound = "";
-        String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String    protocol = theDataset.getProtocol();
         String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-        String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);        
+        String    authority = theDataset.getAuthority();        
         if (theDataset.getGlobalIdCreateTime() == null) {
             if (protocol.equals("doi")
                     && doiProvider.equals("EZID")) {
@@ -59,7 +59,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                     theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 } else {
                     if (doiRetString.contains("identifier already exists")){
-                        theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority));
+                        theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
                         doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
                         if(doiRetString.contains("Identifier not created")){
                             throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact thedata.org for assistance.", this);

@@ -41,10 +41,3 @@ INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (16, ':contributor', 'contributorName', FALSE, NULL, 1 );
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (17, 'type', 'contributorType', TRUE, 16, 1 );
 
-CREATE SEQUENCE identifier_id_seq
- INCREMENT 1
- MINVALUE 1
- MAXVALUE 9223372036854775807
- START 10000
- CACHE 1;
-ALTER TABLE identifier_id_seq OWNER TO "dvnapp";

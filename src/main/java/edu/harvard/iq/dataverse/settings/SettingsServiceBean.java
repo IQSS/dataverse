@@ -41,6 +41,12 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
+        DoiSeparator,
+        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
+        DoiUsername,
+        DoiPassword,
+        DoiBaseurlstring,
+        */
         /* TwoRavens location */
         TwoRavensUrl;
         

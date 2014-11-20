@@ -41,7 +41,7 @@ public class DOIEZIdServiceBean  {
     
     public DOIEZIdServiceBean(){
         baseURLString = System.getProperty("doi.baseurlstring");
-        ezidService = new EZIDService (baseURLString); 
+        ezidService = new EZIDService (baseURLString);    
         USERNAME  = System.getProperty("doi.username");
         PASSWORD  = System.getProperty("doi.password");
         logger.log(Level.INFO, "baseURLString " + baseURLString);
@@ -92,8 +92,8 @@ public class DOIEZIdServiceBean  {
        return metadata;
     }
     
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier){
-        String identifierOut = getIdentifierForLookup( protocol,  authority,  identifier);        
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier){
+        String identifierOut = getIdentifierForLookup( protocol,  authority, separator, identifier);        
         HashMap metadata = new HashMap();
        try {
               metadata = ezidService.getMetadata(identifierOut);
@@ -105,8 +105,8 @@ public class DOIEZIdServiceBean  {
        return metadata;
     }
     
-    public String getIdentifierForLookup(String protocol, String authority, String identifier) {
-        return protocol + ":" + authority  + identifier;
+    public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier) {
+        return protocol + ":" + authority + separator  + identifier;
     }
     
     
@@ -186,11 +186,11 @@ public class DOIEZIdServiceBean  {
         DOISHOULDER = "doi:" + datasetIn.getAuthority();
         
         if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset?globalId=" + DOISHOULDER 
-                           + datasetIn.getIdentifier();
+           targetUrl ="http://localhost:8080" + "/dataset.xhtml?globalId=" + DOISHOULDER 
+                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
         } else{
-           targetUrl = inetAddress + "/dataset?globalId=" + DOISHOULDER 
-                   + datasetIn.getIdentifier();
+           targetUrl = inetAddress + "/dataset.xhtml?globalId=" + DOISHOULDER 
+                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
         }            
         metadata.put("_target", targetUrl);
         return metadata;
