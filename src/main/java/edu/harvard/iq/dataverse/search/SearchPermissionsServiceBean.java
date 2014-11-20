@@ -53,6 +53,7 @@ public class SearchPermissionsServiceBean {
             permStrings.add(IndexServiceBean.getPublicGroupString());
         }
         permStrings.addAll(findDirectAssignments(dataverse));
+        permStrings.addAll(findImplicitAssignments(dataverse));
         return permStrings;
     }
 
@@ -62,12 +63,13 @@ public class SearchPermissionsServiceBean {
             perms.add(IndexServiceBean.getPublicGroupString());
         }
         perms.addAll(findDirectAssignments(version.getDataset()));
+        perms.addAll(findImplicitAssignments(version.getDataset()));
         return perms;
     }
 
     private List<String> findDirectAssignments(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
-        List<RoleAssignee> roleAssignees = findWhoCanSearch(dvObject);
+        List<RoleAssignee> roleAssignees = findWhoHasDirectAssignments(dvObject);
         for (RoleAssignee roleAssignee : roleAssignees) {
             AuthenticatedUser au = findAuthUser(roleAssignee);
             if (au != null) {
@@ -82,13 +84,13 @@ public class SearchPermissionsServiceBean {
         return permStrings;
     }
 
-    private List<RoleAssignee> findWhoCanSearch(DvObject dvObject) {
+    private List<RoleAssignee> findWhoHasDirectAssignments(DvObject dvObject) {
         List<RoleAssignee> emptyList = new ArrayList<>();
         List<RoleAssignee> peopleWhoCanSearch = emptyList;
 
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dvObject);
         for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+            if (roleAssignment.getRole().permissions().contains(getPermissionForDirectAssignment(dvObject))) {
                 RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(roleAssignment.getAssigneeIdentifier());
                 AuthenticatedUser au = findAuthUser(userOrGroup);
                 if (au != null) {
@@ -102,6 +104,14 @@ public class SearchPermissionsServiceBean {
             }
         }
         return peopleWhoCanSearch;
+    }
+
+    /**
+     * @todo implement this
+     */
+    private List<String> findImplicitAssignments(DvObject dvObject) {
+        List<String> emptyList = new ArrayList<>();
+        return emptyList;
     }
 
     private AuthenticatedUser findAuthUser(RoleAssignee roleAssignee) {
@@ -176,6 +186,15 @@ public class SearchPermissionsServiceBean {
      */
     private RoleAssignee findGroup(RoleAssignee roleAssignee) {
         return null;
+    }
+
+    private Permission getPermissionForDirectAssignment(DvObject dvObject) {
+        if (dvObject.isInstanceofDataverse()) {
+            return Permission.ViewUnpublishedDataverse;
+        } else {
+            return Permission.ViewUnpublishedDataset;
+        }
+
     }
 
 }

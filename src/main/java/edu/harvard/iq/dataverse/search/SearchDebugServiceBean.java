@@ -92,7 +92,11 @@ public class SearchDebugServiceBean {
              * @todo We should probably get away from the assumption that
              * endings always end with underscore such as "_draft".
              */
-            String ending = datasetSolrId.substring(datasetSolrId.lastIndexOf('_'));
+            String indicatorOfPublishedSolrId = ".*_[0-9]+$";
+            String ending = "";
+            if (!datasetSolrId.matches(indicatorOfPublishedSolrId)) {
+                ending = datasetSolrId.substring(datasetSolrId.lastIndexOf('_'));
+            }
             String fileSolrId = IndexServiceBean.solrDocIdentifierFile + dataFile.getId() + ending;
             /**
              * @todo We should show the filename for this version of the file.
