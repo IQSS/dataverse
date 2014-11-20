@@ -10,7 +10,6 @@ echo "Solr:"
 curl -s "http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=entityid%3A$1" | jq '.response.docs[] | {id, name_sort, perms_ss}'
 echo "Java:"
 curl -s "http://localhost:8080/api/search/perms?q=*&key=$FINCHKEY&id=$1" | jq '.data[]' 2>/dev/null
-#exit
 echo "Search API perms, items (finch):"
 curl -s "http://localhost:8080/api/search?q=*&key=$FINCHKEY" | jq '.data | {fq_actual, items}'
 echo "Search API perms, items (spruce):"

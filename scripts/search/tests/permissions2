@@ -1,0 +1,10 @@
+#!/bin/bash
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$FINCHKEY" | jq .data) scripts/search/tests/expected/finch1
+
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$SPRUCEKEY" | jq .data) scripts/search/tests/expected/spruce1
+
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$SPARROWKEY" | jq .data) scripts/search/tests/expected/anon-empty
+
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$WRENKEY" | jq .data) scripts/search/tests/expected/anon-empty
+
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$CHESTNUTKEY" | jq .data) scripts/search/tests/expected/anon-empty

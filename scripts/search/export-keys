@@ -1,0 +1,8 @@
+#!/bin/bash
+# `source path/to/this/file` so you can use these keys elsewhere
+export SEARCH_USER_DIR=/tmp/searchusers
+export FINCHKEY=`cat $SEARCH_USER_DIR/1 | jq .data.apiToken | tr -d \"`
+export SPARROWKEY=`cat $SEARCH_USER_DIR/2 | jq .data.apiToken | tr -d \"`
+export WRENKEY=`cat $SEARCH_USER_DIR/3 | jq .data.apiToken | tr -d \"`
+export SPRUCEKEY=`cat $SEARCH_USER_DIR/4 | jq .data.apiToken | tr -d \"`
+export CHESTNUTKEY=`cat $SEARCH_USER_DIR/5 | jq .data.apiToken | tr -d \"`
