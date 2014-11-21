@@ -81,7 +81,10 @@
                     <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                         <li class="dropdown accountName">
                             <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">
-                                <h:outputText style="#{dataverseSession.user.superuser ? 'color:white;background-color: blue;' : '' }" value="#{dataverseSession.user.displayInfo.title}"/>
+                                <ui:fragment rendered="#{dataverseSession.user.superuser}">
+                                    <span class="glyphicon glyphicon-user text-danger" style="margin-right:8px;"></span>
+                                </ui:fragment>
+                                <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}"/>
                                 <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
                                 <b class="caret"></b>
                             </a>
