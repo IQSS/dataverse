@@ -157,9 +157,31 @@ public class DOIEZIdServiceBean  {
             updateIdentifierStatus(datasetIn, "unavailable | withdrawn by author");
             HashMap metadata = new HashMap();
             metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() 
-                    + datasetIn.getIdentifier());
+              + datasetIn.getDoiSeparator()      + datasetIn.getIdentifier());
             modifyIdentifier(datasetIn, metadata);
         }
+    }
+    
+    private HashMap getUpdateMetadataFromDataset(Dataset datasetIn){
+        HashMap<String, String> metadata = new HashMap<String, String>();
+        
+        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
+        
+        if(authorString.isEmpty()) {
+            authorString = ":unav";
+        }
+        
+        String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
+
+        if(producerString.isEmpty()) {
+            producerString = ":unav";
+        }
+        metadata.put("datacite.creator", authorString);
+	metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+	metadata.put("datacite.publisher", producerString);       
+
+        return metadata;
+        
     }
     
     private HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
@@ -224,7 +246,7 @@ public class DOIEZIdServiceBean  {
     
     private void updateIdentifierStatus(Dataset dataset, String statusIn){
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap metadata = new HashMap();
+        HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
        try {
                ezidService.setMetadata(identifier, metadata);

@@ -74,14 +74,13 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         
-        theDataset.setGlobalIdCreateTime(null);
         String nonNullDefaultIfKeyNotFound = "";
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         if (protocol.equals("doi") 
-              && doiProvider.equals("EZID")) {
+              && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-            if (!doiRetString.equals("Identifier not created")) {
+            if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(createDate);
             }
         }

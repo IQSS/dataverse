@@ -196,7 +196,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="currentPassword" styleClass="form-control" validator="#{DataverseUserPage.validatePassword}" value="#{DataverseUserPage.currentPassword}" />
+                                                    <p:password id="currentPassword" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
                                                     <p:message for="currentPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -214,7 +214,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="inputPassword" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" />
+                                                    <p:password id="inputPassword" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                                     <p:message for="inputPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>

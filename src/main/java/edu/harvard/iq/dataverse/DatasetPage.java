@@ -353,7 +353,6 @@ public class DatasetPage implements java.io.Serializable {
         if (!dataverseService.find(ownerId).isMetadataBlockRoot()) {
             dvIdForInputLevel = dataverseService.find(ownerId).getMetadataRootId();
         }
-        System.out.print(dvIdForInputLevel);
         for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
             DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
             if (dsfIl != null) {
@@ -455,8 +454,6 @@ public class DatasetPage implements java.io.Serializable {
     }// A DataFile may have a related MapLayerMetadata object
 
     public String init() {
-        System.out.print("globalId " + globalId );
-        System.out.print("dataset.getId() " + dataset.getId() );
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
