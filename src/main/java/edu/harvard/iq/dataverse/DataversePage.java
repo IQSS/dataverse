@@ -400,7 +400,7 @@ public class DataversePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
             return null;
         }
-        String msg = (create)? "You have successfully created your dataverse": "You have successfully updated your dataverse";
+        String msg = (create)? "You have successfully created your dataverse.": "You have successfully updated your dataverse.";
         JsfHelper.addSuccessMessage(msg);
         
         return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";

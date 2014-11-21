@@ -11,8 +11,8 @@
 
     <cc:implementation>
         <ui:fragment rendered="#{not empty flash['msg']}">
-            <div class="alert alert-info">
-                <span class="glyphicon glyphicon-info-sign"></span>&#160;<h:outputText value="#{flash['msg']}"/>  
+            <div class="alert alert-success">
+                <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>Success!</strong> – <h:outputText value="#{flash['msg']}"/>  
             </div>  
         </ui:fragment>
         <ui:fragment rendered="#{facesContext.validationFailed}">
