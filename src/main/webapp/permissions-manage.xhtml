@@ -10,19 +10,20 @@
 
     <h:body>
         <f:metadata>
-            <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
-            <f:viewAction action="#{DataversePage.init}"/>
+            <f:viewParam name="id" value="#{managePermissionsPage.dvObject.id}"/>
+            <f:viewAction action="#{managePermissionsPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Roles + Permissions - #{DataversePage.dataverse.name} Dataverse"/>
-            <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
-            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:param name="pageTitle" value="Roles + Permissions - #{managePermissionsPage.dvObject.displayName}"/>
+            <ui:param name="dataverse" value="#{managePermissionsPage.dvObject}"/>
+            <ui:param name="showMessagePanel" value="true"/>
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm">
                     <div>
-                        <!-- Roles + Permissions Assign -->
+                        <!-- Permissions Configure -->
                         <ui:include src="permissions-configure.xhtml"/>
-                        
+
+                        <!-- Role Assignments Panel -->
                         <div class="panel-group">
                             <div class="panel panel-default">
                                 <div data-toggle="collapse" data-target="#collapseUsersGroups" class="panel-heading text-info">
@@ -33,69 +34,72 @@
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default pull-right" onclick="userGroupsForm.show()">
                                             <h:outputText value="Assign Roles to Users/Groups" />
                                         </p:commandLink>
-                                        <p class="help-block clearfix">Below this fake help text is where the manage view ==  == should be going.</p>
+                                        <p class="help-block clearfix">Below this fake help text is where the manage view should be going.</p>
                                         <div>
-                                            <div class="ui-datatable ui-widget" id="dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles">
-                                                <div class="ui-datatable-tablewrapper">
-                                                    <table role="grid">
-                                                        <thead id="dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles_head">
-                                                            <tr role="row">
-                                                                <th style="width:35%" role="columnheader" class="ui-state-default" id="dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles:j_idt384"><span>User / Group</span></th>
-                                                                <th style="width:25%" role="columnheader" class="ui-state-default" id="dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles:j_idt386"><span>Role</span></th>
-                                                                <th style="width:40%" role="columnheader" class="ui-state-default" id="dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles:j_idt388"><span>Action</span></th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tfoot></tfoot>
-                                                        <tbody class="ui-datatable-data ui-widget-content" id="dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles_data">
-                                                            <tr role="row" class="ui-widget-content ui-datatable-even" data-ri="0">
-                                                                <td role="gridcell">Admin Dataverse </td>
-                                                                <td role="gridcell">Admin</td>
-                                                                <td role="gridcell">(role assigned at Root Dataverse)</td>
-                                                            </tr>
-                                                            <tr role="row" class="ui-widget-content ui-datatable-odd" data-ri="1">
-                                                                <td role="gridcell">Michael Heppler </td>
-                                                                <td role="gridcell">Admin</td>
-                                                                <td role="gridcell"><a style="color:black;margin-right:0.5em;" onclick="PrimeFaces.ab({source:'dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles:1:j_idt390',update:'dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles',fragmentId:'dataverseForm:j_idt365',fragmentUpdate:true});return false;" class="ui-commandlink ui-widget btn btn-default" href="#" id="dataverseForm:rolesPermissionsTabView:permissionsSubTabView:assignedRoles:1:j_idt390">Revoke</a></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
+                                            <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
+                                                <p:column width="35%"  headerText="User / Group">
+                                                    <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title} " />
+                                                </p:column>
+                                                <p:column width="25%"  headerText="Role">
+                                                    <h:outputText value="#{roleAssignment.roleName}"/>
+                                                </p:column>
+                                                <p:column width="40%" headerText="Action">                                        
+                                                    <h:outputText value="(role assigned at #{roleAssignment.assignedDvName})" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}" />
+                                                    <p:commandLink styleClass="btn btn-default" 
+                                                                   value="Revoke" 
+                                                                   action="#{managePermissionsPage.revokeRole(roleAssignment.id)}"
+                                                                   rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
+                                                                   update="assignedRoles"
+                                                                   style="color:black;margin-right:0.5em;"/>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>                                        
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Roles panel -->
                             <div class="panel panel-default">
                                 <div data-toggle="collapse" data-target="#collapseRoles" class="panel-heading text-info">
                                     Roles <span class="glyphicon glyphicon-chevron-down" style="margin-left:.3em;top:3px;"/>
                                 </div>
                                 <div id="collapseRoles" class="collapse">
                                     <div class="panel-body">
-                                        <p:commandLink id="rolesAdd" styleClass="btn btn-default pull-right" onclick="rolesPermissionsDialog.show()">
-                                            <h:outputText value="Add New Role" />
-                                        </p:commandLink>
-                                        <p class="help-block clearfix">Below this fake help text is where the manage view == id="roleList" {rolePermissionFragment.availableRoles} == should be going.</p>
-                                        <div>
-                                            <div class="bg-warning" style="margin-bottom:1em;padding:5px;">
-                                                <span style="font-weight:bold">{role.name}</span>
-                                                <h:outputText value=" - {role.description}" rendered="#{true}"/>
-                                                <ui:fragment rendered="#{true}">
-                                                    <a href="#">
-                                                        <span class="glyphicon glyphicon-pencil"></span>
-                                                    </a>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{true}">
-                                                    <a href="#" title="Clone role" style="margin-left:1em;">
-                                                        <span class="glyphicon glyphicon-retweet"></span>
-                                                    </a>
-                                                </ui:fragment>
-                                                <div>
-                                                    <!--<ui:repeat value="# { role.permissions().toArray()}" var="prm">-->
-                                                        <span class="label label-default"># { prm }</span>
-                                                    <!--</ui:repeat>-->
+                                        <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                            <p:commandLink id="rolesAdd" styleClass="btn btn-default pull-right" onclick="roleForm.show()">
+                                                <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> 
+                                                <h:outputText value="Add New Role"/>
+                                            </p:commandLink>
+                                        </ui:fragment>
+                                        <p class="help-block clearfix">Below this fake help text is where the manage view should be going.</p>                                        
+                                        <p:fragment id="roleDisplay">
+                                            <ui:repeat id="roleList" value="#{managePermissionsPage.availableRoles}" var="role">
+                                                <f:passThroughAttribute name="class" value="list-unstyled" />
+                                                <div class="#{!empty role.owner ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
+                                                    <span style="font-weight:bold">#{role.name}</span>
+                                                    <h:outputText value=" - #{role.description}" rendered="#{!empty role.description}"/>
+                                                    <ui:fragment rendered="#{!empty role.owner and permissionsWrapper.canManagePermissions(role.owner)}">
+                                                        <p:commandLink title="Edit role" style="margin-left:1em;"
+                                                                       actionListener="#{managePermissionsPage.editRole(role.id)}"
+                                                                       oncomplete="roleForm.show()"
+                                                                       update=":#{p:component('editRolePanel')}">
+                                                            <span class="glyphicon glyphicon-pencil"></span></p:commandLink>                                          
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                                        <p:commandLink title="Clone role" style="margin-left:1em;"
+                                                                       actionListener="#{managePermissionsPage.cloneRole(role.id)}"
+                                                                       oncomplete="roleForm.show()"
+                                                                       update=":#{p:component('editRolePanel')}">
+                                                            <span class="glyphicon glyphicon-retweet"></span></p:commandLink>                                            
+                                                    </ui:fragment>                                    
+                                                    <div>
+                                                        <ui:repeat value="#{role.permissions().toArray()}" var="prm">
+                                                            <span class="label label-default">#{prm}</span>
+                                                        </ui:repeat>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
+                                            </ui:repeat>
+                                        </p:fragment>
                                     </div>
                                 </div>
                             </div>
@@ -104,10 +108,8 @@
 
                     <!-- Users/Groups Popup -->
                     <ui:include src="roles-assign.xhtml"/>
-
-                    <!-- Roles Edit Popup -->
-                    <ui:include src="roles-edit.xhtml"/>
-
+                        <!-- Roles Edit Popup -->
+                        <ui:include src="roles-edit.xhtml"/>
                 </h:form>
             </ui:define>
         </ui:composition>
