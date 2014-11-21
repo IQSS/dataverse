@@ -184,7 +184,7 @@ $ setenforce permissive
 
 $ service shibd restart
 
-To use "Permissive" mode at the next reboot modify /etc/selinix/config to SELINUX=permisive 
+To use "Permissive" mode permanently modify /etc/selinix/config to SELINUX=permisive 
 
 Register  with `TestShib <http://www.testshib.org/>`__ by uploading your server metadata
 ******************************************************************************************

@@ -1024,5 +1024,4 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         return "";
     }
-
 }
