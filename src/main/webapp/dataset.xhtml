@@ -164,14 +164,12 @@
                                                             <h:outputText value="Metadata" />
                                                         </p:commandLink>
                                                     </li>
-                                                    <li>                                                    
-                                                        <p:commandLink id="rolesPermissionsOpts" 
-                                                                       actionListener="#{rolePermissionFragment.setDvObject(DatasetPage.dataset)}" 
-                                                                       update="rolesPermissionsDialog"
-                                                                       oncomplete="rolesPermissionsForm.show()">
-                                                            <h:outputText value="Roles + Permissions" />
-                                                        </p:commandLink>  
-                                                    </li>
+                                                    <li>
+                                                        <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                            <h:outputText value="Permissions" />
+                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                        </h:link>
+                                                    </li>                                                       
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
