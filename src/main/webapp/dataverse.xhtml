@@ -62,7 +62,7 @@
                                         <p:watermark for="name" value="Enter name..."/>
                                     </div>
                                 </ui:fragment>
-                                <p:message for="name"/>
+                                <p:message for="name" display="text"/>
                             </p:panelGrid>
                             <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
                                 <label class="control-label" style="padding-right:1em;" for="hostDataverse">
@@ -94,7 +94,7 @@
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="alias" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
-                                        <p:message for="alias"/>
+                                        <p:message for="alias" display="text"/>
                                     </p:panelGrid>
                                 </div>
                                 <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">
@@ -105,7 +105,7 @@
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="contactEmail" styleClass="form-control" value="#{DataversePage.dataverse.contactEmail}"/>
-                                        <p:message for="contactEmail"/>
+                                        <p:message for="contactEmail" display="text"/>
                                     </p:panelGrid>
                                 </div>
                                 <label class="col-sm-3 control-label" for="affiliation" style="white-space:nowrap;">
@@ -116,7 +116,7 @@
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
-                                        <p:message for="affiliation"/>
+                                        <p:message for="affiliation" display="text"/>
                                     </p:panelGrid>
                                 </div>
 
@@ -136,7 +136,7 @@
                                             <f:selectItem id="dvTeaching" itemLabel="Teaching Courses" itemValue="TEACHING_COURSES" />
                                             <f:selectItem id="dvUncategorized" itemLabel="Uncategorized" itemValue="UNCATEGORIZED" />
                                         </h:selectOneMenu>
-                                        <p:message for="dataverseCategory"/>
+                                        <p:message for="dataverseCategory" display="text"/>
                                     </p:panelGrid>
                                 </div>
                             </div>
@@ -154,7 +154,7 @@
                                     <div><span id="chars"/> characters remaining</div>
                                 </div>
                                 <div class="col-sm-2 control-label">
-                                    <p:message for="description"/>
+                                    <p:message for="description" display="text"/>
                                 </div>
                             </div>
                         </div>
@@ -500,41 +500,41 @@
                         <p:panelGrid columns="3">
                             <h:outputLabel value="Logo"/>
                             <p:inputText id="logo" value="#{DataversePage.dataverse.dataverseTheme.logo}"/>
-                            <p:message for="logo"/>
+                            <p:message for="logo" display="text"/>
                             <h:outputLabel value="Logo Format"/>
                             <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.dataverseTheme.logoFormat}">
                                 <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
                                 <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
-                            <p:message for="logoFormat"/>
+                            <p:message for="logoFormat" display="text"/>
                             <h:outputLabel value="Logo Alignment"/>
                             <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.dataverseTheme.logoAlignment}">
                                 <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
                                 <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
                                 <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
                             </p:selectOneMenu>
-                            <p:message for="logoFormat"/>
+                            <p:message for="logoFormat" display="text"/>
                             <h:outputLabel value="Logo Background Color"/>
                             <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.dataverseTheme.logoBackgroundColor}"/>
-                            <p:message for="logoBackgroundColor"/>
+                            <p:message for="logoBackgroundColor" display="text"/>
                             <h:outputLabel value="Tagline"/>
                             <p:inputText id="tagline" value="#{DataversePage.dataverse.dataverseTheme.tagline}"/>
-                            <p:message for="tagline"/>
+                            <p:message for="tagline" display="text"/>
                             <h:outputLabel value="Link URL"/>
                             <p:inputText id="linkUrl" value="#{DataversePage.dataverse.dataverseTheme.linkUrl}"/>
-                            <p:message for="linkUrl"/>
+                            <p:message for="linkUrl" display="text"/>
                             <h:outputLabel value="Link Text"/>
                             <p:inputText id="linkText" value="#{DataversePage.dataverse.dataverseTheme.linkText}"/>
-                            <p:message for="linkText"/>
+                            <p:message for="linkText" display="text"/>
                             <h:outputLabel value="Link Color"/>
                             <p:inputText id="linkColor" value="#{DataversePage.dataverse.dataverseTheme.linkColor}"/>
-                            <p:message for="linkColor"/>
+                            <p:message for="linkColor" display="text"/>
                             <h:outputLabel value="Text Color"/>
                             <p:inputText id="textColor" value="#{DataversePage.dataverse.dataverseTheme.textColor}"/>
-                            <p:message for="textColor"/>
+                            <p:message for="textColor" display="text"/>
                             <h:outputLabel value="Background Color"/>
                             <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.dataverseTheme.backgroundColor}"/>
-                            <p:message for="backgroundColor"/>
+                            <p:message for="backgroundColor" display="text"/>
                         </p:panelGrid>
                     </ui:fragment>
 

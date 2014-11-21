@@ -43,7 +43,7 @@ body .ui-widget {font-size: inherit;}
 
 button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
 
-.messagePanel {margin-top:1em; font-size: 1em;}
+.messagePanel {padding-top:1em;}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
 .highlightBold {font-weight:bold;}

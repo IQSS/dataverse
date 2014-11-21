@@ -208,7 +208,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("This Username is already taken.");
+            FacesMessage message = new FacesMessage("This username is already taken.");
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
