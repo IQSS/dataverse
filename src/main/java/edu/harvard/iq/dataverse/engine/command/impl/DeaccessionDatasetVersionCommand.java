@@ -45,7 +45,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         }       
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
-        ctxt.index().indexDataset(ds);
+        ctxt.index().indexDataset(managed.getDataset());
         
         return managed;
     }
