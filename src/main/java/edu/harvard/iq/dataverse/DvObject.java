@@ -203,8 +203,13 @@ public abstract class DvObject implements java.io.Serializable {
         return this instanceof DataFile;
     }
     
-    public Dataset getAsDataset() {
-        return (Dataset) this;
-    }
-
+    public Dataverse getDataverseContext() {
+        if (this instanceof Dataverse) {
+            return (Dataverse) this;
+        } else if (this.getOwner() != null){
+            return this.getOwner().getDataverseContext();
+        }
+        
+        return null;
+    }    
 }
