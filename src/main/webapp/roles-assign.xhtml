@@ -17,55 +17,52 @@
                     </a>
                 </label>
                 <div class="col-sm-9">
+                    <p:autoComplete id="userGroupNameAssign" styleClass="form-control" multiple="true" forceSelection="true" emptyMessage="No matches found."
+                                    value="#{managePermissionsPage.selectedRoleAssignees}"  completeMethod="#{managePermissionsPage.completeRoleAssignee}"
+                                    var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">                  
+                        <p:column>
+                            <h:outputText value="#{roleAssignee.displayInfo.title}" />
+                        </p:column>  
+                        <p:column>
+                            <h:outputText value="#{roleAssignee.displayInfo.affiliation}" />
+                        </p:column>                                  
+                    </p:autoComplete>
                     <input type="name" class="form-control" id="userGroupAccessInput" placeholder="Enter User/Group Name"/>
                 </div>
             </div>
+            <p:fragment autoUpdate="true">
+                
             <div class="form-group clearfix">
                 <label for="assignRoleRadios" class="col-sm-3 control-label">
                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
                         Role
                     </a>
                 </label>
-                <div class="col-sm-9">
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="assignRoleRadios" id="assignRoleRadios1" value="option1" checked="checked"/>
-                            Collaborator
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="assignRoleRadios" id="assignRoleRadios2" value="option2"/>
-                            Curator
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="assignRoleRadios" id="assignRoleRadios2" value="option2"/>
-                            Admin
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="assignRoleRadios" id="assignRoleRadios2" value="option2"/>
-                            Custom
-                        </label>
-                    </div>
+                <div class="col-sm-9">                  
+                    <p:selectOneRadio id="assignRoleOptions" layout="pageDirection" value="#{managePermissionsPage.selectedRoleId}">
+                        <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{role.name}"/>
+                        <p:ajax process="@this"/>
+                    </p:selectOneRadio>  
+
                     <div id="assignRolePermissionLabels" style="margin-left:0;">
                         <p class="help-block">This is what they can do.</p>
                         <div class="bg-warning" style="margin-bottom:1em;padding:5px;">
-                            <span style="font-weight:bold">{role.Collaborator}</span>
-                            <div>
-                                <!--<ui:repeat value="# { role.permissions().toArray()}" var="prm">-->
-                                    <span class="label label-default"># { prm }</span>
-                                <!--</ui:repeat>-->
-                            </div>
+                            <span style="font-weight:bold">#{managePermissionsPage.assignedRole.name}</span>
+                            <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
+                                <div>
+                                    <span class="label label-default">#{prm}</span>
+                                </div>
+                            </ui:repeat>                            
                         </div>
                     </div>
-                </div>
+                </div>               
             </div>
+            </p:fragment>
         </div>
-        <!--<h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>-->
+
+        <p:commandLink styleClass="btn btn-default" value="Save Changes" 
+                       update="assignedRoles"
+                       actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()"/>           
         <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">Cancel</button>
     </p:dialog>
 </div>
