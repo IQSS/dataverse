@@ -127,7 +127,7 @@
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Edit" 
                                                    actionListener="#{rolePermissionFragment.setDvObject(ds)}"
-                                                   rendered="#{permissionsWrapper.canManagePermissions(rolePermissionFragment.ds)}"
+                                                   rendered="#{permissionsWrapper.canManagePermissions(ds)}"
                                                    oncomplete="subContent.select(0);"
                                                    style="color:black;margin-right:0.5em;"/>
                                 </p:column>
