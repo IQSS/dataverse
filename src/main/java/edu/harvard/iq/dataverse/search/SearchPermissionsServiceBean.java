@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,6 +42,8 @@ public class SearchPermissionsServiceBean {
     RoleAssigneeServiceBean roleAssigneeService;
     @EJB
     AuthenticationServiceBean authSvc;
+    @EJB
+    SettingsServiceBean settingsService;
 
     /**
      * @todo Should we make a PermStrings object? Probably.
@@ -111,6 +114,9 @@ public class SearchPermissionsServiceBean {
      */
     private List<String> findImplicitAssignments(DvObject dvObject) {
         List<String> emptyList = new ArrayList<>();
+        if (!respectPermissionRoot()) {
+            return emptyList;
+        }
         List<String> permStrings = emptyList;
         if (dvObject.isEffectivelyPermissionRoot()) {
             return emptyList;
@@ -209,6 +215,12 @@ public class SearchPermissionsServiceBean {
             return Permission.ViewUnpublishedDataset;
         }
 
+    }
+
+    private boolean respectPermissionRoot() {
+        boolean safeDefaultIfKeyNotFound = true;
+        // see javadoc of the key
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.SearchRespectPermissionRoot, safeDefaultIfKeyNotFound);
     }
 
 }

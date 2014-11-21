@@ -146,6 +146,9 @@ public class SearchServiceBean {
              */
             if (false) {
                 String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+                if (onlyDatatRelatedToMe) {
+                    experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+                }
                 publicPlusUserPrivateGroup = experimentalJoin;
             }
 

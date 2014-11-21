@@ -11,8 +11,7 @@ import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
-import edu.harvard.iq.dataverse.search.SearchDebugServiceBean;
-import edu.harvard.iq.dataverse.search.SearchPermissionsServiceBean;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -38,7 +37,7 @@ public class Search extends AbstractApiBean {
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
-    SearchDebugServiceBean searchDebugService;
+    SolrIndexServiceBean SolrIndexService;
 
     @GET
     public Response search(@QueryParam("key") String apiToken,
@@ -211,7 +210,7 @@ public class Search extends AbstractApiBean {
             return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
         }
 
-        List<DvObjectSolrDoc> solrDocs = searchDebugService.determineSolrDocs(dvObjectId);
+        List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectId);
 
         JsonArrayBuilder data = Json.createArrayBuilder();
 

@@ -131,9 +131,6 @@ public class IndexServiceBean {
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
-        if (false) {
-            solrIndexService.indexAllPermissions();
-        }
         return dataverseIndexCount + " dataverses, " + datasetIndexCount + " datasets, " + groupIndexCount + " groups, and " + userIndexCount + " users indexed\n";
     }
 
@@ -265,12 +262,6 @@ public class IndexServiceBean {
     }
 
     public String indexDataset(Dataset dataset) {
-        if (false) {
-            /**
-             * @todo Move this to *after* indexing of files happens.
-             */
-            IndexResponse indexResponse = solrIndexService.indexAllPermissions();
-        }
         logger.info("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
@@ -377,6 +368,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
+                indexDatasetPermissions();
                 return result;
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
@@ -427,6 +419,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
+                indexDatasetPermissions();
                 return result;
             } else {
                 return "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
@@ -480,6 +473,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
+                indexDatasetPermissions();
                 return result;
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
 
@@ -524,12 +518,22 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
+                indexDatasetPermissions();
                 return result;
             } else {
                 return "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
             }
         } else {
             return "No-op. Unexpected condition reached: Has a version been published or not?";
+        }
+    }
+
+    private IndexResponse indexDatasetPermissions() {
+        if (false) {
+            IndexResponse indexResponse = solrIndexService.indexAllPermissions();
+            return indexResponse;
+        } else {
+            return new IndexResponse("new JOIN is still experimental");
         }
     }
 
@@ -1140,6 +1144,21 @@ public class IndexServiceBean {
     }
 
     private Dataverse findRootDataverseCached() {
+        if (true) {
+            /**
+             * @todo Is the code below working at all? We don't want the root
+             * dataverse to be indexed into Solr. Specifically, we don't want a
+             * dataverse "card" to show up while browsing.
+             *
+             * Let's just find the root dataverse and be done with it. We'll
+             * figure out the caching later.
+             */
+            return dataverseService.findRootDataverse();
+        }
+
+        /**
+         * @todo Why isn't this code working?
+         */
         if (rootDataverseCached != null) {
             return rootDataverseCached;
         } else {

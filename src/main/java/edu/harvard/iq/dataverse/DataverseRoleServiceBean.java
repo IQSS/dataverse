@@ -70,7 +70,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
          * Solr down? Is everything ok?
          */
         if (false) {
-            IndexResponse indexResponse = solrIndexService.indexAllPermissions();
+            IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(definitionPoint.getId());
         }
         return indexService.indexDvObject(definitionPoint);
     }
