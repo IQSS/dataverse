@@ -47,9 +47,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(ManagePermissionsPage.class.getCanonicalName());
 
     @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
-    DatasetServiceBean datasetService;
+    DvObjectServiceBean dvObjectService;
+    //@EJB
+    //DataverseServiceBean dataverseService;
+    //@EJB
+    //DatasetServiceBean datasetService;
     @EJB
     DataverseRoleServiceBean roleService;
     @EJB
@@ -67,7 +69,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     @Inject
     DataverseSession session;
 
-    DvObject dvObject = new Dataverse();
+    DvObject dvObject = new Dataverse(); // by default we use a Dataverse, but this will be overridden in init by the findById
 
     public DvObject getDvObject() {
         return dvObject;
@@ -83,15 +85,19 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public String init() {
             //@todo deal with any kind of dvObject
             if (dvObject.getId() != null) {
-                dvObject = dataverseService.find(dvObject.getId());
+                dvObject = dvObjectService.findDvObject(dvObject.getId());
             }
             
             // check if dv exists and user has permission
             if (dvObject == null) {
                 return "/404.xhtml";
             }
-            if (!dvObject.isReleased() && !permissionService.on(dvObject).has(Permission.ManageDataversePermissions)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            if (!dvObject.isReleased()) {
+                // for dataFiles, check the perms on its owning dataset
+                DvObject checkPermissionsdvObject = dvObject instanceof DataFile ? dvObject.getOwner() : dvObject;
+                if (!permissionService.on(checkPermissionsdvObject).has(checkPermissionsdvObject instanceof Dataverse ? Permission.ManageDataversePermissions : Permission.ManageDatasetPermissions)) {  
+                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                }
             }   
             return "";
     }
