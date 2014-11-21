@@ -6,4 +6,4 @@ export SPRUCE_USERNAME='@spruce'
 
 export SPRUCE_ADMIN_ON_BIRDS=`curl -s "http://localhost:8080/api/dvs/$BIRDS_DATAVERSE/assignments?key=$FINCHKEY" | jq .data[1].id`
 
-export FIRST_SPRUCE_DOI=`curl --insecure -s -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/spruce | xmllint -format - | xpath '//id/text()' | cut -d'/' -f11,12,13`
+export FIRST_SPRUCE_DOI=`curl --insecure -s -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/spruce | xmllint -format - | xmlstarlet sel -t -v '//_:id' 2>/dev/null | cut -d'/' -f11,12,13`

@@ -1,2 +1,2 @@
 #!/bin/bash
-diff <(curl -s 'http://localhost:8080/api/search?q=:' | jq .) scripts/search/tests/expected/query-unparseable
+diff <(curl -s 'http://localhost:8080/api/search?q=:' | jq .message) scripts/search/tests/expected/query-unparseable

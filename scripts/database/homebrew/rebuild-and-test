@@ -12,12 +12,11 @@ mvn package
 #cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
 sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
-scripts/database/homebrew/run-non-dvnApp-role
 echo "---"
 echo "Creating search users"
 scripts/search/populate-users > /dev/null
 scripts/search/create-users > /dev/null
-source scripts/search/export-keys
+. scripts/search/export-keys
 echo "Creating bird and tree dataverses"
 scripts/search/populate-bird-dvs1
 scripts/search/create-bird-dvs1 > /dev/null
@@ -25,9 +24,11 @@ scripts/search/populate-tree-dvs1
 scripts/search/create-tree-dvs1 > /dev/null
 echo "Creating some datasets"
 curl -s --insecure --data-binary @scripts/search/tests/data/dataset-trees1.xml -H 'Content-Type: application/atom+xml' -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/spruce | xmllint -format - >/dev/null
+sed -i -e "s/123456/`uuidgen | cut -c-6`/" scripts/search/tests/data/dataset-finch1.json
 curl -s -X POST -H "Content-type:application/json" -d @scripts/search/tests/data/dataset-finch1.json http://localhost:8080/api/dvs/finches/datasets/?key=$FINCHKEY >/dev/null
+git checkout scripts/search/tests/data/dataset-finch1.json
 echo "Uploading a file"
-source scripts/search/assumptions
+. scripts/search/assumptions
 curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H 'Content-Disposition: filename=trees.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$FIRST_SPRUCE_DOI >/dev/null
 # give the file a little time to ingest
 sleep 2
@@ -35,12 +36,12 @@ echo "Everything in draft, checking permissions. Silence is golden."
 scripts/search/tests/query-unparseable
 scripts/search/tests/permissions1
 echo "Done."
-source scripts/search/assumptions
+. scripts/search/assumptions
 echo "Giving $SPRUCE_USERNAME "admin" on Birds dataverse"
 curl -s -X POST -H 'Content-Type: application/x-www-form-urlencoded' "http://localhost:8080/api/roles/assignments?username=$SPRUCE_USERNAME&roleId=$ADMIN_ROLE&definitionPointId=$BIRDS_DATAVERSE&key=$FINCHKEY"
 # FIXME: show the right permissions
 #scripts/search/tests/permissions2
-source scripts/search/assumptions
+. scripts/search/assumptions
 echo
 echo "Revoking that role"
 curl -s -X DELETE "http://localhost:8080/api/dvs/$BIRDS_DATAVERSE/assignments/$SPRUCE_ADMIN_ON_BIRDS?key=$FINCHKEY"

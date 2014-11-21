@@ -1,4 +1,1 @@
-{
-  "message": "Unable to find a user with API token provided.",
-  "status": "ERROR"
-}
+"Unable to find a user with API token provided."
