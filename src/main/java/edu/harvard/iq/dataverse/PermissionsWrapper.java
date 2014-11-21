@@ -9,6 +9,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -20,7 +22,7 @@ import javax.inject.Named;
  */
 @ViewScoped
 @Named
-public class PermissionsWrapper {
+public class PermissionsWrapper implements java.io.Serializable {
     
     @EJB
     PermissionServiceBean permissionService;
@@ -41,5 +43,5 @@ public class PermissionsWrapper {
     
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
         return permissionService.userOn(u, dv).has(Permission.ManageDataversePermissions);
-    }    
+    } 
 }
