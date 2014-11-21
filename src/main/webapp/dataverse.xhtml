@@ -336,11 +336,17 @@
                                                 </li>
                                             </ui:fragment>
                                             <li>
+                                                <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                    <h:outputText value="Permissions" />
+                                                    <f:param name="id" value="#{DataversePage.dataverse.id}" />
+                                                </h:link>
+                                            </li>                                            
+                                            <li>
                                                 <p:commandLink id="rolesPermissionsOpts"
                                                                actionListener="#{rolePermissionFragment.setDvObject(DataversePage.dataverse)}"
                                                                update="rolesPermissionsDialog"
                                                                oncomplete="rolesPermissionsForm.show();handleResizeDialog('rolesPermissionsDialog');">
-                                                    <h:outputText value="Roles + Permissions" />
+                                                    <h:outputText value="Permissions (popup)" />
                                                 </p:commandLink>
                                             </li>
                                             <li>
