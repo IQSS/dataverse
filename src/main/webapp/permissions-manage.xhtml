@@ -50,7 +50,7 @@
                                                 <p:column width="40%" headerText="Action">                                        
                                                     <h:outputText value="(role assigned at #{roleAssignment.assignedDvName})" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}" />
                                                     <p:commandLink styleClass="btn btn-default" 
-                                                                   value="Revoke" 
+                                                                   value="Remove Assigned Role" 
                                                                    action="#{managePermissionsPage.revokeRole(roleAssignment.id)}"
                                                                    rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
                                                                    update="assignedRoles"
