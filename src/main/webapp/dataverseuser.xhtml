@@ -196,7 +196,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="currentPassword" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
+                                                    <p:password id="currentPassword" label="Current Password" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
                                                     <p:message for="currentPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -207,14 +207,13 @@
                                         <div class="form-group col-sm-12">
                                             <label for="inputPassword" class="col-sm-2 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Your password needs to be at least 6 characters and include one letter and one number.">
-                                                    <h:outputText value="Password" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                                    <h:outputText value="New Password" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" /> 
+                                                    <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" /> 
                                                     <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="inputPassword" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                                    <p:password id="inputPassword" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                                     <p:message for="inputPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -230,7 +229,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="retypePassword" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
+                                                    <p:password id="retypePassword" label="Retype Password" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
                                                     <p:message for="retypePassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
