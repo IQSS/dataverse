@@ -88,14 +88,14 @@
                             <ul class="dropdown-menu">
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml">
-                                        <f:param name="selectTab" value="notifications" />
-                                        <h:outputText value="Notifications" />
-                                        <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />                                        
+                                        <h:outputText value="Data Related to Me" />
                                     </h:outputLink>
                                 </li>
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml">
-                                        <h:outputText value="Data Related to Me" />
+                                        <f:param name="selectTab" value="notifications" />
+                                        <h:outputText value="Notifications" />
+                                        <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />                                        
                                     </h:outputLink>
                                 </li>
                                 <li>

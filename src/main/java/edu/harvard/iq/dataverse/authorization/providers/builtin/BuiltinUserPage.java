@@ -14,10 +14,7 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -208,7 +205,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("This username is already taken.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "This username is already taken.", null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
