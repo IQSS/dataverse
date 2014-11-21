@@ -3,7 +3,8 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
 
     <h:head>
     </h:head>
@@ -15,14 +16,17 @@
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="Roles + Permissions - #{managePermissionsPage.dvObject.displayName}"/>
-            <ui:param name="dataverse" value="#{managePermissionsPage.dvObject}"/>
+            <ui:param name="dataverse" value="#{managePermissionsPage.dvObject.dataverseContext}"/>
+            <ui:param name="dataset" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject : null}"/>
+            <ui:param name="version" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject.latestVersion : null}"/>
             <ui:param name="showMessagePanel" value="true"/>
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm">
                     <div>
                         <!-- Permissions Configure -->
-                        <ui:include src="permissions-configure.xhtml"/>
-
+                        <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}"> 
+                            <ui:include src="permissions-configure.xhtml"/>
+                        </c:if>
                         <!-- Role Assignments Panel -->
                         <div class="panel-group">
                             <div class="panel panel-default">
@@ -65,7 +69,7 @@
                                 </div>
                                 <div id="collapseRoles" class="collapse">
                                     <div class="panel-body">
-                                        <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                        <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
                                             <p:commandLink id="rolesAdd" styleClass="btn btn-default pull-right" onclick="roleForm.show()">
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> 
                                                 <h:outputText value="Add New Role"/>
@@ -78,14 +82,14 @@
                                                 <div class="#{!empty role.owner ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
                                                     <span style="font-weight:bold">#{role.name}</span>
                                                     <h:outputText value=" - #{role.description}" rendered="#{!empty role.description}"/>
-                                                    <ui:fragment rendered="#{!empty role.owner and permissionsWrapper.canManagePermissions(role.owner)}">
+                                                    <ui:fragment rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(role.owner)}">
                                                         <p:commandLink title="Edit role" style="margin-left:1em;"
                                                                        actionListener="#{managePermissionsPage.editRole(role.id)}"
                                                                        oncomplete="roleForm.show()"
                                                                        update=":#{p:component('editRolePanel')}">
                                                             <span class="glyphicon glyphicon-pencil"></span></p:commandLink>                                          
                                                     </ui:fragment>
-                                                    <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                                    <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
                                                         <p:commandLink title="Clone role" style="margin-left:1em;"
                                                                        actionListener="#{managePermissionsPage.cloneRole(role.id)}"
                                                                        oncomplete="roleForm.show()"
