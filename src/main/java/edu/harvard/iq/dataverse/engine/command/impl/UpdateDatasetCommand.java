@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
@@ -62,6 +63,17 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(updateTime);
+            }
+        }
+        
+        String nonNullDefaultIfKeyNotFound = "";
+        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+         
+        if (theDataset.getProtocol().equals("doi") 
+              && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
+            String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+            if (doiRetString.contains(theDataset.getIdentifier())) {
+                theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
             }
         }
 

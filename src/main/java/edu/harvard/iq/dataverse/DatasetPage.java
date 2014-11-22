@@ -688,6 +688,20 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
+    
+    public String registerDataset() {
+        Command<Dataset> cmd;
+        try {
+            cmd = new UpdateDatasetCommand(dataset, session.getUser());
+            dataset = commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Registration Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetRegistered", "Your dataset is now registered.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+    }
 
     public void refresh(ActionEvent e) {
         refresh();
@@ -758,6 +772,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedFiles(List<FileMetadata> selectedFiles) {
         this.selectedFiles = selectedFiles;
     }
+    
 
     public String save() {
         // Validate

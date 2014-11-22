@@ -121,7 +121,17 @@ public class Dataset extends DvObjectContainer {
     }
 
     private String getEZIdURL() {
-        return "http://dx.doi.org/" + authority + doiSeparator + getIdentifier();
+       if(globalIdCreateTime != null){
+            return "http://dx.doi.org/" + authority + doiSeparator + getIdentifier();
+        } else {
+            return "http://dx.doi.org/" + authority + doiSeparator + "Dataset-not-registered";
+        } 
+    }
+    
+    public String getGlobalId() {
+
+            return protocol + ":" + authority + doiSeparator + getIdentifier();
+                   
     }
 
     public List<DataFile> getFiles() {
@@ -336,9 +346,7 @@ public class Dataset extends DvObjectContainer {
         return v.visit(this);
     }
 
-    public String getGlobalId() {
-        return protocol + ":" + authority + doiSeparator + getIdentifier();
-    }
+
 
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
