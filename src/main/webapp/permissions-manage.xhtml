@@ -69,7 +69,7 @@
                                 <div id="collapseRoles" class="collapse">
                                     <div class="panel-body">
                                         <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
-                                            <p:commandLink id="rolesAdd" styleClass="btn btn-default pull-right" onclick="roleForm.show()">
+                                            <p:commandLink id="rolesAdd" styleClass="btn btn-default pull-right" actionListener="#{managePermissionsPage.createNewRole}"  onclick="roleForm.show()">
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> Add New Role
                                             </p:commandLink>
                                         </ui:fragment>
