@@ -55,13 +55,13 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             if (protocol.equals("doi")
                     && doiProvider.equals("EZID")) {
                 String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);               
-                if (!doiRetString.contains("Identifier not created")) {
+                if (doiRetString.contains(theDataset.getIdentifier())) {
                     theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 } else {
                     if (doiRetString.contains("identifier already exists")){
                         theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(protocol, authority, theDataset.getDoiSeparator()));
                         doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-                        if(doiRetString.contains("Identifier not created")){
+                        if(!doiRetString.contains(theDataset.getIdentifier())){
                             throw new IllegalCommandException("This dataset may not be published because it has not been registered. Please contact thedata.org for assistance.", this);
                         } else{
                             theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
