@@ -159,7 +159,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     /*
     assign roles dialog
     */
-    private List<RoleAssignee> selectedRoleAssignees;
+    private List<RoleAssignee> selectedRoleAssignees = new ArrayList<RoleAssignee>();
     private Long selectedRoleId;
 
     public List<RoleAssignee> getSelectedRoleAssignees() {
@@ -190,13 +190,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
         List<RoleAssignee> returnList = new ArrayList();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(),query)) {
+            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(),query) && (selectedRoleAssignees == null || !selectedRoleAssignees.contains(ra))) {
                 returnList.add(ra);
             }
         }
         return returnList;
     }
-        
+       
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
         if (dvObject != null && dvObject.getId() != null && (dvObject instanceof Dataverse || dvObject instanceof Dataset)) {
