@@ -1,0 +1,32 @@
+#!/bin/bash
+scripts/search/clear
+. scripts/search/export-keys
+. scripts/search/assumptions
+# delete spruce file
+curl -s --insecure -X DELETE https://spruce:spruce@localhost:8181/dvn/api/data-deposit/v1/swordv2/edit-media/file/$FIRST_SPRUCE_FILE >/dev/null
+# delete spruce dataset
+curl -s --insecure -X DELETE -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1/swordv2/edit/study/$FIRST_SPRUCE_DOI >/dev/null
+# delete finch dataset
+curl -s -X DELETE "http://localhost:8080/api/datasets/$FIRST_FINCH_DATASET_ID?key=$FINCHKEY" >/dev/null
+
+# delete all dataverses
+curl -s -X DELETE "http://localhost:8080/api/dvs/chestnutsparrows?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dvs/sparrows?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dvs/finches?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dvs/wrens?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dvs/birds?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dvs/spruce?key=$SPRUCEKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dvs/chestnuttrees?key=$SPRUCEKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dvs/trees?key=$SPRUCEKEY" >/dev/null
+
+# FIXME: manual re-indexing of dvobject docs and permission docs should not be necessary
+curl -s http://localhost:8080/api/index >/dev/null
+curl -s http://localhost:8080/api/index/perms >/dev/null
+# give solr a moment to catch up
+echo
+echo "Making sure finch can't see anything (silence is golden)"
+diff <(curl -s "http://localhost:8080/api/search?q=*&key=$FINCHKEY" | jq '.data.total_count') scripts/search/tests/expected/anon
+echo Done
+echo "Making sure spruce can't see anything (silence is golden)"
+diff <(curl -s "http://localhost:8080/api/search?q=*&key=$SPRUCEKEY" | jq '.data.total_count') scripts/search/tests/expected/anon
+echo Done
