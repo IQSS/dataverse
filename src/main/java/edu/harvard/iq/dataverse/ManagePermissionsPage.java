@@ -48,10 +48,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     @EJB
     DvObjectServiceBean dvObjectService;
-    //@EJB
-    //DataverseServiceBean dataverseService;
-    //@EJB
-    //DatasetServiceBean datasetService;
     @EJB
     DataverseRoleServiceBean roleService;
     @EJB
@@ -92,12 +88,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
             if (dvObject == null) {
                 return "/404.xhtml";
             }
-            if (!dvObject.isReleased()) {
-                // for dataFiles, check the perms on its owning dataset
-                DvObject checkPermissionsdvObject = dvObject instanceof DataFile ? dvObject.getOwner() : dvObject;
-                if (!permissionService.on(checkPermissionsdvObject).has(checkPermissionsdvObject instanceof Dataverse ? Permission.ManageDataversePermissions : Permission.ManageDatasetPermissions)) {  
-                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-                }
+
+            // for dataFiles, check the perms on its owning dataset
+            DvObject checkPermissionsdvObject = dvObject instanceof DataFile ? dvObject.getOwner() : dvObject;
+            if (!permissionService.on(checkPermissionsdvObject).has(checkPermissionsdvObject instanceof Dataverse ? Permission.ManageDataversePermissions : Permission.ManageDatasetPermissions)) {  
+                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }   
             return "";
     }
@@ -200,8 +195,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
             }
         }
         return returnList;
-    } 
-    
+    }
+        
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
         if (dvObject != null && dvObject.getId() != null && (dvObject instanceof Dataverse || dvObject instanceof Dataset)) {
@@ -222,7 +217,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return null;
     }
     
-    public void assignRole(ActionEvent evt) {
+    public void assignRole(ActionEvent evt) {       
         for (RoleAssignee roleAssignee : selectedRoleAssignees) {
             assignRole(roleAssignee, roleService.find(selectedRoleId));    
         }
