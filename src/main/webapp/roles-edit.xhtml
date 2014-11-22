@@ -11,7 +11,7 @@
                     <div class="col-xs-6 form-group">
                         <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the role.">Role Name</label>
                         <div class="col-sm-9">
-                            <p:panelGrid columns="2">
+                            <p:panelGrid columns="2" styleClass="noBorders">
                                 <p:inputText id="roleName" value="#{managePermissionsPage.role.name}"/>
                                 <p:message for="roleName"/>
                             </p:panelGrid>
@@ -20,7 +20,7 @@
                     <div class="col-xs-6 form-group">
                         <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the alias.">Identifier</label>
                         <div class="col-sm-9">
-                            <p:panelGrid columns="2">
+                            <p:panelGrid columns="2" styleClass="noBorders">
                                 <p:inputText id="roleAlias" value="#{managePermissionsPage.role.alias}"/>
                                 <p:message for="roleAlias"/>
                             </p:panelGrid>
@@ -29,7 +29,7 @@
                     <div class="col-xs-6 form-group">
                         <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Describe the role (1000 characters max).">Description</label>
                         <div class="col-sm-9">
-                            <p:panelGrid columns="2">
+                            <p:panelGrid columns="2" styleClass="noBorders">
                                 <h:panelGroup>
                                     <p:inputTextarea id="roleDescription" value="#{managePermissionsPage.role.description}"
                                                      rows="5" cols="50" counter="counter" maxlength="1000"
@@ -42,23 +42,23 @@
                     </div>
                 </div>
             </p:panel>
-            <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="Role Permissions" toggleable="true">
+            <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="Role Permissions">
                 <h:selectManyCheckbox value="#{managePermissionsPage.selectedPermissions}"
-                                      layout="pageDirection">
+                                      layout="pageDirection" styleClass="selectManyCheckboxBlock">
                     <f:selectItems value="#{managePermissionsPage.permissions}" var="pmsn"
-                                   itemLabel="#{pmsn.humanName} &lt;span class=&quot;label label-default&quot;&gt;#{pmsn.name()}&lt;/span&gt;"
+                                   itemLabel="#{pmsn.humanName} &#160; &#60;span class=&#34;label label-default&#34;&#62;#{pmsn.name()}&#60;/span&#62;"
                                    itemValue="#{pmsn.name()}" itemLabelEscaped="false"
                                    />
                 </h:selectManyCheckbox>
             </p:panel>
             <p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
                 <p:commandLink styleClass="btn btn-default" 
-                               value="Save Role" 
+                               value="Save Changes" 
                                oncomplete="roleForm.hide()"
                                update="roleDisplay"
                                actionListener="#{managePermissionsPage.updateRole}"
                                style="color:black;margin-right:0.5em;"/>                       
-                <button type="button" style="color:black;margin-right:0.5em;" class="btn btn-default" onclick="roleForm.hide()" value="Cancel">Cancel</button>
+                <button type="button" class="btn btn-default" onclick="roleForm.hide()" value="Cancel">Cancel</button>
             </p:panel>
         </p:panel>
     </p:dialog>

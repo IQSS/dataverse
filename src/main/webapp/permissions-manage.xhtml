@@ -29,32 +29,31 @@
                         </c:if>
                         <!-- Role Assignments Panel -->
                         <div class="panel-group">
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" style="margin-bottom:1em;">
                                 <div data-toggle="collapse" data-target="#collapseUsersGroups" class="panel-heading text-info">
                                     Users/Groups <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
                                 </div>
                                 <div id="collapseUsersGroups" class="collapse in">
                                     <div class="panel-body">
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default pull-right" onclick="userGroupsForm.show()">
-                                            <h:outputText value="Assign Roles to Users/Groups" />
+                                            <span class="glyphicon glyphicon-user" style="margin-right:0.3em;"/> Assign Roles to Users/Groups
                                         </p:commandLink>
-                                        <p class="help-block clearfix">Below this fake help text is where the manage view should be going.</p>
+                                        <p class="help-block clearfix">Here are all the users and groups that have access to your dataverse.</p>
                                         <div>
                                             <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
                                                 <p:column width="35%"  headerText="User / Group">
-                                                    <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title} " />
+                                                    <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
                                                 </p:column>
                                                 <p:column width="25%"  headerText="Role">
                                                     <h:outputText value="#{roleAssignment.roleName}"/>
                                                 </p:column>
                                                 <p:column width="40%" headerText="Action">                                        
-                                                    <h:outputText value="(role assigned at #{roleAssignment.assignedDvName})" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}" />
+                                                    <h:outputText styleClass="text-muted italic" value="Role assigned at #{roleAssignment.assignedDvName}" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}" />
                                                     <p:commandLink styleClass="btn btn-default" 
-                                                                   value="Remove Assigned Role" 
                                                                    action="#{managePermissionsPage.revokeRole(roleAssignment.id)}"
                                                                    rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
                                                                    update="assignedRoles"
-                                                                   style="color:black;margin-right:0.5em;"/>
+                                                                   style="color:black;margin-right:0.5em;"><span class="glyphicon glyphicon-remove" style="margin-right:0.3em;"/> Remove Assigned Role</p:commandLink>
                                                 </p:column>
                                             </p:dataTable>
                                         </div>                                        
@@ -71,11 +70,10 @@
                                     <div class="panel-body">
                                         <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
                                             <p:commandLink id="rolesAdd" styleClass="btn btn-default pull-right" onclick="roleForm.show()">
-                                                <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> 
-                                                <h:outputText value="Add New Role"/>
+                                                <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> Add New Role
                                             </p:commandLink>
                                         </ui:fragment>
-                                        <p class="help-block clearfix">Below this fake help text is where the manage view should be going.</p>                                        
+                                        <p class="help-block clearfix">Here are all the roles set up in your dataverse, that you can assign to users and groups.</p>                                        
                                         <p:fragment id="roleDisplay">
                                             <ui:repeat id="roleList" value="#{managePermissionsPage.availableRoles}" var="role">
                                                 <f:passThroughAttribute name="class" value="list-unstyled" />
@@ -86,16 +84,14 @@
                                                         <p:commandLink title="Edit role" style="margin-left:1em;"
                                                                        actionListener="#{managePermissionsPage.editRole(role.id)}"
                                                                        oncomplete="roleForm.show()"
-                                                                       update=":#{p:component('editRolePanel')}">
-                                                            <span class="glyphicon glyphicon-pencil"></span></p:commandLink>                                          
+                                                                       update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-pencil"></span></p:commandLink>                                          
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
-                                                        <p:commandLink title="Clone role" style="margin-left:1em;"
+                                                        <p:commandLink title="Copy role" style="margin-left:1em;" 
                                                                        actionListener="#{managePermissionsPage.cloneRole(role.id)}"
                                                                        oncomplete="roleForm.show()"
-                                                                       update=":#{p:component('editRolePanel')}">
-                                                            <span class="glyphicon glyphicon-retweet"></span></p:commandLink>                                            
-                                                    </ui:fragment>                                    
+                                                                       update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-retweet"></span></p:commandLink>
+                                                    </ui:fragment>
                                                     <div>
                                                         <ui:repeat value="#{role.permissions().toArray()}" var="prm">
                                                             <span class="label label-default">#{prm}</span>
