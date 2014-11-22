@@ -159,8 +159,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
     /*
     assign roles dialog
     */
-    private List<RoleAssignee> selectedRoleAssignees = new ArrayList<RoleAssignee>();
+    private List<RoleAssignee> selectedRoleAssignees;
     private Long selectedRoleId;
+    private List<RoleAssignee> roleAssigneeList = new ArrayList();    
 
     public List<RoleAssignee> getSelectedRoleAssignees() {
         return selectedRoleAssignees;
@@ -178,8 +179,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
         this.selectedRoleId = selectedRoleId;
     }
     
- 
-    private List<RoleAssignee> roleAssigneeList = new ArrayList();
+    public void initAssigneeDialog(ActionEvent ae) {
+        selectedRoleAssignees = null;
+        selectedRoleId = null;
+    }
     
     public List<RoleAssignee> completeRoleAssignee(String query) {
         if (roleAssigneeList.isEmpty()) {
