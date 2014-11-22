@@ -25,6 +25,12 @@ import javax.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.*;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+import javax.ejb.EJB;
 
 /**
  *
@@ -33,7 +39,14 @@ import edu.harvard.iq.dataverse.dataaccess.*;
 @Singleton
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
+    @EJB
+    VariableServiceBean variableService;
+    //@PersistenceContext(unitName = "VDCNet-ejbPU")
+    //private EntityManager em;
+    
+    private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
+    
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return clazz == DownloadInstance.class;
@@ -124,8 +137,60 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         di.getConversionParamValue(), requestedMimeType);
                             } 
                         } else if (di.getConversionParam().equals("subset")) {
-                            // create a new accessObject for the subsetting process:
-                        }
+                            logger.fine("processing subset request.");
+                            
+                            // TODO: 
+                            // If there are parameters on the list that are 
+                            // not valid variable ids, or if the do not belong to 
+                            // the datafile referenced - I simply skip them; 
+                            // perhaps I should throw an invalid argument exception 
+                            // instead. 
+                            // -- L.A. 4.0 beta 9
+                            
+                            if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
+                                logger.fine("processing extra arguments list of length "+di.getExtraArguments().size());
+                                List <DataVariable> variableList = new ArrayList<>();
+                                String subsetVariableHeader = null;
+                                for (int i = 0; i < di.getExtraArguments().size(); i++) {
+                                    DataVariable variable = (DataVariable)di.getExtraArguments().get(i);
+                                    if (variable != null) {
+                                        if (variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
+                                            logger.fine("adding variable id "+variable.getId()+" to the list.");
+                                            variableList.add(variable);
+                                            if (subsetVariableHeader == null) {
+                                                subsetVariableHeader = variable.getName();
+                                            } else {
+                                                subsetVariableHeader = subsetVariableHeader.concat("\t");
+                                                subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
+                                            }
+                                        } else {
+                                            logger.warning("variable does not belong to this data file.");
+                                        }
+                                    }  
+                                }
+                                if (variableList.size() > 0) {
+                                    TabularSubsetInputStream subsetInputStream = null; 
+                                
+                                    try {
+                                        subsetInputStream = new TabularSubsetInputStream(sf, variableList);
+                                    } catch (IOException ioe) {
+                                        subsetInputStream = null; 
+                                    }
+                                
+                                    if (subsetInputStream != null) {
+                                        logger.fine("successfully created subset output stream.");
+                                        accessObject.closeInputStream();
+                                        accessObject.setInputStream(subsetInputStream);
+                                        accessObject.setIsLocalFile(true);
+                                        // TODO: make noVarHeader option work for subsets too!
+                                        subsetVariableHeader = subsetVariableHeader.concat("\n");
+                                        accessObject.setVarHeader(subsetVariableHeader);
+                                    }
+                                }
+                            } else {
+                                logger.fine("empty list of extra arguments.");
+                            }
+                        } 
                     }
                     
                     

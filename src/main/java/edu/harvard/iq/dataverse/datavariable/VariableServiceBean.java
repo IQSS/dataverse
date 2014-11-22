@@ -27,7 +27,7 @@ import javax.persistence.Query;
 public class VariableServiceBean {
     public static final String[] summaryStatisticTypes = {"mean", "medn", "mode", "vald", "invd", "min", "max", "stdev"};
     
-    private static final Logger logger = Logger.getLogger(VariableServiceBean.class.getCanonicalName());
+    //private static final Logger logger = Logger.getLogger(VariableServiceBean.class.getCanonicalName());
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;

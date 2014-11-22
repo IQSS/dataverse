@@ -17,6 +17,8 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,6 +27,7 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.ws.rs.GET;
@@ -73,6 +76,8 @@ public class Access {
     DatasetVersionServiceBean versionService;
     @EJB
     DataverseServiceBean dataverseService; 
+    @EJB
+    VariableServiceBean variableService;
 
     //@EJB
     
@@ -123,6 +128,44 @@ public class Access {
                 // this automatically sets the conversion parameters in 
                 // the download instance to key and value;
                 // TODO: I should probably set these explicitly instead. 
+                
+                if (downloadInstance.getConversionParam().equals("subset")) {
+                    String subsetParam = downloadInstance.getConversionParamValue();
+                    String variableIdParams[] = subsetParam.split(",");
+                    if (variableIdParams != null && variableIdParams.length > 0) {
+                        logger.fine(variableIdParams.length + " tokens;");
+                        for (int i = 0; i < variableIdParams.length; i++) {
+                            logger.fine("token: " + variableIdParams[i]);
+                            String token = variableIdParams[i].replaceFirst("^v", "");
+                            Long variableId = null;
+                            try {
+                                variableId = new Long(token);
+                            } catch (NumberFormatException nfe) {
+                                variableId = null;
+                            }
+                            if (variableId != null) {
+                                logger.fine("attempting to look up variable id " + variableId);
+                                if (variableService != null) {
+                                    DataVariable variable = variableService.find(variableId);
+                                    if (variable != null) {
+                                        if (downloadInstance.getExtraArguments() == null) {
+                                            downloadInstance.setExtraArguments(new ArrayList<Object>());
+                                        }
+                                        logger.fine("putting variable id "+variable.getId()+" on the parameters list of the download instance.");
+                                        downloadInstance.getExtraArguments().add(variable);
+                                        
+                                        //if (!variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
+                                        //variableList.add(variable);
+                                        //}
+                                    }
+                                } else {
+                                    logger.fine("variable service is null.");
+                                }
+                            }
+                        }
+                    }
+                }
+
                 break;
             } else {
                 // Service unknown/not supported/bad arguments, etc.:
