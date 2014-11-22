@@ -35,7 +35,11 @@
                                 </div>
                                 <div id="collapseUsersGroups" class="collapse in">
                                     <div class="panel-body">
-                                        <p:commandLink id="userGroupsAdd" styleClass="btn btn-default pull-right" onclick="userGroupsForm.show()">
+                                        <p:commandLink id="userGroupsAdd" 
+                                                       styleClass="btn btn-default pull-right" 
+                                                       actionListener="#{managePermissionsPage.initAssigneeDialog}"
+                                                       update="userGroupDialog"
+                                                       oncomplete="userGroupsForm.show()">
                                             <span class="glyphicon glyphicon-user" style="margin-right:0.3em;"/> Assign Roles to Users/Groups
                                         </p:commandLink>
                                         <p class="help-block clearfix">Here are all the users and groups that have access to your dataverse.</p>
@@ -60,7 +64,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Roles panel -->
                             <div class="panel panel-default">
                                 <div data-toggle="collapse" data-target="#collapseRoles" class="panel-heading text-info">
@@ -69,7 +73,11 @@
                                 <div id="collapseRoles" class="collapse">
                                     <div class="panel-body">
                                         <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
-                                            <p:commandLink id="rolesAdd" styleClass="btn btn-default pull-right" actionListener="#{managePermissionsPage.createNewRole}"  onclick="roleForm.show()">
+                                            <p:commandLink id="rolesAdd" 
+                                                           styleClass="btn btn-default pull-right" 
+                                                           actionListener="#{managePermissionsPage.createNewRole}"  
+                                                           oncomplete="roleForm.show()"
+                                                           update=":#{p:component('editRolePanel')}">
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> Add New Role
                                             </p:commandLink>
                                         </ui:fragment>
@@ -108,8 +116,8 @@
 
                     <!-- Users/Groups Popup -->
                     <ui:include src="roles-assign.xhtml"/>
-                        <!-- Roles Edit Popup -->
-                        <ui:include src="roles-edit.xhtml"/>
+                    <!-- Roles Edit Popup -->
+                    <ui:include src="roles-edit.xhtml"/>
                 </h:form>
             </ui:define>
         </ui:composition>
