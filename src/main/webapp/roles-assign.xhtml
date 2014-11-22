@@ -17,7 +17,8 @@
                     </a>
                 </label>
                 <div class="col-sm-9">
-                    <p:autoComplete id="userGroupNameAssign" styleClass="form-control" multiple="true" forceSelection="true" emptyMessage="No matches found."
+                    <p:autoComplete id="userGroupNameAssign" placeholder="Enter User/Group Name"
+                                    multiple="true" forceSelection="true" emptyMessage="No matches found."
                                     value="#{managePermissionsPage.selectedRoleAssignees}"  completeMethod="#{managePermissionsPage.completeRoleAssignee}"
                                     var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">                  
                         <p:column>
@@ -29,7 +30,6 @@
                         <p:ajax process="@this" event="itemSelect" />
                         <p:ajax process="@this" event="itemUnselect" />
                     </p:autoComplete>
-                    <input type="name" class="form-control" id="userGroupAccessInput" placeholder="Enter User/Group Name"/>
                 </div>
             </div>
             <div class="form-group clearfix">
