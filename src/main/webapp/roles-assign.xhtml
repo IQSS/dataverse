@@ -25,7 +25,9 @@
                         </p:column>  
                         <p:column>
                             <h:outputText value="#{roleAssignee.displayInfo.affiliation}" />
-                        </p:column>                                  
+                        </p:column>
+                        <p:ajax process="@this" event="itemSelect" />
+                        <p:ajax process="@this" event="itemUnselect" />
                     </p:autoComplete>
                     <input type="name" class="form-control" id="userGroupAccessInput" placeholder="Enter User/Group Name"/>
                 </div>
@@ -64,7 +66,7 @@
 
         <p:commandLink styleClass="btn btn-default" value="Save Changes" 
                        update="assignedRoles"
-                       actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()"/>           
+                       actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()"/>
         <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">Cancel</button>
     </p:dialog>
 </div>
