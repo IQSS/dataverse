@@ -44,14 +44,14 @@
                     </p:fragment>
                     <p:fragment id="roleDetails">
                         <div id="assignRolePermissionLabels" style="margin-left:0;">
-                            <p class="help-block">These are the permissions associated with the selected role.</p>
-                            <div class="bg-warning" style="margin-bottom:1em;padding:5px;">
+                            <div style="margin-bottom:1em;padding:5px;background:#f5f5f5;">
+                                <p class="help-block">These are the permissions associated with the selected role.</p>
                                 <span style="font-weight:bold">#{managePermissionsPage.assignedRole.name}</span>
-                                <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
-                                    <div>
+                                <div style="width:388px;">
+                                    <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
                                         <span class="label label-default">#{prm}</span>
-                                    </div>
-                                </ui:repeat>                            
+                                    </ui:repeat>
+                                </div>
                             </div>
                         </div>
                     </p:fragment>
