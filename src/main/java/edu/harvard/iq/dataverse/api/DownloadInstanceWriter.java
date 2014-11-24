@@ -26,11 +26,9 @@ import javax.ws.rs.ext.Provider;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 
 /**
  *
@@ -39,10 +37,6 @@ import javax.ejb.EJB;
 @Singleton
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
-    @EJB
-    VariableServiceBean variableService;
-    //@PersistenceContext(unitName = "VDCNet-ejbPU")
-    //private EntityManager em;
     
     private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
@@ -75,6 +69,56 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     @Override
     public void writeTo(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
 
+        // zip download is a special case: 
+        // the Download Instance doesn't have an associated Download Info or 
+        // primary file associated with it; it only has a list of data file 
+        // objects that need to be zipped together: 
+        if ("zip".equals(di.getConversionParam())) {
+            if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
+                logger.fine("processing extra arguments list of length " + di.getExtraArguments().size());
+                List<DataFile> fileList = new ArrayList<>();
+                for (int i = 0; i < di.getExtraArguments().size(); i++) {
+                    DataFile file = (DataFile) di.getExtraArguments().get(i);
+                    if (file != null) {
+                        logger.fine("adding datafile (id=" + file.getId() + ") to the list.");
+                        fileList.add(file);
+                    }
+                }
+                if (fileList.size() > 0) {
+                    httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                    httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                    
+                    DataFileZipper zipper = new DataFileZipper();
+                    
+                    long sizeLimit = 0L;
+                    
+                    if (di.getConversionParamValue() != null) {
+                        try {
+                            Long configuredLimit = new Long(di.getConversionParamValue());
+                            sizeLimit = configuredLimit.longValue();
+                        } catch (NumberFormatException nfe) {}
+                     }
+        
+                    try {
+                        if (sizeLimit > 0L) {
+                            zipper.zipFiles(fileList, outstream, sizeLimit);
+                        } else {
+                            zipper.zipFiles(fileList, outstream);
+                        }
+                    } catch (IOException ioe) {
+                        throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+                    }
+                    
+                    return;
+                }
+            }
+
+            logger.warning("empty list of extra arguments.");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        
+        
         if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
             DataAccessRequest daReq = new DataAccessRequest();
             
@@ -210,7 +254,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     // to satisfy the widest selection of browsers out there. 
                     
                     httpHeaders.add("Content-disposition", "attachment; filename=\"" + fileName + "\"");
-                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName);
+                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
                     
                     // (the httpHeaders map must be modified *before* writing any
                     // data in the output stream! 
@@ -231,6 +275,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
 
                     instream.close();
+                    outstream.close(); 
                     return;
                 }
             }

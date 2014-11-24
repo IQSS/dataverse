@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -41,6 +42,9 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -78,15 +82,15 @@ public class Access {
     DataverseServiceBean dataverseService; 
     @EJB
     VariableServiceBean variableService;
+    @EJB
+    SettingsServiceBean settingsService; 
 
     //@EJB
     
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
-        ByteArrayOutputStream outStream = null;
-        
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
 
         DataFile df = dataFileService.find(fileId);
         /* TODO: 
@@ -95,7 +99,7 @@ public class Access {
          */
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            return null; 
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
         
@@ -190,6 +194,54 @@ public class Access {
          * Provide some browser-friendly headers: (?)
          */
         //return retValue; 
+        return downloadInstance;
+    }
+    
+    @Path("datafiles/{fileIds}")
+    @GET
+    @Produces({"application/xml"})
+    public DownloadInstance datafiles(@PathParam("fileIds") String fileIds, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        ByteArrayOutputStream outStream = null;
+        // create a Download Instance without, without a primary Download Info object:
+        DownloadInstance downloadInstance = new DownloadInstance();
+
+        if (fileIds == null || fileIds.equals("")) {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        String fileIdParams[] = fileIds.split(",");
+        if (fileIdParams != null && fileIdParams.length > 0) {
+            logger.fine(fileIdParams.length + " tokens;");
+            for (int i = 0; i < fileIdParams.length; i++) {
+                logger.fine("token: " + fileIdParams[i]);
+                Long fileId = null;
+                try {
+                    fileId = new Long(fileIdParams[i]);
+                } catch (NumberFormatException nfe) {
+                    fileId = null;
+                }
+                logger.fine("attempting to look up file id " + fileId);
+                DataFile file = dataFileService.find(fileId);
+                if (file != null) {
+                    if (downloadInstance.getExtraArguments() == null) {
+                        downloadInstance.setExtraArguments(new ArrayList<Object>());
+                    }
+                    logger.fine("putting datafile (id=" + file.getId() + ") on the parameters list of the download instance.");
+                    downloadInstance.getExtraArguments().add(file);
+
+                } else {
+                    throw new WebApplicationException(Response.Status.NOT_FOUND);
+                }
+            }
+        } else {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        // if we've made it this far, we must have found some valid files and 
+        // put them on the stack. 
+        downloadInstance.setConversionParam("zip");
+        downloadInstance.setConversionParamValue(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDonwloadLimit));
+
         return downloadInstance;
     }
     

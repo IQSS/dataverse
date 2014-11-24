@@ -69,7 +69,9 @@ public class SettingsServiceBean {
         DoiBaseurlstring,
         */
         /* TwoRavens location */
-        TwoRavensUrl;
+        TwoRavensUrl,
+        /* zip download size limit */
+        ZipDonwloadLimit;
         
         @Override
         public String toString() {

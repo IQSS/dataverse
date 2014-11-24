@@ -41,6 +41,10 @@ public class DownloadInstance {
     private String conversionParam = null;
     private String conversionParamValue = null;
 
+    public DownloadInstance() {
+        
+    }
+    
     public DownloadInstance(DownloadInfo info) {
         this.downloadInfo = info;
     }
