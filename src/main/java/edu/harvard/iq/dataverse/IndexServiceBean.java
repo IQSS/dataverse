@@ -97,23 +97,6 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        /**
-         * @todo: replace hard-coded groups with real groups
-         */
-        Map<String, String> groups = new HashMap<>();
-        groups.put(publicGroupIdString, publicGroupString);
-
-        int groupIndexCount = 0;
-        for (Map.Entry<String, String> group : groups.entrySet()) {
-            groupIndexCount++;
-            logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
-        }
-
-        int userIndexCount = 0;
-        for (AuthenticatedUser user : userServiceBean.findAllAuthenticatedUsers()) {
-            userIndexCount++;
-            logger.info("indexing user " + userIndexCount + " of several: " + indexUser(user));
-        }
         List<Dataverse> dataverses = dataverseService.findAll();
         int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
@@ -131,7 +114,8 @@ public class IndexServiceBean {
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
-        return dataverseIndexCount + " dataverses, " + datasetIndexCount + " datasets, " + groupIndexCount + " groups, and " + userIndexCount + " users indexed\n";
+        IndexResponse indexResponse = solrIndexService.indexAllPermissions();
+        return dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed\n";
     }
 
     public String indexDataverse(Dataverse dataverse) {
@@ -143,18 +127,7 @@ public class IndexServiceBean {
         }
         Dataverse rootDataverse = findRootDataverseCached();
         if (dataverse.getId() == rootDataverse.getId()) {
-            /**
-             * @todo: replace hard-coded groups with real groups
-             */
-            Map<String, String> groups = new HashMap<>();
-            groups.put(publicGroupIdString, publicGroupString);
-
-            int groupIndexCount = 0;
-            for (Map.Entry<String, String> group : groups.entrySet()) {
-                groupIndexCount++;
-                logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
-            }
-            return "The root dataverse shoud not be indexed. Indexed temporary groups instead.";
+            return "The root dataverse shoud not be indexed.";
         }
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
@@ -169,42 +142,12 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getPublicationDate()));
-            solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
         }
 
-        // look for direct role assignments on dataverse itself as a definition point
-        /**
-         * @todo Could this be combined with the isEffectivelyPermissionRoot
-         * loop below?
-         */
-        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
-        for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataverse)) {
-                addPermissionToSolrDoc(solrInputDocument, roleAssignment);
-            }
-        }
-
-        // loop throught dataverse ancestors/parents until a permission root is found
-        Dataverse currentDataverse = dataverse;
-        while (!currentDataverse.isEffectivelyPermissionRoot()) {
-            logger.info(currentDataverse.getAlias() + " is NOT effectively permissionRoot");
-            List<RoleAssignment> assignmentsOn2 = permissionService.assignmentsOn(currentDataverse);
-            for (RoleAssignment roleAssignment : assignmentsOn2) {
-                if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataverse)) {
-                    addPermissionToSolrDoc(solrInputDocument, roleAssignment);
-                }
-            }
-            currentDataverse = currentDataverse.getOwner();
-        }
-
-        /**
-         * @todo: remove this fake "has access to all data" group
-         */
-//        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
 //        if (dataverse.getOwner() != null) {
 //            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
@@ -368,7 +311,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
-                indexDatasetPermissions();
+                indexDatasetPermissions(dataset);
                 return result;
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
@@ -419,7 +362,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
-                indexDatasetPermissions();
+                indexDatasetPermissions(dataset);
                 return result;
             } else {
                 return "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
@@ -473,7 +416,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
-                indexDatasetPermissions();
+                indexDatasetPermissions(dataset);
                 return result;
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
 
@@ -518,7 +461,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
-                indexDatasetPermissions();
+                indexDatasetPermissions(dataset);
                 return result;
             } else {
                 return "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
@@ -528,9 +471,9 @@ public class IndexServiceBean {
         }
     }
 
-    private IndexResponse indexDatasetPermissions() {
-        if (false) {
-            IndexResponse indexResponse = solrIndexService.indexAllPermissions();
+    private IndexResponse indexDatasetPermissions(Dataset dataset) {
+        if (true) {
+            IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
             return indexResponse;
         } else {
             return new IndexResponse("new JOIN is still experimental");
@@ -590,21 +533,8 @@ public class IndexServiceBean {
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
 //            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
-            solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-        }
-
-        /**
-         * @todo DRY! Same code as for dataverses.
-         *
-         * @todo What about permission root?
-         */
-        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
-        for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataset)) {
-                addPermissionToSolrDoc(solrInputDocument, roleAssignment);
-            }
         }
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
@@ -787,24 +717,13 @@ public class IndexServiceBean {
                 if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                     fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                     datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-                    datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+//                    datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                     addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
                 } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                     fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
                     datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
                 }
                 datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
-
-                /**
-                 * The permission to view a datafile is based on the role
-                 * assignments at the dataset level
-                 */
-                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(datafile.getOwner());
-                for (RoleAssignment roleAssignment : assignmentsOnFile) {
-                    if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataset)) {
-                        addPermissionToSolrDoc(datafileSolrInputDocument, roleAssignment);
-                    }
-                }
 
                 // For the mime type, we are going to index the "friendly" version, e.g., 
                 // "PDF File" instead of "application/pdf", "MS Excel" instead of 
@@ -873,76 +792,6 @@ public class IndexServiceBean {
 
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
-    }
-
-    public String indexGroup(Map.Entry<String, String> group) {
-
-        Collection<SolrInputDocument> docs = new ArrayList<>();
-        SolrInputDocument solrInputDocument = new SolrInputDocument();
-
-        String id = groupPrefix + group.getKey();
-
-        solrInputDocument.addField(SearchFields.TYPE, "groups");
-        solrInputDocument.addField(SearchFields.ID, id);
-        /**
-         * @todo think about how we groups don't have entity IDs in Solr any
-         * more, after the auth merge
-         */
-//        solrInputDocument.addField(SearchFields.ENTITY_ID, group.getKey());
-        solrInputDocument.addField(SearchFields.NAME_SORT, group.getValue());
-        solrInputDocument.addField(SearchFields.GROUPS, id);
-
-        docs.add(solrInputDocument);
-
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
-        try {
-            server.add(docs);
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
-            server.commit();
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-
-        return "indexed group " + group;
-    }
-
-    public String indexUser(AuthenticatedUser user) {
-
-        Collection<SolrInputDocument> docs = new ArrayList<>();
-        SolrInputDocument solrInputDocument = new SolrInputDocument();
-
-        String userid = groupPerUserPrefix + user.getId();
-
-        solrInputDocument.addField(SearchFields.TYPE, "groups");
-        solrInputDocument.addField(SearchFields.ID, userid);
-        /**
-         * @todo is it bad to not index entity id for users, which has changed
-         * from Long to String, yielding NumberFormatException when indexing
-         * into Solr?
-         */
-//        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getIdentifier());
-        solrInputDocument.addField(SearchFields.NAME_SORT, user.getDisplayInfo().getTitle());
-        solrInputDocument.addField(SearchFields.GROUPS, userid);
-
-        docs.add(solrInputDocument);
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
-        try {
-            server.add(docs);
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
-            server.commit();
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-
-        return "indexed user " + user.getIdentifier() + ":" + user.getDisplayInfo().getTitle();
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
@@ -1186,46 +1035,6 @@ public class IndexServiceBean {
             }
         }
         return "Desired state for existence of cards: " + desiredCards + "\n";
-    }
-
-    /**
-     * Our goal is to go from a potentially ugly role assignee identifier such
-     * as "@https://idp.testshib.org/idp/shibboleth|myself@testshib.org" to a
-     * database key we can safely index into Solr such as "group_user8" for an
-     * AuthenticatedUser with a primary key of 8.
-     */
-    private void addPermissionToSolrDoc(SolrInputDocument solrInputDocument, RoleAssignment roleAssignment) {
-        String assigneeIdentifier = roleAssignment.getAssigneeIdentifier();
-        if (assigneeIdentifier == null) {
-            return;
-        }
-        String identifierWithoutPrefix = null;
-        try {
-            String prefix = AuthenticatedUser.IDENTIFIER_PREFIX;
-            int indexAfterPrefix = prefix.length();
-            identifierWithoutPrefix = assigneeIdentifier.substring(indexAfterPrefix);
-        } catch (IndexOutOfBoundsException ex) {
-            return;
-        }
-        if (identifierWithoutPrefix == null) {
-            return;
-        }
-        AuthenticatedUser au = userServiceBean.getAuthenticatedUser(identifierWithoutPrefix);
-        if (au != null) {
-            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + au.getId());
-        }
-    }
-
-    public String indexDvObject(DvObject dvObject) {
-        if (dvObject.isInstanceofDataverse()) {
-            return indexDataverse((Dataverse) dvObject);
-        } else if (dvObject.isInstanceofDataset()) {
-            return indexDataset((Dataset) dvObject);
-        } else if (dvObject.isInstanceofDataFile()) {
-            return indexDataset((Dataset) dvObject.getOwner());
-        } else {
-            return "unexpected instance of " + DvObject.class.toString() + ": " + dvObject.getClass().getName();
-        }
     }
 
     public List findStaleDataverses() {

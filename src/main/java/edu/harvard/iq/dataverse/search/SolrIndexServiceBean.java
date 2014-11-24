@@ -244,6 +244,9 @@ public class SolrIndexServiceBean {
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
 
             solrQuery.addFilterQuery(filterDownToSubtree);
+        } else if (definitionPoint.isInstanceofDataset()) {
+            // index the files of this dataset
+            indexPermissionsForOneDvObject(definitionPoint.getId());
         }
 
         QueryResponse queryResponse = null;

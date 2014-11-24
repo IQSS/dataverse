@@ -93,11 +93,11 @@ public class SearchFields {
     public static final String PUBLICATION_DATE = "publication_date_s";
     public static final String RELEASE_OR_CREATE_DATE = "release_or_create_date_dt";
     public static final String RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT = "date_en";
-    public static final String GROUPS = "groups_s";
-    public static final String PERMS = "perms_ss";
+
     public static final String DEFINITION_POINT = "definition_point_s";
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definition_point_dvobject_id_s";
     public static final String DISCOVERABLE_BY = "discoverable_by_ss";
+
     public static final String PUBLICATION_STATUS = "published_ss";
     // Used for performance. Why hit the db if solr has the data?
     /**

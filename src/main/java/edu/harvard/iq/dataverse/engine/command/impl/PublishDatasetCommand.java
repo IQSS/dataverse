@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -118,6 +119,13 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         Dataset savedDataset = ctxt.em().merge(theDataset);
 
         ctxt.index().indexDataset(savedDataset);
+        /**
+         * @todo consider also ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset);
+         */
+        /**
+         * @todo what should we do with the indexRespose?
+         */
+        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset.getId());
 
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(savedDataset.getLatestVersion(), this.getUser());
 
@@ -132,7 +140,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             datasetDataverseUser.setUserIdentifier(getUser().getIdentifier());
             ctxt.em().merge(datasetDataverseUser);
         }
-        
+
         ctxt.doiEZId().publicizeIdentifier(savedDataset);
         return savedDataset;
     }

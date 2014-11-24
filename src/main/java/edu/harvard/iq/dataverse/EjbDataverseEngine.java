@@ -15,6 +15,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.EnumSet;
 import javax.persistence.EntityManager;
@@ -46,6 +47,9 @@ public class EjbDataverseEngine {
 
     @EJB
     IndexServiceBean indexService;
+
+    @EJB
+    SolrIndexServiceBean solrIndexService;
 
     @EJB
     SearchServiceBean searchService;
@@ -145,6 +149,11 @@ public class EjbDataverseEngine {
                 @Override
                 public IndexServiceBean index() {
                     return indexService;
+                }
+
+                @Override
+                public SolrIndexServiceBean solrIndex() {
+                    return solrIndexService;
                 }
 
                 @Override

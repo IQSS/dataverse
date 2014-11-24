@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.IndexResponse;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -39,7 +40,17 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUserIdentifier(dataverseUser.getIdentifier());
-        return ctxt.dataverses().save(dataverse);
+        Dataverse savedDataverse = ctxt.dataverses().save(dataverse);
+        /**
+         * @todo consider also
+         * ctxt.solrIndex().indexPermissionsOnSelfAndChildren(savedDataverse.getId());
+         */
+        /**
+         * @todo what should we do with the indexRespose?
+         */
+        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataverse.getId());
+        return savedDataverse;
+
     }
 
 }

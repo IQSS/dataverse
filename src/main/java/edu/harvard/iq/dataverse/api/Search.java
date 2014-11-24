@@ -224,7 +224,6 @@ public class Search extends AbstractApiBean {
             for (String perm : solrDoc.getPermissions()) {
                 perms.add(perm);
             }
-            dataDoc.add(SearchFields.PERMS, perms);
             data.add(dataDoc);
         }
 

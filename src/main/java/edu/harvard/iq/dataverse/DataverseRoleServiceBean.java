@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.HashSet;
@@ -45,7 +44,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			return aRole;
 		} else {
                     DataverseRole merged = em.merge(aRole);
-                    String indexDefinitionPountResult = indexDefinitionPoint(merged.getOwner());
+                    IndexResponse indexDefinitionPountResult = indexDefinitionPoint(merged.getOwner());
                     logger.info("aRole getId was not null. Indexing result: " + indexDefinitionPountResult);
                     return merged;
 		}
@@ -58,43 +57,20 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		} else {
 			assignment = em.merge( assignment );
 		}
-            String indexRoleAssigneeResult = indexRoleAssignee(roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier()));
-            String indexDefinitionPountResult = indexDefinitionPoint(assignment.getDefinitionPoint());
-            logger.info("output from indexing operations: " + indexRoleAssigneeResult + " " + indexDefinitionPountResult);
+            IndexResponse indexDefinitionPountResult = indexDefinitionPoint(assignment.getDefinitionPoint());
+            logger.info("output from indexing operations: " + indexDefinitionPountResult);
                 return assignment;
 	}
 
-    private String indexDefinitionPoint(DvObject definitionPoint) {
+    private IndexResponse indexDefinitionPoint(DvObject definitionPoint) {
         /**
-         * @todo Enable this. Also, do something with the index response. Was
-         * Solr down? Is everything ok?
+         * @todo Do something with the index response. Was Solr down? Is
+         * everything ok?
          */
-        if (false) {
-            if (false) {
-                IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(definitionPoint.getId());
-            }
-            IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(definitionPoint);
-            return indexResponse.getMessage();
-        }
-        return indexService.indexDvObject(definitionPoint);
+        IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(definitionPoint);
+        return indexResponse;
     }
 
-    /**
-     * @todo Do we even need this? Users are already indexed when they are
-     * created.
-     */
-    @Deprecated
-    private String indexRoleAssignee(RoleAssignee roleAssignee) {
-        if (roleAssignee instanceof AuthenticatedUser) {
-            return indexService.indexUser((AuthenticatedUser) roleAssignee);
-        } else {
-            /**
-             * @todo index groups
-             */
-            return "Groups should be indexed here";
-        }
-    }
-	
 	public DataverseRole find( Long id ) {
 		return em.find( DataverseRole.class, id );
 	}
@@ -138,8 +114,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			em.refresh(role);
 		}
 		em.refresh(assignee);
-                indexRoleAssignee(assignee);                
-                
 	}
 	
 	public void revoke( RoleAssignment ra ) {
@@ -147,9 +121,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			ra = em.merge(ra);
 		}
 		em.remove(ra);
-            String indexRoleAssigneeResult = indexRoleAssignee(roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()));
-            String indexDefinitionPointResult = indexDefinitionPoint(ra.getDefinitionPoint());
-            logger.info("indexing operation results: " + indexRoleAssigneeResult + " " + indexDefinitionPointResult);
+            IndexResponse indexDefinitionPointResult = indexDefinitionPoint(ra.getDefinitionPoint());
+            logger.info("indexing operation results: " + indexDefinitionPointResult);
 	}
 	
 	public RoleAssignmentSet roleAssignments( User user, Dataverse dv ) {

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.ejb.EJB;
 import javax.persistence.EntityManager;
@@ -42,6 +43,8 @@ public interface CommandContext {
 	public BuiltinUserServiceBean users();
 	
 	public IndexServiceBean index();
+
+        public SolrIndexServiceBean solrIndex();
 	
 	public SearchServiceBean search();
 	
