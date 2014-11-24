@@ -23,14 +23,16 @@ scripts/search/tests/permissions1
 echo "Done."
 . scripts/search/assumptions
 echo "Giving $SPRUCE_USERNAME "admin" on Birds dataverse"
-curl -s -X POST -H 'Content-Type: application/x-www-form-urlencoded' "http://localhost:8080/api/roles/assignments?username=$SPRUCE_USERNAME&roleId=$ADMIN_ROLE&definitionPointId=$BIRDS_DATAVERSE&key=$FINCHKEY" >/dev/null
-# FIXME: show the right permissions
+#curl -s -X POST -H 'Content-Type: application/x-www-form-urlencoded' "http://localhost:8080/api/roles/assignments?username=$SPRUCE_USERNAME&roleId=$ADMIN_ROLE&definitionPointId=$BIRDS_DATAVERSE&key=$FINCHKEY" >/dev/null
+scripts/search/tests/grant-spruce-admin-on-birds
+echo "FIXME: skipping test (only works with experimental JOIN)"
 #echo Re-testing permissions. Silence is golden
 #scripts/search/tests/permissions2
-echo Done
+#echo Done
 . scripts/search/assumptions
 echo "Revoking that role"
-curl -s -X DELETE "http://localhost:8080/api/dvs/$BIRDS_DATAVERSE/assignments/$SPRUCE_ADMIN_ON_BIRDS?key=$FINCHKEY" >/dev/null
+#curl -s -X DELETE "http://localhost:8080/api/dvs/$BIRDS_DATAVERSE/assignments/$SPRUCE_ADMIN_ON_BIRDS?key=$FINCHKEY" >/dev/null
+scripts/search/tests/revoke-spruce-admin-on-birds
 echo "Making sure original permissions are back. Silence is golden."
 scripts/search/tests/permissions1
 echo "Done"

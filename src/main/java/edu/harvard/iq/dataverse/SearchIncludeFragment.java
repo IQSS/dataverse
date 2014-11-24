@@ -266,14 +266,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
             logger.fine("query from user:   " + query);
             logger.fine("queryToPassToSolr: " + queryToPassToSolr);
             logger.fine("sort by: " + sortField);
-            SearchServiceBean.PublishedToggle publishedToggle = null;
-//            if (showUnpublished) {
-//                publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
-//            } else {
-//                publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
-//            }
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, onlyDataRelatedToMe);
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, onlyDataRelatedToMe);
+
+            /**
+             * @todo Number of search results per page should be configurable -
+             * https://github.com/IQSS/dataverse/issues/84
+             */
+            int numRows = 10;
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numRows);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numRows);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

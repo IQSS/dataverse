@@ -66,8 +66,9 @@ public class Search extends AbstractApiBean {
                         return errorResponse(Response.Status.FORBIDDEN, message);
                     }
                 }
-                SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
-                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
+                boolean dataRelatedToMe = false;
+                int numResultsPerPage = 10;
+                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
             } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
@@ -173,13 +174,14 @@ public class Search extends AbstractApiBean {
             return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
         }
 
-        SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
         Dataverse subtreeScope = dataverseService.findRootDataverse();
 
         String sortField = SearchFields.ID;
         String sortOrder = "asc";
         int paginationStart = 0;
-        SolrQueryResponse solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
+        boolean dataRelatedToMe = false;
+        int numResultsPerPage = Integer.MAX_VALUE;
+        SolrQueryResponse solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
 
         JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
         List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();

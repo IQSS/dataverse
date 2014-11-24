@@ -53,26 +53,7 @@ public class SearchServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
-
-    /*
-     * @deprecated The Published/Unpublished toggle was an experiment: https://docs.google.com/a/harvard.edu/document/d/1clGJKOmrH8zhQyG_8vQHui5L4fszdqRjM4t3U6NFJXg/edit?usp=sharing
-     */
-    @Deprecated
-    public enum PublishedToggle {
-
-        PUBLISHED, UNPUBLISHED
-    };
-
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
-        return search(user, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, false);
-    }
-
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
-//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
-//        } else {
-//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
-//        }
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
@@ -232,10 +213,6 @@ public class SearchServiceBean {
          */
 //        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
 //        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
-        /**
-         * @todo: make the number of results per page configurable?
-         */
-        int numResultsPerPage = 10;
         solrQuery.setRows(numResultsPerPage);
         logger.fine("Solr query:" + solrQuery);
 

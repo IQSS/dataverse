@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
@@ -17,10 +18,13 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 
 @Named
@@ -35,6 +39,8 @@ public class SolrIndexServiceBean {
     DvObjectServiceBean dvObjectService;
     @EJB
     SearchPermissionsServiceBean searchPermissionsService;
+    @EJB
+    DataverseServiceBean dataverseService;
 
     public List<DvObjectSolrDoc> determineSolrDocs(Long dvObjectId) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
@@ -219,4 +225,56 @@ public class SolrIndexServiceBean {
         UpdateResponse addResponse = solrServer.add(docs);
         UpdateResponse commitResponse = solrServer.commit();
     }
+
+    public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+        List<Long> dvObjectsToReindexPermissionsFor = new ArrayList<>();
+        /**
+         * @todo Re-indexing the definition point itself seems to be necessary
+         * for revoke but not necessarily grant.
+         */
+        dvObjectsToReindexPermissionsFor.add(definitionPoint.getId());
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("*");
+        solrQuery.setRows(Integer.SIZE);
+        if (definitionPoint.isInstanceofDataverse()) {
+            Dataverse dataverse = (Dataverse) definitionPoint;
+
+            String dataversePath = dataverseService.determineDataversePath(dataverse);
+            String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+
+            solrQuery.addFilterQuery(filterDownToSubtree);
+        }
+
+        QueryResponse queryResponse = null;
+        try {
+            queryResponse = solrServer.query(solrQuery);
+            if (queryResponse != null) {
+                for (SolrDocument solrDoc : queryResponse.getResults()) {
+                    try {
+                        long dvObjectId = (Long) solrDoc.getFieldValue(SearchFields.ENTITY_ID);
+                        dvObjectsToReindexPermissionsFor.add(dvObjectId);
+                    } catch (NullPointerException ex) {
+                        /**
+                         * @todo why are we getting an NPE with
+                         * rebuild-and-test?
+                         */
+                        logger.info("caught NPE");
+                    }
+                }
+            }
+
+        } catch (SolrServerException | HttpSolrServer.RemoteSolrException ex) {
+
+        }
+
+        for (Long dvObjectId : dvObjectsToReindexPermissionsFor) {
+            /**
+             * @todo do something with this response
+             */
+            IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObjectId);
+        }
+        return new IndexResponse("Number of dvObject permissions indexed: " + dvObjectsToReindexPermissionsFor.size());
+    }
+
 }
