@@ -1020,13 +1020,13 @@ for my $script ( "setup-all.sh" ) {
     my $my_hostname = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
 
     my $run_script;
-    if ( $my_hostname ne "localhost" ) {
-        system( "sed 's/localhost:8080/$my_hostname/g' < " . $script . " > tmpscript.sh; chmod +x tmpscript.sh" );
-        $run_script = "tmpscript.sh";
-    }
-    else {
+    #if ( $my_hostname ne "localhost" ) {
+    #    system( "sed 's/localhost:8080/$my_hostname/g' < " . $script . " > tmpscript.sh; chmod +x tmpscript.sh" );
+    #    $run_script = "tmpscript.sh";
+    #}
+    #else {
         $run_script = $script;
-    }
+    #}
 
     unless ( my $exit_code = system( "./" . $run_script ) == 0 ) {
         print "\nERROR executing script " . $script . "!\n";
