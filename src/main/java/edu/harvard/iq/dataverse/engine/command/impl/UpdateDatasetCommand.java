@@ -74,9 +74,23 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
             if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+            } else {
+                //try again if identifier exists
+                if (doiRetString.contains("identifier already exists")) {
+                    theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
+                    doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+                    if (!doiRetString.contains(theDataset.getIdentifier())) {
+                        // didn't register new identifier
+                    } else {
+                        theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                    }
+                } else {
+                    //some reason other that duplicate identifier so don't try again
+                    //EZID down possibly
+                }
             }
         }
-
+        
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
         String indexingResult = ctxt.index().indexDataset(savedDataset);
