@@ -355,3 +355,4 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 .ui-widget-overlay {background:#CCC;}
 .ui-confirm-dialog-severity {margin-top:3px;}
+.ui-widget-content a.btn-default {color:#333;}

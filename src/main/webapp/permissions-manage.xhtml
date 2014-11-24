@@ -39,7 +39,7 @@
                                                        styleClass="btn btn-default pull-right" 
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
-                                                       oncomplete="userGroupsForm.show()">
+                                                       oncomplete="userGroupsForm.show();bind_bsui_components();">
                                             <span class="glyphicon glyphicon-user" style="margin-right:0.3em;"/> Assign Roles to Users/Groups
                                         </p:commandLink>
                                         <p class="help-block clearfix">Here are all the users and groups that have access to your dataverse.</p>

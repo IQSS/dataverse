@@ -5,11 +5,8 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui">
     <p:dialog id="userGroupDialog" header="Edit Users/Groups" widgetVar="userGroupsForm" modal="true" style="min-width:600px;">
-        <div class="form-group">
-            <label for="exampleInputFile">User/Group</label>
-            <p class="help-block">Users and/or groups.</p>
-        </div>
         <div>
+            <p class="help-block">Grant permissions to users and groups by assigning them a role.</p>
             <div class="form-group clearfix">
                 <label for="userGroupAccessInput" class="col-sm-3 control-label">
                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
@@ -47,7 +44,7 @@
                     </p:fragment>
                     <p:fragment id="roleDetails">
                         <div id="assignRolePermissionLabels" style="margin-left:0;">
-                            <p class="help-block">This is what they can do.</p>
+                            <p class="help-block">These are the permissions associated with the selected role.</p>
                             <div class="bg-warning" style="margin-bottom:1em;padding:5px;">
                                 <span style="font-weight:bold">#{managePermissionsPage.assignedRole.name}</span>
                                 <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
