@@ -95,7 +95,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         dataset.setAuthority(authority); 
                         dataset.setDoiSeparator(separator);
                         dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority, separator));
-
+                        logger.fine("DS Deposit identifier: " + dataset.getIdentifier());
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 
                         String foreignFormat = SwordUtil.DCTERMS;
@@ -111,7 +111,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         Dataset createdDataset = null;
                         try {
-                            createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, user));
+                            createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, user, false));
                         } catch (EJBException | CommandException ex) {
                             Throwable cause = ex;
                             StringBuilder sb = new StringBuilder();

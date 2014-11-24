@@ -34,18 +34,26 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(CreateDatasetCommand.class.getCanonicalName());
 
     private final Dataset theDataset;
+    private final boolean registrationRequired;
 
     public CreateDatasetCommand(Dataset theDataset, User user) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
+        this.registrationRequired = false;
     }
 
+    public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired) {
+        super(user, theDataset.getOwner());
+        this.theDataset = theDataset;
+        this.registrationRequired = registrationRequired;
+    }
+    
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         
         // Test for duplicate identifier
         if (!ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
-            throw new IllegalCommandException(String.format("Dataset with idenfidier '%s', protocol '%s' and authority '%s' already exists",
+            throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
         }
@@ -82,8 +90,12 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
             if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(createDate);
-            }
+            } 
         }
+        
+        if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
+            throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
+               }
               
         Dataset savedDataset = ctxt.em().merge(theDataset);
                 
