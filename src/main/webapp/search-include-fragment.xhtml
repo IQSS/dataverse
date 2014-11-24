@@ -602,15 +602,32 @@
                                             <p:graphicImage value="/api/access/preview/#{result.entityId}"/>
                                         </h:outputLink>
                                     </div>
-
-                                    <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right: .5em;"/>
+                                    
+                                    <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
 
                                     <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                        <h:outputText value="Dataset: #{result.parent.get('name')}"/>
+                                        <h:outputText value="#{result.parent.get('name')}"/>
                                     </h:outputLink>
-
-                                    <hr style="margin:.5em;border:0;"/>
-
+                                    
+                                    
+                                    <ui:fragment>
+                                        <br/>
+                                        <h:outputText styleClass="text-muted" value="#{SearchIncludeFragment.dataFileSizeDisplay(result.entityId)} - "/>
+                                        
+                                        <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId) and result.fileTypeHighlightSnippet == null}"/>
+                                        <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId) and result.fileTypeHighlightSnippet != null}" escape="false"/>
+                                        
+                                        <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileMD5Display(result.entityId)}" rendered="#{!SearchIncludeFragment.isTabular(result.entityId)}"/>
+                                        
+                                        <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
+                                        <ui:fragment rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}">
+                                            <h:outputText styleClass="text-muted" value="Tabular Data - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}"/>
+                                        </ui:fragment>
+                                        
+                                        <br/>
+                                    </ui:fragment>
+                                    
+                                    
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
                                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">
@@ -618,14 +635,7 @@
                                             <h:outputText value="... " rendered="#{varStatus.last != true}"/>
                                         </ui:repeat>
                                     </ui:fragment>
-                                    <ui:fragment>
-                                        <h:outputText value="#{SearchIncludeFragment.dataFileSizeDisplay(result.entityId)}"/>
-                                        <h:outputText value="#{SearchIncludeFragment.dataFileMD5Display(result.entityId)}" rendered="#{!SearchIncludeFragment.isTabular(result.entityId)}"/>
-                                    </ui:fragment>
-                                    <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
-                                    <ui:fragment rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}">
-                                        <h:outputText value="Tabular Data; #{SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}"/>
-                                    </ui:fragment>
+                                    
                                     <ui:fragment rendered="#{result.highlightsAsList.size() > 0}">
                                         <div>
                                             <ui:repeat value="#{result.highlightsAsList}" var="highlight">
@@ -637,6 +647,7 @@
                                             </ui:repeat>
                                         </div>
                                     </ui:fragment>
+                                    
                                 </ui:fragment>
                             </p:column>
                         </p:dataTable>

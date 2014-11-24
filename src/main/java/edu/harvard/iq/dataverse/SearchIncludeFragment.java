@@ -983,11 +983,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
             Long varNumber = datatable.getVarQuantity();
             Long obsNumber = datatable.getCaseQuantity();
             if (varNumber != null && varNumber.intValue() != 0) {
-                ret = ret.concat(varNumber + " variables");
+                ret = ret.concat(varNumber + " Variables");
                 if (obsNumber != null && obsNumber.intValue() != 0) {
-                    ret = ret.concat(", " + obsNumber + " observations");
+                    ret = ret.concat(", " + obsNumber + " Observations");
                 }
-                ret = ret.concat("; ");
+                ret = ret.concat(" - ");
             }
             if (unf != null && !unf.equals("")) {
                 ret = ret.concat("UNF: " + unf);
@@ -1005,7 +1005,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
 
         if (datafile.getFilesize() > -1) {
-            return " Size: " + datafile.getFilesize() + " bytes.";
+            return datafile.getFilesize() + " bytes";
         }
 
         return "";

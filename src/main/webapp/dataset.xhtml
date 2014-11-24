@@ -546,41 +546,55 @@
                                                 <p:inputText id="fileName" value="#{fileMetadata.label}" style="margin-bottom:.5em;"/>
                                                 <p:message for="fileName"/>
                                             </ui:fragment>
-
-                                            <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}#{!empty fileMetadata.dataFile.md5 ? ', ' : ''}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
-
-                                            <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
-                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
-                                            <h:outputText id="duplicateFileMD5" style="color:red" value="MD5: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
-                                            <h:outputText id="fileDuplicateWarning" style="color:red" value=" (A file with this MD5 already exists in the dataset!)" rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}"/>
-
-                                            <h:outputText id="fileTypeOutputTabular" value="Tabular Data, " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} variables, " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} observations#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}, " rendered="#{!empty fileMetadata.dataFile.unf}"/>
-                                            <h:outputText id="fileSize" value=" Size: #{fileMetadata.dataFile.filesize} bytes." rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
-
-
-                                            <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                            
+                                            <!-- SIZE + TYPE + MD5 -->
+                                            <div>
+                                                <h:outputText id="fileTypeOutputRegular" styleClass="text-muted" value="#{fileMetadata.dataFile.friendlyType} - " rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+                                                <h:outputText id="fileTypeOutputTabular" styleClass="text-muted" value="Tabular Data - " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                <h:outputText id="fileSize" styleClass="text-muted" value="#{fileMetadata.dataFile.filesize} bytes - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                            
+                                                <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
+                                                <h:outputText id="fileMD5" styleClass="text-muted" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                                                
+                                                <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
+                                                <ui:fragment rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}">
+                                                    <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">A file with this MD5 already exists in the dataset.</span></div>
+                                                </ui:fragment>
+                                            </div>
+                                            
+                                            <!-- UNF + Variables, Obsersvations -->
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
+                                                <div>
+                                                    <h:outputText id="fileNumVars" styleClass="text-muted" value="#{fileMetadata.dataFile.dataTable.varQuantity} Variables, " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                    <h:outputText id="fileNumObs" styleClass="text-muted" value="#{fileMetadata.dataFile.dataTable.caseQuantity} Observations#{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                    <h:outputText id="fileUNF" styleClass="text-muted" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                                                </div>
+                                            </ui:fragment>
+                                            
+                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
                                                 <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
                                                 <br />
                                                 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
 
                                                 <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile) }-->
                                             </ui:fragment>
-                                            <div class="fileDescription">
-                                                <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
-                                                <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.description)}"/>-->
+                                            
+                                            <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
+                                                <div class="fileDescription">
+                                                    <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
+                                                    <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.description)}"/>-->
 
-                                                <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
-                                                    <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
-                                                        Description
-                                                    </label>
-                                                    <p:inputTextarea  id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="margin-top:.5em;"/>
-                                                    <p:watermark for="fileDescription" value="Add file description..."/>
-                                                    <p:message for="fileDescription"/>
-                                                </ui:fragment>
-                                            </div>
+                                                    <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                                        <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                                                            Description
+                                                        </label>
+                                                        <p:inputTextarea  id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="margin-top:.5em;"/>
+                                                        <p:watermark for="fileDescription" value="Add file description..."/>
+                                                        <p:message for="fileDescription"/>
+                                                    </ui:fragment>
+                                                </div>
+                                            </ui:fragment>
+                                                
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
