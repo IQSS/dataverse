@@ -154,32 +154,52 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public void saveConfiguration(ActionEvent e) {
         // Set role (if any) for authenticatedUsers
-        //@todo check if role did not change
+        DataverseRole roleToAssign = null;
+        List<String> contributorRoles = Arrays.asList(DataverseRole.FULL_CONTRIBUTOR, DataverseRole.DV_CONTRIBUTOR, DataverseRole.DS_CONTRIBUTOR);
+
+        // first, determine role from page selection
+        if (allowUsersAddDataverse && allowUsersAddDataset) {
+            roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.FULL_CONTRIBUTOR);
+        } else if (allowUsersAddDataverse) {
+            roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.DV_CONTRIBUTOR);
+        } else if (allowUsersAddDataset) {
+            roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.DS_CONTRIBUTOR);
+        }
+
+        // then, check current contributor role
         List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
         for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
-            revokeRole(roleAssignment.getId());
+            DataverseRole currentRole = roleAssignment.getRole();
+            if (contributorRoles.contains(currentRole.getAlias())) {
+                if (currentRole.equals(roleToAssign)) {
+                    roleToAssign = null; // found the role, so no need to assign
+                } else {
+                    revokeRole(roleAssignment.getId());
+                }
+            }
+        }
+        // finally, assign role, if new
+        if (roleToAssign != null) {
+            assignRole(AuthenticatedUsers.get(), roleToAssign);
         }
         
-        if (allowUsersAddDataverse && allowUsersAddDataset) {
-            assignRole(AuthenticatedUsers.get(), roleService.findBuiltinRoleByAlias(DataverseRole.FULL_CONTRIBUTOR));
-        } else if (allowUsersAddDataverse) {
-            assignRole(AuthenticatedUsers.get(), roleService.findBuiltinRoleByAlias(DataverseRole.DV_CONTRIBUTOR));
-        } else if (allowUsersAddDataset) {
-            assignRole(AuthenticatedUsers.get(), roleService.findBuiltinRoleByAlias(DataverseRole.DS_CONTRIBUTOR));
-        }
 
+        // set dataverse default contributor role
         if (dvObject instanceof Dataverse) {
-            try {
-                DataverseRole defaultRole = roleService.findBuiltinRoleByAlias(defaultContributorRoleAlias);
-                commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, session.getUser(), (Dataverse) dvObject));
-                JH.addMessage(FacesMessage.SEVERITY_INFO, "Default contributor role assigned successfully");
-            } catch (PermissionException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default contributor role - you're missing permission", ex.getRequiredPermissions().toString());
-                logger.log(Level.SEVERE, "Error assigning default contributor role: " + ex.getMessage(), ex);
+            Dataverse dv = (Dataverse) dvObject;
+            DataverseRole defaultRole = roleService.findBuiltinRoleByAlias(defaultContributorRoleAlias);
+            if (!defaultRole.equals(dv.getDefaultContributorRole())) {
+                try {
+                    commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, session.getUser(), dv));
+                    JH.addMessage(FacesMessage.SEVERITY_INFO, "Default contributor role assigned successfully");
+                } catch (PermissionException ex) {
+                    JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default contributor role - you're missing permission", ex.getRequiredPermissions().toString());
+                    logger.log(Level.SEVERE, "Error assigning default contributor role: " + ex.getMessage(), ex);
 
-            } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default contributor role: " + ex.getMessage());
-                logger.log(Level.SEVERE, "Error assigning default contributor role: " + ex.getMessage(), ex);
+                } catch (CommandException ex) {
+                    JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default contributor role: " + ex.getMessage());
+                    logger.log(Level.SEVERE, "Error assigning default contributor role: " + ex.getMessage(), ex);
+                }
             }
         }
 
