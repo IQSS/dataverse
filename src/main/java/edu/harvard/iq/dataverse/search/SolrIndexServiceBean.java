@@ -89,6 +89,29 @@ public class SolrIndexServiceBean {
     }
 
     /**
+     * @todo Try to make this method faster. It should be fine if you need to
+     * figure out the permission documents for a single datafile but will be
+     * slow if you call it over and over in a loop.
+     */
+    private List<DvObjectSolrDoc> constructDatafileSolrDocsTest(DataFile dataFile) {
+        List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
+        Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataFile.getOwner());
+        for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataFile.getOwner())) {
+            boolean cardShouldExist = desiredCards.get(version.getVersionState());
+            if (cardShouldExist) {
+                String solrIdStart = IndexServiceBean.solrDocIdentifierFile + dataFile.getId();
+                String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
+                String solrId = solrIdStart + solrIdEnd;
+                List<String> perms = searchPermissionsService.findDatasetVersionPerms(version);
+                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, dataFile.getDisplayName(), perms);
+                datafileSolrDocs.add(dataFileSolrDoc);
+            }
+        }
+
+        return datafileSolrDocs;
+    }
+
+    /**
      * @todo In this method should we really piggyback off the output of
      * constructDatasetSolrDocs like this? It was the easiest thing to get
      * working quickly.
@@ -97,7 +120,7 @@ public class SolrIndexServiceBean {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
         List<DvObjectSolrDoc> datasetSolrDocs = constructDatasetSolrDocs(dataFile.getOwner());
         for (DvObjectSolrDoc dataset : datasetSolrDocs) {
-            logger.info(dataset.toString());
+            logger.info("constructing solr docs for datafile " + dataFile.getId());
             String datasetSolrId = dataset.getSolrId();
             /**
              * @todo We should probably get away from the assumption that
@@ -136,14 +159,14 @@ public class SolrIndexServiceBean {
 
     private DvObjectSolrDoc makeDatasetSolrDoc(DatasetVersion version) {
         String solrIdStart = IndexServiceBean.solrDocIdentifierDataset + version.getDataset().getId().toString();
-        String solrIdEnd = getDatasetSolrIdEnding(version.getVersionState());
+        String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
         String solrId = solrIdStart + solrIdEnd;
         String name = version.getTitle();
         List<String> perms = searchPermissionsService.findDatasetVersionPerms(version);
         return new DvObjectSolrDoc(version.getDataset().getId().toString(), solrId, name, perms);
     }
 
-    private String getDatasetSolrIdEnding(DatasetVersion.VersionState versionState) {
+    private String getDatasetOrDataFileSolrEnding(DatasetVersion.VersionState versionState) {
         if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {
             return "";
         } else if (versionState.equals(DatasetVersion.VersionState.DRAFT)) {
@@ -160,11 +183,14 @@ public class SolrIndexServiceBean {
 
         List<DvObjectSolrDoc> definitionPoints = new ArrayList<>();
         for (DvObject dvObject : dvObjectService.findAll()) {
+            logger.info("determining definition points for dvobject id " + dvObject.getId());
             definitionPoints.addAll(determineSolrDocs(dvObject.getId()));
         }
 
         for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
+            logger.info("creating solr doc in memory for " + dvObjectSolrDoc.getSolrId());
             SolrInputDocument solrInputDocument = createSolrDoc(dvObjectSolrDoc);
+            logger.info("adding to list of docs to index " + dvObjectSolrDoc.getSolrId());
             docs.add(solrInputDocument);
         }
         try {
@@ -216,8 +242,10 @@ public class SolrIndexServiceBean {
             /**
              * @todo Throw an exception here? "DvObject id 9999 does not exist."
              */
+            logger.info("nothing to persist");
             return;
         }
+        logger.fine("persisting to Solr...");
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         /**
          * @todo Do something with these responses from Solr.
@@ -262,13 +290,15 @@ public class SolrIndexServiceBean {
                          * @todo why are we getting an NPE with
                          * rebuild-and-test?
                          */
-                        logger.info("caught NPE");
+                        logger.info("caught NPE calling indexPermissionsOnSelfAndChildren on DvObject id " + definitionPoint.getId() + ":" + definitionPoint.getDisplayName());
                     }
                 }
             }
 
         } catch (SolrServerException | HttpSolrServer.RemoteSolrException ex) {
-
+            /**
+             * @todo what should we do here?
+             */
         }
 
         for (Long dvObjectId : dvObjectsToReindexPermissionsFor) {
@@ -280,4 +310,19 @@ public class SolrIndexServiceBean {
         return new IndexResponse("Number of dvObject permissions indexed: " + dvObjectsToReindexPermissionsFor.size());
     }
 
+    public IndexResponse deleteMultipleSolrIds(List<String> solrIdsToDelete) {
+        if (solrIdsToDelete.isEmpty()) {
+            return new IndexResponse("nothing to delete");
+        }
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        try {
+            solrServer.deleteById(solrIdsToDelete);
+        } catch (SolrServerException | IOException ex) {
+            /**
+             * @todo mark these for re-deletion
+             */
+            return new IndexResponse("problem deleting the following documents from Solr: " + solrIdsToDelete);
+        }
+        return new IndexResponse("no known problem deleting the following documents from Solr:" + solrIdsToDelete);
+    }
 }

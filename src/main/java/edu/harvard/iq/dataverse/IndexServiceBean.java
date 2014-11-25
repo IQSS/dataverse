@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
@@ -21,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -326,16 +323,9 @@ public class IndexServiceBean {
                         append(deletePublishedResults).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
-                /**
-                 * @todo: DRY! refactor this copied code into a common method
-                 */
                 List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
                 String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
-                StringBuilder deleteDraftFilesResults = new StringBuilder();
-                for (String doomed : solrDocIdsForDraftFilesToDelete) {
-                    String result = removeSolrDocFromIndex(doomed);
-                    deleteDraftFilesResults.append(result);
-                }
+                String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
                 results.append("Attempting to delete traces of drafts. Result: ")
                         .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
 
@@ -381,11 +371,7 @@ public class IndexServiceBean {
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
                 List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
                 String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
-                StringBuilder deleteDraftFilesResults = new StringBuilder();
-                for (String doomed : solrDocIdsForDraftFilesToDelete) {
-                    String result = removeSolrDocFromIndex(doomed);
-                    deleteDraftFilesResults.append(result);
-                }
+                String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
                 results.append("The latest version is published. Attempting to delete drafts. Result: ")
                         .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
 
@@ -469,6 +455,13 @@ public class IndexServiceBean {
         } else {
             return "No-op. Unexpected condition reached: Has a version been published or not?";
         }
+    }
+
+    private String deleteDraftFiles(List<String> solrDocIdsForDraftFilesToDelete) {
+        String deleteDraftFilesResults = "";
+        IndexResponse indexResponse = solrIndexService.deleteMultipleSolrIds(solrDocIdsForDraftFilesToDelete);
+        deleteDraftFilesResults = indexResponse.toString();
+        return deleteDraftFilesResults;
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
@@ -891,6 +884,12 @@ public class IndexServiceBean {
         return response;
     }
 
+    /**
+     * @todo call this in fewer places, favoring
+     * SolrIndexServiceBeans.deleteMultipleSolrIds instead to operate in batches
+     *
+     * https://github.com/IQSS/dataverse/issues/142
+     */
     public String removeSolrDocFromIndex(String doomed) {
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
@@ -956,12 +955,8 @@ public class IndexServiceBean {
     }
 
     private String removeMultipleSolrDocs(List<String> docIds) {
-        StringBuilder deleteMultipleResult = new StringBuilder();
-        for (String doomed : docIds) {
-            String result = removeSolrDocFromIndex(doomed);
-            deleteMultipleResult.append(result);
-        }
-        return deleteMultipleResult.toString();
+        IndexResponse indexResponse = solrIndexService.deleteMultipleSolrIds(docIds);
+        return indexResponse.toString();
     }
 
     private String determinePublishedDatasetSolrDocId(Dataset dataset) {
