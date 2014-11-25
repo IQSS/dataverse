@@ -8,7 +8,7 @@ import javax.servlet.ServletRequest;
 
 public class AuthenticatedUsers extends AbstractGroup {
 
-        private static final AuthenticatedUsers instance = new AuthenticatedUsers();
+    private static final AuthenticatedUsers instance = new AuthenticatedUsers();
     
     public AuthenticatedUsers() {
         setAlias("int:authenticated-users");
