@@ -30,8 +30,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     private final List<DataverseFieldTypeInputLevel> inputLevelList;
     private final List<DatasetFieldType> facetList;
 
-    public CreateDataverseCommand(Dataverse created, 
-       User aUser, List<DatasetFieldType> facetList, List<DataverseFieldTypeInputLevel> inputLevelList) {
+    public CreateDataverseCommand(Dataverse created,
+            User aUser, List<DatasetFieldType> facetList, List<DataverseFieldTypeInputLevel> inputLevelList) {
         super(aUser, created.getOwner());
         this.created = created;
         if (facetList != null) {
@@ -55,8 +55,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
             }
         }
 
-		if ( created.getCreateDate() == null )  {
-			created.setCreateDate( new Timestamp(new Date().getTime()) );
+        if (created.getCreateDate() == null) {
+            created.setCreateDate(new Timestamp(new Date().getTime()));
         }
         // By default, themeRoot should be true
         created.setThemeRoot(true);
@@ -68,16 +68,20 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         if (created.getDataverseType() == null) {
             created.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
         }
+        
+        if (created.getDefaultContributorRole() == null) {
+            created.setDefaultContributorRole(ctxt.roles().findBuiltinRoleByAlias(DataverseRole.EDITOR));
+        }
 
         // Save the dataverse
         Dataverse managedDv = ctxt.dataverses().save(created);
 
-	// Find the built in admin role (currently by alias)
-        DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias("admin");
+        // Find the built in admin role (currently by alias)
+        DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         ctxt.roles().save(new RoleAssignment(adminRole, getUser(), managedDv));
-        
-        ctxt.index().indexDataverse(managedDv);  
-       if (facetList != null) {
+
+        ctxt.index().indexDataverse(managedDv);
+        if (facetList != null) {
             ctxt.facets().deleteFacetsFor(managedDv);
             int i = 0;
             for (DatasetFieldType df : facetList) {
