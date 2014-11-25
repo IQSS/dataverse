@@ -4,7 +4,7 @@
     "description":"Editor",
     "permissions":[
         "ViewUnpublishedDataset",
-        "EditDatset",
+        "EditDataset",
         "DownloadFile",
         "DeleteDatasetDraft"     
     ]

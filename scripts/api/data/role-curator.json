@@ -4,7 +4,7 @@
     "description":"Curator.",
     "permissions":[
         "ViewUnpublishedDataset",
-        "EditDatset",
+        "EditDataset",
         "DownloadFile",
         "DeleteDatasetDraft",
         "PublishDataset",
