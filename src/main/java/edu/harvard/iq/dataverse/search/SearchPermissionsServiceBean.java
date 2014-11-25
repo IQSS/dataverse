@@ -110,7 +110,7 @@ public class SearchPermissionsServiceBean {
     }
 
     /**
-     * @todo How well is this working?
+     * @todo Try using rolesSvc.rolesAssignments(dvObject)
      */
     private List<String> findImplicitAssignments(DvObject dvObject) {
         List<String> emptyList = new ArrayList<>();
