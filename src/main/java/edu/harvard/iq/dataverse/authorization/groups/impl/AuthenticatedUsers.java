@@ -8,11 +8,15 @@ import javax.servlet.ServletRequest;
 
 public class AuthenticatedUsers extends AbstractGroup {
 
+        private static final AuthenticatedUsers instance = new AuthenticatedUsers();
+    
     public AuthenticatedUsers() {
         setAlias("int:authenticated-users");
         setName("Authenticated Users");
         setDescription("All users, except for guests");
     }
+    
+    public static AuthenticatedUsers get() { return instance; }
     
     @Override
     public boolean contains(User aUser, ServletRequest aRequest) {
@@ -31,7 +35,7 @@ public class AuthenticatedUsers extends AbstractGroup {
 
     @Override
     public String getIdentifier() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return":AuthenticatedUsers";
     }
 
     @Override
