@@ -1,0 +1,11 @@
+{
+    "alias":"editor",
+    "name":"Editor",
+    "description":"Editor",
+    "permissions":[
+        "ViewUnpublishedDataset",
+        "EditDatset",
+        "DownloadFile",
+        "DeleteDatasetDraft"     
+    ]
+}

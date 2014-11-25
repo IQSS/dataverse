@@ -1,0 +1,8 @@
+{
+  "alias": "dsContributor",
+  "name": "DS Contributor",
+  "description": "Allows creation of Dataset",
+  "permissions": [
+    "AddDataset"
+  ]
+}

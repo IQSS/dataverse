@@ -1,0 +1,9 @@
+{
+  "alias": "fullContributor",
+  "name": "Full Contributor",
+  "description": "Allows creation of Dataverse and Datset",
+  "permissions": [
+    "AddDataverse",
+    "AddDataset"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+    "alias":"manager",
+    "name":"Manager",
+    "description":"Manager",
+    "permissions":[
+        "ViewUnpublishedDataset",
+        "EditDatset",
+        "DownloadFile",
+        "DeleteDatasetDraft"     
+    ]
+}
