@@ -10,8 +10,8 @@ public class AuthenticatedUsers extends AbstractGroup {
 
     private static final AuthenticatedUsers instance = new AuthenticatedUsers();
     
-    public AuthenticatedUsers() {
-        setAlias("int:authenticated-users");
+    private AuthenticatedUsers() {
+        setAlias(":authenticated-users");
         setName("Authenticated Users");
         setDescription("All users, except for guests");
     }
@@ -40,7 +40,7 @@ public class AuthenticatedUsers extends AbstractGroup {
 
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo("All Authenticated Users", null);
+        return new RoleAssigneeDisplayInfo("Anyone with a Dataverse account", null);
     }
 
 }
