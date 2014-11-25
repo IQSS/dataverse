@@ -18,13 +18,13 @@ Creating a dataverse is easy but first you must be a registered user (see Create
 #. Once you are logged in click on the "Add Data" button and in the dropdown menu select "Create Dataverse".
 #. Once on the "New Dataverse" page fill in the following fields:
     * Enter the name of your dataverse.
-    * **Host Dataverse**: select which dataverse you would like this new dataverse to belong to. By default it will be a child dataverse of the parent you clicked from.
-    * **Alias**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse Alias field, the URL for your Dataverse changes (http//.../dv/'alias'), which affects links to this page.
-    * **E-mail**: This is the email address you will receive notifications for this particular dataverse.
-    * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc).
+    * **Alias**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse URL field, the URL for your Dataverse changes (http//.../dv/'url'), which affects links to this page.
+    * **E-mail**: This is the email address you will receive notifications for, for this particular dataverse.
+    * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
     * **Description**: Provide a description of this dataverse (max. 1000 characters). This will display on the home page of your dataverse and in the search result list.
-    * **Choose the sets of Metadata Elements for datasets in this dataverse**: by default the metadata elements will be from the host dataverse that this new dataverse is created in.
-3. Click "Create Dataverse" button and you're done! An email will be sent to you with more information, including the URL to access your new dataverse.
+    * **Choose the sets of Metadata Elements for datasets in this dataverse**: by default the metadata elements will be from the host dataverse that this new dataverse is created in. Dataverse offers metadata standards for multiple domains. To learn more about the metadata standards in Dataverse please check out the appendix (insert link here)
+    * **Select facets for this dataverse**: by default the facets that will appear on your dataverse landing page will be from the host dataverse that this new dataverse was created in. The facets are simply metadata fields that can be used to help others easily find dataverses and datasets within this dataverse. You can select as many facets as you would like.
+3. Click "Create Dataverse" button and you're done! 
 
 \*Required fields are denoted by a red asterisk.
 
