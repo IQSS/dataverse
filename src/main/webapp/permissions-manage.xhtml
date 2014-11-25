@@ -56,7 +56,7 @@
                                                     <p:commandLink styleClass="btn btn-default" 
                                                                    action="#{managePermissionsPage.revokeRole(roleAssignment.id)}"
                                                                    rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
-                                                                   update="assignedRoles"
+                                                                   update="assignedRoles :#{p:component('configureSettings')}"
                                                                    style="color:black;margin-right:0.5em;"><span class="glyphicon glyphicon-remove" style="margin-right:0.3em;"/> Remove Assigned Role</p:commandLink>
                                                 </p:column>
                                             </p:dataTable>
