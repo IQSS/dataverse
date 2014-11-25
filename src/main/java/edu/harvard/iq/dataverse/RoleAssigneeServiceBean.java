@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.impl.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.Map;
 import java.util.TreeMap;
@@ -29,6 +30,7 @@ public class RoleAssigneeServiceBean {
     @PostConstruct
     void setup() {
         predefinedRoleAssignees.put(GuestUser.get().getIdentifier(), GuestUser.get());
+        predefinedRoleAssignees.put(AuthenticatedUsers.get().getIdentifier(), AuthenticatedUsers.get());
     }
     
     public RoleAssignee getRoleAssignee( String identifier ) {
