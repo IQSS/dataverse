@@ -5,76 +5,101 @@
      xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui">
-
-    <div class="form-group clearfix">
-        <label for="valueY" class="col-sm-3 control-label">
-            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
-                Inherit Permissions
-            </a>
-        </label>
-        <div class="col-sm-9">
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" value="" checked="checked"/>
-                    Inherit all roles and permissions from parent dataverse.
-                </label>
+    <ui:remove>
+        <div class="form-group clearfix">
+            <label for="valueY" class="col-sm-3 control-label">
+                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
+                    Inherit Permissions
+                </a>
+            </label>
+            <div class="col-sm-9">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" value="" checked="checked"/>
+                        Inherit all roles and permissions from parent dataverse.
+                    </label>
+                </div>
             </div>
         </div>
-    </div>
+    </ui:remove>
     <div class="form-group clearfix">
         <label for="accessRadios" class="col-sm-3 control-label">
             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
-                Access
+                Who can add to this dataverse?
             </a>
         </label>
         <div class="col-sm-9">
-            <div class="radio">
-                <label>
-                    <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
-                    Assign
-                </label>
-            </div>
-            <div class="radio">
-                <label>
-                    <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
-                    Open
-                </label>
-            </div>
-            <div id="openAccessOptions" style="margin-left:2em;">
-                <div class="checkbox">
+            <p:fragment id="configureSettings">
+                <div class="radio">
                     <label>
-                        <input type="checkbox" value="" checked="checked"/>
+                        <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
+                        Anyone adding to this dataverse needs to be given access
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
+                        Anyone with a Dataverse account can add:
+                    </label>
+                </div>
+                <div id="openAccessOptions" style="margin-left:2em;">
+                    <div class="checkbox">
+                        <label>
+                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataverse}" />
                             Dataverses
-                    </label>
-                </div>
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" value="" checked="checked"/>
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataset}" />
                             Datasets
-                    </label>
-                </div>
-                <div id="openAccessDatasetsOptions" style="margin-left:2em;">
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="openAccessDatasetsRadios" id="openAccessDatasetsRadios1" value="option1" checked="checked"/>
-                                Level 1 <span class="text-muted">- Edit Metadata + Files</span>
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="openAccessDatasetsRadios" id="openAccessDatasetsRadios2" value="option2"/>
-                                Level 2 <span class="text-muted">- Level 1 + Edit License, Terms, Guestbook, File Restrictions (Files Access + Use)</span>
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="openAccessDatasetsRadios" id="openAccessDatasetsRadios3" value="option3"/>
-                                Level 3 <span class="text-muted">- Level 2 + Edit Permissions/Assign Roles + Publish/(Submit For Review) in this Dataverse</span>
                         </label>
                     </div>
                 </div>
-            </div>
+            </p:fragment>
         </div>
     </div>
-    
+
+    <div class="form-group clearfix">
+        <label for="contributorRadios" class="col-sm-3 control-label">
+            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
+                What type of contributor should be the default for this dataverse?
+            </a>
+        </label>
+        <div class="col-sm-9">
+            A contributor can be a(n)…
+            <p:selectOneRadio id="defaultContributorRoleRadio" value="#{managePermissionsPage.defaultContributorRoleAlias}" layout="custom">
+                <f:selectItem itemLabel="Editor" itemValue="editor" />
+                <f:selectItem itemLabel="Manager" itemValue="manager" />
+                <f:selectItem itemLabel="Curator" itemValue="curator" />
+            </p:selectOneRadio>
+
+            <div class="radio">
+                <label>
+                    <p:radioButton id="opt1" for="defaultContributorRoleRadio" itemIndex="0" />
+                    <h:outputLabel for="opt1" value="Editor" />
+                    <span class="text-muted">- Edit metadata, upload files, and edit the files for a dataset</span>
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <p:radioButton id="opt2" for="defaultContributorRoleRadio" itemIndex="1" />
+                    <h:outputLabel for="opt2" value="Manager" />
+                    <span class="text-muted">- Edit metadata, upload files, and edit files, edit License, Terms, Guestbook, File Restrictions (Files Access + Use)</span>
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <p:radioButton id="opt3" for="defaultContributorRoleRadio" itemIndex="2" />
+                    <h:outputLabel for="opt3" value="Curator" />
+                    <span class="text-muted">- Edit metadata, upload files, and edit files, edit License, Terms, Guestbook, File Restrictions (Files Access + Use), Edit Permissions/Assign Roles + Publish</span>
+                </label>
+            </div>
+        </div>
+    </div>    
+    <p:commandLink styleClass="btn btn-default" value="Save Changes" 
+                   update="assignedRoles"
+                   actionListener="#{managePermissionsPage.saveConfiguration}"/>
+
+
 </div>
