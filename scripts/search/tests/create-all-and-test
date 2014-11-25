@@ -18,7 +18,6 @@ curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H 'Conte
 # give the file a little time to ingest
 sleep 2
 echo "Everything in draft, checking permissions. Silence is golden."
-scripts/search/tests/query-unparseable
 scripts/search/tests/permissions1
 echo "Done."
 . scripts/search/assumptions

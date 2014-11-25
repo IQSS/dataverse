@@ -12,6 +12,7 @@ mvn package
 #cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
 #sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
+scripts/search/tests/query-unparseable
 echo "---"
 echo "Creating search users"
 scripts/search/populate-users > /dev/null

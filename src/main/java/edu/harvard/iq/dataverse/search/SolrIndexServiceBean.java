@@ -93,54 +93,21 @@ public class SolrIndexServiceBean {
      * figure out the permission documents for a single datafile but will be
      * slow if you call it over and over in a loop.
      */
-    private List<DvObjectSolrDoc> constructDatafileSolrDocsTest(DataFile dataFile) {
+    private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
         Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataFile.getOwner());
-        for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataFile.getOwner())) {
-            boolean cardShouldExist = desiredCards.get(version.getVersionState());
+        for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataFile.getOwner())) {
+            boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
             if (cardShouldExist) {
                 String solrIdStart = IndexServiceBean.solrDocIdentifierFile + dataFile.getId();
-                String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
+                String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
-                List<String> perms = searchPermissionsService.findDatasetVersionPerms(version);
+                List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, dataFile.getDisplayName(), perms);
                 datafileSolrDocs.add(dataFileSolrDoc);
             }
         }
 
-        return datafileSolrDocs;
-    }
-
-    /**
-     * @todo In this method should we really piggyback off the output of
-     * constructDatasetSolrDocs like this? It was the easiest thing to get
-     * working quickly.
-     */
-    private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
-        List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
-        List<DvObjectSolrDoc> datasetSolrDocs = constructDatasetSolrDocs(dataFile.getOwner());
-        for (DvObjectSolrDoc dataset : datasetSolrDocs) {
-            logger.info("constructing solr docs for datafile " + dataFile.getId());
-            String datasetSolrId = dataset.getSolrId();
-            /**
-             * @todo We should probably get away from the assumption that
-             * endings always end with underscore such as "_draft".
-             */
-            String indicatorOfPublishedSolrId = ".*_[0-9]+$";
-            String ending = "";
-            if (!datasetSolrId.matches(indicatorOfPublishedSolrId)) {
-                ending = datasetSolrId.substring(datasetSolrId.lastIndexOf('_'));
-            }
-            String fileSolrId = IndexServiceBean.solrDocIdentifierFile + dataFile.getId() + ending;
-            /**
-             * @todo We should show the filename for this version of the file.
-             * Also, go look at all the complicated logic about
-             * filenameCompleteFinal in IndexServiceBean!
-             */
-            String name = dataFile.getDisplayName();
-            DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), fileSolrId, name, dataset.getPermissions());
-            datafileSolrDocs.add(dataFileSolrDoc);
-        }
         return datafileSolrDocs;
     }
 

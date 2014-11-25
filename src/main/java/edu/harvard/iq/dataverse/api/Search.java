@@ -3,9 +3,11 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
@@ -14,6 +16,7 @@ import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -214,7 +217,9 @@ public class Search extends AbstractApiBean {
 
         List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectId);
 
-        JsonArrayBuilder data = Json.createArrayBuilder();
+        JsonObjectBuilder data = Json.createObjectBuilder();
+
+        JsonArrayBuilder permissionsData = Json.createArrayBuilder();
 
         for (DvObjectSolrDoc solrDoc : solrDocs) {
             JsonObjectBuilder dataDoc = Json.createObjectBuilder();
@@ -224,8 +229,17 @@ public class Search extends AbstractApiBean {
             for (String perm : solrDoc.getPermissions()) {
                 perms.add(perm);
             }
-            data.add(dataDoc);
+            permissionsData.add(dataDoc);
         }
+        data.add("perms", permissionsData);
+
+        DvObject dvObject = dvObjectService.findDvObject(dvObjectId);
+        Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
+        JsonArrayBuilder roleAssignmentsData = Json.createArrayBuilder();
+        for (RoleAssignment roleAssignment : roleAssignments) {
+            roleAssignmentsData.add(roleAssignment.getRole() + " has been granted to " + roleAssignment.getAssigneeIdentifier() + " on " + roleAssignment.getDefinitionPoint());
+        }
+        data.add("roleAssignments", roleAssignmentsData);
 
         return okResponse(data);
     }
