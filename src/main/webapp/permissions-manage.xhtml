@@ -76,7 +76,7 @@
                                             <p:commandLink id="rolesAdd" 
                                                            styleClass="btn btn-default pull-right" 
                                                            actionListener="#{managePermissionsPage.createNewRole}"  
-                                                           oncomplete="roleForm.show()"
+                                                           oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
                                                            update=":#{p:component('editRolePanel')}">
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> Add New Role
                                             </p:commandLink>
@@ -91,13 +91,13 @@
                                                     <ui:fragment rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(role.owner)}">
                                                         <p:commandLink title="Edit role" style="margin-left:1em;"
                                                                        actionListener="#{managePermissionsPage.editRole(role.id)}"
-                                                                       oncomplete="roleForm.show()"
+                                                                       oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
                                                                        update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-pencil"></span></p:commandLink>                                          
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
                                                         <p:commandLink title="Copy role" style="margin-left:1em;" 
                                                                        actionListener="#{managePermissionsPage.cloneRole(role.id)}"
-                                                                       oncomplete="roleForm.show()"
+                                                                       oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
                                                                        update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-retweet"></span></p:commandLink>
                                                     </ui:fragment>
                                                     <div>
