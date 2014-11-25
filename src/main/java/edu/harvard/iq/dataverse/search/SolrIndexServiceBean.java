@@ -282,23 +282,15 @@ public class SolrIndexServiceBean {
             queryResponse = solrServer.query(solrQuery);
             if (queryResponse != null) {
                 for (SolrDocument solrDoc : queryResponse.getResults()) {
-                    try {
-                        long dvObjectId = (Long) solrDoc.getFieldValue(SearchFields.ENTITY_ID);
-                        dvObjectsToReindexPermissionsFor.add(dvObjectId);
-                    } catch (NullPointerException ex) {
-                        /**
-                         * @todo why are we getting an NPE with
-                         * rebuild-and-test?
-                         */
-                        logger.info("caught NPE calling indexPermissionsOnSelfAndChildren on DvObject id " + definitionPoint.getId() + ":" + definitionPoint.getDisplayName());
+                    Object entityIdObject = solrDoc.getFieldValue(SearchFields.ENTITY_ID);
+                    if (entityIdObject != null) {
+                        dvObjectsToReindexPermissionsFor.add((Long) entityIdObject);
                     }
                 }
             }
 
         } catch (SolrServerException | HttpSolrServer.RemoteSolrException ex) {
-            /**
-             * @todo what should we do here?
-             */
+            return new IndexResponse("Unable to execute indexPermissionsOnSelfAndChildren on " + definitionPoint.getId() + ":" + definitionPoint.getDisplayName() + ". Exception: " + ex.toString());
         }
 
         for (Long dvObjectId : dvObjectsToReindexPermissionsFor) {
