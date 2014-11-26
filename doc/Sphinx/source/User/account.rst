@@ -40,3 +40,9 @@ You will receive a notification when:
 - There has been a new entry in the Guestbook for one of your datasets.
 
 Dataverse will email your unread notifications once a day. Notifications will only be emailed one time even if you haven't read the notification on the Dataverse site.
+
+Reset Your Account Password
+==============================
+If you cannot remember the password for your Dataverse account, click on Log In in the top right corner of any page. Once on that page, click on the Forgot Password? link below where you would enter your username and password. Enter your email address and click Submit Password Request to receive an email with a link to reset your password. 
+
+*Note: if you have forgotten your username, you can do this same process to receive your username in an email.
