@@ -10,12 +10,12 @@ New Dataset
 
 #. Navigate to the dataverse in which you want to add a dataset (or in the "root" dataverse). 
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
-#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
+#. To quickly get started, enter at minimum all the required fields with an asterisk to get a Data Citation with a DOI (e.g., the Dataset Title, Author, 
    Description, etc)
-#. Scroll down to "Files" tab and click on "Select Files to Add" to add all the relevant files to your Dataset. 
-   You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop your files from your desktop,
-   directly into the upload widget. Your file will appear below the "Select Files to Add" button where you can add a
-   description of the file.
+#. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
+   You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
+   directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
+   description for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a `Universal Numerical Fingerprint (UNF) <./source/Data_Citation/unf.rst>`__ will be added to this file.
 #. Click the "Add Dataset" button when you are done. Your unpublished dataset is now created. 
 
 Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset. 
@@ -29,8 +29,10 @@ Go to your dataset page and click on the "Edit Dataset" button. There you will h
 - Files (Upload or Edit Data): to add or edit files in this dataset.
 - Metadata: to add/edit metadata including additional metadata than was not previously available during Dataset Creation.
 - Roles + Permissions
+- Delete Dataset (only available before your Dataset is published)
 - Deaccession Dataset (only when your Dataset is published, see below)
 
+You can also directly select either the Metadata or File tabs found below the dataset summary information to specifically edit either of those parts of your dataset.
 
 Publish Dataset
 ====================
@@ -66,7 +68,7 @@ If you have more than two versions of a dataset, you can select any two versions
 Deaccession Your Dataset [not recommended]
 ===============================================
 
-Deaccessioning a dataset or a version of a dataset is a very serious action that should only occur if there is a legal or valid reason for the dataset to no longer be accessible to the public. In Dataverse 4.0 Beta, you can deaccession a version of a dataset or an entire dataset. To try out deaccessioning, go to a dataset you’ve already publish (or add a new one and publish it), click on Edit Dataset, then Deaccession Dataset. If you have multiple versions of a dataset, you can select here which versions you want to deaccession or choose to deaccession the entire dataset. You must also include a reason as to why this dataset was deaccessioned from a dropdown list of options. There is also a free-text box to add more details as to why this was deaccessioned. If the dataset has moved to a different repository or site you are encouraged to include a URL (preferably persistent) for users to continue to be able to access this dataset in the future.
+Deaccessioning a dataset or a version of a dataset is a very serious action that should only occur if there is a legal or valid reason for the dataset to no longer be accessible to the public. If you absolutely must deaccession, you can deaccession a version of a dataset or an entire dataset. To deaccession, go to a dataset you’ve already published (or add a new one and publish it), click on Edit Dataset, then Deaccession Dataset. If you have multiple versions of a dataset, you can select here which versions you want to deaccession or choose to deaccession the entire dataset. You must also include a reason as to why this dataset was deaccessioned from a dropdown list of options. There is also a free-text box to add more details as to why this was deaccessioned. If the dataset has moved to a different repository or site you are encouraged to include a URL (preferably persistent) for users to continue to be able to access this dataset in the future.
 
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
 
