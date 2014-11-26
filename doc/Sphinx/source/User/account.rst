@@ -1,4 +1,4 @@
-Account Management & Creation
+Account Creation & Management
 +++++++++++++++++++++++++++++
 
 As a registered user, you can:
