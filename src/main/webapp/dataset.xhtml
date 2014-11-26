@@ -519,7 +519,8 @@
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" style="margin-top:1em;" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
                                                  rowIndexVar="rowNum"
-                                                 selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable">
+                                                 selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable"
+                                                 emptyMessage="No files found.">
                                         <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
@@ -1047,7 +1048,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="alert alert-info" style="margin-top:.5em;">
-                            Metadata Tip: After adding the dataset, click the Edit Dataset button to add more metadata..
+                            Metadata Tip: After adding the dataset, click the Edit Dataset button to add more metadata.
                         </div>
                     </ui:fragment>
 
