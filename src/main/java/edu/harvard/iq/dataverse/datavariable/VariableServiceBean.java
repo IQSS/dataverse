@@ -60,7 +60,7 @@ public class VariableServiceBean {
      * better yet, re-work the entire scheme of how variable types are stored and 
      * defined.
      * -- L.A. 4.0
-     */
+     *
     public VariableFormatType findVariableFormatTypeByName(String name) {
         Query query = em.createQuery("SELECT t from VariableFormatType t where t.name = :name");
         query.setParameter("name", name);
@@ -101,9 +101,7 @@ public class VariableServiceBean {
 
     }
 
-    /**
-     * Find type from prefetched, cached list
-     */
+   
     public SummaryStatisticType findSummaryStatisticTypeByName(List<SummaryStatisticType> typeList, String name) {
         SummaryStatisticType type = null;
         for (Iterator<SummaryStatisticType> it = typeList.iterator(); it.hasNext();) {
@@ -115,5 +113,6 @@ public class VariableServiceBean {
         }
         return type;
     }
+    */
     
 }

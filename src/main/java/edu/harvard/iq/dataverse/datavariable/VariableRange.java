@@ -57,19 +57,18 @@ public class VariableRange implements Serializable {
      */
     private String endValue;
 
+    public enum VariableRangeType { MIN, MAX, MIN_EXCLUSIVE, MAX_EXCLUSIVE, POINT};
     /*
      * beginValueType: type of the value that opens the range.
-     * Note that VariableRangeType is itself an entity. [IS THIS NECESSARY?]
      */
     
-    @ManyToOne
+    //@ManyToOne
     private VariableRangeType beginValueType;
     
     /*
      * endValueType: type of the value that closes the range.
-     * Note that VariableRangeType is itself an entity. [IS THIS NECESSARY?]
      */
-    @ManyToOne
+    //@ManyToOne
     private VariableRangeType endValueType;
 
     
@@ -102,14 +101,94 @@ public class VariableRange implements Serializable {
         this.beginValueType = beginValueType;
     }
     
+    public void setBeginValueTypeMin() {
+        this.beginValueType = VariableRangeType.MIN;
+    }
+    
+    public void setBeginValueTypeMax() {
+        this.beginValueType = VariableRangeType.MAX;
+    }
+    
+    public void setBeginValueTypeMinExcl() {
+        this.beginValueType = VariableRangeType.MIN_EXCLUSIVE;
+    }
+    
+    public void setBeginValueTypeMaxExcl() {
+        this.beginValueType = VariableRangeType.MAX_EXCLUSIVE;
+    }
+    
+    public void setBeginValueTypePoint() {
+        this.beginValueType = VariableRangeType.POINT;
+    }
+        
+    public boolean isBeginValueTypeMin() {
+        return this.beginValueType == VariableRangeType.MIN;
+    }
+    
+    public boolean isBeginValueTypeMax() {
+        return this.beginValueType == VariableRangeType.MAX;
+    }
+    
+    public boolean isBeginValueTypeMinExcl() {
+        return this.beginValueType == VariableRangeType.MIN_EXCLUSIVE;
+    }
+    
+    public boolean isBeginValueTypeMaxExcl() {
+        return this.beginValueType == VariableRangeType.MAX_EXCLUSIVE;
+    }
+    
+    public boolean isBeginValueTypePoint() {
+        return this.beginValueType == VariableRangeType.POINT;
+    }
+    
     public VariableRangeType getEndValueType() {
         return this.endValueType;
     }
-    
+      
     public void setEndValueType(VariableRangeType endValueType) {
         this.endValueType = endValueType;
     }
 
+    public void setEndValueTypeMin() {
+        this.endValueType = VariableRangeType.MIN;
+    }
+    
+    public void setEndValueTypeMax() {
+        this.endValueType = VariableRangeType.MAX;
+    }
+    
+    public void setEndValueTypeMinExcl() {
+        this.endValueType = VariableRangeType.MIN_EXCLUSIVE;
+    }
+    
+    public void setEndValueTypeMaxExcl() {
+        this.endValueType = VariableRangeType.MAX_EXCLUSIVE;
+    }
+    
+    public void setEndValueTypePoint() {
+        this.endValueType = VariableRangeType.POINT;
+    }
+    
+    public boolean isEndValueTypeMin() {
+        return this.endValueType == VariableRangeType.MIN;
+    }
+    
+    public boolean isEndValueTypeMax() {
+        return this.endValueType == VariableRangeType.MAX;
+    }
+    
+    public boolean isEndValueTypeMinExcl() {
+        return this.endValueType == VariableRangeType.MIN_EXCLUSIVE;
+    }
+    
+    public boolean isEndValueTypeMaxExcl() {
+        return this.endValueType == VariableRangeType.MAX_EXCLUSIVE;
+    }
+    
+    public boolean isEndValueTypePoint() {
+        return this.endValueType == VariableRangeType.POINT;
+    }
+    
     public Long getId() {
         return id;
     }

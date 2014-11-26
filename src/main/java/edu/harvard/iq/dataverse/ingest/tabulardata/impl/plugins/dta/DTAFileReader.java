@@ -41,8 +41,8 @@ import javax.naming.NamingException;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+//import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
+//import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
@@ -63,8 +63,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
  */
 
 public class DTAFileReader extends TabularDataFileReader{
-    @Inject
-    VariableServiceBean varService;
+    //@Inject
+    //VariableServiceBean varService;
     // static fields, STATA-specific constants, etc. 
     // (should it all be isolated in some other class?) 
 
@@ -490,6 +490,11 @@ public class DTAFileReader extends TabularDataFileReader{
 
         doubleNumberFormatter.setGroupingUsed(false);
         doubleNumberFormatter.setMaximumFractionDigits(340);
+        /* 
+         * it's no longer necessary to use the variable service to look up 
+         * various type entities: 
+         * -- L.A. 4.0 beta 9
+        
         Context ctx = null; 
         try {
             ctx = new InitialContext();
@@ -503,6 +508,7 @@ public class DTAFileReader extends TabularDataFileReader{
                 throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
             }
         }
+        */
     }
 
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
@@ -820,20 +826,14 @@ public class DTAFileReader extends TabularDataFileReader{
                 String typeLabel = variableTypes[i];
                 
                 if (typeLabel != null) {
-                    // TODO: get rid of the service lookups for known format and interval 
-                    // types, etc. -- L.A. 4.0
-                    VariableFormatType formatTypeNumeric = varService.findVariableFormatTypeByName("numeric");
-                    if (formatTypeNumeric == null) {
-                        throw new IOException("No numeric format type in the database. (has the db been populated with reference data?)");
-                    }
-                    dataTable.getDataVariables().get(i).setVariableFormatType(formatTypeNumeric);
+                    dataTable.getDataVariables().get(i).setTypeNumeric();
                     if (typeLabel.equals("Byte") || typeLabel.equals("Integer") || typeLabel.equals("Long")) {
                         // these are treated as discrete:
-                        dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
                         
                     } else if (typeLabel.equals("Float") || typeLabel.equals("Double")) {
                         // these are treated as contiuous:
-                        dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                        dataTable.getDataVariables().get(i).setIntervalContinuous();
                         
                     } else {
                         throw new IOException("Unrecognized type label: "+typeLabel+" for Stata type value byte "+typeList[i]+".");
@@ -851,8 +851,8 @@ public class DTAFileReader extends TabularDataFileReader{
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
-                        dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                        dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                        dataTable.getDataVariables().get(i).setTypeCharacter();
+                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
                         StringLengthTable.put(i, string_var_length);
 
 
@@ -878,8 +878,8 @@ public class DTAFileReader extends TabularDataFileReader{
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
-                        dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                        dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                        dataTable.getDataVariables().get(i).setTypeCharacter();
+                        dataTable.getDataVariables().get(i).setIntervalDiscrete();
                         StringLengthTable.put(i, string_var_length);
 
 
@@ -1020,11 +1020,12 @@ public class DTAFileReader extends TabularDataFileReader{
                 // STATA format we'll keep in this array for now: 
                 dateVariableFormats[i] = variableFormat; 
                 //dataTable.getDataVariables().get(i).setFormatSchemaName(variableFormat);
+                // TODO: make sure we do save the real format (as .setFormat() somewhere else!)
                 dataTable.getDataVariables().get(i).setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
                 if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "th var: category=" +
                         DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
-                dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                dataTable.getDataVariables().get(i).setTypeCharacter();
+                dataTable.getDataVariables().get(i).setIntervalDiscrete();
             } 
 
             
@@ -1811,7 +1812,7 @@ public class DTAFileReader extends TabularDataFileReader{
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
                                 //dateFormat[columnCounter][i] = ddt.format;
-                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
+                                dataTable.getDataVariables().get(columnCounter).setFormat(ddt.format);
 
                             } else {
                                 dataRow[columnCounter] = short_datum;
@@ -1849,7 +1850,7 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
+                                dataTable.getDataVariables().get(columnCounter).setFormat(ddt.format);
 
                             } else {
                                 dataRow[columnCounter] = int_datum;
@@ -1887,14 +1888,14 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
+                                dataTable.getDataVariables().get(columnCounter).setFormat(ddt.format);
                             } else {
                                 dataRow[columnCounter] = float_datum;
                                 // This may be temporary - but for now (as in, while I'm testing 
                                 // 4.0 ingest against 3.* ingest, I need to be able to tell if a 
                                 // floating point value was a single, or double float in the 
                                 // original STATA file: -- L.A. Jul. 2014
-                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName("float");
+                                dataTable.getDataVariables().get(columnCounter).setFormat("float");
                             }
 
                         }
@@ -1924,7 +1925,7 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
+                                dataTable.getDataVariables().get(columnCounter).setFormat(ddt.format);
                             } else {
                                 dataRow[columnCounter] = doubleNumberFormatter.format(double_datum);
                             }

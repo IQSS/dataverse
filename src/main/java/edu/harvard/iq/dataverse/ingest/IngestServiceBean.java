@@ -916,9 +916,9 @@ public class IngestServiceBean {
         TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {
+            if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 logger.fine("subsetting continuous vector");
-                if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormatSchemaName())) {
+                if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
                     Float[] variableVector = subsetGenerator.subsetFloatVector(dataFile, i);
                     logger.fine("Calculating summary statistics on a Float vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
@@ -945,8 +945,8 @@ public class IngestServiceBean {
         TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if ("discrete".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName()) 
-                    && "numeric".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+            if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
+                    && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
                 //Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
                 Long[] variableVector = subsetGenerator.subsetLongVector(dataFile, i);
@@ -980,7 +980,7 @@ public class IngestServiceBean {
         TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if ("character".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+            if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
                 logger.fine("subsetting character vector");
                 String[] variableVector = subsetGenerator.subsetStringVector(dataFile, i);
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
@@ -1758,7 +1758,7 @@ public class IngestServiceBean {
         Set<Integer> contVarFields = new LinkedHashSet<Integer>();
 
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {
+            if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
                 contVarFields.add(i);
             }
         }
@@ -1809,8 +1809,8 @@ public class IngestServiceBean {
         
         for (int j = 0; j < variableService.summaryStatisticTypes.length; j++) {
             SummaryStatistic ss = new SummaryStatistic();
-            ss.setType(variableService.findSummaryStatisticTypeByName(variableService.summaryStatisticTypes[j]));
-            if (!"mode".equals(variableService.summaryStatisticTypes[j])) {
+            ss.setTypeByLabel(variableService.summaryStatisticTypes[j]);
+            if (!ss.isTypeMode()) {
                 ss.setValue((new Double(sumStats[j])).toString());
             } else {
                 ss.setValue(".");
@@ -1858,7 +1858,7 @@ public class IngestServiceBean {
         
         if ("time".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {
             dateFormats = new String[dataVector.length];
-            String savedDateTimeFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormatSchemaName();
+            String savedDateTimeFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormat();
             String timeFormat = null;
             if (savedDateTimeFormat != null && !savedDateTimeFormat.equals("")) {
                 timeFormat = savedDateTimeFormat;
@@ -1917,7 +1917,7 @@ public class IngestServiceBean {
             }
         } else if ("date".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {
             dateFormats = new String[dataVector.length];
-            String savedDateFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormatSchemaName();
+            String savedDateFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormat();
             for (int i = 0; i < dataVector.length; i++) {
                 if (dataVector[i] != null) {
                     if (savedDateFormat != null && !savedDateFormat.equals("")) {
@@ -2028,10 +2028,10 @@ public class IngestServiceBean {
                     for (int i = 0; i < dataTable.getVarQuantity(); i++) {
                         String vartype = "";
                         
-                        if ("continuous".equals(dataTable.getDataVariables().get(i).getVariableIntervalType().getName())) {
+                        if (dataTable.getDataVariables().get(i).isIntervalContinuous()) {
                             vartype = "numeric-continuous";
                         } else {
-                            if ("numeric".equals(dataTable.getDataVariables().get(i).getVariableFormatType().getName())) {
+                            if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
                                 vartype = "numeric-discrete";
                             } else {
                                 vartype = "character";

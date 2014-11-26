@@ -228,10 +228,11 @@ public class DDIExportServiceBean {
             writeAttribute(xmlw, "nature", "ordinal");
         }
         
-        if (dv.getVariableIntervalType() != null) {
-            String interval = dv.getVariableIntervalType().getName();
-            interval = DB_VAR_INTERVAL_TYPE_CONTINUOUS.equals(interval) ? VAR_INTERVAL_CONTIN : interval;
-            writeAttribute(xmlw, "intrvl", interval);
+        if (dv.getInterval() != null) {
+            String interval = dv.getIntervalLabel();
+            if (interval != null) {
+                writeAttribute(xmlw, "intrvl", interval);
+            }
         }
 
         // location
@@ -264,7 +265,8 @@ public class DDIExportServiceBean {
         if (checkField("invalrng", excludedFieldSet, includedFieldSet)) {
             boolean invalrngAdded = false;
             for (VariableRange range : dv.getInvalidRanges()) {
-                if (range.getBeginValueType() != null && range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_POINT)) {
+                //if (range.getBeginValueType() != null && range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_POINT)) {
+                if (range.getBeginValueType() != null && range.isBeginValueTypePoint()) {
                     if (range.getBeginValue() != null) {
                         invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
                         xmlw.writeEmptyElement("item");
@@ -274,16 +276,16 @@ public class DDIExportServiceBean {
                     invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
                     xmlw.writeEmptyElement("range");
                     if (range.getBeginValueType() != null && range.getBeginValue() != null) {
-                        if (range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_MIN)) {
+                        if (range.isBeginValueTypeMin()) {
                             writeAttribute(xmlw, "min", range.getBeginValue());
-                        } else if (range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_MIN_EX)) {
+                        } else if (range.isBeginValueTypeMinExcl()) {
                             writeAttribute(xmlw, "minExclusive", range.getBeginValue());
                         }
                     }
                     if (range.getEndValueType() != null && range.getEndValue() != null) {
-                        if (range.getEndValueType().getName().equals(DB_VAR_RANGE_TYPE_MAX)) {
+                        if (range.isEndValueTypeMax()) {
                             writeAttribute(xmlw, "max", range.getEndValue());
-                        } else if (range.getEndValueType().getName().equals(DB_VAR_RANGE_TYPE_MAX_EX)) {
+                        } else if (range.isEndValueTypeMaxExcl()) {
                             writeAttribute(xmlw, "maxExclusive", range.getEndValue());
                         }
                     }
@@ -307,7 +309,11 @@ public class DDIExportServiceBean {
         if (checkField("sumStat", excludedFieldSet, includedFieldSet)) {
             for (SummaryStatistic sumStat : dv.getSummaryStatistics()) {
                 xmlw.writeStartElement("sumStat");
-                writeAttribute(xmlw, "type", sumStat.getType().getName());
+                if (sumStat.getTypeLabel() != null) {
+                    writeAttribute(xmlw, "type", sumStat.getTypeLabel());
+                } else {
+                    writeAttribute(xmlw, "type", "unknown");
+                }
                 xmlw.writeCharacters(sumStat.getValue());
                 xmlw.writeEndElement(); //sumStat
             }
@@ -354,9 +360,15 @@ public class DDIExportServiceBean {
         // varFormat
         if (checkField("varFormat", excludedFieldSet, includedFieldSet)) {
             xmlw.writeEmptyElement("varFormat");
-            writeAttribute(xmlw, "type", dv.getVariableFormatType().getName());
-            writeAttribute(xmlw, "formatname", dv.getFormatSchemaName());
-            writeAttribute(xmlw, "schema", dv.getFormatSchema());
+            if (dv.isTypeNumeric()) {
+                writeAttribute(xmlw, "type", "numeric");
+            } else if (dv.isTypeCharacter()) {
+                writeAttribute(xmlw, "type", "character");
+            } else {
+                throw new XMLStreamException("Illegal Variable Format Type!");
+            }
+            writeAttribute(xmlw, "formatname", dv.getFormat());
+            //experiment writeAttribute(xmlw, "schema", dv.getFormatSchema());
             writeAttribute(xmlw, "category", dv.getFormatCategory());
         }
 

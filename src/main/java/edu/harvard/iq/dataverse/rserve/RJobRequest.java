@@ -151,32 +151,32 @@ public class RJobRequest {
                 } else if (dv.getFormatCategory().equals("Boolean")) {
                     rw.add(3); 
                 } else {
-                    if (dv.getVariableFormatType().getId() == 1L) {
-                        if (dv.getVariableIntervalType().getId() == null) {
+                    if (dv.isTypeNumeric()) {
+                        if (dv.getInterval() == null) {
                             rw.add(2);
                         } else {
-                            if (dv.getVariableIntervalType().getId() == 2L) {
+                            if (dv.isIntervalContinuous()) {
                                 rw.add(2);
                             } else {
                                 rw.add(1);
                             }
                         }
-                    } else if (dv.getVariableFormatType().getId() == 2L) {
+                    } else if (dv.isTypeCharacter()) {
                         rw.add(0);
                     }
                 }
             } else {
-                if (dv.getVariableFormatType().getId() == 1L) {
-                    if (dv.getVariableIntervalType().getId() == null) {
+                if (dv.isTypeNumeric()) {
+                    if (dv.getInterval() == null) {
                         rw.add(2);
                     } else {
-                        if (dv.getVariableIntervalType().getId() == 2L) {
+                        if (dv.isIntervalContinuous()) {
                             rw.add(2);
                         } else {
                             rw.add(1);
                         }
                     }
-                } else if (dv.getVariableFormatType().getId() == 2L) {
+                } else if (dv.isTypeCharacter()) {
                     rw.add(0);
                 }
             }
@@ -205,32 +205,32 @@ public class RJobRequest {
                     dv.getFormatCategory().toLowerCase().equals("time")){
                     rw.add("0");
                 } else {
-                    if (dv.getVariableFormatType().getId() == 1L) {
-                        if (dv.getVariableIntervalType().getId() == null) {
+                    if (dv.isTypeNumeric()) {
+                        if (dv.getInterval() == null) {
                             rw.add("2");
                         } else {
-                            if (dv.getVariableIntervalType().getId() == 2L) {
+                            if (dv.isIntervalContinuous()) {
                                 rw.add("2");
                             } else {
                                 rw.add("1");
                             }
                         }
-                    } else if (dv.getVariableFormatType().getId() == 2L) {
+                    } else if (dv.isTypeCharacter()) {
                         rw.add("0");
                     }
                 }
             } else {
-                if (dv.getVariableFormatType().getId() == 1L) {
-                    if (dv.getVariableIntervalType().getId() == null) {
+                if (dv.isTypeNumeric()) {
+                    if (dv.getInterval() == null) {
                         rw.add("2");
                     } else {
-                        if (dv.getVariableIntervalType().getId() == 2L) {
+                        if (dv.isIntervalContinuous()) {
                             rw.add("2");
                         } else {
                             rw.add("1");
                         }
                     }
-                } else if (dv.getVariableFormatType().getId() == 2L) {
+                } else if (dv.isTypeCharacter()) {
                     rw.add("0");
                 }
             }
@@ -251,24 +251,25 @@ public class RJobRequest {
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
 
-            dbgLog.fine(String.format("DvnRJobRequest: column[%d] schema = %s", i, dv.getFormatSchema()));
+            //dbgLog.fine(String.format("DvnRJobRequest: column[%d] schema = %s", i, dv.getFormatSchema()));
             dbgLog.fine(String.format("DvnRJobRequest: column[%d] category = %s", i, dv.getFormatCategory()));
             
-            dbgLog.fine(i+"-th \tformatschema="+dv.getFormatSchema());
+            //experiment dbgLog.fine(i+"-th \tformatschema="+dv.getFormatSchema());
             dbgLog.fine(i+"-th \tformatcategory="+dv.getFormatCategory());
             
             if (!StringUtils.isEmpty(dv.getFormatCategory())) {
-                if (dv.getFormatSchema().toLowerCase().equals("spss")){
+                //if (dv.getFormatSchema().toLowerCase().equals("spss")){
+                if (dv.getDataTable().getOriginalFileFormat().toLowerCase().startsWith("application/x-spss")) {
                     if (dv.getFormatCategory().toLowerCase().equals("date")){
                         // add this var to this map value D
                         variableFormats.put(getSafeVariableName(dv.getName()), "D");
                     } else if (dv.getFormatCategory().toLowerCase().equals("time")){
                         // add this var to this map
-                        if ( dv.getFormatSchemaName().toLowerCase().startsWith("dtime")){
+                        if ( dv.getFormatCategory().toLowerCase().startsWith("dtime")){
                             // value JT
                             variableFormats.put(getSafeVariableName(dv.getName()), "JT");
                             
-                        } else if ( dv.getFormatSchemaName().toLowerCase().startsWith("datetime")){
+                        } else if ( dv.getFormatCategory().toLowerCase().startsWith("datetime")){
                             // value DT
                             variableFormats.put(getSafeVariableName(dv.getName()), "DT");
                         } else {
@@ -277,22 +278,22 @@ public class RJobRequest {
                         }
                     }
                 }
-                
-                else if (dv.getFormatSchema().toLowerCase().equals("rdata")) {
+                //else if (dv.getFormatSchema().toLowerCase().equals("rdata")) {
+                else if (dv.getDataTable().getOriginalFileFormat().toLowerCase().startsWith("application/x-rlang-transport")) { // TODO: double-check that this is what we save for the original format!!
                   if (dv.getFormatCategory().toLowerCase().equals("date")) {
                     variableFormats.put(getSafeVariableName(dv.getName()), "D");
                   }
                   else if (dv.getFormatCategory().toLowerCase().equals("time")) {
                     // add this var to this map
-                    if ( dv.getFormatSchemaName().toLowerCase().startsWith("dtime")){
+                    if ( dv.getFormatCategory().toLowerCase().startsWith("dtime")){
                       // value JT
                       variableFormats.put(getSafeVariableName(dv.getName()), "JT");
                     }
-                    else if (dv.getFormatSchemaName().toLowerCase().startsWith("datetime")) {
+                    else if (dv.getFormatCategory().toLowerCase().startsWith("datetime")) {
                       // Set as date-time-timezone, DT
                       variableFormats.put(getSafeVariableName(dv.getName()), "DT");
                     }
-                    else if (dv.getFormatSchemaName().toLowerCase().startsWith("time")) {
+                    else if (dv.getFormatCategory().toLowerCase().startsWith("time")) {
                       // Set as date-time-timezone, DT
                       variableFormats.put(getSafeVariableName(dv.getName()), "DT");
                     }
@@ -302,7 +303,7 @@ public class RJobRequest {
                     }
                   }
                 }
-                else if (dv.getFormatSchema().toLowerCase().equals("other")) {
+                else /* if (dv.getFormatSchema().toLowerCase().equals("other")) ?? */{
                   if (dv.getFormatCategory().toLowerCase().equals("date")) {
                     // value = D
                     variableFormats.put(getSafeVariableName(dv.getName()), "D");

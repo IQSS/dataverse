@@ -116,6 +116,6 @@ public class VariableRangeItem implements Serializable {
     
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.VariableRangeType[ " + this.getValue() + " ]";
+        return "edu.harvard.iq.dataverse.VariableRangeItem[ " + this.getValue() + " ]";
     }
 }

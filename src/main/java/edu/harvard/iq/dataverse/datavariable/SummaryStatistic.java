@@ -49,10 +49,12 @@ public class SummaryStatistic implements Serializable {
     
     /*
      * type of this Summary Statistic value (for ex., "median", "mean", etc.)
-     * Note that SummaryStatisticType is itself an entity. 
      */
-    @ManyToOne
-    @JoinColumn(nullable=false)
+    
+    public enum SummaryStatisticType {MEAN, MEDN, MODE, MIN, MAX, STDEV, VALD, INVD}; 
+    
+    //@ManyToOne
+    //@JoinColumn(nullable=false)
     private SummaryStatisticType type;
 
     
@@ -82,6 +84,130 @@ public class SummaryStatistic implements Serializable {
     public void setType(SummaryStatisticType type) {
         this.type = type;
     }
+    
+    // This method returns the summary statistic type as a character
+    // label used in the DDI.
+    public String getTypeLabel() {
+        if (isTypeMean()) {
+            return "mean";
+        }
+        if (isTypeMedian()) {
+            return "medn";
+        }
+        if (isTypeMode()) {
+            return "mode";
+        }
+        if (isTypeMin()) {
+            return "min";
+        }
+        if (isTypeMax()) {
+            return "max";
+        }
+        if (isTypeStdDev()) {
+            return "stdev";
+        }
+        if (isTypeValid()) {
+            return "vald";
+        }
+        if (isTypeInvalid()) {
+            return "invd";
+        }
+        
+        return null; 
+    }
+    
+    public void setTypeByLabel(String label) {
+        if ("mean".equals(label)) {
+            setTypeMean();
+        }
+        else if ("medn".equals(label)) {
+            setTypeMedian();
+        }
+        else if ("mode".equals(label)) {
+            setTypeMode();
+        }
+        else if ("min".equals(label)) {
+            setTypeMin();
+        }
+        else if ("max".equals(label)) {
+            setTypeMax();
+        }
+        else if ("stdev".equals(label)) {
+            setTypeStdDev();
+        }
+        else if ("vald".equals(label)) {
+            setTypeValid();
+        }
+        else if ("invd".equals(label)) {
+            setTypeInvalid();
+        }
+    }
+    
+    public void setTypeMean() {
+        this.type = SummaryStatisticType.MEAN;
+    }
+    
+    public void setTypeMedian() {
+        this.type = SummaryStatisticType.MEDN;
+    }
+    
+    public void setTypeMode() {
+        this.type = SummaryStatisticType.MODE;
+    }
+    
+    public void setTypeMin() {
+        this.type = SummaryStatisticType.MIN;
+    }
+    
+    public void setTypeMax() {
+        this.type = SummaryStatisticType.MAX;
+    }
+    
+    public void setTypeStdDev() {
+        this.type = SummaryStatisticType.STDEV;
+    }
+    
+    public void setTypeValid() {
+        this.type = SummaryStatisticType.VALD;
+    }
+    
+    public void setTypeInvalid() {
+        this.type = SummaryStatisticType.INVD;
+    }
+    
+    
+    public boolean isTypeMean() {
+        return this.type == SummaryStatisticType.MEAN;
+    }
+    
+    public boolean isTypeMedian() {
+        return this.type == SummaryStatisticType.MEDN;
+    }
+    
+    public boolean isTypeMode() {
+        return this.type == SummaryStatisticType.MODE;
+    }
+    
+    public boolean isTypeMin() {
+        return this.type == SummaryStatisticType.MIN;
+    }
+    
+    public boolean isTypeMax() {
+        return this.type == SummaryStatisticType.MAX;
+    }
+    
+    public boolean isTypeStdDev() {
+        return this.type == SummaryStatisticType.STDEV;
+    }
+    
+    public boolean isTypeValid() {
+        return this.type == SummaryStatisticType.VALD;
+    }
+    
+    public boolean isTypeInvalid() {
+        return this.type == SummaryStatisticType.INVD;
+    }
+    
 
     public String getValue() {
         return this.value;

@@ -39,9 +39,7 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
 import edu.harvard.iq.dataverse.datavariable.VariableRange;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
@@ -64,9 +62,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.InvalidData;
  */
 
 public class SAVFileReader  extends TabularDataFileReader{
-    @Inject
-    VariableServiceBean varService;
-        
+    
     // static fields ---------------------------------------------------------//
     private static String[] FORMAT_NAMES = {"sav", "SAV"};
     private static String[] EXTENSIONS = {"sav"};
@@ -310,20 +306,6 @@ public class SAVFileReader  extends TabularDataFileReader{
 
     private void init() throws IOException {
         
-        Context ctx = null; 
-        try {
-            ctx = new InitialContext();
-            varService = (VariableServiceBean) ctx.lookup("java:global/dataverse-4.0/VariableServiceBean");
-        } catch (NamingException nex) {
-            try {
-                ctx = new InitialContext();
-                varService = (VariableServiceBean) ctx.lookup("java:global/dataverse/VariableServiceBean");
-            } catch (NamingException nex2) {
-                if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("Could not look up initial context, or the variable service in JNDI!");
-                throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
-            }
-        }
-        
         sdf_ymd.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_ymdhms.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_dhms.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -473,7 +455,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                                 dbgLog.fine("setting format category to "+formatCategory);
                                 dataTable.getDataVariables().get(indx).setFormatCategory(formatCategory);
                                 dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
-                                dataTable.getDataVariables().get(indx).setFormatSchemaName(dateFormatList[indx]);
+                                dataTable.getDataVariables().get(indx).setFormat(dateFormatList[indx]);
                             }
                         }
                     } else if (variableFormatType.equals("other")) {
@@ -502,18 +484,18 @@ public class SAVFileReader  extends TabularDataFileReader{
             
             if (simpleType > 0) {
                 // String: 
-                dataTable.getDataVariables().get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                dataTable.getDataVariables().get(indx).setTypeCharacter();
+                dataTable.getDataVariables().get(indx).setIntervalDiscrete();
             } else {
                 // Numeric: 
-                dataTable.getDataVariables().get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
+                dataTable.getDataVariables().get(indx).setTypeNumeric();
                 // discrete or continuous?
                 // "decimal variables" become dataverse data variables of interval type "continuous":
         
                 if (decimalVariableSet.contains(indx)) {
-                    dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                    dataTable.getDataVariables().get(indx).setIntervalContinuous();
                 } else {
-                    dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    dataTable.getDataVariables().get(indx).setIntervalDiscrete();
                 }
                 
             }
