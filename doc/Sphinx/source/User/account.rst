@@ -45,4 +45,4 @@ Reset Your Account Password
 ==============================
 If you cannot remember the password for your Dataverse account, click on Log In in the top right corner of any page. Once on that page, click on the Forgot Password? link below where you would enter your username and password. Enter your email address and click Submit Password Request to receive an email with a link to reset your password. 
 
-*Note: if you have forgotten your username, you can do this same process to receive your username in an email.
+\*Note: if you have forgotten your username, you can do this same process to receive your username in an email.
