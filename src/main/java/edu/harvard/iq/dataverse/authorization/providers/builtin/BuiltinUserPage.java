@@ -253,7 +253,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         boolean passwordIsComplexEnough = validator.validatePassword(password);
         if (!passwordIsComplexEnough) {
             ((UIInput) toValidate).setValid(false);
-            String messageDetail = "Password is not complex enough. The password must have at least one letter and one number be at least " + minPasswordLength + " characters in length.";
+            String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
             context.addMessage(toValidate.getClientId(context), message);
         }
