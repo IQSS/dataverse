@@ -54,6 +54,22 @@ is made public it can no longer be unpublished.
 
 .. |image1| image:: ./img/Dataverse-Diagram.png
 
+Dataset Templates
+======================
+Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in. In Dataverse 4.0, templates are created at the dataverse level, can be deleted (so it does not show for future datasets), set to default (not required), and can be copied so you do not have to start over when creating a new template with similiar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
+
+How do you create a template? 
+
+#. Navigate to your dataverse, click on the Edit Dataverse button and select Dataset Templates. 
+#. Once you have clicked on Dataset Templates, you will be brought to the Dataset Templates page. On this page, you can 1) decide to use the dataset templates from your parent dataverse 2) create a new dataset template or 3) do both.
+#. Click on the Create Dataset Template to get started. You will see that the template is the same as the create dataset page with an additional field at the top of the page to add a name for the template.
+#. After adding information into the metadata fields you have information for and clicking save, you will be brought back to the Manage Dataset Templates page and should see your template listed there now with several options. 
+#. A dataverse does not have to have a default template and users can select which template they would like to use while on the Create Dataset page. 
+#. You can also click on the View button on the Manage Dataset Templates page to see what metadata fields have information filled in.
+
+\* Please note that the ability to choose which metadata fields are hidden, required, or optional is done on the General Information page for the dataverse.
+
+
 
 
 
