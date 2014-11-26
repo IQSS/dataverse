@@ -18,7 +18,7 @@ FIXME: Shibboleth needs to be documented.
 
 Edit Your Account
 ==================
-#. To edit your account, click on your account name in the header on the right hand side and click on either Notifications or Data Related to Me.
+#. To edit your account after you have logged in, click on your account name in the header on the right hand side and click on either Notifications or Data Related to Me.
 #. On the top right of your account page, click on the "Edit Account" button and from there you can select to edit either your Account Information or your Account Password. 
 #. Select "Save Changes" when you are done.
 
