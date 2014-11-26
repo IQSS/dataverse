@@ -37,10 +37,7 @@ You can also directly select either the Metadata or File tabs found below the da
 Publish Dataset
 ====================
 
-When you publish a dataset, you make it available to the public so that other users can
-browse or search for it. Once your dataset is ready to go public, go to your dataset page and click on the 
-"Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually 
-Publish since once a dataset is made public it can no longer be unpublished. 
+When you publish a dataset (available to an admin, curator, or any custom role which has this level of permission assigned), you make it available to the public so that other users can browse or search for it. Once your dataset is ready to go public, go to your dataset page and click on the "Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish since once a dataset is made public it can no longer be unpublished. 
 
 Whenever you edit your dataset, you are able to publish a new version of the dataset. The publish dataset button will reappear whenever you edit the metadata of the dataset or add a file.
 
