@@ -689,6 +689,105 @@
                                         <ui:include src="metadataFragment.xhtml"/>
                                     </div>
                                 </p:tab>
+                                <p:tab id="licensingTermsTab" title="Licensing + Terms" rendered="#{false}">
+                                    <div class="" style="text-align:right; margin-bottom:.5em;">
+                                        <button type="button" class="btn btn-default" value="Edit Licensing + Terms Requirements">
+                                            <span class="glyphicon glyphicon-briefcase"></span> Edit Licensing + Terms Requirements
+                                        </button>
+                                    </div>
+                                    <p class="help-block">These are all the Licensing + Terms for your dataset.</p>
+                                    <div class="panel-group">
+                                        <div class="panel panel-default" style="margin-bottom:1em;">
+                                            <div data-toggle="collapse" data-target="#collapseLiscensingTOU" class="panel-heading text-info">
+                                                Licensing + Terms of Use <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                            </div>
+                                            <div id="collapseLiscensingTOU" class="collapse in">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="metadata_Licensing" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Licensing
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Terms of Use
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="panel panel-default" style="margin-bottom:1em;">
+                                            <div data-toggle="collapse" data-target="#collapseRestrictedFilesTOA" class="panel-heading text-info">
+                                                Restricted Files + Terms of Access <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                            </div>
+                                            <div id="collapseRestrictedFilesTOA" class="collapse in">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Restricted Files
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Terms of Access
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Request Access
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="panel panel-default" style="margin-bottom:1em;">
+                                            <div data-toggle="collapse" data-target="#collapseGuestbook" class="panel-heading text-info">
+                                                Guestbook <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                            </div>
+                                            <div id="collapseGuestbook" class="collapse in">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Guestbook
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:tab>
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                     <p:commandButton value="Show Differences" style="margin-bottom:.5em;"
                                                      onclick="testCheckBoxes();"
