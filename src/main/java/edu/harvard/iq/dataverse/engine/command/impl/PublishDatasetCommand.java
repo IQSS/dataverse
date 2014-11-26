@@ -36,7 +36,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
     Dataset theDataset;
 
     public PublishDatasetCommand(Dataset datasetIn, User user, boolean minor) {
-        super(user, datasetIn.getOwner());
+        super(user, datasetIn);
         minorRelease = minor;
         theDataset = datasetIn;
     }

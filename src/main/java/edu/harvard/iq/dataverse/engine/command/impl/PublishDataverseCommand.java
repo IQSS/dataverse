@@ -19,7 +19,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
     private final User dataverseUser;
 
     public PublishDataverseCommand(User dataverseUser, Dataverse dataverse) {
-        super(dataverseUser, dataverse.getOwner());
+        super(dataverseUser, dataverse);
         this.dataverse = dataverse;
         this.dataverseUser = dataverseUser;
     }

@@ -28,7 +28,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
    final boolean deleteDOIIdentifier;
     
     public DeaccessionDatasetVersionCommand(User aUser, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
-        super(aUser, deaccessionVersion.getDataset().getOwner());
+        super(aUser, deaccessionVersion.getDataset());
         theVersion = deaccessionVersion;
         deleteDOIIdentifier = deleteDOIIdentifierIn;
     }

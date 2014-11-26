@@ -22,9 +22,7 @@ public enum Permission implements java.io.Serializable {
     
     // Create
     AddDataverse("Add a dataverse within another dataverse", Dataverse.class),
-    AddDataset("Add a dataset to a dataverse", Dataverse.class),
-    PublishDataverse("Publish a dataverse within another dataverse", Dataverse.class),
-    PublishDataset("Publish a dataset to a dataverse", Dataverse.class),      
+    AddDataset("Add a dataset to a dataverse", Dataverse.class),     
     // Read
     ViewUnpublishedDataverse("View an unpublished dataverse", Dataverse.class),
     ViewUnpublishedDataset("View an unpublished dataset and its files", Dataset.class),    
@@ -35,6 +33,8 @@ public enum Permission implements java.io.Serializable {
     EditDataset("Edit a dataset's metadata", Dataset.class),
     ManageDataversePermissions("Manage permissions for a dataverse", Dataverse.class),
     ManageDatasetPermissions("Manage permissions for a dataset", Dataset.class), 
+    PublishDataverse("Publish a dataverse", Dataverse.class),
+    PublishDataset("Publish a dataset", Dataset.class),     
     // Delete
     DeleteDataverse("Delete an unpublished dataverse", Dataverse.class),    
     DeleteDatasetDraft("Delete a dataset draft", Dataset.class);
