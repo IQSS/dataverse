@@ -24,9 +24,11 @@
                 <h:form id="rolesPermissionsForm">
                     <div>
                         <!-- Permissions Configure -->
-                        <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}"> 
-                            <ui:include src="permissions-configure.xhtml"/>
-                        </c:if>
+                        <p:fragment id ="configureSettings">
+                            <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}"> 
+                                <ui:include src="permissions-configure.xhtml"/>
+                            </c:if>
+                        </p:fragment>
                         <!-- Role Assignments Panel -->
                         <div class="panel-group">
                             <div class="panel panel-default" style="margin-bottom:1em;">

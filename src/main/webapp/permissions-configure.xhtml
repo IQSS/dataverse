@@ -29,34 +29,32 @@
             </a>
         </label>
         <div class="col-sm-9">
-            <p:fragment id="configureSettings">
-                <div class="radio">
+            <div class="radio">
+                <label>
+                    <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
+                    Anyone adding to this dataverse needs to be given access
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
+                    Anyone with a Dataverse account can add:
+                </label>
+            </div>
+            <div id="openAccessOptions" style="margin-left:2em;">
+                <div class="checkbox">
                     <label>
-                        <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
-                        Anyone adding to this dataverse needs to be given access
+                        <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataverse}" />
+                        Dataverses
                     </label>
                 </div>
-                <div class="radio">
+                <div class="checkbox">
                     <label>
-                        <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
-                        Anyone with a Dataverse account can add:
+                        <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataset}" />
+                        Datasets
                     </label>
                 </div>
-                <div id="openAccessOptions" style="margin-left:2em;">
-                    <div class="checkbox">
-                        <label>
-                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataverse}" />
-                            Dataverses
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataset}" />
-                            Datasets
-                        </label>
-                    </div>
-                </div>
-            </p:fragment>
+            </div>
         </div>
     </div>
 
