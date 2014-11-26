@@ -19,7 +19,7 @@ Here are the currently proposed metadata blocks and fields for 4.0:
   : These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) 
   `VOResource Schema format <http://www.ivoa.net/documents/latest/RM.html>`__ and is based on 
   `Virtual Observatory (VO) Discovery and Provenance Metadata <http://www.wf4ever-project.org/wiki/download/attachments/1179927/DPmetadata.pdf?version=1&modificationDate=1337186963000>`__
-- `Life Sciences Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=2>`__: based on `ISA-Tab <http://isatab.sourceforge.net/format.html>`__, along with subsets of the `OBI Ontology <http://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms<http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__)
+- `Life Sciences Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=2>`__: based on `ISA-Tab <http://isatab.sourceforge.net/format.html>`__, along with subsets of the `OBI Ontology <http://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__)
 
 
 
