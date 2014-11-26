@@ -58,8 +58,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         if (created.getCreateDate() == null) {
             created.setCreateDate(new Timestamp(new Date().getTime()));
         }
-        // By default, themeRoot should be true
-        created.setThemeRoot(true);
+        
         if (created.getCreator() == null) {
             // FIXME Is the "creator" concept being carried over from 3.x?
 //			created.setCreator(getUser());
@@ -72,6 +71,11 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         if (created.getDefaultContributorRole() == null) {
             created.setDefaultContributorRole(ctxt.roles().findBuiltinRoleByAlias(DataverseRole.EDITOR));
         }
+        
+        // By default, themeRoot should be true
+        created.setThemeRoot(true);
+        // @todo for now we are saying all dataverses are permission root
+        created.setPermissionRoot(true);
 
         // Save the dataverse
         Dataverse managedDv = ctxt.dataverses().save(created);
