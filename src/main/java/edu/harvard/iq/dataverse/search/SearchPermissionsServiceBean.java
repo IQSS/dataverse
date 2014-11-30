@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.search;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -41,6 +43,8 @@ public class SearchPermissionsServiceBean {
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
     @EJB
+    DataverseRoleServiceBean rolesSvc;
+    @EJB
     AuthenticationServiceBean authSvc;
     @EJB
     SettingsServiceBean settingsService;
@@ -55,8 +59,9 @@ public class SearchPermissionsServiceBean {
         if (hasBeenPublished(dataverse)) {
             permStrings.add(IndexServiceBean.getPublicGroupString());
         }
-        permStrings.addAll(findDirectAssignments(dataverse));
-        permStrings.addAll(findImplicitAssignments(dataverse));
+//        permStrings.addAll(findDirectAssignments(dataverse));
+//        permStrings.addAll(findImplicitAssignments(dataverse));
+        permStrings.addAll(findDvObjectPerms(dataverse));
         return permStrings;
     }
 
@@ -65,11 +70,34 @@ public class SearchPermissionsServiceBean {
         if (version.isReleased()) {
             perms.add(IndexServiceBean.getPublicGroupString());
         }
-        perms.addAll(findDirectAssignments(version.getDataset()));
-        perms.addAll(findImplicitAssignments(version.getDataset()));
+//        perms.addAll(findDirectAssignments(version.getDataset()));
+//        perms.addAll(findImplicitAssignments(version.getDataset()));
+        perms.addAll(findDvObjectPerms(version.getDataset()));
         return perms;
     }
 
+    public List<String> findDvObjectPerms(DvObject dvObject) {
+        List<String> permStrings = new ArrayList<>();
+        Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
+        for (RoleAssignment roleAssignment : roleAssignments) {
+            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
+                RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(roleAssignment.getAssigneeIdentifier());
+                AuthenticatedUser au = findAuthUser(userOrGroup);
+                if (au != null) {
+                    permStrings.add(IndexServiceBean.getGroupPerUserPrefix() + au.getId());
+                } else {
+                    RoleAssignee group = findGroup(userOrGroup);
+                    if (group != null) {
+                        permStrings.add(IndexServiceBean.getGroupPrefix() + "FIXME groupId");
+                    }
+                }
+
+            }
+        }
+        return permStrings;
+    }
+
+    @Deprecated
     private List<String> findDirectAssignments(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         List<RoleAssignee> roleAssignees = findWhoHasDirectAssignments(dvObject);
@@ -87,13 +115,14 @@ public class SearchPermissionsServiceBean {
         return permStrings;
     }
 
+    @Deprecated
     private List<RoleAssignee> findWhoHasDirectAssignments(DvObject dvObject) {
         List<RoleAssignee> emptyList = new ArrayList<>();
         List<RoleAssignee> peopleWhoCanSearch = emptyList;
 
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dvObject);
         for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(getPermissionForDirectAssignment(dvObject))) {
+            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
                 RoleAssignee userOrGroup = roleAssigneeService.getRoleAssignee(roleAssignment.getAssigneeIdentifier());
                 AuthenticatedUser au = findAuthUser(userOrGroup);
                 if (au != null) {
@@ -109,9 +138,7 @@ public class SearchPermissionsServiceBean {
         return peopleWhoCanSearch;
     }
 
-    /**
-     * @todo Try using rolesSvc.rolesAssignments(dvObject)
-     */
+    @Deprecated
     private List<String> findImplicitAssignments(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         DvObject parent = dvObject.getOwner();
@@ -206,7 +233,7 @@ public class SearchPermissionsServiceBean {
         return null;
     }
 
-    private Permission getPermissionForDirectAssignment(DvObject dvObject) {
+    private Permission getRequiredSearchPermission(DvObject dvObject) {
         if (dvObject.isInstanceofDataverse()) {
             return Permission.ViewUnpublishedDataverse;
         } else {
@@ -215,6 +242,7 @@ public class SearchPermissionsServiceBean {
 
     }
 
+    @Deprecated
     private boolean respectPermissionRoot() {
         boolean safeDefaultIfKeyNotFound = true;
         // see javadoc of the key
