@@ -113,19 +113,17 @@ public class SearchPermissionsServiceBean {
      * @todo Try using rolesSvc.rolesAssignments(dvObject)
      */
     private List<String> findImplicitAssignments(DvObject dvObject) {
-        List<String> emptyList = new ArrayList<>();
-        if (respectPermissionRoot()) {
-            return emptyList;
-        }
-        List<String> permStrings = emptyList;
-        if (dvObject.isEffectivelyPermissionRoot()) {
-            return emptyList;
-        }
+        List<String> permStrings = new ArrayList<>();
         DvObject parent = dvObject.getOwner();
         while (parent != null) {
-            if (dvObject.isInstanceofDataverse()) {
+            if (respectPermissionRoot()) {
+                if (parent.isEffectivelyPermissionRoot()) {
+                    return permStrings;
+                }
+            }
+            if (parent.isInstanceofDataverse()) {
                 permStrings.addAll(findDirectAssignments(parent));
-            } else if (dvObject.isInstanceofDataset()) {
+            } else if (parent.isInstanceofDataset()) {
                 // files get discoverability from their parent dataset
                 permStrings.addAll(findDirectAssignments(parent));
             }
