@@ -114,7 +114,7 @@ public class SearchPermissionsServiceBean {
      */
     private List<String> findImplicitAssignments(DvObject dvObject) {
         List<String> emptyList = new ArrayList<>();
-        if (!respectPermissionRoot()) {
+        if (respectPermissionRoot()) {
             return emptyList;
         }
         List<String> permStrings = emptyList;
