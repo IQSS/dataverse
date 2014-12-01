@@ -1,0 +1,3 @@
+#!/bin/sh
+. scripts/search/assumptions
+curl -s -X DELETE "http://localhost:8080/api/dvs/$SPRUCE_DATAVERSE/assignments/$FINCH_ADMIN_ON_SPRUCE?key=$SPRUCEKEY" | jq .data.message
