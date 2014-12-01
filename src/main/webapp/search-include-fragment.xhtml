@@ -26,8 +26,11 @@
                     </h:outputLink>
                 </h:form>
             </ui:fragment>
-
-            <ui:fragment rendered="#{!dataverseSession.user.authenticated and (dataverse.owner == null or dataverse.alias.endsWith('_open'))}">
+            
+            <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.AuthenticatedUsers" />
+            <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
+                                     or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
+                
                 <div style="float:right;">
                     <button type="button" class="btn btn-default" onclick="addData_popup.show()">
                         <span class="glyphicon glyphicon-plus"/> Add Data <span class="caret"></span>
