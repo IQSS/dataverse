@@ -552,7 +552,7 @@
                                             <div>
                                                 <h:outputText id="fileTypeOutputRegular" styleClass="text-muted" value="#{fileMetadata.dataFile.friendlyType} - " rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                                                 <h:outputText id="fileTypeOutputTabular" styleClass="text-muted" value="Tabular Data - " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                                <h:outputText id="fileSize" styleClass="text-muted" value="#{fileMetadata.dataFile.filesize} bytes - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                                <h:outputText id="fileSize" styleClass="text-muted" value="#{fileMetadata.dataFile.friendlySize} - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
                                                 <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
                                                 <h:outputText id="fileMD5" styleClass="text-muted" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>

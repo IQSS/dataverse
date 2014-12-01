@@ -280,6 +280,14 @@ public class DataFile extends DvObject {
        this.filesize = filesize;
     }
 
+    /**
+     * Converts the stored size of the file in bytes to 
+     * a user-friendly value in KB, MB or GB.
+     */
+    public String getFriendlySize() {
+        return FileUtil.getFriendlySize(filesize);
+    }
+
     public boolean isRestricted() {
         return restricted;
     }

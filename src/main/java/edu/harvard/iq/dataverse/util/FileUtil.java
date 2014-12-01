@@ -374,4 +374,31 @@ public class FileUtil implements java.io.Serializable  {
         return isGraphML;
     }
     
+    /**
+     * The number of bytes in a kilobyte, megabyte and gigabyte:
+     */
+    public static final long ONE_KB = 1024;
+    public static final long ONE_MB = ONE_KB * ONE_KB;
+    public static final long ONE_GB = ONE_KB * ONE_MB;
+ 
+    public static String getFriendlySize(Long filesize) {
+        if (filesize == null || filesize.longValue() < 0) {
+            return "unknown";
+        }
+
+        long bytesize = filesize.longValue();
+        String displaySize;
+
+        if (bytesize / ONE_GB > 0) {
+            displaySize = String.valueOf(bytesize / ONE_GB) + "." + String.valueOf((bytesize % ONE_GB) / (100 * ONE_MB)) + " GB";
+        } else if (bytesize / ONE_MB > 0) {
+            displaySize = String.valueOf(bytesize / ONE_MB) + "." + String.valueOf((bytesize % ONE_MB) / (100 * ONE_KB)) + " MB";
+        } else if (bytesize / ONE_KB > 0) {
+            displaySize = String.valueOf(bytesize / ONE_KB) + "." + String.valueOf((bytesize % ONE_KB) / 100) + " KB";
+        } else {
+            displaySize = String.valueOf(bytesize) + " bytes";
+        }
+        return displaySize;
+
+    }
 }

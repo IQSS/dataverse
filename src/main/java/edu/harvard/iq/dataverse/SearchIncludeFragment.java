@@ -1004,11 +1004,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return "";
         }
 
-        if (datafile.getFilesize() > -1) {
-            return datafile.getFilesize() + " bytes";
-        }
+        return datafile.getFriendlySize();
 
-        return "";
     }
 
     public String dataFileMD5Display(Long fileId) {
