@@ -67,6 +67,6 @@ Once on a dataset page, you will see the title, citation, description, and sever
 Download Files
 -----------------
 
-Within the Files tab on a dataset page, a user can either Explore the file using TwoRavens or Download the file as tab-delimited, RData, Saved Original, or the variable metadata.
+Within the Files tab on a dataset page, a user can either Explore the file using TwoRavens, Download All File Formats + Information or individually download the Original File Format, Tab Delimited Format, Variable Metadata, Data File Citation (RIS Format or EndNote XML), or Subset (options appear depending on file format).
 
 
