@@ -26,7 +26,7 @@ Generate Your API Token
 ========================
 #. To generate your API token, click on your name in the hearder on right hand side and then click on either Notifications or Data Related to Me. 
 #. On the top right of your account page, click on the "Edit Account" button and click on API Token in the list.
-#. Your API code is located on that page. 
+#. Your API Token is located on that page. 
 
 Notifications: Setup & Maintainance
 ===================================
