@@ -342,14 +342,6 @@
                                                 </h:link>
                                             </li>                                            
                                             <li>
-                                                <p:commandLink id="rolesPermissionsOpts"
-                                                               actionListener="#{rolePermissionFragment.setDvObject(DataversePage.dataverse)}"
-                                                               update="rolesPermissionsDialog"
-                                                               oncomplete="rolesPermissionsForm.show();handleResizeDialog('rolesPermissionsDialog');">
-                                                    <h:outputText value="Permissions (popup)" />
-                                                </p:commandLink>
-                                            </li>
-                                            <li>
                                                 <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
                                                     <h:outputText value="Dataset Templates" />
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
