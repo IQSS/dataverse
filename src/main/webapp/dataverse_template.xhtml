@@ -30,6 +30,7 @@
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
             <ui:param name="showBreadcrumbs" value="#{showBreadcrumbs != null ? showBreadcrumbs : true}"/>
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
+            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? loginRedirectPage : dataverseHeaderFragment.loginRedirectPage}"/>
         </ui:include>
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>
