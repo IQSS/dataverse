@@ -17,7 +17,7 @@ Creating a dataverse is easy but first you must be a registered user (see Create
 
 #. Once you are logged in click on the "Add Data" button and in the dropdown menu select "Create Dataverse".
 #. Once on the "New Dataverse" page fill in the following fields:
-    * Enter the name of your dataverse.
+    * **Name**: Enter the name of your dataverse.
     * **Alias**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse URL field, the URL for your Dataverse changes (http//.../dv/'url'), which affects links to this page.
     * **E-mail**: This is the email address you will receive notifications for, for this particular dataverse.
     * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
@@ -49,7 +49,7 @@ Publish Your Dataverse
 
 Once your dataverse is ready to go public, go to your dataverse page, click on the "Publish" button on the right 
 hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish, since once a dataverse
-is made public it can no longer be unpublished.
+is made public, it can no longer be unpublished.
 
 
 .. |image1| image:: ./img/Dataverse-Diagram.png
