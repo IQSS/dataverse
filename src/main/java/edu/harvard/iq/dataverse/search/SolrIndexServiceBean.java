@@ -7,11 +7,13 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -64,6 +66,20 @@ public class SolrIndexServiceBean {
         return solrDocs;
     }
 
+    private List<DvObjectSolrDoc> determineSolrDocsForFilesFromDataset(Map.Entry<Long, List<Long>> datasetHash) {
+        List<DvObjectSolrDoc> emptyList = new ArrayList<>();
+        List<DvObjectSolrDoc> solrDocs = emptyList;
+        DvObject dvObject = dvObjectService.findDvObject(datasetHash.getKey());
+        if (dvObject == null) {
+            return emptyList;
+        }
+        if (dvObject.isInstanceofDataset()) {
+            Dataset dataset = (Dataset) dvObject;
+            solrDocs.addAll(constructDatafileSolrDocsFromDataset(dataset));
+        }
+        return solrDocs;
+    }
+
     /**
      * @todo should this method return a List? The equivalent methods for
      * datasets and files return lists.
@@ -111,6 +127,27 @@ public class SolrIndexServiceBean {
         return datafileSolrDocs;
     }
 
+    private List<DvObjectSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
+        List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
+        Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
+        for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
+            boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
+            if (cardShouldExist) {
+                List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
+                    Long fileId = fileMetadata.getDataFile().getId();
+                    String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
+                    String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
+                    String solrId = solrIdStart + solrIdEnd;
+                    DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, fileMetadata.getLabel(), perms);
+                    logger.fine("adding fileid " + fileId);
+                    datafileSolrDocs.add(dataFileSolrDoc);
+                }
+            }
+        }
+        return datafileSolrDocs;
+    }
+
     private List<DatasetVersion> datasetVersionsToBuildCardsFor(Dataset dataset) {
         List<DatasetVersion> datasetVersions = new ArrayList<>();
         DatasetVersion latest = dataset.getLatestVersion();
@@ -149,9 +186,26 @@ public class SolrIndexServiceBean {
         Collection<SolrInputDocument> docs = new ArrayList<>();
 
         List<DvObjectSolrDoc> definitionPoints = new ArrayList<>();
+        Map<Long, List<Long>> filesPerDataset = new HashMap<>();
         for (DvObject dvObject : dvObjectService.findAll()) {
             logger.info("determining definition points for dvobject id " + dvObject.getId());
-            definitionPoints.addAll(determineSolrDocs(dvObject.getId()));
+            if (dvObject.isInstanceofDataFile()) {
+                Long dataset = dvObject.getOwner().getId();
+                Long datafile = dvObject.getId();
+
+                List<Long> files = filesPerDataset.get(dataset);
+                if (files == null) {
+                    files = new ArrayList<>();
+                    filesPerDataset.put(dataset, files);
+                }
+                files.add(datafile);
+            } else {
+                definitionPoints.addAll(determineSolrDocs(dvObject.getId()));
+            }
+        }
+
+        for (Map.Entry<Long, List<Long>> filePerDataset : filesPerDataset.entrySet()) {
+            definitionPoints.addAll(determineSolrDocsForFilesFromDataset(filePerDataset));
         }
 
         for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
