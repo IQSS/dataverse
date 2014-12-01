@@ -643,18 +643,19 @@
                                                     <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                         <li>
                                                             <h:outputLink value="#">
-                                                                <strong>All File Formats + Information</strong>
+                                                                <!--strong>All File Formats + Information</strong-->
+                                                                <strong>All formats bundle (coming soon)</strong>
                                                             </h:outputLink>
                                                         </li>
                                                         <li role="presentation" class="divider"></li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="Original File Format (#{fileMetadata.dataFile.originalFormatLabel})"/>
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                                <h:outputText value="Tab-Delimited"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="Tab-Delimited Format"/>
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                                <h:outputText value="Original File Format (#{fileMetadata.dataFile.originalFormatLabel})"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
@@ -668,7 +669,7 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li class="dropdown-submenu">
-                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation</a>
+                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation (coming soon)</a>
                                                             <ul class="dropdown-menu">
                                                               <li><a tabindex="-1" href="#">RIS Format</a></li>
                                                               <li><a href="#">EndNote XML</a></li>
