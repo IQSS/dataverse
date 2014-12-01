@@ -13,10 +13,11 @@ body .ui-widget {font-size: inherit;}
 .navbar-fixed-top, .navbar-fixed-bottom {
     z-index: 930;
 }
-#navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/logo_dataverse.png) no-repeat left center;background-size:20% auto;}
+#navbarFixed .navbar-brand {color:#C55B28;}
+#navbarFixed .icon-dataverse {color:#C55B28; font-size:28px; float: left; height: 50px; line-height: 28px; padding: 10px 0; margin-left:-15px;}
 #navbarFixed .label.beta {display:block; float:left; margin-top:12px; background:#C55B28; font-size:18px; font-weight:normal;}
 
-#navbarFixed #navbar-search-toggle {cursor: pointer; cursor: hand;}
+#navbarFixed #navbar-search-toggle, #navbarFixed #dataverseSupportLink, #navbarFixed #lnk_header_account_dropdown {cursor: pointer; cursor: hand;}
 #navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em; line-height:normal; vertical-align:text-top;}
 #navbarFixed .dropdown.accountName .logout form {margin:0; padding:0; width:100%;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}

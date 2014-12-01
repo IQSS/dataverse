@@ -16,9 +16,10 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <h:outputLink value="/">
-                    <h:outputText styleClass="navbar-brand" value="Dataverse"/>
-                </h:outputLink>
+                <a href="/">
+                    <i id="icon-dataverse" class="icon-dataverse"></i>
+                    <span class="navbar-brand"> Dataverse</span>
+                </a>
                 <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community" title="Visit the Dataverse Users Community Group to learn more about the Dataverse 4.0 Beta release." target="_blank">
                     <span class="label label-default beta">Beta</span>
                 </h:outputLink>
@@ -26,7 +27,7 @@
             <div class="collapse navbar-collapse" id="topNavBar">
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a value="#" id="navbar-search-toggle">
+                        <a value="#" id="navbar-search-toggle" title="Search all Dataverses...">
                             <span class="glyphicon glyphicon-search"></span>
                         </a>
                     </li>
@@ -46,7 +47,7 @@
                         </h:outputLink>
                     </li>
                     <li class="dropdown">
-                        <a value="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <a value="#" id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
                             Support <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu">
