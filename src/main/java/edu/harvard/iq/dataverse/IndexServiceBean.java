@@ -465,12 +465,15 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
-        if (true) {
-            IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
-            return indexResponse;
-        } else {
-            return new IndexResponse("new JOIN is still experimental");
-        }
+//        IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
+        /**
+         * @todo Stop doing an "index all permissions" here. Do something much
+         * more targeted. It's in place because when you try to upload many
+         * files at once (as with a zip), the permissions on the files are not
+         * being indexed. See https://github.com/IQSS/dataverse/issues/142
+         */
+        IndexResponse indexResponse = solrIndexService.indexAllPermissions();
+        return indexResponse;
     }
 
     private String addOrUpdateDataset(IndexableDataset indexableDataset) {
