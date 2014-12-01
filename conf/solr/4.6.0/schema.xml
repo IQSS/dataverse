@@ -276,6 +276,7 @@
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="articleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="astroFacility" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="astroInstrument" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="astroObject" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -347,6 +348,7 @@
    <field name="gsdStudentProgram" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="gsdTags" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="issue" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -408,6 +410,7 @@
    <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="unitOfAnalysis" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="universe" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="volume" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
  </fields>
@@ -480,6 +483,7 @@
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <copyField source="accessToSources" dest="text" maxChars="3000"/>
    <copyField source="actionsToMinimizeLoss" dest="text" maxChars="3000"/>
+   <copyField source="articleType" dest="text" maxChars="3000"/>
    <copyField source="astroFacility" dest="text" maxChars="3000"/>
    <copyField source="astroInstrument" dest="text" maxChars="3000"/>
    <copyField source="astroObject" dest="text" maxChars="3000"/>
@@ -551,6 +555,7 @@
    <copyField source="gsdStudentProgram" dest="text" maxChars="3000"/>
    <copyField source="gsdTags" dest="text" maxChars="3000"/>
    <copyField source="gsdTypes" dest="text" maxChars="3000"/>
+   <copyField source="issue" dest="text" maxChars="3000"/>
    <copyField source="keyword" dest="text" maxChars="3000"/>
    <copyField source="kindOfData" dest="text" maxChars="3000"/>
    <copyField source="language" dest="text" maxChars="3000"/>
@@ -612,6 +617,7 @@
    <copyField source="topicClassification" dest="text" maxChars="3000"/>
    <copyField source="unitOfAnalysis" dest="text" maxChars="3000"/>
    <copyField source="universe" dest="text" maxChars="3000"/>
+   <copyField source="volume" dest="text" maxChars="3000"/>
    <copyField source="weighting" dest="text" maxChars="3000"/>
    <copyField source="westLongitude" dest="text" maxChars="3000"/>
 
