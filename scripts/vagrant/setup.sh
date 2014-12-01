@@ -21,7 +21,7 @@ GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 useradd $GLASSFISH_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.0.zip"
+GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-4.6.0.tgz"
 if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $GLASSFISH_ZIP or $SOLR_TGZ! Running download script...."
