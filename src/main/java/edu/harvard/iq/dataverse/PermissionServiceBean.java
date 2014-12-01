@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -53,10 +54,10 @@ public class PermissionServiceBean {
 
     public class PermissionQuery {
 
-        final User user;
+        final RoleAssignee user;
         final DvObject subject;
 
-        public PermissionQuery(User user, DvObject subject) {
+        public PermissionQuery(RoleAssignee user, DvObject subject) {
             this.user = user;
             this.subject = subject;
         }
@@ -73,6 +74,7 @@ public class PermissionServiceBean {
          * "Fast and loose" query mechanism, allowing to pass the command class
          * name. Command is assumed to live in
          * {@code edu.harvard.iq.dataverse.engine.command.impl.}
+         *
          * @deprecated
          * @param commandName
          * @return {@code true} iff the user has the permissions required by the
@@ -104,33 +106,33 @@ public class PermissionServiceBean {
                 .setParameter("definitionPointId", d.getId()).getResultList();
     }
 
-    public Set<Permission> permissionsFor(User u, DvObject d) {
+    public Set<Permission> permissionsFor(RoleAssignee ra, DvObject d) {
         // super user check
         // @todo for 4.0, we are allowing superusers all permissions
         // for secure data, we may need to restrict some of the permissions
-        if (u instanceof AuthenticatedUser && ((AuthenticatedUser) u).isSuperuser()) {
+        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
             return EnumSet.allOf(Permission.class);
-        }        
-        
+        }
+
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
-        
-        for (RoleAssignment asmnt : assignmentsFor(u, d)) {
+
+        for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
             retVal.addAll(asmnt.getRole().permissions());
         }
-        
+
         return retVal;
     }
 
-    public Set<RoleAssignment> assignmentsFor(User u, DvObject d) {
+    public Set<RoleAssignment> assignmentsFor(RoleAssignee ra, DvObject d) {
         Set<RoleAssignment> assignments = new HashSet<>();
         while (d != null) {
-            assignments.addAll(roleService.directRoleAssignments(u, d));
+            assignments.addAll(roleService.directRoleAssignments(ra, d));
             //@todo add support for all groups
             //but for now we check role assignments for the AuthenticatedUsers group
-            if (u.isAuthenticated()) {
+            if (ra instanceof AuthenticatedUser) {
                 assignments.addAll(roleService.directRoleAssignments(AuthenticatedUsers.get(), d));
             }
-            
+
             if (d instanceof Dataverse && ((Dataverse) d).isEffectivelyPermissionRoot()) {
                 return assignments;
             } else {
@@ -140,7 +142,7 @@ public class PermissionServiceBean {
 
         return assignments;
     }
-    
+
     /**
      * For commands with no named dataverses, this allows a quick check whether
      * a user can issue the command on the dataverse or not.
@@ -150,17 +152,17 @@ public class PermissionServiceBean {
      * @param dvo
      * @return
      */
-    public boolean isUserAllowedOn(User u, Class<? extends Command> commandClass, DvObject dvo) {        
+    public boolean isUserAllowedOn(RoleAssignee u, Class<? extends Command> commandClass, DvObject dvo) {
         Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
         return isUserAllowedOn(u, required, dvo);
     }
 
-    public boolean isUserAllowedOn(User u, Command<?> command, DvObject dvo) {        
+    public boolean isUserAllowedOn(RoleAssignee u, Command<?> command, DvObject dvo) {
         Map<String, Set<Permission>> required = command.getRequiredPermissions();
         return isUserAllowedOn(u, required, dvo);
     }
-        
-    private boolean isUserAllowedOn(User u, Map<String, Set<Permission>> required, DvObject dvo) {         
+
+    private boolean isUserAllowedOn(RoleAssignee u, Map<String, Set<Permission>> required, DvObject dvo) {
         if (required.isEmpty() || required.get("") == null) {
             logger.fine("IsUserAllowedOn: empty-true");
             return true;
@@ -171,7 +173,7 @@ public class PermissionServiceBean {
         }
     }
 
-    public PermissionQuery userOn(User u, DvObject d) {
+    public PermissionQuery userOn(RoleAssignee u, DvObject d) {
         if (u == null) {
             // get guest user for dataverse d
             u = GuestUser.get();
