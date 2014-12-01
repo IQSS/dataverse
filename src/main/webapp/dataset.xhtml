@@ -640,26 +640,39 @@
                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download <span class="caret"></span>
                                                     </button>
-                                                    <ul class="dropdown-menu" role="menu" style="text-align:left;">
+                                                    <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
+                                                        <li>
+                                                            <h:outputLink value="#">
+                                                                <strong>All File Formats + Information</strong>
+                                                            </h:outputLink>
+                                                        </li>
+                                                        <li role="presentation" class="divider"></li>
+                                                        <li>
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                                <h:outputText value="Original File Format (#{fileMetadata.dataFile.originalFormatLabel})"/>
+                                                            </h:outputLink>
+                                                        </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="As Tab-Delimited"/>
+                                                                <h:outputText value="Tab-Delimited Format"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData"  rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="As RData"/>
-                                                            </h:outputLink>
-                                                        </li>
-                                                        <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="Saved Original (#{fileMetadata.dataFile.originalFormatLabel})"/>
+                                                                <h:outputText value="RData Format"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/meta/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="Variable Metadata"/>
                                                             </h:outputLink>
+                                                        </li>
+                                                        <li class="dropdown-submenu">
+                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation</a>
+                                                            <ul class="dropdown-menu">
+                                                              <li><a tabindex="-1" href="#">RIS Format</a></li>
+                                                              <li><a href="#">EndNote XML</a></li>
+                                                            </ul>
                                                         </li>
                                                     </ul>
                                                 </div>
