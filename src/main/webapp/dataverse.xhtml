@@ -323,10 +323,10 @@
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink process="@this" actionListener="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}"
-                                                               update="themeAndWidgetsDlg" id="themeWidgetsOpts" oncomplete="themeAndWidgetsForm.show();handleResizeDialog('themeAndWidgetsDlg');bind_bsui_components();">
+                                                <h:link outcome="ThemeAndWidgets"   id="themeWidgetsOpts" >
+                                                    <f:param name="id" value="#{DataversePage.dataverse.id}" />
                                                          <h:outputText value="Theme + Widgets" />
-                                                </p:commandLink>
+                                                </h:link>
                                             </li>
                                             <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
                                                 <li>
@@ -476,7 +476,7 @@
                         <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
                     </p:dialog>
 
-                    <ui:include src="themeAndWidgetsFragment.xhtml"/>
+                   
                     <ui:include src="rolesAndPermissionsFragment.xhtml"/>
 
                     <!-- Publish Confirmation Popup -->

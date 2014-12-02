@@ -50,7 +50,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     @Inject DataversePage dataversePage;
     private File tempDir;
     private File uploadedFile;
-    private Dataverse editDv;
+    private Dataverse editDv= new Dataverse();
     private HtmlInputText linkUrlInput;
     private HtmlInputText linkTextInput;
  
@@ -114,8 +114,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
    
 
-    public void initEditDv(Long dataverseId) {
-        editDv = dataverseServiceBean.find(dataverseId);
+    public void initEditDv() {
+        editDv = dataverseServiceBean.find(editDv.getId());
         if (editDv.getOwner()==null) {
             editDv.setThemeRoot(true);
         }
@@ -248,7 +248,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
     
     
 
-    public void save() {
+    public String save() {
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
         if (!editDv.isThemeRoot()) {
@@ -265,7 +265,9 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         }
         this.cleanupTempDirectory();
         this.editDv=null;
+        return "dataverse";  // go to dataverse page 
     }
+   
     
  }
 
