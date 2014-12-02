@@ -30,7 +30,6 @@ import javax.inject.Inject;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
@@ -69,9 +68,6 @@ import javax.xml.parsers.SAXParserFactory;
  */
 public class XLSXFileReader extends TabularDataFileReader {
 
-    @Inject
-    VariableServiceBean varService;
-
     private static final Logger dbglog = Logger.getLogger(XLSXFileReader.class.getPackage().getName());
     private char delimiterChar = '\t';
 
@@ -80,19 +76,7 @@ public class XLSXFileReader extends TabularDataFileReader {
     }
 
     private void init() throws IOException {
-        Context ctx = null; 
-        try {
-            ctx = new InitialContext();
-            varService = (VariableServiceBean) ctx.lookup("java:global/dataverse-4.0/VariableServiceBean");
-        } catch (NamingException nex) {
-            try {
-                ctx = new InitialContext();
-                varService = (VariableServiceBean) ctx.lookup("java:global/dataverse/VariableServiceBean");
-            } catch (NamingException nex2) {
-                dbglog.severe("Could not look up initial context, or the variable service in JNDI!");
-                //throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
-            }
-        }
+        
     }
     
     /**
@@ -147,7 +131,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             }
         
             for (int i = 0; i < varQnty; i++) {
-                if (isNumericVariable(dataTable.getDataVariables().get(i))) {
+                if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
                     if (valueTokens[i] == null || valueTokens[i].equals(".") || valueTokens[i].equals("") || valueTokens[i].equalsIgnoreCase("NA")) {
                         // Missing value - represented as an empty string in 
                         // the final tab file
@@ -234,13 +218,6 @@ public class XLSXFileReader extends TabularDataFileReader {
 
     }
 
-    private boolean isNumericVariable(DataVariable dataVariable) {
-        if (dataVariable.getVariableFormatType() != null) {
-            return ("numeric".equals(dataVariable.getVariableFormatType().getName()));
-        }
-        return false; 
-    }
-    
     public void processSheet(String filename, DataTable dataTable, PrintWriter tempOut) throws Exception {
         BufferedInputStream xlsxInputStream = new BufferedInputStream(new FileInputStream(new File(filename)));
         processSheet(xlsxInputStream, dataTable, tempOut);
@@ -276,7 +253,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         // -- L.A. 4.0 alpha 1
  
         XMLReader xReader = XMLReaderFactory.createXMLReader();
-        ContentHandler handler = new SheetHandler(sst, dataTable, varService, tempOut);
+        ContentHandler handler = new SheetHandler(sst, dataTable, tempOut);
         xReader.setContentHandler(handler);
         return xReader;
     }
@@ -291,19 +268,17 @@ public class XLSXFileReader extends TabularDataFileReader {
         private List<String> variableNames;
         private int caseCount;
         private int columnCount;
-        private VariableServiceBean variableServiceLocal;
         boolean[] isNumericVariable;
         String[] dataRow; 
         PrintWriter tempOut; 
 
         private SheetHandler(SharedStringsTable sst) {
-            this(sst, null, null, null);
+            this(sst, null, null);
         }
 
-        private SheetHandler(SharedStringsTable sst, DataTable dataTable, VariableServiceBean variableService, PrintWriter tempOut) {
+        private SheetHandler(SharedStringsTable sst, DataTable dataTable, PrintWriter tempOut) {
             this.sst = sst;
             this.dataTable = dataTable;
-            this.variableServiceLocal = variableService;
             this.tempOut = tempOut; 
             variableHeader = true;
             variableNames = new ArrayList<String>(); 
@@ -371,10 +346,8 @@ public class XLSXFileReader extends TabularDataFileReader {
                         dv.setCategories(new ArrayList());
                         variableList.add(dv);
 
-                        if (variableServiceLocal != null) {
-                            dv.setVariableFormatType(variableServiceLocal.findVariableFormatTypeByName("character"));
-                            dv.setVariableIntervalType(variableServiceLocal.findVariableIntervalTypeByName("discrete"));
-                        }
+                        dv.setTypeCharacter();
+                        dv.setIntervalDiscrete();
 
                         dv.setFileOrder(i);
                         dv.setDataTable(dataTable);
@@ -444,10 +417,8 @@ public class XLSXFileReader extends TabularDataFileReader {
                 // Re-type the variables that we've determined are numerics:
         
                 for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
-                    if (isNumericVariable[i] && variableServiceLocal != null) {
-                        dataTable.getDataVariables().get(i).setVariableFormatType(variableServiceLocal.findVariableFormatTypeByName("numeric"));
-                        dataTable.getDataVariables().get(i).setVariableIntervalType(variableServiceLocal.findVariableIntervalTypeByName("continuous"));
-                    }
+                    dataTable.getDataVariables().get(i).setTypeNumeric();
+                    dataTable.getDataVariables().get(i).setIntervalContinuous();
                 }
                 
                 tempOut.close(); 

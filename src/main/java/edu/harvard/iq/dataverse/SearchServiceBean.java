@@ -53,26 +53,7 @@ public class SearchServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
-
-    /*
-     * @deprecated The Published/Unpublished toggle was an experiment: https://docs.google.com/a/harvard.edu/document/d/1clGJKOmrH8zhQyG_8vQHui5L4fszdqRjM4t3U6NFJXg/edit?usp=sharing
-     */
-    @Deprecated
-    public enum PublishedToggle {
-
-        PUBLISHED, UNPUBLISHED
-    };
-
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
-        return search(user, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, false);
-    }
-
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
-//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
-//        } else {
-//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
-//        }
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
@@ -122,7 +103,8 @@ public class SearchServiceBean {
             solrQuery.addFilterQuery(filterQuery);
         }
 
-        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
+        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
+//        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
         // initialize to public only to be safe
         String permissionFilterQuery = publicOnly;
         if (user instanceof GuestUser) {
@@ -131,15 +113,42 @@ public class SearchServiceBean {
             // Non-guests might get more than public stuff with an OR or two
             AuthenticatedUser au = (AuthenticatedUser) user;
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
+
+            /**
+             * @todo all this code needs cleanup and clarification.
+             */
             /**
              * Every AuthenticatedUser is part of a "User Private Group" (UGP),
              * a concept we borrow from RHEL:
              * https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/ch-Managing_Users_and_Groups.html#s2-users-groups-private-groups
              */
-            String publicPlusUserPrivateGroup = "("
-                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
-                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
-            // not part of any particular group 
+            /**
+             * @todo rename this from publicPlusUserPrivateGroup. Confusing
+             */
+            // safe default: public only
+            String publicPlusUserPrivateGroup = publicOnly;
+//                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
+//                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+
+//            /**
+//             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
+//             * before enabling it.
+//             */
+            if (true) {
+                /**
+                 * @todo get rid of "experimental" in name
+                 */
+                String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+                if (onlyDatatRelatedToMe) {
+                    /**
+                     * @todo make this a variable called "String
+                     * dataRelatedToMeFilterQuery" or something
+                     */
+                    experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+                }
+                publicPlusUserPrivateGroup = experimentalJoin;
+            }
+
             permissionFilterQuery = publicPlusUserPrivateGroup;
 
             if (au.isSuperuser()) {
@@ -219,10 +228,6 @@ public class SearchServiceBean {
          */
 //        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
 //        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
-        /**
-         * @todo: make the number of results per page configurable?
-         */
-        int numResultsPerPage = 10;
         solrQuery.setRows(numResultsPerPage);
         logger.fine("Solr query:" + solrQuery);
 

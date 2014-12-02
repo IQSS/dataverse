@@ -1,0 +1,72 @@
+{
+  "authority": "10.5072/FK2",
+  "identifier": "123456",
+  "persistentUrl": "http://dx.doi.org/10.5072/FK2/17",
+  "protocol": "doi",
+  "initialVersion": {
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "value": "Darwin's Finches",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "title"
+          },
+          {
+            "value": [
+              {
+                "authorName": {
+                  "value": "Finch, Fiona",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                },
+                "authorAffiliation": {
+                  "value": "Birds Inc.",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [
+              "finch@mailinator.com"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "datasetContact"
+          },
+          {
+            "value": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "dsDescription"
+          },
+          {
+            "value": [
+              "Medicine, Health & Life Sciences"
+            ],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          }
+        ],
+        "displayName": "Citation Metadata"
+      }
+    },
+    "createTime": "2014-05-20 11:52:55 -04",
+    "UNF": "UNF",
+    "id": 1,
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "DRAFT",
+    "distributionDate": "Distribution Date",
+    "productionDate": "Production Date"
+  }
+}

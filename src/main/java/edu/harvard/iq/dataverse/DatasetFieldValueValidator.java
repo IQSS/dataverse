@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
@@ -24,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
  * @author gdurand
  */
 public class DatasetFieldValueValidator implements ConstraintValidator<ValidateDatasetFieldType, DatasetFieldValue> {
+    private static final Logger logger = Logger.getLogger(DatasetFieldValueValidator.class.getCanonicalName());
 
     //private String fieldType;
     public void initialize(ValidateDatasetFieldType constraintAnnotation) {
@@ -87,6 +89,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             try {
                 Double.parseDouble(value.getValue());
             } catch (Exception e) {
+                logger.fine("Float value failed validation: "+value.getValue()+" ("+dsfType.getDisplayName()+")");
                 context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid number.").addConstraintViolation();
                 return false;
             }

@@ -3,11 +3,18 @@ DIR='scripts/search/data/in/dv-birds1'
 USERDIR=/tmp/searchusers
 FINCHKEY=`cat $USERDIR/1 | jq .data.apiToken | tr -d \"`
 curl -s -H "Content-type:application/json" -X POST -d @$DIR/1 "http://localhost:8080/api/dvs/root?key=$FINCHKEY"
+echo
 
-curl -s -H "Content-type:application/json" -X POST -d @$DIR/2 "http://localhost:8080/api/dvs/birds?key=$FINCHKEY"
+#PARENT=`xsltproc scripts/search/data/mkpaths.xsl scripts/search/data/nodes.xml | grep '/sparrows$' | tr / " " |  awk '{print $(NF-1)}'`
+PARENT=birds
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/2 "http://localhost:8080/api/dvs/$PARENT?key=$FINCHKEY"
+echo
 
 curl -s -H "Content-type:application/json" -X POST -d @$DIR/3 "http://localhost:8080/api/dvs/birds?key=$FINCHKEY"
+echo
 
 curl -s -H "Content-type:application/json" -X POST -d @$DIR/4 "http://localhost:8080/api/dvs/birds?key=$FINCHKEY"
+echo
 
 curl -s -H "Content-type:application/json" -X POST -d @$DIR/5 "http://localhost:8080/api/dvs/sparrows?key=$FINCHKEY"
+echo

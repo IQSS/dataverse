@@ -1,9 +1,9 @@
-#!/bin/bash
-USERNAME=pete
-PASSWORD=pete
+#!/bin/bash -x
+USERNAME=spruce
+PASSWORD=spruce
 DVN_SERVER=localhost:8181
 if [ -z "$1" ]; then
-  DATAVERSE_ALIAS=peteTop
+  DATAVERSE_ALIAS=spruce
   #DATAVERSE_ALIAS=root
 else
   DATAVERSE_ALIAS=$1

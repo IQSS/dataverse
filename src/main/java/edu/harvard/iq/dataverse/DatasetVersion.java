@@ -627,6 +627,9 @@ public class DatasetVersion implements Serializable {
     public String getAuthorsStr(boolean affiliation) {
         String str = "";
         for (DatasetAuthor sa : getDatasetAuthors()) {
+            if (sa.getName() == null){
+                break;
+            }
             if (str.trim().length() > 1) {
                 str += "; ";
             }

@@ -14,10 +14,8 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -208,7 +206,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("This Username is already taken.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "This username is already taken.", null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -232,15 +230,35 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
     }
 
-    public void validatePassword(FacesContext context, UIComponent toValidate, Object value) {
+    public void validateCurrentPassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
         if (!encryptedPassword.equals(builtinUser.getEncryptedPassword())) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("Password is incorrect.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", "Password is incorrect.");
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
+    
+    public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
+        String password = (String) value;
+
+        int minPasswordLength = 6;
+        boolean forceNumber = true;
+        boolean forceSpecialChar = false;
+        boolean forceCapitalLetter = false;
+        int maxPasswordLength = 255;
+
+        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
+        boolean passwordIsComplexEnough = validator.validatePassword(password);
+        if (!passwordIsComplexEnough) {
+            ((UIInput) toValidate).setValid(false);
+            String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+
 
     public void updatePassword(String userName) {
         String plainTextPassword = PasswordEncryption.generateRandomPassword();

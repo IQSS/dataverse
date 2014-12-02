@@ -41,8 +41,6 @@ import org.rosuda.REngine.Rserve.*;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
@@ -73,8 +71,6 @@ import org.apache.commons.lang.ArrayUtils;
  * This implementation uses external R-Scripts to do the bulk of the processing.
  */
 public class RDATAFileReader extends TabularDataFileReader {
-    @Inject
-    VariableServiceBean varService;
     
 // Date-time things
   public static final String[] FORMATS = { "other", "date", "date-time", "date-time-timezone" };
@@ -477,13 +473,6 @@ public class RDATAFileReader extends TabularDataFileReader {
     doubleNumberFormatter.setGroupingUsed(false);
     doubleNumberFormatter.setMaximumFractionDigits(340);
     
-    try {
-            Context ctx = new InitialContext();
-            varService = (VariableServiceBean) ctx.lookup("java:global/dataverse-4.0/VariableServiceBean");
-        } catch (NamingException nex) {
-            LOG.info("Could not look up initial context, or the variable service in JNDI!");
-            throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
-        }
   }
   
   /**
@@ -766,29 +755,26 @@ public class RDATAFileReader extends TabularDataFileReader {
                     LOG.fine("variable level: " + variableLevels[i]);
                 }
 
-                dataTable.getDataVariables().get(k).setFormatSchema("RDATA");
+                //dataTable.getDataVariables().get(k).setFormatSchema("RDATA");
 
                 if (variableTypeName == null || variableTypeName.equals("character") || variableTypeName.equals("other")) {
                     // This is a String: 
-                    dataTable.getDataVariables().get(k).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                    dataTable.getDataVariables().get(k).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    dataTable.getDataVariables().get(k).setTypeCharacter();
+                    dataTable.getDataVariables().get(k).setIntervalDiscrete();
                     
                 } else if (variableTypeName.equals("integer")) {
-                    dataTable.getDataVariables().get(k).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
-                    dataTable.getDataVariables().get(k).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    dataTable.getDataVariables().get(k).setTypeNumeric();
+                    dataTable.getDataVariables().get(k).setIntervalDiscrete();
                     
                 } else if (variableTypeName.equals("numeric") || variableTypeName.equals("double")) {
-                    dataTable.getDataVariables().get(k).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
-                    dataTable.getDataVariables().get(k).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                    dataTable.getDataVariables().get(k).setTypeNumeric();
+                    dataTable.getDataVariables().get(k).setIntervalContinuous();
                     
                 } else if (variableTypeName.startsWith("Date")) {
-                    dataTable.getDataVariables().get(k).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                    dataTable.getDataVariables().get(k).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
-                    dataTable.getDataVariables().get(k).setFormatSchemaName(variableFormat);
-                    // Or should it be that "DATE10"/"DATETIME23.3" format specs instead, 
-                    // that were used in Matt's implementation? -- TODO: research this! -- L.A. 4.0 alpha 1
-
-                    //dataTable.getDataVariables().get(k).setFormatCategory(variableTypeName);
+                    dataTable.getDataVariables().get(k).setTypeCharacter();
+                    dataTable.getDataVariables().get(k).setIntervalDiscrete();
+                    dataTable.getDataVariables().get(k).setFormat(variableFormat);
+                    
                     // instead:
                     if (variableTypeName.equals("Date")) {
                         dataTable.getDataVariables().get(k).setFormatCategory("date");
@@ -799,9 +785,8 @@ public class RDATAFileReader extends TabularDataFileReader {
                 } else if (variableTypeName.equals("factor")) {
                     
                     // All R factors are *string* factors!
-                    dataTable.getDataVariables().get(k).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                    dataTable.getDataVariables().get(k).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
-                    
+                    dataTable.getDataVariables().get(k).setTypeCharacter();
+                    dataTable.getDataVariables().get(k).setIntervalDiscrete();
                     if (variableLevels != null && variableLevels.length > 0) {
                         // yes, this is a factor, with levels defined.
                         LOG.fine("this is a factor.");
@@ -840,8 +825,8 @@ public class RDATAFileReader extends TabularDataFileReader {
                 else if ("logical".equals(variableTypeName)) {
                     dataTable.getDataVariables().get(k).setFormatCategory("Boolean");
                     
-                    dataTable.getDataVariables().get(k).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
-                    dataTable.getDataVariables().get(k).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    dataTable.getDataVariables().get(k).setTypeNumeric();
+                    dataTable.getDataVariables().get(k).setIntervalDiscrete();
 
                     String booleanFactorLabels[] = new String[2];
                     booleanFactorLabels[0] = "FALSE";

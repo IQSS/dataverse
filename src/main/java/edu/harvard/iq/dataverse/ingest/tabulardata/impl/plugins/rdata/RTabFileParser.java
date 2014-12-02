@@ -97,10 +97,10 @@ public class RTabFileParser implements java.io.Serializable {
                 if (var == null) {
                     // throw exception!
                 }
-                if (var.getVariableFormatType() == null || var.getVariableFormatType().getName() == null) {
+                if (var.getType() == null) {
                     // throw exception!
                 }
-                if (var.getVariableFormatType().getName().equals("character")) {
+                if (var.isTypeCharacter()) {
                     isCharacterVariable[i] = true; 
                     isContinuousVariable[i] = false; 
                     
@@ -109,13 +109,13 @@ public class RTabFileParser implements java.io.Serializable {
                             isTimeVariable[i] = true; 
                         }
                     
-                } else if (var.getVariableFormatType().getName().equals("numeric")) {
+                } else if (var.isTypeNumeric()) {
                     isCharacterVariable[i] = false; 
                     
-                    if (var.getVariableIntervalType() == null || var.getVariableIntervalType().getName() == null) {
+                    if (var.getInterval() == null) {
                         // throw exception!
                     }
-                    if (var.getVariableIntervalType().getName().equals("continuous")) {
+                    if (var.isIntervalContinuous()) {
                         isContinuousVariable[i] = true;
                     } else {
                         // discrete by default:

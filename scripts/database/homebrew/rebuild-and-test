@@ -10,23 +10,16 @@ mvn package
 # should probably use this instead: https://maven-glassfish-plugin.java.net/deploy-mojo.html
 /Applications/NetBeans/glassfish4/glassfish/bin/asadmin deploy --force target/dataverse-4.0.war
 #cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
-sleep 15
+#sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
-scripts/database/homebrew/run-non-dvnApp-role
-scripts/database/homebrew/keys2tmp
+scripts/search/tests/query-unparseable
 echo "---"
 echo "Creating search users"
 scripts/search/populate-users > /dev/null
 scripts/search/create-users > /dev/null
-echo "Creating bird and tree dataverses"
-scripts/search/populate-bird-dvs1
-scripts/search/create-bird-dvs1 > /dev/null
-scripts/search/populate-tree-dvs1
-scripts/search/create-tree-dvs1 > /dev/null
-echo "Running sanity checks..."
-scripts/search/tests/query-unparseable
-scripts/search/tests/permissions
-echo "Done running sanity checks. Silence is golden."
+scripts/search/tests/grant-authusers-add-on-root
+scripts/search/tests/create-all-and-test
+
 exit
 # FIXME: clean up these old test and make them pass
 scripts/search/tests/delete-dataverse

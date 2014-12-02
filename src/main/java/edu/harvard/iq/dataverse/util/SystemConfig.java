@@ -57,7 +57,9 @@ public class SystemConfig {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
     }
-
+    
+    
+    
     /**
      * The number of minutes for which a password reset token is valid. Can be
      * overridden by {@link #PASSWORD_RESET_TIMEOUT_IN_MINUTES}.
@@ -121,5 +123,31 @@ public class SystemConfig {
             }
         }
         return fqdn;
+    }
+    
+    /**
+     * Download-as-zip size limit.
+     * returns 0 if not specified; 
+     * (the file zipper will then use the default value)
+     * set to -1 to disable zip downloads. 
+     */
+    
+    public long getZipDownloadLimit() {
+        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDonwloadLimit);   
+        
+        Long zipLimit = null; 
+        if (zipLimitOption != null && !zipLimitOption.equals("")) {
+            try {
+                zipLimit = new Long(zipLimitOption);
+            } catch (NumberFormatException nfe) {
+                zipLimit = null; 
+            }
+        }
+        
+        if (zipLimit != null) {
+            return zipLimit.longValue();
+        }
+        
+        return 0L; 
     }
 }

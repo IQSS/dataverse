@@ -286,7 +286,6 @@ public class AuthenticationServiceBean {
         AuthenticatedUserLookup auusLookup = new AuthenticatedUserLookup(authPrvUserPersistentId, authenticationProviderId, auus);
         em.persist( auusLookup );
         auus.setAuthenticatedUserLookup(auusLookup);
-        indexService.indexUser(auus);
         return auus;
     }
     

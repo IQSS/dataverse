@@ -10,15 +10,15 @@
     </cc:interface>
 
     <cc:implementation>
-        <ui:fragment rendered="#{not empty flash['msg']}" >
-            <div class="alert  alert-info">
-                <span class="glyphicon glyphicon-info-sign"> </span>&#160; <h:outputText value="#{flash['msg']}"/>  
+        <ui:fragment rendered="#{not empty flash['msg']}">
+            <div class="alert alert-success">
+                <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>Success!</strong> – <h:outputText value="#{flash['msg']}"/>  
             </div>  
         </ui:fragment>
         <ui:fragment rendered="#{facesContext.validationFailed}">
-                <div class="alert  alert-danger">
-              <span class="glyphicon glyphicon-info-sign"></span>&#160;<h:outputText value="Form validation failed, see details below."/>
-                </div>
+            <div class="alert alert-danger">
+                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>Validation Error</strong> – Required fields were missed or there was a validation error. Please scroll down to see details.
+            </div>
         </ui:fragment>
         <ui:repeat rendered="#{!facesContext.validationFailed}" value="#{facesContext.messageList}" var="msg">
             #{level = fn:split(msg.severity,' ')[0]; "" }
@@ -31,6 +31,5 @@
             </div>
             #{msg.rendered()}
         </ui:repeat>
-       
     </cc:implementation>
 </html>

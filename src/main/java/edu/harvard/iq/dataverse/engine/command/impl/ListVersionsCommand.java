@@ -22,7 +22,7 @@ import java.util.List;
  * @author Naomi
  */
 // No permission needed to view published dvObjects
-//@RequiredPermissions( Permission.Discover )
+@RequiredPermissions({})
 public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>>{
     
     private final Dataset ds;

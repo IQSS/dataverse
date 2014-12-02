@@ -80,36 +80,54 @@ public class DataVariable implements Serializable {
      */
     private java.lang.Long fileEndPosition;
 
+    
+
+    public enum VariableInterval { DISCRETE, CONTINUOUS, NOMINAL, DICHOTOMOUS }; // former VariableIntervalType
     /*
-     * formatSchema: <REVIEW; ADD COMMENT>
+     * Interval: <FINALIZED>
+     * former VariableIntervalType
      */
-    private String formatSchema;
+    //@ManyToOne
+    private VariableInterval interval;
+
+    
+    public enum VariableType { NUMERIC, CHARACTER }; // former VariableFormatType
 
     /*
-     * formatSchemaName: <REVIEW; ADD COMMENT>
+     * Type: <FINALIZED>
+     * former VariableFormatType
      */
-    private String formatSchemaName;
+    //@ManyToOne
+    //@JoinColumn(nullable=false)
+    private VariableType type;
 
     /*
-     * variableIntervalType: <REVIEW; ADD COMMENT>
-     * Note that VariableIntervalType is itself an entity [is it necessary?]
+     * formatSchema: <FINALIZED, DROPPED>
+     * Used for the original format - i.e. RData, SPSS, etc. (??)
      */
-    @ManyToOne
-    private VariableIntervalType variableIntervalType;
+    //experimentprivate String formatSchema;
 
     /*
-     * variableFormatType: <REVIEW; ADD COMMENT>
-     * Note that VariableFormatType is itself an entity [is it necessary?]
+     * format: <FINALIZED>
+     * used for format strings - such as "%D-%Y-%M" for date values, etc. 
+     * former formatSchemaName
      */
-    @ManyToOne
-    @JoinColumn(nullable=false)
-    private VariableFormatType variableFormatType;
+    private String format;
 
+    /*
+     * formatCategory: 
+     * <FINALIZED>
+     * left as is. 
+     * TODO: (?) consider replacing with an enum (?)
+     * Used for "time", "date", etc.
+     */
+    private String formatCategory;
+    
     /*
      * recordSegmentNumber: this property is specific to fixed-width data 
      * files.
      */
-    private java.lang.Long recordSegmentNumber;
+    private Long recordSegmentNumber;
 
     /*
      * invalidRanges: value ranges that are defined as "invalid" for this
@@ -178,12 +196,6 @@ public class DataVariable implements Serializable {
     private int fileOrder;
     
     /*
-     * formatCategory: name of the Format Category of this variable
-     * <TODO: REVIEW; ADD COMMENT>
-     */
-    private String formatCategory;
-
-    /*
      * number of decimal points, where applicable.
      */
     private Long numberOfDecimalPoints;
@@ -251,36 +263,105 @@ public class DataVariable implements Serializable {
         this.fileEndPosition = fileEndPosition;
     }
 
-    public String getFormatSchema() {
-        return this.formatSchema;
+    //experimentpublic String getFormatSchema() {
+    //    return this.formatSchema;
+    //}
+    //
+    //public void setFormatSchema(String formatSchema) {
+    //    this.formatSchema = formatSchema;
+    //}
+
+    public String getFormat() {
+        return this.format;
     }
     
-    public void setFormatSchema(String formatSchema) {
-        this.formatSchema = formatSchema;
+    public void setFormat(String format) {
+        this.format = format;
+    }
+    
+    public VariableInterval getInterval() {
+        return this.interval;
+    }
+    
+    public void setInterval(VariableInterval interval) {
+        this.interval = interval;
     }
 
-    public String getFormatSchemaName() {
-        return this.formatSchemaName;
+    // Methods for obtaining interval types as strings (labels), 
+    // used in the DDI:
+    
+    public String getIntervalLabel() {
+        if (isIntervalDiscrete()) {
+            return "discrete";
+        }
+        if (isIntervalContinuous()) {
+            return "contin";
+        }
+        if (isIntervalNominal()) {
+            return "nominal";
+        }
+        if (isIntervalDichotomous()) {
+            return "dichotomous";
+        }
+        return null; 
     }
     
-    public void setFormatSchemaName(String formatSchemaName) {
-        this.formatSchemaName = formatSchemaName;
+    public void setIntervalDiscrete() {
+        this.interval = VariableInterval.DISCRETE;
     }
     
-    public VariableIntervalType getVariableIntervalType() {
-        return this.variableIntervalType;
+    public void setIntervalContinuous() {
+        this.interval = VariableInterval.CONTINUOUS;
     }
     
-    public void setVariableIntervalType(VariableIntervalType variableIntervalType) {
-        this.variableIntervalType = variableIntervalType;
-    }
-
-    public VariableFormatType getVariableFormatType() {
-        return this.variableFormatType;
+    public void setIntervalNominal() {
+        this.interval = VariableInterval.NOMINAL;
     }
     
-    public void setVariableFormatType(VariableFormatType variableFormatType) {
-        this.variableFormatType = variableFormatType;
+    public void setIntervalDichotomous() {
+        this.interval = VariableInterval.DICHOTOMOUS;
+    }
+    
+    public boolean isIntervalDiscrete() {
+        return this.interval == VariableInterval.DISCRETE;
+    }
+    
+    public boolean isIntervalContinuous() {
+        return this.interval == VariableInterval.CONTINUOUS;
+    }
+    
+    public boolean isIntervalNominal() {
+        return this.interval == VariableInterval.NOMINAL;
+    }
+    
+    public boolean isIntervalDichotomous() {
+        return this.interval == VariableInterval.DICHOTOMOUS;
+    }
+    
+    
+    
+    public VariableType getType() {
+        return this.type;
+    }
+    
+    public void setType(VariableType type) {
+        this.type = type;
+    }
+    
+    public void setTypeNumeric() {
+        this.type = VariableType.NUMERIC;
+    }
+    
+    public void setTypeCharacter() {
+        this.type = VariableType.CHARACTER;
+    }
+    
+    public boolean isTypeNumeric() {
+        return this.type == VariableType.NUMERIC;
+    }
+    
+    public boolean isTypeCharacter() {
+        return this.type == VariableType.CHARACTER;
     }
 
     public java.lang.Long getRecordSegmentNumber() {

@@ -41,6 +41,10 @@
                         $('button[id$="updateTemplate"]').trigger('click');
                     }
 
+                    function registerDataset() {
+                        $('button[id$="registerDataset"]').trigger('click');
+                    }
+
                     function checkFilesSelected() {
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
@@ -130,6 +134,7 @@
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                     <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
+                    <f:viewParam name="globalId" value="#{DatasetPage.globalId}"/>
                     <f:viewAction action="#{DatasetPage.init}" />
                 </f:metadata>
 
@@ -163,13 +168,11 @@
                                                             <h:outputText value="Metadata" />
                                                         </p:commandLink>
                                                     </li>
-                                                    <li>                                                    
-                                                        <p:commandLink id="rolesPermissionsOpts" 
-                                                                       actionListener="#{rolePermissionFragment.setDvObject(DatasetPage.dataset)}" 
-                                                                       update="rolesPermissionsDialog"
-                                                                       oncomplete="rolesPermissionsForm.show()">
-                                                            <h:outputText value="Roles + Permissions" />
-                                                        </p:commandLink>  
+                                                    <li>
+                                                        <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                            <h:outputText value="Permissions" />
+                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                        </h:link>
                                                     </li>
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
@@ -204,8 +207,20 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
-                                            <ui:fragment rendered="#{!DatasetPage.dataset.released 
-                                                                     and DatasetPage.dataset.latestVersion.versionState=='DRAFT' 
+                                            <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime == null
+                                                                     and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                                     and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
+                                                <button type="button" class="btn btn-default" onclick="registerDataset()">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Register Dataset
+                                                </button>
+                                                <p:commandButton value="Direct" id="registerDataset"
+                                                         style="display:none"
+                                                         update="@form"
+                                                         action="#{DatasetPage.registerDataset()}">
+                                        </p:commandButton>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
+                                                                     and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                      and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                                 <button type="button" class="btn btn-default" onclick="confirmation.show()">
                                                     <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
@@ -282,7 +297,7 @@
                                             <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="Deaccessioned" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                         </div>
-                                            
+
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div class="row" >
@@ -335,8 +350,8 @@
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value and !DatasetPage.workingVersion.deaccessioned}">
                                         <span id="description">#{DatasetPage.datasetVersionUI.description.value}</span>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!DatasetPage.workingVersion.deaccessioned and (!empty DatasetPage.datasetVersionUI.keyword.value 
-                                                             or !empty DatasetPage.datasetVersionUI.subject.value or !empty DatasetPage.datasetVersionUI.relPublicationCitation 
+                                    <ui:fragment rendered="#{!DatasetPage.workingVersion.deaccessioned and (!empty DatasetPage.datasetVersionUI.keyword.value
+                                                             or !empty DatasetPage.datasetVersionUI.subject.value or !empty DatasetPage.datasetVersionUI.relPublicationCitation
                                                              or !empty DatasetPage.datasetVersionUI.notes.value)}">
                                         <div id="" class="panel panel-default" style="margin-top:1em;">
                                             <div class="panel-body" style="padding:12px 0;">
@@ -420,7 +435,7 @@
                                     </div>
                                 </div>
                             </ui:fragment>
-                            <ui:include src="metadataFragment.xhtml"/>                      
+                            <ui:include src="metadataFragment.xhtml"/>
                         </ui:fragment>
                     </ui:fragment>
 
@@ -447,7 +462,7 @@
                                 </p:socket>
                             </ui:fragment>
                             <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
-                                <p:tab id="dataFilesTab" title="Files" rendered="#{!DatasetPage.workingVersion.deaccessioned and 
+                                <p:tab id="dataFilesTab" title="Files" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                                                    (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                     <!-- Upload -->
                                     <!--<p:message for="fileUpload" showDetail="true"/>-->
@@ -504,7 +519,8 @@
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" style="margin-top:1em;" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
                                                  rowIndexVar="rowNum"
-                                                 selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable">
+                                                 selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable"
+                                                 emptyMessage="No files found.">
                                         <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
@@ -532,40 +548,62 @@
                                                 <p:message for="fileName"/>
                                             </ui:fragment>
 
-                                            <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}#{!empty fileMetadata.dataFile.md5 ? ', ' : ''}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+                                            <!-- SIZE + TYPE + MD5 -->
+                                            <div>
+                                                <h:outputText id="fileTypeOutputRegular" styleClass="text-muted" value="#{fileMetadata.dataFile.friendlyType} - " rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+                                                <h:outputText id="fileTypeOutputTabular" styleClass="text-muted" value="Tabular Data - " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                <h:outputText id="fileSize" styleClass="text-muted" value="#{fileMetadata.dataFile.friendlySize} - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
-                                            <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
-                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
-                                            <h:outputText id="duplicateFileMD5" style="color:red" value="MD5: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
-                                            <h:outputText id="fileDuplicateWarning" style="color:red" value=" (A file with this MD5 already exists in the dataset!)" rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}"/>
+                                                <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
+                                                <h:outputText id="fileMD5" styleClass="text-muted" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
 
-                                            <h:outputText id="fileTypeOutputTabular" value="Tabular Data, " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} variables, " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} observations#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}, " rendered="#{!empty fileMetadata.dataFile.unf}"/>
-                                            <h:outputText id="fileSize" value=" Size: #{fileMetadata.dataFile.filesize} bytes." rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                                <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
+                                                <ui:fragment rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}">
+                                                    <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">A file with this MD5 already exists in the dataset.</span></div>
+                                                </ui:fragment>
+                                            </div>
 
+                                            <!-- UNF + Variables, Obsersvations -->
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
+                                                <div>
+                                                    <h:outputText id="fileNumVars" styleClass="text-muted" value="#{fileMetadata.dataFile.dataTable.varQuantity} Variables, " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                    <h:outputText id="fileNumObs" styleClass="text-muted" value="#{fileMetadata.dataFile.dataTable.caseQuantity} Observations#{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                    <h:outputText id="fileUNF" styleClass="text-muted" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                                                </div>
+                                            </ui:fragment>
 
-                                            <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
+                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a>
                                                 <br />
                                                 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
 
                                                 <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile) }-->
                                             </ui:fragment>
-                                            <div class="fileDescription">
-                                                <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
-                                                <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.description)}"/>-->
 
-                                                <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
-                                                    <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
-                                                        Description
-                                                    </label>
-                                                    <p:inputTextarea  id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="margin-top:.5em;"/>
-                                                    <p:watermark for="fileDescription" value="Add file description..."/>
-                                                    <p:message for="fileDescription"/>
-                                                </ui:fragment>
-                                            </div>
+                                            <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
+                                                <div class="fileDescription">
+                                                    <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
+                                                    <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.description)}"/>-->
+
+                                                    <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                                        <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                                                            Description
+                                                        </label>
+                                                        <p:inputTextarea  id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="margin-top:.5em;"/>
+                                                        <p:watermark for="fileDescription" value="Add file description..."/>
+                                                        <p:message for="fileDescription"/>
+                                                    </ui:fragment>
+                                                </div>
+                                            </ui:fragment>
+
+                                        </p:column>
+
+                                        <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                            <ui:fragment rendered="#{(fileMetadata.dataFile.tabularData)}">
+                                                <p:commandLink id="deleteDataset" styleClass="btn btn-default" onclick="fileAdvancedOptions.show()">
+                                                    <span class="glyphicon glyphicon-cog" style="margin-right:.3em;"/> Advanced Options
+                                                </p:commandLink>
+                                            </ui:fragment>
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
@@ -584,9 +622,9 @@
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
                                             </ui:fragment>-->
 
-                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
+                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->
                                                  <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" target="_blank" role="button">
-                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
+                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/>
                                                     <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
                                                     <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
                                                 </a>
@@ -602,26 +640,40 @@
                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download <span class="caret"></span>
                                                     </button>
-                                                    <ul class="dropdown-menu" role="menu" style="text-align:left;">
+                                                    <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="As Tab-Delimited"/>
+                                                            <h:outputLink value="#">
+                                                                <!--strong>All File Formats + Information</strong-->
+                                                                <strong>All formats bundle (coming soon)</strong>
                                                             </h:outputLink>
                                                         </li>
+                                                        <li role="presentation" class="divider"></li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData"  rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="As RData"/>
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                                <h:outputText value="Tab-Delimited"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="Saved Original (#{fileMetadata.dataFile.originalFormatLabel})"/>
+                                                                <h:outputText value="Original File Format (#{fileMetadata.dataFile.originalFormatLabel})"/>
+                                                            </h:outputLink>
+                                                        </li>
+                                                        <li>
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData"  rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
+                                                                <h:outputText value="RData Format"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/meta/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="Variable Metadata"/>
                                                             </h:outputLink>
+                                                        </li>
+                                                        <li class="dropdown-submenu">
+                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation (coming soon)</a>
+                                                            <ul class="dropdown-menu">
+                                                              <li><a tabindex="-1" href="#">RIS Format</a></li>
+                                                              <li><a href="#">EndNote XML</a></li>
+                                                            </ul>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -634,7 +686,7 @@
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab  id="metadataMapTab" title="Metadata" 
+                                <p:tab  id="metadataMapTab" title="Metadata"
                                         rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}"
                                         >
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
@@ -650,6 +702,105 @@
                                     </ui:fragment>
                                     <div style="clear:left;">
                                         <ui:include src="metadataFragment.xhtml"/>
+                                    </div>
+                                </p:tab>
+                                <p:tab id="licensingTermsTab" title="Licensing + Terms" rendered="#{false}">
+                                    <div class="" style="text-align:right; margin-bottom:.5em;">
+                                        <button type="button" class="btn btn-default" value="Edit Licensing + Terms Requirements">
+                                            <span class="glyphicon glyphicon-briefcase"></span> Edit Licensing + Terms Requirements
+                                        </button>
+                                    </div>
+                                    <p class="help-block">These are all the Licensing + Terms for your dataset.</p>
+                                    <div class="panel-group">
+                                        <div class="panel panel-default" style="margin-bottom:1em;">
+                                            <div data-toggle="collapse" data-target="#collapseLiscensingTOU" class="panel-heading text-info">
+                                                Licensing + Terms of Use <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                            </div>
+                                            <div id="collapseLiscensingTOU" class="collapse in">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="metadata_Licensing" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Licensing
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Terms of Use
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="panel panel-default" style="margin-bottom:1em;">
+                                            <div data-toggle="collapse" data-target="#collapseRestrictedFilesTOA" class="panel-heading text-info">
+                                                Restricted Files + Terms of Access <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                            </div>
+                                            <div id="collapseRestrictedFilesTOA" class="collapse in">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Restricted Files
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Terms of Access
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Request Access
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="panel panel-default" style="margin-bottom:1em;">
+                                            <div data-toggle="collapse" data-target="#collapseGuestbook" class="panel-heading text-info">
+                                                Guestbook <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                            </div>
+                                            <div id="collapseGuestbook" class="collapse in">
+                                                <div class="panel-body">
+                                                    <div class="form-group">
+                                                        <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Guestbook
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </p:tab>
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
@@ -737,7 +888,7 @@
                                                            value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
                                         <p:column style="min-width:140px;">
-											<!-- FIXME Commented this out, as there is no such property at this time. Michael --> 
+											<!-- FIXME Commented this out, as there is no such property at this time. Michael -->
                                                                                         <h:outputText value="#{versionTab.contributorNames}" />
                                         </p:column>
                                         <p:column>
@@ -800,7 +951,7 @@
                             <label class="control-label" for="fileDescription">
                                 Please enter additional information about the reason for deaccession.
                             </label>
-                            <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" 
+                            <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40"
                                              onkeyup="updateHiddenReason(this);"   value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
                             <p:message for="reasonForDeaccession"/>
                         </div>
@@ -911,7 +1062,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="alert alert-info" style="margin-top:.5em;">
-                            Metadata Tip: After adding the dataset, click the Edit Dataset button to add more metadata..
+                            Metadata Tip: After adding the dataset, click the Edit Dataset button to add more metadata.
                         </div>
                     </ui:fragment>
 
@@ -930,8 +1081,84 @@
                                      oncomplete="javascript:bind_bsui_components();"
                                      action="#{DatasetPage.save}">
                     </p:commandButton>
-                    
-                    <ui:include src="rolesAndPermissionsFragment.xhtml"/>                    
+
+                    <ui:include src="rolesAndPermissionsFragment.xhtml"/>
+                    <p:dialog id="fileAdvancedOptions" header="Advanced Options" widgetVar="fileAdvancedOptions" modal="true">
+                        <p class="help-block">Edit these advanced options.</p>
+                        <style type="text/css">
+                                    .form-group table.noBorders {width:100%;}
+                                    .form-group table.noBorders td {width:50%;}
+                                    .form-group table.noBorders td .form-control {width:100%;}
+                                </style>
+                        <div class="form-inline clearfix" style="min-width:800px;">
+                            <div class="form-group col-sm-12">
+                                <label for="spssPortableSecondFile" class="col-sm-4 control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        SPSS-Portable Second File
+                                    </a>
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:panelGrid columns="2" styleClass="noBorders">
+                                        <h:outputText value="**REMOVE ME** File Upload"/>
+                                        <h:outputText value="Error Msg **REMOVE ME**"/>
+                                    </p:panelGrid>
+                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
+                                        <p:inputText id="spssPortableSecondFile" styleClass="form-control"/>
+                                        <p:message for="spssPortableSecondFile" display="text" /> -->
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-12">
+                                <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        SPSS-Sav Encoding Language
+                                    </a>
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:panelGrid columns="2" styleClass="noBorders">
+                                        <h:outputText value="**REMOVE ME** Dropdown"/>
+                                        <h:outputText value="Error Msg **REMOVE ME**"/>
+                                    </p:panelGrid>
+                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
+                                        <p:inputText id="spssSavEncodingLanguage" styleClass="form-control"/>
+                                        <p:message for="spssSavEncodingLanguage" display="text" /> -->
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-12">
+                                <label for="datasetThumbnailImage" class="col-sm-4 control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        Dataset Thumbnail Image
+                                    </a>
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:panelGrid columns="2" styleClass="noBorders">
+                                        <h:outputText value="**REMOVE ME** [x] Use this thumbail image as my dataset default"/>
+                                        <h:outputText value="Error Msg **REMOVE ME**"/>
+                                    </p:panelGrid>
+                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
+                                        <p:inputText id="datasetThumbnailImage" styleClass="form-control"/>
+                                        <p:message for="datasetThumbnailImage" display="text" /> -->
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-12">
+                                <label for="fileTags" class="col-sm-4 control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        File Tags
+                                    </a>
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:panelGrid columns="2" styleClass="noBorders">
+                                        <h:outputText value="**REMOVE ME** Multiple Select Dropdown w/Checkboxes"/>
+                                        <h:outputText value="Error Msg **REMOVE ME**"/>
+                                    </p:panelGrid>
+                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
+                                        <p:inputText id="fileTags" styleClass="form-control"/>
+                                        <p:message for="fileTags" display="text" /> -->
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-default" value="Save Changes" onclick="fileAdvancedOptions.hide()">Save Changes</button>
+                        <button type="button" class="btn btn-default" value="Cancel" onclick="fileAdvancedOptions.hide()">Cancel</button>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>

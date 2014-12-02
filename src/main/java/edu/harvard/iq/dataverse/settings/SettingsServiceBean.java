@@ -25,6 +25,27 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /**
+         * A boolean defining if indexing and search should respect the concept
+         * of "permission root".
+         *
+         * <p>
+         *
+         * If we ignore permissionRoot at index time, we should blindly give
+         * search ("discoverability") access to people and group who have access
+         * defined in a parent dataverse, all the way back to the root.
+         *
+         * <p>
+         *
+         * If we respect permissionRoot, this means that the dataverse being
+         * indexed is an island of permissions all by itself. We should not look
+         * to its parent to see if more people and groups might be able to
+         * search the DvObjects within it. We would assume no implicit
+         * inheritance of permissions. In this mode, all permissions must be
+         * explicitly defined on DvObjects. No implied inheritance.
+         *
+         */
+        SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API. */
@@ -41,8 +62,16 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
+        DoiSeparator,
+        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
+        DoiUsername,
+        DoiPassword,
+        DoiBaseurlstring,
+        */
         /* TwoRavens location */
-        TwoRavensUrl;
+        TwoRavensUrl,
+        /* zip download size limit */
+        ZipDonwloadLimit;
         
         @Override
         public String toString() {

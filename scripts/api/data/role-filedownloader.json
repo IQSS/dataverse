@@ -3,6 +3,6 @@
     "name":"File Downloader",
     "description":"A user who can download a file.",
     "permissions":[
-        "Download"
+        "DownloadFile"
     ]
 }

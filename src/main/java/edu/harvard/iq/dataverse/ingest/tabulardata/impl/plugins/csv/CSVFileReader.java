@@ -31,8 +31,6 @@ import javax.inject.Inject;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
@@ -60,9 +58,6 @@ import org.apache.commons.lang.StringUtils;
  */
 public class CSVFileReader extends TabularDataFileReader {
 
-    @Inject
-    VariableServiceBean varService;
-
     private static final Logger dbglog = Logger.getLogger(CSVFileReader.class.getPackage().getName());
     private static final int DIGITS_OF_PRECISION_DOUBLE = 15; 
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
@@ -88,19 +83,6 @@ public class CSVFileReader extends TabularDataFileReader {
 
     private void init() throws IOException {
         doubleMathContext = new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN);
-        Context ctx = null; 
-        try {
-            ctx = new InitialContext();
-            varService = (VariableServiceBean) ctx.lookup("java:global/dataverse-4.0/VariableServiceBean");
-        } catch (NamingException nex) {
-            try {
-                ctx = new InitialContext();
-                varService = (VariableServiceBean) ctx.lookup("java:global/dataverse/VariableServiceBean");
-            } catch (NamingException nex2) {
-                dbglog.severe("Could not look up initial context, or the variable service in JNDI!");
-                throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
-            }
-        }
     }
     
     /**
@@ -178,9 +160,8 @@ public class CSVFileReader extends TabularDataFileReader {
             dv.setCategories(new ArrayList());
             variableList.add(dv);
 
-            dv.setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-            dv.setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
-            
+            dv.setTypeCharacter();
+            dv.setIntervalDiscrete();
             dv.setFileOrder(i);
             dv.setDataTable(dataTable);
         }
@@ -382,21 +363,21 @@ public class CSVFileReader extends TabularDataFileReader {
         
         for (int i = 0; i < varQnty; i++) {
             if (isNumericVariable[i]) {
-                dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
+                dataTable.getDataVariables().get(i).setTypeNumeric();
 
                 if (isIntegerVariable[i]) {
-                    dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    dataTable.getDataVariables().get(i).setIntervalDiscrete();
                 } else {
-                    dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                    dataTable.getDataVariables().get(i).setIntervalContinuous();
                 }
             } else if (isDateVariable[i] && selectedDateFormat[i] != null) {
                 // Dates are still Strings, i.e., they are "character" and "discrete";
                 // But we add special format values for them:
-                dataTable.getDataVariables().get(i).setFormatSchemaName(DATE_FORMATS[0].toPattern());
+                dataTable.getDataVariables().get(i).setFormat(DATE_FORMATS[0].toPattern());
                 dataTable.getDataVariables().get(i).setFormatCategory("date");
             } else if (isTimeVariable[i] && selectedDateTimeFormat[i] != null) {
                 // Same for time values:
-                dataTable.getDataVariables().get(i).setFormatSchemaName(selectedDateTimeFormat[i].toPattern());
+                dataTable.getDataVariables().get(i).setFormat(selectedDateTimeFormat[i].toPattern());
                 dataTable.getDataVariables().get(i).setFormatCategory("time");
             }
         }

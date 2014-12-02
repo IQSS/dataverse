@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="id" value="#{managePermissionsPage.dvObject.id}"/>
+            <f:viewAction action="#{managePermissionsPage.init}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Roles + Permissions - #{managePermissionsPage.dvObject.displayName}"/>
+            <ui:param name="dataverse" value="#{managePermissionsPage.dvObject.dataverseContext}"/>
+            <ui:param name="dataset" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject : null}"/>
+            <ui:param name="version" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject.latestVersion : null}"/>
+            <ui:param name="showMessagePanel" value="true"/>
+            <ui:define name="body">
+                <h:form id="rolesPermissionsForm">
+                    <div>
+                        <!-- Permissions Configure -->
+                        <p:fragment id ="configureSettings">
+                            <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}"> 
+                                <ui:include src="permissions-configure.xhtml"/>
+                            </c:if>
+                        </p:fragment>
+                        <!-- Role Assignments Panel -->
+                        <div class="panel-group">
+                            <div class="panel panel-default" style="margin-bottom:1em;">
+                                <div data-toggle="collapse" data-target="#collapseUsersGroups" class="panel-heading text-info">
+                                    Users/Groups <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                </div>
+                                <div id="collapseUsersGroups" class="collapse in">
+                                    <div class="panel-body">
+                                        <p:commandLink id="userGroupsAdd" 
+                                                       styleClass="btn btn-default pull-right" 
+                                                       actionListener="#{managePermissionsPage.initAssigneeDialog}"
+                                                       update="userGroupDialog"
+                                                       oncomplete="userGroupsForm.show();bind_bsui_components();">
+                                            <span class="glyphicon glyphicon-user" style="margin-right:0.3em;"/> Assign Roles to Users/Groups
+                                        </p:commandLink>
+                                        <p class="help-block clearfix">Here are all the users and groups that have access to your dataverse.</p>
+                                        <div>
+                                            <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
+                                                <p:column width="35%"  headerText="User / Group">
+                                                    <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
+                                                </p:column>
+                                                <p:column width="25%"  headerText="Role">
+                                                    <h:outputText value="#{roleAssignment.roleName}"/>
+                                                </p:column>
+                                                <p:column width="40%" headerText="Action">                                        
+                                                    <h:outputText styleClass="text-muted italic" value="Role assigned at #{roleAssignment.assignedDvName}" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}" />
+                                                    <p:commandLink styleClass="btn btn-default" 
+                                                                   action="#{managePermissionsPage.revokeRole(roleAssignment.id)}"
+                                                                   rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
+                                                                   update="assignedRoles :#{p:component('configureSettings')}"
+                                                                   style="color:black;margin-right:0.5em;"><span class="glyphicon glyphicon-remove" style="margin-right:0.3em;"/> Remove Assigned Role</p:commandLink>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>                                        
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Roles panel -->
+                            <div class="panel panel-default">
+                                <div data-toggle="collapse" data-target="#collapseRoles" class="panel-heading text-info">
+                                    Roles <span class="glyphicon glyphicon-chevron-down" style="margin-left:.3em;top:3px;"/>
+                                </div>
+                                <div id="collapseRoles" class="collapse">
+                                    <div class="panel-body">
+                                        <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                            <p:commandLink id="rolesAdd" 
+                                                           styleClass="btn btn-default pull-right" 
+                                                           actionListener="#{managePermissionsPage.createNewRole}"  
+                                                           oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
+                                                           update=":#{p:component('editRolePanel')}">
+                                                <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> Add New Role
+                                            </p:commandLink>
+                                        </ui:fragment>
+                                        <p class="help-block clearfix">Here are all the roles set up in your dataverse, that you can assign to users and groups.</p>                                        
+                                        <p:fragment id="roleDisplay">
+                                            <ui:repeat id="roleList" value="#{managePermissionsPage.availableRoles}" var="role">
+                                                <f:passThroughAttribute name="class" value="list-unstyled" />
+                                                <div class="#{!empty role.owner ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
+                                                    <span style="font-weight:bold">#{role.name}</span>
+                                                    <h:outputText value=" - #{role.description}" rendered="#{!empty role.description}"/>
+                                                    <ui:fragment rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(role.owner)}">
+                                                        <p:commandLink title="Edit role" style="margin-left:1em;"
+                                                                       actionListener="#{managePermissionsPage.editRole(role.id)}"
+                                                                       oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
+                                                                       update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-pencil"></span></p:commandLink>                                          
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                                        <p:commandLink title="Copy role" style="margin-left:1em;" 
+                                                                       actionListener="#{managePermissionsPage.cloneRole(role.id)}"
+                                                                       oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
+                                                                       update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-retweet"></span></p:commandLink>
+                                                    </ui:fragment>
+                                                    <div>
+                                                        <ui:repeat value="#{role.permissions().toArray()}" var="prm">
+                                                            <span class="label label-default">#{prm}</span>
+                                                        </ui:repeat>
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        </p:fragment>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users/Groups Popup -->
+                    <ui:include src="roles-assign.xhtml"/>
+                    <!-- Roles Edit Popup -->
+                    <ui:include src="roles-edit.xhtml"/>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

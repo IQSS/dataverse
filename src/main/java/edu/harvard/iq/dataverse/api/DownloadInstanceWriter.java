@@ -25,6 +25,10 @@ import javax.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.*;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
@@ -33,7 +37,10 @@ import edu.harvard.iq.dataverse.dataaccess.*;
 @Singleton
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
+    
+    private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
+    
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return clazz == DownloadInstance.class;
@@ -62,6 +69,56 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     @Override
     public void writeTo(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
 
+        // zip download is a special case: 
+        // the Download Instance doesn't have an associated Download Info or 
+        // primary file associated with it; it only has a list of data file 
+        // objects that need to be zipped together: 
+        if ("zip".equals(di.getConversionParam())) {
+            if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
+                logger.fine("processing extra arguments list of length " + di.getExtraArguments().size());
+                List<DataFile> fileList = new ArrayList<>();
+                for (int i = 0; i < di.getExtraArguments().size(); i++) {
+                    DataFile file = (DataFile) di.getExtraArguments().get(i);
+                    if (file != null) {
+                        logger.fine("adding datafile (id=" + file.getId() + ") to the list.");
+                        fileList.add(file);
+                    }
+                }
+                if (fileList.size() > 0) {
+                    httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                    httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+                    
+                    DataFileZipper zipper = new DataFileZipper();
+                    
+                    long sizeLimit = 0L;
+                    
+                    if (di.getConversionParamValue() != null) {
+                        try {
+                            Long configuredLimit = new Long(di.getConversionParamValue());
+                            sizeLimit = configuredLimit.longValue();
+                        } catch (NumberFormatException nfe) {}
+                     }
+        
+                    try {
+                        if (sizeLimit > 0L) {
+                            zipper.zipFiles(fileList, outstream, sizeLimit);
+                        } else {
+                            zipper.zipFiles(fileList, outstream);
+                        }
+                    } catch (IOException ioe) {
+                        throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+                    }
+                    
+                    return;
+                }
+            }
+
+            logger.warning("empty list of extra arguments.");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        
+        
         if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
             DataAccessRequest daReq = new DataAccessRequest();
             
@@ -123,7 +180,61 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         (FileAccessObject)accessObject, 
                                         di.getConversionParamValue(), requestedMimeType);
                             } 
-                        }
+                        } else if (di.getConversionParam().equals("subset")) {
+                            logger.fine("processing subset request.");
+                            
+                            // TODO: 
+                            // If there are parameters on the list that are 
+                            // not valid variable ids, or if the do not belong to 
+                            // the datafile referenced - I simply skip them; 
+                            // perhaps I should throw an invalid argument exception 
+                            // instead. 
+                            // -- L.A. 4.0 beta 9
+                            
+                            if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
+                                logger.fine("processing extra arguments list of length "+di.getExtraArguments().size());
+                                List <DataVariable> variableList = new ArrayList<>();
+                                String subsetVariableHeader = null;
+                                for (int i = 0; i < di.getExtraArguments().size(); i++) {
+                                    DataVariable variable = (DataVariable)di.getExtraArguments().get(i);
+                                    if (variable != null) {
+                                        if (variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
+                                            logger.fine("adding variable id "+variable.getId()+" to the list.");
+                                            variableList.add(variable);
+                                            if (subsetVariableHeader == null) {
+                                                subsetVariableHeader = variable.getName();
+                                            } else {
+                                                subsetVariableHeader = subsetVariableHeader.concat("\t");
+                                                subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
+                                            }
+                                        } else {
+                                            logger.warning("variable does not belong to this data file.");
+                                        }
+                                    }  
+                                }
+                                if (variableList.size() > 0) {
+                                    TabularSubsetInputStream subsetInputStream = null; 
+                                
+                                    try {
+                                        subsetInputStream = new TabularSubsetInputStream(sf, variableList);
+                                    } catch (IOException ioe) {
+                                        subsetInputStream = null; 
+                                    }
+                                
+                                    if (subsetInputStream != null) {
+                                        logger.fine("successfully created subset output stream.");
+                                        accessObject.closeInputStream();
+                                        accessObject.setInputStream(subsetInputStream);
+                                        accessObject.setIsLocalFile(true);
+                                        // TODO: make noVarHeader option work for subsets too!
+                                        subsetVariableHeader = subsetVariableHeader.concat("\n");
+                                        accessObject.setVarHeader(subsetVariableHeader);
+                                    }
+                                }
+                            } else {
+                                logger.fine("empty list of extra arguments.");
+                            }
+                        } 
                     }
                     
                     
@@ -143,7 +254,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     // to satisfy the widest selection of browsers out there. 
                     
                     httpHeaders.add("Content-disposition", "attachment; filename=\"" + fileName + "\"");
-                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName);
+                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
                     
                     // (the httpHeaders map must be modified *before* writing any
                     // data in the output stream! 
@@ -164,6 +275,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
 
                     instream.close();
+                    outstream.close(); 
                     return;
                 }
             }

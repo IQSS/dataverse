@@ -15,6 +15,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.EnumSet;
 import javax.persistence.EntityManager;
@@ -46,6 +47,9 @@ public class EjbDataverseEngine {
 
     @EJB
     IndexServiceBean indexService;
+
+    @EJB
+    SolrIndexServiceBean solrIndexService;
 
     @EJB
     SearchServiceBean searchService;
@@ -85,7 +89,7 @@ public class EjbDataverseEngine {
 
 		// Currently not in use
         // Check permissions - or throw an exception
-        Map<String, ? extends Set<Permission>> requiredMap = CH.permissionsRequired(aCommand);
+        Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
         if (requiredMap == null) {
             throw new RuntimeException("Command class " + aCommand.getClass() + " does not define required permissions. "
                     + "Please use the RequiredPermissions annotation.");
@@ -145,6 +149,11 @@ public class EjbDataverseEngine {
                 @Override
                 public IndexServiceBean index() {
                     return indexService;
+                }
+
+                @Override
+                public SolrIndexServiceBean solrIndex() {
+                    return solrIndexService;
                 }
 
                 @Override

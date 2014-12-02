@@ -1,12 +1,1 @@
-{
-  "data": {
-    "items": "[]",
-    "count_in_response": 0,
-    "start": 0,
-    "total_count": 0,
-    "fq_actual": "[{!join from=groups_s to=perms_ss}id:group_public]",
-    "fq_provided": "[]",
-    "q": "*"
-  },
-  "status": "OK"
-}
+0

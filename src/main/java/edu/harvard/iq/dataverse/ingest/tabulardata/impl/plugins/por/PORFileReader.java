@@ -40,8 +40,6 @@ import javax.naming.NamingException;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
@@ -65,9 +63,6 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SPSSConstant
  */
 
 public class PORFileReader  extends TabularDataFileReader{
-    @Inject
-    VariableServiceBean varService;
-        
     // static fields ---------------------------------------------------------//
     private static final String MissingValueForTextDataFile = "";
 
@@ -155,19 +150,6 @@ public class PORFileReader  extends TabularDataFileReader{
     
     private void init() throws IOException {
         
-        Context ctx = null; 
-        try {
-            ctx = new InitialContext();
-            varService = (VariableServiceBean) ctx.lookup("java:global/dataverse-4.0/VariableServiceBean");
-        } catch (NamingException nex) {
-            try {
-                ctx = new InitialContext();
-                varService = (VariableServiceBean) ctx.lookup("java:global/dataverse/VariableServiceBean");
-            } catch (NamingException nex2) {
-                if (dbgLog.isLoggable(Level.INFO)) dbgLog.fine("Could not look up initial context, or the variable service in JNDI!");
-                throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
-            }
-        }
         sdf_ymd.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_ymdhms.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_dhms.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -298,7 +280,7 @@ public class PORFileReader  extends TabularDataFileReader{
                                 dbgLog.fine("setting format category to "+formatCategory);
                                 variableList.get(indx).setFormatCategory(formatCategory);
                                 dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
-                                variableList.get(indx).setFormatSchemaName(dateFormatList[indx]);
+                                variableList.get(indx).setFormat(dateFormatList[indx]);
                             }
                         }
                     } else if (variableFormatType.equals("other")) {
@@ -330,18 +312,18 @@ public class PORFileReader  extends TabularDataFileReader{
             
             if (simpleType > 0) {
                 // String: 
-                variableList.get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                variableList.get(indx).setTypeCharacter();
+                variableList.get(indx).setIntervalDiscrete();
             } else {
                 // Numeric: 
-                variableList.get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
+                variableList.get(indx).setTypeNumeric();
                 // discrete or continuous?
                 // "decimal variables" become dataverse data variables of interval type "continuous":
         
                 if (decimalVariableSet.contains(indx)) {
-                    variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                    variableList.get(indx).setIntervalContinuous();
                 } else {
-                    variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    variableList.get(indx).setIntervalDiscrete();
                 }
                 
             }

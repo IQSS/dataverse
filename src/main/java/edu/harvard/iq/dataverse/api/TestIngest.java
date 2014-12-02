@@ -154,10 +154,11 @@ public class TestIngest {
                     for (int i = 0; i < dataTable.getVarQuantity(); i++) {
                         String vartype = "";
                         
-                        if ("continuous".equals(dataTable.getDataVariables().get(i).getVariableIntervalType().getName())) {
+                        //if ("continuous".equals(dataTable.getDataVariables().get(i).getVariableIntervalType().getName())) {
+                        if (dataTable.getDataVariables().get(i).isIntervalContinuous()) {
                             vartype = "numeric-continuous";
                         } else {
-                            if ("numeric".equals(dataTable.getDataVariables().get(i).getVariableFormatType().getName())) {
+                            if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
                                 vartype = "numeric-discrete";
                             } else {
                                 String formatCategory = dataTable.getDataVariables().get(i).getFormatCategory();

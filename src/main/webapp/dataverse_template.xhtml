@@ -20,6 +20,7 @@
         <h:outputStylesheet library="css" name="componentStyles.css" />
         <h:outputStylesheet library="css" name="owl.carousel.css" />
         <h:outputStylesheet library="css" name="main.css" />
+        <link type="text/css" rel="stylesheet" href="/resources/css/fontcustom.css"/>
         <link type="text/css" rel="stylesheet" href="/resources/css/structure.css"/>
     </h:head>
 
@@ -30,6 +31,7 @@
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
             <ui:param name="showBreadcrumbs" value="#{showBreadcrumbs != null ? showBreadcrumbs : true}"/>
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
+            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : dataverseHeaderFragment.loginRedirectPage}"/>
         </ui:include>
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>

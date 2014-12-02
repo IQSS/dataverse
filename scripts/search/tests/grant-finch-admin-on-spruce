@@ -1,0 +1,3 @@
+#!/bin/bash
+. scripts/search/assumptions
+curl -s -X POST -H 'Content-Type: application/x-www-form-urlencoded' "http://localhost:8080/api/roles/assignments?username=$FINCH_USERNAME&roleId=$ADMIN_ROLE&definitionPointId=$SPRUCE_DATAVERSE&key=$SPRUCEKEY" | jq ' .data | {assignee,_roleAlias}'

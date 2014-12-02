@@ -1,0 +1,16 @@
+{
+    "alias":"curator",
+    "name":"Curator",
+    "description":"Curator.",
+    "permissions":[
+        "ViewUnpublishedDataset",
+        "EditDataset",
+        "DownloadFile",
+        "DeleteDatasetDraft",
+        "PublishDataset",
+        "ManageDatasetPermissions",
+        "AddDataverse",
+        "AddDataset",
+        "ViewUnpublishedDataverse" 
+    ]
+}

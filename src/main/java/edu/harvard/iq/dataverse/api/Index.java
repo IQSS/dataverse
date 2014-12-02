@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -25,6 +27,8 @@ public class Index extends AbstractApiBean {
 
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    SolrIndexServiceBean solrIndexService;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -117,6 +121,20 @@ public class Index extends AbstractApiBean {
             }
             return Util.message2ApiError(sb.toString());
         }
+    }
+
+    @GET
+    @Path("perms")
+    public Response indexAllPermissions() {
+        IndexResponse indexResponse = solrIndexService.indexAllPermissions();
+        return okResponse(indexResponse.getMessage());
+    }
+
+    @GET
+    @Path("perms/{id}")
+    public Response indexPermissions(@PathParam("id") Long id) {
+        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(id);
+        return okResponse(indexResponse.getMessage());
     }
 
     @GET

@@ -21,6 +21,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.util.*;
 import java.util.Scanner;
 import java.util.logging.*;
@@ -55,7 +56,338 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     private static int COLUMN_TYPE_DOUBLE = 3; 
     private static int COLUMN_TYPE_FLOAT = 4; 
     
-       
+    private static int MAX_COLUMN_BUFFER = 8192;
+    
+    private FileChannel fileChannel = null; 
+    
+    private int varcount; 
+    private int casecount; 
+    private int subsetcount;
+    
+    private byte[][] columnEntries = null; 
+
+    
+    private ByteBuffer[] columnByteBuffers;
+    private int[] columnBufferSizes;
+    private int[] columnBufferOffsets;
+    
+    private long[] columnStartOffsets; 
+    private long[] columnTotalOffsets;
+    private long[] columnTotalLengths;
+    
+    public TabularSubsetGenerator() {
+        
+    }
+    
+    public TabularSubsetGenerator (DataFile datafile, List<DataVariable> variables) throws IOException {
+        if (!datafile.isTabularData()) {
+            throw new IOException("DataFile is not tabular data.");
+        }
+         
+        setVarCount(datafile.getDataTable().getVarQuantity().intValue()); 
+        setCaseCount(datafile.getDataTable().getCaseQuantity().intValue()); 
+        
+        File tabfile = datafile.getFileSystemLocation().toFile();    
+        File rotatedImageFile = getRotatedImage(tabfile, getVarCount(), getCaseCount());
+        long[] columnEndOffsets = extractColumnOffsets(rotatedImageFile, getVarCount(), getCaseCount()); 
+        
+        fileChannel = (FileChannel.open(Paths.get(rotatedImageFile.getAbsolutePath()), StandardOpenOption.READ));
+        
+        if (variables == null || variables.size() < 1 || variables.size() > getVarCount()) {
+            throw new IOException("Illegal number of variables in the subset request");
+        }
+        
+        subsetcount = variables.size();
+        columnTotalOffsets = new long[subsetcount];
+        columnTotalLengths = new long[subsetcount];
+        columnByteBuffers = new ByteBuffer[subsetcount];
+
+
+        
+        if (subsetcount == 1) {
+            if (!datafile.getDataTable().getId().equals(variables.get(0).getDataTable().getId())) {
+                throw new IOException("Variable in the subset request does not belong to the datafile.");
+            }
+            dbgLog.fine("single variable subset; setting fileChannel position to "+extractColumnOffset(columnEndOffsets, variables.get(0).getFileOrder()));
+            fileChannel.position(extractColumnOffset(columnEndOffsets, variables.get(0).getFileOrder()));
+            columnTotalLengths[0] = extractColumnLength(columnEndOffsets, variables.get(0).getFileOrder());
+            columnTotalOffsets[0] = 0;
+        } else {
+            columnEntries = new byte[subsetcount][];
+
+            columnBufferSizes = new int[subsetcount];
+            columnBufferOffsets = new int[subsetcount];
+            columnStartOffsets = new long[subsetcount];
+
+            int i = 0;
+            for (DataVariable var : variables) {
+                if (!datafile.getDataTable().getId().equals(var.getDataTable().getId())) {
+                    throw new IOException("Variable in the subset request does not belong to the datafile.");
+                }
+                columnByteBuffers[i] = ByteBuffer.allocate(MAX_COLUMN_BUFFER);
+                columnTotalLengths[i] = extractColumnLength(columnEndOffsets, var.getFileOrder());
+                columnStartOffsets[i] = extractColumnOffset(columnEndOffsets, var.getFileOrder());
+                if (columnTotalLengths[i] < MAX_COLUMN_BUFFER) {
+                    columnByteBuffers[i].limit((int)columnTotalLengths[i]);
+                }
+                fileChannel.position(columnStartOffsets[i]);
+                columnBufferSizes[i] = fileChannel.read(columnByteBuffers[i]);
+                columnBufferOffsets[i] = 0;
+                columnTotalOffsets[i] = columnBufferSizes[i];
+                i++;
+            }
+        }
+    }
+    
+    private int getVarCount() {
+        return varcount;
+    }
+    
+    private void setVarCount(int varcount) {
+        this.varcount = varcount; 
+    }
+    
+    private int getCaseCount() {
+        return casecount;
+    }
+    
+    private void setCaseCount(int casecount) {
+        this.casecount = casecount; 
+    }
+    
+    
+    /* 
+     * Note that this method operates on the *absolute* column number, i.e.
+     * the number of the physical column in the tabular file. This is stored
+     * in DataVariable.FileOrder. 
+     * This "column number" should not be confused with the number of column 
+     * in the subset request; a user can request any number of variable 
+     * columns, in an order that doesn't have to follow the physical order
+     * of the columns in the file. 
+    */
+    private long extractColumnOffset(long[] columnEndOffsets, int column) throws IOException {
+        if (columnEndOffsets == null || columnEndOffsets.length <= column) {
+            throw new IOException("Offsets table not initialized; or column out of bounds.");
+        }
+        long columnOffset;
+        
+        if (column > 0) {
+            columnOffset = columnEndOffsets[column - 1];
+        } else {
+            columnOffset = getVarCount() * 8; 
+        }
+        return columnOffset; 
+    }
+    
+    /* 
+     * See the comment for the method above. 
+     */
+    private long extractColumnLength(long[] columnEndOffsets, int column) throws IOException {
+        if (columnEndOffsets == null || columnEndOffsets.length <= column) {
+            throw new IOException("Offsets table not initialized; or column out of bounds.");
+        }
+        long columnLength; 
+        
+        if (column > 0) {
+            columnLength = columnEndOffsets[column] - columnEndOffsets[column - 1];
+        } else {
+            columnLength = columnEndOffsets[0] - varcount * 8;  
+        }
+        
+        return columnLength; 
+    }
+      
+    
+    private void bufferMoreColumnBytes(int column) throws IOException {
+        if (columnTotalOffsets[column] >= columnTotalLengths[column]) {
+            throw new IOException("attempt to buffer bytes past the column boundary");
+        }
+        fileChannel.position(columnStartOffsets[column] + columnTotalOffsets[column]);
+        
+        columnByteBuffers[column].clear();
+        if (columnTotalLengths[column] < columnTotalOffsets[column] + MAX_COLUMN_BUFFER) {
+            dbgLog.fine("Limiting the buffer to "+(columnTotalLengths[column] - columnTotalOffsets[column])+" bytes");
+            columnByteBuffers[column].limit((int) (columnTotalLengths[column] - columnTotalOffsets[column]));
+        }
+        columnBufferSizes[column] = fileChannel.read(columnByteBuffers[column]);
+        dbgLog.fine("Read "+columnBufferSizes[column]+" bytes for subset column "+column);
+        columnBufferOffsets[column] = 0;
+        columnTotalOffsets[column] += columnBufferSizes[column];
+    }
+    
+    /* 
+       do not use this method!
+       there's a high potential for the "UTF8 character split between buffers" error!
+    public String readColumnEntry(int column) {
+        String ret = null; 
+        int currentbyte;
+        
+        if (columnBufferOffsets[column] >= columnBufferSizes[column]) {
+            try {
+                bufferMoreColumnBytes(column);
+            } catch (IOException ioe) {
+                return null; 
+            }
+        }
+        
+        currentbyte = columnBufferOffsets[column];
+        try {
+            while (columnByteBuffers[column].array()[currentbyte] != '\n') {
+                currentbyte++;
+                if (currentbyte == columnBufferSizes[column]) {
+                    // save the leftover: 
+                    if (ret == null) {
+                        ret = new String(columnByteBuffers[column].array(), columnBufferOffsets[column], columnBufferSizes[column] - columnBufferOffsets[column], "UTF8");
+                    } else {
+                        ret = ret.concat(new String(columnByteBuffers[column].array(), columnBufferOffsets[column], columnBufferSizes[column] - columnBufferOffsets[column], "UTF8"));
+                    }
+                    // read more bytes:
+                    bufferMoreColumnBytes(column);
+                    currentbyte = 0;
+                }
+            }
+
+            // presumably, we have found our '\n':
+            if (ret == null) {
+                ret = new String(columnByteBuffers[column].array(), columnBufferOffsets[column], currentbyte - columnBufferOffsets[column], "UTF8");
+            } else {
+                ret = ret.concat(new String(columnByteBuffers[column].array(), columnBufferOffsets[column], currentbyte - columnBufferOffsets[column], "UTF8"));
+            }
+
+        } catch (IOException ioe) {
+            return null;
+        }
+
+        columnBufferOffsets[column] += (currentbyte + 1);
+
+        return ret;
+    }
+    */
+    
+    public byte[] readColumnEntryBytes(int column) {
+        return readColumnEntryBytes(column, true);
+    }
+    
+    
+    public byte[] readColumnEntryBytes(int column, boolean addTabs) {
+        byte[] leftover = null; 
+        byte[] ret = null; 
+        
+        if (columnBufferOffsets[column] >= columnBufferSizes[column]) {
+            try {
+                bufferMoreColumnBytes(column);
+                if (columnBufferSizes[column] < 1) {
+                    return null;
+                }
+            } catch (IOException ioe) {
+                return null; 
+            }
+        }
+        
+        int byteindex = columnBufferOffsets[column];
+        try {
+            while (columnByteBuffers[column].array()[byteindex] != '\n') {
+                byteindex++;
+                if (byteindex == columnBufferSizes[column]) {
+                    // save the leftover: 
+                    if (leftover == null) {
+                        leftover = new byte[columnBufferSizes[column] - columnBufferOffsets[column]];
+                        System.arraycopy(columnByteBuffers[column].array(), columnBufferOffsets[column], leftover, 0, columnBufferSizes[column] - columnBufferOffsets[column]);
+                    } else {
+                        byte[] merged = new byte[leftover.length + columnBufferSizes[column]];
+                        
+                        System.arraycopy(leftover, 0, merged, 0, leftover.length);
+                        System.arraycopy(columnByteBuffers[column].array(), 0, merged, leftover.length, columnBufferSizes[column]);
+                        leftover = merged;
+                        merged = null; 
+                    }
+                    // read more bytes:
+                    bufferMoreColumnBytes(column);
+                    if (columnBufferSizes[column] < 1) {
+                        return null;
+                    }
+                    byteindex = 0;
+                }
+            }
+
+            // presumably, we have found our '\n':
+            if (leftover == null) {
+                ret = new byte[byteindex - columnBufferOffsets[column] + 1];
+                System.arraycopy(columnByteBuffers[column].array(), columnBufferOffsets[column], ret, 0, byteindex - columnBufferOffsets[column] + 1);
+            } else {
+                ret = new byte[leftover.length + byteindex + 1];
+                System.arraycopy(leftover, 0, ret, 0, leftover.length);
+                System.arraycopy(columnByteBuffers[column].array(), 0, ret, leftover.length, byteindex + 1);
+            }
+
+        } catch (IOException ioe) {
+            return null;
+        }
+
+        columnBufferOffsets[column] = (byteindex + 1);
+
+        if (column < columnBufferOffsets.length - 1) {
+            ret[ret.length - 1] = '\t';
+        }
+        return ret;
+    }
+    
+    public int readSingleColumnSubset(byte[] buffer) throws IOException {
+        if (columnTotalOffsets[0] == columnTotalLengths[0]) {
+            return -1;
+        }
+        
+        if (columnByteBuffers[0] == null) {
+            dbgLog.fine("allocating single column subset buffer.");
+            columnByteBuffers[0] = ByteBuffer.allocate(buffer.length);
+        }
+                
+        int bytesread = fileChannel.read(columnByteBuffers[0]);
+        dbgLog.fine("single column subset: read "+bytesread+" bytes.");
+        if (columnTotalOffsets[0] + bytesread > columnTotalLengths[0]) {
+            bytesread = (int)(columnTotalLengths[0] - columnTotalOffsets[0]);
+        }
+        System.arraycopy(columnByteBuffers[0].array(), 0, buffer, 0, bytesread);
+
+        columnTotalOffsets[0] += bytesread;
+        columnByteBuffers[0].clear();
+        return bytesread > 0 ? bytesread : -1;
+    }
+    
+    
+    public byte[] readSubsetLineBytes() throws IOException {
+        byte[] ret = null; 
+        int total = 0; 
+        
+        for (int i = 0; i < subsetcount; i++) {
+            columnEntries[i] = readColumnEntryBytes(i);
+            if (columnEntries[i] == null) {
+                throw new IOException("Failed to read subset line entry");
+            }
+            total += columnEntries[i].length;
+        }
+        
+        ret = new byte[total];
+        int offset = 0;
+        for (int i = 0; i < subsetcount; i++) {
+            System.arraycopy(columnEntries[i], 0, ret, offset, columnEntries[i].length);
+            offset += columnEntries[i].length;
+        }
+        dbgLog.fine("line: "+new String(ret));
+        return ret;
+    } 
+    
+    
+    public void close() {
+        if (fileChannel != null) {
+            try {
+                fileChannel.close();
+            } catch (IOException ioe) {
+                // don't care.
+            }
+        }
+    }
+    
     public  void subsetFile(String infile, String outfile, Set<Integer> columns, Long numCases) {
         subsetFile(infile, outfile, columns, numCases, "\t");
     }
@@ -304,6 +636,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return subsetObjectVector(tabfile, column, varcount, casecount, columntype, false);
     }
     
+    
+    
     public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype, boolean compatmode) throws IOException {
         
         Object[] retVector = null; 
@@ -332,7 +666,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         
         File rotatedImageFile = getRotatedImage(tabfile, varcount, casecount);
-        long[] columnEndOffsets = getColumnOffsets(rotatedImageFile, varcount, casecount); 
+        long[] columnEndOffsets = extractColumnOffsets(rotatedImageFile, varcount, casecount); 
         long columnOffset = 0; 
         long columnLength = 0; 
         
@@ -583,7 +917,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return retVector; 
     }
     
-    private long[] getColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
+    private long[] extractColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
          BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotatedImageFile));
         
         byte[] offsetHeader = new byte[varcount * 8];

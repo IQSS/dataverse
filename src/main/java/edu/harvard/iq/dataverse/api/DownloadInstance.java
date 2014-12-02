@@ -14,7 +14,8 @@ import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
  * @author Leonid Andreev
  */
 public class DownloadInstance {
-    /*
+    
+     /*
      private ByteArrayOutputStream outStream = null;
 
      public ByteArrayOutputStream getOutStream() {
@@ -23,13 +24,27 @@ public class DownloadInstance {
 
      public void setOutStream(ByteArrayOutputStream outStream) {
      this.outStream = outStream;
-     }
-     */
+     }*/
+    
+    private List<Object> extraArguments = null; 
+    
+    public List<Object> getExtraArguments() {
+        return extraArguments; 
+    }
+    
+    public void setExtraArguments(List<Object> extraArguments) {
+        this.extraArguments = extraArguments; 
+    }
+     
 
     private DownloadInfo downloadInfo = null;
     private String conversionParam = null;
     private String conversionParamValue = null;
 
+    public DownloadInstance() {
+        
+    }
+    
     public DownloadInstance(DownloadInfo info) {
         this.downloadInfo = info;
     }
@@ -69,14 +84,13 @@ public class DownloadInstance {
         for (OptionalAccessService dataService : servicesAvailable) {
             if (dataService != null) {
                 // Special case for the subsetting parameter (variables=<LIST>):
-                //if (serviceArg.equals("variables")) {
-                //    if ("subset".equals(dataService.getServiceName())) {
-                //        conversionParam = "subset";
-                //        conversionParamValue = serviceArgValue; 
-                //        return true; 
-                //    }
-                //} else {
-                if ("imageThumb".equals(serviceArg)) {
+                if (serviceArg.equals("variables")) {
+                    if ("subset".equals(dataService.getServiceName())) {
+                        conversionParam = "subset";
+                        conversionParamValue = serviceArgValue; 
+                        return true; 
+                    }
+                } else if ("imageThumb".equals(serviceArg)) {
                     if ("true".equals(serviceArgValue)) {
                         this.conversionParam = serviceArg;
                         this.conversionParamValue = "";

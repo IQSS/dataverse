@@ -1,0 +1,5 @@
+#!/bin/sh
+. scripts/search/export-keys
+. scripts/search/assumptions
+echo "Uploading 1000 files"
+curl -s --insecure --data-binary @scripts/search/data/binary/1000files.zip -H 'Content-Disposition: filename=1000files.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$FIRST_SPRUCE_DOI

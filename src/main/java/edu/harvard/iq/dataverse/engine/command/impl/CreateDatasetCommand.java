@@ -34,18 +34,26 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(CreateDatasetCommand.class.getCanonicalName());
 
     private final Dataset theDataset;
+    private final boolean registrationRequired;
 
     public CreateDatasetCommand(Dataset theDataset, User user) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
+        this.registrationRequired = false;
     }
 
+    public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired) {
+        super(user, theDataset.getOwner());
+        this.theDataset = theDataset;
+        this.registrationRequired = registrationRequired;
+    }
+    
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         
         // Test for duplicate identifier
-        if (!ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()) ) {
-            throw new IllegalCommandException(String.format("Dataset with idenfidier '%s', protocol '%s' and authority '%s' already exists",
+        if (!ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
+            throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
         }
@@ -74,23 +82,25 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         
-        theDataset.setGlobalIdCreateTime(null);
         String nonNullDefaultIfKeyNotFound = "";
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
         if (protocol.equals("doi") 
-              && doiProvider.equals("EZID")) {
+              && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
-            if (!doiRetString.equals("Identifier not created")) {
+            if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(createDate);
-            }
+            } 
         }
+        
+        if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
+            throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
+               }
               
         Dataset savedDataset = ctxt.em().merge(theDataset);
-                
-	// Find the built in admin role (currently by alias)
-        DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias("admin");
-        ctxt.roles().save(new RoleAssignment(adminRole, getUser(), savedDataset));
+        
+        // set the role to be default contributor role for its dataverse
+        ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getUser(), savedDataset));
         
         try {
             // TODO make async

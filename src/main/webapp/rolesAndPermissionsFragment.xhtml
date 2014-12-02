@@ -8,7 +8,7 @@
     <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp"> 
         <p:fragment autoUpdate="true" rendered="#{rolePermissionFragment.dvObject!=null}">
             #{rolePermissionFragment.dvObject.displayName}         
-            <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner and permissionServiceBean.on(rolePermissionFragment.dvObject.owner).has('AssignRole')}"
+            <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner and permissionsWrapper.canManagePermissions(rolePermissionFragment.dvObject.owner)}"
                            actionListener="#{rolePermissionFragment.setDvObject(rolePermissionFragment.dvObject.owner)}">
                 <h:outputText value="(Up)" />
             </p:commandLink>
@@ -45,7 +45,7 @@
                                             <h:outputText value="#{roleAssignee.displayInfo.title}" />
                                         </p:column>  
                                         <p:column>
-                                            <h:outputText value="#{roleAssignee.displayInfo.emailAddress}" />
+                                            <h:outputText value="#{roleAssignee.displayInfo.affiliation}" />
                                         </p:column>                                  
                                     </p:autoComplete>
                                     <ui:fragment rendered="#{!rolePermissionFragment.dvObject.instanceofDataFile}">
@@ -106,7 +106,7 @@
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Edit" 
                                                    actionListener="#{rolePermissionFragment.setDvObject(dv)}"
-                                                   rendered="#{permissionServiceBean.on(dv).has('AssignRole')}"
+                                                   rendered="#{permissionsWrapper.canManagePermissions(dv)}"
                                                    oncomplete="subContent.select(0);"                                                   
                                                    style="color:black;margin-right:0.5em;"/>
                                 </p:column>
@@ -127,7 +127,7 @@
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Edit" 
                                                    actionListener="#{rolePermissionFragment.setDvObject(ds)}"
-                                                   rendered="#{permissionServiceBean.on(ds).has('AssignRole')}"
+                                                   rendered="#{permissionsWrapper.canManagePermissions(ds)}"
                                                    oncomplete="subContent.select(0);"
                                                    style="color:black;margin-right:0.5em;"/>
                                 </p:column>
@@ -151,7 +151,7 @@
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Edit" 
                                                    actionListener="#{rolePermissionFragment.setDvObject(file)}"
-                                                   rendered="#{permissionServiceBean.on(file).has('AssignRole')}"
+                                                   rendered="#{permissionsWrapper.canManagePermissions(file.owner)}"
                                                    oncomplete="subContent.select(0);"
                                                    style="color:black;margin-right:0.5em;"/>
                                 </p:column>
@@ -165,7 +165,7 @@
                 </p:tab>
                 <p:tab id="rolesTab" title="Roles" rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                     <p:panel id="rolePanel" styleClass="panelLayoutBlock" widgetVar="roles" toggleable="true" closable="true" toggleSpeed="0" closeSpeed="0">
-                        <ui:fragment rendered="#{permissionServiceBean.on(rolePermissionFragment.dvObject).has('CreateRole')}">
+                        <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(rolePermissionFragment.dvObject)}">
                             <div style="float:right; margin-bottom:.5em;">
                                 <p:commandLink styleClass="btn btn-default" actionListener="#{rolePermissionFragment.createNewRole}"
                                                update=":#{p:component('editRolePanel')}"
@@ -181,14 +181,14 @@
                                 <div class="#{!empty role.owner ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
                                     <span style="font-weight:bold">#{role.name}</span>
                                     <h:outputText value=" - #{role.description}" rendered="#{!empty role.description}"/>
-                                    <ui:fragment rendered="#{!empty role.owner and permissionServiceBean.on(role.owner).has('CreateRole')}">
+                                    <ui:fragment rendered="#{!empty role.owner and permissionsWrapper.canManagePermissions(role.owner)}">
                                         <p:commandLink title="Edit role" style="margin-left:1em;"
                                                        actionListener="#{rolePermissionFragment.editRole(role.id)}"
                                                        update=":#{p:component('editRolePanel')}"
                                                        oncomplete="roles.close();editRole.show();">
                                             <span class="glyphicon glyphicon-pencil"></span></p:commandLink>                                          
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{permissionServiceBean.on(rolePermissionFragment.dvObject).has('CreateRole')}">
+                                    <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(rolePermissionFragment.dvObject)}">
                                         <p:commandLink title="Clone role" style="margin-left:1em;"
                                                        actionListener="#{rolePermissionFragment.cloneRole(role.id)}"
                                                        update=":#{p:component('editRolePanel')}"

@@ -98,21 +98,21 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         UUID uid = UUID.randomUUID();
                 
-        logger.info("UUID value: "+uid.toString());
+        logger.fine("UUID value: "+uid.toString());
         
         // last 6 bytes, of the random UUID, in hex: 
         
         String hexRandom = uid.toString().substring(24);
         
-        logger.info("UUID (last 6 bytes, 12 hex digits): "+hexRandom);
+        logger.fine("UUID (last 6 bytes, 12 hex digits): "+hexRandom);
         
         String hexTimestamp = Long.toHexString(new Date().getTime());
         
-        logger.info("(not UUID) timestamp in hex: "+hexTimestamp);
+        logger.fine("(not UUID) timestamp in hex: "+hexTimestamp);
             
         storageIdentifier = hexTimestamp + "-" + hexRandom;
         
-        logger.info("timestamp/UUID hybrid: "+storageIdentifier);
+        logger.fine("timestamp/UUID hybrid: "+storageIdentifier);
         return storageIdentifier; 
     }
         

@@ -1,6 +1,6 @@
 #!/bin/bash -x
-USERNAME=pete
-PASSWORD=pete
+USERNAME=spruce
+PASSWORD=spruce
 DVN_SERVER=localhost:8181
 if [ -z "$1" ]; then
   FILE_ID=`scripts/api/data-deposit/show-files | cut -d'/' -f1`

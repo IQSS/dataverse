@@ -40,6 +40,18 @@ import javax.validation.constraints.Size;
 })
 @Entity
 public class DataverseRole implements Serializable  {
+    
+    //constants for the built in roles references in the code
+    public static final String ADMIN = "admin";
+    public static final String FILE_DOWNLOADER = "fileDownloader";
+    public static final String FULL_CONTRIBUTOR = "fullContributor";
+    public static final String DV_CONTRIBUTOR = "dvContributor";
+    public static final String DS_CONTRIBUTOR = "dsContributor";
+    public static final String EDITOR = "editor";
+    public static final String MANAGER = "manager";
+    public static final String CURATOR = "curator";
+    
+    
 	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){
 
 		@Override

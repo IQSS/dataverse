@@ -1,0 +1,12 @@
+<root>
+  <birds>
+    <finches/>
+    <sparrows>
+      <chestnutsparrows/>
+    </sparrows>
+  </birds>
+  <trees>
+    <spruce/>
+    <chestnuttrees/>
+  </trees>
+</root>

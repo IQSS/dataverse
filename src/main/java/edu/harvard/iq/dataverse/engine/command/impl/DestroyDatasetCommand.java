@@ -44,9 +44,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
 
         if (user instanceof AuthenticatedUser) {
             if (((AuthenticatedUser) user).isSuperuser()) {
-                Set<Permission> returnSet = Collections.emptySet();
                 throw new PermissionException("Destroy can only be called by superusers.",
-                    this, returnSet, doomed);                
+                    this, Collections.<Permission>emptySet(), doomed);                
             }
         }
         

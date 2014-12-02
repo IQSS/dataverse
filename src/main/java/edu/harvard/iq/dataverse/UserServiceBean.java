@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -27,8 +26,6 @@ public class UserServiceBean {
             user = em.merge(user);
         }
         em.flush();
-        String indexingResult = indexService.indexUser(user);
-        logger.log(Level.INFO, "during user save, indexing result was: {0}", indexingResult);
 
         return user;
     }

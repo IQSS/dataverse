@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -72,7 +73,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(name, email);
+        return new RoleAssigneeDisplayInfo(name, email, affiliation);
     }
     
     /**
@@ -167,6 +168,23 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAuthenticatedUserLookup(AuthenticatedUserLookup authenticatedUserLookup) {
         this.authenticatedUserLookup = authenticatedUserLookup;
     }
+    
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }    
+    
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof AuthenticatedUser)) {
+            return false;
+        }
+        AuthenticatedUser other = (AuthenticatedUser) object;
+        return Objects.equals(getId(), other.getId());
+    }    
     
     
 }

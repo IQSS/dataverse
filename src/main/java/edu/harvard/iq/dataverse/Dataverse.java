@@ -102,7 +102,19 @@ public class Dataverse extends DvObjectContainer {
             fetch = FetchType.LAZY,
             mappedBy = "owner")
     private Set<DataverseRole> roles;
+    
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private DataverseRole defaultContributorRole;
 
+    public DataverseRole getDefaultContributorRole() {
+        return defaultContributorRole;
+    }
+
+    public void setDefaultContributorRole(DataverseRole defaultContributorRole) {
+        this.defaultContributorRole = defaultContributorRole;
+    }
+   
     private boolean metadataBlockRoot;
     private boolean facetRoot;
     private boolean themeRoot;

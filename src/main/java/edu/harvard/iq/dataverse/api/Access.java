@@ -17,6 +17,9 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,6 +28,7 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.ws.rs.GET;
@@ -38,6 +42,9 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -73,15 +80,17 @@ public class Access {
     DatasetVersionServiceBean versionService;
     @EJB
     DataverseServiceBean dataverseService; 
+    @EJB
+    VariableServiceBean variableService;
+    @EJB
+    SettingsServiceBean settingsService; 
 
     //@EJB
     
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
-        ByteArrayOutputStream outStream = null;
-        
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
 
         DataFile df = dataFileService.find(fileId);
         /* TODO: 
@@ -90,7 +99,7 @@ public class Access {
          */
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
-            return null; 
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
         
@@ -112,6 +121,7 @@ public class Access {
             
             dInfo.addServiceAvailable(new OptionalAccessService("R", "application/x-rlang-transport", "format=RData", "Data in R format"));
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
+            dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         
@@ -122,6 +132,44 @@ public class Access {
                 // this automatically sets the conversion parameters in 
                 // the download instance to key and value;
                 // TODO: I should probably set these explicitly instead. 
+                
+                if (downloadInstance.getConversionParam().equals("subset")) {
+                    String subsetParam = downloadInstance.getConversionParamValue();
+                    String variableIdParams[] = subsetParam.split(",");
+                    if (variableIdParams != null && variableIdParams.length > 0) {
+                        logger.fine(variableIdParams.length + " tokens;");
+                        for (int i = 0; i < variableIdParams.length; i++) {
+                            logger.fine("token: " + variableIdParams[i]);
+                            String token = variableIdParams[i].replaceFirst("^v", "");
+                            Long variableId = null;
+                            try {
+                                variableId = new Long(token);
+                            } catch (NumberFormatException nfe) {
+                                variableId = null;
+                            }
+                            if (variableId != null) {
+                                logger.fine("attempting to look up variable id " + variableId);
+                                if (variableService != null) {
+                                    DataVariable variable = variableService.find(variableId);
+                                    if (variable != null) {
+                                        if (downloadInstance.getExtraArguments() == null) {
+                                            downloadInstance.setExtraArguments(new ArrayList<Object>());
+                                        }
+                                        logger.fine("putting variable id "+variable.getId()+" on the parameters list of the download instance.");
+                                        downloadInstance.getExtraArguments().add(variable);
+                                        
+                                        //if (!variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
+                                        //variableList.add(variable);
+                                        //}
+                                    }
+                                } else {
+                                    logger.fine("variable service is null.");
+                                }
+                            }
+                        }
+                    }
+                }
+
                 break;
             } else {
                 // Service unknown/not supported/bad arguments, etc.:
@@ -146,6 +194,54 @@ public class Access {
          * Provide some browser-friendly headers: (?)
          */
         //return retValue; 
+        return downloadInstance;
+    }
+    
+    @Path("datafiles/{fileIds}")
+    @GET
+    @Produces({"application/xml"})
+    public DownloadInstance datafiles(@PathParam("fileIds") String fileIds, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        ByteArrayOutputStream outStream = null;
+        // create a Download Instance without, without a primary Download Info object:
+        DownloadInstance downloadInstance = new DownloadInstance();
+
+        if (fileIds == null || fileIds.equals("")) {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        String fileIdParams[] = fileIds.split(",");
+        if (fileIdParams != null && fileIdParams.length > 0) {
+            logger.fine(fileIdParams.length + " tokens;");
+            for (int i = 0; i < fileIdParams.length; i++) {
+                logger.fine("token: " + fileIdParams[i]);
+                Long fileId = null;
+                try {
+                    fileId = new Long(fileIdParams[i]);
+                } catch (NumberFormatException nfe) {
+                    fileId = null;
+                }
+                logger.fine("attempting to look up file id " + fileId);
+                DataFile file = dataFileService.find(fileId);
+                if (file != null) {
+                    if (downloadInstance.getExtraArguments() == null) {
+                        downloadInstance.setExtraArguments(new ArrayList<Object>());
+                    }
+                    logger.fine("putting datafile (id=" + file.getId() + ") on the parameters list of the download instance.");
+                    downloadInstance.getExtraArguments().add(file);
+
+                } else {
+                    throw new WebApplicationException(Response.Status.NOT_FOUND);
+                }
+            }
+        } else {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
+        // if we've made it this far, we must have found some valid files and 
+        // put them on the stack. 
+        downloadInstance.setConversionParam("zip");
+        downloadInstance.setConversionParamValue(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDonwloadLimit));
+
         return downloadInstance;
     }
     

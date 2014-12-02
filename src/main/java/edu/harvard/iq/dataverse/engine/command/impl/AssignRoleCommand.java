@@ -1,9 +1,10 @@
 /*
  *  (C) Michael Bar-Sinai
  */
-
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -12,38 +13,50 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Assign a in a dataverse to a user.
+ *
  * @author michael
  */
-@RequiredPermissions( Permission.AssignRole )
+// no annotations here, since permissions are dynamically decided
 public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
-	
-	private final DataverseRole role;
-	private final RoleAssignee grantee;
-	private final DvObject defPoint;
-	
-	/**
-	 * @param anAssignee The user being granted the role
-	 * @param aRole the role being granted to the user
-	 * @param assignmentPoint the dataverse on which the role is granted.
-	 * @param issuingUser the user issuing the command.
-	 */
-	public AssignRoleCommand(RoleAssignee anAssignee, DataverseRole aRole, DvObject assignmentPoint, User issuingUser) {
-		super(issuingUser, assignmentPoint);
-		role = aRole;
-		grantee = anAssignee;
-		defPoint = assignmentPoint;
-	}
 
-	@Override
-	public RoleAssignment execute(CommandContext ctxt) throws CommandException {
-		// TODO make sure the role is defined on the dataverse.
-		RoleAssignment roleAssignment = new RoleAssignment(role, grantee,defPoint);
-		return ctxt.roles().save(roleAssignment);
-	}
-	
+    private final DataverseRole role;
+    private final RoleAssignee grantee;
+    private final DvObject defPoint;
+
+    /**
+     * @param anAssignee The user being granted the role
+     * @param aRole the role being granted to the user
+     * @param assignmentPoint the dataverse on which the role is granted.
+     * @param issuingUser the user issuing the command.
+     */
+    public AssignRoleCommand(RoleAssignee anAssignee, DataverseRole aRole, DvObject assignmentPoint, User issuingUser) {
+        // for data file check permission on owning dataset
+        super(issuingUser, assignmentPoint instanceof DataFile ? assignmentPoint.getOwner() : assignmentPoint);
+        role = aRole;
+        grantee = anAssignee;
+        defPoint = assignmentPoint;
+    }
+
+    @Override
+    public RoleAssignment execute(CommandContext ctxt) throws CommandException {
+        // TODO make sure the role is defined on the dataverse.
+        RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint);
+        return ctxt.roles().save(roleAssignment);
+    }
+
+    @Override
+    public Map<String, Set<Permission>> getRequiredPermissions() {
+        // for data file check permission on owning dataset
+        return Collections.singletonMap("",
+                defPoint instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
+                : Collections.singleton(Permission.ManageDatasetPermissions));
+    }
+
 }

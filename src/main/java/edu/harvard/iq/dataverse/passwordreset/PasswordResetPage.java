@@ -16,7 +16,7 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named("PasswordResetPage")
-public class PasswordResetPage implements java.io.Serializable  {
+public class PasswordResetPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(PasswordResetPage.class.getCanonicalName());
 
@@ -76,9 +76,14 @@ public class PasswordResetPage implements java.io.Serializable  {
             if (passwordResetData != null) {
                 BuiltinUser user = passwordResetData.getDataverseUser();
                 passwordResetUrl = passwordResetInitResponse.getResetUrl();
-                logger.info("Found account using " + emailAddress + ": " + user.getUserName() + " and sending link " + passwordResetUrl);
+                logger.info("Found single account using " + emailAddress + ": " + user.getUserName() + " and sending link " + passwordResetUrl);
             } else {
-                logger.info("Couldn't find account using " + emailAddress);
+                /**
+                 * @todo remove "single" when it's no longer necessary. See
+                 * https://github.com/IQSS/dataverse/issues/844 and
+                 * https://github.com/IQSS/dataverse/issues/1141
+                 */
+                logger.info("Couldn't find single account using " + emailAddress);
             }
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Password Reset Initiated", ""));
         } catch (PasswordResetException ex) {

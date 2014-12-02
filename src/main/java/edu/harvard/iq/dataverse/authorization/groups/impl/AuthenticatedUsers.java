@@ -8,11 +8,15 @@ import javax.servlet.ServletRequest;
 
 public class AuthenticatedUsers extends AbstractGroup {
 
-    public AuthenticatedUsers() {
-        setAlias("int:authenticated-users");
+    private static final AuthenticatedUsers instance = new AuthenticatedUsers();
+    
+    private AuthenticatedUsers() {
+        setAlias(":authenticated-users");
         setName("Authenticated Users");
         setDescription("All users, except for guests");
     }
+    
+    public static AuthenticatedUsers get() { return instance; }
     
     @Override
     public boolean contains(User aUser, ServletRequest aRequest) {
@@ -31,12 +35,12 @@ public class AuthenticatedUsers extends AbstractGroup {
 
     @Override
     public String getIdentifier() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return":AuthenticatedUsers";
     }
 
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo("All Authenticated Users", null);
+        return new RoleAssigneeDisplayInfo("Anyone with a Dataverse account", null);
     }
 
 }

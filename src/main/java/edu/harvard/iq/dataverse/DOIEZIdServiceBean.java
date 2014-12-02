@@ -41,7 +41,7 @@ public class DOIEZIdServiceBean  {
     
     public DOIEZIdServiceBean(){
         baseURLString = System.getProperty("doi.baseurlstring");
-        ezidService = new EZIDService (baseURLString); 
+        ezidService = new EZIDService (baseURLString);    
         USERNAME  = System.getProperty("doi.username");
         PASSWORD  = System.getProperty("doi.password");
         logger.log(Level.INFO, "baseURLString " + baseURLString);
@@ -92,8 +92,8 @@ public class DOIEZIdServiceBean  {
        return metadata;
     }
     
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier){
-        String identifierOut = getIdentifierForLookup( protocol,  authority,  identifier);        
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier){
+        String identifierOut = getIdentifierForLookup( protocol,  authority, separator, identifier);        
         HashMap metadata = new HashMap();
        try {
               metadata = ezidService.getMetadata(identifierOut);
@@ -105,8 +105,8 @@ public class DOIEZIdServiceBean  {
        return metadata;
     }
     
-    public String getIdentifierForLookup(String protocol, String authority, String identifier) {
-        return protocol + ":" + authority  + identifier;
+    public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier) {
+        return protocol + ":" + authority + separator  + identifier;
     }
     
     
@@ -157,9 +157,31 @@ public class DOIEZIdServiceBean  {
             updateIdentifierStatus(datasetIn, "unavailable | withdrawn by author");
             HashMap metadata = new HashMap();
             metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() 
-                    + datasetIn.getIdentifier());
+              + datasetIn.getDoiSeparator()      + datasetIn.getIdentifier());
             modifyIdentifier(datasetIn, metadata);
         }
+    }
+    
+    private HashMap getUpdateMetadataFromDataset(Dataset datasetIn){
+        HashMap<String, String> metadata = new HashMap<String, String>();
+        
+        String authorString = datasetIn.getLatestVersion().getAuthorsStr();
+        
+        if(authorString.isEmpty()) {
+            authorString = ":unav";
+        }
+        
+        String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
+
+        if(producerString.isEmpty()) {
+            producerString = ":unav";
+        }
+        metadata.put("datacite.creator", authorString);
+	metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+	metadata.put("datacite.publisher", producerString);       
+
+        return metadata;
+        
     }
     
     private HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
@@ -186,11 +208,11 @@ public class DOIEZIdServiceBean  {
         DOISHOULDER = "doi:" + datasetIn.getAuthority();
         
         if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset?globalId=" + DOISHOULDER 
-                           + datasetIn.getIdentifier();
+           targetUrl ="http://localhost:8080" + "/dataset.xhtml?globalId=" + DOISHOULDER 
+                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
         } else{
-           targetUrl = inetAddress + "/dataset?globalId=" + DOISHOULDER 
-                   + datasetIn.getIdentifier();
+           targetUrl = inetAddress + "/dataset.xhtml?globalId=" + DOISHOULDER 
+                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
         }            
         metadata.put("_target", targetUrl);
         return metadata;
@@ -224,7 +246,7 @@ public class DOIEZIdServiceBean  {
     
     private void updateIdentifierStatus(Dataset dataset, String statusIn){
         String identifier = getIdentifierFromDataset(dataset);
-        HashMap metadata = new HashMap();
+        HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
        try {
                ezidService.setMetadata(identifier, metadata);

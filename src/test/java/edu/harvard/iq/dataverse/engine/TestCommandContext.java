@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.persistence.EntityManager;
 
@@ -36,6 +37,11 @@ public class TestCommandContext implements CommandContext {
 
 	@Override
 	public IndexServiceBean index() {
+		return null;
+	}
+
+	@Override
+	public SolrIndexServiceBean solrIndex() {
 		return null;
 	}
 

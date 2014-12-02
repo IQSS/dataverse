@@ -1,0 +1,20 @@
+#!/bin/bash
+# `source path/to/this/file` to get the same assumptions :)
+export ADMIN_ROLE=1
+export ROOT_DATAVERSE=1
+export DV_CONTRIBUTOR_ROLE=4
+export BIRDS_DATAVERSE=`grep '"alias":"birds"' /tmp/bird-dvs1 | jq .data.id`
+export SPRUCE_DATAVERSE=`grep '"alias":"spruce"' /tmp/tree-dvs1 | jq .data.id`
+export SPRUCE_USERNAME='@spruce'
+export FINCH_USERNAME='@finch'
+
+export SPRUCE_ADMIN_ON_BIRDS=`curl -s "http://localhost:8080/api/dvs/$BIRDS_DATAVERSE/assignments?key=$FINCHKEY" | jq .data[1].id`
+
+export FINCH_ADMIN_ON_SPRUCE=`curl -s "http://localhost:8080/api/dvs/$SPRUCE_DATAVERSE/assignments?key=$SPRUCEKEY" | jq .data[1].id`
+
+export FIRST_SPRUCE_DOI=`curl --insecure -s -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/spruce | xmllint -format - | xmlstarlet sel -t -v '//_:id' 2>/dev/null | cut -d'/' -f11,12,13`
+
+export FIRST_SPRUCE_FILE=`scripts/api/data-deposit/show-statement $FIRST_SPRUCE_DOI 2>/dev/null | xmlstarlet sel -t -v '//_:feed/_:entry/_:id' 2>/dev/null | cut -d '/' -f11`
+
+export FIRST_FINCH_DOI=`curl --insecure -s -u finch:finch https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/finches | xmllint -format - | xmlstarlet sel -t -v '//_:id' 2>/dev/null | cut -d'/' -f11,12,13`
+export FIRST_FINCH_DATASET_ID=`curl -s "http://localhost:8080/api/dvs/finches/contents?key=$FINCHKEY" | jq '.data[0].id'`

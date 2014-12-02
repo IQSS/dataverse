@@ -215,7 +215,7 @@ public class PasswordResetServiceBean {
         boolean passwordIsComplexEnough = validator.validatePassword(newPassword);
         if (!passwordIsComplexEnough) {
             messageSummary = messageSummaryFail;
-            messageDetail = "Password is not complex enough. The password must have at least one letter and one number be at least " + minPasswordLength + " characters in length.";
+            messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
             logger.info(messageDetail);
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }

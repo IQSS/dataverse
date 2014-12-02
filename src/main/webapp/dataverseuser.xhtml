@@ -163,106 +163,171 @@
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfo" title="Account Information">
                             <div class="clearfix" style="padding-bottom:.75em; border-bottom:1px solid #DDDDDD;">
-                                <div>
-                                    <style type="text/css">
-                                        .panelgridFormTable tr, .panelgridFormTable td {border:0;}
-                                    </style>
-                                    <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                                        <p:outputLabel value="Username *" for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Username" for="userName" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
-                                        <p:outputLabel value="Usuername/Email:  " rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE'}">
-                                            <h:outputText value="#{DataverseUserPage.builtinUser.userName}" rendered="#{empty DataverseUserPage.editMode}" />
-                                            <p:panelGrid columns="2" rendered="#{!empty DataverseUserPage.editMode}">
-                                                <p:inputText id="userName" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.builtinUser.userName}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" disabled="#{DataverseUserPage.editMode != 'CREATE'}"/>
-                                                <p:inputText id="userNameEmail" validator="#{DataverseUserPage.validateUserNameEmail}" value="#{DataverseUserPage.builtinUser.userName}" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                                                <p:message for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
-                                                <p:message for="userNameEmail" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <h:outputLabel value="Current Password *" for="currentPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CHANGE'}">
-                                            <p:panelGrid columns="2">
-                                                <p:password id="currentPassword" validator="#{DataverseUserPage.validatePassword}" label="Current Password" value="#{DataverseUserPage.currentPassword}" />
-                                                <p:message for="currentPassword" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <h:outputLabel value="Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <h:outputLabel value="New Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
-                                            <p:panelGrid columns="2">
-                                                <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" />
-                                                <p:message for="inputPassword" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <h:outputLabel value="Retype Password *" for="retypePassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
-                                            <p:panelGrid columns="2">
-                                                <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" />
-                                                <p:message for="retypePassword" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <p:outputLabel value="First Name *" for="firstName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="First Name" for="firstName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
-                                        <p:outputLabel value="Name" rendered="#{empty DataverseUserPage.editMode}" />
-                                        <ui:fragment rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                            <h:outputText value="#{DataverseUserPage.builtinUser.firstName} #{DataverseUserPage.builtinUser.lastName}" rendered="#{empty DataverseUserPage.editMode}" />
-                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                                <p:inputText id="firstName" value="#{DataverseUserPage.builtinUser.firstName}" />
-                                                <p:message for="firstName" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <p:outputLabel value="Last Name *" for="lastName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Last Name" for="lastName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                            <p:panelGrid columns="2">
-                                                <p:inputText id="lastName" value="#{DataverseUserPage.builtinUser.lastName}" />
-                                                <p:message for="lastName" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <p:outputLabel value="Email *" for="email" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Email" for="email" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
-                                            <h:outputText value="#{DataverseUserPage.builtinUser.email}" rendered="#{empty DataverseUserPage.editMode}" />
-                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                                <p:inputText id="email" value="#{DataverseUserPage.builtinUser.email}" />
-                                                <p:message for="email" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <p:outputLabel value="Affiliation" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
-                                            <h:outputText value="#{DataverseUserPage.builtinUser.affiliation}" rendered="#{empty DataverseUserPage.editMode}" />
-                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                                <p:inputText id="affiliation" value="#{DataverseUserPage.builtinUser.affiliation}" />
-                                                <p:message for="affiliation" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-
-                                        <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
-                                            <h:outputText value="#{DataverseUserPage.builtinUser.position}" rendered="#{empty DataverseUserPage.editMode}" />
-                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                                <p:inputText id="position" value="#{DataverseUserPage.builtinUser.position}" />
-                                                <p:message for="position" />
-                                            </p:panelGrid>
-                                        </ui:fragment>
-                                    </p:panelGrid>
-                                </div>
-                                <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataverseUserPage.editMode}">
-                                    <ui:fragment>
-                                        <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE'?'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <p:commandButton id="submit" value="Submit" actionListener="#{DataverseUserPage.submit}" update="@all" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                                        <p:commandButton id="cancel" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE' or DataverseUserPage.editMode == 'FORGOT'}">
-                                            <p:resetInput target="@all" />
-                                        </p:commandButton>
+                                <style type="text/css">
+                                    .form-group table.noBorders {width:100%;}
+                                    .form-group table.noBorders td {width:50%;}
+                                    .form-group table.noBorders td .form-control {width:100%;}
+                                </style>
+                                <div class="form-inline">
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- Username -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="userNameEmail" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Between 2-32 characters, and can use &#34;a-z&#34;, &#34;0-9&#34;, &#34;_&#34; for your username.">
+                                                    Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:inputText id="userName" styleClass="form-control" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.builtinUser.userName}" disabled="#{DataverseUserPage.editMode != 'CREATE'}"/>
+                                                    <p:message for="userName" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
                                     </ui:fragment>
+                                    
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CHANGE'}">
+                                    <!-- Current Password -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="currentPassword" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Please enter the current password for this account.">
+                                                    Current Password <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:password id="currentPassword" label="Current Password" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
+                                                    <p:message for="currentPassword" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
+                                    <!-- Password -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="inputPassword" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Your password needs to be at least 6 characters and include one letter and one number.">
+                                                    <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" /> 
+                                                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:password id="inputPassword" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                                    <p:message for="inputPassword" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
+                                    <!-- Retype Password -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="retypePassword" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Please retype the password you entered above.">
+                                                    Retype Password <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:password id="retypePassword" label="Retype Password" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
+                                                    <p:message for="retypePassword" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- First Name -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="firstName" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The first name or name you would like to use for this account.">
+                                                    Given Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:inputText id="firstName" styleClass="form-control" value="#{DataverseUserPage.builtinUser.firstName}" />
+                                                    <p:message for="firstName" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- Last Name -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="lastName" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The last name you would like to use for this account.">
+                                                    Family Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:inputText id="lastName" styleClass="form-control" value="#{DataverseUserPage.builtinUser.lastName}" />
+                                                    <p:message for="lastName" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- Email -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="email" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A valid email address you have access to in order to be contacted.">
+                                                    Email 
+                                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
+                                                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                    </ui:fragment>
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:inputText id="email" styleClass="form-control" value="#{DataverseUserPage.builtinUser.email}" />
+                                                    <p:message for="email" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- Affiliation -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="affiliation" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The organization with which you are affiliated.">
+                                                    Affiliation
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataverseUserPage.builtinUser.affiliation}" />
+                                                    <p:message for="affiliation" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- Position -->
+                                        <div class="form-group col-sm-12">
+                                            <label for="position" class="col-sm-2 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Your role or title at the organization you are affiliated with; such as staff, faculty, student, etc.">
+                                                    Position
+                                                </a>
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:inputText id="position" styleClass="form-control" value="#{DataverseUserPage.builtinUser.position}" />
+                                                    <p:message for="position" display="text" />
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                </div>
+                                <p:panel styleClass="panelLayoutButtonBlock">
+                                    <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@all" />
+                                    <p:commandButton id="cancel" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@all">
+                                        <p:resetInput target="@all" />
+                                    </p:commandButton>
                                 </p:panel>
                             </div>
                         </p:tab>
