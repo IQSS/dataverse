@@ -43,7 +43,7 @@ public class FieldDTOTest {
         authorFields.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top"));
         authorFields.add(FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ellenId"));
         authorFields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
-        author = FieldDTO.createCompoundFieldDTO("author", authorFields);
+        author = FieldDTO.createCompoundFieldDTOs("author", authorFields);
         
         
     }

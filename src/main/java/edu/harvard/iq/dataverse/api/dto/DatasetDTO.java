@@ -68,6 +68,9 @@ public class DatasetDTO implements java.io.Serializable {
     public List<DatasetVersionDTO> getDatasetVersions() {
         return datasetVersions;
     }
+    public DatasetVersionDTO getFirstVersion() {
+        return datasetVersions.get(0);
+    }
 
     public void setDatasetVersions(List<DatasetVersionDTO> datasetVersions) {
         this.datasetVersions = datasetVersions;

@@ -18,6 +18,15 @@ public  class MetadataBlockDTO {
             this.displayName = displayName;
         }
 
+        public FieldDTO getField(String typeName) {
+            for( FieldDTO field : fields) {
+                if (field.getTypeName().equals(typeName)) {
+                    return field;
+                }
+            }
+            return null;
+        }
+        
         public List<FieldDTO> getFields() {
             return fields;
         }

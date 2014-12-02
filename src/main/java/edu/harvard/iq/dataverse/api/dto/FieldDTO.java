@@ -29,21 +29,41 @@ public class FieldDTO {
         return primitive;
     }
     public static FieldDTO createVocabFieldDTO(String typeName, String value) {
-        FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
-        primitive.setSingleVocab(value);
-        return primitive;
+        FieldDTO field = new FieldDTO();
+        field.typeName=typeName;
+        field.setSingleVocab(value);
+        return field;
         
     }
-    public static FieldDTO createCompoundFieldDTO(String typeName, Set<FieldDTO> value) {
-        FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
-        primitive.setSingleCompound(value);
-        return primitive;
+   
+    public static FieldDTO createCompoundFieldDTO(String typeName, FieldDTO... value) {
+        FieldDTO field = new FieldDTO();
+        field.typeName=typeName;
+        field.setSingleCompound(value);
+        return field;
         
     }
     
- 
+     
+    /**
+     * Creates a FieldDTO that contains a size=1 list of compound values 
+     * @param typeName
+     * @param value
+     * @return 
+     */  
+    public static FieldDTO createMultipleCompoundFieldDTO(String typeName, FieldDTO... value) {
+        FieldDTO field = new FieldDTO();
+        field.typeName = typeName;
+        field.setMultipleCompound(value);
+        return field;
+    } 
+    public static FieldDTO createMultipleCompoundFieldDTO(String typeName,List<HashSet<FieldDTO>> compoundList) {
+        FieldDTO field = new FieldDTO();
+        field.typeName=typeName;
+        field.setMultipleCompound(compoundList);
+        return field;
+    }
+    
     String typeName;
     Boolean multiple;
     String typeClass;
@@ -158,19 +178,21 @@ public class FieldDTO {
         this.value = gson.toJsonTree(value);
     }
     
-    public void setSingleCompound(Set<FieldDTO> compoundField) {
+    public void setSingleCompound(FieldDTO... compoundField) {
         Gson gson = new Gson();
         this.typeClass = "compound";
         this.multiple = false;
        
         JsonObject obj = new JsonObject();
         for (FieldDTO fieldDTO : compoundField) {
-            obj.add(fieldDTO.typeName,gson.toJsonTree(fieldDTO, FieldDTO.class));
+            if (fieldDTO!=null) {
+                obj.add(fieldDTO.typeName,gson.toJsonTree(fieldDTO, FieldDTO.class));
+            }
         }
   
         this.value = obj;
     }
-
+   
     public void setMultiplePrimitive(List<String> value) {
         Gson gson = new Gson();
         typeClass = "primitive";
@@ -185,10 +207,32 @@ public class FieldDTO {
         this.value = gson.toJsonTree(value);
     }
 
+    /**
+     * Set value to a size 1 list of compound fields, that is a single set of primitives
+     */
+    public void setMultipleCompound(FieldDTO... fieldList) {
+         Gson gson = new Gson();
+        this.typeClass = "compound";
+        this.multiple = true;
+        List<Map<String, FieldDTO>> mapList = new ArrayList<Map<String, FieldDTO>>();
+            Map<String, FieldDTO> fieldMap = new HashMap<>();
+            for (FieldDTO fieldDTO : fieldList) {
+                if (fieldDTO!=null){
+                    fieldMap.put(fieldDTO.typeName, fieldDTO);
+                }
+            }
+            mapList.add(fieldMap);
+        
+        this.value = gson.toJsonTree(mapList);
 
+    }
+    /**
+     * Set value to a list of compound fields (each member of the list is a set of fields)
+     * @param compoundFieldList 
+     */
     public void setMultipleCompound(List<HashSet<FieldDTO>> compoundFieldList) {
          Gson gson = new Gson();
-        this.typeClass = "coumpound";
+        this.typeClass = "compound";
         this.multiple = true;
         List<Map<String, FieldDTO>> mapList = new ArrayList<Map<String, FieldDTO>>();
         for (Set<FieldDTO> compoundField : compoundFieldList) {

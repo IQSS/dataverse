@@ -26,9 +26,29 @@ public class DatasetVersionDTO {
     String lastUpdateTime;
     String createTime;
     String archiveTime;
+    String UNF;
+    
     Map<String,MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
 
+    public String getUNF() {
+        return UNF;
+    }
+
+    public void setUNF(String UNF) {
+        this.UNF = UNF;
+    }
+
+    public List<FileMetadataDTO> getFileMetadatas() {
+        return fileMetadatas;
+    }
+
+    public void setFileMetadatas(List<FileMetadataDTO> fileMetadatas) {
+        this.fileMetadatas = fileMetadatas;
+    }
+
+    
+    
     public String getArchiveNote() {
         return archiveNote;
     }
