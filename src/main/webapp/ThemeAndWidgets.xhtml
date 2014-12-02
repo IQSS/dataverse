@@ -21,8 +21,9 @@
                     <f:viewParam name="id" value="#{themeWidgetFragment.editDv.id}"/>
                     <f:viewAction action="#{themeWidgetFragment.initEditDv}"/>
                 </f:metadata>
+                <h:form id="themeWidgetsForm">
                 <ui:include src="themeAndWidgetsFragment.xhtml"/>
-
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>

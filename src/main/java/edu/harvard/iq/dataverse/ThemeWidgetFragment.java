@@ -242,13 +242,15 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         context.reset(":dataverseForm:themeWidgetsTabView");
     }
     
-    public void cancel() {
-        
+    public String cancel() {
+         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
     
+   
     
 
     public String save() {
+        System.out.println("in save");
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
         if (!editDv.isThemeRoot()) {
@@ -264,8 +266,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());          
         }
         this.cleanupTempDirectory();
-        this.editDv=null;
-        return "dataverse";  // go to dataverse page 
+        return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
    
     

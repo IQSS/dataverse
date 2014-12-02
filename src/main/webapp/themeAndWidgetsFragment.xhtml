@@ -46,14 +46,14 @@
                                                 <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name} Dataverse"/>
                                                 <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name} Dataverse"/>
                                             </p>
-                                            <p:commandButton update=":themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
+                                            <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
                                         </p:column>
-                                        <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                        <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                                       fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload New File"/>
                                         <p:message for="changelogo"/>
                                     </p:panelGrid>
                                     <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
-                                        <p:fileUpload id="uploadlogo" update=":themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                        <p:fileUpload id="uploadlogo" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                                       fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
                                         <p:message for="uploadlogo"/>
                                     </p:panelGrid>
@@ -216,8 +216,8 @@
                         </div>
                     </ui:fragment>
                 </p:fragment>
-                <p:commandButton update=":themeWidgetsTabView"   value="Save Changes" action="#{themeWidgetFragment.save()}"/>
-                <p:commandButton action="dataverse" immediate="true"     id="widgetsDone"   value="Cancel">
+                   <p:commandButton   value="Save Changes" action="#{themeWidgetFragment.save()}"/>
+                   <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true"     id="widgetsDone"   value="Cancel">
            
                 </p:commandButton>    
                
