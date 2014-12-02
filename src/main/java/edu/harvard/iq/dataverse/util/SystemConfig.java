@@ -59,23 +59,7 @@ public class SystemConfig {
     }
     
     
-    public String getDataverseSiteUrl() {
-        String hostUrl = System.getProperty("dataverse.siteUrl");
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty("dataverse.fqdn");
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
-    }
-
+    
     /**
      * The number of minutes for which a password reset token is valid. Can be
      * overridden by {@link #PASSWORD_RESET_TIMEOUT_IN_MINUTES}.
