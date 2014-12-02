@@ -294,8 +294,23 @@ public class SolrIndexServiceBean {
 
             solrQuery.addFilterQuery(filterDownToSubtree);
         } else if (definitionPoint.isInstanceofDataset()) {
-            // index the files of this dataset
+            // index the dataset itself
             indexPermissionsForOneDvObject(definitionPoint.getId());
+            // index files
+            /**
+             * @todo make this faster, index files in batches
+             */
+            Dataset dataset = (Dataset) definitionPoint;
+            Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
+            for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
+                boolean cardShouldExist = desiredCards.get(version.getVersionState());
+                if (cardShouldExist) {
+                    for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+                        dvObjectsToReindexPermissionsFor.add(fileMetadata.getDataFile().getId());
+                    }
+                }
+            }
+
         }
 
         QueryResponse queryResponse = null;
@@ -320,7 +335,7 @@ public class SolrIndexServiceBean {
              */
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObjectId);
         }
-        return new IndexResponse("Number of dvObject permissions indexed: " + dvObjectsToReindexPermissionsFor.size());
+        return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint + ": " + dvObjectsToReindexPermissionsFor.size());
     }
 
     public IndexResponse deleteMultipleSolrIds(List<String> solrIdsToDelete) {
