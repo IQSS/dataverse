@@ -17,6 +17,7 @@ echo "---"
 echo "Creating search users"
 scripts/search/populate-users > /dev/null
 scripts/search/create-users > /dev/null
+scripts/search/tests/grant-authusers-add-on-root
 scripts/search/tests/create-all-and-test
 
 exit

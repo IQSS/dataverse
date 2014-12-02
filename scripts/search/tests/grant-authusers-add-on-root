@@ -1,0 +1,6 @@
+#!/bin/sh
+. scripts/search/export-keys
+. scripts/search/assumptions
+OUTPUT=`curl -s -X POST -H 'Content-Type: application/x-www-form-urlencoded' "http://localhost:8080/api/roles/assignments?username=:AuthenticatedUsers&roleId=$DV_CONTRIBUTOR_ROLE&definitionPointId=$ROOT_DATAVERSE&key=$ADMINKEY"`
+echo $OUTPUT
+echo $OUTPUT | jq ' .data | {assignee,_roleAlias}'

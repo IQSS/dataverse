@@ -1,6 +1,8 @@
 #!/bin/bash
 # `source path/to/this/file` to get the same assumptions :)
 export ADMIN_ROLE=1
+export ROOT_DATAVERSE=1
+export DV_CONTRIBUTOR_ROLE=4
 export BIRDS_DATAVERSE=`grep '"alias":"birds"' /tmp/bird-dvs1 | jq .data.id`
 export SPRUCE_DATAVERSE=`grep '"alias":"spruce"' /tmp/tree-dvs1 | jq .data.id`
 export SPRUCE_USERNAME='@spruce'

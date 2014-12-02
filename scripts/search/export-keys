@@ -1,5 +1,6 @@
 #!/bin/bash
 # `source path/to/this/file` so you can use these keys elsewhere
+export ADMINKEY=`cat /tmp/setup-all.sh.out | grep apiToken| jq .data.apiToken | tr -d \"`
 export SEARCH_USER_DIR=/tmp/searchusers
 export FINCHKEY=`cat $SEARCH_USER_DIR/1 | jq .data.apiToken | tr -d \"`
 export SPARROWKEY=`cat $SEARCH_USER_DIR/2 | jq .data.apiToken | tr -d \"`
