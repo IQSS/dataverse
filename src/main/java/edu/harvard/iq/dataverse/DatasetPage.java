@@ -25,8 +25,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCount
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -1060,11 +1062,56 @@ public class DatasetPage implements java.io.Serializable {
             return;
         }
 
+        String duplicateFileNames = null; 
+        boolean multipleDupes = false; 
+        
         if (dFileList != null) {
             for (int i = 0; i < dFileList.size(); i++) {
                 dFile = dFileList.get(i);
-                newFiles.add(dFile);
+                if (!isDuplicate(dFile.getFileMetadata())) {
+                    newFiles.add(dFile);
+                } else {
+                    if (duplicateFileNames == null) {
+                        duplicateFileNames = dFile.getFileMetadata().getLabel();
+                    } else {
+                        duplicateFileNames = duplicateFileNames.concat(", "+dFile.getFileMetadata().getLabel());
+                        multipleDupes = true; 
+                    }
+                    // remove the file from the dataset (since createDataFiles has already linked
+                    // it to the dataset!
+                    // first, through the filemetadata list, then through tht datafiles list:
+                    
+                    Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
+                    while (fmIt.hasNext()) {
+                        FileMetadata fm = fmIt.next();
+                        if (fm.getId() == null && dFile.getFileSystemName().equals(fm.getDataFile().getFileSystemName())) {
+                            fmIt.remove();
+                            break;
+                        }
+                    }
+                    
+                    Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+                    while (dfIt.hasNext()) {
+                        DataFile dfn = dfIt.next();
+                        if (dfn.getId() == null && dFile.getFileSystemName().equals(dfn.getFileSystemName())) {
+                            dfIt.remove();
+                            break;
+                        }
+                    }
+                }
             }
+        }
+        
+        if (duplicateFileNames != null) {
+            String duplicateFilesErrorMessage = null;
+            if (multipleDupes) {
+                duplicateFilesErrorMessage = "The following files already exist in the dataset: " + duplicateFileNames;
+            } else {
+                duplicateFilesErrorMessage = "The following file already exists in the dataset: " + duplicateFileNames;
+            }
+            logger.fine("trying to send faces message to "+event.getComponent().getClientId());
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", duplicateFilesErrorMessage));
+            logger.severe(duplicateFilesErrorMessage);
         }
     }
 
@@ -1310,24 +1357,29 @@ public class DatasetPage implements java.io.Serializable {
         String myHostURL = systemConfig.getDataverseSiteUrl();
         String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
 
-        /*try {
-         return URLEncoder.encode(metaURL, "UTF8");
-         } catch (UnsupportedEncodingException uex) {*/
-        //metaURL = metaURL.replaceAll(":", "\\:");
         return metaURL;
-        /*}*/
     }
 
     public String getTabularDataFileURL(Long fileid) {
         String myHostURL = systemConfig.getDataverseSiteUrl();;
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
 
-        /*try {
-         return URLEncoder.encode(dataURL, "UTF8");
-         } catch (UnsupportedEncodingException uex) {*/
-        //dataURL = dataURL.replaceAll(":", "\\:");
         return dataURL;
-        /*}*/
+    }
+    
+    private FileMetadata fileForAdvancedOptions = null; 
+    
+    public void setAdvfile(FileMetadata fm) {
+        fileForAdvancedOptions = fm;
+        logger.info("set the file for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
     }
 
+    public FileMetadata getAdvfile() {
+        if (fileForAdvancedOptions != null) {
+            logger.info("returning file metadata for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
+        } else {
+            logger.info("file metadata for the advanced options popup is null.");
+        }
+        return fileForAdvancedOptions;
+    }
 }

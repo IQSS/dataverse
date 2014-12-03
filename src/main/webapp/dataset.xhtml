@@ -490,9 +490,9 @@
                                             });
                                         </script>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add"
+                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="Select Files to Add"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
-
+                                        
                                         <ui:fragment rendered="#{!empty DatasetPage.dropBoxKey}">
                                             <div id="dropboxUploadBlock" class="panel panel-default" style="margin-top:1em;">
                                                 <div class="panel-body">
@@ -504,6 +504,7 @@
                                                 </div>
                                             </div>
                                         </ui:fragment>
+                                        <p:message for="fileUpload" id="uploadMessage" display="text"/>
                                     </ui:fragment>
                                     <!-- View -->
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
@@ -600,7 +601,11 @@
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <ui:fragment rendered="#{(fileMetadata.dataFile.tabularData)}">
-                                                <p:commandLink id="deleteDataset" styleClass="btn btn-default" onclick="fileAdvancedOptions.show()">
+                                                <p:commandLink id="advancedIngestOptionsButton" 
+                                                               styleClass="btn btn-default" 
+                                                               actionListener="#{DatasetPage.setAdvfile(fileMetadata)}"
+                                                               update=":datasetForm:fileAdvancedOptions"
+                                                               oncomplete="fileAdvancedOptions.show()">
                                                     <span class="glyphicon glyphicon-cog" style="margin-right:.3em;"/> Advanced Options
                                                 </p:commandLink>
                                             </ui:fragment>
@@ -1083,8 +1088,9 @@
                     </p:commandButton>
 
                     <ui:include src="rolesAndPermissionsFragment.xhtml"/>
+                    
                     <p:dialog id="fileAdvancedOptions" header="Advanced Options" widgetVar="fileAdvancedOptions" modal="true">
-                        <p class="help-block">Edit these advanced options.</p>
+                        <p class="help-block">Advanced Options.</p>
                         <style type="text/css">
                                     .form-group table.noBorders {width:100%;}
                                     .form-group table.noBorders td {width:50%;}
@@ -1099,7 +1105,7 @@
                                 </label>
                                 <div class="col-sm-8">
                                     <p:panelGrid columns="2" styleClass="noBorders">
-                                        <h:outputText value="**REMOVE ME** File Upload"/>
+                                        <h:outputText value="**REMOVE ME** File Upload #{DatasetPage.advfile.label}"/>
                                         <h:outputText value="Error Msg **REMOVE ME**"/>
                                     </p:panelGrid>
                                     <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
@@ -1107,6 +1113,8 @@
                                         <p:message for="spssPortableSecondFile" display="text" /> -->
                                 </div>
                             </div>
+                            
+                            <ui:fragment rendered="false">
                             <div class="form-group col-sm-12">
                                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1123,6 +1131,8 @@
                                         <p:message for="spssSavEncodingLanguage" display="text" /> -->
                                 </div>
                             </div>
+                            </ui:fragment>
+                            <ui:fragment rendered="false">
                             <div class="form-group col-sm-12">
                                 <label for="datasetThumbnailImage" class="col-sm-4 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1139,6 +1149,8 @@
                                         <p:message for="datasetThumbnailImage" display="text" /> -->
                                 </div>
                             </div>
+                            </ui:fragment>
+                            <ui:fragment rendered="false">
                             <div class="form-group col-sm-12">
                                 <label for="fileTags" class="col-sm-4 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1155,6 +1167,7 @@
                                         <p:message for="fileTags" display="text" /> -->
                                 </div>
                             </div>
+                            </ui:fragment>
                         </div>
                         <button type="button" class="btn btn-default" value="Save Changes" onclick="fileAdvancedOptions.hide()">Save Changes</button>
                         <button type="button" class="btn btn-default" value="Cancel" onclick="fileAdvancedOptions.hide()">Cancel</button>
