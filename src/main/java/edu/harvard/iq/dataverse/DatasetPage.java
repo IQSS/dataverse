@@ -900,6 +900,7 @@ public class DatasetPage implements java.io.Serializable {
         // ones and modify their names so that there are no duplicates. 
         // (but should we really be doing it here? - maybe a better approach to do it
         // in the ingest service bean, when the files get uploaded.)
+        
         // Finally, save the files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
 

@@ -448,9 +448,9 @@ public class IngestServiceBean {
                     String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
                     if ( originalMimeType != null) {
                         String origFileExtension = generateOriginalExtension(originalMimeType);
-                        existingName = existingName.replaceAll(".tab$", origFileExtension);
+                        fileNamesExisting.add(existingName.replaceAll(".tab$", origFileExtension));
                     } else {
-                        existingName = existingName.replaceAll(".tab$", "");
+                        fileNamesExisting.add(existingName.replaceAll(".tab$", ""));
                     }
                 }
                 fileNamesExisting.add(existingName);
@@ -462,6 +462,47 @@ public class IngestServiceBean {
         }
 
         return fileName;
+    }
+    
+    private void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
+        Set<String> fileNamesExisting = new HashSet<String>();
+
+        Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            if (fm.getId() != null) {
+                String existingName = fm.getLabel();
+            
+                if (existingName != null) {
+                    // if it's a tabular file, we need to restore the original file name; 
+                    // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
+                    // foobar.tab once ingested! 
+                    if (fm.getDataFile().isTabularData()) {
+                        String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
+                        if ( originalMimeType != null) {
+                            String origFileExtension = generateOriginalExtension(originalMimeType);
+                            existingName = existingName.replaceAll(".tab$", origFileExtension);
+                        } else {
+                            existingName = existingName.replaceAll(".tab$", "");
+                        }
+                    }
+                    fileNamesExisting.add(existingName);
+                }
+            }
+        }
+
+        Iterator<DataFile> dfIt = newFiles.iterator();
+        while (dfIt.hasNext()) {
+            FileMetadata fm = dfIt.next().getFileMetadata();
+            String fileName = fm.getLabel(); 
+            while (fileNamesExisting.contains(fileName)) {
+                fileName = generateNewFileName(fileName);
+            }
+            if (!fm.getLabel().equals(fileName)) {
+                fm.setLabel(fileName);
+                fileNamesExisting.add(fileName);
+            }
+        }
     }
     
     // TODO: 
@@ -622,6 +663,13 @@ public class IngestServiceBean {
     
     public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
+            // final check for duplicate file names; 
+            // we tried to make the file names unique on upload, but then 
+            // the user may have edited them on the "add files" page, and 
+            // renamed FOOBAR-1.txt back to FOOBAR.txt...
+            
+            checkForDuplicateFileNamesFinal(version, newFiles);
+            
             Dataset dataset = version.getDataset();
             
             try {
@@ -652,17 +700,6 @@ public class IngestServiceBean {
                     // These are all brand new files, so they should all have 
                     // one filemetadata total. -- L.A. 
                     boolean metadataExtracted = false;
-
-                    /*
-                    // Hmm. Why exactly am I incrementing the filename sequence
-                    // here? I could just save the file in the permanent location
-                    // under the same name as the temp version... 
-                    // Could be a moot point - this filename sequence has to 
-                    // go away anyway... On the inside, it's too PostgresQL-specific;
-                    // and it's too filesystem-specific architecturally. 
-                    // -- L.A. Jul. 11 2014
-                    datasetService.generateFileSystemName(dataFile);
-                    */
                     
                     if (ingestableAsTabular(dataFile)) {
                         /*
@@ -1210,7 +1247,7 @@ public class IngestServiceBean {
                     // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
                     dataFile.setContentType(MIME_TYPE_TAB);
-                    dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));
+                    dataFile.getFileMetadata().setLabel(checkForDuplicateFileNames(dataFile.getOwner().getLatestVersion(), FileUtil.replaceExtension(fileName, "tab")));
 
                     dataFile.setDataTable(tabDataIngest.getDataTable());
                     tabDataIngest.getDataTable().setDataFile(dataFile);
