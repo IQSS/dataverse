@@ -18,6 +18,7 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
             <ui:define name="body">
                 <ui:fragment rendered="#{not LoginPage.authenticationProvidersAvailable}">
                     <div class="row">
