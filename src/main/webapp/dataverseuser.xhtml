@@ -35,7 +35,7 @@
                     <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
-                    <f:viewAction action="#{SearchIncludeFragment.search(true)}" />                    
+                    <f:viewAction action="#{SearchIncludeFragment.search(true)}" />
                 </f:metadata>
                 <h:form id="dataverseUserForm" style="margin-top:1em;">
                     <ui:fragment rendered="#{empty DataverseUserPage.editMode}">
@@ -44,11 +44,11 @@
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
-                                            <span class="glyphicon glyphicon-pencil"/> Edit Account <span class="caret"></span>                                            
+                                            <span class="glyphicon glyphicon-pencil"/> Edit Account <span class="caret"></span>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
-                                            Account Information <span class="caret"></span>                                            
-                                        </ui:fragment>                                        
+                                            Account Information <span class="caret"></span>
+                                        </ui:fragment>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
                                         <li>
@@ -66,12 +66,12 @@
                                         </li>
                                         <li class="divider" role="presentation"></li>
                                         <li>
-                                            <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" rendered="#{!empty DataverseUserPage.builtinUser}" update="@all">
+                                            <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" rendered="#{!empty DataverseUserPage.builtinUser}" update="@form">
                                                 <h:outputText value="Account Information" />
                                             </p:commandLink>
                                         </li>
                                         <li>
-                                            <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" rendered="#{!empty DataverseUserPage.builtinUser}" update="@all">
+                                            <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" rendered="#{!empty DataverseUserPage.builtinUser}" update="@form">
                                                 <h:outputText value="Password" />
                                             </p:commandLink>
                                         </li>
@@ -83,8 +83,8 @@
                                         <li>
                                             <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
                                                 You have logged in through your institution. To edit account details, please visit the account page for your institution.
-                                            </ui:fragment>                        
-                                        </li>                                        
+                                            </ui:fragment>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -138,7 +138,7 @@
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
                                         </h:outputLink>
                                         <h:outputText value=" had WorldMap layer data added to it." />
-                                    </ui:fragment>                                    
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEACC'}">
                                         <h:outputText value="Welcome to Dataverse 4.0 Beta! Please take a look around, try everything out, and check out our " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
                                         <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
@@ -185,7 +185,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    
+
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CHANGE'}">
                                     <!-- Current Password -->
                                         <div class="form-group col-sm-12">
@@ -207,7 +207,7 @@
                                         <div class="form-group col-sm-12">
                                             <label for="inputPassword" class="col-sm-2 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Your password needs to be at least 6 characters and include one letter and one number.">
-                                                    <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" /> 
+                                                    <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
                                                     <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
@@ -235,7 +235,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    
+
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- First Name -->
                                         <div class="form-group col-sm-12">
@@ -268,13 +268,13 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    
+
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Email -->
                                         <div class="form-group col-sm-12">
                                             <label for="email" class="col-sm-2 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A valid email address you have access to in order to be contacted.">
-                                                    Email 
+                                                    Email
                                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
                                                         <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                     </ui:fragment>
@@ -288,7 +288,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    
+
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Affiliation -->
                                         <div class="form-group col-sm-12">
@@ -305,7 +305,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    
+
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Position -->
                                         <div class="form-group col-sm-12">
@@ -324,9 +324,9 @@
                                     </ui:fragment>
                                 </div>
                                 <p:panel styleClass="panelLayoutButtonBlock">
-                                    <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@all" />
-                                    <p:commandButton id="cancel" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@all">
-                                        <p:resetInput target="@all" />
+                                    <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@form" />
+                                    <p:commandButton id="cancel" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
+                                        <p:resetInput target="@form" />
                                     </p:commandButton>
                                 </p:panel>
                             </div>
