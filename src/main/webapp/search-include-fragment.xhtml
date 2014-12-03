@@ -548,8 +548,9 @@
                                         </h:outputLink>
                                     </div>
 
-                                    <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
+                                    <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
 
+                                    <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
                                     <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                         <h:outputText value="#{result.parent.get('name')} Dataverse"/>
                                     </h:outputLink>
