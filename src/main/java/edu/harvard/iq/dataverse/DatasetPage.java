@@ -1063,6 +1063,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         String duplicateFileNames = null; 
+        boolean multipleFiles = dFileList.size() > 1; 
         boolean multipleDupes = false; 
         
         if (dFileList != null) {
@@ -1077,6 +1078,7 @@ public class DatasetPage implements java.io.Serializable {
                         duplicateFileNames = duplicateFileNames.concat(", "+dFile.getFileMetadata().getLabel());
                         multipleDupes = true; 
                     }
+                    
                     // remove the file from the dataset (since createDataFiles has already linked
                     // it to the dataset!
                     // first, through the filemetadata list, then through tht datafiles list:
@@ -1107,7 +1109,11 @@ public class DatasetPage implements java.io.Serializable {
             if (multipleDupes) {
                 duplicateFilesErrorMessage = "The following files already exist in the dataset: " + duplicateFileNames;
             } else {
-                duplicateFilesErrorMessage = "The following file already exists in the dataset: " + duplicateFileNames;
+                if (multipleFiles) {
+                    duplicateFilesErrorMessage = "The following file already exists in the dataset: " + duplicateFileNames;
+                } else {
+                    duplicateFilesErrorMessage = "This file already exists in this dataset. Please upload another file.";
+                }
             }
             logger.fine("trying to send faces message to "+event.getComponent().getClientId());
             FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", duplicateFilesErrorMessage));
