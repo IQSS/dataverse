@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.Highlight;
+import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class SearchServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) {
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
@@ -234,18 +235,21 @@ public class SearchServiceBean {
         QueryResponse queryResponse;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (SolrServerException | RemoteSolrException ex) {
-            String error = "Bloops!";
-            if (ex instanceof SolrServerException) {
-                error = "Internal error: " + ex.getLocalizedMessage();
-            } else if (ex instanceof RemoteSolrException) {
-                error = "Trouble parsing query? " + ex.getLocalizedMessage();
+        } catch (RemoteSolrException ex) {
+            String messageFromSolr = ex.getLocalizedMessage();
+            String error = "Search Syntax Error: ";
+            String stringToHide = "org.apache.solr.search.SyntaxError: ";
+            if (messageFromSolr.startsWith(stringToHide)) {
+                // hide "org.apache.solr..."
+                error += messageFromSolr.substring(stringToHide.length());
+            } else {
+                error += messageFromSolr;
             }
-
-            logger.info(error + " " + ex.getLocalizedMessage());
+            logger.info(error);
             SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse();
             exceptionSolrQueryResponse.setError(error);
 
+            // we can't show anything because of the search syntax error
             long zeroNumResultsFound = 0;
             long zeroGetResultsStart = 0;
             List<SolrSearchResult> emptySolrSearchResults = new ArrayList<>();
@@ -257,8 +261,9 @@ public class SearchServiceBean {
             exceptionSolrQueryResponse.setFacetCategoryList(exceptionFacetCategoryList);
             exceptionSolrQueryResponse.setTypeFacetCategories(exceptionFacetCategoryList);
             exceptionSolrQueryResponse.setSpellingSuggestionsByToken(emptySpellingSuggestion);
-
             return exceptionSolrQueryResponse;
+        } catch (SolrServerException ex) {
+            throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();

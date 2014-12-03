@@ -13,10 +13,12 @@ import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -72,7 +74,7 @@ public class Search extends AbstractApiBean {
                 boolean dataRelatedToMe = false;
                 int numResultsPerPage = 10;
                 solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
-            } catch (EJBException ex) {
+            } catch (SearchException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
                 sb.append(cause + " ");
@@ -184,7 +186,12 @@ public class Search extends AbstractApiBean {
         int paginationStart = 0;
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
-        SolrQueryResponse solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+        SolrQueryResponse solrQueryResponse;
+        try {
+            solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+        } catch (SearchException ex) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
+        }
 
         JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
         List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();

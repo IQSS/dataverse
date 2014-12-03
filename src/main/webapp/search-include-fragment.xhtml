@@ -216,6 +216,7 @@
                                 <h:outputText value="mode:#{SearchIncludeFragment.mode} "/>
                                 <h:outputText value="sort=#{SearchIncludeFragment.sortField}:#{SearchIncludeFragment.sortOrder}"/><br/>
                                 <h:outputText value="#{SearchIncludeFragment.filterQueriesDebug}"/><br/>
+                                <h:outputText value="solrIsDown=#{SearchIncludeFragment.solrIsDown}"/><br/>
                                 <h:outputText value="errorFromSolr: #{SearchIncludeFragment.errorFromSolr}" rendered="#{SearchIncludeFragment.errorFromSolr != null}"/>
                             </tt>
                         </div>
@@ -227,6 +228,9 @@
                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                 <!--THIS IS EMPTY / SEARCH-->
                                 <p>Sorry, there are no Dataverses, Datasets, or Files that match your search. Please try a new search. You can also check out the <a href="/guides/User/find-use-data.html" target="_blank">search guide</a> for tips.</p>
+                                <ui:fragment rendered="#{SearchIncludeFragment.errorFromSolr != null}">
+                                    <pre><h:outputText value="#{SearchIncludeFragment.errorFromSolr}"/></pre>
+                                </ui:fragment>
                             </ui:fragment>
                             <ui:fragment rendered="#{!dataverseSession.user.authenticated and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / GUEST-->
@@ -743,29 +747,13 @@
                 </div>
             </ui:fragment>
             <ui:fragment rendered="#{SearchIncludeFragment.solrIsDown}">
-                <p:dataTable value="#{SearchIncludeFragment.directChildDvObjectContainerList}" var="directChild">
-                    <p:column>
-                        <ui:fragment rendered="#{directChild.class.simpleName == 'Dataverse'}">
-                            <h:outputLink value="#{dataversePage}?id=#{directChild.id}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
-                                <h:outputText value="#{directChild.name} Dataverse" style="padding:4px 0;"/>
-                            </h:outputLink>
-                            <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
-                            </div>
-                            <h:outputText value="#{directChild.affiliation}" rendered="#{directChild.affiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{directChild.class.simpleName == 'Dataset'}">
-                            <h:outputLink value="/dataset.xhtml?id=#{directChild.id}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
-                                <h:outputText value="#{directChild}" style="padding:4px 0;"/>
-                            </h:outputLink>
-                            <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                <img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/>
-                            </div>
-                            <!--FIXME: copy more of the dataset card here from search.xhtml-->
-                        </ui:fragment>
-                    </p:column>
-                </p:dataTable>
-                <h:outputText value="Please note: Due to an internal error, only a limited browsing experience is available (i.e. no facets)."/>
+                <h:outputText value="Please note: Due to an internal error, browsing and searching is not available." style="font-weight:bolder; font-size: xx-large"/>
+                <br/>
+                <br/>
+                <h:outputText value="#{SearchIncludeFragment.searchException.message}" style="font-weight:bolder; font-size: xx-large"/>
+                <br/>
+                <br/>
+                <h:outputText value="#{SearchIncludeFragment.searchException.cause.message}" style="font-weight:bolder; font-size: xx-large"/>
             </ui:fragment>
         </div>
     </div>
