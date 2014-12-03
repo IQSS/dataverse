@@ -35,16 +35,6 @@
                         <div id="builtinColumn" class="col-md-5" style="margin-top:3em;">
                             <h:form id="loginForm" styleClass="form-horizontal">
                                 <p:focus context="loginForm"/>
-                                <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
-                                    <div class="form-group">
-                                        <p:outputLabel value="Login System" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
-                                        <h:selectOneMenu id="loginSystemSelect" value="#{LoginPage.credentialsAuthProviderId}">
-                                            <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
-                                                           itemLabel="#{ap.title}" itemValue="#{ap.id}" />
-                                            <f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
-                                        </h:selectOneMenu>
-                                    </div>
-                                </ui:fragment>
                                 <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
                                     <div class="form-group">
                                         <p:outputLabel value="#{fc.credential.title}" for="credValue" styleClass="col-sm-2 control-label"/>
