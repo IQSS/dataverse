@@ -83,7 +83,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
                 queryStrings.add(constructQuery(listQueryStrings, false));
             }
         }
-        if (!dsPublicationDate.isEmpty()) {
+        if (StringUtils.isNotBlank(dsPublicationDate)) {
             queryStrings.add(constructQuery(SearchFields.DATASET_PUBLICATION_DATE, dsPublicationDate));
         }
         return constructQuery(queryStrings, true);
@@ -92,15 +92,15 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     private String constructDataverseQuery() {
         List queryStrings = new ArrayList();
-        if (!dvFieldName.isEmpty()) {
+        if (StringUtils.isNotBlank(dvFieldName)) {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_NAME, dvFieldName));
         }
 
-        if (!dvFieldAffiliation.isEmpty()) {
+        if (StringUtils.isNotBlank(dvFieldAffiliation)) {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_AFFILIATION, dvFieldAffiliation));
         }
 
-        if (!dvFieldDescription.isEmpty()) {
+        if (StringUtils.isNotBlank(dvFieldDescription)) {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_DESCRIPTION, dvFieldDescription));
         }
 
@@ -109,23 +109,23 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     private String constructFileQuery() {
         List queryStrings = new ArrayList();
-        if (!fileFieldName.isEmpty()) {
+        if (StringUtils.isNotBlank(fileFieldName)) {
             queryStrings.add(constructQuery(SearchFields.FILE_NAME, fileFieldName));
         }
 
-        if (!fileFieldDescription.isEmpty()) {
+        if (StringUtils.isNotBlank(fileFieldDescription)) {
             queryStrings.add(constructQuery(SearchFields.FILE_DESCRIPTION, fileFieldDescription));
         }
 
-        if (!fileFieldFiletype.isEmpty()) {
+        if (StringUtils.isNotBlank(fileFieldFiletype)) {
             queryStrings.add(constructQuery(SearchFields.FILE_TYPE_SEARCHABLE, fileFieldFiletype));
         }
 
-        if (!fileFieldVariableName.isEmpty()) {
+        if (StringUtils.isNotBlank(fileFieldVariableName)) {
             queryStrings.add(constructQuery(SearchFields.VARIABLE_NAME, fileFieldVariableName));
         }
 
-        if (!fileFieldVariableLabel.isEmpty()) {
+        if (StringUtils.isNotBlank(fileFieldVariableLabel)) {
             queryStrings.add(constructQuery(SearchFields.VARIABLE_LABEL, fileFieldVariableLabel));
         }
 
