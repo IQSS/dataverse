@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RenameDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,6 +111,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
      */
     private boolean allowUsersAddDataverse;
     private boolean allowUsersAddDataset;
+    private String authenticatedUsersContributorRoleAlias = null;
     private String defaultContributorRoleAlias = DataverseRole.EDITOR;
 
     public boolean isAllowUsersAddDataverse() {
@@ -128,6 +130,14 @@ public class ManagePermissionsPage implements java.io.Serializable {
         this.allowUsersAddDataset = allowUsersAddDataset;
     }
 
+    public String getAuthenticatedUsersContributorRoleAlias() {
+        return authenticatedUsersContributorRoleAlias;
+    }
+
+    public void setAuthenticatedUsersContributorRoleAlias(String authenticatedUsersContributorRoleAlias) {
+        this.authenticatedUsersContributorRoleAlias = authenticatedUsersContributorRoleAlias;
+    }
+
     public String getDefaultContributorRoleAlias() {
         return defaultContributorRoleAlias;
     }
@@ -137,6 +147,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     public void initAccessSettings() {
+        /* commented out, while we test having just radio buttons
+        
         allowUsersAddDataverse = false;
         allowUsersAddDataset = false;
         
@@ -150,6 +162,19 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 allowUsersAddDataset = true;   
             }
         }
+        */
+
+        authenticatedUsersContributorRoleAlias = "";
+        
+        List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
+        for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
+            String roleAlias = roleAssignment.getRole().getAlias();
+            authenticatedUsersContributorRoleAlias = roleAlias;
+            break;
+            // @todo handle case where more than one role has been assigned to the AutenticatedUsers group!
+        }        
+        
+        
     }
 
     public void saveConfiguration(ActionEvent e) {
@@ -157,6 +182,12 @@ public class ManagePermissionsPage implements java.io.Serializable {
         DataverseRole roleToAssign = null;
         List<String> contributorRoles = Arrays.asList(DataverseRole.FULL_CONTRIBUTOR, DataverseRole.DV_CONTRIBUTOR, DataverseRole.DS_CONTRIBUTOR);
 
+        if (!StringUtil.isEmpty(authenticatedUsersContributorRoleAlias)) {
+            roleToAssign = roleService.findBuiltinRoleByAlias(authenticatedUsersContributorRoleAlias);
+        }
+        
+        /* commented out, while we test having just radio buttons
+        
         // first, determine role from page selection
         if (allowUsersAddDataverse && allowUsersAddDataset) {
             roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.FULL_CONTRIBUTOR);
@@ -165,6 +196,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         } else if (allowUsersAddDataset) {
             roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.DS_CONTRIBUTOR);
         }
+        */
 
         // then, check current contributor role
         List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
