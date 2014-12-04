@@ -65,6 +65,9 @@ public class DataFile extends DvObject {
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<IngestReport> ingestReports;
     
+    @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataFileTag> dataFileTags;
+    
     
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileMetadata> fileMetadatas;
@@ -104,14 +107,6 @@ public class DataFile extends DvObject {
         this.dataTables = dataTables;
     }
     
-    public List<FileMetadata> getFileMetadatas() {
-        return fileMetadatas;
-    }
-
-    public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
-        this.fileMetadatas = fileMetadatas;
-    }
-    
     public DataTable getDataTable() {
         if ( getDataTables() != null && getDataTables().size() > 0 ) {
             return getDataTables().get(0);
@@ -128,6 +123,30 @@ public class DataFile extends DvObject {
         }
 
         this.getDataTables().add(dt);
+    }
+    
+    public List<DataFileTag> getTags() {
+        return dataFileTags;
+    }
+    
+    public void setTags(List<DataFileTag> dataFileTags) {
+        this.dataFileTags = dataFileTags;
+    }
+    
+    public void addTag(DataFileTag tag) {
+        if (dataFileTags == null) {
+            dataFileTags = new ArrayList<>();
+        } 
+
+        dataFileTags.add(tag);
+    }
+    
+    public List<FileMetadata> getFileMetadatas() {
+        return fileMetadatas;
+    }
+
+    public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
+        this.fileMetadatas = fileMetadatas;
     }
     
     public IngestReport getIngestReport() {

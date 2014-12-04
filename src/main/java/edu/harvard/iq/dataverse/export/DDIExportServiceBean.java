@@ -85,7 +85,9 @@ public class DDIExportServiceBean {
     public static final String DB_VAR_RANGE_TYPE_MAX_EX = "max exclusive";
     public static final String LEVEL_FILE = "file";
     public static final String NOTE_TYPE_UNF = "VDC:UNF";
+    public static final String NOTE_TYPE_TAG = "DATAVERSE:TAG";
     public static final String NOTE_SUBJECT_UNF = "Universal Numeric Fingerprint";
+    public static final String NOTE_SUBJECT_TAG = "Data File Tag";
 
     /*
      * Internal service objects:
@@ -632,6 +634,16 @@ public class DDIExportServiceBean {
 
          }
          */
+        if (checkField("tags", excludedFieldSet, includedFieldSet) && df.getTags() != null) {
+            for (int i = 0; i < df.getTags().size(); i++) {
+                xmlw.writeStartElement("notes");
+                writeAttribute(xmlw, "level", LEVEL_FILE);
+                writeAttribute(xmlw, "type", NOTE_TYPE_TAG);
+                writeAttribute(xmlw, "subject", NOTE_SUBJECT_TAG);
+                xmlw.writeCharacters(df.getTags().get(i).getTypeLabel());
+                xmlw.writeEndElement(); // notes
+            }
+        }
         xmlw.writeEndElement(); // fileDscr   
     }
 

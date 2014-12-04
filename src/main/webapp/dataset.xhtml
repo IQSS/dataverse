@@ -1092,29 +1092,32 @@
                     <ui:include src="rolesAndPermissionsFragment.xhtml"/>
                     
                     <p:dialog id="fileAdvancedOptions" header="Advanced Options" widgetVar="fileAdvancedOptions" modal="true">
-                        <p class="help-block">Advanced Options.</p>
+                        <p class="help-block"></p>
                         <style type="text/css">
                                     .form-group table.noBorders {width:100%;}
                                     .form-group table.noBorders td {width:50%;}
                                     .form-group table.noBorders td .form-control {width:100%;}
                                 </style>
                         <div class="form-inline clearfix" style="min-width:800px;">
-                            <div class="form-group col-sm-12">
-                                <label for="spssPortableSecondFile" class="col-sm-4 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                        SPSS-Portable Second File
-                                    </a>
-                                </label>
-                                <div class="col-sm-8">
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <h:outputText value="**REMOVE ME** File Upload #{DatasetPage.advfile.label}"/>
-                                        <h:outputText value="Error Msg **REMOVE ME**"/>
-                                    </p:panelGrid>
-                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                        <p:inputText id="spssPortableSecondFile" styleClass="form-control"/>
-                                        <p:message for="spssPortableSecondFile" display="text" /> -->
+                            <!-- "Data File Tags" - these only apply to tabular files, for now: -->
+                            <ui:fragment rendered="#{DatasetPage.advfile.dataFile.tabularData}">
+                                <div class="form-group col-sm-12">
+                                    <label for="spssPortableSecondFile" class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Tabular Data Tags 
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:selectCheckboxMenu id="tabularDataTags" value="#{DatasetPage.selectedTags}" label="Add/Edit Tags"
+                                                     filter="false" panelStyle="width:300px">
+                                                <f:selectItems value="#{DatasetPage.tabFileTags}" />
+                                            </p:selectCheckboxMenu>
+                                            <p:message for="tabularDataTags" display="text" />
+                                        </p:panelGrid>
+                                    </div>
                                 </div>
-                            </div>
+                            </ui:fragment>
                             
                             <ui:fragment rendered="false">
                             <div class="form-group col-sm-12">
@@ -1171,8 +1174,8 @@
                             </div>
                             </ui:fragment>
                         </div>
-                        <button type="button" class="btn btn-default" value="Save Changes" onclick="fileAdvancedOptions.hide()">Save Changes</button>
-                        <button type="button" class="btn btn-default" value="Cancel" onclick="fileAdvancedOptions.hide()">Cancel</button>
+                        <p:commandButton id="fileAdvancedOptionsSaveButton" value="Save Changes" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
+                        <p:commandButton id="fileAdvancedOptionsCancelButton" value="Cancel" onclick="fileAdvancedOptions.hide()"/>
                     </p:dialog>
                 </h:form>
             </ui:define>

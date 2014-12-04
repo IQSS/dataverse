@@ -1389,4 +1389,68 @@ public class DatasetPage implements java.io.Serializable {
         }
         return fileForAdvancedOptions;
     }
+    
+    /* Items for the "Advanced Options" popup. 
+     * 
+     * Tabular File Tags: 
+     */
+    
+    private List<String> tabFileTags = null;
+    
+    public List<String> getTabFileTags() {
+        if (tabFileTags == null) {
+            tabFileTags = DataFileTag.listTags();
+        }
+        return tabFileTags;
+    }
+    
+    public void setTabFileTags(List<String> tabFileTags) {
+        this.tabFileTags = tabFileTags; 
+    }
+    
+    private String[] selectedTags = {}; 
+    
+    public String[] getSelectedTags() {
+        
+        selectedTags = null;
+        selectedTags = new String[0];
+        
+        if (fileForAdvancedOptions != null) {
+            if (fileForAdvancedOptions.getDataFile() != null 
+                    && fileForAdvancedOptions.getDataFile().getTags() != null
+                    && fileForAdvancedOptions.getDataFile().getTags().size() > 0) {
+                
+                selectedTags = new String[ fileForAdvancedOptions.getDataFile().getTags().size()];
+                
+                for (int i = 0; i < fileForAdvancedOptions.getDataFile().getTags().size(); i++) {
+                    selectedTags[i] = fileForAdvancedOptions.getDataFile().getTags().get(i).getTypeLabel();
+                }
+            }
+        }
+        return selectedTags;
+    }
+ 
+    public void setSelectedTags(String[] selectedTags) {
+        this.selectedTags = selectedTags;
+    }
+    
+    public void saveAdvancedOptions() {
+        // DataFile Tags: 
+        
+        if (selectedTags != null) {
+            if (fileForAdvancedOptions != null && fileForAdvancedOptions.getDataFile() != null) {
+                fileForAdvancedOptions.getDataFile().setTags(null);
+                for (int i = 0; i < selectedTags.length; i++) {
+                    DataFileTag tag = new DataFileTag();
+                    try { 
+                        tag.setTypeByLabel(selectedTags[i]);
+                        tag.setDataFile(fileForAdvancedOptions.getDataFile());
+                        fileForAdvancedOptions.getDataFile().addTag(tag);
+                    } catch (IllegalArgumentException iax) {
+                        // ignore 
+                    }
+                }
+            }
+        }
+    }
 }
