@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -447,14 +448,14 @@ public class Access {
         // First, check if the dataverse has a defined logo: 
         
         if (dataverse.getDataverseTheme()!=null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
-            String dataverseLogoPath = getLogoPath(dataverse);
-            if (dataverseLogoPath != null) {
+            File dataverseLogoFile = getLogo(dataverse);
+            if (dataverseLogoFile != null) {
                 String logoThumbNailPath = null;
                 InputStream in = null;
 
                 try {
-                    if (new File(dataverseLogoPath).exists()) {
-                        logoThumbNailPath =  ImageThumbConverter.generateImageThumb(dataverseLogoPath, 48);
+                    if (dataverseLogoFile.exists()) {
+                        logoThumbNailPath =  ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
                         if (logoThumbNailPath != null) {
                             in = new FileInputStream(logoThumbNailPath);
                         }
@@ -520,19 +521,26 @@ public class Access {
         return null; 
     }
     
-    private String getLogoPath(Dataverse dataverse) {
+    private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
             return null; 
         }
         
-        Properties p = System.getProperties();
-        String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+        DataverseTheme theme = dataverse.getDataverseTheme(); 
+        if (theme != null && theme.getLogo() != null && !theme.getLogo().equals("")) {
+            Properties p = System.getProperties();
+            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
   
-        return domainRoot + File.separator + 
-                "docroot" + File.separator + 
-                "logos" + File.separator + 
-                dataverse.getId() + File.separator + 
-                dataverse.getDataverseTheme().getLogo();
+            if (domainRoot != null && !"".equals(domainRoot)) {
+                return new File (domainRoot + File.separator + 
+                    "docroot" + File.separator + 
+                    "logos" + File.separator + 
+                    dataverse.getLogoOwnerId() + File.separator + 
+                    theme.getLogo());
+            }
+        }
+            
+        return null;         
     }
     
     private String getWebappImageResource(String imageName) {
