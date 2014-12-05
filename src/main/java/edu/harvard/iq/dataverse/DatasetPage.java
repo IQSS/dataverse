@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -646,27 +647,28 @@ public class DatasetPage implements java.io.Serializable {
 
     private DatasetVersion setDatasetVersionDeaccessionReasonAndURL(DatasetVersion dvIn) {
         int deaccessionReasonCode = getDeaccessionReasonRadio();
+        String deacessionReasonDetail = getDeaccessionReasonText() != null ? getDeaccessionReasonText() : "";
         switch (deaccessionReasonCode) {
             case 1:
-                dvIn.setVersionNote("There is identifiable data in one or more files. " + getDeaccessionReasonText());
+                dvIn.setVersionNote("There is identifiable data in one or more files. " + deacessionReasonDetail);
                 break;
             case 2:
-                dvIn.setVersionNote("The research article has been retracted. " + getDeaccessionReasonText());
+                dvIn.setVersionNote("The research article has been retracted. " + deacessionReasonDetail);
                 break;
             case 3:
-                dvIn.setVersionNote("The dataset has been transferred to another repository. " + getDeaccessionReasonText());
+                dvIn.setVersionNote("The dataset has been transferred to another repository. " + deacessionReasonDetail);
                 break;
             case 4:
-                dvIn.setVersionNote("IRB request. " + getDeaccessionReasonText());
+                dvIn.setVersionNote("IRB request. " + deacessionReasonDetail);
                 break;
             case 5:
-                dvIn.setVersionNote("Legal issue or Data Usage Agreement. " + getDeaccessionReasonText());
+                dvIn.setVersionNote("Legal issue or Data Usage Agreement. " + deacessionReasonDetail);
                 break;
             case 6:
-                dvIn.setVersionNote("Not a valid dataset. " + getDeaccessionReasonText());
+                dvIn.setVersionNote("Not a valid dataset. " + deacessionReasonDetail);
                 break;
             case 7:
-                dvIn.setVersionNote(getDeaccessionReasonText());
+                dvIn.setVersionNote(deacessionReasonDetail);
                 break;
         }
         dvIn.setArchiveNote(getDeaccessionForwardURLFor());
