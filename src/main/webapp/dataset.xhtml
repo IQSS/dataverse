@@ -555,7 +555,7 @@
                                                 <h:outputText id="fileTypeOutputTabular" value="Tabular Data - " rendered="#{fileMetadata.dataFile.tabularData}"/>
                                                 <h:outputText id="fileSize" value="#{fileMetadata.dataFile.friendlySize} - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
-                                                <h:outputText id="fileCreatePublishDate" value="MM/DD/YYYY - "/>
+                                                <h:outputText id="fileCreatePublishDate" value="#{DatasetPage.getFileDateToDisplay(fileMetadata)} - " rendered="#{!(empty fileMetadata.id)}"/>
                                                 
                                                 <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>

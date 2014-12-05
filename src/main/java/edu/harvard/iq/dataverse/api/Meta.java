@@ -100,16 +100,24 @@ public class Meta {
     
     @Path("datafile/{fileId}")
     @GET
-    @Produces({"application/xml"})
+    @Produces({"text/xml"})
     public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
         
+        //httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+        //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+        
         dataFile = datafileService.find(fileId);
         if (dataFile == null) {
             throw new NotFoundException();
         }
+        
+        String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
+        response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
+        response.setHeader("Content-Type", "application/xml; name=\""+fileName+"\"");
         
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();

@@ -71,6 +71,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.net.URLEncoder;
+import java.text.DateFormat;
 
 /**
  *
@@ -128,7 +129,10 @@ public class DatasetPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @Inject
     DatasetVersionUI datasetVersionUI;
+ 
+    private static final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
+   
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -1484,5 +1488,29 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
+    }
+    
+    public String getFileDateToDisplay(FileMetadata fileMetadata) {
+        Date fileDate = null;
+        DataFile datafile = fileMetadata.getDataFile();
+        if (datafile != null) {
+            boolean fileHasBeenReleased = datafile.isReleased();
+            if (fileHasBeenReleased) {
+                Timestamp filePublicationTimestamp = datafile.getPublicationDate();
+                if (filePublicationTimestamp != null) {
+                    fileDate = filePublicationTimestamp;
+                }
+            } else {
+                Timestamp fileCreateTimestamp = datafile.getCreateDate();
+                if (fileCreateTimestamp != null) {
+                    fileDate = fileCreateTimestamp;
+                } 
+            }
+        }
+        if (fileDate != null) {
+            return displayDateFormat.format(fileDate);
+        }
+        
+        return "";
     }
 }
