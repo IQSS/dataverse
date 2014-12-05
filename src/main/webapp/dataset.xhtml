@@ -321,13 +321,13 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                         <li>
-                                                            <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
+                                                            <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadDatasetCitationXML()}" >
 
                                                                 <h:outputText value="EndNote XML" />
                                                             </h:commandLink>
                                                         </li>
                                                         <li>
-                                                            <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
+                                                            <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
 
                                                                 <h:outputText value="RIS Format" />
                                                             </h:commandLink>
@@ -676,10 +676,18 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li class="dropdown-submenu">
-                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation (coming soon)</a>
+                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation</a>
                                                             <ul class="dropdown-menu">
-                                                              <li><a tabindex="-1" href="#">RIS Format</a></li>
-                                                              <li><a href="#">EndNote XML</a></li>
+                                                              <li>
+                                                                  <h:commandLink id="risLinkFile" actionListener="#{DatasetPage.downloadDatafileCitationRIS(fileMetadata)}">
+                                                                    <h:outputText value="RIS Format" />
+                                                                  </h:commandLink>
+                                                              </li>
+                                                              <li>
+                                                                  <h:commandLink id="endNoteLinkFile" action="#{DatasetPage.downloadDatafileCitationXML(fileMetadata)}" >
+                                                                    <h:outputText value="EndNote XML" />
+                                                                  </h:commandLink>
+                                                              </li>
                                                             </ul>
                                                         </li>
                                                     </ul>

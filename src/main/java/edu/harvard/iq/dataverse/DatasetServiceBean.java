@@ -169,6 +169,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public String getRISFormat(DatasetVersion version) {
+        return getRISFormat(version, null);
+    } 
+    
+    public String getRISFormat(DatasetVersion version, FileMetadata fileMetadata) {
         String publisher = version.getRootDataverseNameforCitation();
         List<DatasetAuthor> authorList = version.getDatasetAuthors();
         String retString = "Provider: " + publisher + "\r\n";
@@ -182,20 +186,38 @@ public class DatasetServiceBean implements java.io.Serializable {
         retString += "PY  - " + version.getVersionYear() + "\r\n";
         retString += "UR  - " + version.getDataset().getPersistentURL() + "\r\n";
         retString += "PB  - " + publisher + "\r\n";
+        
+        // a DataFile citation also includes filename und UNF, if applicable:
+        if (fileMetadata != null) { 
+            retString += "T2  - " + fileMetadata.getLabel() + "\r\n";
+            
+            if (fileMetadata.getDataFile().isTabularData()) {
+                if (fileMetadata.getDataFile().getUnf() != null) {
+                    retString += "C1  - " + fileMetadata.getDataFile().getUnf() + "\r\n";
+                }
+            }
+        }
+        
+        // closing element: 
         retString += "ER  - \r\n";
+
         return retString;
     }
 
     private XMLOutputFactory xmlOutputFactory = null;
 
-    public void createXML(OutputStream os, DatasetVersion datasetVersion) {
+    public void createCitationXML(OutputStream os, DatasetVersion datasetVersion) {
+        createCitationXML(os, datasetVersion, null);
+    } 
+    
+    public void createCitationXML(OutputStream os, DatasetVersion datasetVersion, FileMetadata fileMetadata) {
 
         xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
         XMLStreamWriter xmlw = null;
         try {
             xmlw = xmlOutputFactory.createXMLStreamWriter(os);
             xmlw.writeStartDocument();
-            createEndNoteXML(xmlw, datasetVersion);
+            createEndNoteXML(xmlw, datasetVersion, fileMetadata);
             xmlw.writeEndDocument();
         } catch (XMLStreamException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
@@ -209,8 +231,8 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
         }
     }
-
-    private void createEndNoteXML(XMLStreamWriter xmlw, DatasetVersion version) throws XMLStreamException {
+    
+    private void createEndNoteXML(XMLStreamWriter xmlw, DatasetVersion version, FileMetadata fileMetadata) throws XMLStreamException {
 
         String title = version.getTitle();
         String versionYear = version.getVersionYear();
@@ -243,6 +265,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         xmlw.writeStartElement("title");
         xmlw.writeCharacters(title);
         xmlw.writeEndElement(); // title
+        // a citation for a DataFile also includes filename:
+        if (fileMetadata != null) { 
+            xmlw.writeStartElement("secondary_title");
+            xmlw.writeCharacters(fileMetadata.getLabel());
+            xmlw.writeEndElement(); // secondary_title
+        }
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
@@ -273,6 +301,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         xmlw.writeEndElement(); // url
         xmlw.writeEndElement(); // related-urls
         xmlw.writeEndElement(); // urls
+        
+        // a (tabular) DataFile citation also includes the UNF signature. 
+        // We put it into a "custom" field:
+        
+        if (fileMetadata != null) { 
+            if (fileMetadata.getDataFile().isTabularData()) {
+                if (fileMetadata.getDataFile().getUnf() != null) {
+                    xmlw.writeStartElement("custom1");
+                    xmlw.writeCharacters(fileMetadata.getDataFile().getUnf());
+                    xmlw.writeEndElement(); // custom1
+                }
+            }
+        }
 
         xmlw.writeStartElement("electronic-resource-num");
         String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId();

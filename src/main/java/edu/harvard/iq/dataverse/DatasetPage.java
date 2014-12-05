@@ -1286,15 +1286,30 @@ public class DatasetPage implements java.io.Serializable {
         return retList;
     }
 
-    public void downloadXMLFile() {
+    public void downloadDatasetCitationXML() {
+        downloadCitationXML(null);
+    }
+
+    public void downloadDatafileCitationXML(FileMetadata fileMetadata) {
+        downloadCitationXML(fileMetadata);
+    } 
+    
+    public void downloadCitationXML (FileMetadata fileMetadata) {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        datasetService.createXML(outStream, workingVersion);
+        datasetService.createCitationXML(outStream, workingVersion, fileMetadata);
         String xml = outStream.toString();
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
-        String fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
+        String fileNameString = ""; 
+        if (fileMetadata == null) {
+            // Dataset-level citation: 
+            fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
+        } else {
+            // Datafile-level citation:
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel() + ".xml";
+        }
         response.setHeader("Content-Disposition", fileNameString);
         try {
             ServletOutputStream out = response.getOutputStream();
@@ -1305,20 +1320,37 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
-
+    
     private String getFileNameDOI() {
         Dataset ds = workingVersion.getDataset();
         return "DOI:" + ds.getAuthority() + "_" + ds.getId().toString();
     }
 
-    public void downloadRISFile() {
+    public void downloadDatasetCitationRIS() {
+        
+        downloadCitationRIS(null);
 
-        String risFormatDowload = datasetService.getRISFormat(workingVersion);
+    }
+
+    public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
+        downloadCitationRIS(fileMetadata);
+    }
+    
+    public void downloadCitationRIS(FileMetadata fileMetadata) {
+
+        String risFormatDowload = datasetService.getRISFormat(workingVersion, fileMetadata);
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
 
-        String fileNameString = "attachment;filename=" + getFileNameDOI() + ".ris";
+        String fileNameString = ""; 
+        if (fileMetadata == null) {
+            // Dataset-level citation: 
+            fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
+        } else {
+            // Datafile-level citation:
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel() + ".xml";
+        }
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
@@ -1330,7 +1362,7 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
-
+    
     public String getDataExploreURL() {
         String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl);
 
