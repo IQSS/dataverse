@@ -167,7 +167,8 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setArchiveNote(String note) {
-        if (note.length() > ARCHIVE_NOTE_MAX_LENGTH) {
+        // @todo should this be using bean validation for trsting note length?
+        if (note != null && note.length() > ARCHIVE_NOTE_MAX_LENGTH) {
             throw new IllegalArgumentException("Error setting archiveNote: String length is greater than maximum (" + ARCHIVE_NOTE_MAX_LENGTH + ")."
                     + "  StudyVersion id=" + id + ", archiveNote=" + note);
         }
