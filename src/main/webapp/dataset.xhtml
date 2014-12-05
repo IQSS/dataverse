@@ -649,9 +649,9 @@
                                                     </button>
                                                     <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                         <li>
-                                                            <h:outputLink value="#">
+                                                            <h:outputLink value="/api/access/datafile/bundle/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <!--strong>All File Formats + Information</strong-->
-                                                                <strong>All formats bundle (coming soon)</strong>
+                                                                <strong><h:outputText value="All File Formats + Information"/></strong>
                                                             </h:outputLink>
                                                         </li>
                                                         <li role="presentation" class="divider"></li>

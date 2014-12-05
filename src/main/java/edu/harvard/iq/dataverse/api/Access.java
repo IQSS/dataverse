@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.List;
@@ -84,8 +85,54 @@ public class Access {
     VariableServiceBean variableService;
     @EJB
     SettingsServiceBean settingsService; 
+    @EJB
+    DDIExportServiceBean ddiExportService; 
 
     //@EJB
+    
+    // TODO: 
+    // versions? -- L.A. 4.0 beta 10
+    @Path("datafile/bundle/{fileId}")
+    @GET
+    @Produces({"application/zip"})
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+ 
+        DataFile df = dataFileService.find(fileId);
+        
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        
+        DownloadInfo dInfo = new DownloadInfo(df);
+        BundleDownloadInstance downloadInstance = new BundleDownloadInstance(dInfo);
+        
+        FileMetadata fileMetadata = df.getFileMetadata();
+        DatasetVersion datasetVersion = df.getOwner().getLatestVersion();
+        
+        downloadInstance.setFileCitationEndNote(datasetService.createCitationXML(datasetVersion, fileMetadata));
+        downloadInstance.setFileCitationRIS(datasetService.createCitationRIS(datasetVersion, fileMetadata));
+        
+        ByteArrayOutputStream outStream = null;
+        outStream = new ByteArrayOutputStream();
+
+        try {
+            ddiExportService.exportDataFile(
+                    fileId,
+                    outStream,
+                    null,
+                    null);
+
+            downloadInstance.setFileDDIXML(outStream.toString());
+
+        } catch (Exception ex) {
+            // if we can't generate the DDI, it's ok; 
+            // we'll just generate the bundle without it. 
+        }
+        
+        return downloadInstance; 
+    }
     
     @Path("datafile/{fileId}")
     @GET
@@ -93,10 +140,7 @@ public class Access {
     public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
 
         DataFile df = dataFileService.find(fileId);
-        /* TODO: 
-         * Throw a meaningful exception if file not found!
-         * -- L.A. 4.0alpha1
-         */
+        
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -106,8 +150,6 @@ public class Access {
         DownloadInfo dInfo = new DownloadInfo(df);
 
         /*
-         * The only "optional access services" supported as of now (4.0alpha1)
-         * are image thumbnail generation and "saved original": 
          * (and yes, this is a hack)
          * TODO: un-hack this. -- L.A. 4.0 alpha 1
          */
@@ -196,6 +238,8 @@ public class Access {
         //return retValue; 
         return downloadInstance;
     }
+    
+    
     
     @Path("datafiles/{fileIds}")
     @GET
