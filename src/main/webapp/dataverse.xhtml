@@ -378,7 +378,7 @@
                             </ui:fragment>
                             <ui:fragment rendered="true">
                                 <div style="float:right;">
-                                    <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
+                                    <button type="button" class="btn btn-default" onclick="contactForm.show()">
                                         <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Email Dataverse Contact
                                     </button>
                                 </div>
@@ -552,6 +552,53 @@
                         <ui:param name="showSearch" value="true"/>
                     </ui:include>
                 </ui:fragment>
+                
+                <!-- Dialog Contact Form -->
+                <p:dialog header="Email Dataverse Contact" widgetVar="contactForm" modal="true" style="min-width:500px;">
+                    <h:form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="messageTo" class="col-sm-2 control-label">To</label>
+                            <div class="col-sm-10">
+                                <p id="messageTo" class="form-control-static">#{DataversePage.dataverse.displayName} Contact</p>
+                            </div>
+                        </div>
+                        <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
+                            <div class="form-group">
+                                <label for="userEmailStatic" class="col-sm-2 control-label">From</label>
+                                <div class="col-sm-10">
+                                    <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
+                            <div class="form-group">
+                                <label for="userEmail" class="col-sm-2 control-label">From</label>
+                                <div class="col-sm-10">
+                                    <h:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"/>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <div class="form-group">
+                            <label for="messageSubject" class="col-sm-2 control-label">Subject</label>
+                            <div class="col-sm-10">
+                                <select id="messageSubject" class="form-control">
+                                    <option>Select subject...</option>
+                                    <option>Support Question</option>
+                                    <option>Data Issue</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="userMessage" class="col-sm-2 control-label">Message</label>
+                            <div class="col-sm-10">
+                                <h:inputTextarea id="userMessage" styleClass="form-control" rows="10" value="#{sendFeedbackDialog.userMessage}"/>
+                            </div>
+                        </div>
+
+                        <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="Send Message"/>
+                        <button type="button" class="btn btn-default" onclick="contactForm.hide()" value="Cancel">Cancel</button>
+                    </h:form>
+                </p:dialog>
 
                 <script type="text/javascript">
                     //<![CDATA[
