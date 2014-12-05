@@ -35,13 +35,34 @@ Edit Dataverse
 To edit your dataverse, navigate to your dataverse homepage and select the "Edit Dataverse" button, 
 where you will be presented with the following editing options. 
 
-- **General Information**: edit name, host dataverse, alias, email, 
+- :ref:`General Information <general-information>` : edit name, host dataverse, alias, email, 
   description, affilitation, Metadata Elements, and facets for your dataverse.
-- **Theme + Widgets**: upload a logo for your dataverse, add a link to your department or personal website, and select colors for your dataverse in order to brand it. Also, you can get code to add to your website to have your dataverse display on it.
-- **Featured Dataverses**: if you have one or more dataverses, you can use this option to show them at the top of your dataverse page to help others easily find interesting or important dataverses
-- **Permissions**: give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
-- :ref:`Dataset Templates <dataset-templates>` **Dataset Templates**: these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
+- :ref:`Theme + Widgets <theme-widgets>` : upload a logo for your dataverse, add a link to your department or personal website, and select colors for your dataverse in order to brand it. Also, you can get code to add to your website to have your dataverse display on it.
+- :ref:`Featured Dataverses <featured-dataverses>` : if you have one or more dataverses, you can use this option to show them at the top of your dataverse page to help others easily find interesting or important dataverses
+- :ref:`Permissions <dataverse-permissions>` : give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
+- :ref:`Dataset Templates <dataset-templates>` : these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
 - **Delete Dataverse**: you are able to delete your dataverse as long as it is not published and does not have any draft datasets 
+
+.. _general-information:
+
+General Information
+=====================================================
+
+.. _theme-widgets:
+
+Theme + Widgets
+====================================================
+
+.. _featured-dataverses:
+
+Featured Dataverses
+======================================================
+
+.. _dataverse-permissions:
+
+Permissions 
+=======================================================
+
 
 
 Publish Your Dataverse
