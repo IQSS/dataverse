@@ -181,7 +181,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="userName" styleClass="form-control" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.builtinUser.userName}" disabled="#{DataverseUserPage.editMode != 'CREATE'}"/>
+                                                    <p:inputText id="userName" tabindex="1" styleClass="form-control" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.builtinUser.userName}" disabled="#{DataverseUserPage.editMode != 'CREATE'}"/>
                                                     <p:message for="userName" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -198,7 +198,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="currentPassword" label="Current Password" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
+                                                    <p:password id="currentPassword" tabindex="1" label="Current Password" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
                                                     <p:message for="currentPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -215,7 +215,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="inputPassword" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
+                                                    <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                                     <p:message for="inputPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -231,7 +231,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="retypePassword" label="Retype Password" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
+                                                    <p:password id="retypePassword" tabindex="3" label="Retype Password" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
                                                     <p:message for="retypePassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -248,7 +248,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="firstName" styleClass="form-control" value="#{DataverseUserPage.builtinUser.firstName}" />
+                                                    <p:inputText id="firstName" tabindex="4" styleClass="form-control" value="#{DataverseUserPage.builtinUser.firstName}" />
                                                     <p:message for="firstName" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -264,7 +264,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="lastName" styleClass="form-control" value="#{DataverseUserPage.builtinUser.lastName}" />
+                                                    <p:inputText id="lastName" tabindex="5" styleClass="form-control" value="#{DataverseUserPage.builtinUser.lastName}" />
                                                     <p:message for="lastName" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -284,7 +284,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="email" styleClass="form-control" value="#{DataverseUserPage.builtinUser.email}" />
+                                                    <p:inputText id="email" tabindex="6" styleClass="form-control" value="#{DataverseUserPage.builtinUser.email}" />
                                                     <p:message for="email" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -301,7 +301,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataverseUserPage.builtinUser.affiliation}" />
+                                                    <p:inputText id="affiliation" tabindex="7" styleClass="form-control" value="#{DataverseUserPage.builtinUser.affiliation}" />
                                                     <p:message for="affiliation" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -318,7 +318,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="position" styleClass="form-control" value="#{DataverseUserPage.builtinUser.position}" />
+                                                    <p:inputText id="position" tabindex="8" styleClass="form-control" value="#{DataverseUserPage.builtinUser.position}" />
                                                     <p:message for="position" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -326,8 +326,8 @@
                                     </ui:fragment>
                                 </div>
                                 <p:panel styleClass="panelLayoutButtonBlock">
-                                    <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@form" />
-                                    <p:commandButton id="cancel" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
+                                    <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@form" />
+                                    <p:commandButton id="cancel" tabindex="10" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
                                         <p:resetInput target="@form" />
                                     </p:commandButton>
                                 </p:panel>
