@@ -51,18 +51,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         
         final Dataset managedDoomed = ctxt.em().merge(doomed);
 
-        // ASSIGNMENTS
-        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
-            ctxt.em().remove(ra);
-        }
-        // ROLES
-        for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
-            ctxt.em().remove(ra);
-        }
-
         // files need to iterate through and remove 'by hand' to avoid
-        // optimistic lock issues....
-        
+        // optimistic lock issues....        
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
@@ -77,13 +67,15 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             }
             ctxt.em().remove(ver);
         }
-        /* commented out because handled above
-         -- not sure the reason for the merge
-         doesn't seem to be needed in above code
-         for ( DatasetVersion ver : managedDoomed.getVersions() ) {
-         DatasetVersion managed = ctxt.em().merge(ver);
-         ctxt.em().remove( managed );
-         }*/
+        
+        // ASSIGNMENTS
+        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
+            ctxt.em().remove(ra);
+        }
+        // ROLES
+        for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
+            ctxt.em().remove(ra);
+        }        
 
         Dataverse toReIndex = managedDoomed.getOwner();
 
