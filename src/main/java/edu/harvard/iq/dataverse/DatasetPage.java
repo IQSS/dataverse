@@ -780,30 +780,9 @@ public class DatasetPage implements java.io.Serializable {
 
     public String save() {
         // Validate
-        boolean dontSave = false;
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
-            dsf.setValidationMessage(null); // clear out any existing validation message
-            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
-            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
-                dsf.setValidationMessage(constraintViolation.getMessage());
-                dontSave = true;
-                break; // currently only support one message, so we can break out of the loop after the first constraint violation
-            }
-            for (DatasetFieldValue dsfv : dsf.getDatasetFieldValues()) {
-                dsfv.setValidationMessage(null); // clear out any existing validation message
-                Set<ConstraintViolation<DatasetFieldValue>> constraintViolations2 = validator.validate(dsfv);
-                for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations2) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
-                    dsfv.setValidationMessage(constraintViolation.getMessage());
-                    dontSave = true;
-                    break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
-                }
-            }
-        }
-        if (dontSave) {
+        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
+        if (!constraintViolations.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
 
@@ -936,6 +915,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
+            return null;
         }
         newFiles.clear();
         editMode = null;
