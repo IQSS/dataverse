@@ -9,18 +9,22 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetVersionUI;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.ConstraintViolation;
 
 /**
  *
@@ -39,6 +43,17 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
+        // first validate
+        // @todo for now we run in through the DatasetVersinUI which creates empty fields to test the required
+        Set<ConstraintViolation> constraintViolations = new DatasetVersionUI(theDataset.getEditVersion()).getDatasetVersion().validate();
+        if (!constraintViolations.isEmpty()) {
+            String validationFailedString = "Validation failed:";
+            for (ConstraintViolation constraintViolation : constraintViolations) {
+                validationFailedString += " " + constraintViolation.getMessage();
+            }
+            throw new IllegalCommandException(validationFailedString, this);
+        }
+
         return save(ctxt);
     }
 
@@ -65,12 +80,12 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setCreateDate(updateTime);
             }
         }
-        
+
         String nonNullDefaultIfKeyNotFound = "";
-        String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
-         
-        if (theDataset.getProtocol().equals("doi") 
-              && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
+        String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+
+        if (theDataset.getProtocol().equals("doi")
+                && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
             if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
@@ -90,17 +105,17 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 }
             }
         }
-        
+
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
         String indexingResult = ctxt.index().indexDataset(savedDataset);
         //String indexingResult = "(Indexing Skipped)";
         logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
-        
-        if (ddu != null){
-             ddu.setLastUpdateDate(updateTime);
-             ctxt.em().merge(ddu);
+
+        if (ddu != null) {
+            ddu.setLastUpdateDate(updateTime);
+            ctxt.em().merge(ddu);
         } else {
             DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
             datasetDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
