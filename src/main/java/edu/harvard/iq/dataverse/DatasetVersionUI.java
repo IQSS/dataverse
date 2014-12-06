@@ -60,71 +60,11 @@ public class DatasetVersionUI implements Serializable {
     }
 
     public DatasetVersionUI(DatasetVersion datasetVersion) {
-        /*takes in the values of a dataset version 
-         and apportions them into lists for 
-         viewing and editng in the dataset page.
-         */
-        setDatasetVersion(datasetVersion);
-        this.setDatasetAuthors(new ArrayList());
-        this.setDatasetRelPublications(new ArrayList());
-
-        // loop through vaues to get fields for view mode
-        for (DatasetField dsf : datasetVersion.getDatasetFields()) {
-            //Special Handling for various fields displayed above tabs in dataset page view.
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
-                setTitle(dsf);
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText)) {
-                setDescription(dsf);
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
-                setKeyword(dsf);
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
-                setSubject(dsf);
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText)) {
-                this.setNotes(dsf);                
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    DatasetAuthor datasetAuthor = new DatasetAuthor();
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                            datasetAuthor.setName(subField);
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                            datasetAuthor.setAffiliation(subField);
-                        }
-                    }
-                    this.getDatasetAuthors().add(datasetAuthor);
-                }                
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
-                //Special handling for Related Publications
-                // Treated as below the tabs for editing, but must get first value for display above tabs    
-                if (this.datasetRelPublications.isEmpty()) {
-                    for (DatasetFieldCompoundValue relPubVal : dsf.getDatasetFieldCompoundValues()) {
-                        DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
-                        datasetRelPublication.setTitle(dsf.getDatasetFieldType().getTitle());
-                        datasetRelPublication.setDescription(dsf.getDatasetFieldType().getDescription());
-                        for (DatasetField subField : relPubVal.getChildDatasetFields()) {
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                                datasetRelPublication.setText(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
-                                datasetRelPublication.setIdNumber(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
-                                datasetRelPublication.setIdType(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
-                                datasetRelPublication.setUrl(subField.getValue());
-                            }
-                        }
-                        this.getDatasetRelPublications().add(datasetRelPublication);
-                    }
-                }
-            }
-        }
-        
+        // @todo make sure this is not called anywhere, except by commands
+        // we may want to move this logic away from here
+        setDatasetVersion(datasetVersion);      
         datasetVersion.setDatasetFields(initDatasetFields());
-        
-        setMetadataValueBlocks(datasetVersion);
+
     }
     
     public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion) {
