@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import static java.lang.Math.max;
 import java.text.SimpleDateFormat;
@@ -168,11 +169,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         return u;
     }
 
-    public String getRISFormat(DatasetVersion version) {
-        return getRISFormat(version, null);
+    public String createCitationRIS(DatasetVersion version) {
+        return createCitationRIS(version, null);
     } 
     
-    public String getRISFormat(DatasetVersion version, FileMetadata fileMetadata) {
+    public String createCitationRIS(DatasetVersion version, FileMetadata fileMetadata) {
         String publisher = version.getRootDataverseNameforCitation();
         List<DatasetAuthor> authorList = version.getDatasetAuthors();
         String retString = "Provider: " + publisher + "\r\n";
@@ -206,11 +207,14 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     private XMLOutputFactory xmlOutputFactory = null;
 
-    public void createCitationXML(OutputStream os, DatasetVersion datasetVersion) {
-        createCitationXML(os, datasetVersion, null);
+    public String createCitationXML(DatasetVersion datasetVersion, FileMetadata fileMetadata) {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        createEndNoteCitation(outStream, datasetVersion, fileMetadata);
+        String xml = outStream.toString();
+        return xml; 
     } 
     
-    public void createCitationXML(OutputStream os, DatasetVersion datasetVersion, FileMetadata fileMetadata) {
+    public void createEndNoteCitation(OutputStream os, DatasetVersion datasetVersion, FileMetadata fileMetadata) {
 
         xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
         XMLStreamWriter xmlw = null;

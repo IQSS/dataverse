@@ -71,6 +71,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.net.URLEncoder;
+import java.text.DateFormat;
 
 /**
  *
@@ -128,7 +129,10 @@ public class DatasetPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @Inject
     DatasetVersionUI datasetVersionUI;
+ 
+    private static final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
+   
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -1277,20 +1281,18 @@ public class DatasetPage implements java.io.Serializable {
     } 
     
     public void downloadCitationXML (FileMetadata fileMetadata) {
-
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        datasetService.createCitationXML(outStream, workingVersion, fileMetadata);
-        String xml = outStream.toString();
+        
+        String xml = datasetService.createCitationXML(workingVersion, fileMetadata);
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
         String fileNameString = ""; 
-        if (fileMetadata == null) {
+        if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
             fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel() + ".xml";
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", "-endnote.xml");
         }
         response.setHeader("Content-Disposition", fileNameString);
         try {
@@ -1320,18 +1322,18 @@ public class DatasetPage implements java.io.Serializable {
     
     public void downloadCitationRIS(FileMetadata fileMetadata) {
 
-        String risFormatDowload = datasetService.getRISFormat(workingVersion, fileMetadata);
+        String risFormatDowload = datasetService.createCitationRIS(workingVersion, fileMetadata);
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
 
         String fileNameString = ""; 
-        if (fileMetadata == null) {
+        if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
+            fileNameString = "attachment;filename=" + getFileNameDOI() + ".txt";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel() + ".xml";
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", "-ris.txt");
         }
         response.setHeader("Content-Disposition", fileNameString);
 
@@ -1466,5 +1468,29 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
+    }
+    
+    public String getFileDateToDisplay(FileMetadata fileMetadata) {
+        Date fileDate = null;
+        DataFile datafile = fileMetadata.getDataFile();
+        if (datafile != null) {
+            boolean fileHasBeenReleased = datafile.isReleased();
+            if (fileHasBeenReleased) {
+                Timestamp filePublicationTimestamp = datafile.getPublicationDate();
+                if (filePublicationTimestamp != null) {
+                    fileDate = filePublicationTimestamp;
+                }
+            } else {
+                Timestamp fileCreateTimestamp = datafile.getCreateDate();
+                if (fileCreateTimestamp != null) {
+                    fileDate = fileCreateTimestamp;
+                } 
+            }
+        }
+        if (fileDate != null) {
+            return displayDateFormat.format(fileDate);
+        }
+        
+        return "";
     }
 }
