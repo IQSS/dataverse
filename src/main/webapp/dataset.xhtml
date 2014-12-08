@@ -1155,11 +1155,11 @@
                                 </label>
                                 <div class="col-sm-8">
                                     <p:panelGrid columns="2" styleClass="noBorders">
-                                        <label>
-                                            <p:selectBooleanCheckbox  id="datasetThumbnailImage" value="#{DatasetPage.useAsDatasetThumbnail}"/>
-                                            Use this image as the thumbnail image for my dataset.
+                                        <p:column>
+                                            <p:selectBooleanCheckbox  id="datasetThumbnailImage" itemLabel="Use this image as the thumbnail image for my dataset." value="#{DatasetPage.useAsDatasetThumbnail}"/>
+                                            
                                             <p:message for="datasetThumbnailImage" display="text" />
-                                        </label>
+                                        </p:column>
                                     </p:panelGrid>
                                 </div>
                             </div>
