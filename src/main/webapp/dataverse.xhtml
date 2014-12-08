@@ -52,7 +52,7 @@
                                 <ui:fragment>
                                     <div class="col-sm-12 form-group" style="margin-bottom:0;">
                                         <div class="col-sm-6">
-                                            <p:inputText id="name" styleClass="form-control" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
+                                            <p:inputText id="name" tabindex="1" styleClass="form-control" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
                                         </div>
                                         <label class="control-label" style="padding-right:1em;" for="name">
                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The project, department, university, or professor this Dataverse will contain data for.">
@@ -73,7 +73,7 @@
                                 <h:outputText value="#{ DataversePage.dataverse.getOwner().name }" />
                                 <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverse" />
                                 <ui:remove><!-- removed for beta -->
-                                    <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                    <p:selectOneMenu id="hostDataverse" tabindex="2" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
                                         <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
                                                        itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}" />
                                     </p:selectOneMenu>
@@ -93,7 +93,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="alias" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
+                                        <p:inputText id="alias" tabindex="3" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="alias" display="text"/>
                                     </p:panelGrid>
                                 </div>
@@ -104,7 +104,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="contactEmail" styleClass="form-control" value="#{DataversePage.dataverse.contactEmail}"/>
+                                        <p:inputText id="contactEmail" tabindex="4" styleClass="form-control" value="#{DataversePage.dataverse.contactEmail}"/>
                                         <p:message for="contactEmail" display="text"/>
                                     </p:panelGrid>
                                 </div>
@@ -115,7 +115,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
+                                        <p:inputText id="affiliation" tabindex="5" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                         <p:message for="affiliation" display="text"/>
                                     </p:panelGrid>
                                 </div>
@@ -127,7 +127,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
-                                        <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
+                                        <h:selectOneMenu id="dataverseCategory" tabindex="6" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
                                             <f:selectItem id="dvSelect" itemLabel="Select one..." itemValue="" />
                                             <f:selectItem id="dvResearch" itemLabel="Researchers" itemValue="RESEARCHERS" />
                                             <f:selectItem id="dvResearchProj" itemLabel="Research Projects" itemValue="RESEARCH_PROJECTS" />
@@ -147,7 +147,7 @@
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
+                                    <p:inputTextarea id="description" tabindex="7" styleClass="form-control" value="#{DataversePage.dataverse.description}"
                                                      rows="6" cols="50"
                                                      autoResize="false">
                                     </p:inputTextarea>
@@ -164,17 +164,23 @@
                                      actionListener="#{DataversePage.refresh}"
                                      update="@widgetVar(optionBlock)" />
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}"  widgetVar="optionBlock">
+                        
+                        <style type="text/css">
+                            /*.metadata-blocks-default input:focus {outline:1px dotted red;}*/
+                            /*.metadata-blocks-default .ui-chkbox-icon {width:18px; height:18px; outline: -webkit-focus-ring-color auto 5px;}*/
+                            div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5px;}
+                        </style>
 
                         <div class="row form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="mdbSelect">Metadata Elements</label>
                                 <div class="col-sm-9">
                                     <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose metadata fields to use in dataset templates and when adding a dataset to this dataverse.</p>
-                                    <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Metadata Elements from Host Dataverse">
-                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
-                                        </p:selectBooleanCheckbox>
-                                    </ui:fragment>
+                                    
+                                    <p:selectBooleanCheckbox tabindex="7" styleClass="metadata-blocks-default" rendered="#{DataversePage.dataverse.owner != null}" 
+                                                             value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Metadata Elements from Host Dataverse">
+                                        <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
+                                    </p:selectBooleanCheckbox>
 
                                     <ui:repeat value="#{DataversePage.allMetadataBlocks}"  var="mdb">
                                         <ui:fragment rendered="#{mdb.required }">
@@ -276,12 +282,12 @@
                                 <label class="col-sm-3 control-label" for="facetPickListCreate">Select Facets</label>
                                 <div class="col-sm-9">
                                     <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Pick the metadata fields to use as facets for browsing datasets and dataverses in this dataverse.</p>
-                                    <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Facets from Host Dataverse">
-                                            <p:ajax update="editFacets" listener="#{DataversePage.editFacets}"/>
-                                        </p:selectBooleanCheckbox>
-                                    </ui:fragment>
-
+                                    
+                                    <p:selectBooleanCheckbox tabindex="8" styleClass="facet-category-default" rendered="#{DataversePage.dataverse.owner != null}" 
+                                                             value="#{DataversePage.inheritFacetFromParent}" itemLabel="Facets from Host Dataverse">
+                                        <p:ajax update="editFacets" listener="#{DataversePage.editFacets}"/>
+                                    </p:selectBooleanCheckbox>
+                                    
                                     <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                                 itemLabel="#{facet.displayName}" itemValue="#{facet}"
                                                 disabled ="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null }"
@@ -538,9 +544,9 @@
 
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
-                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}" action="#{DataversePage.save}" update="@all"/>
-                        <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
-                        <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                        <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}" action="#{DataversePage.save}" update="@all"/>
+                        <p:commandButton id="cancel" tabindex="10" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
+                        <p:button tabindex="10" value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </p:panel>
                 </h:form>
 
