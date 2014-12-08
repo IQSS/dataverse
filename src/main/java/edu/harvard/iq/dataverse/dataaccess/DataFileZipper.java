@@ -120,7 +120,7 @@ public class DataFileZipper {
                     } else {
                         String zipEntryName = checkZipEntryName(fileName, nameList);
                         ZipEntry e = new ZipEntry(zipEntryName);
-                        
+                        logger.info("created new zip entry for " + zipEntryName);
                         // support for categories: (not yet implemented)
                         //String zipEntryDirectoryName = file.getCategory(versionNum);
                         //ZipEntry e = new ZipEntry(zipEntryDirectoryName + "/" + zipEntryName);
@@ -141,13 +141,16 @@ public class DataFileZipper {
                         int i = 0;
                         while ((i = instream.read(data)) > 0) {
                             zout.write(data, 0, i);
+                            logger.info("wrote " + i + " bytes;");
+
                             fileSize += i;
-                            zout.flush();
+                            //zout.flush();
                         }
                         instream.close();
                         zout.closeEntry();
+                        logger.info("clozed zip entry for " + zipEntryName);
 
-                        fileManifest = fileManifest + fileName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";
+                        fileManifest = fileManifest + zipEntryName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";
 
                         if (fileSize > 0) {
                             successList.add(file.getId());
@@ -158,17 +161,17 @@ public class DataFileZipper {
                     fileManifest = fileManifest + fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + sizeLimit + " bytes.\r\n";
                 }
             }
-
-            // finally, let's create the manifest entry:
-            ZipEntry e = new ZipEntry("MANIFEST.TXT");
-
-            zout.putNextEntry(e);
-            zout.write(fileManifest.getBytes());
-            zout.closeEntry();
-
-            zout.close();
-
         }
+
+        // finally, let's create the manifest entry:
+        ZipEntry e = new ZipEntry("MANIFEST.TXT");
+
+        zout.putNextEntry(e);
+        zout.write(fileManifest.getBytes());
+        zout.closeEntry();
+
+        zout.close();
+
     }
 
     // check for and process duplicates:
