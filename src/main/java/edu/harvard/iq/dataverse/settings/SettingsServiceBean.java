@@ -71,7 +71,9 @@ public class SettingsServiceBean {
         /* TwoRavens location */
         TwoRavensUrl,
         /* zip download size limit */
-        ZipDonwloadLimit;
+        ZipDonwloadLimit,
+        /* zip upload number of files limit */
+        ZipUploadFilesLimit;
         
         @Override
         public String toString() {

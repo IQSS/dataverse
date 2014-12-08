@@ -1042,6 +1042,8 @@ public class DatasetPage implements java.io.Serializable {
         DataFile dFile = null;
         List<DataFile> dFileList = null;
 
+        String warningMessage = null;
+        
         try {
             dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
@@ -1056,6 +1058,20 @@ public class DatasetPage implements java.io.Serializable {
         if (dFileList != null) {
             for (int i = 0; i < dFileList.size(); i++) {
                 dFile = dFileList.get(i);
+                
+                // Check for ingest warnings: 
+                
+                if (dFile.isIngestProblem()) {
+                    if (dFile.getIngestReportMessage() != null) {
+                        if (warningMessage == null) {
+                            warningMessage = dFile.getIngestReportMessage();
+                        } else {
+                            warningMessage = warningMessage.concat("; " + dFile.getIngestReportMessage());
+                        }
+                    }
+                    dFile.setIngestDone();
+                }
+                
                 if (!isDuplicate(dFile.getFileMetadata())) {
                     newFiles.add(dFile);
                 } else {
@@ -1102,9 +1118,17 @@ public class DatasetPage implements java.io.Serializable {
                     duplicateFilesErrorMessage = "This file already exists in this dataset. Please upload another file.";
                 }
             }
+            if (warningMessage == null) {
+                warningMessage = duplicateFilesErrorMessage;
+            } else {
+                warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
+            }
+        }
+        
+        if (warningMessage != null) {
             logger.fine("trying to send faces message to "+event.getComponent().getClientId());
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", duplicateFilesErrorMessage));
-            logger.severe(duplicateFilesErrorMessage);
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+            logger.severe(warningMessage); 
         }
     }
 
@@ -1394,14 +1418,14 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setAdvfile(FileMetadata fm) {
         fileForAdvancedOptions = fm;
-        logger.info("set the file for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
+        logger.fine("set the file for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
     }
 
     public FileMetadata getAdvfile() {
         if (fileForAdvancedOptions != null) {
-            logger.info("returning file metadata for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
+            logger.fine("returning file metadata for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
         } else {
-            logger.info("file metadata for the advanced options popup is null.");
+            logger.fine("file metadata for the advanced options popup is null.");
         }
         return fileForAdvancedOptions;
     }
