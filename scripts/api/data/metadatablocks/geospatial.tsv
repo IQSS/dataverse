@@ -6,7 +6,7 @@
 	state	State / Province	The state or province that the dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	geospatial
 	city	City	The name of the city that the dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	geospatial
 	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	geospatial
-	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the dataset, e.g., village, county, region.		text	5	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE		geospatial
+	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the dataset, e.g., village, county, region.		text	5	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		text	6	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	westLongitude	West Longitude	Westernmost coordinate delimiting the geographic  extent of the dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= West  Bounding Longitude Value <= 180,0.		text	7	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	eastLongitude	East Longitude	Easternmost coordinate delimiting the geographic extent of the dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= East Bounding Longitude Value <= 180,0.		text	8	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
@@ -108,7 +108,7 @@
 	country	Guinea-Bissau	92											
 	country	Guyana	93											
 	country	Haiti	94											
-	country	Heard Island and McDonald Mcdonald Islands	95											
+	country	Heard Island and Mcdonald Islands	95											
 	country	Holy See (Vatican City State)	96											
 	country	Honduras	97											
 	country	Hong Kong	98											
