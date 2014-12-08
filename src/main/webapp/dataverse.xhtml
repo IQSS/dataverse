@@ -405,21 +405,21 @@
                                                 <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
                                                     <div class="item" style="min-height:80px;">
                                                         <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.dataverseTheme.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                            <a href="/dataverse/#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
                                                                 <img src="/resources/images/icon_dataverse.png" style="height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                            <a href="/dataverse/#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
                                                                 <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                            <a href="/dataverse/#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
                                                                 <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
-                                                        <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
                                                             <h:outputText value="#{dv.name} Dataverse"/>
                                                         </a>
                                                     </div>

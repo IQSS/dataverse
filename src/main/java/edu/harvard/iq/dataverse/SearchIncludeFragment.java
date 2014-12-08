@@ -335,6 +335,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
+                    Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
+                    Dataverse parentDataverse = dataverseService.find(dataverseId);
+                    solrSearchResult.setDataverseAlias(parentDataverse.getAlias());
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {
                         DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
