@@ -14,9 +14,11 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationTypeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
@@ -90,6 +92,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @EJB
     AuthenticationServiceBean dataverseUserService;
 
+    @EJB
+    PermissionServiceBean permissionService;
     
     /**
      *  Create URL for API call to WorldMapRelatedData.mapDataFile(...)   
@@ -150,15 +154,19 @@ public class WorldMapRelatedData extends AbstractApiBean {
            return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
         }
         
-        // TO ADD WHEN PERMISSIONS ARE READY
-        // Does this user have permission to edit metadata for this file?
+        // Does this user have permission to edit metadata for this file?    
+        if (!permissionService.on(dfile.getOwner()).user(dvUser).has(Permission.EditDataset)){
+           String errMsg = "The user does not have permission to edit metadata for this file.";
+           return errorResponse(Response.Status.FORBIDDEN, errMsg);
+        }
+        
         WorldMapToken token = tokenServiceBean.getNewToken(dfile, dvUser);
 
         // Redirect to geoconnect url
  //       String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH + dfile.getId();
         String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH;
         String redirect_url_str = token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
-        //String redirect_url_str = TokenApplicationType.DEV_MAPIT_LINK + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
+        //String redirect_url_str = TokenApplicationType.TEST_MAPIT_LINK + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
         URI redirect_uri;
         
         try {
@@ -203,24 +211,24 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (jsonTokenInfo==null){
             return null;
         }
+       // logger.info("retrieveTokenValueFromJson.jsonTokenInfo:"+ jsonTokenInfo);
         if (!jsonTokenInfo.containsKey(WorldMapToken.GEOCONNECT_TOKEN_KEY)){
             logger.warning("Token not found.  Permission denied.");
             return null;
             //return errorResponse( Response.Status.BAD_REQUEST, "Permission denied");
         }
-        Object worldmapTokenObject = jsonTokenInfo.get(WorldMapToken.GEOCONNECT_TOKEN_KEY);
-        if (worldmapTokenObject==null){
-            logger.warning("Token is null found.  Permission denied.");
-            return null;
-            //return errorResponse( Response.Status.BAD_REQUEST, "Token value not found");
-        }
+        
                 
-        String worldmapTokenParam = worldmapTokenObject.toString();                
+        //String worldmapTokenParam = worldmapTokenObject.toString();                
+        String worldmapTokenParam = jsonTokenInfo.getString(WorldMapToken.GEOCONNECT_TOKEN_KEY);       
         if (worldmapTokenParam==null){      // shouldn't happen
             logger.warning("worldmapTokenParam is null when .toString() called.  Permission denied.");
             return null;
             //return errorResponse(Response.Status.UNAUTHORIZED, "No access.");
         }
+       //logger.info("worldmapTokenParam:"+ worldmapTokenParam);
+
+       //logger.info("worldmapTokenParam length:"+ worldmapTokenParam.length());
         if (!(worldmapTokenParam.length()==64)){
             logger.warning("worldmapTokenParam not length 64.  Permission denied.");
             return null;
@@ -264,6 +272,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
            // return okResponse("remote server: " + request.getRemoteAddr());
         }
+        logger.info("API call: getWorldMapDatafileInfo");
         //----------------------------------
         // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
         //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
