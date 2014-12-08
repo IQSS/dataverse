@@ -602,7 +602,7 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{(fileMetadata.dataFile.tabularData)}">
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image)}">
                                                 <p:commandLink id="advancedIngestOptionsButton" 
                                                                styleClass="btn btn-default" 
                                                                actionListener="#{DatasetPage.setAdvfile(fileMetadata)}"
@@ -1110,7 +1110,7 @@
                             <!-- "Data File Tags" - these only apply to tabular files, for now: -->
                             <ui:fragment rendered="#{DatasetPage.advfile.dataFile.tabularData}">
                                 <div class="form-group col-sm-12">
-                                    <label for="spssPortableSecondFile" class="col-sm-4 control-label">
+                                    <label for="tabularDataTags" class="col-sm-4 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
                                             Tabular Data Tags 
                                         </a>
@@ -1127,6 +1127,7 @@
                                 </div>
                             </ui:fragment>
                             
+                            <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
                             <ui:fragment rendered="false">
                             <div class="form-group col-sm-12">
                                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
@@ -1145,7 +1146,7 @@
                                 </div>
                             </div>
                             </ui:fragment>
-                            <ui:fragment rendered="false">
+                            <ui:fragment rendered="#{!(empty DatasetPage.advfile.id) and DatasetPage.advfile.dataFile.image}">
                             <div class="form-group col-sm-12">
                                 <label for="datasetThumbnailImage" class="col-sm-4 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1154,12 +1155,12 @@
                                 </label>
                                 <div class="col-sm-8">
                                     <p:panelGrid columns="2" styleClass="noBorders">
-                                        <h:outputText value="**REMOVE ME** [x] Use this thumbail image as my dataset default"/>
-                                        <h:outputText value="Error Msg **REMOVE ME**"/>
+                                        <label>
+                                            <p:selectBooleanCheckbox  id="datasetThumbnailImage" value="#{DatasetPage.useAsDatasetThumbnail}"/>
+                                            Use this image as the thumbnail image for my dataset.
+                                            <p:message for="datasetThumbnailImage" display="text" />
+                                        </label>
                                     </p:panelGrid>
-                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                        <p:inputText id="datasetThumbnailImage" styleClass="form-control"/>
-                                        <p:message for="datasetThumbnailImage" display="text" /> -->
                                 </div>
                             </div>
                             </ui:fragment>

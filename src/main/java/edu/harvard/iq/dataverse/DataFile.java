@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.NamedQueries;
@@ -73,6 +74,9 @@ public class DataFile extends DvObject {
     private List<FileMetadata> fileMetadatas;
     
     private char ingestStatus = INGEST_STATUS_NONE; 
+    
+    @OneToOne(mappedBy = "thumbnailFile")
+    private Dataset thumbnailForDataset;
     
 
     public DataFile() {
@@ -435,6 +439,13 @@ public class DataFile extends DvObject {
         return ingestStatus; 
     }
     
+    public Dataset getThumbnailForDataset() {
+        return thumbnailForDataset;
+    }
+    
+    public void setAsThumbnailForDataset(Dataset dataset) {
+        thumbnailForDataset = dataset;
+    }
     
     /**
      * URL to use with the WorldMapRelatedData API

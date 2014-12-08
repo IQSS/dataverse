@@ -1474,6 +1474,38 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTags = selectedTags;
     }
     
+    public boolean getUseAsDatasetThumbnail() {
+        
+        if (fileForAdvancedOptions != null) {
+            if (fileForAdvancedOptions.getDataFile() != null) {
+                if (fileForAdvancedOptions.getDataFile().getId() != null) {
+                    if (fileForAdvancedOptions.getDataFile().getOwner() != null) {
+                        if (fileForAdvancedOptions.getDataFile().equals(fileForAdvancedOptions.getDataFile().getOwner().getThumbnailFile())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void setUseAsDatasetThumbnail(boolean useAsThumbnail) {
+        if (fileForAdvancedOptions != null) {
+            if (fileForAdvancedOptions.getDataFile() != null) {
+                if (fileForAdvancedOptions.getDataFile().getId() != null) { // ?
+                    if (fileForAdvancedOptions.getDataFile().getOwner() != null) {
+                        if (useAsThumbnail) {
+                            fileForAdvancedOptions.getDataFile().getOwner().setThumbnailFile(fileForAdvancedOptions.getDataFile());
+                        } else if (getUseAsDatasetThumbnail()) {
+                            fileForAdvancedOptions.getDataFile().getOwner().setThumbnailFile(null);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     public void saveAdvancedOptions() {
         // DataFile Tags: 
         
@@ -1491,7 +1523,11 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             }
+            // reset:
+            selectedTags = null;
         }
+        
+        // Use-as-the-thumbnail assignment (do nothing?)
     }
     
     public String getFileDateToDisplay(FileMetadata fileMetadata) {

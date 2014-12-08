@@ -398,18 +398,35 @@ public class Access {
         }
         
         String imageThumbFileName = null; 
-                
-        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+        
+        // First, check if this dataset has a designated thumbnail image: 
+        
+        if (datasetVersion.getDataset() != null) {
+            DataFile dataFile = datasetVersion.getDataset().getThumbnailFile();
+            if (dataFile != null) {
+                if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                    imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                } else if (dataFile.isImage()) {
+                    imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                } 
+            }
+        }
+        
+        // If not, we'll try to use one of the files in this dataset version:
+        
+        if (imageThumbFileName == null) {
+            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
-                imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
-                break; 
-            } else if (dataFile.isImage()) {
-                imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
-                break;
-            } 
+            for (FileMetadata fileMetadata : fileMetadatas) {
+                DataFile dataFile = fileMetadata.getDataFile();
+                if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                    imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                    break; 
+                } else if (dataFile.isImage()) {
+                    imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                    break;
+                } 
+            }
         }
         
         if (imageThumbFileName == null) {
