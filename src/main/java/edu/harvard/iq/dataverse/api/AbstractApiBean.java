@@ -175,7 +175,7 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(com);
             
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( errorResponse( Response.Status.BAD_REQUEST, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
+            throw new WrappedResponse( errorResponse( Response.Status.BAD_REQUEST, messageSeed + ": Bad Request (" + ex.getMessage() + ")" ));
           
         } catch (PermissionException ex) {
             throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
