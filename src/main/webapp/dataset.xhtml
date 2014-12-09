@@ -526,8 +526,8 @@
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
-                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#38;#{DatasetPage.apiTokenKey}&#34; alt=&#34;Preview: #{fileMetadata.label}&#34; /&gt;">
-                                                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true&#38;#{DatasetPage.apiTokenKey}"/>
+                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;Preview: #{fileMetadata.label}&#34; /&gt;">
+                                                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                 </a>
                                             </ui:fragment>
 
@@ -637,7 +637,7 @@
                                                 </a>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
-                                                <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}?#{DatasetPage.apiTokenKey}" role="button" style="color:#333333;">
+                                                <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
                                                 </a>
                                             </ui:fragment>
@@ -656,17 +656,17 @@
                                                         </li>
                                                         <li role="presentation" class="divider"></li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?#{DatasetPage.apiTokenKey}"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="Tab-Delimited"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original&#38;#{DatasetPage.apiTokenKey}"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="Original File Format (#{fileMetadata.dataFile.originalFormatLabel})"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData&#38;#{DatasetPage.apiTokenKey}"  rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData" rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="RData Format"/>
                                                             </h:outputLink>
                                                         </li>
