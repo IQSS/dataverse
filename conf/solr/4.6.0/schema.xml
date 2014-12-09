@@ -276,6 +276,7 @@
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="alternativeTitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="articleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="astroFacility" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="astroInstrument" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -315,9 +316,12 @@
    <field name="coverage.Temporal.StopTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="datasetContactAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="datasetContactEmail" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="datasetContactName" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetLevelErrorNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfCollectionEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -327,13 +331,17 @@
    <field name="distributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="distributorAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="distributorAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="distributorLogoURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="distributorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="dsDescription" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="distributorURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="dsDescription" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="dsDescriptionDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="dsDescriptionValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="eastLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="frequencyOfDataCollection" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="geographicBoundingBox" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="geographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="geographicUnit" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="geographicUnit" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="grantNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="grantNumberAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -350,6 +358,9 @@
    <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="issue" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="keywordValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="keywordVocabulary" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -364,7 +375,9 @@
    <field name="producer" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="producerAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="producerAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="producerLogoURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="producerName" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="productionPlace" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -398,18 +411,21 @@
    <field name="studyDesignType" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="studyFactorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="subject" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="subtitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="targetSampleActualSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="targetSampleSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="targetSampleSizeFormula" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="timeMethod" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="timePeriodCovered" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="timePeriodCoveredEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="timePeriodCoveredStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="title" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassVocab" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassVocabURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="unitOfAnalysis" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="universe" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="unitOfAnalysis" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="volume" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -483,6 +499,7 @@
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <copyField source="accessToSources" dest="text" maxChars="3000"/>
    <copyField source="actionsToMinimizeLoss" dest="text" maxChars="3000"/>
+   <copyField source="alternativeTitle" dest="text" maxChars="3000"/>
    <copyField source="articleType" dest="text" maxChars="3000"/>
    <copyField source="astroFacility" dest="text" maxChars="3000"/>
    <copyField source="astroInstrument" dest="text" maxChars="3000"/>
@@ -522,9 +539,12 @@
    <copyField source="coverage.Temporal.StopTime" dest="text" maxChars="3000"/>
    <copyField source="dataCollectionSituation" dest="text" maxChars="3000"/>
    <copyField source="dataCollector" dest="text" maxChars="3000"/>
-   <copyField source="dataSources" dest="text" maxChars="3000"/>
    <copyField source="datasetContact" dest="text" maxChars="3000"/>
+   <copyField source="datasetContactAffiliation" dest="text" maxChars="3000"/>
+   <copyField source="datasetContactEmail" dest="text" maxChars="3000"/>
+   <copyField source="datasetContactName" dest="text" maxChars="3000"/>
    <copyField source="datasetLevelErrorNotes" dest="text" maxChars="3000"/>
+   <copyField source="dataSources" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollection" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollectionEnd" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollectionStart" dest="text" maxChars="3000"/>
@@ -534,8 +554,12 @@
    <copyField source="distributor" dest="text" maxChars="3000"/>
    <copyField source="distributorAbbreviation" dest="text" maxChars="3000"/>
    <copyField source="distributorAffiliation" dest="text" maxChars="3000"/>
+   <copyField source="distributorLogoURL" dest="text" maxChars="3000"/>
    <copyField source="distributorName" dest="text" maxChars="3000"/>
+   <copyField source="distributorURL" dest="text" maxChars="3000"/>
    <copyField source="dsDescription" dest="text" maxChars="3000"/>
+   <copyField source="dsDescriptionDate" dest="text" maxChars="3000"/>
+   <copyField source="dsDescriptionValue" dest="text" maxChars="3000"/>
    <copyField source="eastLongitude" dest="text" maxChars="3000"/>
    <copyField source="frequencyOfDataCollection" dest="text" maxChars="3000"/>
    <copyField source="geographicBoundingBox" dest="text" maxChars="3000"/>
@@ -557,6 +581,9 @@
    <copyField source="gsdTypes" dest="text" maxChars="3000"/>
    <copyField source="issue" dest="text" maxChars="3000"/>
    <copyField source="keyword" dest="text" maxChars="3000"/>
+   <copyField source="keywordValue" dest="text" maxChars="3000"/>
+   <copyField source="keywordVocabulary" dest="text" maxChars="3000"/>
+   <copyField source="keywordVocabularyURI" dest="text" maxChars="3000"/>
    <copyField source="kindOfData" dest="text" maxChars="3000"/>
    <copyField source="language" dest="text" maxChars="3000"/>
    <copyField source="northLongitude" dest="text" maxChars="3000"/>
@@ -571,7 +598,9 @@
    <copyField source="producer" dest="text" maxChars="3000"/>
    <copyField source="producerAbbreviation" dest="text" maxChars="3000"/>
    <copyField source="producerAffiliation" dest="text" maxChars="3000"/>
+   <copyField source="producerLogoURL" dest="text" maxChars="3000"/>
    <copyField source="producerName" dest="text" maxChars="3000"/>
+   <copyField source="producerURL" dest="text" maxChars="3000"/>
    <copyField source="productionDate" dest="text" maxChars="3000"/>
    <copyField source="productionPlace" dest="text" maxChars="3000"/>
    <copyField source="publication" dest="text" maxChars="3000"/>
@@ -605,16 +634,19 @@
    <copyField source="studyDesignType" dest="text" maxChars="3000"/>
    <copyField source="studyFactorType" dest="text" maxChars="3000"/>
    <copyField source="subject" dest="text" maxChars="3000"/>
+   <copyField source="subtitle" dest="text" maxChars="3000"/>
+   <copyField source="targetSampleActualSize" dest="text" maxChars="3000"/>
    <copyField source="targetSampleSize" dest="text" maxChars="3000"/>
+   <copyField source="targetSampleSizeFormula" dest="text" maxChars="3000"/>
    <copyField source="timeMethod" dest="text" maxChars="3000"/>
    <copyField source="timePeriodCovered" dest="text" maxChars="3000"/>
    <copyField source="timePeriodCoveredEnd" dest="text" maxChars="3000"/>
    <copyField source="timePeriodCoveredStart" dest="text" maxChars="3000"/>
    <copyField source="title" dest="text" maxChars="3000"/>
+   <copyField source="topicClassification" dest="text" maxChars="3000"/>
    <copyField source="topicClassValue" dest="text" maxChars="3000"/>
    <copyField source="topicClassVocab" dest="text" maxChars="3000"/>
    <copyField source="topicClassVocabURI" dest="text" maxChars="3000"/>
-   <copyField source="topicClassification" dest="text" maxChars="3000"/>
    <copyField source="unitOfAnalysis" dest="text" maxChars="3000"/>
    <copyField source="universe" dest="text" maxChars="3000"/>
    <copyField source="volume" dest="text" maxChars="3000"/>
