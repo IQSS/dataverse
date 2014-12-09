@@ -18,7 +18,6 @@ Contents:
   Installers/index
   API/index
   Best_Practices/index
-  Data_Citation/index
   Data_Exploration/index
 
 How the Guides Are Organized
