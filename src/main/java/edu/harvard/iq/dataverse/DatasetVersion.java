@@ -79,6 +79,16 @@ public class DatasetVersion implements Serializable {
         this.id = id;
     }
 
+    public String getUNF() {
+        return UNF;
+    }
+
+    public void setUNF(String UNF) {
+        this.UNF = UNF;
+    }
+    
+    private String UNF;
+
     @Version
     private Long version;
     
@@ -98,7 +108,7 @@ public class DatasetVersion implements Serializable {
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
-
+    
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
 
@@ -254,7 +264,7 @@ public class DatasetVersion implements Serializable {
         this.contributorNames = contributorNames;
     }
 
-    
+ 
     public String getVersionNote() {
         return versionNote;
     }
@@ -308,7 +318,7 @@ public class DatasetVersion implements Serializable {
         }
         this.versionNote = note;
     }
-
+   
     public Long getVersionNumber() {
         return versionNumber;
     }
@@ -579,10 +589,7 @@ public class DatasetVersion implements Serializable {
         return "Distribution Date";
     }
 
-    public String getUNF() {
-        //todo get dist date from datasetfieldvalue table
-        return "UNF";
-    }
+    
     
     public String getRootDataverseNameforCitation(){
                     //Get root dataverse name for Citation
