@@ -15,4 +15,5 @@ Contents:
   find-use-data
   dataverse-management
   dataset-management
+  Data_Exploration/index
   appendix
