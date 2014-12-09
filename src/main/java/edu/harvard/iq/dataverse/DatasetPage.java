@@ -575,8 +575,21 @@ public class DatasetPage implements java.io.Serializable {
             // the following only applies if this is a "real", builit-in user - has an account:           
             if (user.isBuiltInUser() && builtinUser != null) {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
-                    dsf.getDatasetFieldValues().get(0).setValue(builtinUser.getEmail());
+                    for (DatasetFieldCompoundValue contactValue : dsf.getDatasetFieldCompoundValues()) {
+                        for (DatasetField subField : contactValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                                subField.getDatasetFieldValues().get(0).setValue(builtinUser.getLastName() + ", " + builtinUser.getFirstName());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
+                                subField.getDatasetFieldValues().get(0).setValue(builtinUser.getAffiliation());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+                                subField.getDatasetFieldValues().get(0).setValue(builtinUser.getEmail());
+                            }
+                        }
+                    }
                 }
+                
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
                     for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                         for (DatasetField subField : authorValue.getChildDatasetFields()) {
