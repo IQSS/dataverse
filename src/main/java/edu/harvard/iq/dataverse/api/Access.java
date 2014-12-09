@@ -16,6 +16,10 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -44,8 +48,8 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response;
 
 /*
@@ -67,7 +71,7 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
  */
 
 @Path("access")
-public class Access {
+public class Access extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
     
     private static final String DEFAULT_FILE_ICON = "icon_file.png";
@@ -87,7 +91,9 @@ public class Access {
     @EJB
     SettingsServiceBean settingsService; 
     @EJB
-    DDIExportServiceBean ddiExportService; 
+    DDIExportServiceBean ddiExportService;
+    @EJB
+    PermissionServiceBean permissionService;
 
     //@EJB
     
@@ -138,7 +144,7 @@ public class Access {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
 
         DataFile df = dataFileService.find(fileId);
         
@@ -147,6 +153,32 @@ public class Access {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
+        AuthenticatedUser dataverseUser = null;
+        if (apiToken != null) {
+            dataverseUser = findUserByApiToken(apiToken);
+
+            // (temporary) logic: 
+            // if an API key is provided, we'll try to authenticate and 
+            // authorize, and deny service if not authorized...
+            // but if there's no key provided, download is still 
+            // free for all... this is so that tworavens doesn't stop 
+            // working, while support for key access is being added to it. 
+            // -- L.A. Dec. 9 2014.
+            
+            if (dataverseUser == null) {
+                String message = "Unable to find a user with API token provided.";
+                logger.warning(message);
+                throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+                // or should this be handled as an anonymous call?
+            } else {
+                logger.info("User (authenticated): " + dataverseUser.getName());
+                if (!permissionService.on(df).has(Permission.DownloadFile)) {
+                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                }
+            }
+        } else {
+            // this will be handled as an anonymous call (guest user?)
+        }
         
         DownloadInfo dInfo = new DownloadInfo(df);
 

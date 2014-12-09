@@ -5,10 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -125,6 +126,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    AuthenticationServiceBean authService;
     @EJB
     SystemConfig systemConfig;
     @Inject
@@ -554,6 +557,27 @@ public class DatasetPage implements java.io.Serializable {
         return "Guest";
     }
 
+    public String getApiTokenKey() {
+        ApiToken apiToken;
+        
+        if (session.getUser() == null) {
+            // ?
+            return null;
+        }
+        
+        if (session.getUser().isAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) session.getUser();
+            apiToken = authService.findApiTokenByUser(au);
+            if (apiToken != null) {
+                return "key=" + apiToken.getTokenString();
+            } else {
+                return "key=";
+            }
+        } else {
+            return null;
+        }
+
+    }
     private void resetVersionUI() {
         datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
         User user = session.getUser();
