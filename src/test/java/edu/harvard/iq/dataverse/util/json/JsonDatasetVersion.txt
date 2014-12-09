@@ -1,0 +1,293 @@
+{
+            "UNF": "UNF",
+            "createTime": "2014-11-12 12:17:55 -05",
+            "distributionDate": "Distribution Date",
+            "id": 2,
+            "lastUpdateTime": "2014-11-12 12:20:32 -05",
+            "metadataBlocks": {
+                "astrophysics": {
+                    "displayName": "Astronomy and Astrophysics Metadata",
+                    "fields": [
+                        {
+                            "multiple": true,
+                            "typeClass": "controlledVocabulary",
+                            "typeName": "astroType",
+                            "value": [
+                                "Image",
+                                "Mosaic",
+                                "EventList"
+                            ]
+                        }
+                    ]
+                },
+                "citation": {
+                    "displayName": "Citation Metadata",
+                    "fields": [
+                        {
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "typeName": "title",
+                            "value": "My Dataset"
+                        },
+                        {
+                            "multiple": true,
+                            "typeClass": "compound",
+                            "typeName": "author",
+                            "value": [
+                                {
+                                    "authorAffiliation": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorAffiliation",
+                                        "value": "Top"
+                                    },
+                                    "authorIdentifier": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorIdentifier",
+                                        "value": "ellenid"
+                                    },
+                                    "authorIdentifierScheme": {
+                                        "multiple": false,
+                                        "typeClass": "controlledVocabulary",
+                                        "typeName": "authorIdentifierScheme",
+                                        "value": "ORCID"
+                                    },
+                                    "authorName": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorName",
+                                        "value": "Privileged, Pete"
+                                    }
+                                },
+  				{
+                                    "authorAffiliation": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorAffiliation",
+                                        "value": "Bottom"
+                                    },
+                                    "authorIdentifier": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorIdentifier",
+                                        "value": "audreyId"
+                                    },
+                                    "authorIdentifierScheme": {
+                                        "multiple": false,
+                                        "typeClass": "controlledVocabulary",
+                                        "typeName": "authorIdentifierScheme",
+                                        "value": "DAISY"
+                                    },
+                                    "authorName": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "authorName",
+                                        "value": "Awesome, Audrey"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "multiple": true,
+                            "typeClass": "primitive",
+                            "typeName": "datasetContact",
+                            "value": [
+                                "pete@malinator.com"
+                            ]
+                        },
+                        {
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "typeName": "dsDescription",
+                            "value": "Here is my description"
+                        },
+                        {
+                            "multiple": true,
+                            "typeClass": "controlledVocabulary",
+                            "typeName": "subject",
+                            "value": [
+                                "Arts and Humanities",
+                                "Astronomy and Astrophysics",
+                                "Business and Management"
+                            ]
+                        },
+                        {
+                            "multiple": true,
+                            "typeClass": "primitive",
+                            "typeName": "keyword",
+                            "value": [
+                                "keyword1",
+                                "keyword2"
+                            ]
+                        },
+                        {
+                            "multiple": true,
+                            "typeClass": "compound",
+                            "typeName": "otherId",
+                            "value": [
+                                {
+                                    "otherIdAgency": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "otherIdAgency",
+                                        "value": "my agency"
+                                    },
+                                    "otherIdValue": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "otherIdValue",
+                                        "value": "otherId"
+                                    }
+                                },
+                                {
+                                    "otherIdAgency": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "otherIdAgency",
+                                        "value": "another agency"
+                                    },
+                                    "otherIdValue": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "otherIdValue",
+                                        "value": "otherId2"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "typeName": "depositor",
+                            "value": "Ellen K"
+                        },
+                        {
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "typeName": "dateOfDeposit",
+                            "value": "2014-11-12"
+                        }
+                    ]
+                },
+                "geospatial": {
+                    "displayName": "Geospatial Metadata",
+                    "fields": [
+                        {
+                            "multiple": true,
+                            "typeClass": "compound",
+                            "typeName": "geographicCoverage",
+                            "value": [
+                                {
+                                    "city": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "city",
+                                        "value": "Arlington"
+                                    },
+                                    "country": {
+                                        "multiple": false,
+                                        "typeClass": "controlledVocabulary",
+                                        "typeName": "country",
+                                        "value": "United States"
+                                    },
+                                    "state": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "state",
+                                        "value": "MA"
+                                    }
+                                },
+                                {
+                                    "city": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "city",
+                                        "value": "beachcity"
+                                    },
+                                    "country": {
+                                        "multiple": false,
+                                        "typeClass": "controlledVocabulary",
+                                        "typeName": "country",
+                                        "value": "Aruba"
+                                    },
+                                    "state": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "state",
+                                        "value": "beach"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "multiple": false,
+                            "typeClass": "compound",
+                            "typeName": "geographicBoundingBox",
+                            "value": 
+                                {
+                                    "eastLongitude": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "eastLongitude",
+                                        "value": "23"
+                                    },
+                                    "northLongitude": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "northLongitude",
+                                        "value": "786"
+                                    },
+                                    "southLongitude": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "southLongitude",
+                                        "value": "34"
+                                    },
+                                    "westLongitude": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "westLongitude",
+                                        "value": "45"
+                                    }
+                                }
+                            
+                        }
+                    ]
+                },
+                "socialscience": {
+                    "displayName": "Social Science and Humanities Metadata",
+                    "fields": [
+                        {
+                            "multiple": true,
+                            "typeClass": "compound",
+                            "typeName": "software",
+                            "value": [
+                                {
+                                    "softwareName": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "softwareName",
+                                        "value": "softwareName"
+                                    },
+                                    "softwareVersion": {
+                                        "multiple": false,
+                                        "typeClass": "primitive",
+                                        "typeName": "softwareVersion",
+                                        "value": "software version"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "typeName": "unitOfAnalysis",
+                            "value": "unit of analysis"
+                        }
+                    ]
+                }
+            },
+            "productionDate": "Production Date",
+            "versionState": "DRAFT"
+        }
