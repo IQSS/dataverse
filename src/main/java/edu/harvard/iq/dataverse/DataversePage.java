@@ -384,7 +384,7 @@ public class DataversePage implements java.io.Serializable {
         String msg = (create)? "You have successfully created your dataverse.": "You have successfully updated your dataverse.";
         JsfHelper.addSuccessMessage(msg);
         
-        return "/dataverse/" + dataverse.getAlias() + "&faces-redirect=true";
+        return "/dataverse?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
     public void cancel(ActionEvent e) {
