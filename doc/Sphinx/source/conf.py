@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Consilience Documentation build configuration file, created by
+# Dataverse Documentation build configuration file, created by
 # sphinx-quickstart on Wed Apr 16 09:34:18 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -133,6 +133,9 @@ html_theme_options = {
     #     ("Examples", "examples"),
     #     ("Link", "http://example.com", True),
     # ],
+    'navbar_links': [
+        ("View 3.6.2 Guides", "http://docs.dataverse.org/en/3.6.2/", True),
+    ],
     
     # Global TOC depth for "site" navbar tab. (Default: 1)
     # Switching to -1 shows all levels.
