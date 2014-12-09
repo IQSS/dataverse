@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +27,12 @@ public class FieldDTO {
         FieldDTO primitive = new FieldDTO();
         primitive.typeName=typeName;
         primitive.setSinglePrimitive(value);
+        return primitive;
+    }
+    public static FieldDTO createMultiplePrimitiveFieldDTO(String typeName, List<String> values) {
+        FieldDTO primitive = new FieldDTO();
+        primitive.typeName=typeName;
+        primitive.setMultiplePrimitive(values);
         return primitive;
     }
     public static FieldDTO createVocabFieldDTO(String typeName, String value) {
@@ -100,11 +107,12 @@ public class FieldDTO {
     }
 
     String getSinglePrimitive() {
-        return value.getAsString();
+        
+        return value==null? "": value.getAsString();
     }
     
     String getSingleVocab() {
-        return value.getAsString();
+        return value==null? "": value.getAsString();
     }
     
     public Set<FieldDTO> getSingleCompound() {
@@ -192,7 +200,12 @@ public class FieldDTO {
   
         this.value = obj;
     }
-   
+    public void setMultiplePrimitive(String[] value) {
+        Gson gson = new Gson();
+        typeClass = "primitive";
+        multiple = true;
+        this.value = gson.toJsonTree(Arrays.asList(value));
+    }
     public void setMultiplePrimitive(List<String> value) {
         Gson gson = new Gson();
         typeClass = "primitive";
