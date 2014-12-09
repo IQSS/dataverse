@@ -40,10 +40,11 @@ public class FieldDTOTest {
        
         Set<FieldDTO> authorFields = new HashSet<>();
         
-        authorFields.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top"));
-        authorFields.add(FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ellenId"));
-        authorFields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
-        author = FieldDTO.createCompoundFieldDTOs("author", authorFields);
+      
+        author = FieldDTO.createCompoundFieldDTO("author",
+                FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top"),
+                FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ellenId"),
+                FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
         
         
     }
@@ -130,7 +131,7 @@ public class FieldDTOTest {
         authorFields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
         
         FieldDTO compoundField = new FieldDTO();
-        compoundField.setSingleCompound(authorFields);
+        compoundField.setSingleCompound(authorFields.toArray(new FieldDTO[]{}));
         Set<FieldDTO>  returned = compoundField.getSingleCompound();   
         Assert.assertTrue(returned.equals(authorFields));
        

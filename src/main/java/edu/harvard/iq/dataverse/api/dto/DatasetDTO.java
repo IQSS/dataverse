@@ -83,5 +83,10 @@ public class DatasetDTO implements java.io.Serializable {
     public void setDataFiles(List<DataFileDTO> dataFiles) {
         this.dataFiles = dataFiles;
     }
+
+    @Override
+    public String toString() {
+        return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", peristentUrl=" + peristentUrl + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersions=" + datasetVersions + ", dataFiles=" + dataFiles + '}';
+    }
         
 }

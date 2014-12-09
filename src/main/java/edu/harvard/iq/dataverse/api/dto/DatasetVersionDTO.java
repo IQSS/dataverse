@@ -1,15 +1,8 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import java.util.ArrayList;
-import java.util.Iterator;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  *
@@ -18,10 +11,10 @@ import java.util.Set;
 public class DatasetVersionDTO {
     String archiveNote;
     String deacessionLink;
-    String versionNumber;
+    Long versionNumber;
     String minorVersionNumber;
     long id;
-    String versionState;
+    VersionState versionState;
     String releaseDate;
     String lastUpdateTime;
     String createTime;
@@ -65,11 +58,11 @@ public class DatasetVersionDTO {
         this.deacessionLink = deacessionLink;
     }
 
-    public String getVersionNumber() {
+    public Long getVersionNumber() {
         return versionNumber;
     }
 
-    public void setVersionNumber(String versionNumber) {
+    public void setVersionNumber(Long versionNumber) {
         this.versionNumber = versionNumber;
     }
 
@@ -89,11 +82,13 @@ public class DatasetVersionDTO {
         this.id = id;
     }
 
-    public String getVersionState() {
+    
+
+    public VersionState getVersionState() {
         return versionState;
     }
 
-    public void setVersionState(String versionState) {
+    public void setVersionState(VersionState versionState) {
         this.versionState = versionState;
     }
 
@@ -135,6 +130,11 @@ public class DatasetVersionDTO {
 
     public void setMetadataBlocks(Map<String, MetadataBlockDTO> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
+    }
+
+    @Override
+    public String toString() {
+        return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + minorVersionNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
     }
     
     
