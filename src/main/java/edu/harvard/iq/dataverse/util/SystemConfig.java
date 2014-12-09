@@ -53,6 +53,12 @@ public class SystemConfig {
      */
     private String saneDefaultForSolrHostColonPort = "localhost:8983";
 
+    /**
+     * The default number of datafiles that we allow to be created through 
+     * zip file upload.
+     */
+    private static final int defaultZipUploadFilesLimit = 1000; 
+    
     public String getSolrHostColonPort() {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
@@ -149,5 +155,24 @@ public class SystemConfig {
         }
         
         return 0L; 
+    }
+    
+    public int getZipUploadFilesLimit() {
+        String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipUploadFilesLimit);
+        Integer limit = null; 
+        
+        if (limitOption != null && !limitOption.equals("")) {
+            try {
+                limit = new Integer(limitOption);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit.intValue();
+        }
+        
+        return defaultZipUploadFilesLimit; 
     }
 }

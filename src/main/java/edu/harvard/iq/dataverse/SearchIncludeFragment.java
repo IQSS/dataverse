@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.search.SearchException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -90,12 +90,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
     Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
-    private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
     private boolean debug = false;
 //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
     private String errorFromSolr;
+    private SearchException searchException;
 
     /**
      * @todo:
@@ -274,7 +274,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             int numRows = 10;
             solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numRows);
             solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numRows);
-        } catch (EJBException ex) {
+        } catch (SearchException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
             sb.append(cause + " ");
@@ -286,6 +286,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             String message = "Exception running search for [" + queryToPassToSolr + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
             logger.info(message);
             this.solrIsDown = true;
+            this.searchException = ex;
         }
         if (!solrIsDown) {
             this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
@@ -334,6 +335,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
+                    Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
+                    Dataverse parentDataverse = dataverseService.find(dataverseId);
+                    solrSearchResult.setDataverseAlias(parentDataverse.getAlias());
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {
                         DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
@@ -377,7 +381,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         } else {
             List contentsList = dataverseService.findByOwnerId(dataverse.getId());
             contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
-            directChildDvObjectContainerList.addAll(contentsList);
+//            directChildDvObjectContainerList.addAll(contentsList);
         }
         /**
          * @todo: pull values from datasetField.getTitle() rather than hard
@@ -820,14 +824,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.solrIsDown = solrIsDown;
     }
 
-    public List<DvObjectContainer> getDirectChildDvObjectContainerList() {
-        return directChildDvObjectContainerList;
-    }
-
-    public void setDirectChildDvObjectContainerList(List<DvObjectContainer> directChildDvObjectContainerList) {
-        this.directChildDvObjectContainerList = directChildDvObjectContainerList;
-    }
-
     public boolean isDebug() {
         return debug;
     }
@@ -930,10 +926,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return errorFromSolr;
     }
 
-    public void setErrorFromSolr(String errorFromSolr) {
-        this.errorFromSolr = errorFromSolr;
-    }
-
     /**
      * @return the dataverseAlias
      */
@@ -961,6 +953,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
 
         return datafile.isTabularData();
+    }
+
+    public SearchException getSearchException() {
+        return searchException;
     }
 
     public String tabularDataDisplayInfo(Long fileId) {

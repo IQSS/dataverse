@@ -1,11 +1,4 @@
-
 {
-    "q":"*",
-    "fq_provided":"[]",
-    "fq_actual":"[]",
-    "total_count":0,
-    "start":0,
-    "count_in_response":0,
-    "items":"[]",
-    "error":"Internal error: Server refused connection at: http://localhost:8983/solr"
+  "message": "Exception running search for [*] with filterQueries [] and paginationStart [0]: edu.harvard.iq.dataverse.search.SearchException: Internal Dataverse Search Engine Error org.apache.solr.client.solrj.SolrServerException org.apache.solr.client.solrj.SolrServerException: Server refused connection at: http://localhost:8983/solr org.apache.http.conn.HttpHostConnectException org.apache.http.conn.HttpHostConnectException: Connection to http://localhost:8983 refused java.net.ConnectException java.net.ConnectException: Connection refused ",
+  "status": "ERROR"
 }

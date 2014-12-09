@@ -31,7 +31,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </ui:fragment>  
+                        </ui:fragment>
                         <ui:fragment rendered="#{themeWidgetFragment.editDv.themeRoot}">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">
@@ -69,7 +69,7 @@
                                                     <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
                                                         <f:selectItem itemLabel="Square" itemValue="SQUARE"/>
                                                         <f:selectItem itemLabel="Rectangle" itemValue="RECTANGLE"/>
-                                                        <p:ajax update="@widgetVar(content)"  />  
+                                                        <p:ajax update="@widgetVar(content)"  />
                                                     </p:selectOneRadio>
                                                     <p:message for="logoFormat"/>
                                                 </p:panelGrid>
@@ -185,9 +185,9 @@
                                     <f:validator validatorId="linkValidator"/>
                                     <f:attribute name="linkUrlInput" value="#{themeWidgetFragment.linkUrlInput}"/>
                                     <f:attribute name="linkTextInput" value="#{themeWidgetFragment.linkTextInput}"/>
-                             
+
                                 </h:inputHidden>
-                          
+
                                 <div class="form-group col-sm-9">
                                     <div class="form-col-container col-sm-6">
                                         <label for="linkUrl" class="control-label">
@@ -216,12 +216,8 @@
                         </div>
                     </ui:fragment>
                 </p:fragment>
-                   <p:commandButton   value="Save Changes" action="#{themeWidgetFragment.save()}"/>
-                   <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true"     id="widgetsDone"   value="Cancel">
-           
-                </p:commandButton>    
-               
-
+                <p:commandButton value="Save Changes" action="#{themeWidgetFragment.save()}"/>
+                <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="Cancel"/>
             </p:tab>
             <p:tab id="widgetsTab" title="Widgets">
                 <div>
@@ -247,8 +243,10 @@
                     <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?id=#{themeWidgetFragment.editDv.id}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;
                     </textarea>
                 </div>
-                <p:commandButton  process="@this" action="dataverse"   id="widgetsCancel"   value="Done"/>
+                <p style="margin-top:1em;">
+                    <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="Done"/>
+                </p>
             </p:tab>
         </p:tabView>
-   
-</div> 
+
+</div>

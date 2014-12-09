@@ -29,32 +29,42 @@
             </a>
         </label>
         <div class="col-sm-9">
-            <div class="radio">
-                <label>
-                    <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
-                    Anyone adding to this dataverse needs to be given access
-                </label>
-            </div>
-            <div class="radio">
-                <label>
-                    <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
-                    Anyone with a Dataverse account can add:
-                </label>
-            </div>
-            <div id="openAccessOptions" style="margin-left:2em;">
-                <div class="checkbox">
+            <p:selectOneRadio id="authenticatedUsersContributorRoleRadio" value="#{managePermissionsPage.authenticatedUsersContributorRoleAlias}" layout="grid" columns="1">
+                <f:selectItem itemLabel="Anyone adding to this dataverse needs to be given access" itemValue="" />
+                <f:selectItem itemLabel="Anyone with a Dataverse account can add dataverses" itemValue="dvContributor" />
+                <f:selectItem itemLabel="Anyone with a Dataverse account can add datasets" itemValue="dsContributor" />
+                <f:selectItem itemLabel="Anyone with a Dataverse account can add dataverses and datasets" itemValue="fullContributor" />                
+            </p:selectOneRadio>            
+            
+            
+            <ui:remove>
+                <div class="radio">
                     <label>
-                        <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataverse}" />
-                        Dataverses
+                        <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
+                        Anyone adding to this dataverse needs to be given access
                     </label>
                 </div>
-                <div class="checkbox">
+                <div class="radio">
                     <label>
-                        <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataset}" />
-                        Datasets
+                        <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
+                        Anyone with a Dataverse account can add:
                     </label>
                 </div>
-            </div>
+                <div id="openAccessOptions" style="margin-left:2em;">
+                    <div class="checkbox">
+                        <label>
+                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataverse}" />
+                            Dataverses
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataset}" />
+                            Datasets
+                        </label>
+                    </div>
+                </div>
+            </ui:remove>
         </div>
     </div>
 

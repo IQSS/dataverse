@@ -27,6 +27,9 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String grantNumber = "grantNumber";
     public final static String distributor = "distributor";
     public final static String datasetContact = "datasetContact";
+    public final static String datasetContactEmail = "datasetContactEmail";
+    public final static String datasetContactName = "datasetContactName";
+    public final static String datasetContactAffiliation = "datasetContactAffiliation";
     public final static String series = "series";
     public final static String datasetVersion = "datasetVersion";
     

@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import static java.lang.Math.max;
 import java.text.SimpleDateFormat;
@@ -168,7 +169,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         return u;
     }
 
-    public String getRISFormat(DatasetVersion version) {
+    public String createCitationRIS(DatasetVersion version) {
+        return createCitationRIS(version, null);
+    } 
+    
+    public String createCitationRIS(DatasetVersion version, FileMetadata fileMetadata) {
         String publisher = version.getRootDataverseNameforCitation();
         List<DatasetAuthor> authorList = version.getDatasetAuthors();
         String retString = "Provider: " + publisher + "\r\n";
@@ -182,20 +187,41 @@ public class DatasetServiceBean implements java.io.Serializable {
         retString += "PY  - " + version.getVersionYear() + "\r\n";
         retString += "UR  - " + version.getDataset().getPersistentURL() + "\r\n";
         retString += "PB  - " + publisher + "\r\n";
+        
+        // a DataFile citation also includes filename und UNF, if applicable:
+        if (fileMetadata != null) { 
+            retString += "T2  - " + fileMetadata.getLabel() + "\r\n";
+            
+            if (fileMetadata.getDataFile().isTabularData()) {
+                if (fileMetadata.getDataFile().getUnf() != null) {
+                    retString += "C1  - " + fileMetadata.getDataFile().getUnf() + "\r\n";
+                }
+            }
+        }
+        
+        // closing element: 
         retString += "ER  - \r\n";
+
         return retString;
     }
 
     private XMLOutputFactory xmlOutputFactory = null;
 
-    public void createXML(OutputStream os, DatasetVersion datasetVersion) {
+    public String createCitationXML(DatasetVersion datasetVersion, FileMetadata fileMetadata) {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        createEndNoteCitation(outStream, datasetVersion, fileMetadata);
+        String xml = outStream.toString();
+        return xml; 
+    } 
+    
+    public void createEndNoteCitation(OutputStream os, DatasetVersion datasetVersion, FileMetadata fileMetadata) {
 
         xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
         XMLStreamWriter xmlw = null;
         try {
             xmlw = xmlOutputFactory.createXMLStreamWriter(os);
             xmlw.writeStartDocument();
-            createEndNoteXML(xmlw, datasetVersion);
+            createEndNoteXML(xmlw, datasetVersion, fileMetadata);
             xmlw.writeEndDocument();
         } catch (XMLStreamException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
@@ -209,8 +235,8 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
         }
     }
-
-    private void createEndNoteXML(XMLStreamWriter xmlw, DatasetVersion version) throws XMLStreamException {
+    
+    private void createEndNoteXML(XMLStreamWriter xmlw, DatasetVersion version, FileMetadata fileMetadata) throws XMLStreamException {
 
         String title = version.getTitle();
         String versionYear = version.getVersionYear();
@@ -243,6 +269,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         xmlw.writeStartElement("title");
         xmlw.writeCharacters(title);
         xmlw.writeEndElement(); // title
+        // a citation for a DataFile also includes filename:
+        if (fileMetadata != null) { 
+            xmlw.writeStartElement("secondary_title");
+            xmlw.writeCharacters(fileMetadata.getLabel());
+            xmlw.writeEndElement(); // secondary_title
+        }
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
@@ -273,6 +305,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         xmlw.writeEndElement(); // url
         xmlw.writeEndElement(); // related-urls
         xmlw.writeEndElement(); // urls
+        
+        // a (tabular) DataFile citation also includes the UNF signature. 
+        // We put it into a "custom" field:
+        
+        if (fileMetadata != null) { 
+            if (fileMetadata.getDataFile().isTabularData()) {
+                if (fileMetadata.getDataFile().getUnf() != null) {
+                    xmlw.writeStartElement("custom1");
+                    xmlw.writeCharacters(fileMetadata.getDataFile().getUnf());
+                    xmlw.writeEndElement(); // custom1
+                }
+            }
+        }
 
         xmlw.writeStartElement("electronic-resource-num");
         String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId();

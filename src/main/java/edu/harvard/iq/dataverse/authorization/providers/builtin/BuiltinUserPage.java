@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseHeaderFragment;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PasswordEncryption;
@@ -152,7 +153,16 @@ public class BuiltinUserPage implements java.io.Serializable {
         this.selectTab = selectTab;
     }
 
-    public void init() {
+    public String init() {
+        if (editMode == EditMode.CREATE) {
+            if (!session.getUser().isAuthenticated()) { // in create mode for new user
+                builtinUser = new BuiltinUser();
+                return "";
+            } else {
+                editMode = null; // we can't be in create mode for an existing user
+            }
+        }
+        
         if ( session.getUser().isAuthenticated() ) {
             currentUser = (AuthenticatedUser) session.getUser();
             notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
@@ -173,10 +183,10 @@ public class BuiltinUserPage implements java.io.Serializable {
             }            
             
         } else {
-            // if user is not logged in, go to sign up page
-            editMode = EditMode.CREATE;
-            builtinUser = new BuiltinUser();           
+            return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
         }
+        
+        return "";
     }
 
     public void edit(ActionEvent e) {

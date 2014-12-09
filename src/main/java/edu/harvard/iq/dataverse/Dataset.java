@@ -14,6 +14,7 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -51,6 +52,9 @@ public class Dataset extends DvObjectContainer {
     private List<DatasetVersion> versions = new ArrayList();
     @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private DatasetLock datasetLock;
+    @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
+    @JoinColumn(name="thumbnailfile_id")
+    private DataFile thumbnailFile;
 
     public Dataset() {
         //this.versions = new ArrayList();
@@ -330,7 +334,15 @@ public class Dataset extends DvObjectContainer {
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
         return version.getCitation(isOnlineVersion);
     }
-
+    
+    public DataFile getThumbnailFile() {
+        return thumbnailFile;
+    }
+    
+    public void setThumbnailFile(DataFile thumbnailFile) {
+        this.thumbnailFile = thumbnailFile;
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

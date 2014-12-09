@@ -321,13 +321,13 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                         <li>
-                                                            <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
+                                                            <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadDatasetCitationXML()}" >
 
                                                                 <h:outputText value="EndNote XML" />
                                                             </h:commandLink>
                                                         </li>
                                                         <li>
-                                                            <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
+                                                            <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
 
                                                                 <h:outputText value="RIS Format" />
                                                             </h:commandLink>
@@ -490,9 +490,9 @@
                                             });
                                         </script>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add"
+                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="Select Files to Add"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
-
+                                        
                                         <ui:fragment rendered="#{!empty DatasetPage.dropBoxKey}">
                                             <div id="dropboxUploadBlock" class="panel panel-default" style="margin-top:1em;">
                                                 <div class="panel-body">
@@ -504,6 +504,7 @@
                                                 </div>
                                             </div>
                                         </ui:fragment>
+                                        <p:message for="fileUpload" id="uploadMessage" display="text"/>
                                     </ui:fragment>
                                     <!-- View -->
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
@@ -548,14 +549,16 @@
                                                 <p:message for="fileName"/>
                                             </ui:fragment>
 
-                                            <!-- SIZE + TYPE + MD5 -->
-                                            <div>
-                                                <h:outputText id="fileTypeOutputRegular" styleClass="text-muted" value="#{fileMetadata.dataFile.friendlyType} - " rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
-                                                <h:outputText id="fileTypeOutputTabular" styleClass="text-muted" value="Tabular Data - " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                                <h:outputText id="fileSize" styleClass="text-muted" value="#{fileMetadata.dataFile.friendlySize} - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                            <!-- TYPE + SIZE + DATE + MD5 -->
+                                            <div class="text-muted">
+                                                <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType} - " rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+                                                <h:outputText id="fileTypeOutputTabular" value="Tabular Data - " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                <h:outputText id="fileSize" value="#{fileMetadata.dataFile.friendlySize} - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
+                                                <h:outputText id="fileCreatePublishDate" value="#{DatasetPage.getFileDateToDisplay(fileMetadata)} - " rendered="#{!(empty fileMetadata.id)}"/>
+                                                
                                                 <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
-                                                <h:outputText id="fileMD5" styleClass="text-muted" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                                                <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
 
                                                 <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
                                                 <ui:fragment rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}">
@@ -599,8 +602,12 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{(fileMetadata.dataFile.tabularData)}">
-                                                <p:commandLink id="deleteDataset" styleClass="btn btn-default" onclick="fileAdvancedOptions.show()">
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image)}">
+                                                <p:commandLink id="advancedIngestOptionsButton" 
+                                                               styleClass="btn btn-default" 
+                                                               actionListener="#{DatasetPage.setAdvfile(fileMetadata)}"
+                                                               update=":datasetForm:fileAdvancedOptions"
+                                                               oncomplete="fileAdvancedOptions.show()">
                                                     <span class="glyphicon glyphicon-cog" style="margin-right:.3em;"/> Advanced Options
                                                 </p:commandLink>
                                             </ui:fragment>
@@ -642,9 +649,9 @@
                                                     </button>
                                                     <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                         <li>
-                                                            <h:outputLink value="#">
+                                                            <h:outputLink value="/api/access/datafile/bundle/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <!--strong>All File Formats + Information</strong-->
-                                                                <strong>All formats bundle (coming soon)</strong>
+                                                                <strong><h:outputText value="All File Formats + Information"/></strong>
                                                             </h:outputLink>
                                                         </li>
                                                         <li role="presentation" class="divider"></li>
@@ -669,10 +676,18 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li class="dropdown-submenu">
-                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation (coming soon)</a>
+                                                            <a tabindex="-1" href="javascript:void(0);">Data File Citation</a>
                                                             <ul class="dropdown-menu">
-                                                              <li><a tabindex="-1" href="#">RIS Format</a></li>
-                                                              <li><a href="#">EndNote XML</a></li>
+                                                              <li>
+                                                                  <h:commandLink id="risLinkFile" actionListener="#{DatasetPage.downloadDatafileCitationRIS(fileMetadata)}">
+                                                                    <h:outputText value="RIS Format" />
+                                                                  </h:commandLink>
+                                                              </li>
+                                                              <li>
+                                                                  <h:commandLink id="endNoteLinkFile" action="#{DatasetPage.downloadDatafileCitationXML(fileMetadata)}" >
+                                                                    <h:outputText value="EndNote XML" />
+                                                                  </h:commandLink>
+                                                              </li>
                                                             </ul>
                                                         </li>
                                                     </ul>
@@ -1083,30 +1098,37 @@
                     </p:commandButton>
 
                     <ui:include src="rolesAndPermissionsFragment.xhtml"/>
+                    
                     <p:dialog id="fileAdvancedOptions" header="Advanced Options" widgetVar="fileAdvancedOptions" modal="true">
-                        <p class="help-block">Edit these advanced options.</p>
+                        <p class="help-block"></p>
                         <style type="text/css">
                                     .form-group table.noBorders {width:100%;}
                                     .form-group table.noBorders td {width:50%;}
                                     .form-group table.noBorders td .form-control {width:100%;}
                                 </style>
                         <div class="form-inline clearfix" style="min-width:800px;">
-                            <div class="form-group col-sm-12">
-                                <label for="spssPortableSecondFile" class="col-sm-4 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                        SPSS-Portable Second File
-                                    </a>
-                                </label>
-                                <div class="col-sm-8">
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <h:outputText value="**REMOVE ME** File Upload"/>
-                                        <h:outputText value="Error Msg **REMOVE ME**"/>
-                                    </p:panelGrid>
-                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                        <p:inputText id="spssPortableSecondFile" styleClass="form-control"/>
-                                        <p:message for="spssPortableSecondFile" display="text" /> -->
+                            <!-- "Data File Tags" - these only apply to tabular files, for now: -->
+                            <ui:fragment rendered="#{DatasetPage.advfile.dataFile.tabularData}">
+                                <div class="form-group col-sm-12">
+                                    <label for="tabularDataTags" class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Tabular Data Tags 
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:selectCheckboxMenu id="tabularDataTags" value="#{DatasetPage.selectedTags}" label="Add/Edit Tags"
+                                                     filter="false" panelStyle="width:300px">
+                                                <f:selectItems value="#{DatasetPage.tabFileTags}" />
+                                            </p:selectCheckboxMenu>
+                                            <p:message for="tabularDataTags" display="text" />
+                                        </p:panelGrid>
+                                    </div>
                                 </div>
-                            </div>
+                            </ui:fragment>
+                            
+                            <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
+                            <ui:fragment rendered="false">
                             <div class="form-group col-sm-12">
                                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1123,6 +1145,8 @@
                                         <p:message for="spssSavEncodingLanguage" display="text" /> -->
                                 </div>
                             </div>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!(empty DatasetPage.advfile.id) and DatasetPage.advfile.dataFile.image}">
                             <div class="form-group col-sm-12">
                                 <label for="datasetThumbnailImage" class="col-sm-4 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1131,14 +1155,16 @@
                                 </label>
                                 <div class="col-sm-8">
                                     <p:panelGrid columns="2" styleClass="noBorders">
-                                        <h:outputText value="**REMOVE ME** [x] Use this thumbail image as my dataset default"/>
-                                        <h:outputText value="Error Msg **REMOVE ME**"/>
+                                        <p:column>
+                                            <p:selectBooleanCheckbox  id="datasetThumbnailImage" itemLabel="Use this image as the thumbnail image for my dataset." value="#{DatasetPage.useAsDatasetThumbnail}"/>
+                                            
+                                            <p:message for="datasetThumbnailImage" display="text" />
+                                        </p:column>
                                     </p:panelGrid>
-                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                        <p:inputText id="datasetThumbnailImage" styleClass="form-control"/>
-                                        <p:message for="datasetThumbnailImage" display="text" /> -->
                                 </div>
                             </div>
+                            </ui:fragment>
+                            <ui:fragment rendered="false">
                             <div class="form-group col-sm-12">
                                 <label for="fileTags" class="col-sm-4 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1155,9 +1181,10 @@
                                         <p:message for="fileTags" display="text" /> -->
                                 </div>
                             </div>
+                            </ui:fragment>
                         </div>
-                        <button type="button" class="btn btn-default" value="Save Changes" onclick="fileAdvancedOptions.hide()">Save Changes</button>
-                        <button type="button" class="btn btn-default" value="Cancel" onclick="fileAdvancedOptions.hide()">Cancel</button>
+                        <p:commandButton id="fileAdvancedOptionsSaveButton" value="Save Changes" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
+                        <p:commandButton id="fileAdvancedOptionsCancelButton" value="Cancel" onclick="fileAdvancedOptions.hide()"/>
                     </p:dialog>
                 </h:form>
             </ui:define>

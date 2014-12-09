@@ -15,10 +15,12 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.util.List;
@@ -84,8 +86,54 @@ public class Access {
     VariableServiceBean variableService;
     @EJB
     SettingsServiceBean settingsService; 
+    @EJB
+    DDIExportServiceBean ddiExportService; 
 
     //@EJB
+    
+    // TODO: 
+    // versions? -- L.A. 4.0 beta 10
+    @Path("datafile/bundle/{fileId}")
+    @GET
+    @Produces({"application/zip"})
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+ 
+        DataFile df = dataFileService.find(fileId);
+        
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        
+        DownloadInfo dInfo = new DownloadInfo(df);
+        BundleDownloadInstance downloadInstance = new BundleDownloadInstance(dInfo);
+        
+        FileMetadata fileMetadata = df.getFileMetadata();
+        DatasetVersion datasetVersion = df.getOwner().getLatestVersion();
+        
+        downloadInstance.setFileCitationEndNote(datasetService.createCitationXML(datasetVersion, fileMetadata));
+        downloadInstance.setFileCitationRIS(datasetService.createCitationRIS(datasetVersion, fileMetadata));
+        
+        ByteArrayOutputStream outStream = null;
+        outStream = new ByteArrayOutputStream();
+
+        try {
+            ddiExportService.exportDataFile(
+                    fileId,
+                    outStream,
+                    null,
+                    null);
+
+            downloadInstance.setFileDDIXML(outStream.toString());
+
+        } catch (Exception ex) {
+            // if we can't generate the DDI, it's ok; 
+            // we'll just generate the bundle without it. 
+        }
+        
+        return downloadInstance; 
+    }
     
     @Path("datafile/{fileId}")
     @GET
@@ -93,10 +141,7 @@ public class Access {
     public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
 
         DataFile df = dataFileService.find(fileId);
-        /* TODO: 
-         * Throw a meaningful exception if file not found!
-         * -- L.A. 4.0alpha1
-         */
+        
         if (df == null) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -106,8 +151,6 @@ public class Access {
         DownloadInfo dInfo = new DownloadInfo(df);
 
         /*
-         * The only "optional access services" supported as of now (4.0alpha1)
-         * are image thumbnail generation and "saved original": 
          * (and yes, this is a hack)
          * TODO: un-hack this. -- L.A. 4.0 alpha 1
          */
@@ -196,6 +239,8 @@ public class Access {
         //return retValue; 
         return downloadInstance;
     }
+    
+    
     
     @Path("datafiles/{fileIds}")
     @GET
@@ -353,18 +398,35 @@ public class Access {
         }
         
         String imageThumbFileName = null; 
-                
-        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+        
+        // First, check if this dataset has a designated thumbnail image: 
+        
+        if (datasetVersion.getDataset() != null) {
+            DataFile dataFile = datasetVersion.getDataset().getThumbnailFile();
+            if (dataFile != null) {
+                if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                    imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                } else if (dataFile.isImage()) {
+                    imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                } 
+            }
+        }
+        
+        // If not, we'll try to use one of the files in this dataset version:
+        
+        if (imageThumbFileName == null) {
+            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
-                imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
-                break; 
-            } else if (dataFile.isImage()) {
-                imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
-                break;
-            } 
+            for (FileMetadata fileMetadata : fileMetadatas) {
+                DataFile dataFile = fileMetadata.getDataFile();
+                if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                    imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                    break; 
+                } else if (dataFile.isImage()) {
+                    imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                    break;
+                } 
+            }
         }
         
         if (imageThumbFileName == null) {
@@ -403,14 +465,14 @@ public class Access {
         // First, check if the dataverse has a defined logo: 
         
         if (dataverse.getDataverseTheme()!=null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
-            String dataverseLogoPath = getLogoPath(dataverse);
-            if (dataverseLogoPath != null) {
+            File dataverseLogoFile = getLogo(dataverse);
+            if (dataverseLogoFile != null) {
                 String logoThumbNailPath = null;
                 InputStream in = null;
 
                 try {
-                    if (new File(dataverseLogoPath).exists()) {
-                        logoThumbNailPath =  ImageThumbConverter.generateImageThumb(dataverseLogoPath, 48);
+                    if (dataverseLogoFile.exists()) {
+                        logoThumbNailPath =  ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
                         if (logoThumbNailPath != null) {
                             in = new FileInputStream(logoThumbNailPath);
                         }
@@ -476,19 +538,26 @@ public class Access {
         return null; 
     }
     
-    private String getLogoPath(Dataverse dataverse) {
+    private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
             return null; 
         }
         
-        Properties p = System.getProperties();
-        String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+        DataverseTheme theme = dataverse.getDataverseTheme(); 
+        if (theme != null && theme.getLogo() != null && !theme.getLogo().equals("")) {
+            Properties p = System.getProperties();
+            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
   
-        return domainRoot + File.separator + 
-                "docroot" + File.separator + 
-                "logos" + File.separator + 
-                dataverse.getId() + File.separator + 
-                dataverse.getDataverseTheme().getLogo();
+            if (domainRoot != null && !"".equals(domainRoot)) {
+                return new File (domainRoot + File.separator + 
+                    "docroot" + File.separator + 
+                    "logos" + File.separator + 
+                    dataverse.getLogoOwnerId() + File.separator + 
+                    theme.getLogo());
+            }
+        }
+            
+        return null;         
     }
     
     private String getWebappImageResource(String imageName) {

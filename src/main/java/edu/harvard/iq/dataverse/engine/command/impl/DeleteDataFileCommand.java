@@ -34,7 +34,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     private final DataFile doomed;
 
     public DeleteDataFileCommand(DataFile doomed, User aUser) {
-        super(aUser, doomed);
+        super(aUser, doomed.getOwner());
         this.doomed = doomed;
     }
 

@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.util.Collections;
@@ -25,9 +26,9 @@ import java.util.Set;
  *
  * @author michael
  */
-// No permission check as destory currently works outside the permission system
-// (user is checked for superuser)
-//@RequiredPermissions(Permission.DestructiveEdit)
+// Since this is used by DeleteDatasetCommand, must have at least that permission
+// (for released, user is checked for superuser)
+@RequiredPermissions( Permission.DeleteDatasetDraft )
 public class DestroyDatasetCommand extends AbstractVoidCommand {
 
     private final Dataset doomed;
@@ -42,27 +43,16 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
-        if (user instanceof AuthenticatedUser) {
-            if (((AuthenticatedUser) user).isSuperuser()) {
-                throw new PermissionException("Destroy can only be called by superusers.",
-                    this, Collections.<Permission>emptySet(), doomed);                
-            }
+        // first check if dataset is released, and if so, if user is a superuser
+        if ( doomed.isReleased() && (!(user instanceof AuthenticatedUser) || !((AuthenticatedUser) user).isSuperuser() ) ) {      
+            throw new PermissionException("Destroy can only be called by superusers.",
+                this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
         
         final Dataset managedDoomed = ctxt.em().merge(doomed);
 
-        // ASSIGNMENTS
-        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
-            ctxt.em().remove(ra);
-        }
-        // ROLES
-        for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
-            ctxt.em().remove(ra);
-        }
-
         // files need to iterate through and remove 'by hand' to avoid
-        // optimistic lock issues....
-        
+        // optimistic lock issues....        
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
@@ -77,13 +67,15 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             }
             ctxt.em().remove(ver);
         }
-        /* commented out because handled above
-         -- not sure the reason for the merge
-         doesn't seem to be needed in above code
-         for ( DatasetVersion ver : managedDoomed.getVersions() ) {
-         DatasetVersion managed = ctxt.em().merge(ver);
-         ctxt.em().remove( managed );
-         }*/
+        
+        // ASSIGNMENTS
+        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
+            ctxt.em().remove(ra);
+        }
+        // ROLES
+        for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
+            ctxt.em().remove(ra);
+        }        
 
         Dataverse toReIndex = managedDoomed.getOwner();
 

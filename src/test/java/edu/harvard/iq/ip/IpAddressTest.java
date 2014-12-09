@@ -9,27 +9,16 @@ import static org.junit.Assert.*;
  */
 public class IpAddressTest {
     
-    
-    /**
-     * Test of valueOf method, of class IpAddress.
-     */
     @Test
-    public void testValueOf() {
-        assertEquals( new IpAddress(1,2,3,4), IpAddress.valueOf("1.2.3.4") );
-        assertEquals( new IpAddress(127,0,0,1), IpAddress.valueOf("127.0.0.1") );
+    public void testValueOfIPv4() {
+        assertEquals( new IPv4Address(127,0,0,1),
+                    IpAddress.valueOf("127.0.0.1") );
     }
     
-    @Test( expected=IllegalArgumentException.class )
-    public void testValueOf_bad() {
-        IpAddress.valueOf("1.2.3");
-    }
-
-    /**
-     * Test of toString method, of class IpAddress.
-     */
     @Test
-    public void testToString() {
-        assertEquals( "127.0.0.1", new IpAddress( 127,0,0,1).toString() );
+    public void testValueOfIPv6() {
+        assertEquals( new IPv6Address(0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x0, 0x0),
+                      IpAddress.valueOf("a:b:c:d:e:f::"));
     }
     
 }

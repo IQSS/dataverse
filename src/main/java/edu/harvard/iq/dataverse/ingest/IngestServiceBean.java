@@ -64,6 +64,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dvn.unf.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -133,6 +134,8 @@ public class IngestServiceBean {
     DatasetFieldServiceBean fieldService;
     @EJB
     DataFileServiceBean fileService; 
+    @EJB
+    SystemConfig systemConfig;
 
     @Resource(mappedName = "jms/DataverseIngest")
     Queue queue;
@@ -176,6 +179,8 @@ public class IngestServiceBean {
     
     public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
         List<DataFile> datafiles = new ArrayList<DataFile>(); 
+        
+        String warningMessage = null; 
         
         // save the file, in the temporary location for now: 
         Path tempFile = null; 
@@ -284,17 +289,25 @@ public class IngestServiceBean {
             
             ZipInputStream unZippedIn = null; 
             ZipEntry zipEntry = null; 
+            
+            int fileNumberLimit = systemConfig.getZipUploadFilesLimit();
+            
             try {
                 unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
+                int counter = 0; 
 
-                if (unZippedIn == null) {
-                    return null;
-                }
                 while ((zipEntry = unZippedIn.getNextEntry()) != null) {
                     // Note that some zip entries may be directories - we 
                     // simply skip them:
                     
                     if (!zipEntry.isDirectory()) {
+                        if (datafiles.size() > fileNumberLimit) {
+                            logger.warning("Zip upload - too many files.");
+                            warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit + 
+                                "); please upload a zip archive with fewer files, if you want them to be ingested " +
+                                "as individual DataFiles.";
+                            throw new IOException();
+                        }
 
                         String fileEntryName = zipEntry.getName();
 
@@ -309,7 +322,7 @@ public class IngestServiceBean {
                                 // OK, this seems like an OK file entry - we'll try 
                                 // to read it and create a DataFile with it:
 
-                                DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, MIME_TYPE_UNDETERMINED_DEFAULT);
+                                DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, MIME_TYPE_UNDETERMINED_DEFAULT, false);
                                 
                                 if (datafile != null) {
                                     // We have created this datafile with the mime type "unknown";
@@ -341,6 +354,7 @@ public class IngestServiceBean {
                 // ingest default to creating a single DataFile out
                 // of the unzipped file. 
                 logger.warning("Unzipping failed; rolling back to saving the file as is.");
+                
                 datafiles.clear();
             } finally {
                 if (unZippedIn != null) {
@@ -348,6 +362,19 @@ public class IngestServiceBean {
                 }
             }
             if (datafiles.size() > 0) {
+                // link the data files to the dataset/version: 
+                Iterator<DataFile> itf = datafiles.iterator();
+                while (itf.hasNext()) {
+                    DataFile datafile = itf.next();
+                    datafile.setOwner(version.getDataset());
+                    if (version.getFileMetadatas() == null) {
+                        version.setFileMetadatas(new ArrayList());
+                    }
+                    version.getFileMetadatas().add(datafile.getFileMetadata());
+                    datafile.getFileMetadata().setDatasetVersion(version);
+                    version.getDataset().getFiles().add(datafile);
+                }
+                // and return:
                 return datafiles;
             }
             
@@ -406,7 +433,7 @@ public class IngestServiceBean {
         // (Note that we are passing null for the InputStream; that's because
         // we already have the file saved; we'll just need to rename it, below)
         
-        DataFile datafile = createSingleDataFile(version, null, fileName, finalType);;
+        DataFile datafile = createSingleDataFile(version, null, fileName, finalType);
         
         if (datafile != null) {
             fileService.generateStorageIdentifier(datafile);
@@ -422,7 +449,16 @@ public class IngestServiceBean {
                 logger.warning("Could not calculate MD5 signature for new file " + fileName);
             }
         
+            if (warningMessage != null) {
+                IngestReport errorReport = new IngestReport();
+                errorReport.setFailure();
+                errorReport.setReport(warningMessage);
+                errorReport.setDataFile(datafile);
+                datafile.setIngestReport(errorReport);
+                datafile.SetIngestProblem();
+            }
             datafiles.add(datafile);
+            
             return datafiles;
         }
         
@@ -448,9 +484,9 @@ public class IngestServiceBean {
                     String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
                     if ( originalMimeType != null) {
                         String origFileExtension = generateOriginalExtension(originalMimeType);
-                        existingName = existingName.replaceAll(".tab$", origFileExtension);
+                        fileNamesExisting.add(existingName.replaceAll(".tab$", origFileExtension));
                     } else {
-                        existingName = existingName.replaceAll(".tab$", "");
+                        fileNamesExisting.add(existingName.replaceAll(".tab$", ""));
                     }
                 }
                 fileNamesExisting.add(existingName);
@@ -462,6 +498,47 @@ public class IngestServiceBean {
         }
 
         return fileName;
+    }
+    
+    private void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
+        Set<String> fileNamesExisting = new HashSet<String>();
+
+        Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            if (fm.getId() != null) {
+                String existingName = fm.getLabel();
+            
+                if (existingName != null) {
+                    // if it's a tabular file, we need to restore the original file name; 
+                    // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
+                    // foobar.tab once ingested! 
+                    if (fm.getDataFile().isTabularData()) {
+                        String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
+                        if ( originalMimeType != null) {
+                            String origFileExtension = generateOriginalExtension(originalMimeType);
+                            existingName = existingName.replaceAll(".tab$", origFileExtension);
+                        } else {
+                            existingName = existingName.replaceAll(".tab$", "");
+                        }
+                    }
+                    fileNamesExisting.add(existingName);
+                }
+            }
+        }
+
+        Iterator<DataFile> dfIt = newFiles.iterator();
+        while (dfIt.hasNext()) {
+            FileMetadata fm = dfIt.next().getFileMetadata();
+            String fileName = fm.getLabel(); 
+            while (fileNamesExisting.contains(fileName)) {
+                fileName = generateNewFileName(fileName);
+            }
+            if (!fm.getLabel().equals(fileName)) {
+                fm.setLabel(fileName);
+                fileNamesExisting.add(fileName);
+            }
+        }
     }
     
     // TODO: 
@@ -554,6 +631,10 @@ public class IngestServiceBean {
     */
     
     private DataFile createSingleDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) {
+        return createSingleDataFile(version, inputStream, fileName, contentType, true);
+    }
+    
+    private DataFile createSingleDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType, boolean addToDataset) {
 
         DataFile datafile = new DataFile(contentType);
         datafile.setModificationTime(new Timestamp(new Date().getTime()));
@@ -561,15 +642,19 @@ public class IngestServiceBean {
         
         fmd.setLabel(checkForDuplicateFileNames(version,fileName));
 
-        datafile.setOwner(version.getDataset());
+        if (addToDataset) {
+            datafile.setOwner(version.getDataset());
+        }
         fmd.setDataFile(datafile);
         datafile.getFileMetadatas().add(fmd);
-        if (version.getFileMetadatas() == null) {
-            version.setFileMetadatas(new ArrayList());
+        if (addToDataset) {
+            if (version.getFileMetadatas() == null) {
+                version.setFileMetadatas(new ArrayList());
+            }
+            version.getFileMetadatas().add(fmd);
+            fmd.setDatasetVersion(version);
+            version.getDataset().getFiles().add(datafile);
         }
-        version.getFileMetadatas().add(fmd);
-        fmd.setDatasetVersion(version);
-        version.getDataset().getFiles().add(datafile);
 
         // And save the file - but only if the InputStream is not null; 
         // (the temp file may be saved already - if this is a single
@@ -622,6 +707,13 @@ public class IngestServiceBean {
     
     public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
+            // final check for duplicate file names; 
+            // we tried to make the file names unique on upload, but then 
+            // the user may have edited them on the "add files" page, and 
+            // renamed FOOBAR-1.txt back to FOOBAR.txt...
+            
+            checkForDuplicateFileNamesFinal(version, newFiles);
+            
             Dataset dataset = version.getDataset();
             
             try {
@@ -652,17 +744,6 @@ public class IngestServiceBean {
                     // These are all brand new files, so they should all have 
                     // one filemetadata total. -- L.A. 
                     boolean metadataExtracted = false;
-
-                    /*
-                    // Hmm. Why exactly am I incrementing the filename sequence
-                    // here? I could just save the file in the permanent location
-                    // under the same name as the temp version... 
-                    // Could be a moot point - this filename sequence has to 
-                    // go away anyway... On the inside, it's too PostgresQL-specific;
-                    // and it's too filesystem-specific architecturally. 
-                    // -- L.A. Jul. 11 2014
-                    datasetService.generateFileSystemName(dataFile);
-                    */
                     
                     if (ingestableAsTabular(dataFile)) {
                         /*
@@ -1210,7 +1291,7 @@ public class IngestServiceBean {
                     // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
                     dataFile.setContentType(MIME_TYPE_TAB);
-                    dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));
+                    dataFile.getFileMetadata().setLabel(checkForDuplicateFileNames(dataFile.getOwner().getLatestVersion(), FileUtil.replaceExtension(fileName, "tab")));
 
                     dataFile.setDataTable(tabDataIngest.getDataTable());
                     tabDataIngest.getDataTable().setDataFile(dataFile);
@@ -2060,4 +2141,13 @@ public class IngestServiceBean {
         }
         
     }
+    /*
+    private class InternalIngestException extends Exception {
+        
+    }
+    
+    public class IngestServiceException extends Exception {
+        
+    }
+    */
 }

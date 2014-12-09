@@ -96,30 +96,33 @@ public class JsonParser {
         }
         
         ret.setDatasetFieldType(type);
+        
+        try {
+            if ( type.isCompound() ) {
+                List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
+                for ( DatasetFieldCompoundValue dsfcv : vals ) {
+                    dsfcv.setParentDatasetField(ret);
+                }
+                ret.setDatasetFieldCompoundValues(vals);
 
-        if ( type.isCompound() ) {
-            List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
-            for ( DatasetFieldCompoundValue dsfcv : vals ) {
-                dsfcv.setParentDatasetField(ret);
-            }
-            ret.setDatasetFieldCompoundValues(vals);
+            } else if ( type.isControlledVocabulary() ) {
+                List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
+                for ( ControlledVocabularyValue cvv : vals ) {
+                    cvv.setDatasetFieldType(type);
+                }
+                ret.setControlledVocabularyValues(vals);
 
-        } else if ( type.isControlledVocabulary() ) {
-            List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
-            for ( ControlledVocabularyValue cvv : vals ) {
-                cvv.setDatasetFieldType(type);
+            } else {
+                // primitive
+                List<DatasetFieldValue> values = parsePrimitiveValue( json );
+                for ( DatasetFieldValue val : values ) {
+                    val.setDatasetField(ret);
+                }
+                ret.setDatasetFieldValues(values);
             }
-            ret.setControlledVocabularyValues(vals);
-
-        } else {
-            // primitive
-            List<DatasetFieldValue> values = parsePrimitiveValue( json );
-            for ( DatasetFieldValue val : values ) {
-                val.setDatasetField(ret);
-            }
-            ret.setDatasetFieldValues(values);
+        } catch ( Exception e ) {
+            throw new JsonParseException("Exception while parsing field of type: " + ret.getDatasetFieldType().getName(), e );
         }
-
         return ret;
     }
     

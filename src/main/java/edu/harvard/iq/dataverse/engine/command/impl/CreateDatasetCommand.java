@@ -4,8 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.DatasetVersionUI;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -17,11 +16,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 /**
  * Creates a {@link Dataset} in the passed {@link CommandContext}.
@@ -57,6 +58,18 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
         }
+
+        // validate
+        // @todo for now we run in through the DatasetVersinUI which creates empty fields to test the required        
+        Set<ConstraintViolation> constraintViolations = new DatasetVersionUI(theDataset.getEditVersion()).getDatasetVersion().validate();
+        if (!constraintViolations.isEmpty()) {
+            String validationFailedString = "Validation failed:";
+            for (ConstraintViolation constraintViolation : constraintViolations) {
+                validationFailedString += " " + constraintViolation.getMessage();
+            }
+            throw new IllegalCommandException(validationFailedString, this);
+        }
+                
         
         // FIXME - need to revisit this. Either
         // theDataset.setCreator(getUser());
