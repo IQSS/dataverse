@@ -137,7 +137,6 @@ public class ContainerManagerImpl implements ContainerManager {
                         }
                         swordService.addDatasetContact(datasetVersion);
                         swordService.addDatasetSubject(datasetVersion);
-                        swordService.doRequiredFieldCheck(datasetVersion);
                         try {
                             engineSvc.submit(new UpdateDatasetCommand(dataset, user));
                         } catch (CommandException ex) {
