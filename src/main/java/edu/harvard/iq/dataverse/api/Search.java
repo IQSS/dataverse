@@ -55,11 +55,11 @@ public class Search extends AbstractApiBean {
         if (query != null) {
             if (sortField == null) {
                 // predictable default
-                sortField = SearchFields.ID;
+                sortField = SearchFields.RELEVANCE;
             }
             if (sortOrder == null) {
                 // asc for alphabetical by default despite GitHub using desc by default: "The sort order if sort parameter is provided. One of asc or desc. Default: desc" -- http://developer.github.com/v3/search/
-                sortOrder = "asc";
+                sortOrder = "desc"; // descending for Relevance
             }
             SolrQueryResponse solrQueryResponse;
             try {
