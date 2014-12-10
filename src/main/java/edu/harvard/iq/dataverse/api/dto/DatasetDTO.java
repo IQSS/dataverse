@@ -14,7 +14,7 @@ public class DatasetDTO implements java.io.Serializable {
         private String protocol;
         private String authority;
         private String globalIdCreateTime;
-        private List<DatasetVersionDTO> datasetVersions;
+        private DatasetVersionDTO datasetVersion;
         private List<DataFileDTO> dataFiles;
 
     public String getId() {
@@ -65,16 +65,14 @@ public class DatasetDTO implements java.io.Serializable {
         this.globalIdCreateTime = globalIdCreateTime;
     }
 
-    public List<DatasetVersionDTO> getDatasetVersions() {
-        return datasetVersions;
-    }
-    public DatasetVersionDTO getFirstVersion() {
-        return datasetVersions.get(0);
+    public DatasetVersionDTO getDatasetVersion() {
+        return datasetVersion;
     }
 
-    public void setDatasetVersions(List<DatasetVersionDTO> datasetVersions) {
-        this.datasetVersions = datasetVersions;
+    public void setDatasetVersion(DatasetVersionDTO datasetVersion) {
+        this.datasetVersion = datasetVersion;
     }
+
 
     public List<DataFileDTO> getDataFiles() {
         return dataFiles;
@@ -86,7 +84,7 @@ public class DatasetDTO implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", peristentUrl=" + peristentUrl + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersions=" + datasetVersions + ", dataFiles=" + dataFiles + '}';
+        return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", peristentUrl=" + peristentUrl + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
     }
         
 }
