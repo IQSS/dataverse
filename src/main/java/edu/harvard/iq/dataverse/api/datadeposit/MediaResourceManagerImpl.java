@@ -282,7 +282,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             try {
                 dataset = commandEngine.submit(cmd);
             } catch (CommandException ex) {
-                throw returnEarly("couldn't update dataset");
+                throw returnEarly("Couldn't update dataset " + ex);
             } catch (EJBException ex) {
                 /**
                  * @todo stop bothering to catch an EJBException once this has
