@@ -15,10 +15,12 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -36,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import javax.inject.Inject;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -94,6 +97,8 @@ public class Access extends AbstractApiBean {
     DDIExportServiceBean ddiExportService;
     @EJB
     PermissionServiceBean permissionService;
+    @Inject
+    DataverseSession session;
 
     //@EJB
     
@@ -153,31 +158,56 @@ public class Access extends AbstractApiBean {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
-        AuthenticatedUser dataverseUser = null;
-        if (apiToken != null) {
-            dataverseUser = findUserByApiToken(apiToken);
-
-            // (temporary) logic: 
-            // if an API key is provided, we'll try to authenticate and 
-            // authorize, and deny service if not authorized...
-            // but if there's no key provided, download is still 
-            // free for all... this is so that tworavens doesn't stop 
-            // working, while support for key access is being added to it. 
-            // -- L.A. Dec. 9 2014.
-            
-            if (dataverseUser == null) {
-                String message = "Unable to find a user with API token provided.";
-                logger.warning(message);
-                throw new WebApplicationException(Response.Status.UNAUTHORIZED);
-                // or should this be handled as an anonymous call?
-            } else {
-                logger.info("User (authenticated): " + dataverseUser.getName());
-                if (!permissionService.on(df).has(Permission.DownloadFile)) {
-                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+        AuthenticatedUser user = null;
+       
+        if (session != null) {
+            if (session.getUser() != null) {
+                if (session.getUser().isAuthenticated()) {
+                    user = (AuthenticatedUser) session.getUser();
+                } else {
+                    logger.info("User associated with the session is not an authenticated user. (Guest access will be assumed).");
+                    if (session.getUser() instanceof GuestUser) {
+                        logger.info("User associated with the session is indeed a guest user.");
+                    }
                 }
+            } else {
+                logger.info("No user associated with the session.");
             }
         } else {
-            // this will be handled as an anonymous call (guest user?)
+            logger.info("Session is null.");
+        } 
+        
+        if (user != null && permissionService.on(df).has(Permission.DownloadFile)) {
+            // Note: PermissionServiceBean.on(Datafile df) will obtain the 
+            // User from the Session object, just like in the code fragment 
+            // above. That's why it's not passed along as an argument. 
+            logger.info("User "+user.getName()+" from the session object has access rights on the requested datafile.");
+        } else if (apiToken != null) {
+            // Will try to obtain the user information from the API token, 
+            // if supplied: 
+        
+            user = findUserByApiToken(apiToken);
+            
+            if (user == null) {
+                logger.warning("Unable to find a user with the API token provided.");
+                
+            } else {
+                logger.info("User (authenticated, by API token): " + user.getName());
+            }
+            if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) {
+                // When called with user=null, userOn will assume the
+                // GuestUser. 
+                throw new WebApplicationException(Response.Status.FORBIDDEN);
+            }
+        } else {
+            // - No user associated with the session, and no API token. 
+            // this will be handled as an anonymous call (guest user):
+            if (!permissionService.userOn(null, df).has(Permission.DownloadFile)) {
+                logger.info("No guest access to the datafile.");
+                throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+            } else {
+                logger.info("Guest access granted to download the datafile.");
+            }
         }
         
         DownloadInfo dInfo = new DownloadInfo(df);

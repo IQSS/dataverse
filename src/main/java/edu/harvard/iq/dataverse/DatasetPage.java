@@ -574,7 +574,7 @@ public class DatasetPage implements java.io.Serializable {
                 return "key=";
             }
         } else {
-            return null;
+            return "";
         }
 
     }
@@ -1429,12 +1429,12 @@ public class DatasetPage implements java.io.Serializable {
             // full URLs to pass data and metadata to it. 
             String tabularDataURL = getTabularDataFileURL(fileid);
             String tabularMetaURL = getVariableMetadataURL(fileid);
-            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL;
+            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL + "&" + getApiTokenKey();
         }
 
         // For a local TwoRavens setup it's enough to call it with just 
         // the file id:
-        return TwoRavensDefaultLocal + fileid;
+        return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
     }
 
     public String getVariableMetadataURL(Long fileid) {
