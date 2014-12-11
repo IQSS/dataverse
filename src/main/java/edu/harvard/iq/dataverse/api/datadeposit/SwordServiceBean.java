@@ -56,11 +56,8 @@ public class SwordServiceBean {
         String subjectOther = "Other";
         ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(subjectDatasetFieldType, subjectOther);
         if (cvv != null) {
-            List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
-            controlledVocabularyValues.add(cvv);
-            subjectDatasetField.setControlledVocabularyValues(controlledVocabularyValues);
-
-            // add the new subject field to the rest of the fields
+            subjectDatasetField.setSingleControlledVocabularyValue(cvv);
+            
             datasetVersion.getDatasetFields().add(subjectDatasetField);
 
         } else {
