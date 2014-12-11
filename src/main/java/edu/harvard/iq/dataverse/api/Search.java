@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.SearchException;
@@ -18,10 +19,8 @@ import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -70,6 +69,8 @@ public class Search extends AbstractApiBean {
                         String message = "Unable to find a user with API token provided.";
                         return errorResponse(Response.Status.FORBIDDEN, message);
                     }
+                } else {
+                    dataverseUser = GuestUser.get();
                 }
                 boolean dataRelatedToMe = false;
                 int numResultsPerPage = 10;
