@@ -69,55 +69,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     @Override
     public void writeTo(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
 
-        // zip download is a special case: 
-        // the Download Instance doesn't have an associated Download Info or 
-        // primary file associated with it; it only has a list of data file 
-        // objects that need to be zipped together: 
-        if ("zip".equals(di.getConversionParam())) {
-            if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
-                logger.fine("processing extra arguments list of length " + di.getExtraArguments().size());
-                List<DataFile> fileList = new ArrayList<>();
-                for (int i = 0; i < di.getExtraArguments().size(); i++) {
-                    DataFile file = (DataFile) di.getExtraArguments().get(i);
-                    if (file != null) {
-                        logger.fine("adding datafile (id=" + file.getId() + ") to the list.");
-                        fileList.add(file);
-                    }
-                }
-                if (fileList.size() > 0) {
-                    httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-                    httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
-                    
-                    DataFileZipper zipper = new DataFileZipper();
-                    
-                    long sizeLimit = 0L;
-                    
-                    if (di.getConversionParamValue() != null) {
-                        try {
-                            Long configuredLimit = new Long(di.getConversionParamValue());
-                            sizeLimit = configuredLimit.longValue();
-                        } catch (NumberFormatException nfe) {}
-                     }
-        
-                    try {
-                        if (sizeLimit > 0L) {
-                            zipper.zipFiles(fileList, outstream, sizeLimit);
-                        } else {
-                            zipper.zipFiles(fileList, outstream);
-                        }
-                    } catch (IOException ioe) {
-                        throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
-                    }
-                    
-                    return;
-                }
-            }
-
-            logger.warning("empty list of extra arguments.");
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-
-        
         
         if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
             DataAccessRequest daReq = new DataAccessRequest();
@@ -147,15 +98,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             }
                         }
                     }
-                    /* the following download services are not supported just yet: 
-                    else if (di.getConversionParam().equals("TermsOfUse")) {
-                        accessObject = ExportTermsOfUse.export(sf.getStudy());
-                    } else if (di.getConversionParam().equals("package")) {
-                        if ("WithTermsOfUse".equals(di.getConversionParamValue())) {
-                            accessObject = PackageWithTermsOfUse.repackage(sf, (FileAccessObject)accessObject);
-                        }
-                    }
-                    */
                     
                     
                     if (sf.isTabularData()) {
