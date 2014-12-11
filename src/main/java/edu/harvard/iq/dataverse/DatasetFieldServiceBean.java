@@ -116,6 +116,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
     }
     
+    // return singleton NA Controled Vocabulary Value
+    public ControlledVocabularyValue findNAControlledVocabularyValue() {
+        return findControlledVocabularyValueByDatasetFieldTypeAndStrValue(null, DatasetField.NA_VALUE);
+    }    
+    
     public DatasetFieldType save(DatasetFieldType dsfType) {
        return em.merge(dsfType);
     }
