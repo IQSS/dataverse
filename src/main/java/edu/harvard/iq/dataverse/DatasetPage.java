@@ -1391,10 +1391,10 @@ public class DatasetPage implements java.io.Serializable {
         String fileNameString = ""; 
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI() + ".txt";
+            fileNameString = "attachment;filename=" + getFileNameDOI() + ".ris";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", "-ris.txt");
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".ris");
         }
         response.setHeader("Content-Disposition", fileNameString);
 
