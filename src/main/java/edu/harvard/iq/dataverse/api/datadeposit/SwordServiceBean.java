@@ -49,19 +49,12 @@ public class SwordServiceBean {
         DatasetField subjectDatasetField = DatasetField.createNewEmptyDatasetField(subjectDatasetFieldType, datasetVersion);
 
         /**
-         * @todo Rather than hard coding "Other" here, inherit the Subject from
-         * the parent dataverse, when it's available once
-         * https://github.com/IQSS/dataverse/issues/769 has been implemented
+         * @todo Once dataverse has subject (https://github.com/IQSS/dataverse/issues/769), we should get subject from there 
+         * for now, we'll use the global NA value
          */
-        String subjectOther = "Other";
-        ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(subjectDatasetFieldType, subjectOther);
-        if (cvv != null) {
-            subjectDatasetField.setSingleControlledVocabularyValue(cvv);
+        ControlledVocabularyValue cvv = datasetFieldService.findNAControlledVocabularyValue();
+        subjectDatasetField.setSingleControlledVocabularyValue(cvv);
             
-            datasetVersion.getDatasetFields().add(subjectDatasetField);
-
-        } else {
-            logger.info(subjectDatasetFieldType.getName() + "could not be populated with '" + subjectOther + "': null returned from lookup.");
-        }
+        datasetVersion.getDatasetFields().add(subjectDatasetField);
     }
 }
