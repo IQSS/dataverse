@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -182,19 +183,19 @@ public class DatasetVersionDifference {
 
     private boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
 
-        if (!(fmdo.getDescription().equals(fmdn.getDescription()))) {
+        if (!StringUtils.equals(fmdo.getDescription(), fmdn.getDescription())) {
             return false;
         }
-        if (!(fmdo.getCategory().equals(fmdn.getCategory()))) {
+        if (!StringUtils.equals(fmdo.getCategory(), fmdn.getCategory())) {
             return false;
         }
-        if (!(fmdo.getLabel().equals(fmdn.getLabel()))) {
+        if (!StringUtils.equals(fmdo.getLabel(), fmdn.getLabel())) {
             return false;
         }
 
         return true;
     }
-
+    
     private void compareValues(DatasetField originalField, DatasetField newField, boolean compound) {
         String originalValue = "";
         String newValue = "";
