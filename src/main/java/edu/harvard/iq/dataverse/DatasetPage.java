@@ -791,7 +791,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return "/dataverse/" + dataset.getOwner().getAlias() + "&faces-redirect=true";
+        return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
     }
 
     public String deleteDatasetVersion() {
