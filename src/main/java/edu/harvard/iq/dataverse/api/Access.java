@@ -658,7 +658,6 @@ public class Access extends AbstractApiBean {
             
             // Check 1:  Is this a valid WorldMap token?
             //
-            logger.info("yes: DataFile connected to valid token matches given DataFile requested");
             WorldMapToken worldMapTokenObject = this.worldMapTokenServiceBean.retrieveAndRefreshValidToken(apiToken);
             if (worldMapTokenObject == null){
                 logger.info("WorldMap token-based auth: Token is invalid.");
@@ -668,16 +667,20 @@ public class Access extends AbstractApiBean {
             // Check 2:  Does this WorldMap token's datafile match the requested datafile?
             //
             if (!(worldMapTokenObject.getDatafile().getId()==df.getId())){
-                logger.info("WorldMap token-based auth: Token's datafile does not match this datafile.");
+                logger.info("WorldMap token-based auth: Token's datafile does not match the requested datafile.");
                 throw new WebApplicationException(Response.Status.FORBIDDEN);
             }
 
             // Check 3:  Does this WorldMap token's user have permissiong for the requested datafile?
             //
             if (!permissionService.userOn(worldMapTokenObject.getDataverseUser(), df).has(Permission.DownloadFile)) { 
-                logger.info("WorldMap token-based auth: Token's User is not authorized for this datafile.");
+                logger.info("WorldMap token-based auth: Token's User is not authorized for the requested datafile.");
                 throw new WebApplicationException(Response.Status.FORBIDDEN);
             }
+            
+            // Yes! User may access file
+            //
+            logger.info("WorldMap token-based auth: Token is valid for the requested datafile");
             
         } else if ((apiToken != null)&&(apiToken.length()!=64)) {
             // Will try to obtain the user information from the API token, 
