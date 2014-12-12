@@ -107,4 +107,64 @@ public class WorldMapTokenServiceBean {
             return null;
         }    
     }
-}
+
+
+    /**
+     * Given a string token, retrieve the related WorldMapToken object
+     * 
+     * @param worldmapTokenParam
+     * @return WorldMapToken object (if it hasn't expired)
+     */
+    public WorldMapToken retrieveAndRefreshValidToken(String worldmapTokenParam){
+        if (worldmapTokenParam==null){
+            logger.warning("worldmapTokenParam is null.  Permission denied.");
+            return null;
+        }
+        WorldMapToken wmToken = this.findByName(worldmapTokenParam);
+        if (wmToken==null){
+            logger.warning("WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
+            return null;
+        }
+        if (wmToken.hasTokenExpired()){
+            logger.warning("WorldMapToken has expired.  Permission denied.");
+            return null;
+        }
+        wmToken.refreshToken();
+        logger.info("WorldMapToken refreshed.");
+        this.save(wmToken);
+        
+        return wmToken;
+    }
+    
+    /*
+        Given a string for a WorldMapToken and DataFile, check:
+    
+            (1) Is this token valid?
+            (2) Does the token correspond to this DataFile?
+    
+        @return boolean if token is valid and corresponds to the given DataFile
+    
+    */
+    public boolean isWorldMapTokenAuthorized(String worldmapTokenParam, DataFile df){
+        logger.info("-- isWorldMapTokenAuthorized?");
+        if ((worldmapTokenParam == null)||(df == null)){
+            logger.info("nope: worldmapTokenParam or data file is null");
+            return false;
+        }
+        
+        WorldMapToken token = this.retrieveAndRefreshValidToken(worldmapTokenParam);
+        if (token==null){
+            logger.info("nope: worldmapTokenParam is no longer valid");
+            return false;
+        }
+        
+        if (token.getDatafile().getId()==df.getId()){
+            logger.info("yes: DataFile connected to valid token matches given DataFile requested");
+            return true;
+        }
+        
+        logger.info("nope: DataFile connected to valid token matches given DataFile requested");
+        return false;
+        
+    }
+} // end of class

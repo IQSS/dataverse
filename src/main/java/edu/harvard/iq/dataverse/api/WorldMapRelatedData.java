@@ -237,33 +237,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         return worldmapTokenParam;
     }
     
-    /**
-     * Given a string token, retrieve the related WorldMapToken object
-     * 
-     * @param worldmapTokenParam
-     * @return WorldMapToken object (if it hasn't expired)
-     */
-    private WorldMapToken retrieveAndRefreshValidToken(String worldmapTokenParam){
-        if (worldmapTokenParam==null){
-            logger.warning("worldmapTokenParam is null.  Permission denied.");
-            return null;
-        }
-        WorldMapToken wmToken = this.tokenServiceBean.findByName(worldmapTokenParam);
-        if (wmToken==null){
-            logger.warning("WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
-            return null;
-        }
-        if (wmToken.hasTokenExpired()){
-            logger.warning("WorldMapToken has expired.  Permission denied.");
-            return null;
-        }
-        wmToken.refreshToken();
-        logger.info("WorldMapToken refreshed.");
-        tokenServiceBean.save(wmToken);
-        
-        return wmToken;
-    }
-
+    
     @POST
     @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT)// + "{worldmap_token}")
     public Response getWorldMapDatafileInfo(String jsonTokenData, @Context HttpServletRequest request){//, @PathParam("worldmap_token") String worldmapTokenParam) {
@@ -295,7 +269,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         // Retrieve WorldMapToken and make sure it is valid
         //
-        WorldMapToken wmToken = this.retrieveAndRefreshValidToken(worldmapTokenParam);
+        WorldMapToken wmToken = tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (wmToken==null){
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
@@ -451,7 +425,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         // Retrieve WorldMapToken and make sure it is valid
         //
-        WorldMapToken wmToken = this.retrieveAndRefreshValidToken(worldmapTokenParam);
+        WorldMapToken wmToken = this.tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (wmToken==null){
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
@@ -466,8 +440,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // (3) Attempt to retrieve DataverseUser      
-        AuthenticatedUser dv_user = wmToken.getDataverseUser();
-        if (dv_user == null) {
+        AuthenticatedUser dvUser = wmToken.getDataverseUser();
+        if (dvUser == null) {
             return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }
         
@@ -477,7 +451,11 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
          }
 
-       
+        // check permissions!
+        if (!permissionService.on(dfile.getOwner()).user(dvUser).has(Permission.EditDataset)){
+           String errMsg = "The user does not have permission to edit metadata for this file. (MapLayerMetadata)";
+           return errorResponse(Response.Status.FORBIDDEN, errMsg);
+        }
         
         MapLayerMetadata mapLayer;
         // (5) See if a MapLayerMetadata already exists
