@@ -578,13 +578,14 @@ public class DatasetVersion implements Serializable {
             str += " DEACCESSIONED VERSION ";
 
         }
-        /*UNF is not calculated yet
+        /*UNF is not calculated yet*/
          if (!StringUtil.isEmpty(getUNF())) {
-         if (!StringUtil.isEmpty(str)) {
-         str += " ";
-         }
-         str += getUNF();
-         }
+            if (!StringUtil.isEmpty(str)) {
+                str += " ";
+            }
+            str += getUNF();
+        }
+         /*
          String distributorNames = getDistributorNames();
          if (distributorNames.trim().length() > 0) {
          str += " " + distributorNames;
