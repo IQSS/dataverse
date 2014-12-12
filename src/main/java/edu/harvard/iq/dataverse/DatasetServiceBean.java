@@ -178,23 +178,26 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetAuthor> authorList = version.getDatasetAuthors();
         String retString = "Provider: " + publisher + "\r\n";
         retString += "Content: text/plain; charset=\"us-ascii\"" + "\r\n";
-        retString += "TY  - DATA" + "\r\n";
+        // Using type "DBASE" - "Online Database", for consistency with 
+        // EndNote (see the longer comment in the EndNote section below)> 
+        
+        retString += "TY  - DBASE" + "\r\n";
         retString += "T1  - " + version.getTitle() + "\r\n";
         for (DatasetAuthor author : authorList) {
             retString += "AU  - " + author.getName().getDisplayValue() + "\r\n";
         }
-        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId() + "\r\n";
+        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier() + "\r\n";
         retString += "PY  - " + version.getVersionYear() + "\r\n";
         retString += "UR  - " + version.getDataset().getPersistentURL() + "\r\n";
         retString += "PB  - " + publisher + "\r\n";
         
         // a DataFile citation also includes filename und UNF, if applicable:
         if (fileMetadata != null) { 
-            retString += "T2  - " + fileMetadata.getLabel() + "\r\n";
+            retString += "C1  - " + fileMetadata.getLabel() + "\r\n";
             
             if (fileMetadata.getDataFile().isTabularData()) {
                 if (fileMetadata.getDataFile().getUnf() != null) {
-                    retString += "C1  - " + fileMetadata.getDataFile().getUnf() + "\r\n";
+                    retString += "C2  - " + fileMetadata.getDataFile().getUnf() + "\r\n";
                 }
             }
         }
@@ -249,10 +252,23 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         xmlw.writeStartElement("record");
 
-        //<ref-type name="Dataset">59</ref-type> - How do I get that and xmlw.write it?
+        // "Ref-type" indicate which of the (numerous!) available EndNote
+        // schemas this record will be interpreted as. 
+        // This is relatively important. Certain fields with generic 
+        // names like "custom1" and "custom2" become very specific things
+        // in certain schemas; for example, custom1 shows as "legal notice"
+        // in "Journal Article" (ref-type 84), or as "year published" in 
+        // "Government Document". 
+        // We don't want our UNF to show as a "legal notice"! 
+        // We have found a ref-type that works ok for our purposes - 
+        // "Online Database" (type 45). In this one, the fields Custom1 
+        // and Custom2 are not translated and just show as is. 
+        // And "Custom1" still beats "legal notice". 
+        // -- L.A. 12.12.2014 beta 10
+        
         xmlw.writeStartElement("ref-type");
-        xmlw.writeAttribute("name", "Dataset");
-        xmlw.writeCharacters(version.getDataset().getId().toString());
+        xmlw.writeAttribute("name", "Online Database");
+        xmlw.writeCharacters("45");
         xmlw.writeEndElement(); // ref-type
 
         xmlw.writeStartElement("contributors");
@@ -269,12 +285,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         xmlw.writeStartElement("title");
         xmlw.writeCharacters(title);
         xmlw.writeEndElement(); // title
-        // a citation for a DataFile also includes filename:
-        if (fileMetadata != null) { 
-            xmlw.writeStartElement("secondary_title");
-            xmlw.writeCharacters(fileMetadata.getLabel());
-            xmlw.writeEndElement(); // secondary_title
-        }
+        
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
@@ -306,21 +317,27 @@ public class DatasetServiceBean implements java.io.Serializable {
         xmlw.writeEndElement(); // related-urls
         xmlw.writeEndElement(); // urls
         
-        // a (tabular) DataFile citation also includes the UNF signature. 
-        // We put it into a "custom" field:
+        // a DataFile citation also includes the filename and (for Tabular
+        // files) the UNF signature, that we put into the custom1 and custom2 
+        // fields respectively:
         
-        if (fileMetadata != null) { 
+        
+        if (fileMetadata != null) {
+            xmlw.writeStartElement("custom1");
+            xmlw.writeCharacters(fileMetadata.getLabel());
+            xmlw.writeEndElement(); // custom1
+            
             if (fileMetadata.getDataFile().isTabularData()) {
                 if (fileMetadata.getDataFile().getUnf() != null) {
-                    xmlw.writeStartElement("custom1");
+                    xmlw.writeStartElement("custom2");
                     xmlw.writeCharacters(fileMetadata.getDataFile().getUnf());
-                    xmlw.writeEndElement(); // custom1
+                    xmlw.writeEndElement(); // custom2
                 }
             }
         }
 
         xmlw.writeStartElement("electronic-resource-num");
-        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId();
+        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + version.getDataset().getDoiSeparator() + version.getDataset().getIdentifier();
         xmlw.writeCharacters(electResourceNum);
         xmlw.writeEndElement();
         //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  

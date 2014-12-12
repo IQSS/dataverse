@@ -1374,7 +1374,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private String getFileNameDOI() {
         Dataset ds = workingVersion.getDataset();
-        return "DOI:" + ds.getAuthority() + "_" + ds.getId().toString();
+        return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier().toString();
     }
 
     public void downloadDatasetCitationRIS() {
