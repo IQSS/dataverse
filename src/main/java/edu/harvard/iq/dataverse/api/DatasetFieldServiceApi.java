@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -134,6 +135,20 @@ public class DatasetFieldServiceApi {
         }
 
     }
+    
+    
+    @GET
+    @Path("loadNAControlledVocabularyValue")
+    public void loadNAControlledVocabularyValue() { 
+        // the find will throw a javax.persistence.NoResultException if no values are in db
+        try {
+            datasetFieldService.findNAControlledVocabularyValue();
+        } catch (Exception e){
+           ControlledVocabularyValue naValue = new ControlledVocabularyValue();
+           naValue.setStrValue(DatasetField.NA_VALUE);
+           datasetFieldService.save(naValue);
+       }
+    }   
 
     private enum HeaderType {
 
