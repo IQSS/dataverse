@@ -393,6 +393,12 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
+        // The shapefile must be public.  RP 12/2015
+        //
+        if (!(fm.getDataFile().isReleased())){
+            return false;
+        }
+        
         return fm.getDataFile().isShapefileType();
     }
 
