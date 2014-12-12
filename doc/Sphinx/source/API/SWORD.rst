@@ -53,7 +53,7 @@ New features as of v1.1
 
 - "Contact E-mail" is automatically populated with the email on file for the parent dataverse.
 
-- "Subject" is automatically populated with "Other". #921 #769 
+- "Subject" is automatically populated with "NA". #769 
 
 - Zero-length files are now allowed (but not necessarily encouraged) #753
 
