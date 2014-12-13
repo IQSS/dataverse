@@ -50,7 +50,7 @@ public class Dataverse extends DvObjectContainer {
     private String name;
 
     @NotBlank(message = "Please enter an alias.")
-    @Size(max = 32, message = "Alias must be at most 32 characters.")
+    @Size(max = 60, message = "Alias must be at most 60 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
 
