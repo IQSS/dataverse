@@ -1,201 +1,108 @@
 Permissions and Terms of Use
 ++++++++++++++++++++++++++++++
 
-To access permissions related to your dataverse, log in to your account. After you've logged in, you can access your dataverse by selecting it from the "Data Related to You" tab. Once on your dataverse's page, click on the Edit Dataverse button and choose "Roles + Permissions" from the drop down menu. There are three tabs on the Roles + Permissions page: Dataverse, Roles, and Users. Within these tabs you can determine how another user can access your dataverse and the datasets contained within it, create and assign roles to specific users, and determine groups. 
-
-Dataverse Tab
-==============
+Permissions and Roles
+=============================
 
 
-Roles Tab
-==============
+Dataset Terms of Use & Access
+==================================
 
+Starting with Dataverse version 4.0 all new datasets will default to a `CC0 public domain dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_ license. CC0 facilitates reuse and extensibility of research data. Our :ref:`Community Norms <community-norms>`_ as well as good scientific practices expect that proper credit is given via citation. If you are unable to give your datasets a CC0 license you may enter your own custom Terms of Use for your Datasets.
 
-Users Tab
-==============
+.. _community-norms:
 
+Community Norms
+---------------------
 
-Manage Permissions
-==================
+Dataverse asks that all users and guests who download datasets from Dataverse’s services follow the following Community Norms*. 
 
-Enable contribution invitation, grant permissions to users and groups,
-and manage dataverse file permissions.
+Crediting any research used with data citations
+******************************************************
 
-Navigate to Manage Permissions from the [???] page:
+Any materials (books, articles, conference papers, theses, dissertations, reports, and other such publications) created that employ, reference, or otherwise utilize the data (in whole or in part) gathered from deposited datasets should credit the source with the applicable data and/or file citation accompanying the data (found on the dataset page). These citations include the data authors, data identifier, and other information in accordance with the Joint Declaration of Data Citation Principles (http://force11.org/datacitation) for all research data. 
 
-[need to add the path here]
+Maintaining anonymity of human subjects
+*****************************************************
 
-**Contribution Settings**
+Users of the Service should not abuse the available data that relate to human subjects and use the materials to:
+ 
+1) obtain information that could directly or indirectly identify any research subjects, or obtain information to attempt to directly or indirectly identify any research subjects; 
+2) produce and/or publish connections among datasets that could identify individuals or organizations; or 
+3) obtain (additional) information about or (additional) means of contact for already-identified subjects. 
 
-Choose the access level contributors have to your dataverse. 
-[Add a description when permissions is more solidified]
+\* **Legal Disclaimer:** these Community Norms are not a substitute for the CC0 or custom licenses applicable to each dataset. Please be advised that the Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
 
-**User Permission Settings**
+Setting up Custom Terms of Use for Datasets
+--------------------------------------------
 
-There are several roles defined for users of a Dataverse Network
-installation:
+If you are unable to use CC0 for your datasets you are able to set your own custom terms of use. 
 
--  Data Users - Download and analyze all types of data
--  Contributors - Distribute data and receive recognition and citations
-   to it
--  Curators - Summarize related data, organize data, or manage multiple
-   sets of data
--  Administrators - Set up and manage contributions to your dataverse,
-   manage the appearance of your dataverse, organize your dataverse
-   collections
+Here is an `example of a Data Usage Agreement :ref:<data-agreement-example>`_ for datasets that have de-identified human subject data:
 
-**Privileged Groups**
+.. _data-agreement-example:
 
-Enter group name to allow a group access to the dataverse. Groups are
-created by [?].
+Example of Data Usage Agreement
+*************************************
 
-**Dataverse File Permission Settings**
+This is an agreement (“Agreement”) between you the downloader (“Downloader”) and the owner of the materials (“User”) governing the use of the materials (“Materials”) to be downloaded. 
 
-[add more information here]
+**I. Acceptance of this Agreement**
 
-**Role/State Table** 
-[update this table]
+ By downloading or otherwise accessing the Materials, Downloader represents his/her acceptance of the terms of this Agreement. 
 
-+---------------------+-----------+----------------+------------------+------------------+---------------------+
-|                     | **Role**  |                |                  |                  |                     |
-+=====================+===========+================+==================+==================+=====================+
-| **Version State**   | None      | Contributor +, | Curator          | Admin            | Super Admin**     |
-|                     |           | ++             |                  |                  |                     |
-+---------------------+-----------+----------------+------------------+------------------+---------------------+
-| Draft               |           | E,E2,D3,S,V    | E,E2,P,T,D3,R,V  | E,E2,P,T,D3,R,V  | E,E2,P,T,D3,D2,R,V  |
-+---------------------+-----------+----------------+---+--------------+------------------+---------------------+
-| In Review           |           | E,E2,D3,V      | E,E2,P,T,D3,R,V  | E,E2,P,T,D3,R,V  | E,E2,P,T,D3,R,D2,V  |
-+---------------------+-----------+----------------+------------------+------------------+---------------------+
-| Released            |  V        | E,V            | E,P,T,D1,V       | E,P,T,D1,V       | E,P,T,D2,D1,V       |
-+---------------------+-----------+----------------+------------------+------------------+---------------------+
-|  Archived           |  V        | V              | P,T,V            | P,T,V            | P,T,D2,V            |
-+---------------------+-----------+----------------+------------------+------------------+---------------------+
-|  Deaccessioned      |           |                | P,T,R2,V         | P,T,R2,V         | P,T,R2,D2,V         |
-+---------------------+-----------+----------------+------------------+------------------+---------------------+
+**II. Modification of this Agreement**
 
+ Users may modify the terms of this Agreement at any time. However, any modifications to this Agreement will only be effective for downloads subsequent to such modification. No modifications will supersede any previous terms that were in effect at the time of the Downloader’s download. 
 
-**Legend:**
+**III. Use of the Materials**
 
-E = Edit (Cataloging info, File meta data, Add files)
+ Use of the Materials include but are not limited to viewing parts or the whole of the content included in the Materials; comparing data or content from the Materials with data or content in other Materials; verifying research results with the content included in the Materials; and extracting and/or appropriating any part of the content included in the Materials for use in other projects, publications, research, or other related work products.
+  
+A. Representations 
 
-E2 = Edit Study Version Notes
+  In Use of the Materials, Downloader represents that:
 
-D1 = Deaccession
+ 1)	Downloader is not bound by any pre-existing legal obligations or other applicable laws that prevent Downloader from downloading or using the Materials; 
+ 2)	Downloader will not use the Materials in any way prohibited by applicable laws; 
+ 3)	Downloader has no knowledge of and will therefore not be responsible for any restrictions regarding the use of Materials beyond what is described in this Agreement; and 
+ 4)	Downloader has no knowledge of and will therefore not be responsible for any inaccuracies and any other such problems with regards to the content of the Materials and the accompanying citation information. 
 
-P = Permission
+B. Restrictions
 
-T = Create Template
+ In his/her Use of the Materials, Downloaders cannot:
 
-D2 = Destroy
+ 1)	obtain information from the Materials that results in Downloader or any third party(ies) directly or indirectly identifying any research subjects with the aid of other information acquired elsewhere; 
+ 2)	produce connections or links among the information included in User’s datasets (including information in the Materials), or between the information included in User’s datasets (including information in the Materials) and other third-party information that could be used to identify any individuals or organizations, not limited to research subjects; and
+ 3)	extract information from the Materials that could aid Downloader in gaining knowledge about or obtaining any means of contacting any subjects already known to Downloader. 
 
-D3 = Delete Draft, Delete Review Version
+**IV. Representations and Warranties**
 
-S = Submit for Review
+ USER REPRESENTS THAT USER HAS ALL RIGHTS REQUIRED TO MAKE AVAILABLE AND DISTRIBUTE THE MATERIALS. EXCEPT FOR SUCH REPRESENTATION, THE MATERIALS IS PROVIDED "AS IS" AND "AS AVAILABLE" AND WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, AND ANY WARRANTIES IMPLIED BY ANY COURSE OF PERFORMANCE OR USAGE OF TRADE, ALL OF WHICH ARE EXPRESSLY DISCLAIMED. 
+ 
+ WITHOUT LIMITING THE FOREGOING, USER DOES NOT WARRANT THAT: (A) THE MATERIALS ARE ACCURATE, COMPLETE, RELIABLE OR CORRECT; (B) THE MATERIALS FILES WILL BE SECURE ; (C) THE MATERIALS WILL BE AVAILABLE AT ANY PARTICULAR TIME OR LOCATION; (D) ANY DEFECTS OR ERRORS WILL BE CORRECTED; (E) THE MATERIALS AND ACCOMPANYING FILES ARE FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS; OR (F) THE RESULTS OF USING THE MATERIALS WILL MEET DOWNLOADER’S REQUIREMENTS. DOWNLOADER’S USE OF THE MATERIALS IS SOLELY AT DOWNLOADER’S OWN RISK.
 
-R = Release
+**V. Limitation of Liability**
 
-R2 = Restore
+ IN NO EVENT SHALL USER BE LIABLE UNDER CONTRACT, TORT, STRICT LIABILITY, NEGLIGENCE OR ANY OTHER LEGAL THEORY WITH RESPECT TO THE MATERIALS (I) FOR ANY DIRECT DAMAGES, OR (II) FOR ANY LOST PROFITS OR SPECIAL, INDIRECT, INCIDENTAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES OF ANY KIND WHATSOEVER.
 
-V = View
+**VI. Indemnification**
 
- 
+ Downloader will indemnify and hold User harmless from and against any and all loss, cost, expense, liability, or damage, including, without limitation, all reasonable attorneys' fees and court costs, arising from the i) Downloader’s misuse of the Materials; (ii) Downloader’s violation of the terms of this Agreement; or (iii) infringement by Downloader or any third party of any intellectual property or other right of any person or entity contained in the Materials. Such losses, costs, expenses, damages, or liabilities shall include, without limitation, all actual, general, special, and consequential damages.
 
-**Notes:**
+**VII. Dispute Resolution**
 
-*\Same as Curator
+ Downloader and User agree that any cause of action arising out of or related to the download or use of the Materials must commence within one (1) year after the cause of action arose; otherwise, such cause of action is permanently barred.
 
-**\Same as Curator + D2
+ This Agreement shall be governed by and interpreted in accordance with the laws of the Commonwealth of Massachusetts (excluding the conflict of laws rules thereof). All disputes under this Agreement will be resolved in the applicable state or federal courts of Massachusetts. Downloader consents to the jurisdiction of such courts and waives any jurisdictional or venue defenses otherwise available. 
 
-+\ Contributor actions (E,D3,S,V) depend on new DV permission settings. A
-contributor role can act on their own studies (default) or all studies
-in a dv, and registered users can become contributors and act on their
-own studies or all studies in a dv.
+**VIII. Integration and Severability**
 
-++ A contributor is defined either as a contributor role or as any
-registered user in a DV that allows all registered users to contribute.
+ This Agreement represents the entire agreement between Downloader and User with respect to the downloading and use of the Materials, and supersedes all prior or contemporaneous communications and proposals (whether oral, written or electronic) between Downloader and User with respect to downloading or using the Materials. If any provision of this Agreement is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that the Agreement will otherwise remain in full force and effect and enforceable.
 
+**IX. Miscellaneous**
 
-   
-Managing User File Access
-==========================
+ User may assign, transfer or delegate any of its rights and obligations hereunder without consent. No agency, partnership, joint venture, or employment relationship is created as a result of the Agreement and neither party has any authority of any kind to bind the other in any respect outside of the terms described within this Agreement. In any action or proceeding to enforce rights under the Agreement, the prevailing party will be entitled to recover costs and attorneys' fees. 
 
-[need to review this section once the new Permissions feature is in place]
-
-User file access is managed through a set of access permissions that
-together determines whether or not a user can access a particular file,
-study, or dataverse. Generally speaking, there are three places where
-access permissions can be configured: at the dataverse level, at the
-study level, and at the file level. Think of each of these as a security
-perimeter or lock with dataverse being the outer most perimeter, study
-the next, and finally the file level. When configuring user file access,
-it might be helpful to approach this from the dataverse access level
-first and so on.
-
-For example, a user would like access to a particular file. Since files
-belong to studies and studies belong to dataverses, first determine
-whether the user has access to the dataverse. If the dataverse is
-released, all users have access to it. If it is unreleased, the user
-must appear in the User Permissions section on the dataverse permissions
-page.
-
-Next, they would need access to the study. If the study is public, then
-everyone has access. If it is restricted, the user must appear in the
-User Restricted Study Settings section on the study permissions page.
-
-Last, they would need access to the file. If the file is public,
-everyone has access. If the file is restricted, then the user must be
-granted access. There are two ways a file can be restricted.
-
-First, on the dataverse permissions page, all files in the dataverse
-could be restricted using Restrict ALL files in this Dataverse. To
-enable user access in this case, add the username to the Restricted File
-User Access section on this page.
-
-Second, an individual file can be restricted at the study level on the
-study permissions page. If this is the case, the file will be displayed
-as restricted in the Individual File Permission Settings section. To
-enable user access to a particular file in this case, check the file to
-grant access to, type the username in the Restricted File User Access
-section, click update so their name appears next to the file, then click
-save.
-
-Finally, a somewhat unusual configuration could exist where both
-Restrict all files in a dataverse is set and an individual file is
-restricted. In this case access would need to be granted in both places
--think of it as two locks. This last situation is an artifact of
-integrating these two features and will be simplified in a future
-release.
-
-   
-Set Dataset and File Permissions
-=================================
-
-You can restrict access to a Dataset, all of its files, or some of its
-files. This restriction extends to the search and browse functions.
-
-*To permit or restrict access:*
-
-[need to add this later]
-
-
-*To set permission for individual files in the dataset:*
-[need to add this later]
-   
-      
-Set Dataverse Terms of Use
-===============================
-
-You can set up Terms of Use for the dataverse that require users to
-acknowledge your terms and click "Accept" before they can contribute to
-the dataverse.
-
-To set Terms of Use for Adding a Dataset or uploading a File to the dataverse:
-
-[add later]
-
-Edit Terms for File Download
-============================
-
-[Add when we have confirmed what Terms will exist for File download]
 
  
