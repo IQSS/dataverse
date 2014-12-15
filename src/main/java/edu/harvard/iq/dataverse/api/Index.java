@@ -74,13 +74,21 @@ public class Index extends AbstractApiBean {
         }
     }
 
+    /**
+     * @todo return Response rather than String
+     */
     @GET
     @Path("{type}/{id}")
     public String indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
         try {
             if (type.equals("dataverses")) {
                 Dataverse dataverse = dataverseService.find(id);
-                return indexService.indexDataverse(dataverse) + "\n";
+                if (dataverse != null) {
+                    return indexService.indexDataverse(dataverse) + "\n";
+                } else {
+                    String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataverse + id);
+                    return "Could not find dataverse with id of " + id + ". Result from deletion attempt: " + response;
+                }
             } else if (type.equals("datasets")) {
                 Dataset dataset = datasetService.find(id);
                 return indexService.indexDataset(dataset) + "\n";
@@ -140,26 +148,48 @@ public class Index extends AbstractApiBean {
     @GET
     @Path("status")
     public Response indexStatus() {
-        List<Dataverse> staleDataverses = indexService.findStaleDataverses();
-        List<Dataset> staleDatasets = indexService.findStaleDatasets();
+        List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
+        List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
+        List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
+        List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
 
-        JsonObjectBuilder staleCounts = Json.createObjectBuilder()
-                .add("dataverses", staleDataverses.size())
-                .add("datasets", staleDatasets.size());
+        JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
+        for (Dataverse dataverse : stateOrMissingDataverses) {
+            jsonStateOrMissingDataverses.add(dataverse.getId());
+        }
+        JsonArrayBuilder datasetsInDatabaseButNotSolr = Json.createArrayBuilder();
+        for (Dataset dataset : staleOrMissingDatasets) {
+            datasetsInDatabaseButNotSolr.add(dataset.getId());
+        }
 
-        JsonArrayBuilder staleDataverseIds = Json.createArrayBuilder();
-        for (Dataverse staleDataverse : staleDataverses) {
-            staleDataverseIds.add(staleDataverse.getId());
+        JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
+        JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
+        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder();
+        if (dataversesInSolrOnly != null && datasetsInSolrOnly != null) {
+            for (Long dataverseId : dataversesInSolrOnly) {
+                dataversesInSolrButNotDatabase.add(dataverseId);
+            }
+            for (Long datasetId : datasetsInSolrOnly) {
+                datasetsInSolrButNotDatabase.add(datasetId);
+            }
+            contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
+                    .add("dataverses", jsonStateOrMissingDataverses)
+                    .add("datasets", datasetsInDatabaseButNotSolr);
         }
-        JsonArrayBuilder staleDatasetIds = Json.createArrayBuilder();
-        for (Dataset staleDataset : staleDatasets) {
-            staleDatasetIds.add(staleDataset.getId());
-        }
+
+        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
+                .add("dataverses", dataversesInSolrButNotDatabase)
+                .add("datasets", datasetsInSolrButNotDatabase);
+
+        JsonObjectBuilder permissions = Json.createObjectBuilder()
+                .add("dataverses", "FIXME")
+                .add("datasets", "FIXME")
+                .add("files", "FIXME");
 
         JsonObjectBuilder data = Json.createObjectBuilder()
-                .add("staleCounts", staleCounts)
-                .add("staleDataverseIds", staleDataverseIds)
-                .add("staleDatasetIds", staleDatasetIds);
+                .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
+                .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
+                .add("permissions", permissions);
 
         return okResponse(data);
     }

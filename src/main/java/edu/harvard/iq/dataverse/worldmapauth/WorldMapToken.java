@@ -180,7 +180,7 @@ public class WorldMapToken implements java.io.Serializable {
      * @return boolean, value of property hasExpired.
      */
     public boolean getHasExpired() {
-            return this.hasExpired;
+        return this.hasExpired;
     }
 
     /**
@@ -188,7 +188,7 @@ public class WorldMapToken implements java.io.Serializable {
      * @param hasExpired new value of property hasExpired.
      */
     public void setHasExpired(boolean hasExpired) {
-            this.hasExpired = hasExpired;
+        this.hasExpired = hasExpired;
     }
 
 
@@ -293,13 +293,13 @@ public class WorldMapToken implements java.io.Serializable {
         }
         
         if ((currentTimestamp==null)||(this.lastRefreshTime==null)){            
-            this.setHasExpired(true);
+            this.expireToken();
             return true;
         }
         //System.out.println("  ..pre diff: "+ currentTimestamp);
         long hours = this.getElapsedHours(currentTimestamp, this.created);
         if (hours > MAX_HOURS_TOKEN_CAN_BE_USED){
-            this.setHasExpired(true);
+            this.expireToken();
             return false;
         }
         
@@ -307,12 +307,17 @@ public class WorldMapToken implements java.io.Serializable {
         //System.out.println("  ..diffSeconds: "+ diffSeconds);
         //logger.info("this.application.getTimeLimitSeconds: "+ this.application.getTimeLimitSeconds());
         if (diffSeconds > this.application.getTimeLimitSeconds()){
-            this.setHasExpired(true);
+            this.expireToken();
             return true;
         }
         return false;
                 
     }
+    
+    public void expireToken(){
+        this.setHasExpired(true);
+    }
+    
     
     public Timestamp getCurrentTimestamp(){
         return new Timestamp(new Date().getTime());

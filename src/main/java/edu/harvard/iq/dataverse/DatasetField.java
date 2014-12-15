@@ -34,6 +34,8 @@ import org.apache.commons.lang.StringUtils;
 @ValidateDatasetFieldType
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    public static final String NA_VALUE = "N/A";
 
     /**
      * Orders dataset fields by their display order.

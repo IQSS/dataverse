@@ -68,7 +68,6 @@ public class ControlledVocabularyValue implements Serializable  {
        
     
     @ManyToOne
-    @JoinColumn(nullable=false)
     private DatasetFieldType datasetFieldType;
     public DatasetFieldType getDatasetFieldType() {
         return datasetFieldType;

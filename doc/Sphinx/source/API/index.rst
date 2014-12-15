@@ -19,5 +19,4 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-  data-sharing
   SWORD

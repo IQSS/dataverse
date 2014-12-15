@@ -70,6 +70,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "update-layer-metadata/"; 
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH = BASE_PATH + UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
 
+    public static final String DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "delete-layer-metadata/"; 
+    public static final String DELETE_MAP_LAYER_DATA_API_PATH = BASE_PATH + DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
     
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
@@ -237,33 +239,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         return worldmapTokenParam;
     }
     
-    /**
-     * Given a string token, retrieve the related WorldMapToken object
-     * 
-     * @param worldmapTokenParam
-     * @return WorldMapToken object (if it hasn't expired)
-     */
-    private WorldMapToken retrieveAndRefreshValidToken(String worldmapTokenParam){
-        if (worldmapTokenParam==null){
-            logger.warning("worldmapTokenParam is null.  Permission denied.");
-            return null;
-        }
-        WorldMapToken wmToken = this.tokenServiceBean.findByName(worldmapTokenParam);
-        if (wmToken==null){
-            logger.warning("WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
-            return null;
-        }
-        if (wmToken.hasTokenExpired()){
-            logger.warning("WorldMapToken has expired.  Permission denied.");
-            return null;
-        }
-        wmToken.refreshToken();
-        logger.info("WorldMapToken refreshed.");
-        tokenServiceBean.save(wmToken);
-        
-        return wmToken;
-    }
-
+    
     @POST
     @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT)// + "{worldmap_token}")
     public Response getWorldMapDatafileInfo(String jsonTokenData, @Context HttpServletRequest request){//, @PathParam("worldmap_token") String worldmapTokenParam) {
@@ -295,10 +271,18 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         // Retrieve WorldMapToken and make sure it is valid
         //
-        WorldMapToken wmToken = this.retrieveAndRefreshValidToken(worldmapTokenParam);
+        WorldMapToken wmToken = tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (wmToken==null){
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
+        
+        // Make sure the token's User still has permissions to access the file
+        //
+        if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
+            tokenServiceBean.expireToken(wmToken);
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
 
         // (1) Retrieve token connected data: DataverseUser, DataFile
         //
@@ -312,7 +296,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (dfile  == null) {
             return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
         }
-                
+        
+        
         // (1a) Retrieve FileMetadata
         FileMetadata dfile_meta = dfile.getFileMetadata();
         if (dfile_meta==null){
@@ -398,9 +383,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
         dfile_json.add("datafile_filesize", fsize); 
         dfile_json.add("datafile_content_type", dfile.getContentType());
         dfile_json.add("datafile_create_datetime", dfile.getCreateDate().toString());
-                      
-       
-        
         
         return okResponse(dfile_json);
  
@@ -412,9 +394,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
         For WorldMap/GeoConnect Usage
         Create a MayLayerMetadata object for a given Datafile id
         
-        !! Does not yet implement permissions/command checks
-        !! Change to check for hidden WorldMap key; IP check, etc
-    
         Example of jsonLayerData String:
         {
              "layerName": "geonode:boston_census_blocks_zip_cr9"
@@ -424,14 +403,17 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
     */
     @POST
-    @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT) // + "{datafile_id}")
-    //public Response updateWorldMapLayerData(String jsonLayerData, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey){
-    public Response updateWorldMapLayerData(String jsonLayerData){//, @QueryParam("key") String apiKey){
+    @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT)
+    public Response updateWorldMapLayerData(String jsonLayerData){
         
          //----------------------------------
         // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
         //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
         //----------------------------------
+        if (jsonLayerData==null){
+            logger.log(Level.SEVERE, "jsonLayerData is null");
+            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+        }
 
         // (1) Parse JSON 
         //
@@ -451,8 +433,15 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         // Retrieve WorldMapToken and make sure it is valid
         //
-        WorldMapToken wmToken = this.retrieveAndRefreshValidToken(worldmapTokenParam);
+        WorldMapToken wmToken = this.tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (wmToken==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
+        // Make sure the token's User still has permissions to access the file
+        //
+        if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
+            tokenServiceBean.expireToken(wmToken);
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 
@@ -466,8 +455,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // (3) Attempt to retrieve DataverseUser      
-        AuthenticatedUser dv_user = wmToken.getDataverseUser();
-        if (dv_user == null) {
+        AuthenticatedUser dvUser = wmToken.getDataverseUser();
+        if (dvUser == null) {
             return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }
         
@@ -477,7 +466,11 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
          }
 
-       
+        // check permissions!
+        if (!permissionService.on(dfile.getOwner()).user(dvUser).has(Permission.EditDataset)){
+           String errMsg = "The user does not have permission to edit metadata for this file. (MapLayerMetadata)";
+           return errorResponse(Response.Status.FORBIDDEN, errMsg);
+        }
         
         MapLayerMetadata mapLayer;
         // (5) See if a MapLayerMetadata already exists
@@ -508,7 +501,78 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         return okResponse("map layer object saved!");
 
+    }  // end updateWorldMapLayerData
+    
+    
+    
+    
+    /*
+        For WorldMap/GeoConnect Usage
+        Delete MayLayerMetadata object for a given Datafile
+
+        POST params
+        {
+           "GEOCONNECT_TOKEN": "-- some 64 char token which contains a link to the DataFile --"
+        }
+    */
+    @POST
+    @Path(DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT)
+    public Response deleteWorldMapLayerData(String jsonData){
         
-//        return okResponse("In process");
-    }
-}
+        /*----------------------------------
+            Parse the json message.
+            - Auth check: GEOCONNECT_TOKEN
+        //----------------------------------*/
+        if (jsonData==null){
+            logger.log(Level.SEVERE, "jsonData is null");
+            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+        }
+        // (1) Parse JSON 
+        //
+        JsonObject jsonInfo;
+        try ( StringReader rdr = new StringReader(jsonData) ) {
+            jsonInfo = Json.createReader(rdr).readObject();
+        } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: " + jsonData);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+        }
+        
+        // (2) Retrieve token string
+        String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
+        if (worldmapTokenParam==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "Permission denied.");
+        }
+
+        // (3) Retrieve WorldMapToken and make sure it is valid
+        //
+        WorldMapToken wmToken = this.tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
+        if (wmToken==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
+        // (4) Make sure the token's User still has permissions to access the file
+        //
+        if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
+            tokenServiceBean.expireToken(wmToken);
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
+        // (5) Attempt to retrieve DataFile and mapLayerMetadata   
+        DataFile dfile = wmToken.getDatafile();
+        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafileId(dfile.getId());
+        if (mapLayerMetadata==null){
+            return errorResponse(Response.Status.EXPECTATION_FAILED, "No map layer metadata found.");
+        }
+        
+       // (6) Delete the mapLayerMetadata
+       //   (note: permissions checked here for a second time by the mapLayerMetadataService call)
+       //
+       if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, wmToken.getDataverseUser()))){
+            return errorResponse(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");        
+       };
+       
+       return okResponse("Map layer metadata deleted.");
+        
+    }  // end deleteWorldMapLayerData
+    
+} // end class

@@ -109,10 +109,6 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                  return false;
         }
         
-        if (fieldType.equals("textbox")  && value.getValue().length() > 1000) {
-                 context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " may not be more than 1000 characters.").addConstraintViolation(); 
-                 return false;
-        }
         if (fieldType.equals("url") && !lengthOnly) {
             try {
                 URL url = new URL(value.getValue());

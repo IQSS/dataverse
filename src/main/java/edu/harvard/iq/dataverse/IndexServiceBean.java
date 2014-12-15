@@ -1028,7 +1028,11 @@ public class IndexServiceBean {
         return "Desired state for existence of cards: " + desiredCards + "\n";
     }
 
-    public List findStaleDataverses() {
+    /**
+     * @return Dataverses that should be reindexed either because they have
+     * never been indexed or their index time is before their modification time.
+     */
+    public List findStaleOrMissingDataverses() {
         List<Dataverse> staleDataverses = new ArrayList<>();
         for (Dataverse dataverse : dataverseService.findAll()) {
             if (dataverse.equals(dataverseService.findRootDataverse())) {
@@ -1041,7 +1045,11 @@ public class IndexServiceBean {
         return staleDataverses;
     }
 
-    public List findStaleDatasets() {
+    /**
+     * @return Datasets that should be reindexed either because they have never
+     * been indexed or their index time is before their modification time.
+     */
+    public List findStaleOrMissingDatasets() {
         List<Dataset> staleDatasets = new ArrayList<>();
         for (Dataset dataset : datasetService.findAll()) {
             if (stale(dataset)) {
@@ -1062,6 +1070,39 @@ public class IndexServiceBean {
             }
         }
         return false;
+    }
+
+    public List<Long> findDataversesInSolrOnly() {
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("*");
+        solrQuery.setRows(Integer.SIZE);
+        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + "dataverses");
+        List<Long> dataversesInSolrOnly = new ArrayList<>();
+        try {
+            QueryResponse queryResponse = solrServer.query(solrQuery);
+            SolrDocumentList results = queryResponse.getResults();
+            for (SolrDocument solrDocument : results) {
+                Object idObject = solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+                if (idObject != null) {
+                    try {
+                        long id = (Long) idObject;
+                        Dataverse dataverseToFind = dataverseService.find(id);
+                        if (dataverseToFind == null) {
+                            dataversesInSolrOnly.add(id);
+                        }
+                    } catch (ClassCastException ex) {
+                    }
+                }
+            }
+        } catch (SolrServerException ex) {
+            return null;
+        }
+        return dataversesInSolrOnly;
+    }
+
+    public List<Long> findDatasetsInSolrOnly() {
+        return new ArrayList<>();
     }
 
 }

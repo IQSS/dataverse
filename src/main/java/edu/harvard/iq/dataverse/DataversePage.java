@@ -384,7 +384,7 @@ public class DataversePage implements java.io.Serializable {
         String msg = (create)? "You have successfully created your dataverse.": "You have successfully updated your dataverse.";
         JsfHelper.addSuccessMessage(msg);
         
-        return "/dataverse/" + dataverse.getAlias() + "&faces-redirect=true";
+        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
     public void cancel(ActionEvent e) {
@@ -459,7 +459,7 @@ public class DataversePage implements java.io.Serializable {
             commandEngine.submit(cmd);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
             FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse/" + dataverse.getAlias() + "&faces-redirect=true";
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String msg = "There was a problem publishing your dataverse: " + ex;
             logger.severe(msg);
@@ -468,7 +468,7 @@ public class DataversePage implements java.io.Serializable {
              */
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", msg);
             FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse/" + dataverse.getAlias() + "&faces-redirect=true";
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
     }
 
@@ -478,7 +478,7 @@ public class DataversePage implements java.io.Serializable {
             commandEngine.submit(cmd);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseDeleted", "Your dataverse ihas been deleted.");
             FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse/" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
+            return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String msg = "There was a problem deleting your dataverse: " + ex;
             logger.severe(msg);
@@ -487,7 +487,7 @@ public class DataversePage implements java.io.Serializable {
              */
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotDeleted", msg);
             FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse/=" + dataverse.getAlias() + "&faces-redirect=true";
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
     }
 

@@ -316,12 +316,12 @@
    <field name="coverage.Temporal.StopTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetContactAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetContactEmail" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetContactName" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetLevelErrorNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfCollectionEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -394,7 +394,6 @@
    <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="sampleFrame" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="samplingProcedure" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="series" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -420,10 +419,10 @@
    <field name="timePeriodCoveredEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="timePeriodCoveredStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="title" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassVocab" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassVocabURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="unitOfAnalysis" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="volume" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -539,12 +538,12 @@
    <copyField source="coverage.Temporal.StopTime" dest="text" maxChars="3000"/>
    <copyField source="dataCollectionSituation" dest="text" maxChars="3000"/>
    <copyField source="dataCollector" dest="text" maxChars="3000"/>
+   <copyField source="dataSources" dest="text" maxChars="3000"/>
    <copyField source="datasetContact" dest="text" maxChars="3000"/>
    <copyField source="datasetContactAffiliation" dest="text" maxChars="3000"/>
    <copyField source="datasetContactEmail" dest="text" maxChars="3000"/>
    <copyField source="datasetContactName" dest="text" maxChars="3000"/>
    <copyField source="datasetLevelErrorNotes" dest="text" maxChars="3000"/>
-   <copyField source="dataSources" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollection" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollectionEnd" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollectionStart" dest="text" maxChars="3000"/>
@@ -617,7 +616,6 @@
    <copyField source="resolution.Spectral" dest="text" maxChars="3000"/>
    <copyField source="resolution.Temporal" dest="text" maxChars="3000"/>
    <copyField source="responseRate" dest="text" maxChars="3000"/>
-   <copyField source="sampleFrame" dest="text" maxChars="3000"/>
    <copyField source="samplingErrorEstimates" dest="text" maxChars="3000"/>
    <copyField source="samplingProcedure" dest="text" maxChars="3000"/>
    <copyField source="series" dest="text" maxChars="3000"/>
@@ -643,10 +641,10 @@
    <copyField source="timePeriodCoveredEnd" dest="text" maxChars="3000"/>
    <copyField source="timePeriodCoveredStart" dest="text" maxChars="3000"/>
    <copyField source="title" dest="text" maxChars="3000"/>
-   <copyField source="topicClassification" dest="text" maxChars="3000"/>
    <copyField source="topicClassValue" dest="text" maxChars="3000"/>
    <copyField source="topicClassVocab" dest="text" maxChars="3000"/>
    <copyField source="topicClassVocabURI" dest="text" maxChars="3000"/>
+   <copyField source="topicClassification" dest="text" maxChars="3000"/>
    <copyField source="unitOfAnalysis" dest="text" maxChars="3000"/>
    <copyField source="universe" dest="text" maxChars="3000"/>
    <copyField source="volume" dest="text" maxChars="3000"/>

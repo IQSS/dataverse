@@ -139,7 +139,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
 
                     if (di.getFileCitationRIS() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-ris.txt"));
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-ris.ris"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationRIS().getBytes());

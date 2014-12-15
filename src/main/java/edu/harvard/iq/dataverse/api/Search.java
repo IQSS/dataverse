@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.SearchException;
@@ -18,10 +19,8 @@ import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -55,11 +54,11 @@ public class Search extends AbstractApiBean {
         if (query != null) {
             if (sortField == null) {
                 // predictable default
-                sortField = SearchFields.ID;
+                sortField = SearchFields.RELEVANCE;
             }
             if (sortOrder == null) {
                 // asc for alphabetical by default despite GitHub using desc by default: "The sort order if sort parameter is provided. One of asc or desc. Default: desc" -- http://developer.github.com/v3/search/
-                sortOrder = "asc";
+                sortOrder = "desc"; // descending for Relevance
             }
             SolrQueryResponse solrQueryResponse;
             try {
@@ -70,6 +69,8 @@ public class Search extends AbstractApiBean {
                         String message = "Unable to find a user with API token provided.";
                         return errorResponse(Response.Status.FORBIDDEN, message);
                     }
+                } else {
+                    dataverseUser = GuestUser.get();
                 }
                 boolean dataRelatedToMe = false;
                 int numResultsPerPage = 10;

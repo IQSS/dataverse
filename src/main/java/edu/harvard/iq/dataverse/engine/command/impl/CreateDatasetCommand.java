@@ -60,8 +60,10 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         // validate
-        // @todo for now we run in through the DatasetVersinUI which creates empty fields to test the required        
-        Set<ConstraintViolation> constraintViolations = new DatasetVersionUI(theDataset.getEditVersion()).getDatasetVersion().validate();
+        // @todo for now we run through an initFields method that creates empty fields for anything without a value
+        // that way they can be checked for required
+        theDataset.getEditVersion().setDatasetFields(theDataset.getEditVersion().initDatasetFields());
+        Set<ConstraintViolation> constraintViolations = theDataset.getEditVersion().validate();
         if (!constraintViolations.isEmpty()) {
             String validationFailedString = "Validation failed:";
             for (ConstraintViolation constraintViolation : constraintViolations) {

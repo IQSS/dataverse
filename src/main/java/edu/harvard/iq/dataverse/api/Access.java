@@ -15,13 +15,21 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import javax.inject.Inject;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -44,8 +53,8 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response;
 
 /*
@@ -67,7 +76,7 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
  */
 
 @Path("access")
-public class Access {
+public class Access extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
     
     private static final String DEFAULT_FILE_ICON = "icon_file.png";
@@ -87,7 +96,13 @@ public class Access {
     @EJB
     SettingsServiceBean settingsService; 
     @EJB
-    DDIExportServiceBean ddiExportService; 
+    DDIExportServiceBean ddiExportService;
+    @EJB
+    PermissionServiceBean permissionService;
+    @Inject
+    DataverseSession session;
+    @EJB
+    WorldMapTokenServiceBean worldMapTokenServiceBean;
 
     //@EJB
     
@@ -96,7 +111,7 @@ public class Access {
     @Path("datafile/bundle/{fileId}")
     @GET
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
  
         DataFile df = dataFileService.find(fileId);
         
@@ -105,6 +120,9 @@ public class Access {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
+        // This will throw a WebApplicationException, with the correct 
+        // exit code, if access isn't authorized: 
+        checkAuthorization(df, apiToken);
         
         DownloadInfo dInfo = new DownloadInfo(df);
         BundleDownloadInstance downloadInstance = new BundleDownloadInstance(dInfo);
@@ -138,7 +156,7 @@ public class Access {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {                
 
         DataFile df = dataFileService.find(fileId);
         
@@ -147,6 +165,9 @@ public class Access {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
+        // This will throw a WebApplicationException, with the correct 
+        // exit code, if access isn't authorized: 
+        checkAuthorization(df, apiToken);
         
         DownloadInfo dInfo = new DownloadInfo(df);
 
@@ -244,11 +265,11 @@ public class Access {
     
     @Path("datafiles/{fileIds}")
     @GET
-    @Produces({"application/xml"})
-    public DownloadInstance datafiles(@PathParam("fileIds") String fileIds, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @Produces({"application/zip"})
+    public ZippedDownloadInstance datafiles(@PathParam("fileIds") String fileIds, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         ByteArrayOutputStream outStream = null;
         // create a Download Instance without, without a primary Download Info object:
-        DownloadInstance downloadInstance = new DownloadInstance();
+        ZippedDownloadInstance downloadInstance = new ZippedDownloadInstance();
 
         if (fileIds == null || fileIds.equals("")) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
@@ -268,13 +289,16 @@ public class Access {
                 logger.fine("attempting to look up file id " + fileId);
                 DataFile file = dataFileService.find(fileId);
                 if (file != null) {
-                    if (downloadInstance.getExtraArguments() == null) {
-                        downloadInstance.setExtraArguments(new ArrayList<Object>());
+                    if (isAccessAuthorized(file, apiToken)) { 
+                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                        downloadInstance.addDataFile(file);
+                    } else {
+                        downloadInstance.setManifest(downloadInstance.getManifest() + 
+                                file.getFilename() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
                     }
-                    logger.fine("putting datafile (id=" + file.getId() + ") on the parameters list of the download instance.");
-                    downloadInstance.getExtraArguments().add(file);
 
                 } else {
+                    // Or should we just drop it and make a note in the Manifest?    
                     throw new WebApplicationException(Response.Status.NOT_FOUND);
                 }
             }
@@ -282,10 +306,12 @@ public class Access {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
-        // if we've made it this far, we must have found some valid files and 
-        // put them on the stack. 
-        downloadInstance.setConversionParam("zip");
-        downloadInstance.setConversionParamValue(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDonwloadLimit));
+        if (downloadInstance.getDataFiles().size() < 1) {
+            // This means the file ids supplied were valid, but none were 
+            // accessible for this user:
+            throw new WebApplicationException(Response.Status.FORBIDDEN);
+        }
+        
 
         return downloadInstance;
     }
@@ -578,5 +604,155 @@ public class Access {
         }
 
         return null;
+    }
+    
+    private void checkAuthorization(DataFile df, String apiToken) throws WebApplicationException {
+        AuthenticatedUser user = null;
+       
+        /** 
+         * Authentication/authorization:
+         * 
+         * note that the fragment below - that retrieves the session object
+         * and tries to find the user associated with the session - is really
+         * for logging/debugging purposes only; for practical purposes, it 
+         * would be enough to just call "permissionService.on(df).has(Permission.DownloadFile)"
+         * and the method does just that, tries to authorize for the user in 
+         * the current session (or guest user, if no session user is available):
+         */
+        
+        if (session != null) {
+            if (session.getUser() != null) {
+                if (session.getUser().isAuthenticated()) {
+                    user = (AuthenticatedUser) session.getUser();
+                } else {
+                    logger.fine("User associated with the session is not an authenticated user. (Guest access will be assumed).");
+                    if (session.getUser() instanceof GuestUser) {
+                        logger.fine("User associated with the session is indeed a guest user.");
+                    }
+                }
+            } else {
+                logger.fine("No user associated with the session.");
+            }
+        } else {
+            logger.fine("Session is null.");
+        } 
+        
+        /**
+         * TODO: remove all the auth logging, once the functionality is tested. 
+         * -- L.A. 4.0, beta 10
+         */
+        
+        if (permissionService.on(df).has(Permission.DownloadFile)) {
+            // Note: PermissionServiceBean.on(Datafile df) will obtain the 
+            // User from the Session object, just like in the code fragment 
+            // above. That's why it's not passed along as an argument.
+            if (user != null) {
+                logger.info("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
+            } else {
+                logger.info("Session-based auth: guest user is granted access to the datafile.");
+            }
+        } else if ((apiToken != null)&&(apiToken.length()==64)){
+            /* 
+                WorldMap token check
+                - WorldMap tokens are 64 chars in length
+            
+                - Use the worldMapTokenServiceBean to verify token 
+                    and check permissions against the requested DataFile
+            */
+            if (!(this.worldMapTokenServiceBean.isWorldMapTokenAuthorizedForDataFileDownload(apiToken, df))){
+                throw new WebApplicationException(Response.Status.FORBIDDEN);
+            }
+            
+            // Yes! User may access file
+            //
+            logger.info("WorldMap token-based auth: Token is valid for the requested datafile");
+            
+        } else if ((apiToken != null)&&(apiToken.length()!=64)) {
+            // Will try to obtain the user information from the API token, 
+            // if supplied: 
+        
+            user = findUserByApiToken(apiToken);
+            
+            if (user == null) {
+                logger.warning("API token-based auth: Unable to find a user with the API token provided.");
+                throw new WebApplicationException(Response.Status.FORBIDDEN);
+                
+            } 
+            
+            if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
+                logger.info("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
+                throw new WebApplicationException(Response.Status.FORBIDDEN);
+            }
+            
+            logger.info("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
+        } else {
+            logger.info("Unauthenticated access: No guest access to the datafile.");
+            // throwing "authorization required" (401) instead of "access denied" (403) here:
+            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+        }
+    }
+    
+    
+    
+    
+    private boolean isAccessAuthorized(DataFile df, String apiToken) {
+        AuthenticatedUser user = null;
+       
+        if (session != null) {
+            if (session.getUser() != null) {
+                if (session.getUser().isAuthenticated()) {
+                    user = (AuthenticatedUser) session.getUser();
+                } else {
+                    logger.fine("User associated with the session is not an authenticated user. (Guest access will be assumed).");
+                    if (session.getUser() instanceof GuestUser) {
+                        logger.fine("User associated with the session is indeed a guest user.");
+                    }
+                }
+            } else {
+                logger.fine("No user associated with the session.");
+            }
+        } else {
+            logger.fine("Session is null.");
+        } 
+        
+        /**
+         * TODO: remove all the auth logging, once the functionality is tested. 
+         * -- L.A. 4.0, beta 10
+         */
+        
+        if (permissionService.on(df).has(Permission.DownloadFile)) {
+            // Note: PermissionServiceBean.on(Datafile df) will obtain the 
+            // User from the Session object, just like in the code fragment 
+            // above. That's why it's not passed along as an argument.
+            if (user != null) {
+                logger.info("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
+            } else {
+                logger.info("Session-based auth: guest user is granted access to the datafile.");
+            }
+        } else if (apiToken != null) {
+            // Will try to obtain the user information from the API token, 
+            // if supplied: 
+        
+            user = findUserByApiToken(apiToken);
+            
+            if (user == null) {
+                logger.warning("API token-based auth: Unable to find a user with the API token provided.");
+                return false; 
+                
+            } 
+            
+            if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
+                logger.info("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
+                return false; 
+            }
+            
+            logger.info("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
+        } else {
+            logger.info("Unauthenticated access: No guest access to the datafile.");
+            // throwing "authorization required" (401) instead of "access denied" (403) here:
+            return false; 
+        }
+        
+        return true;
     }
 }

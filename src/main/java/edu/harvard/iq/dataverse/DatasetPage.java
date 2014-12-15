@@ -5,10 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -125,6 +126,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    AuthenticationServiceBean authService;
     @EJB
     SystemConfig systemConfig;
     @Inject
@@ -390,6 +393,12 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
+        // The shapefile must be public.  RP 12/2015
+        //
+        if (!(fm.getDataFile().isReleased())){
+            return false;
+        }
+        
         return fm.getDataFile().isShapefileType();
     }
 
@@ -554,6 +563,27 @@ public class DatasetPage implements java.io.Serializable {
         return "Guest";
     }
 
+    public String getApiTokenKey() {
+        ApiToken apiToken;
+        
+        if (session.getUser() == null) {
+            // ?
+            return null;
+        }
+        
+        if (session.getUser().isAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) session.getUser();
+            apiToken = authService.findApiTokenByUser(au);
+            if (apiToken != null) {
+                return "key=" + apiToken.getTokenString();
+            } else {
+                return "key=";
+            }
+        } else {
+            return "";
+        }
+
+    }
     private void resetVersionUI() {
         datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
         User user = session.getUser();
@@ -767,7 +797,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return "/dataverse/" + dataset.getOwner().getAlias() + "&faces-redirect=true";
+        return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
     }
 
     public String deleteDatasetVersion() {
@@ -1344,7 +1374,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private String getFileNameDOI() {
         Dataset ds = workingVersion.getDataset();
-        return "DOI:" + ds.getAuthority() + "_" + ds.getId().toString();
+        return "DOI:" + ds.getAuthority() + "_" + ds.getIdentifier().toString();
     }
 
     public void downloadDatasetCitationRIS() {
@@ -1367,10 +1397,10 @@ public class DatasetPage implements java.io.Serializable {
         String fileNameString = ""; 
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
-            fileNameString = "attachment;filename=" + getFileNameDOI() + ".txt";
+            fileNameString = "attachment;filename=" + getFileNameDOI() + ".ris";
         } else {
             // Datafile-level citation:
-            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", "-ris.txt");
+            fileNameString = "attachment;filename=" + getFileNameDOI() + "-" + fileMetadata.getLabel().replaceAll("\\.tab$", ".ris");
         }
         response.setHeader("Content-Disposition", fileNameString);
 
@@ -1405,12 +1435,12 @@ public class DatasetPage implements java.io.Serializable {
             // full URLs to pass data and metadata to it. 
             String tabularDataURL = getTabularDataFileURL(fileid);
             String tabularMetaURL = getVariableMetadataURL(fileid);
-            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL;
+            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL + "&" + getApiTokenKey();
         }
 
         // For a local TwoRavens setup it's enough to call it with just 
         // the file id:
-        return TwoRavensDefaultLocal + fileid;
+        return TwoRavensDefaultLocal + fileid + "&" + getApiTokenKey();
     }
 
     public String getVariableMetadataURL(Long fileid) {

@@ -48,7 +48,6 @@ public class AuthenticatedUser implements User, Serializable {
     private String affiliation;
     private boolean superuser;
 
-    @Column(nullable = false)
     private Timestamp modificationTime;
 
     private Timestamp indexTime;

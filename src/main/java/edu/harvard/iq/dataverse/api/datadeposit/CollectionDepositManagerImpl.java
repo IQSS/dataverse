@@ -107,7 +107,6 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         swordService.addDatasetContact(newDatasetVersion);
                         swordService.addDatasetSubject(newDatasetVersion);
-                        swordService.doRequiredFieldCheck(newDatasetVersion);
 
                         Dataset createdDataset = null;
                         try {
