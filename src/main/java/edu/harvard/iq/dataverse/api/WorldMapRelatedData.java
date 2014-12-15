@@ -273,6 +273,14 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (wmToken==null){
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
+        
+        // Make sure the token's User still has permissions to access the file
+        //
+        if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
+            tokenServiceBean.expireToken(wmToken);
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
 
         // (1) Retrieve token connected data: DataverseUser, DataFile
         //
@@ -286,7 +294,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (dfile  == null) {
             return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
         }
-                
+        
+        
         // (1a) Retrieve FileMetadata
         FileMetadata dfile_meta = dfile.getFileMetadata();
         if (dfile_meta==null){
@@ -372,9 +381,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
         dfile_json.add("datafile_filesize", fsize); 
         dfile_json.add("datafile_content_type", dfile.getContentType());
         dfile_json.add("datafile_create_datetime", dfile.getCreateDate().toString());
-                      
-       
-        
         
         return okResponse(dfile_json);
  
@@ -386,9 +392,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
         For WorldMap/GeoConnect Usage
         Create a MayLayerMetadata object for a given Datafile id
         
-        !! Does not yet implement permissions/command checks
-        !! Change to check for hidden WorldMap key; IP check, etc
-    
         Example of jsonLayerData String:
         {
              "layerName": "geonode:boston_census_blocks_zip_cr9"
@@ -427,6 +430,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //
         WorldMapToken wmToken = this.tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
         if (wmToken==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
+        // Make sure the token's User still has permissions to access the file
+        //
+        if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
+            tokenServiceBean.expireToken(wmToken);
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 

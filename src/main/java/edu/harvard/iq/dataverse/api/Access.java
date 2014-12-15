@@ -652,29 +652,14 @@ public class Access extends AbstractApiBean {
                 logger.info("Session-based auth: guest user is granted access to the datafile.");
             }
         } else if ((apiToken != null)&&(apiToken.length()==64)){
-            // WorldMap token check
-            // WorldMap tokens are 64 chars in length
-            //
+            /* 
+                WorldMap token check
+                - WorldMap tokens are 64 chars in length
             
-            // Check 1:  Is this a valid WorldMap token?
-            //
-            WorldMapToken worldMapTokenObject = this.worldMapTokenServiceBean.retrieveAndRefreshValidToken(apiToken);
-            if (worldMapTokenObject == null){
-                logger.info("WorldMap token-based auth: Token is invalid.");
-                throw new WebApplicationException(Response.Status.FORBIDDEN);
-            }
-            
-            // Check 2:  Does this WorldMap token's datafile match the requested datafile?
-            //
-            if (!(worldMapTokenObject.getDatafile().getId()==df.getId())){
-                logger.info("WorldMap token-based auth: Token's datafile does not match the requested datafile.");
-                throw new WebApplicationException(Response.Status.FORBIDDEN);
-            }
-
-            // Check 3:  Does this WorldMap token's user have permissiong for the requested datafile?
-            //
-            if (!permissionService.userOn(worldMapTokenObject.getDataverseUser(), df).has(Permission.DownloadFile)) { 
-                logger.info("WorldMap token-based auth: Token's User is not authorized for the requested datafile.");
+                - Use the worldMapTokenServiceBean to verify token 
+                    and check permissions against the requested DataFile
+            */
+            if (!(this.worldMapTokenServiceBean.isWorldMapTokenAuthorizedForDataFileDownload(apiToken, df))){
                 throw new WebApplicationException(Response.Status.FORBIDDEN);
             }
             
