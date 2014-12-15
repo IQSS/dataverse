@@ -45,18 +45,18 @@ import javax.validation.ValidatorFactory;
 public class DatasetVersion implements Serializable {
 
     /**
-     * Convenience comparator to compare dataset versions by their version
-     * number. The draft version is considered the latest.
+     * Convenience comparator to compare dataset versions by their version number.
+     * The draft version is considered the latest.
      */
     public static final Comparator<DatasetVersion> compareByVersion = new Comparator<DatasetVersion>() {
         @Override
         public int compare(DatasetVersion o1, DatasetVersion o2) {
-            if (o1.isDraft()) {
+            if ( o1.isDraft() ) {
                 return o2.isDraft() ? 0 : 1;
             } else {
-                return (int) Math.signum((o1.getVersionNumber().equals(o2.getVersionNumber()))
-                        ? o1.getMinorVersionNumber() - o2.getMinorVersionNumber()
-                        : o1.getVersionNumber() - o2.getVersionNumber());
+               return (int)Math.signum( (o1.getVersionNumber().equals(o2.getVersionNumber())) ?
+                        o1.getMinorVersionNumber() - o2.getMinorVersionNumber()
+                       : o1.getVersionNumber() - o2.getVersionNumber() );
             }
         }
     };
@@ -99,9 +99,7 @@ public class DatasetVersion implements Serializable {
     private Long version;
 
     /**
-     * This is JPA's optimistic locking mechanism, and has no semantic meaning
-     * in the DV object model.
-     *
+     * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
      * @return the object db version
      */
     public Long getVersion() {
@@ -144,14 +142,12 @@ public class DatasetVersion implements Serializable {
     }
 
     /**
-     * Sets the dataset fields for this version. Also updates the fields to have
-     *
-     * @{code this} as their dataset version.
-     *
+     * Sets the dataset fields for this version. Also updates the fields to 
+     * have @{code this} as their dataset version.
      * @param datasetFields
      */
     public void setDatasetFields(List<DatasetField> datasetFields) {
-        for (DatasetField dsf : datasetFields) {
+        for ( DatasetField dsf : datasetFields ) {
             dsf.setDatasetVersion(this);
         }
         this.datasetFields = datasetFields;
