@@ -43,8 +43,9 @@ import javax.json.JsonObject;
  */
 public class JsonPrinter {
 	public static final String TIME_FORMAT_STRING = "yyyy-MM-dd hh:mm:ss X";
-    
-    private static final DateFormat dateFormat = new SimpleDateFormat(TIME_FORMAT_STRING);
+    	public static final String DATE_FORMAT_STRING = "yyyy-MM-dd";
+ 
+    private static final DateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT_STRING);
 	
 	public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 	
@@ -100,7 +101,7 @@ public class JsonPrinter {
 			bld.add("ownerId", dv.getOwner().getId());
 		}
 		if ( dv.getCreateDate() != null ) {
-			bld.add("creationDate", dateFormat.format(dv.getCreateDate()));
+			bld.add("creationDate", timeFormat.format(dv.getCreateDate()));
 		}
 		
 		return bld;
@@ -276,7 +277,7 @@ public class JsonPrinter {
 	}
 	
 	public static String format( Date d ) {
-		return (d==null) ? null : dateFormat.format(d);
+		return (d==null) ? null : timeFormat.format(d);
 	}
     
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {

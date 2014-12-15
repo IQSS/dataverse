@@ -28,8 +28,9 @@ import javax.json.JsonString;
  */
 public class JsonParser {
     
-    private final DateFormat dateFormat = new SimpleDateFormat( JsonPrinter.TIME_FORMAT_STRING );
-    
+    private final DateFormat timeFormat = new SimpleDateFormat( JsonPrinter.TIME_FORMAT_STRING );
+    private final DateFormat dateFormat = new SimpleDateFormat( JsonPrinter.DATE_FORMAT_STRING );
+  
     DatasetFieldServiceBean datasetFieldSvc;
     MetadataBlockServiceBean blockService;
 
@@ -75,9 +76,9 @@ public class JsonParser {
             }
             
             dsv.setReleaseTime( parseDate(obj.getString("releaseDate", null)) );
-            dsv.setLastUpdateTime( parseDate(obj.getString("lastUpdateTime", null)) );
-            dsv.setCreateTime( parseDate(obj.getString("createTime", null)) );
-            dsv.setArchiveTime( parseDate(obj.getString("archiveTime", null)) );
+            dsv.setLastUpdateTime( parseTime(obj.getString("lastUpdateTime", null)) );
+            dsv.setCreateTime( parseTime(obj.getString("createTime", null)) );
+            dsv.setArchiveTime( parseTime(obj.getString("archiveTime", null)) );
             
             dsv.setDatasetFields( parseMetadataBlocks(obj.getJsonObject("metadataBlocks")) );
             
@@ -237,9 +238,11 @@ public class JsonParser {
             return Collections.singletonList(cvv);
         }
     }
-    
     Date parseDate( String str ) throws ParseException {
         return str==null ? null : dateFormat.parse(str);
+    }
+    Date parseTime( String str ) throws ParseException {
+        return str==null ? null : timeFormat.parse(str);
     }
     
     Long parseLong( String str ) throws NumberFormatException {
