@@ -10,7 +10,6 @@ import java.util.List;
 public class DatasetDTO implements java.io.Serializable {
 	private String id;
         private String identifier;
-        private String peristentUrl;
         private String protocol;
         private String authority;
         private String globalIdCreateTime;
@@ -31,14 +30,6 @@ public class DatasetDTO implements java.io.Serializable {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
-    }
-
-    public String getPeristentUrl() {
-        return peristentUrl;
-    }
-
-    public void setPeristentUrl(String peristentUrl) {
-        this.peristentUrl = peristentUrl;
     }
 
     public String getProtocol() {
@@ -84,7 +75,7 @@ public class DatasetDTO implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", peristentUrl=" + peristentUrl + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
+        return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
     }
         
 }
