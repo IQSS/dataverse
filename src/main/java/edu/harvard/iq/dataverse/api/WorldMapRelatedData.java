@@ -70,6 +70,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "update-layer-metadata/"; 
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH = BASE_PATH + UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
 
+    public static final String DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "delete-layer-metadata/"; 
+    public static final String DELETE_MAP_LAYER_DATA_API_PATH = BASE_PATH + DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
     
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
@@ -401,14 +403,17 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
     */
     @POST
-    @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT) // + "{datafile_id}")
-    //public Response updateWorldMapLayerData(String jsonLayerData, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey){
-    public Response updateWorldMapLayerData(String jsonLayerData){//, @QueryParam("key") String apiKey){
+    @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT)
+    public Response updateWorldMapLayerData(String jsonLayerData){
         
          //----------------------------------
         // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
         //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
         //----------------------------------
+        if (jsonLayerData==null){
+            logger.log(Level.SEVERE, "jsonLayerData is null");
+            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+        }
 
         // (1) Parse JSON 
         //
@@ -496,7 +501,76 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         return okResponse("map layer object saved!");
 
+    }  // end updateWorldMapLayerData
+    
+    
+    
+    
+    /*
+        For WorldMap/GeoConnect Usage
+        Delete MayLayerMetadata object for a given Datafile
+
+        POST params
+        {
+           "GEOCONNECT_TOKEN": "-- some 64 char token which contains a link to the DataFile --"
+        }
+    */
+    @POST
+    @Path(DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT)
+    public Response deleteWorldMapLayerData(String jsonData){
         
-//        return okResponse("In process");
-    }
-}
+        /*----------------------------------
+            Parse the json message.
+            - Auth check: GEOCONNECT_TOKEN
+        //----------------------------------*/
+        if (jsonData==null){
+            logger.log(Level.SEVERE, "jsonData is null");
+            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+        }
+        // (1) Parse JSON 
+        //
+        JsonObject jsonInfo;
+        try ( StringReader rdr = new StringReader(jsonData) ) {
+            jsonInfo = Json.createReader(rdr).readObject();
+        } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: " + jsonData);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+        }
+        
+        // (2) Retrieve token string
+        String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
+        if (worldmapTokenParam==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "Permission denied.");
+        }
+
+        // (3) Retrieve WorldMapToken and make sure it is valid
+        //
+        WorldMapToken wmToken = this.tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
+        if (wmToken==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
+        // (4) Make sure the token's User still has permissions to access the file
+        //
+        if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
+            tokenServiceBean.expireToken(wmToken);
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+
+        // (5) Attempt to retrieve DataFile and mapLayerMetadata   
+        DataFile dfile = wmToken.getDatafile();
+        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafileId(dfile.getId());
+        if (mapLayerMetadata==null){
+            return errorResponse(Response.Status.EXPECTATION_FAILED, "No map layer metadata found.");
+        }
+        
+       // (6) Delete the mapLayerMetadata
+       if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, wmToken.getDataverseUser()))){
+            return errorResponse(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");        
+       };
+       
+       return okResponse("Map layer metadata deleted.");
+        
+    }  // end deleteWorldMapLayerData
+    
+} // end class
