@@ -35,6 +35,12 @@ public class FieldDTO {
         primitive.setMultiplePrimitive(values);
         return primitive;
     }
+ public static FieldDTO createMultipleVocabFieldDTO(String typeName, List<String> values) {
+        FieldDTO primitive = new FieldDTO();
+        primitive.typeName=typeName;
+        primitive.setMultipleVocab(values);
+        return primitive;
+    }   
     public static FieldDTO createVocabFieldDTO(String typeName, String value) {
         FieldDTO field = new FieldDTO();
         field.typeName=typeName;
