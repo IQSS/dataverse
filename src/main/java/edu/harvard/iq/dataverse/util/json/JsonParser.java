@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -8,10 +9,10 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -37,10 +38,29 @@ public class JsonParser {
         this.blockService = blockService;
     }
     
-    public DatasetVersion parseDatasetVersion( JsonObject obj ) throws JsonParseException {
-        try {
-            DatasetVersion dsv = new DatasetVersion();
+    public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
+        return parseDatasetVersion(obj, new DatasetVersion());
+    }
+    
+    public Dataset parseDataset(JsonObject obj) throws JsonParseException {
+        Dataset dataset = new Dataset();
+        // EMK TODO: 
+        // set datasetvalues from obj; Do we need to set anything else?
+        dataset.setAuthority(obj.getString("authority", null));
+        dataset.setIdentifier(obj.getString("identifier", null));
+        dataset.setProtocol(obj.getString("protocol", null));
+        DatasetVersion dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"));
+        LinkedList<DatasetVersion> versions = new LinkedList<>();
+        versions.add(dsv);
+        dsv.setDataset(dataset);
 
+        dataset.setVersions(versions);
+        return dataset;
+    }
+    
+    public DatasetVersion parseDatasetVersion( JsonObject obj, DatasetVersion dsv ) throws JsonParseException {
+        try {
+           
             String archiveNote = obj.getString("archiveNote", null);
             if ( archiveNote != null ) dsv.setArchiveNote( archiveNote );
             
@@ -94,7 +114,18 @@ public class JsonParser {
         if ( type == null ) {
             throw new JsonParseException("Can't find type '" + json.getString("typeName","") +"'");
         }
-        
+        if (type.isAllowMultiples() != json.getBoolean("multiple")) {
+            throw new JsonParseException("incorrect multiple   for field " +json.getString("typeName",""));
+        }
+        if (type.isCompound() && !json.getString("typeClass").equals("compound")) {
+                    throw new JsonParseException("incorrect  typeClass for field " +json.getString("typeName","")+", should be compound.");  
+        }      
+        if (!type.isControlledVocabulary() && type.isPrimitive() && !json.getString("typeClass").equals("primitive")) {
+                    throw new JsonParseException("incorrect  typeClass for field: " +json.getString("typeName","")+", should be primitive");  
+        } 
+        if (type.isControlledVocabulary() && !json.getString("typeClass").equals("controlledVocabulary")) {
+                    throw new JsonParseException("incorrect  typeClass for field " +json.getString("typeName","")+", should be controlledVocabulary");  
+        }   
         ret.setDatasetFieldType(type);
         
         try {
@@ -127,7 +158,7 @@ public class JsonParser {
     }
     
     public List<DatasetFieldCompoundValue> parseCompoundValue( DatasetFieldType compoundType, JsonObject json ) throws JsonParseException {
-        
+       
         if ( json.getBoolean("multiple") ) {
             List<DatasetFieldCompoundValue> vals = new LinkedList<>();
             
@@ -158,7 +189,9 @@ public class JsonParser {
                 fields.add( f );
             }
             cv.setChildDatasetFields(fields);
-            return Collections.singletonList(cv);
+            List<DatasetFieldCompoundValue> vals = new LinkedList<>();
+            vals.add(cv);
+            return vals;
         }
     }
     
