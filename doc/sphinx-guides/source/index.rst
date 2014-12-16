@@ -13,6 +13,7 @@ Contents:
   :titlesonly:
   :maxdepth: 2
 
+  getting-started/index
   user/index
   developers/index
   installation/index
