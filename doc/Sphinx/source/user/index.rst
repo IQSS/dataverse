@@ -16,5 +16,5 @@ Contents:
   dataverse-management
   dataset-management
   permissions-tou
-  Data_Exploration/index
+  data-exploration/index
   appendix

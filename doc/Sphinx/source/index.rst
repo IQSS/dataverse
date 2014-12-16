@@ -13,10 +13,10 @@ Contents:
   :titlesonly:
   :maxdepth: 2
 
-  User/index
-  Developers/index
-  Installers/index
-  API/index
+  user/index
+  developers/index
+  installers/index
+  api/index
 
 How the Guides Are Organized
 =============================
