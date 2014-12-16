@@ -21,11 +21,14 @@ Steps for Journals
 
 As a journal you have two options: 
 
-**Option 1:** Recommend that your authors deposit data in one of the repositories on `dataverse.org <http://dataverse.org>`_
-**Option 2:** If you would like to be able to organize, review and approve all datasets that are associated with your published journal articles then you can setup your own Journal Dataverse by following the steps below:
+**Option 1:** 
+Recommend that your authors deposit data in one of the repositories on `dataverse.org <http://dataverse.org>`_
+
+**Option 2:** 
+If you would like to be able to organize, review and approve all datasets that are associated with your published journal articles then you can setup your own Journal Dataverse by following the steps below:
 
 For Option 2:
---------------
+------------------
 
 #. Go to `dataverse.org <http://dataverse.org>`_.
 #. Select a Dataverse repository that you want to setup your Journal Dataverse in for your authors to deposit their Datasets into (e.g. Harvard Dataverse is open for all researchers worldwide from all disciplines).
