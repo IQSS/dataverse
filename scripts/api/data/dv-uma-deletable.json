@@ -1,8 +1,12 @@
- {
-    "alias":"umaDeletable",
-    "name":"Uma's deletable",
-    "affiliation":"Affiliation value",
-    "contactEmail":"Uma@mailinator.com",
-    "permissionRoot":true,
-    "description":"Forgettable, deletable, temporary."
+{
+  "alias": "umaDeletable",
+  "name": "Uma's deletable",
+  "affiliation": "Affiliation value",
+  "permissionRoot": true,
+  "description": "Forgettable, deletable, temporary.",
+  "dataverseContacts": [
+    {
+      "contactEmail": "Uma@mailinator.com"
+    }
+  ]
 }

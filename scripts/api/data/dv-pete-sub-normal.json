@@ -1,8 +1,12 @@
- {
-    "alias":"peteSubNormal",
-    "name":"Pete's public place",
-    "affiliation":"Affiliation value",
-    "contactEmail":"pete@mailinator.com",
-    "permissionRoot":false,
-    "description":"Where Pete stores normal data"
+{
+  "alias": "peteSubNormal",
+  "name": "Pete's public place",
+  "affiliation": "Affiliation value",
+  "permissionRoot": false,
+  "description": "Where Pete stores normal data",
+  "dataverseContacts": [
+    {
+      "contactEmail": "pete@mailinator.com"
+    }
+  ]
 }
