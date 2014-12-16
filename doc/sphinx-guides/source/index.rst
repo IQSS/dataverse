@@ -13,20 +13,20 @@ Contents:
   :titlesonly:
   :maxdepth: 2
 
-  User/index
-  Developers/index
-  Installers/index
-  API/index
+  user/index
+  developers/index
+  installation/index
+  api/index
 
 How the Guides Are Organized
 =============================
 
 The Guides are reference documents that explain how to use Dataverse,
 which are divided into the following sections: User Guide,
-Installers Guide, Developers Guide, and API Guide. The User Guide is further divided into primary activities: find & using
+Installation Guide, Developers Guide, and API Guide. The User Guide is further divided into primary activities: find & using
 data, adding Datasets, administering dataverses or Datasets, and Dataset exploration/visualizations. Details
 on all of the above tasks can be found in the Users Guide. The
-Installers Guide is for people or organizations who want to host their
+Installation Guide is for people or organizations who want to host their
 own Dataverse. The Developers Guide contains instructions for
 people who want to contribute to the Open Source Dataverse Network
 project or who want to modify the code to suit their own needs. Finally, the API Guide is for

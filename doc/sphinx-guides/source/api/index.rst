@@ -19,4 +19,4 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-  SWORD
+  sword

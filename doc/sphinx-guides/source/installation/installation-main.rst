@@ -1,5 +1,5 @@
 ====================================
-Installers Guide
+Installation Guide
 ====================================
 
 .. _introduction:
