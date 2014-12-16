@@ -36,5 +36,4 @@ For Option 2:
 #. Add a link on your journal website pointing to your new Dataverse.
 #. You will receive an email notification when an author submits a Dataset to your Dataverse, so that you can go and in and review the data.
 #. If you are happy with the Dataset you can Publish the Dataset (in 3.6 this is Release the Study). The author will receive an email notification when their Dataset is published in your Dataverse.
-#. Include the Data Citation with the persistent DOI as a
- reference in your corresponding journal article.
+#. Include the Data Citation with the persistent DOI as a reference in your corresponding journal article.
