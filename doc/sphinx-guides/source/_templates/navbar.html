@@ -1,0 +1,37 @@
+{#      For dataverse.org SPHINX projects                                                               #}
+{#      Instructions:                                                                                   #}
+{#          (1) For a Sphinx project, copy the contents of this file into navbar.html                   #}
+{#          (2) Location of navbar.html within a SPHINX project:                                        #}
+{#              - /source/_templates/navbar.html                                                        #}
+{# See:  https://github.com/IQSS/dataverse.org/tree/master/dataverse_org/templates/sphinx-navbar        #}
+
+<!-- Navigation -->
+<!-- uncomment next line to test as standalone file -->
+<!--
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+-->
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://dataverse.org" id="dataverse-org-homepage-url">Dataverse Project</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+
+       <div class="collapse navbar-collapse" id="dv-bs-navbar-details"></div><!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script type="text/javascript" src="/_static/navbar_from_dataverse_org.js"></script>
+<script>
+    $(document).ready(function () {
+        load_navbar();
+    });
+</script>
