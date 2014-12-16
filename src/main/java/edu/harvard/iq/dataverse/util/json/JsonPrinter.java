@@ -95,7 +95,6 @@ public class JsonPrinter {
                                                 .add("affiliation", dv.getAffiliation())
                                                 .add("dataverseContacts", json(dv.getDataverseContacts()))
 						.add("permissionRoot", dv.isPermissionRoot())
-						//.add("creator",json(dv.getCreator()))
 						.add("description", dv.getDescription());
 		if ( dv.getOwner() != null ) {
 			bld.add("ownerId", dv.getOwner().getId());
@@ -103,6 +102,9 @@ public class JsonPrinter {
 		if ( dv.getCreateDate() != null ) {
 			bld.add("creationDate", dateFormat.format(dv.getCreateDate()));
 		}
+                if ( dv.getCreator() != null ) {
+                    bld.add("creator",json(dv.getCreator()));
+                }
 		
 		return bld;
 	}
