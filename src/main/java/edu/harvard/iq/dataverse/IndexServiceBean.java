@@ -1073,12 +1073,26 @@ public class IndexServiceBean {
     }
 
     public List<Long> findDataversesInSolrOnly() {
+        /**
+         * @todo define this centrally and statically
+         */
+        return findDvObjectInSolrOnly("dataverses");
+    }
+
+    public List<Long> findDatasetsInSolrOnly() {
+        /**
+         * @todo define this centrally and statically
+         */
+        return findDvObjectInSolrOnly("datasets");
+    }
+
+    private List<Long> findDvObjectInSolrOnly(String type) {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
         solrQuery.setRows(Integer.SIZE);
-        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + "dataverses");
-        List<Long> dataversesInSolrOnly = new ArrayList<>();
+        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
+        List<Long> dvObjectInSolrOnly = new ArrayList<>();
         try {
             QueryResponse queryResponse = solrServer.query(solrQuery);
             SolrDocumentList results = queryResponse.getResults();
@@ -1087,9 +1101,9 @@ public class IndexServiceBean {
                 if (idObject != null) {
                     try {
                         long id = (Long) idObject;
-                        Dataverse dataverseToFind = dataverseService.find(id);
-                        if (dataverseToFind == null) {
-                            dataversesInSolrOnly.add(id);
+                        DvObject dvobject = dvObjectService.findDvObject(id);
+                        if (dvobject == null) {
+                            dvObjectInSolrOnly.add(id);
                         }
                     } catch (ClassCastException ex) {
                     }
@@ -1098,11 +1112,7 @@ public class IndexServiceBean {
         } catch (SolrServerException ex) {
             return null;
         }
-        return dataversesInSolrOnly;
-    }
-
-    public List<Long> findDatasetsInSolrOnly() {
-        return new ArrayList<>();
+        return dvObjectInSolrOnly;
     }
 
 }

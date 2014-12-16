@@ -91,7 +91,16 @@ public class Index extends AbstractApiBean {
                 }
             } else if (type.equals("datasets")) {
                 Dataset dataset = datasetService.find(id);
-                return indexService.indexDataset(dataset) + "\n";
+                if (dataset != null) {
+                    return indexService.indexDataset(dataset) + "\n";
+                } else {
+                    /**
+                     * @todo what about published, deaccessioned, etc.? Need
+                     * method to target those, not just drafts!
+                     */
+                    String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataset + id + IndexServiceBean.draftSuffix);
+                    return "Could not find dataset with id of " + id + ". Result from deletion attempt: " + response;
+                }
             } else if (type.equals("files")) {
                 DataFile dataFile = dataFileService.find(id);
                 Dataset datasetThatOwnsTheFile = datasetService.find(dataFile.getOwner().getId());
@@ -152,6 +161,12 @@ public class Index extends AbstractApiBean {
         List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
         List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
         List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+        /**
+         * @todo enable this instead of the check below
+         */
+//        if (dataversesInSolrOnly == null || datasetsInSolrOnly == null) {
+//            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Is Solr down?");
+//        }
 
         JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
         for (Dataverse dataverse : stateOrMissingDataverses) {
