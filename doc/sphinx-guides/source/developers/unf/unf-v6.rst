@@ -5,18 +5,15 @@ UNF Version 6
 
 The document is primarily intended for those who are interested in implementing their own UNF Version 6 calculator. We would like to encourage multiple parallel implementations, since that would be a great (the only, really) way to cross-validate UNF signatures calculated for specific sets of data.
 
-Algorithm Description
-========================================
+**Algorithm Description**
 
 UNF v5, on which v6 is based, was originally described in Dr. Micah Altman's paper "A Fingerprint Method for Verification of Scientific Data", Springer Verlag, 2008. The reader is encouraged to consult it for the explanation of the theory behind UNF. However, various changes and clarifications concerning the specifics of normalization have been made to the algorithm since the publication. These crucial details were only documented in the author's unpublished edits of the article and in private correspondence. With this document, a serious effort has been made to produce a complete step-by-step description of the entire process. It should be fully sufficient for the purposes of implementing the algorithm.
 
-I. UNF of a Data Vector
-=========================================
+**I. UNF of a Data Vector**
 
 For each individual vector in a data frame, calculate its UNF signature as follows:
 
-Ia. Normalize each vector element as follows:
------------------------------------------------------------------------
+**Ia. Normalize each vector element as follows:**
 
 **1. For a vector of numeric elements:**
 Round each vector element to k significant digits using the IEEE 754 "round towards nearest, ties to even" rounding mode. The default value of k is 7.
@@ -89,8 +86,7 @@ Fri Aug 22 12:51:05 EDT 2014 is encoded as "2014-08-22T16:51:05Z"
 **6. Missing values**
 Missing values, of all of the above types, are encoded as 3 null bytes: \000\000\000.
 
-Ib. Calculate the UNF of the vector as follows:
----------------------------------------------------------------------------
+**Ib. Calculate the UNF of the vector as follows:**
 
 Terminate each character string representing a NON-MISSING value with a POSIX end-of-line character and a null byte (\000). Do not terminate missing value representations (3 null bytes \000\000\000). Concatenate all the individual character strings, and compute the SHA256 hash of the combined string. Truncate the resulting hash to 128 bits (128 being the default, with other values possible - see the note below). Encode the resulting string in base64, for readability. Prepend the encoded hash string with the signature header UNF:6: (with 6 being the current version).
 
@@ -102,11 +98,9 @@ Combined string: "+1.234568e+\n\000\000\000\000+0.e+\n\000"
 SHA256 hash truncated to the default 128 bits: Do5dfAoOOFt4FSj0JcByEw==
 Printable UNF: UNF:6:Do5dfAoOOFt4FSj0JcByEw==
 
-II. Combining multiple UNFs to create UNFs of higher-level objects.
-==============================================================================================
+**II. Combining multiple UNFs to create UNFs of higher-level objects.**
 
-IIa. Combine UNFs from multiple variables to form the UNF for an entire data frame as follows:
-------------------------------------------------------------------------------------------------------------------------------
+**IIa. Combine UNFs from multiple variables to form the UNF for an entire data frame as follows:**
 
 Sort the printable representations of individual UNFs in POSIX locale sort order.
 
@@ -114,8 +108,7 @@ Apply the UNF algorithm to the resulting vector of character strings, with the c
 
 Do note the sorting part, above, it is important! In a vector of observations, the order is important; changing the order of observations changes the UNF. A data frame, however, is considered an unordered set of individual vectors. I.e., re-arranging the order in which data variable columns occur in an R or Stata file should not affect the UNF. Hence the UNFs of individual variables are sorted, before the combined UNF of the data frame is calculated.
 
-IIb. Similarly, combine the UNFs for a set of data frames to form a single UNF that represents an entire research study ("dataset").
-------------------------------------------------------------------------------------------------------------------------------------------------
+**IIb. Similarly, combine the UNFs for a set of data frames to form a single UNF that represents an entire research study ("dataset").**
 
 Using a consistent UNF version and level of precision across an entire dataset is recommended when calculating the UNFs of individual data objects.
 
@@ -123,7 +116,7 @@ Using a consistent UNF version and level of precision across an entire dataset i
 
 .. _note1:
 
-Note: On default and non-default parameter values:
+**Note: On default and non-default parameter values:**
 Here and throughout the rest of this document, phrases like "The default value of k is 7" suggest that it is possible to use non-default values, such as a different number of digits of precision, in this case. This has been a source of some confusion in the past. UNF relies on data normalization to produce "data fingerprints" that are meaningful and descriptive. So how do you generate reproducible and verifiable signatures if any flexibility is allowed in the normalization algorithm? The answer, as specified in the original UNF paper: any non-default parameters used are embedded in the header portion of the UNF!
 
 For example, the UNF of a floating point (Double) vector with a single value of 1.23456789, calculated with the default 7 digits of precision, is UNF:6:vcKELUSS4s4k1snF4OTB9A==. Calculated with the 9 digits of precision, the printable UNF is UNF:6:N9:IKw+l4ywdwsJeDze8dplJA==. With the parameter value embedded in the signature, it can be recalculated and verified unambiguously.
@@ -141,7 +134,7 @@ It should be noted that the Dataverse application never calculates UNFs with any
 
 .. _note2:
 
-Note: Negative Zero
+**Note: Negative Zero**
 IEEE 754 zero is signed. I.e., there are 2 zeros, positive and negative. As implemented in most programming languages, floating point types can have negative zero values. It is the responsibility of the implementer, to properly identify the sign of a floating point zero value. Which can be a bit tricky; for example, in Java programming language, when performing arithmetic comparison on values of the primitive type double, the following evaluates to TRUE:
 0.0d == -0.0d
 However, the comparison methods provided by the wrapper class Double recognize -0.0 and 0.0 as different values, and 0.0 to be greater than -0.0. So all of the following expressions evaluate to FALSE:
@@ -152,7 +145,7 @@ new Double(-0.0d).compareTo(new Double(0.0d)) >= 0
 
 .. _note3:
 
-Note: UNFs of time values in real-life statistical packages
+**Note: UNFs of time values in real-life statistical packages**
 The following is not by itself an implementation concern. But it is something you may need to consider when calculating UNFs of time values from real-world data.
 
 The fact that the same time value with and without the time zone specified produces different UNFs presents an interesting issue when converting data between different formats. For example, in STATA none of the available time types support time zones. In R, on the other hand, ALL time values are stored with a time zone. While it is possible to create an R time value from a character representation with no time zone - for example:
