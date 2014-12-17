@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;

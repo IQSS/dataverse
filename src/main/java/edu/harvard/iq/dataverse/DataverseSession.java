@@ -18,7 +18,7 @@ import javax.inject.Named;
 @SessionScoped
 public class DataverseSession implements Serializable{
     
-	private AuthenticatedUser user;
+	private User user;
 	
 	@EJB
 	PermissionServiceBean permissionsService;
@@ -27,7 +27,10 @@ public class DataverseSession implements Serializable{
 	BuiltinUserServiceBean usersSvc;
 	
     public User getUser() {
-        return ( user==null ) ? GuestUser.get(): user;
+        if ( user == null ) {
+            user = new GuestUser();
+        }
+        return user;
     }
 
     public void setUser(AuthenticatedUser user) {

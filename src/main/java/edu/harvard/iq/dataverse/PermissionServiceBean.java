@@ -144,7 +144,7 @@ public class PermissionServiceBean {
     }
 
     /**
-     * For commands with no named dataverses, this allows a quick check whether
+     * For commands with no named dvObjects, this allows a quick check whether
      * a user can issue the command on the dataverse or not.
      *
      * @param u
@@ -176,7 +176,7 @@ public class PermissionServiceBean {
     public PermissionQuery userOn(RoleAssignee u, DvObject d) {
         if (u == null) {
             // get guest user for dataverse d
-            u = GuestUser.get();
+            u = new GuestUser();
         }
         return new PermissionQuery(u, d);
     }

@@ -5,12 +5,12 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.UserLister;
-import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
+import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
 import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
+import java.util.Set;
 
 /**
  * An authentication provider built into the application. Uses JPA and the 
@@ -18,7 +18,7 @@ import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationPr
  * 
  * @author michael
  */
-public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupCreator {
+public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupProvider {
     
     public static final String PROVIDER_ID = "builtin";
     private static final String KEY_USERNAME = "Username";
@@ -33,11 +33,6 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public List<User> listUsers() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Group createGroup() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -64,5 +59,20 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     @Override
     public List<Credential> getRequiredCredentials() {
         return CREDENTIALS_LIST;
+    }
+
+    @Override
+    public String getGroupProviderAlias() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getGroupProviderInfo() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Set groupsFor(User u) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

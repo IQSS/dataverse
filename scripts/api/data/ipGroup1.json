@@ -1,0 +1,7 @@
+{
+  "alias":"ipGroup1",
+  "name":"The first IP Group",
+  "ranges" : [["60.0.0.0", "60.0.0.255"],
+              ["128.0.0.0", "129.0.255.255"],
+              ["ff:abcd:eff::ffff", "ff:abcd:eff::0"]]
+}

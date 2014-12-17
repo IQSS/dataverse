@@ -7,10 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import java.util.EnumSet;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -31,7 +28,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     DataverseSession session;
     
     public boolean canManagePermissions(DvObject dvo) {
-        User u = session.getUser() != null ? session.getUser() : GuestUser.get();
+        User u = session.getUser();
         return dvo instanceof Dataverse ? 
                 canManageDataversePermissions(u,  (Dataverse) dvo) : 
                 canManageDatasetPermissions(u,  (Dataset) dvo);

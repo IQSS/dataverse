@@ -100,7 +100,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		setInheritAssignmentsCbValue( ! getDataverse().isPermissionRoot() );
 		guestRolesHere = new LinkedList<>();
 		guestRolesUp = new LinkedList<>();
-		for ( RoleAssignment ra : rolesSvc.roleAssignments(GuestUser.get(), dataverse).getAssignments() ) {
+		for ( RoleAssignment ra : rolesSvc.roleAssignments( new GuestUser(), dataverse).getAssignments() ) {
 			if ( ra.getDefinitionPoint().equals(dataverse) ) {
 				guestRolesHere.add(ra.getRole());
 			} else {

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -91,6 +92,9 @@ public abstract class AbstractApiBean {
     
     @EJB
     protected PermissionServiceBean permissionSvc;
+    
+    @EJB
+    protected IpGroupsServiceBean ipGroupsSvc;
     
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;

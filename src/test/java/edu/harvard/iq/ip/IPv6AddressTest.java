@@ -3,6 +3,8 @@
  */
 package edu.harvard.iq.ip;
 
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Range;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
@@ -147,4 +149,65 @@ public class IPv6AddressTest {
         Arrays.sort(scrambled);
         assertArrayEquals( expected, scrambled );
     }
+    
+    @Test
+    public void testLongRoundTrips() {
+        for ( String s: Arrays.asList("a:b:c:d:e:f::1","::","::1","ff:ff:ff:ff:ff:ff:ff:ff",
+                "fe80::8358:c945:7094:2e6c",
+                "fe80::60d0:6eff:fece:7713","ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff") ) {
+            IPv6Address addr = IPv6Address.valueOf(s);
+            assertEquals("Bad roundtrip on address: " + s,
+                    addr, new IPv6Address(addr.toLongArray()));
+        }
+    }
+    
+    @Test
+    public void testInclusionAbove() {
+        IPv6Range r = new IPv6Range( IPv6Address.valueOf("dd:2:2:2:2:2:2:2"),
+                                     IPv6Address.valueOf("dd:a:a:a:a:a:a:a"));
+        for ( String addr : Arrays.asList("df:a:a:a:a:a:a:a","dd:b:a:a:a:a:a:a",
+                                            "dd:a:b:a:a:a:a:a","dd:a:a:b:a:a:a:a",
+                                            "dd:a:a:a:b:a:a:a","dd:a:a:a:a:b:a:a",
+                                            "dd:a:a:a:a:a:b:a","dd:a:a:a:a:a:a:b") ) {
+            IPv6Address ipv6 = IPv6Address.valueOf(addr);
+        assertFalse( r.contains(ipv6) );
+        assertTrue("for address " + ipv6, above(ipv6.toLongArray(),
+                                                r.getTop().toLongArray()));
+        assertFalse("for address " + ipv6, between(r.getBottom().toLongArray(),
+                                                   r.getTop().toLongArray(),
+                                                   ipv6.toLongArray()));
+        
+    }
+   }
+   
+     @Test
+    public void testInclusionBelow() {
+        IPv6Range r = new IPv6Range( IPv6Address.valueOf("dd:2:2:2:2:2:2:2"),
+                                     IPv6Address.valueOf("dd:a:a:a:a:a:a:a"));
+        for ( String addr : Arrays.asList("dc:2:2:2:2:2:2:2","dd:1:2:2:2:2:2:2",
+                                          "dd:2:1:2:2:2:2:2","dd:2:2:1:2:2:2:2",
+                                          "dd:2:2:2:1:2:2:2","dd:2:2:2:2:1:2:2",
+                                          "dd:2:2:2:2:2:1:2","dd:2:2:2:2:2:2:1") ) {
+            IPv6Address ipv6 = IPv6Address.valueOf(addr);
+        assertFalse( r.contains(ipv6) );
+        
+        long[] bottomArr = r.getBottom().toLongArray();
+        long[] addrArr = ipv6.toLongArray();
+        
+        assertTrue("for address " + ipv6, above(bottomArr, addrArr));
+        assertFalse("for address " + ipv6, between(bottomArr,
+                                                   r.getTop().toLongArray(), addrArr));
+        
+    }
+   }
+    
+    public boolean above( long[] top, long[] addr ) {
+        return top[0]>addr[0]
+                || ( top[0]==addr[0] && top[1]>addr[1] )
+                || ( top[0]==addr[0] && top[1]==addr[1] && top[2]>addr[2] )
+                || ( top[0]==addr[0] && top[1]==addr[1] && top[2]==addr[2] && top[3]>=addr[3] );
+    }
+   public boolean between( long[] bottom, long[] top, long[] addr ) {
+       return above( top, addr ) && above(addr, bottom);
+   }
 }

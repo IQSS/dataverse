@@ -18,6 +18,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 @NamedQueries({
@@ -52,6 +53,9 @@ public class AuthenticatedUser implements User, Serializable {
 
     private Timestamp indexTime;
 
+    @Transient
+    private UserRequestMetadata requestMetadata;
+    
     @Override
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
@@ -184,6 +188,14 @@ public class AuthenticatedUser implements User, Serializable {
         AuthenticatedUser other = (AuthenticatedUser) object;
         return Objects.equals(getId(), other.getId());
     }    
-    
+
+    @Override
+    public UserRequestMetadata getRequestMetadata() {
+        return requestMetadata;
+    }
+
+    public void setRequestMetadata(UserRequestMetadata requestMetadata) {
+        this.requestMetadata = requestMetadata;
+    }
     
 }

@@ -1,12 +1,16 @@
-package edu.harvard.iq.ip;
+package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
 import java.util.Arrays;
 
 /**
- *
+ * 128 BIT
+ * 4 unsinged ints
+ * 8 int
+ * 2 unsigned long
+ * 4 long
  * @author michael
  */
-public class IPv6Address extends IpAddress implements Comparable<IPv6Address> {
+ public class IPv6Address extends IpAddress implements Comparable<IPv6Address> {
     
     public static IPv6Address valueOf( String in ) {
         if ( in.contains("::") ) {
@@ -67,6 +71,19 @@ public class IPv6Address extends IpAddress implements Comparable<IPv6Address> {
         this.words = Arrays.copyOf(words, words.length);
     }
     
+    public IPv6Address( long[] longs ) {
+        words = new int[]{
+            (int)(longs[0] >>> 32),
+            (int)(longs[0] & 0xffffffffl),
+            (int)(longs[1] >>> 32),
+            (int)(longs[1] & 0xffffffffl),
+            (int)(longs[2] >>> 32),
+            (int)(longs[2] & 0xffffffffl),
+            (int)(longs[3] >>> 32),
+            (int)(longs[3] & 0xffffffffl)
+        };
+    }
+    
     public IPv6Address( int w1, int w2, int w3, int w4, int w5, int w6, int w7, int w8 ) {
         words = new int[]{w1, w2, w3, w4, w5, w6, w7, w8};
     }
@@ -74,7 +91,17 @@ public class IPv6Address extends IpAddress implements Comparable<IPv6Address> {
     public int get(int idx) {
         return words[idx];
     }
-
+    
+    public long[] toLongArray() {
+        long[] retVal = new long[4];
+        for ( int i=0; i<4; i++ ) {
+            retVal[i] = words[2*i];
+            retVal[i] = (retVal[i]<<32);
+            retVal[i] =  retVal[i] + words[2*i+1];
+        }
+        return retVal;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 7;
