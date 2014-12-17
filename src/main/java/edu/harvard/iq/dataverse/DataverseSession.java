@@ -5,10 +5,13 @@ import edu.harvard.iq.dataverse.PermissionServiceBean.PermissionQuery;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -30,6 +33,7 @@ public class DataverseSession implements Serializable{
         if ( user == null ) {
             user = new GuestUser();
         }
+        user.setRequestMetadata( new UserRequestMetadata((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()) );
         return user;
     }
 

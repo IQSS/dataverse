@@ -18,7 +18,7 @@ public class UserRequestMetadata {
     
     private final HttpServletRequest httpRequest;
     
-    private Set<Group> groups = new HashSet<>();
+    private final Set<Group> groups = new HashSet<>();
     
     public UserRequestMetadata( HttpServletRequest aHttpServletRequest ) {
         httpRequest = aHttpServletRequest;

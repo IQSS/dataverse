@@ -18,4 +18,5 @@ public interface User extends RoleAssignee, Serializable {
     
     public UserRequestMetadata getRequestMetadata();
     
+    public void setRequestMetadata( UserRequestMetadata mtd );
 }

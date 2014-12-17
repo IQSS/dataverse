@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.nio.file.Path;
@@ -12,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
@@ -358,10 +352,14 @@ public class Dataset extends DvObjectContainer {
         return v.visit(this);
     }
 
-
-
+    @Override
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
         return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
     }   
+
+    @Override
+    protected boolean isPermissionRoot() {
+        return false;
+    }
 }

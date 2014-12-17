@@ -66,7 +66,14 @@ public class Dataverse extends DvObjectContainer {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Please select a category for your dataverse.")
     private DataverseType dataverseType;
+    
+    /**
+     * When {@code true}, users are not granted permissions the got for parent
+     * dataverses.
+     */
+    protected boolean permissionRoot;
 
+    
     public DataverseType getDataverseType() {
         return dataverseType;
     }
@@ -354,8 +361,6 @@ public class Dataverse extends DvObjectContainer {
         this.displayFeatured = displayFeatured;
     }
 
-  
-
     public void addRole(DataverseRole role) {
         role.setOwner(this);
         roles.add(role);
@@ -401,7 +406,18 @@ public class Dataverse extends DvObjectContainer {
         return "Dataverse Deposit Terms of Use will be implemented in https://github.com/IQSS/dataverse/issues/551";
     }
     
+    @Override
     public String getDisplayName() {
         return getName() + " Dataverse";
     }
+    
+    @Override
+    public boolean isPermissionRoot() {
+        return permissionRoot;
+    }
+
+    public void setPermissionRoot(boolean permissionRoot) {
+        this.permissionRoot = permissionRoot;
+    }
+
 }

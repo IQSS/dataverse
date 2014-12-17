@@ -129,7 +129,7 @@ public class LoginPage implements java.io.Serializable {
         for ( FilledCredential fc : getFilledCredentials() ) {
             authReq.putCredential(fc.getCredential().getTitle(), fc.getValue());
         }
-        authReq.setIpAddress( JH.requestClientIpAddress() );
+        authReq.setIpAddress( session.getUser().getRequestMetadata().getIpAddress() );
         
         try {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
