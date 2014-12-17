@@ -61,7 +61,9 @@ The Theme + Widgets feature provides you with a way to customize the look of you
 
 For Theme, you can decide either to use the customization from the dataverse above yours or upload your own image file. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
 
-There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data.
+There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data. Within the Widgets page, you can copy and paste the code for the widget you would like to have on your website. 
+
+Adding Widgets to an OpenScholar Website
 
 .. _featured-dataverses:
 
