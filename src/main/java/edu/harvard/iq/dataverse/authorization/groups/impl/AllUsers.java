@@ -1,12 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
+import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import javax.servlet.ServletRequest;
 
-public class AllUsers extends AbstractGroup {
+public class AllUsers extends PersistedGroup {
 
     public AllUsers() {
         setAlias("int:all-users");
@@ -15,7 +13,7 @@ public class AllUsers extends AbstractGroup {
     }
         
     @Override
-    public boolean contains(User aUser, ServletRequest aRequest) {
+    public boolean contains(User aUser) {
         return true;
     }
 
@@ -25,7 +23,7 @@ public class AllUsers extends AbstractGroup {
     }
 
     @Override
-    public GroupCreator getCreator() {
+    public GroupProvider getGroupProvider() {
         return null;
     }
 

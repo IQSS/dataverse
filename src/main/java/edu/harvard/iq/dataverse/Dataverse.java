@@ -26,8 +26,8 @@ import javax.persistence.OrderBy;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -59,14 +59,17 @@ public class Dataverse extends DvObjectContainer {
     @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @Email(message = "Please enter a valid email address.")
-    private String contactEmail;
-
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Please select a category for your dataverse.")
     private DataverseType dataverseType;
+    
+    /**
+     * When {@code true}, users are not granted permissions the got for parent
+     * dataverses.
+     */
+    protected boolean permissionRoot;
 
+    
     public DataverseType getDataverseType() {
         return dataverseType;
     }
@@ -118,6 +121,7 @@ public class Dataverse extends DvObjectContainer {
     private boolean metadataBlockRoot;
     private boolean facetRoot;
     private boolean themeRoot;
+    private boolean templateRoot;    
     private boolean displayByType;
     private boolean displayFeatured;
     
@@ -125,6 +129,11 @@ public class Dataverse extends DvObjectContainer {
     @JoinColumn(name="dataversetheme_id")
     private DataverseTheme dataverseTheme;
 
+    @OneToMany(mappedBy = "dataverse")
+    @OrderBy("displayOrder")
+    @NotEmpty(message="At least one contact is required.")
+    private List<DataverseContact> dataverseContacts = new ArrayList();
+    
     @OneToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks = new ArrayList();
 
@@ -134,7 +143,81 @@ public class Dataverse extends DvObjectContainer {
     
     @OneToMany(mappedBy = "dataverse")
     private List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels = new ArrayList();
+    
+    @ManyToOne
+    @JoinColumn(nullable = true)
+    private Template defaultTemplate;  
+    
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<Template> templates; 
+    
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<Guestbook> guestbooks;
 
+    public List<Guestbook> getGuestbooks() {
+        return guestbooks;
+    }
+
+    public void setGuestbooks(List<Guestbook> guestbooks) {
+        this.guestbooks = guestbooks;
+    } 
+    
+    public List<Guestbook> getParentGuestbooks() {
+        List<Guestbook> retList = new ArrayList();
+        Dataverse testDV = this;
+        while (testDV.getOwner() != null){   
+          
+           retList.addAll(testDV.getOwner().getGuestbooks());
+           
+           if(!testDV.getOwner().guestbookRoot){               
+               break;
+           }           
+           testDV = testDV.getOwner();
+        }
+            return  retList;
+    }
+    
+    public List<Guestbook> getAvailableGuestbooks(){
+        
+        List<Guestbook> retList = new ArrayList();
+        Dataverse testDV = this;
+        List<Guestbook> allGbs = new ArrayList();
+        if (!this.guestbookRoot){
+                    while (testDV.getOwner() != null){   
+          
+           allGbs.addAll(testDV.getOwner().getGuestbooks());
+           
+           if(!testDV.getOwner().guestbookRoot){               
+               break;
+           }           
+           testDV = testDV.getOwner();
+        }
+            
+        }
+        
+        allGbs.addAll(this.getGuestbooks());
+
+        
+        for (Guestbook gbt: allGbs){
+            if(gbt.isEnabled()){
+                retList.add(gbt);
+            }
+        }
+            return  retList;
+        
+    }
+    
+    private boolean guestbookRoot;
+    
+    public boolean isGuestbookRoot() {
+        return guestbookRoot;
+    }
+
+    public void setGuestbookRoot(boolean guestbookRoot) {
+        this.guestbookRoot = guestbookRoot;
+    } 
+    
+    
     public void setDataverseFieldTypeInputLevels(List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels) {
         this.dataverseFieldTypeInputLevels = dataverseFieldTypeInputLevels;
     }
@@ -143,12 +226,6 @@ public class Dataverse extends DvObjectContainer {
         return dataverseFieldTypeInputLevels;
     }
 
-    private boolean templateRoot;
- 
-    
-    @ManyToOne
-    @JoinColumn(nullable = true)
-    private Template defaultTemplate;
 
     public Template getDefaultTemplate() {
         return defaultTemplate;
@@ -157,8 +234,6 @@ public class Dataverse extends DvObjectContainer {
     public void setDefaultTemplate(Template defaultTemplate) {
         this.defaultTemplate = defaultTemplate;
     }
-    @OneToMany(cascade = {CascadeType.MERGE})
-    private List<Template> templates;
 
     public List<Template> getTemplates() {
         return templates;
@@ -269,7 +344,7 @@ public class Dataverse extends DvObjectContainer {
             return getOwner().getDataverseFacets();
         }
     }
-    
+     
     public Long getFacetRootId(){
         if(facetRoot || getOwner() == null){
             return this.getId();
@@ -280,6 +355,26 @@ public class Dataverse extends DvObjectContainer {
 
     public void setDataverseFacets(List<DataverseFacet> dataverseFacets) {
         this.dataverseFacets = dataverseFacets;
+    }
+    
+    public List<DataverseContact> getDataverseContacts() {
+        return dataverseContacts;
+    }
+    
+    public String getContactEmails() {
+        return "";
+    }
+
+    public void setDataverseContacts(List<DataverseContact> dataverseContacts) {
+        this.dataverseContacts = dataverseContacts;
+    }
+    
+    public void addDataverseContact(int index) {
+        dataverseContacts.add(index, new DataverseContact(this));
+    }
+
+    public void removeDataverseContact(int index) {
+        dataverseContacts.remove(index);
     }
 
     public String getName() {
@@ -304,14 +399,6 @@ public class Dataverse extends DvObjectContainer {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getContactEmail() {
-        return contactEmail;
-    }
-
-    public void setContactEmail(String contactEmail) {
-        this.contactEmail = contactEmail;
     }
 
     public String getAffiliation() {
@@ -353,8 +440,6 @@ public class Dataverse extends DvObjectContainer {
     public void setDisplayFeatured(boolean displayFeatured) {
         this.displayFeatured = displayFeatured;
     }
-
-  
 
     public void addRole(DataverseRole role) {
         role.setOwner(this);
@@ -401,7 +486,18 @@ public class Dataverse extends DvObjectContainer {
         return "Dataverse Deposit Terms of Use will be implemented in https://github.com/IQSS/dataverse/issues/551";
     }
     
+    @Override
     public String getDisplayName() {
         return getName() + " Dataverse";
     }
+    
+    @Override
+    public boolean isPermissionRoot() {
+        return permissionRoot;
+    }
+
+    public void setPermissionRoot(boolean permissionRoot) {
+        this.permissionRoot = permissionRoot;
+    }
+
 }

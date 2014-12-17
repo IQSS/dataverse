@@ -5,16 +5,12 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import java.util.ArrayList;
-import java.util.List;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import org.swordapp.server.SwordError;
-import org.swordapp.server.UriRegistry;
 
 @Stateless
 @Named
@@ -23,20 +19,20 @@ public class SwordServiceBean {
     private static final Logger logger = Logger.getLogger(SwordServiceBean.class.getCanonicalName());
 
     @EJB
-    DatasetFieldServiceBean datasetFieldService;
+    DatasetFieldServiceBean datasetFieldService;  
 
     /**
      * Mutate the dataset version, adding a datasetContact (email address) from
      * the dataverse that will own the dataset.
      */
-    public void addDatasetContact(DatasetVersion newDatasetVersion) {
+    public void addDatasetContact(DatasetVersion newDatasetVersion, User user) {
         DatasetFieldType emailDatasetFieldType = datasetFieldService.findByNameOpt(DatasetFieldConstant.datasetContact);
         DatasetField emailDatasetField = DatasetField.createNewEmptyDatasetField(emailDatasetFieldType, newDatasetVersion);
 
         for (DatasetField childField : emailDatasetField.getDatasetFieldCompoundValues().get(0).getChildDatasetFields()) {
             if (DatasetFieldConstant.datasetContactEmail.equals(childField.getDatasetFieldType().getName())) {
-                // set the value to that of the owning dataverse
-                childField.getSingleValue().setValue(newDatasetVersion.getDataset().getOwner().getContactEmail());
+                // set the value to the  in user's email
+                childField.getSingleValue().setValue(user.getDisplayInfo().getEmailAddress());
             }
         }
 

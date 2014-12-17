@@ -1,5 +1,6 @@
 package edu.harvard.iq.ip;
 
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -52,6 +53,30 @@ public class IPv4AddressTest {
         IPv4Address[] scrambled = new IPv4Address[]{expected[3], expected[2],expected[0],expected[1]};
         Arrays.sort(scrambled);
         assertArrayEquals( expected, scrambled );
+    }
+    
+    @Test
+    public void testLongRoundtrip() {
+        for ( IPv4Address addr : Arrays.asList(
+                new IPv4Address(127,0,36,255),
+                new IPv4Address(0,0,0,0),
+                new IPv4Address(127,0,0,1),
+                new IPv4Address(128,0,0,1),
+                new IPv4Address(0,0,127,1),
+                new IPv4Address(0,0,128,1),
+                new IPv4Address(128,128,128,128),
+                new IPv4Address(127,127,127,127),
+                new IPv4Address(255,255,255,255),
+                new IPv4Address(255,0,34,1)) ) {
+            assertEquals( addr, new IPv4Address(addr.toLong()) );
+        }
+    }
+    
+    @Test
+    public void testBitOffset() {
+        for ( int i=0; i<64; i++ ) {
+            System.out.println("0x1<<" + i + "=\t" + (1l<<i));
+        }
     }
     
 }

@@ -1,5 +1,8 @@
 package edu.harvard.iq.ip;
 
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

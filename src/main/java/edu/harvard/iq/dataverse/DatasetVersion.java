@@ -68,6 +68,11 @@ public class DatasetVersion implements Serializable {
 
         DRAFT, IN_REVIEW, RELEASED, ARCHIVED, DEACCESSIONED
     };
+    
+    public enum License {
+        NONE, CC0
+    }
+
 
     public DatasetVersion() {
 
@@ -119,6 +124,17 @@ public class DatasetVersion implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
+    
+    @Enumerated(EnumType.STRING)
+    private License license;
+
+    public License getLicense() {
+        return license;
+    }
+
+    public void setLicense(License license) {
+        this.license = license;
+    }
 
     @ManyToOne
     private Dataset dataset;
@@ -173,6 +189,144 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     private String deaccessionLink;
+        private String termsOfUse;
+    private String termsOfAccess;
+    private String confidentialityDeclaration;
+    private String specialPermissions;
+    private String restrictions;
+    private String citationRequirements;
+    private String depositorRequirements;
+    private String conditions;
+    private String disclaimer;
+    private String dataAccessPlace;
+    private String originalArchive;
+    private String availabilityStatus;
+    private String contactForAccess;
+    private String sizeOfCollection;
+    private String studyCompletion;
+
+    public String getStudyCompletion() {
+        return studyCompletion;
+    }
+
+    public void setStudyCompletion(String studyCompletion) {
+        this.studyCompletion = studyCompletion;
+    }
+        
+    
+    public String getTermsOfUse() {
+        return termsOfUse;
+    }
+
+    public void setTermsOfUse(String termsOfUse) {
+        this.termsOfUse = termsOfUse;
+    }
+
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+    
+        
+    public String getConfidentialityDeclaration() {
+        return confidentialityDeclaration;
+    }
+
+    public void setConfidentialityDeclaration(String confidentialityDeclaration) {
+        this.confidentialityDeclaration = confidentialityDeclaration;
+    }
+
+    public String getSpecialPermissions() {
+        return specialPermissions;
+    }
+
+    public void setSpecialPermissions(String specialPermissions) {
+        this.specialPermissions = specialPermissions;
+    }
+
+    public String getRestrictions() {
+        return restrictions;
+    }
+
+    public void setRestrictions(String restrictions) {
+        this.restrictions = restrictions;
+    }
+
+    public String getCitationRequirements() {
+        return citationRequirements;
+    }
+
+    public void setCitationRequirements(String citationRequirements) {
+        this.citationRequirements = citationRequirements;
+    }
+
+    public String getDepositorRequirements() {
+        return depositorRequirements;
+    }
+
+    public void setDepositorRequirements(String depositorRequirements) {
+        this.depositorRequirements = depositorRequirements;
+    }
+
+    public String getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(String conditions) {
+        this.conditions = conditions;
+    }
+
+    public String getDisclaimer() {
+        return disclaimer;
+    }
+
+    public void setDisclaimer(String disclaimer) {
+        this.disclaimer = disclaimer;
+    }
+
+    public String getDataAccessPlace() {
+        return dataAccessPlace;
+    }
+
+    public void setDataAccessPlace(String dataAccessPlace) {
+        this.dataAccessPlace = dataAccessPlace;
+    }
+
+    public String getOriginalArchive() {
+        return originalArchive;
+    }
+
+    public void setOriginalArchive(String originalArchive) {
+        this.originalArchive = originalArchive;
+    }
+
+    public String getAvailabilityStatus() {
+        return availabilityStatus;
+    }
+
+    public void setAvailabilityStatus(String availabilityStatus) {
+        this.availabilityStatus = availabilityStatus;
+    }
+
+    public String getContactForAccess() {
+        return contactForAccess;
+    }
+
+    public void setContactForAccess(String contactForAccess) {
+        this.contactForAccess = contactForAccess;
+    }
+
+    public String getSizeOfCollection() {
+        return sizeOfCollection;
+    }
+
+    public void setSizeOfCollection(String sizeOfCollection) {
+        this.sizeOfCollection = sizeOfCollection;
+    }
+
 
     public Date getArchiveTime() {
         return archiveTime;

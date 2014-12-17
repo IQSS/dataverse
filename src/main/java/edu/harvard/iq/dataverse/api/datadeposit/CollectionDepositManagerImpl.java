@@ -105,7 +105,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }
 
-                        swordService.addDatasetContact(newDatasetVersion);
+                        swordService.addDatasetContact(newDatasetVersion, user);
                         swordService.addDatasetSubject(newDatasetVersion);
 
                         Dataset createdDataset = null;

@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -17,6 +18,8 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -73,7 +76,27 @@ public class JsonPrinter {
 		}
 		return bld;
 	}
-	
+    
+    public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
+        return jsonObjectBuilder()
+                .add( "title", d.getTitle() )
+                .add( "email", d.getEmailAddress() )
+                .add( "affiliation", d.getAffiliation() );
+    }
+    
+	public static JsonObjectBuilder json( IpGroup grp ) {
+        JsonArrayBuilder rangeBld = Json.createArrayBuilder();
+        for ( IpAddressRange r :grp.getRanges() ) {
+            rangeBld.add( Json.createArrayBuilder().add(r.getBottom().toString()).add(r.getTop().toString()) );
+        }
+        return jsonObjectBuilder()
+                .add("alias", grp.getAlias() )
+                .add("id", grp.getId() )
+                .add("name", grp.getName() )
+                .add("description", grp.getDescription() )
+                .add("ranges", rangeBld);
+    }
+    
 	public static JsonObjectBuilder json( DataverseRole role ) {
 		JsonObjectBuilder bld = jsonObjectBuilder()
 				.add("alias", role.getAlias()) 
@@ -91,10 +114,9 @@ public class JsonPrinter {
 						.add("id", dv.getId() )
 						.add("alias", dv.getAlias()) 
 						.add("name", dv.getName())
-                        .add("affiliation", dv.getAffiliation())
-						.add("contactEmail", dv.getContactEmail())
+                                                .add("affiliation", dv.getAffiliation())
+                                                .add("dataverseContacts", json(dv.getDataverseContacts()))
 						.add("permissionRoot", dv.isPermissionRoot())
-						//.add("creator",json(dv.getCreator()))
 						.add("description", dv.getDescription());
 		if ( dv.getOwner() != null ) {
 			bld.add("ownerId", dv.getOwner().getId());
@@ -102,9 +124,24 @@ public class JsonPrinter {
 		if ( dv.getCreateDate() != null ) {
 			bld.add("creationDate", dateFormat.format(dv.getCreateDate()));
 		}
+                if ( dv.getCreator() != null ) {
+                    bld.add("creator",json(dv.getCreator()));
+                }
 		
 		return bld;
 	}
+
+    public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        for (DataverseContact dc : dataverseContacts) {
+            bld.add( jsonObjectBuilder()
+                .add( "displayOrder",dc.getDisplayOrder())
+                .add( "contactEmail",dc.getContactEmail())
+            );
+        }
+        return bld;
+    }       
+      
 	
 	public static JsonObjectBuilder json( BuiltinUser user ) {
 		return (user == null ) 

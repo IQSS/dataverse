@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
+import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchPermissionsServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -1028,7 +1029,11 @@ public class IndexServiceBean {
         return "Desired state for existence of cards: " + desiredCards + "\n";
     }
 
-    public List findStaleDataverses() {
+    /**
+     * @return Dataverses that should be reindexed either because they have
+     * never been indexed or their index time is before their modification time.
+     */
+    public List findStaleOrMissingDataverses() {
         List<Dataverse> staleDataverses = new ArrayList<>();
         for (Dataverse dataverse : dataverseService.findAll()) {
             if (dataverse.equals(dataverseService.findRootDataverse())) {
@@ -1041,7 +1046,11 @@ public class IndexServiceBean {
         return staleDataverses;
     }
 
-    public List findStaleDatasets() {
+    /**
+     * @return Datasets that should be reindexed either because they have never
+     * been indexed or their index time is before their modification time.
+     */
+    public List findStaleOrMissingDatasets() {
         List<Dataset> staleDatasets = new ArrayList<>();
         for (Dataset dataset : datasetService.findAll()) {
             if (stale(dataset)) {
@@ -1062,6 +1071,59 @@ public class IndexServiceBean {
             }
         }
         return false;
+    }
+
+    public List<Long> findDataversesInSolrOnly() throws SearchException {
+        try {
+            /**
+             * @todo define this centrally and statically
+             */
+            return findDvObjectInSolrOnly("dataverses");
+        } catch (SearchException ex) {
+            throw ex;
+        }
+    }
+
+    public List<Long> findDatasetsInSolrOnly() throws SearchException {
+        try {
+            /**
+             * @todo define this centrally and statically
+             */
+            return findDvObjectInSolrOnly("datasets");
+        } catch (SearchException ex) {
+            throw ex;
+        }
+    }
+
+    private List<Long> findDvObjectInSolrOnly(String type) throws SearchException {
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("*");
+        solrQuery.setRows(Integer.SIZE);
+        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
+        List<Long> dvObjectInSolrOnly = new ArrayList<>();
+        QueryResponse queryResponse = null;
+        try {
+            queryResponse = solrServer.query(solrQuery);
+        } catch (SolrServerException ex) {
+            throw new SearchException("Error searching Solr for " + type, ex);
+        }
+        SolrDocumentList results = queryResponse.getResults();
+        for (SolrDocument solrDocument : results) {
+            Object idObject = solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+            if (idObject != null) {
+                try {
+                    long id = (Long) idObject;
+                    DvObject dvobject = dvObjectService.findDvObject(id);
+                    if (dvobject == null) {
+                        dvObjectInSolrOnly.add(id);
+                    }
+                } catch (ClassCastException ex) {
+                    throw new SearchException("Found " + SearchFields.ENTITY_ID + " but error casting " + idObject + " to long", ex);
+                }
+            }
+        }
+        return dvObjectInSolrOnly;
     }
 
 }

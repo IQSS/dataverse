@@ -31,7 +31,7 @@ import javax.validation.constraints.Size;
 			    query= "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
 	@NamedQuery(name = "DataverseRole.findBuiltinRoles",
 			    query= "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),
-        @NamedQuery(name = "DataverseRole.findBuiltinRoleByAlias",
+    @NamedQuery(name = "DataverseRole.findBuiltinRoleByAlias",
 			    query= "SELECT r FROM DataverseRole r WHERE r.alias=:alias AND r.owner is null"),
 	@NamedQuery(name = "DataverseRole.listAll",
 			    query= "SELECT r FROM DataverseRole r"),

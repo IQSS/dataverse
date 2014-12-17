@@ -142,10 +142,12 @@ public class DataversePage implements java.io.Serializable {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-            }               
-            dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
+            }
+            
+            // set defaults - contact e-mail and affiliation from user
+            dataverse.getDataverseContacts().add(new DataverseContact(session.getUser().getDisplayInfo().getEmailAddress()));
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
-            dataverse.setFacetRoot(false);
+            
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         }
 
@@ -586,5 +588,5 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     }
-
+    
 }

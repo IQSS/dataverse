@@ -23,7 +23,7 @@
                     <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null and manageTemplatesPage.inheritTemplatesAllowed}">
                         <label for="templateRoot" style="margin-top:.75em;">
                             <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
-                                <p:ajax update="@all" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
+                                <p:ajax update="@form" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
                             </h:selectBooleanCheckbox>
                             Include Templates from  Parent Dataverse
                         </label>
@@ -58,13 +58,13 @@
                                                    value="Make Default"
                                                    rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
                                                    actionListener="#{manageTemplatesPage.makeDefault(template)}"
-                                                   update="@all"
+                                                   update="@form"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Default"                                                 
                                                    rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
                                                    actionListener="#{manageTemplatesPage.unselectDefault(template)}"
-                                                   update="@all"
+                                                   update="@form"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" rendered="false"
                                                   value="/template.xhtml?id=#{template.id}&#38;ownerId=#{template.dataverse.id}">
@@ -77,9 +77,9 @@
                                                    update=":manageTemplatesForm"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <p:commandLink styleClass="btn btn-default" 
-                                                   value="Clone"                                                 
+                                                   value="Copy"                                                 
                                                    action="#{manageTemplatesPage.cloneTemplate(template)}"
-                                                   update="@all"
+                                                   update="@form"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" 
                                                   rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"

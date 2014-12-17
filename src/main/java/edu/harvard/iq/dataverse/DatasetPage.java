@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
@@ -73,6 +74,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import javax.faces.model.SelectItem;
 
 /**
  *
@@ -86,7 +88,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, FILE, METADATA
+        CREATE, INFO, FILE, METADATA, LICENSE
     };
 
     public enum DisplayMode {
@@ -130,6 +132,8 @@ public class DatasetPage implements java.io.Serializable {
     AuthenticationServiceBean authService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    GuestbookResponseServiceBean guestbookServiceBean;
     @Inject
     DatasetVersionUI datasetVersionUI;
  
@@ -160,8 +164,46 @@ public class DatasetPage implements java.io.Serializable {
     private String protocol = "";
     private String authority = "";
     private String separator = "";
+    private boolean acceptedTerms = false;
+
+    public boolean isAcceptedTerms() {
+        return acceptedTerms;
+    }
+
+    public void setAcceptedTerms(boolean acceptedTerms) {
+        this.acceptedTerms = acceptedTerms;
+    }
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
+    
+    private GuestbookResponse guestbookResponse = new GuestbookResponse();
+    private Guestbook selectedGuestbook;
+
+    public GuestbookResponse getGuestbookResponse() {
+        return guestbookResponse;
+    }
+
+    public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
+        this.guestbookResponse = guestbookResponse;
+    }
+
+
+    public Guestbook getSelectedGuestbook() {
+        return selectedGuestbook;
+    }
+
+    public void setSelectedGuestbook(Guestbook selectedGuestbook) {
+        this.selectedGuestbook = selectedGuestbook;
+    }
+
+
+    public void viewSelectedGuestbook(Guestbook selectedGuestbook) {
+        this.selectedGuestbook = selectedGuestbook;
+    }
+    
+    public void reset() {
+        dataset.setGuestbook(null);
+    }
 
     public String getGlobalId() {
         return globalId;
@@ -553,6 +595,60 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         return null;
+    }
+    
+    public String saveGuestbookResponse() {
+        
+        boolean valid = true;
+        
+        if (workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
+            valid &= this.acceptedTerms;
+        }
+        
+        if(dataset.getGuestbook() != null){
+            if (dataset.getGuestbook().isNameRequired()){
+                valid &= !guestbookResponse.getName().isEmpty();
+            }
+            if (dataset.getGuestbook().isEmailRequired()){
+                valid &= !guestbookResponse.getEmail().isEmpty();
+            }
+            if (dataset.getGuestbook().isInstitutionRequired()){
+                valid &= !guestbookResponse.getInstitution().isEmpty();
+            }
+            if (dataset.getGuestbook().isPositionRequired()){
+                valid &= !guestbookResponse.getPosition().isEmpty();
+            }
+        }
+        
+        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()){
+            for (CustomQuestion cq: dataset.getGuestbook().getCustomQuestions()){
+                if (cq.isRequired()){
+                    for(CustomQuestionResponse cqr: guestbookResponse.getCustomQuestionResponses()){
+                        if(cqr.getCustomQuestion().equals(cq)){
+                            valid &= !cqr.getResponse().isEmpty();
+                        }
+                    }
+                }
+            }
+        }
+        
+
+        if (!valid) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+            return "";
+        }
+    /* need to get file and connect to actual download
+        Command cmd;
+        try {
+            cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
+           commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+
+        }
+        */
+        return "";
     }
 
     private String getUserName(User user) {
@@ -1258,6 +1354,62 @@ public class DatasetPage implements java.io.Serializable {
         this.datasetVersionDifference = datasetVersionDifference;
     }
 
+    public void initGuestbookResponse() {
+        
+        if(this.guestbookResponse == null){
+            this.guestbookResponse= new GuestbookResponse();
+        }
+        User user = session.getUser();
+        if (this.dataset.getGuestbook() != null) {
+            this.guestbookResponse.setGuestbook(this.dataset.getGuestbook());
+                this.guestbookResponse.setName("");
+                this.guestbookResponse.setEmail("");
+                this.guestbookResponse.setInstitution("");
+                this.guestbookResponse.setPosition(""); 
+            if (user.isAuthenticated()) {
+                AuthenticatedUser aUser = (AuthenticatedUser) user;
+                this.guestbookResponse.setName(aUser.getName());
+                this.guestbookResponse.setAuthenticatedUser(aUser);
+                this.guestbookResponse.setEmail(aUser.getEmail());
+                this.guestbookResponse.setInstitution(aUser.getAffiliation());
+            }
+            /*
+            if (user.isBuiltInUser()) {
+                BuiltinUser bUser = (BuiltinUser) user;
+                this.guestbookResponse.setPosition(bUser.getPosition());
+            }*/
+        } else {
+            this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, null, user);
+        }
+        if (this.dataset.getGuestbook() != null && !this.dataset.getGuestbook().getCustomQuestions().isEmpty()){
+            this.guestbookResponse.setCustomQuestionResponses(new ArrayList());
+            for (CustomQuestion cq : this.dataset.getGuestbook().getCustomQuestions()){
+                CustomQuestionResponse cqr = new CustomQuestionResponse();
+                cqr.setGuestbookResponse(guestbookResponse);
+                cqr.setCustomQuestion(cq);
+                cqr.setResponse("");
+                if (cq.getQuestionType().equals("options")){
+                        //response select Items
+                       cqr.setResponseSelectItems(setResponseUISelectItems(cq));
+                }
+                this.guestbookResponse.getCustomQuestionResponses().add(cqr);
+            }
+            
+        }
+        //TODO - get real datafile
+        //this.guestbookResponse.setDataFile(datafileService.find(new Long(5)));
+        this.guestbookResponse.setDataset(dataset);
+    }
+    
+    private List <SelectItem> setResponseUISelectItems(CustomQuestion cq){
+        List  <SelectItem> retList = new ArrayList();
+        for (CustomQuestionValue cqv: cq.getCustomQuestionValues()){
+            SelectItem si = new SelectItem(cqv.getValueString(), cqv.getValueString());
+            retList.add(si);
+        }
+        return retList;
+    }
+    
     public void compareVersionDifferences() {
         RequestContext requestContext = RequestContext.getCurrentInstance();
         if (this.selectedVersions.size() != 2) {
