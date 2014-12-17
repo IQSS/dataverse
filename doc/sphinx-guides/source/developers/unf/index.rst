@@ -9,9 +9,9 @@ Contents:
   unf-v5
   unf-v6
 
-
+====================================
 Universal Numerical Fingerprint (UNF)
-++++++++++++++++++++++++++++
+====================================
 
 .. figure:: ./img/unf-diagram.png
     :align: center
