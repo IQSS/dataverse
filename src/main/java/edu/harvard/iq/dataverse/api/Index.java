@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import javax.ejb.EJB;
@@ -91,7 +92,16 @@ public class Index extends AbstractApiBean {
                 }
             } else if (type.equals("datasets")) {
                 Dataset dataset = datasetService.find(id);
-                return indexService.indexDataset(dataset) + "\n";
+                if (dataset != null) {
+                    return indexService.indexDataset(dataset) + "\n";
+                } else {
+                    /**
+                     * @todo what about published, deaccessioned, etc.? Need
+                     * method to target those, not just drafts!
+                     */
+                    String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataset + id + IndexServiceBean.draftSuffix);
+                    return "Could not find dataset with id of " + id + ". Result from deletion attempt: " + response;
+                }
             } else if (type.equals("files")) {
                 DataFile dataFile = dataFileService.find(id);
                 Dataset datasetThatOwnsTheFile = datasetService.find(dataFile.getOwner().getId());
@@ -150,8 +160,14 @@ public class Index extends AbstractApiBean {
     public Response indexStatus() {
         List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
         List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
-        List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
-        List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+        List<Long> dataversesInSolrOnly;
+        List<Long> datasetsInSolrOnly;
+        try {
+            dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
+            datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+        } catch (SearchException ex) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
+        }
 
         JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
         for (Dataverse dataverse : stateOrMissingDataverses) {
@@ -164,18 +180,15 @@ public class Index extends AbstractApiBean {
 
         JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
         JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
-        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder();
-        if (dataversesInSolrOnly != null && datasetsInSolrOnly != null) {
-            for (Long dataverseId : dataversesInSolrOnly) {
-                dataversesInSolrButNotDatabase.add(dataverseId);
-            }
-            for (Long datasetId : datasetsInSolrOnly) {
-                datasetsInSolrButNotDatabase.add(datasetId);
-            }
-            contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
-                    .add("dataverses", jsonStateOrMissingDataverses)
-                    .add("datasets", datasetsInDatabaseButNotSolr);
+        for (Long dataverseId : dataversesInSolrOnly) {
+            dataversesInSolrButNotDatabase.add(dataverseId);
         }
+        for (Long datasetId : datasetsInSolrOnly) {
+            datasetsInSolrButNotDatabase.add(datasetId);
+        }
+        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
+                .add("dataverses", jsonStateOrMissingDataverses)
+                .add("datasets", datasetsInDatabaseButNotSolr);
 
         JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
                 .add("dataverses", dataversesInSolrButNotDatabase)
