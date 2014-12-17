@@ -142,7 +142,74 @@ public class Dataverse extends DvObjectContainer {
     private Template defaultTemplate;  
     
     @OneToMany(cascade = {CascadeType.MERGE})
-    private List<Template> templates;    
+    private List<Template> templates; 
+    
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<Guestbook> guestbooks;
+
+    public List<Guestbook> getGuestbooks() {
+        return guestbooks;
+    }
+
+    public void setGuestbooks(List<Guestbook> guestbooks) {
+        this.guestbooks = guestbooks;
+    } 
+    
+    public List<Guestbook> getParentGuestbooks() {
+        List<Guestbook> retList = new ArrayList();
+        Dataverse testDV = this;
+        while (testDV.getOwner() != null){   
+          
+           retList.addAll(testDV.getOwner().getGuestbooks());
+           
+           if(!testDV.getOwner().guestbookRoot){               
+               break;
+           }           
+           testDV = testDV.getOwner();
+        }
+            return  retList;
+    }
+    
+    public List<Guestbook> getAvailableGuestbooks(){
+        
+        List<Guestbook> retList = new ArrayList();
+        Dataverse testDV = this;
+        List<Guestbook> allGbs = new ArrayList();
+        if (!this.guestbookRoot){
+                    while (testDV.getOwner() != null){   
+          
+           allGbs.addAll(testDV.getOwner().getGuestbooks());
+           
+           if(!testDV.getOwner().guestbookRoot){               
+               break;
+           }           
+           testDV = testDV.getOwner();
+        }
+            
+        }
+        
+        allGbs.addAll(this.getGuestbooks());
+
+        
+        for (Guestbook gbt: allGbs){
+            if(gbt.isEnabled()){
+                retList.add(gbt);
+            }
+        }
+            return  retList;
+        
+    }
+    
+    private boolean guestbookRoot;
+    
+    public boolean isGuestbookRoot() {
+        return guestbookRoot;
+    }
+
+    public void setGuestbookRoot(boolean guestbookRoot) {
+        this.guestbookRoot = guestbookRoot;
+    } 
+    
     
     public void setDataverseFieldTypeInputLevels(List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels) {
         this.dataverseFieldTypeInputLevels = dataverseFieldTypeInputLevels;

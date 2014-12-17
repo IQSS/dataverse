@@ -77,8 +77,15 @@ public class EjbDataverseEngine {
 
     @EJB
     DOIEZIdServiceBean doiEZId;
+    
     @EJB
     SettingsServiceBean settings;
+    
+    @EJB
+    GuestbookServiceBean guestbookService;
+    
+    @EJB
+    GuestbookResponseServiceBean responses;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -210,7 +217,16 @@ public class EjbDataverseEngine {
                 public SettingsServiceBean settings() {
                     return settings;
                 }
+                
+                @Override
+                public GuestbookServiceBean guestbooks() {
+                    return guestbookService;
+                }
 
+                @Override
+                public GuestbookResponseServiceBean responses() {
+                    return responses;
+                }
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {

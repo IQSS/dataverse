@@ -55,6 +55,12 @@ public class Dataset extends DvObjectContainer {
     @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
     @JoinColumn(name="thumbnailfile_id")
     private DataFile thumbnailFile;
+    
+    @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
+    @JoinColumn(name="guestbook_id", unique= true, nullable=true, insertable=true, updatable=true)
+    private Guestbook guestbook;
+    
+    private boolean fileAccessRequest;
 
     public Dataset() {
         //this.versions = new ArrayList();
@@ -107,8 +113,23 @@ public class Dataset extends DvObjectContainer {
     public void setGlobalIdCreateTime(Date globalIdCreateTime) {
         this.globalIdCreateTime = globalIdCreateTime;
     }
+    
+    public Guestbook getGuestbook() {
+        return guestbook;
+    }
 
+    public void setGuestbook(Guestbook guestbook) {
+        this.guestbook = guestbook;
+    }
+    
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
 
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }
+    
     public String getPersistentURL() {
         switch (this.getProtocol()) {
             case "hdl":
@@ -363,5 +384,5 @@ public class Dataset extends DvObjectContainer {
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
         return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
-    }   
+    } 
 }
