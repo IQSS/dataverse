@@ -71,7 +71,12 @@ public class WorldMapTokenServiceBean {
         return (WorldMapToken) em.find(WorldMapToken.class, pk);
     }
     
-    
+
+    /**
+     * Expire the token, set the "hasExpired" flag to True
+     * 
+     * @param wmToken 
+     */
     public void expireToken(WorldMapToken wmToken){
         if (wmToken==null){
             return;
@@ -80,6 +85,19 @@ public class WorldMapTokenServiceBean {
         em.merge(wmToken);     
     }
     
+    /**
+     * Expire and then Delete the token
+     * (The expire is a bit extraneous)
+     * 
+     * @param wmToken 
+     */
+    public void deleteToken(WorldMapToken wmToken){
+    
+        if (wmToken==null){
+            return;
+        }
+        em.remove(em.merge(wmToken));
+    }
     
     /*
         Remove expired tokens from the database
@@ -88,8 +106,9 @@ public class WorldMapTokenServiceBean {
 
         Query query = em.createQuery("select object(w) from WorldMapToken as w where w.hasExpired IS TRUE");// order by o.name");
         List<WorldMapToken> tokenList = query.getResultList();
-        for (WorldMapToken token : tokenList) {
-            em.remove(token);
+        for (WorldMapToken wmToken : tokenList) {
+           // em.remove(token);
+            em.remove(em.merge(wmToken));
 	}
     }
 
@@ -156,7 +175,7 @@ public class WorldMapTokenServiceBean {
             return null;
         }
         if (wmToken.hasTokenExpired()){
-            em.remove(wmToken);     // Delete expired token from the database.
+            em.remove(em.merge(wmToken));   // Delete expired token from the database.
             logger.warning("WorldMapToken has expired.  Permission denied.");
             return null;
         }
@@ -178,7 +197,7 @@ public class WorldMapTokenServiceBean {
             return false;
         }
         if (permissionService.userOn(wmToken.getDataverseUser(), wmToken.getDatafile()).has(Permission.EditDataset)) { 
-            logger.info("WorldMap token-based auth: Token's User is still authorized for the datafile.");
+            logger.info("WorldMap token-based auth: Token's User is still authorized to edit the dataset for the datafile.");
             return true;
         }
         return false;
@@ -194,7 +213,7 @@ public class WorldMapTokenServiceBean {
             return false;
         }
         if (permissionService.userOn(wmToken.getDataverseUser(), wmToken.getDatafile()).has(Permission.DownloadFile)) { 
-            logger.info("WorldMap token-based auth: Token's User is still authorized for the datafile.");
+            logger.info("WorldMap token-based auth: Token's User is still authorized to download the datafile.");
             return true;
         }
         return false;
