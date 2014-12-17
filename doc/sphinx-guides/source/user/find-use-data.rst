@@ -69,4 +69,8 @@ Download Files
 
 Within the Files tab on a dataset page, a user can either Explore the file using TwoRavens, Download All File Formats + Information or individually download the Original File Format, Tab Delimited Format, Variable Metadata, Data File Citation (RIS Format or EndNote XML), or Subset (options appear depending on file format).
 
+Explore Data
+------------------
+
+Link to Explore Data guide.
 
