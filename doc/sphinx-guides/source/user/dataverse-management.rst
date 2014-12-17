@@ -33,7 +33,7 @@ Edit Dataverse
 =================
 
 To edit your dataverse, navigate to your dataverse homepage and select the "Edit Dataverse" button, 
-where you will be presented with the following editing options. 
+where you will be presented with the following editing options: 
 
 - :ref:`General Information <general-information>` : edit name, host dataverse, alias, email, 
   description, affilitation, Metadata Elements, and facets for your dataverse.
@@ -48,15 +48,33 @@ where you will be presented with the following editing options.
 General Information
 =====================================================
 
+The General Information page is the same as the page you filled out while creating your dataverse. If you need to change or add a contact email address, this is the place to do it. Additionally, you can update the metadata elements used for datasets within the dataverse, change which metadafields are hidden, required, or optional, and update the facets you would like displayed for browsing the dataverse. If you plan on using templates, you need to select the metadata fields on the General Information page.
+
+Tip: The metadata fields you select as required, will appear on the Create Dataset form when someone goes to add a dataset to the dataverse. 
+
 .. _theme-widgets:
 
 Theme + Widgets
 ====================================================
 
+The Theme + Widgets feature provides you with a way to customize the look of your dataverse as well as provide code for you to put on your personal website to have your dataverse appear there. (For adding your dataverse to an OpenScholar site, follow these instructions.)
+
+For Theme, you can decide either to use the customization from the dataverse above yours or upload your own image file. Additionally, you can select the colors for the header of your dataverse and the text that appears in your dataverse. You can also add a link to your personal website, the website for your organization or institution, your department, journal, etc.
+
+There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data. Within the Widgets page, you can copy and paste the code for the widget you would like to have on your website. 
+
+Adding Widgets to an OpenScholar Website
+
 .. _featured-dataverses:
 
 Featured Dataverses
 ======================================================
+
+Featured Dataverses is a way to display sub dataverses in your dataverse that you want to feature for people to easily see when they visit your dataverse. If you have more than one sub dataverse, Featured Dataverses will appear under the Edit Dataverse button. 
+
+Click on Featured Dataverses and a pop up will appear. Check the box that says, "Display "Featured Dataverses" Carousel on Front Page" and then select which dataverses you would like to have appear. 
+
+Note: Featured Dataverses can only be used with published dataverses.
 
 .. _dataverse-permissions:
 

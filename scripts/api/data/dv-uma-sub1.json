@@ -1,8 +1,12 @@
- {
-    "alias":"umaSub1",
-    "name":"Uma's first",
-    "affiliation":"Affiliation value",
-    "contactEmail":"Uma@mailinator.com",
-    "permissionRoot":false,
-    "description":"Some data of Uma"
+{
+  "alias": "umaSub1",
+  "name": "Uma's first",
+  "affiliation": "Affiliation value",
+  "permissionRoot": false,
+  "description": "Some data of Uma",
+  "dataverseContacts": [
+    {
+      "contactEmail": "Uma@mailinator.com"
+    }
+  ]
 }

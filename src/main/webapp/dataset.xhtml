@@ -113,7 +113,7 @@
                     function openDropboxChooser() {
                         options = {
                             // Required. Called when a user selects an item in the Chooser.
-                            success: function(files) {
+                            success: function (files) {
                                 // Pass the JSON-ized output of the Chooser to the backing bean,
                                 // via a hidden input field:
                                 $('input[id$="dropBoxSelectionInput"]').val(JSON.stringify(files));
@@ -168,6 +168,12 @@
                                                             <h:outputText value="Metadata" />
                                                         </p:commandLink>
                                                     </li>
+                                                   <li>
+                                                        <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_metadata()">
+                                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                            <h:outputText value="License and Terms" />
+                                                        </p:commandLink>
+                                                    </li>
                                                     <li>
                                                         <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
                                                             <h:outputText value="Permissions" />
@@ -214,10 +220,10 @@
                                                     <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Register Dataset
                                                 </button>
                                                 <p:commandButton value="Direct" id="registerDataset"
-                                                         style="display:none"
-                                                         update="@form"
-                                                         action="#{DatasetPage.registerDataset()}">
-                                        </p:commandButton>
+                                                                 style="display:none"
+                                                                 update="@form"
+                                                                 action="#{DatasetPage.registerDataset()}">
+                                                </p:commandButton>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
                                                                      and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -485,14 +491,14 @@
                                             function uploadWidgetDropRemoveMsg() {
                                                 $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
                                             }
-                                            $(document).ready(function() {
+                                            $(document).ready(function () {
                                                 uploadWidgetDropMsg();
                                             });
                                         </script>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                       fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="Select Files to Add"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
-                                        
+
                                         <ui:fragment rendered="#{!empty DatasetPage.dropBoxKey}">
                                             <div id="dropboxUploadBlock" class="panel panel-default" style="margin-top:1em;">
                                                 <div class="panel-body">
@@ -556,8 +562,8 @@
                                                 <h:outputText id="fileSize" value="#{fileMetadata.dataFile.friendlySize} - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
                                                 <h:outputText id="fileCreatePublishDate" value="#{DatasetPage.getFileDateToDisplay(fileMetadata)} - " rendered="#{!(empty fileMetadata.id)}"/>
-                                                
-                                                <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
+
+<!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
 
                                                 <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? 'Original File MD5' : 'MD5'}: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
@@ -629,8 +635,8 @@
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
                                             </ui:fragment>-->
 
-                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->
-                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" target="_blank" role="button">
+                                            <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->
+                                                <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" target="_blank" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/>
                                                     <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
                                                     <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
@@ -678,16 +684,16 @@
                                                         <li class="dropdown-submenu">
                                                             <a tabindex="-1" href="javascript:void(0);">Data File Citation</a>
                                                             <ul class="dropdown-menu">
-                                                              <li>
-                                                                  <h:commandLink id="risLinkFile" actionListener="#{DatasetPage.downloadDatafileCitationRIS(fileMetadata)}">
-                                                                    <h:outputText value="RIS Format" />
-                                                                  </h:commandLink>
-                                                              </li>
-                                                              <li>
-                                                                  <h:commandLink id="endNoteLinkFile" action="#{DatasetPage.downloadDatafileCitationXML(fileMetadata)}" >
-                                                                    <h:outputText value="EndNote XML" />
-                                                                  </h:commandLink>
-                                                              </li>
+                                                                <li>
+                                                                    <h:commandLink id="risLinkFile" actionListener="#{DatasetPage.downloadDatafileCitationRIS(fileMetadata)}">
+                                                                        <h:outputText value="RIS Format" />
+                                                                    </h:commandLink>
+                                                                </li>
+                                                                <li>
+                                                                    <h:commandLink id="endNoteLinkFile" action="#{DatasetPage.downloadDatafileCitationXML(fileMetadata)}" >
+                                                                        <h:outputText value="EndNote XML" />
+                                                                    </h:commandLink>
+                                                                </li>
                                                             </ul>
                                                         </li>
                                                     </ul>
@@ -699,6 +705,15 @@
                                             </ui:fragment>
                                         </p:column>
                                     </p:dataTable>
+                                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                                        <div style="float:right;">
+                                            <p:commandButton value="Command show download button" id="showDownloadButton"                                                   
+                                                             oncomplete="downloadPopup.show();"
+                                                             update="@form"
+                                                             action="#{DatasetPage.initGuestbookResponse()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </ui:fragment>
                                 </p:tab>
 
                                 <p:tab  id="metadataMapTab" title="Metadata"
@@ -719,12 +734,18 @@
                                         <ui:include src="metadataFragment.xhtml"/>
                                     </div>
                                 </p:tab>
-                                <p:tab id="licensingTermsTab" title="Licensing + Terms" rendered="#{false}">
-                                    <div class="" style="text-align:right; margin-bottom:.5em;">
-                                        <button type="button" class="btn btn-default" value="Edit Licensing + Terms Requirements">
-                                            <span class="glyphicon glyphicon-briefcase"></span> Edit Licensing + Terms Requirements
-                                        </button>
-                                    </div>
+                                <p:tab id="licensingTermsTab" title="Licensing + Terms" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE'}">
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
+                                        <div class="" style="text-align:right; margin-bottom:.5em;">
+                                            <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                <span class="glyphicon glyphicon-briefcase" style="margin-right:.3em;"/> Edit Licensing + Terms Requirements
+                                            </p:commandLink>
+                                        </div>
+                                    </ui:fragment>
                                     <p class="help-block">These are all the Licensing + Terms for your dataset.</p>
                                     <div class="panel-group">
                                         <div class="panel panel-default" style="margin-bottom:1em;">
@@ -739,30 +760,193 @@
                                                                 Licensing
                                                             </a>
                                                         </label>
-                                                        <div class="col-sm-9">
-                                                            <p class="help-block">This a default setting for your dataset.</p>
-                                                        </div>
+                                                        <ui:fragment rendered ="#{empty DatasetPage.editMode}">
+                                                            <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
+                                                                <div class="col-sm-9">
+                                                                    <p class="help-block">CC0 - "Public Domain Dedication"</p>
+                                                                </div>
+                                                                <div class="col-sm-9">
+                                                                    <p class="help-block">This a default setting for your dataset. Add your Terms of Use in the Edit Access and Requirements if CC0 is not applicable to your data.</p>
+                                                                </div>
+                                                            </ui:fragment>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered ="#{!empty DatasetPage.editMode }">
+                                                            <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
+                                                                <f:selectItem itemLabel="Yes, apply CC0 - Public Domain Dedication licensing to this dataset." itemValue="CC0" />
+                                                                <f:selectItem itemLabel="No, do not apply CC0 - Public Domain Dedication licensing to this dataset." itemValue="" />
+                                                                <p:ajax update=":datasetForm" />                                                
+                                                            </p:selectOneRadio>      
+                                                            <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
+                                                                This is what your end users will see displayed on your dataset 
+                                                                <div class="col-sm-9">
+                                                                    <p class="help-block">For more details about the CC0 - Public Domain Dedication licensing see our Community Norms.</p>
+                                                                </div>
+                                                                <div class="col-sm-9">
+                                                                    <p class="help-block">CC0 - "Public Domain Dedication"</p>
+                                                                </div>
+                                                            </ui:fragment>  
+                                                        </ui:fragment>
                                                     </div>
-                                                    <div class="form-group">
-                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                                                Terms of Use
+                                                    <ui:fragment rendered="#{DatasetPage.workingVersion.license != 'CC0'}">
+                                                        <div class="form-group">
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                    Terms of Use
+                                                                </a>
+                                                            </label>
+                                                            <ui:fragment rendered ="#{empty DatasetPage.editMode}">
+                                                                <div class="col-sm-9">
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.termsOfUse}"/>
+                                                                </div>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUse}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            </ui:fragment>
+                                                        </div>
+                                                    </ui:fragment>
+                                                </div>
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading" role="tab" id="headingTOU">
+                                                        <h4 class="panel-title">
+                                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#additionalTOU" aria-expanded="false" aria-controls="additionalTOU">
+                                                                Additional Information
                                                             </a>
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                        </h4>
+                                                    </div>
+                                                    <div id="additionalTOU" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTOU">
+                                                        <div class="panel-body">
+                                                            <ui:fragment rendered ="#{empty DatasetPage.editMode}">
+                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.confidentialityDeclaration}">      
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">                                                                
+                                                                    Confidentiality Declaration
+                                                            </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.confidentialityDeclaration}"/>
+                                                                </div>
+                                                                    </ui:fragment> 
+                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.specialPermissions}"> 
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Special Permissions
+                                                            </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.specialPermissions}"/>
+                                                                </div>
+                                                                    </ui:fragment>
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.restrictions}"> 
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Restrictions
+                                                            </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.restrictions}"/>
+                                                                </div>
+                                                                    </ui:fragment>
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.citationRequirements}"> 
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Citation Requirements
+                                                            </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersioncitationRequirements}"/>
+                                                                </div>
+                                                                    </ui:fragment>
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.depositorRequirements}"> 
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Depositor Requirements
+                                                            </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.depositorRequirements}"/>
+                                                                </div>
+                                                                    </ui:fragment>  
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.conditions}"> 
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Conditions
+                                                            </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.conditions}"/>
+                                                                </div>
+                                                                    </ui:fragment>
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.disclaimer}"> 
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Disclaimer
+                                                            </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.disclaimer}"/>
+                                                                </div>
+                                                                    </ui:fragment>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Indicates whether signing of a confidentiality declaration is needed to access a resource.">
+                                                                     Confidentiality Declaration
+                                                                </a>
+                                                            </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.confidentialityDeclaration}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Determine if any special permissions are required to access a resource (e.g., if form is a needed and where to access the form). .">
+                                                                    Special Permissions
+                                                                </a>
+                                                            </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.specialPermissions}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Any restrictions on access to or use of the collection, such as privacy certification or distribution restrictions, should be indicated here. These can be restrictions applied by the author, producer, or disseminator of the data collection. If the data are restricted to only a certain class of user, specify which type.">
+                                                                    Restrictions
+                                                                </a>
+                                                            </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.restrictions}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Include special/explicit citation requirements for data to be cited properly in articles or other publications that are based on analysis of the data. For standard data citation requirements refer to our Community Norms.">
+                                                                    Citation Requirements
+                                                                </a>
+                                                            </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.citationRequirements}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Information regarding user responsibility for informing Dataset Depositors, Authors or Curators of their use of data through providing citations to the published work or providing copies of the manuscripts.">
+                                                                    Depositor Requirements
+                                                                </a>
+                                                            </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.depositorRequirements}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Any additional information that will assist the user in understanding the access and use conditions of the Dataset.">
+                                                                    Conditions
+                                                                </a>
+                                                            </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.conditions}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title=" Information regarding responsibility for uses of the Dataset.">
+                                                                    Disclaimer
+                                                                </a>
+                                                            </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.disclaimer}" rows="5" cols="60"  styleClass="form-control" />
+                                                                </div>
+                                                            </ui:fragment>
+
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="panel panel-default" style="margin-bottom:1em;">
                                             <div data-toggle="collapse" data-target="#collapseRestrictedFilesTOA" class="panel-heading text-info">
                                                 Restricted Files + Terms of Access <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
                                             </div>
                                             <div id="collapseRestrictedFilesTOA" class="collapse in">
                                                 <div class="panel-body">
+                                                     <ui:fragment rendered ="#{empty DatasetPage.editMode}">
                                                     <div class="form-group">
                                                         <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -773,6 +957,7 @@
                                                             <p class="help-block">This a default setting for your dataset.</p>
                                                         </div>
                                                     </div>
+                                                   
                                                     <div class="form-group">
                                                         <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -780,23 +965,176 @@
                                                             </a>
                                                         </label>
                                                         <div class="col-sm-9">
-                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                            <h:outputText value ="#{DatasetPage.workingVersion.termsOfAccess}"/>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                       <div class="form-group">
                                                         <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
                                                                 Request Access
                                                             </a>
                                                         </label>
+                                                           
                                                         <div class="col-sm-9">
-                                                            <p class="help-block">This a default setting for your dataset.</p>
+                                                            <h:outputText value ="Users may request access to files." rendered="#{DatasetPage.dataset.fileAccessRequest}"/>
+                                                            <h:outputText value ="Users may not request access to files." rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
                                                         </div>
+                                                               
+                                                    </div>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
+                                                    <div class="form-group">
+                                                        <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Restricted Files
+                                                            </a>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <p class="help-block">Placeholder for editing restricted files.</p>
+                                                        </div>
+                                                    </div>
+                                                   
+                                                    <div class="form-group">
+                                                        <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Terms of Access
+                                                            </a>
+                                                        </label>
+                                                        <div >
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfAccess}" rows="5" cols="60"  styleClass="form-control" />
+                                                        </div>
+                                                    </div>
+                                                       <div class="form-group">
+                                                        <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                                                Request Access
+                                                            </a>
+                                                        </label>
+                                                           
+                                                        <div class="col-sm-9">
+                                                             <p:selectBooleanCheckbox  id="requestAccess" itemLabel="Enable access request." value="#{DatasetPage.dataset.fileAccessRequest}"/>
+                                                        </div>
+                                                               
+                                                    </div>                                                        
+                                                    </ui:fragment>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading" role="tab" id="headingTOA">
+                                                    <h4 class="panel-title">
+                                                        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTOA" aria-expanded="false" aria-controls="collapseTOA">
+                                                            Additional Information
+                                                        </a>
+                                                    </h4>
+                                                </div>
+                                                <div id="collapseTOA" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTOA">
+                                                    <div class="panel-body">
+                                                        <ui:fragment rendered ="#{empty DatasetPage.editMode}">
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.dataAccessPlace}"> 
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Data Access Place
+                                                                </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.dataAccessPlace}"/>
+                                                                </div>
+                                                            </ui:fragment> 
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.originalArchive}"> 
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Original Archive
+                                                                </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.originalArchive}"/>
+                                                                </div>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.availabilityStatus}"> 
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Availability Status
+                                                                </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.availabilityStatus}"/>
+                                                                </div>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.contactForAccess}"> 
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Contact for Access
+                                                                </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.contactForAccess}"/>
+                                                                </div>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.sizeOfCollection}"> 
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Size of Collection
+                                                                </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.sizeOfCollection}"/>
+                                                                </div>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.studyCompletion}"> 
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    Study Completion
+                                                                </label>
+                                                                <div class="col-sm-9"  >
+                                                                    <h:outputText value ="#{DatasetPage.workingVersiont.studyCompletion}"/>
+                                                                </div>
+                                                            </ui:fragment>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
+
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="If the data is not only in Dataverse, list the location(s) where the data are currently stored.">
+                                                                    Data Access Place
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.dataAccessPlace}" rows="5" cols="60"  styleClass="form-control" />
+                                                            </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Archive from which the data was obtained.">
+                                                                    Original Archive
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.originalArchive}" rows="5" cols="60"  styleClass="form-control" />
+                                                            </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Statement of Dataset availability. A depositor may need to indicate that a Dataset is unavailable because it is embargoed for a period of time, because it has been superseded, because a new edition is imminent, etc.">
+                                                                    Availability Status
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.availabilityStatus}" rows="5" cols="60"  styleClass="form-control" />
+                                                            </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="If different from the Dataset Contact, this is the Contact person or organization (include email or full address, and telephone number if available) that controls access to a collection.">
+                                                                    Contact for Access
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.contactForAccess}" rows="5" cols="60"  styleClass="form-control" />
+                                                            </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Summary of the number of physical files that exist in a Dataset, recording the number of files that contain data and noting whether the collection contains machine readable documentation and/or other supplementary files and information, such as code, data dictionaries, data definition statements, or data collection instruments.">
+                                                                    Size of Collection
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.sizeOfCollection}" rows="5" cols="60"  styleClass="form-control" />
+                                                            </div>
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Relationship of the data collected to the amount of data coded and stored in the Dataset. Information as to why certain items of collected information were not included in the dataset or a specific data file should be provided.">
+                                                                    Study Completion
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.studyCompletion}" rows="5" cols="60"  styleClass="form-control" />
+                                                            </div>
+                                                        </ui:fragment>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="panel panel-default" style="margin-bottom:1em;">
                                             <div data-toggle="collapse" data-target="#collapseGuestbook" class="panel-heading text-info">
                                                 Guestbook <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
@@ -804,19 +1142,103 @@
                                             <div id="collapseGuestbook" class="collapse in">
                                                 <div class="panel-body">
                                                     <div class="form-group">
-                                                        <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                                                Guestbook
-                                                            </a>
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            <p class="help-block">This a default setting for your dataset.</p>
-                                                        </div>
+                                                       <ui:fragment rendered ="#{empty DatasetPage.editMode}">
+                                                           <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
+
+                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Guestbook may be applied to files to get information from users who download them.">
+                                                                    Custom Guestbook in use
+                                                                </a>
+                                                            </label>
+                                                        </ui:fragment>
+
+                                                                <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
+
+                                                                <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
+                                                                               value="View" 
+                                                                               action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
+                                                                               oncomplete="viewGuestbook.show()"
+                                                                               update=":datasetForm"
+                                                                               style="color:black;margin-right:0.5em;"/>
+
+                                                        <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
+                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Readily available user information will be collected when files are downloaded.">
+                                                                    No Guestbook selected
+                                                                </a>
+                                                            </label>
+                                                        </ui:fragment>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
+                                                        <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+
+                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Guestbook may be applied to files to get information from users who download them.">
+                                                                    Available Custom Guestbooks
+                                                                </a>
+                                                            </label>
+                                                        </ui:fragment>
+                                                        <p:commandButton value="Clear Selection" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
+                                                        <p:dataTable id="guestbookTable" value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
+                                                                     rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
+                                                                     rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}"  rowKey="#{guestbook}">
+                                                            <p:column selectionMode="single" rendered="true"
+                                                                      style="width:2%;text-align:center"/>
+
+                                                            <p:column> 
+                                                                <h:outputText value="#{guestbook.name} " />
+                                                            </p:column>
+                                                            <p:column> 
+                                                                <p:commandLink styleClass="btn btn-default" 
+                                                                               value="View" 
+                                                                               action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
+                                                                               oncomplete="viewGuestbook.show()"
+                                                                               update=":datasetForm"
+                                                                               style="color:black;margin-right:0.5em;"/>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                        <ui:fragment rendered="#{empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Readily available user information will be collected when files are downloaded.">
+                                                                    No Available Custom Guestbooks
+                                                                </a>
+                                                            </label>
+                                                        </ui:fragment>
+                                                        </ui:fragment>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <p:dialog id="viewGuestbook" header="Dataset Guestbook Preview" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
+                                        <div class="form-horizontal">
+
+                                            <div class="form-group">
+                                                <label for="select_DatasetTemplate" class="col-sm-3 control-label">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Upon downloading files the guestbook asks for the following information .">Dataset Guestbook</a>
+                                                </label>
+                                                <div class="col-sm-7" style="padding-top: 7px;">
+                                                    #{DatasetPage.selectedGuestbook.name}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div  style="padding-top: 7px;">
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}" 
+                                                          rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString }"/>
+                                        </div>
+                                        <div style="padding-top: 7px;">
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}" 
+                                                          rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString }"/>
+                                        </div>
+                                        <div style="padding-top: 7px;">
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}" 
+                                                          rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString }"/>
+                                        </div>
+                                        <div style="padding-top: 7px;">
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}" 
+                                                          rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString }"/>
+                                        </div>
+                                    </p:dialog>
                                 </p:tab>
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                     <p:commandButton value="Show Differences" style="margin-bottom:.5em;"
@@ -903,8 +1325,8 @@
                                                            value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
                                         <p:column style="min-width:140px;">
-											<!-- FIXME Commented this out, as there is no such property at this time. Michael -->
-                                                                                        <h:outputText value="#{versionTab.contributorNames}" />
+                                            <!-- FIXME Commented this out, as there is no such property at this time. Michael -->
+                                            <h:outputText value="#{versionTab.contributorNames}" />
                                         </p:column>
                                         <p:column>
                                             <h:outputText  id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
@@ -1098,14 +1520,14 @@
                     </p:commandButton>
 
                     <ui:include src="rolesAndPermissionsFragment.xhtml"/>
-                    
+
                     <p:dialog id="fileAdvancedOptions" header="Advanced Options" widgetVar="fileAdvancedOptions" modal="true">
                         <p class="help-block"></p>
                         <style type="text/css">
-                                    .form-group table.noBorders {width:100%;}
-                                    .form-group table.noBorders td {width:50%;}
-                                    .form-group table.noBorders td .form-control {width:100%;}
-                                </style>
+                            .form-group table.noBorders {width:100%;}
+                            .form-group table.noBorders td {width:50%;}
+                            .form-group table.noBorders td .form-control {width:100%;}
+                        </style>
                         <div class="form-inline clearfix" style="min-width:800px;">
                             <!-- "Data File Tags" - these only apply to tabular files, for now: -->
                             <ui:fragment rendered="#{DatasetPage.advfile.dataFile.tabularData}">
@@ -1118,7 +1540,7 @@
                                     <div class="col-sm-8">
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:selectCheckboxMenu id="tabularDataTags" value="#{DatasetPage.selectedTags}" label="Add/Edit Tags"
-                                                     filter="false" panelStyle="width:300px">
+                                                                  filter="false" panelStyle="width:300px">
                                                 <f:selectItems value="#{DatasetPage.tabFileTags}" />
                                             </p:selectCheckboxMenu>
                                             <p:message for="tabularDataTags" display="text" />
@@ -1126,66 +1548,114 @@
                                     </div>
                                 </div>
                             </ui:fragment>
-                            
+
                             <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
                             <ui:fragment rendered="false">
-                            <div class="form-group col-sm-12">
-                                <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                        SPSS-Sav Encoding Language
-                                    </a>
-                                </label>
-                                <div class="col-sm-8">
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <h:outputText value="**REMOVE ME** Dropdown"/>
-                                        <h:outputText value="Error Msg **REMOVE ME**"/>
-                                    </p:panelGrid>
-                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                        <p:inputText id="spssSavEncodingLanguage" styleClass="form-control"/>
-                                        <p:message for="spssSavEncodingLanguage" display="text" /> -->
+                                <div class="form-group col-sm-12">
+                                    <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            SPSS-Sav Encoding Language
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <h:outputText value="**REMOVE ME** Dropdown"/>
+                                            <h:outputText value="Error Msg **REMOVE ME**"/>
+                                        </p:panelGrid>
+                                        <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
+                                            <p:inputText id="spssSavEncodingLanguage" styleClass="form-control"/>
+                                            <p:message for="spssSavEncodingLanguage" display="text" /> -->
+                                    </div>
                                 </div>
-                            </div>
                             </ui:fragment>
                             <ui:fragment rendered="#{!(empty DatasetPage.advfile.id) and DatasetPage.advfile.dataFile.image}">
-                            <div class="form-group col-sm-12">
-                                <label for="datasetThumbnailImage" class="col-sm-4 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                        Dataset Thumbnail Image
-                                    </a>
-                                </label>
-                                <div class="col-sm-8">
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <p:column>
-                                            <p:selectBooleanCheckbox  id="datasetThumbnailImage" itemLabel="Use this image as the thumbnail image for my dataset." value="#{DatasetPage.useAsDatasetThumbnail}"/>
+                                <div class="form-group col-sm-12">
+                                    <label for="datasetThumbnailImage" class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Dataset Thumbnail Image
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:column>
+                                                <p:selectBooleanCheckbox  id="datasetThumbnailImage" itemLabel="Use this image as the thumbnail image for my dataset." value="#{DatasetPage.useAsDatasetThumbnail}"/>
 
-                                            <p:message for="datasetThumbnailImage" display="text" />
-                                        </p:column>
-                                    </p:panelGrid>
+                                                <p:message for="datasetThumbnailImage" display="text" />
+                                            </p:column>
+                                        </p:panelGrid>
+                                    </div>
                                 </div>
-                            </div>
                             </ui:fragment>
                             <ui:fragment rendered="false">
-                            <div class="form-group col-sm-12">
-                                <label for="fileTags" class="col-sm-4 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                        File Tags
-                                    </a>
-                                </label>
-                                <div class="col-sm-8">
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <h:outputText value="**REMOVE ME** Multiple Select Dropdown w/Checkboxes"/>
-                                        <h:outputText value="Error Msg **REMOVE ME**"/>
-                                    </p:panelGrid>
-                                    <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                        <p:inputText id="fileTags" styleClass="form-control"/>
-                                        <p:message for="fileTags" display="text" /> -->
+                                <div class="form-group col-sm-12">
+                                    <label for="fileTags" class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            File Tags
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <h:outputText value="**REMOVE ME** Multiple Select Dropdown w/Checkboxes"/>
+                                            <h:outputText value="Error Msg **REMOVE ME**"/>
+                                        </p:panelGrid>
+                                        <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
+                                            <p:inputText id="fileTags" styleClass="form-control"/>
+                                            <p:message for="fileTags" display="text" /> -->
+                                    </div>
                                 </div>
-                            </div>
                             </ui:fragment>
                         </div>
                         <p:commandButton id="fileAdvancedOptionsSaveButton" value="Save Changes" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
                         <p:commandButton id="fileAdvancedOptionsCancelButton" value="Cancel" onclick="fileAdvancedOptions.hide()"/>
                     </p:dialog>
+                    <p:dialog  header="Download File" widgetVar="downloadPopup">
+                        Please complete the following before downloading
+                        <ui:fragment rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
+                            <div  style="padding-top: 7px;">
+                                <h:outputText value="#{DatasetPage.workingVersion.termsOfUse}" />
+                            </div>
+                            <div  style="padding-top: 7px;">
+                                <p:selectBooleanCheckbox  id="acceptTOU" itemLabel="I accept these Terms of Use." value="#{DatasetPage.acceptedTerms}"/>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
+                            <div  style="padding-top: 7px;">
+                                <h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}" />
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
+                            <div  style="padding-top: 7px;">
+                                Name <h:inputText value="#{DatasetPage.guestbookResponse.name}"/>
+                            </div>
+                            <div  style="padding-top: 7px;">
+                                Email <h:inputText value="#{DatasetPage.guestbookResponse.email}"/>
+                            </div>
+                            <div  style="padding-top: 7px;">
+                                Institution <h:inputText value="#{DatasetPage.guestbookResponse.institution}"/>
+                            </div>
+                            <div  style="padding-top: 7px;">
+                                Position <h:inputText value="#{DatasetPage.guestbookResponse.position}"/>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
+                            <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
+                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='text'}">
+                                    <h:outputText value ="#{customQuestionResponse.customQuestion.questionString}"/>
+                                    <h:inputText value="#{customQuestionResponse.response}"/>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
+                                    <h:outputText value ="#{customQuestionResponse.customQuestion.questionString}"/>
+                                    <p:selectOneMenu value="#{customQuestionResponse.response}" >
+                                        <f:selectItem itemLabel="Select" itemValue="" />
+                                        <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                </ui:fragment>
+                            </ui:repeat>
+                        </ui:fragment>    
+                        <p:commandButton value="Continue" onclick="downloadPopup.hide()" action="#{DatasetPage.saveGuestbookResponse()}" >
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="downloadPopup.hide()" type="button" />
+                    </p:dialog>  
                 </h:form>
             </ui:define>
         </ui:composition>

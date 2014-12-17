@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -34,7 +35,6 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
@@ -85,6 +85,11 @@ public class Dataverses extends AbstractApiBean {
 			}
 			d.setOwner(owner);
 		}
+                
+                // set the dataverse - contact relationship in the contacts
+                for (DataverseContact dc : d.getDataverseContacts()) {
+                    dc.setDataverse(d);
+                }
 		
 		try {
             d = execCommand( new CreateDataverseCommand(d, u, null, null), "Creating Dataverse" );

@@ -93,7 +93,17 @@ public class TestCommandContext implements CommandContext {
         @Override
 	public SettingsServiceBean settings() {
 		return null;
-	}  
+	} 
+        
+        @Override
+	public GuestbookServiceBean guestbooks() {
+		return null;
+	} 
+        
+        @Override
+	public GuestbookResponseServiceBean responses() {
+		return null;
+	}
         
 	@Override
         

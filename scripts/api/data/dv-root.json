@@ -1,8 +1,12 @@
- {
-    "alias":"root",
-    "name":"Root",
-    "contactEmail":"root@mailinator.com",
-    "permissionRoot":false,
-    "facetRoot":true,
-    "description":"The root dataverse."
+{
+  "alias": "root",
+  "name": "Root",
+  "permissionRoot": false,
+  "facetRoot": true,
+  "description": "The root dataverse.",
+  "dataverseContacts": [
+    {
+      "contactEmail": "root@mailinator.com"
+    }
+  ]
 }

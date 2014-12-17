@@ -15,7 +15,7 @@ New Dataset
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
-   description for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a `Universal Numerical Fingerprint (UNF) <./source/Data_Citation/unf.rst>`__ will be added to this file.
+   description for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Add Dataset" button when you are done. Your unpublished dataset is now created. 
 
 Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset. 

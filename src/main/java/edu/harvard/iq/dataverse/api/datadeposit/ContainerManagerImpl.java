@@ -135,7 +135,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         } catch (Exception ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }
-                        swordService.addDatasetContact(datasetVersion);
+                        swordService.addDatasetContact(datasetVersion, user);
                         swordService.addDatasetSubject(datasetVersion);
                         try {
                             engineSvc.submit(new UpdateDatasetCommand(dataset, user));

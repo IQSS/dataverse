@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -113,10 +114,9 @@ public class JsonPrinter {
 						.add("id", dv.getId() )
 						.add("alias", dv.getAlias()) 
 						.add("name", dv.getName())
-                        .add("affiliation", dv.getAffiliation())
-						.add("contactEmail", dv.getContactEmail())
+                                                .add("affiliation", dv.getAffiliation())
+                                                .add("dataverseContacts", json(dv.getDataverseContacts()))
 						.add("permissionRoot", dv.isPermissionRoot())
-						//.add("creator",json(dv.getCreator()))
 						.add("description", dv.getDescription());
 		if ( dv.getOwner() != null ) {
 			bld.add("ownerId", dv.getOwner().getId());
@@ -124,9 +124,24 @@ public class JsonPrinter {
 		if ( dv.getCreateDate() != null ) {
 			bld.add("creationDate", dateFormat.format(dv.getCreateDate()));
 		}
+                if ( dv.getCreator() != null ) {
+                    bld.add("creator",json(dv.getCreator()));
+                }
 		
 		return bld;
 	}
+
+    public static JsonArrayBuilder json(List<DataverseContact> dataverseContacts) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        for (DataverseContact dc : dataverseContacts) {
+            bld.add( jsonObjectBuilder()
+                .add( "displayOrder",dc.getDisplayOrder())
+                .add( "contactEmail",dc.getContactEmail())
+            );
+        }
+        return bld;
+    }       
+      
 	
 	public static JsonObjectBuilder json( BuiltinUser user ) {
 		return (user == null ) 
