@@ -300,7 +300,7 @@ public class WorldMapToken implements java.io.Serializable {
         long hours = this.getElapsedHours(currentTimestamp, this.created);
         if (hours > MAX_HOURS_TOKEN_CAN_BE_USED){
             this.expireToken();
-            return false;
+            return true;
         }
         
         long diffSeconds = this.getElapsedSeconds(currentTimestamp, this.lastRefreshTime);
