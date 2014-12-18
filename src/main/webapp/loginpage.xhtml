@@ -14,7 +14,7 @@
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Log In - Dataverse"/>
+            <ui:param name="pageTitle" value="Log In - #{dataverseServiceBean.findRootDataverse().name} Dataverse"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
