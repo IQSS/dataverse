@@ -188,7 +188,7 @@
                                         </div>
                                     </ui:fragment>
 
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CHANGE'}">
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Current Password -->
                                         <div class="form-group col-sm-12">
                                             <label for="currentPassword" class="col-sm-2 control-label">
@@ -204,7 +204,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Password -->
                                         <div class="form-group col-sm-12">
                                             <label for="inputPassword" class="col-sm-2 control-label">
@@ -221,7 +221,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
+                                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Retype Password -->
                                         <div class="form-group col-sm-12">
                                             <label for="retypePassword" class="col-sm-2 control-label">
