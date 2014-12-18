@@ -459,9 +459,8 @@ public class DataversePage implements java.io.Serializable {
         PublishDataverseCommand cmd = new PublishDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+            JsfHelper.addFlashMessage( "Your dataverse is now public.");
+             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String msg = "There was a problem publishing your dataverse: " + ex;
             logger.severe(msg);
