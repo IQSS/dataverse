@@ -85,7 +85,7 @@
                                 <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                     <span class="glyphicon glyphicon-user text-danger" style="margin-right:8px;"></span>
                                 </ui:fragment>
-                                <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}"/>
+                                <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                 <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
                                 <b class="caret"></b>
                             </a>
@@ -223,12 +223,14 @@
     </ui:fragment>
 
     <!-- Message Panel -->
-    <ui:fragment rendered="#{showMessagePanel}">
-        <div class="container messagePanel">
-            <iqbs:messages id="messages" collapsible="true" />
-        </div>
-    </ui:fragment>
-    
+    <p:fragment id="messagePanel">
+        <ui:fragment rendered="#{showMessagePanel}">
+            <div class="container messagePanel">
+                <iqbs:messages id="messages" collapsible="true" />
+            </div>
+        </ui:fragment>
+    </p:fragment>
+
     <!-- Dialog Feedback Form -->
     <p:dialog header="Send feedback to the Dataverse development team!" widgetVar="feedbackForm" modal="true">
         <h:form class="form-horizontal">

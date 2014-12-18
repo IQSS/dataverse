@@ -326,7 +326,7 @@
                                     </ui:fragment>
                                 </div>
                                 <p:panel styleClass="panelLayoutButtonBlock">
-                                    <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@form" />
+                                    <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
                                     <p:commandButton id="cancel" tabindex="10" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
                                         <p:resetInput target="@form" />
                                     </p:commandButton>
