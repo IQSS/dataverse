@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -35,6 +36,8 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -98,6 +101,9 @@ public abstract class AbstractApiBean {
     
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
+    
+    @Context
+    HttpServletRequest request;
 	
     /**
      * For pretty printing (indenting) of JSON output.
@@ -130,7 +136,10 @@ public abstract class AbstractApiBean {
     
     protected AuthenticatedUser findUserOrDie( String apiKey ) throws WrappedResponse {
         AuthenticatedUser u = authSvc.lookupUser(apiKey);
-        if ( u != null ) return u;
+        if ( u != null ) {
+            u.setRequestMetadata( new UserRequestMetadata(request) );
+            return u;
+        }
         throw new WrappedResponse( badApiKey(apiKey) );
     }
     

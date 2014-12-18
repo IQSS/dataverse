@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
@@ -42,7 +41,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -69,13 +67,12 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}")
     public Response getDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
-		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
-        Dataset ds = datasetService.find(id);
-        if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
         
         try {
+            User u = findUserOrDie(apiKey);
+            Dataset ds = datasetService.find(id);
+            if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
+            
             Dataset retrieved = execCommand(new GetDatasetCommand(u, ds), "Getting dataset");
             DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(u, ds), "Getting latest dataset version");
             final JsonObjectBuilder jsonbuilder = json(retrieved);
@@ -90,13 +87,13 @@ public class Datasets extends AbstractApiBean {
 	@DELETE
 	@Path("{id}")
 	public Response deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
-		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
-        Dataset ds = datasetService.find(id);
-        if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
 		
 		try {
+            User u = findUserOrDie(apiKey);
+            if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+
+            Dataset ds = datasetService.find(id);
+            if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
 			execCommand( new DeleteDatasetCommand(ds, u), "Delete dataset " + id);
 			return okResponse("Dataset " + id + " deleted");
 			
@@ -109,13 +106,12 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}/versions")
     public Response listVersions( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
-		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
-        Dataset ds = datasetService.find(id);
-        if (ds == null) return notFound("dataset not found");
 		
         try {
+            User u = findUserOrDie(apiKey);
+
+            Dataset ds = datasetService.find(id);
+            if (ds == null) return notFound("dataset not found");
             List<DatasetVersion> retrieved = execCommand(new ListVersionsCommand(u, ds), "Listing Dataset versions");
             JsonArrayBuilder bld = Json.createArrayBuilder();
             for ( DatasetVersion dsv : retrieved ) {
@@ -130,13 +126,11 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}/versions/{versionId}")
     public Response getVersion( @PathParam("id") Long datasetId, @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ) {
-		final User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
-        final Dataset ds = datasetService.find(datasetId);
-        if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
         try {
+            final User u = findUserOrDie(apiKey);
+            final Dataset ds = datasetService.find(datasetId);
+            if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
             Command<DatasetVersion> cmd = handleVersion( versionId, new DsVersionHandler<Command<DatasetVersion>>(){
 
                 @Override
@@ -171,13 +165,11 @@ public class Datasets extends AbstractApiBean {
     @GET
 	@Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") Long datasetId, @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ) {
-		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
-        Dataset ds = datasetService.find(datasetId);
-        if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
         try {
+            User u = findUserOrDie(apiKey);
+            Dataset ds = datasetService.find(datasetId);
+            if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
             DatasetVersion dsv = getDatasetVersion( u, versionId, ds );
             return (dsv==null)
                     ? errorResponse(Response.Status.NOT_FOUND, "dataset version not found")
@@ -195,13 +187,11 @@ public class Datasets extends AbstractApiBean {
                                              @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName,
                                              @QueryParam("key") String apiKey ) {
-		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
-        final Dataset ds = datasetService.find(datasetId);
-        if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
         try {
+            User u = findUserOrDie(apiKey);
+            final Dataset ds = datasetService.find(datasetId);
+            if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
             DatasetVersion dsv = getDatasetVersion(u, versionNumber, ds);
             if ( dsv == null ) return errorResponse(Response.Status.NOT_FOUND, "dataset version not found");
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
@@ -224,12 +214,11 @@ public class Datasets extends AbstractApiBean {
         if ( ! ":draft".equals(versionId) ) 
             return errorResponse( Response.Status.BAD_REQUEST, "Only the :draft version can be deleted");
         
-        User u = findUserByApiToken(apiKey);
-        if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-        Dataset ds = datasetService.find(id);
-        if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
         
         try {
+            User u = findUserOrDie(apiKey);
+            Dataset ds = datasetService.find(id);
+            if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
             execCommand( new DeleteDatasetVersionCommand(u,ds), "Deleting draft version of dataset " + id );
             return okResponse("Draft version of dataset " + id + " deleted");
         } catch (WrappedResponse ex) {
@@ -244,12 +233,10 @@ public class Datasets extends AbstractApiBean {
         if ( ! ":draft".equals(versionId) ) 
             return errorResponse( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         
-        User u = findUserByApiToken(apiKey);
-        if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-        Dataset ds = datasetService.find(id);
-        if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
-        
         try ( StringReader rdr = new StringReader(jsonBody) ) {
+            User u = findUserOrDie(apiKey);
+            Dataset ds = datasetService.find(id);
+            if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
             JsonObject json = Json.createReader(rdr).readObject();
             DatasetVersion version = jsonParser().parseDatasetVersion(json);
             
@@ -268,6 +255,8 @@ public class Datasets extends AbstractApiBean {
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
     
@@ -290,21 +279,17 @@ public class Datasets extends AbstractApiBean {
                 return errorResponse( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
             }
             
-            User u = findUserByApiToken(apiKey);
+            User u = findUserOrDie(apiKey);
             if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
             
             Dataset ds = datasetService.find(dsId);
             if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
             
-            ds = engineSvc.submit( new PublishDatasetCommand(ds, u, isMinor));
+            ds = execCommand(new PublishDatasetCommand(ds, u, isMinor), "Publish Dataset");
             return okResponse( json(ds) );
-            
-        } catch (IllegalCommandException ex) {
-            return errorResponse( Response.Status.FORBIDDEN, "Error publishing the dataset: " + ex.getMessage() );
-            
-        } catch (CommandException ex) {
-            Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, "Error while publishing a Dataset", ex);
-            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error publishing the dataset: " + ex.getMessage() );
+        
+        }  catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
     
