@@ -33,7 +33,12 @@ public class DataverseSession implements Serializable{
         if ( user == null ) {
             user = new GuestUser();
         }
-        user.setRequestMetadata( new UserRequestMetadata((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()) );
+        
+        
+        if (FacesContext.getCurrentInstance() != null)
+        {
+            user.setRequestMetadata( new UserRequestMetadata((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()) );
+        }
         return user;
     }
 
