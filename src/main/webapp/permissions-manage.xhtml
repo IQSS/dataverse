@@ -4,7 +4,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://java.sun.com/jsp/jstl/core">
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <h:head>
     </h:head>
@@ -24,9 +25,17 @@
                 <h:form id="rolesPermissionsForm">
                     <div>
                         <!-- Permissions Configure -->
+                        <p:fragment id="configureMessages">
+                            <div class="container messagePanel">
+                                <iqbs:messages  collapsible="true" />
+                            </div>
+                        </p:fragment>                        
                         <p:fragment id ="configureSettings">
-                            <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}"> 
+                            <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}">                                    
                                 <ui:include src="permissions-configure.xhtml"/>
+                                <p:commandLink styleClass="btn btn-default" value="Save Changes" 
+                                               update="assignedRoles :#{p:component('configureMessages')} "
+                                               actionListener="#{managePermissionsPage.saveConfiguration}"/>                                
                             </c:if>
                         </p:fragment>
                         <!-- Role Assignments Panel -->
@@ -36,6 +45,11 @@
                                     Users/Groups <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
                                 </div>
                                 <div id="collapseUsersGroups" class="collapse in">
+                                    <p:fragment id="assignmentMessages">
+                                        <div class="container messagePanel">
+                                            <iqbs:messages  collapsible="true" />
+                                        </div>
+                                    </p:fragment>                                        
                                     <div class="panel-body">
                                         <p:commandLink id="userGroupsAdd" 
                                                        styleClass="btn btn-default pull-right" 
@@ -58,7 +72,7 @@
                                                     <p:commandLink styleClass="btn btn-default" 
                                                                    action="#{managePermissionsPage.revokeRole(roleAssignment.id)}"
                                                                    rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
-                                                                   update="assignedRoles :#{p:component('configureSettings')}"
+                                                                   update="assignedRoles :#{p:component('assignmentMessages')} :#{p:component('configureSettings')}"
                                                                    style="color:black;margin-right:0.5em;"><span class="glyphicon glyphicon-remove" style="margin-right:0.3em;"/> Remove Assigned Role</p:commandLink>
                                                 </p:column>
                                             </p:dataTable>
@@ -74,6 +88,11 @@
                                 </div>
                                 <div id="collapseRoles" class="collapse">
                                     <div class="panel-body">
+                                        <p:fragment id="roleMessages">
+                                            <div class="container messagePanel">
+                                                <iqbs:messages  collapsible="true" />
+                                            </div>
+                                        </p:fragment>                                          
                                         <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
                                             <p:commandLink id="rolesAdd" 
                                                            styleClass="btn btn-default pull-right" 
