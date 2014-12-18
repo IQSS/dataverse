@@ -128,6 +128,14 @@ public class LoginPage implements java.io.Serializable {
         
         AuthenticationRequest authReq = new AuthenticationRequest();
         for ( FilledCredential fc : getFilledCredentials() ) {
+            if(fc.getValue()==null || fc.getValue().isEmpty()){
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, "Please enter a "+fc.getCredential().getTitle());
+            }
+            if (fc.getCredential().getTitle().equals("Password")){
+                if (fc.getValue()!=null && fc.getValue().length()<6){
+                    JH.addMessage(FacesMessage.SEVERITY_ERROR,"Please enter a 6 character length password with at least one characters and one number ");
+                }
+            }
             authReq.putCredential(fc.getCredential().getTitle(), fc.getValue());
         }
         authReq.setIpAddress( session.getUser().getRequestMetadata().getIpAddress() );
