@@ -13,6 +13,7 @@ public class DatasetDTO implements java.io.Serializable {
         private String protocol;
         private String authority;
         private String globalIdCreateTime;
+        private String doiSeparator;
         private DatasetVersionDTO datasetVersion;
         private List<DataFileDTO> dataFiles;
 
@@ -71,6 +72,14 @@ public class DatasetDTO implements java.io.Serializable {
 
     public void setDataFiles(List<DataFileDTO> dataFiles) {
         this.dataFiles = dataFiles;
+    }
+
+    public String getDoiSeparator() {
+        return doiSeparator;
+    }
+
+    public void setDoiSeparator(String doiSeparator) {
+        this.doiSeparator = doiSeparator;
     }
 
     @Override

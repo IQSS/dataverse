@@ -696,13 +696,24 @@ public class ImportDDI {
         }
 
     }
+    /*
+    EMK TODO:  In DVN 3.6, users were allowed to enter their own version date, and in addition the app assigned a version date when
+     the version is released.  So DDI's that we have to migrate, we can see this:
+    <verStmt>
+		<version date="2004-04-04">1</version>
+	</verStmt>
+	<verStmt source="DVN">
+		<version date="2014-05-21" type="RELEASED">1</version>
+	</verStmt>
+    Question:  what to do with these two different dates?  Need to review with Eleni
+    */
     private void processVerStmt(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
         if (!importType.equals(ImportType.NEW)) {
             for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
                 if (event == XMLStreamConstants.START_ELEMENT) {
                     if (xmlr.getLocalName().equals("version")) {
                         dvDTO.setReleaseDate(xmlr.getAttributeValue(null, "date"));
-
+                        dvDTO.setVersionState(Enum.valueOf(VersionState.class, xmlr.getAttributeValue(null,"type")));
                         dvDTO.setVersionNumber(Long.parseLong(parseText(xmlr)));
                         // EMK TODO: add note processing
                         // } else if (xmlr.getLocalName().equals("notes")) { processNotes(xmlr, metadata); 
@@ -719,9 +730,7 @@ public class ImportDDI {
             dvDTO.setVersionState(VersionState.DRAFT);
         } else if (importType.equals(ImportType.HARVEST)) {
             dvDTO.setVersionState(VersionState.RELEASED);
-        } else if (importType.equals(ImportType.MIGRATION)) {
-            // EMK TODO: need to get version state of migrated datasets from DDI
-        }
+        } 
     }
 
  
@@ -776,7 +785,8 @@ public class ImportDDI {
                     citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("dateOfDeposit", parseDate(xmlr, "depDate")));
 
                 } else if (xmlr.getLocalName().equals("distDate")) {
-                    // TODO: ask Gustavo & Eleni missing distDate
+                    // TODO: for New Import, we will ignore this, waiting for decision
+                    // about what to do for Harvest & migration (12/15/2014)
                     // metadata.setDistributionDate( parseDate(xmlr,"distDate") );
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -1152,6 +1162,7 @@ public class ImportDDI {
             datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
         datasetDTO.setProtocol("doi");
+      
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
     // Helper methods

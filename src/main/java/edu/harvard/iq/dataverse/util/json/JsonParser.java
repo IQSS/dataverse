@@ -111,6 +111,7 @@ public class JsonParser {
         dataset.setAuthority(obj.getString("authority", null));
         dataset.setIdentifier(obj.getString("identifier", null));
         dataset.setProtocol(obj.getString("protocol", null));
+        dataset.setDoiSeparator(obj.getString("doiSeparator",null));
         DatasetVersion dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"));
         LinkedList<DatasetVersion> versions = new LinkedList<>();
         versions.add(dsv);
