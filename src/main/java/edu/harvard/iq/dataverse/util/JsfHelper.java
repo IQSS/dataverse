@@ -17,7 +17,7 @@ public class JsfHelper {
 	
 	public static final JsfHelper JH = new JsfHelper();
         
-        public static void addSuccessMessage(String message) {
+        public static void addFlashMessage(String message) {
               FacesContext.getCurrentInstance().getExternalContext().getFlash().put("msg", message);
       
         } 
