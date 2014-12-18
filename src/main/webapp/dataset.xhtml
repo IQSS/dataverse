@@ -1360,7 +1360,7 @@
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
-                                <label for="deaccessionOptions">Which version(s) do you want to deaccession?</label>
+                                <label for="deaccessionOptions">Which version(s) do you want to deaccession? <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
                                 <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                              rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
                                     <p:column selectionMode="multiple" style="width:2%;text-align:center;"/>
@@ -1371,7 +1371,7 @@
                             </div>
                         </ui:fragment>
                         <div class="form-group">
-                            <label for="deaccessionOptions">What is the reason for deaccession?</label>
+                            <label for="deaccessionOptions">What is the reason for deaccession? <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
                             <h:selectOneMenu id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}">
                                 <f:selectItem itemLabel="Select one..." itemValue="0" />
                                 <f:selectItem itemLabel="There is identifiable data in one or more files" itemValue="1" />
