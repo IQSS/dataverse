@@ -377,7 +377,7 @@ public class DataversePage implements java.io.Serializable {
             cmd = new CreateDataverseCommand(dataverse, session.getUser(), facets.getTarget(), listDFTIL);
         } else {
             create=Boolean.FALSE;
-            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), featuredDataverses.getTarget(), session.getUser(), listDFTIL);
+            cmd = new UpdateDataverseCommand(null, facets.getTarget(), featuredDataverses.getTarget(), session.getUser(), listDFTIL);
         }
 
         try {
@@ -387,7 +387,12 @@ public class DataversePage implements java.io.Serializable {
             }
             editMode = null;
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
+            System.out.println("caught command exception");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Could not save changes");
+            return null;
+        } catch (Exception e) {
+            System.out.println("caught generic exception");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Could not save changes");
             return null;
         }
         if (message==null) {
