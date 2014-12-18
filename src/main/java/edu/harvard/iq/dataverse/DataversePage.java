@@ -384,7 +384,7 @@ public class DataversePage implements java.io.Serializable {
             return null;
         }
         String msg = (create)? "You have successfully created your dataverse.": "You have successfully updated your dataverse.";
-        JsfHelper.addSuccessMessage(msg);
+        JsfHelper.addFlashMessage(msg);
         
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
