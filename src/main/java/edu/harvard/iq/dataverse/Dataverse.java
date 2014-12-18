@@ -56,7 +56,6 @@ public class Dataverse extends DvObjectContainer {
 
     // #VALIDATION: page defines maxlength in input:textarea component
     @Column(name = "description", columnDefinition = "TEXT")
-    @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
 
     @Enumerated(EnumType.STRING)

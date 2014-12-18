@@ -139,15 +139,12 @@
                                                          rows="6" cols="50"
                                                          autoResize="false">
                                         </p:inputTextarea>
-                                        <div><span id="chars"/> characters remaining</div>
                                     </div>
                                     <div class="col-sm-2 control-label">
                                         <p:message for="description" display="text"/>
                                     </div>                                    
                                 </div>
                                 <div class="col-xs-6 form-group">
-
-                                    
                                     <p:fragment autoUpdate="true">
                                     <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The e-mail address(es) of the contact(s) for the Dataverse.">
@@ -155,7 +152,7 @@
                                         </a>
                                     </label>
                                     <div class="form-col-container col-sm-12">
-                                        <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount" >
+                                        <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
                                             <div class="form-group">
                                                 <div class="form-col-container col-sm-9">
                                                     <p:panelGrid columns="2">
@@ -350,7 +347,7 @@
                                                 </li>
                                                 <li class="divider" role="presentation"></li>
                                                 <li>
-                                                    <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();characterCounter();initPopover();">
+                                                    <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
                                                         <h:outputText value="General Information" />
                                                     </p:commandLink>
                                                 </li>
@@ -491,7 +488,6 @@
                             </ui:fragment>
                         </ui:fragment>
 
-
                         <!-- Featured Dataverses Popup -->
                         <p:dialog header="Featured Dataverses" widgetVar="browseOptsForm" modal="true">
                             <!--<div class="form-group">
@@ -513,7 +509,6 @@
                             <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
                             <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
                         </p:dialog>
-
 
                         <ui:include src="rolesAndPermissionsFragment.xhtml"/>
 
@@ -642,7 +637,6 @@
                     //<![CDATA[
                     $(document).ready(function () {
                         initPopover();
-                        characterCounter();
                         initCarousel();
                     });
 
@@ -710,28 +704,6 @@
 
                     function updateInclude() {
                         $('button[id$="hiddenRefresh"]').trigger('click');
-                    }
-
-
-                    function characterCounter() {
-                        $.fn.extend({
-                            updateCounter: function (limit, elem) {
-                                $(this).on("keyup focus", function () {
-                                    setCount(this, elem);
-                                });
-                                function setCount(src, elem) {
-                                    if (typeof src === "undefined") {
-                                        return;
-                                    }
-                                    var chars = src.value.length;
-                                    elem.html(limit - chars);
-                                }
-                                setCount($(this)[0], elem);
-                            }
-                        });
-
-                        var elem = $("#chars");
-                        $("textarea[id$='description']").updateCounter(1000, elem);
                     }
                     //]]>
                 </script>
