@@ -129,7 +129,7 @@ public class Dataverse extends DvObjectContainer {
     @JoinColumn(name="dataversetheme_id")
     private DataverseTheme dataverseTheme;
 
-    @OneToMany(mappedBy = "dataverse")
+    @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     @OrderBy("displayOrder")
     @NotEmpty(message="At least one contact is required.")
     private List<DataverseContact> dataverseContacts = new ArrayList();
