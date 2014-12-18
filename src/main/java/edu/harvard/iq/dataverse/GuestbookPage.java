@@ -116,6 +116,7 @@ public class GuestbookPage implements java.io.Serializable {
             editMode = GuestbookPage.EditMode.CREATE;
             guestbook = new Guestbook();
             guestbook.setDataverse(dataverse);
+            guestbook.setCustomQuestions(new ArrayList());
         } else {
             throw new RuntimeException("On Guestbook page without id or ownerid."); // improve error handling
         }
@@ -136,6 +137,7 @@ public class GuestbookPage implements java.io.Serializable {
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList());
         toAdd.setGuestbook(guestbook);
+        
         int index = guestbook.getCustomQuestions().size();
         guestbook.addCustomQuestion(index, toAdd);
         return "";
