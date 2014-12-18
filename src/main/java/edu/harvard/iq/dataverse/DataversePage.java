@@ -145,7 +145,7 @@ public class DataversePage implements java.io.Serializable {
             }
             
             // set defaults - contact e-mail and affiliation from user
-            dataverse.getDataverseContacts().add(new DataverseContact(session.getUser().getDisplayInfo().getEmailAddress()));
+            dataverse.getDataverseContacts().add(new DataverseContact(dataverse, session.getUser().getDisplayInfo().getEmailAddress()));
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
