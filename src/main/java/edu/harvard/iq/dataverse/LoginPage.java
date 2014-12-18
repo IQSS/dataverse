@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -149,7 +150,7 @@ public class LoginPage implements java.io.Serializable {
 
             
         } catch (AuthenticationFailedException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Login Failed", ex.getResponse().getMessage());
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "The username and/or password you entered is invalid. Contact support@dataverse.org if you need assistance accessing your account.", ex.getResponse().getMessage());
             return null;
         }
         

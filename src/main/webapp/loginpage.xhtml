@@ -61,7 +61,7 @@
                                 </ui:repeat>
                                 <div class="form-group">
                                     <div class="col-sm-offset-2 col-sm-9">
-                                        <p:commandButton id="login" value="Log In" action="#{LoginPage.login}"/>
+                                        <p:commandButton id="login" value="Log In" update="@all" action="#{LoginPage.login}"/>
                                         <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
                                     </div>
                                 </div>

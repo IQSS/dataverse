@@ -16,9 +16,11 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -38,6 +40,8 @@ import org.primefaces.event.TabChangeEvent;
 @ViewScoped
 @Named("DataverseUserPage")
 public class BuiltinUserPage implements java.io.Serializable {
+
+    private static final Logger logger = Logger.getLogger(BuiltinUserPage.class.getCanonicalName());
 
     public enum EditMode {
 
@@ -298,6 +302,8 @@ public class BuiltinUserPage implements java.io.Serializable {
         } else {
             authSvc.updateAuthenticatedUser(currentUser, builtinUser.createDisplayInfo());
             editMode = null;
+            String msg = "Your account information has been successfully updated.";
+            JH.addFlashMessage(msg);
             return null;            
         }
     }
