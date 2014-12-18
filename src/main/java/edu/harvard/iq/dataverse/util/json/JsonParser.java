@@ -8,7 +8,10 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
@@ -41,6 +44,37 @@ public class JsonParser {
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
+    }
+    
+    public static Dataverse parseDataverse( JsonObject jobj ) throws JsonParseException {
+        Dataverse dv = new Dataverse();
+
+        dv.setAlias( getMandatoryString(jobj, "alias") );
+        dv.setName( getMandatoryString(jobj, "name") );
+        dv.setDescription( jobj.getString("description", null));
+        dv.setPermissionRoot( jobj.getBoolean("permissionRoot", false) );
+        dv.setFacetRoot( jobj.getBoolean("facetRoot", false) );
+        if ( jobj.containsKey("dataverseContacts") ) {
+            JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
+            int i=0;
+            List<DataverseContact> dvContactList = new LinkedList<>();
+            for ( JsonValue jsv : dvContacts ) {
+                DataverseContact dvc = new DataverseContact(dv);
+                dvc.setContactEmail( getMandatoryString((JsonObject)jsv,"contactEmail") );
+                dvc.setDisplayOrder(i++);
+                dvContactList.add( dvc );
+            }
+            dv.setDataverseContacts(dvContactList);
+        }
+        
+        return dv;
+    }
+    
+    private static String getMandatoryString( JsonObject jobj, String name ) throws JsonParseException {
+        if ( jobj.containsKey(name) ) {
+            return jobj.getString(name);
+        }
+        throw new JsonParseException("Field " + name + " is mandatory");
     }
     
     public IpGroup parseIpGroup( JsonObject obj ) {

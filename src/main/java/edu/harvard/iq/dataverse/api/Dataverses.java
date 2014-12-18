@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
@@ -67,17 +68,26 @@ public class Dataverses extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
 	
 	@POST
-	public Response addRoot( Dataverse d, @QueryParam("key") String apiKey ) {
+	public Response addRoot( JsonObject body, @QueryParam("key") String apiKey ) {
         logger.info("Creating root dataverse");
-		return addDataverse(d, "", apiKey);
+		return addDataverse( body, "", apiKey);
 	}
 	
 	@POST
 	@Path("{identifier}")
-	public Response addDataverse( Dataverse d, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+	public Response addDataverse( JsonObject dvJson, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
 		User u = findUserByApiToken(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
+        
+        Dataverse d;
+        try {
+            d = JsonParser.parseDataverse(dvJson);
+        } catch (JsonParseException ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
+            return errorResponse( Response.Status.BAD_REQUEST,
+                    "Error parsing the POSTed json into a dataverse: " + ex.getMessage() );
+        }
+        
 		if ( ! parentIdtf.isEmpty() ) {
 			Dataverse owner = findDataverse(parentIdtf);
 			if ( owner == null ) {
@@ -86,14 +96,14 @@ public class Dataverses extends AbstractApiBean {
 			d.setOwner(owner);
 		}
                 
-                // set the dataverse - contact relationship in the contacts
-                for (DataverseContact dc : d.getDataverseContacts()) {
-                    dc.setDataverse(d);
-                }
+        // set the dataverse - contact relationship in the contacts
+        for (DataverseContact dc : d.getDataverseContacts()) {
+            dc.setDataverse(d);
+        }
 		
 		try {
             d = execCommand( new CreateDataverseCommand(d, u, null, null), "Creating Dataverse" );
-			return okResponse( json(d) );
+			return createdResponse( "/dvs/"+d.getAlias(), json(d) );
         } catch ( WrappedResponse ww ) {
             return ww.getResponse();
             

@@ -95,7 +95,7 @@ public class Roles extends AbstractApiBean {
         
         DvObject d = null;
         if ( dvObjectId != null ) {
-            dvSvc.find( dvObjectId );
+            d = dvSvc.find( dvObjectId );
             if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no DvObject with id " + dvObjectId );
         }
 		DataverseRole r = rolesSvc.find(roleId);
