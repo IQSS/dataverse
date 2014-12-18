@@ -55,7 +55,7 @@
                 <p:commandLink styleClass="btn btn-default" 
                                value="Save Changes" 
                                oncomplete="roleForm.hide()"
-                               update="roleDisplay availableRoles"
+                               update="roleDisplay availableRoles :#{p:component('roleMessages')}"
                                actionListener="#{managePermissionsPage.updateRole}"
                                style="color:black;margin-right:0.5em;"/>                       
                 <button type="button" class="btn btn-default" onclick="roleForm.hide()" value="Cancel">Cancel</button>
