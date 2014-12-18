@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.IOException;
@@ -253,7 +254,6 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
     
 
     public String save() {
-        System.out.println("in save");
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
         if (!editDv.isThemeRoot()) {
@@ -268,6 +268,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());          
         }
+        JsfHelper.addFlashMessage("You have successfully updated the theme for this dataverse!");
         this.cleanupTempDirectory();
         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
