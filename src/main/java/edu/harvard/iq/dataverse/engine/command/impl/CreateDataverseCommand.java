@@ -84,6 +84,9 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         ctxt.roles().save(new RoleAssignment(adminRole, getUser(), managedDv));
 
+        managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        managedDv = ctxt.dataverses().save(managedDv);
+
         ctxt.index().indexDataverse(managedDv);
         if (facetList != null) {
             ctxt.facets().deleteFacetsFor(managedDv);

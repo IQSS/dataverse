@@ -119,6 +119,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         // set the role to be default contributor role for its dataverse
         ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getUser(), savedDataset));
         
+        savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        savedDataset = ctxt.em().merge(savedDataset);
+
         try {
             // TODO make async
             String indexingResult = ctxt.index().indexDataset(savedDataset);

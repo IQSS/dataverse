@@ -167,15 +167,19 @@ public class Index extends AbstractApiBean {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
         }
 
-        JsonObjectBuilder permissions = Json.createObjectBuilder()
-                .add("dataverses", "FIXME")
-                .add("datasets", "FIXME")
-                .add("files", "FIXME");
+        JsonObjectBuilder permissionsInDatabaseButMissingFromSolr;
+        try {
+            permissionsInDatabaseButMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
+        } catch (Exception ex) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
+        }
+        JsonObjectBuilder permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
 
         JsonObjectBuilder data = Json.createObjectBuilder()
                 .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
                 .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
-                .add("permissions", permissions);
+                .add("permissionsInDatabaseButMissingFromSolr", permissionsInDatabaseButMissingFromSolr)
+                .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
 
         return okResponse(data);
     }
@@ -192,6 +196,10 @@ public class Index extends AbstractApiBean {
             datasetsInDatabaseButNotSolr.add(dataset.getId());
         }
         JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
+                /**
+                 * @todo What about files? Currently files are always indexed
+                 * along with their parent dataset
+                 */
                 .add("dataverses", jsonStateOrMissingDataverses)
                 .add("datasets", datasetsInDatabaseButNotSolr);
         return contentInDatabaseButStaleInOrMissingFromSolr;
@@ -209,9 +217,34 @@ public class Index extends AbstractApiBean {
             datasetsInSolrButNotDatabase.add(datasetId);
         }
         JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
+                /**
+                 * @todo What about files? Currently files are always indexed
+                 * along with their parent dataset
+                 */
                 .add("dataverses", dataversesInSolrButNotDatabase)
                 .add("datasets", datasetsInSolrButNotDatabase);
         return contentInSolrButNotDatabase;
+    }
+
+    private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() throws Exception {
+        List<Long> staleOrMissingPermissions;
+        staleOrMissingPermissions = solrIndexService.findPermissionsMissingFromSolr();
+        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
+        for (Long dvObjectId : staleOrMissingPermissions) {
+            stalePermissionList.add(dvObjectId);
+        }
+        return Json.createObjectBuilder()
+                .add("dvobjects", stalePermissionList);
+    }
+
+    private JsonObjectBuilder getPermissionsInSolrButNotDatabase() {
+        List<Long> staleOrMissingPermissions = solrIndexService.findPermissionsInSolrNoLongerInDatabase();
+        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
+        for (Long dvObjectId : staleOrMissingPermissions) {
+            stalePermissionList.add(dvObjectId);
+        }
+        return Json.createObjectBuilder()
+                .add("dvobjects", stalePermissionList);
     }
 
 }

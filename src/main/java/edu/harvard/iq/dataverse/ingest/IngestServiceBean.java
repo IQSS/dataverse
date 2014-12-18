@@ -638,6 +638,13 @@ public class IngestServiceBean {
 
         DataFile datafile = new DataFile(contentType);
         datafile.setModificationTime(new Timestamp(new Date().getTime()));
+        /**
+         * @todo Think more about when permissions on files are modified.
+         * Obviously, here at create time files have some sort of permissions,
+         * even if these permissions are *implied*, by ViewUnpublishedDataset at
+         * the dataset level, for example.
+         */
+        datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         FileMetadata fmd = new FileMetadata();
         
         fmd.setLabel(checkForDuplicateFileNames(version,fileName));

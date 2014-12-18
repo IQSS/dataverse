@@ -62,7 +62,16 @@ public abstract class DvObject implements java.io.Serializable {
     private Timestamp modificationTime;
 
     private Timestamp indexTime;
-    
+
+    /**
+     * @todo Make this nullable=true. Currently we can't because the
+     * CreateDataverseCommand saves the dataverse before it assigns a role.
+     */
+    @Column(nullable = true)
+    private Timestamp permissionModificationTime;
+
+    private Timestamp permissionIndexTime;
+
     public Timestamp getModificationTime() {
         return modificationTime;
     }
@@ -89,7 +98,6 @@ public abstract class DvObject implements java.io.Serializable {
 
     @ManyToOne
     private AuthenticatedUser creator;
-
 
     public interface Visitor<T> {
         public T visit(Dataverse dv);
@@ -201,7 +209,23 @@ public abstract class DvObject implements java.io.Serializable {
     public boolean isInstanceofDataFile() {
         return this instanceof DataFile;
     }
-    
+
+    public Timestamp getPermissionModificationTime() {
+        return permissionModificationTime;
+    }
+
+    public void setPermissionModificationTime(Timestamp permissionModificationTime) {
+        this.permissionModificationTime = permissionModificationTime;
+    }
+
+    public Timestamp getPermissionIndexTime() {
+        return permissionIndexTime;
+    }
+
+    public void setPermissionIndexTime(Timestamp permissionIndexTime) {
+        this.permissionIndexTime = permissionIndexTime;
+    }
+
     public Dataverse getDataverseContext() {
         if (this instanceof Dataverse) {
             return (Dataverse) this;
