@@ -16,6 +16,8 @@ public class IpAddressTest {
     public void testValueOfIPv4() {
         assertEquals( new IPv4Address(127,0,0,1),
                     IpAddress.valueOf("127.0.0.1") );
+        assertEquals( new IPv4Address(149,78,247,173),
+                    IpAddress.valueOf("149.78.247.173") );
     }
     
     @Test
