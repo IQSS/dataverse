@@ -317,8 +317,15 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     } 
-
+    public String saveFeature() {
+        String successMessage = "The featured dataverses for this dataverse have been updated.";
+        return save(successMessage);
+    } 
     public String save() {
+        return save(null);
+    }
+    
+    public String save(String message) {
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList();
         List<MetadataBlock> selectedBlocks = new ArrayList();
         if (dataverse.isMetadataBlockRoot()) {
@@ -383,8 +390,10 @@ public class DataversePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
             return null;
         }
-        String msg = (create)? "You have successfully created your dataverse!": "You have successfully updated your dataverse!";
-        JsfHelper.addFlashMessage(msg);
+        if (message==null) {
+            message = (create)? "You have successfully created your dataverse!": "You have successfully updated your dataverse!";
+        }
+        JsfHelper.addFlashMessage(message);
         
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
