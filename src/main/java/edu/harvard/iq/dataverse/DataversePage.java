@@ -477,9 +477,8 @@ public class DataversePage implements java.io.Serializable {
         DeleteDataverseCommand cmd = new DeleteDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseDeleted", "Your dataverse ihas been deleted.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
+           JsfHelper.addFlashMessage( "Your dataverse has been deleted.");
+          return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String msg = "There was a problem deleting your dataverse: " + ex;
             logger.severe(msg);
