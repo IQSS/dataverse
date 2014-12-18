@@ -1,4 +1,4 @@
-package edu.harvard.iq.ip;
+package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
 /**
  * Base class for IP addresses. There are two concrete subclasses - IPv4 adn IPv6.

@@ -2,14 +2,12 @@ package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.groups.impl.AbstractGroup;
-import java.util.Set;
-import javax.servlet.ServletRequest;
+import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGroup;
 
 
 /**
  * An object that contains unbounded number of {@link RoleAssignee}s (e.g Users, other groups).
- * Implementors might want to look at {@link AbstractGroup} for a more convenient implementation.
+ * Implementors might want to look at {@link PersistedGroup} for a more convenient implementation.
  * 
  * @author michael
  */
@@ -40,10 +38,9 @@ public interface Group extends RoleAssignee {
      * Some groups may determine membership based on request properties, such as IP address.
      * 
      * @param aUser The user whose inclusion we test 
-     * @param aRequest The request the assignee issued.
      * @return {@code true} iff {@code anAssignee} is in this group; {@code false} otherwise.
      */
-    public boolean contains(  User aUser, ServletRequest aRequest );
+    public boolean contains(  User aUser );
     
     public boolean isEditable();
     
@@ -51,13 +48,6 @@ public interface Group extends RoleAssignee {
      * References the object that created the group, and may also edit it.
      * @return the creator of this group.
      */
-    public GroupCreator getCreator();
+    public GroupProvider getGroupProvider();
     
-    /**
-     * Lists all the direct sub groups of this group. Used to prevent infinite inclusions, where a group contains itself.
-     * @return all the direct sub-groups of this group. 
-     */
-    public Set<Group> getDirectSubGroups();
-    
-
 }

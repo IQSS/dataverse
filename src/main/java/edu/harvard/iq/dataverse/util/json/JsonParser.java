@@ -9,6 +9,9 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,6 +24,7 @@ import java.util.Set;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
+import javax.json.JsonValue;
 
 /**
  * Parses JSON objects into domain objects.
@@ -39,6 +43,32 @@ public class JsonParser {
         this.blockService = blockService;
     }
     
+    public IpGroup parseIpGroup( JsonObject obj ) {
+        IpGroup retVal = new IpGroup();
+        
+        if ( obj.containsKey("id") ) {
+            retVal.setId( Long.valueOf(obj.getString("id")) );
+        }
+        retVal.setName( obj.getString("name",null) );
+        retVal.setDescription( obj.getString("description",null) );
+        retVal.setAlias( obj.getString("alias", null) );
+        
+        JsonArray rangeArray = obj.getJsonArray("ranges");
+        for ( JsonValue range : rangeArray ) {
+            if ( range.getValueType() == JsonValue.ValueType.ARRAY ) {
+                JsonArray rr = (JsonArray)range;
+                retVal.add( IpAddressRange.make(IpAddress.valueOf(rr.getString(0)),
+                                            IpAddress.valueOf(rr.getString(1))) );
+                
+            }
+        }
+        
+        return retVal;
+    }
+    
+    public DatasetVersion parseDatasetVersion( JsonObject obj ) throws JsonParseException {
+        try {
+            DatasetVersion dsv = new DatasetVersion();
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
         return parseDatasetVersion(obj, new DatasetVersion());
     }

@@ -70,7 +70,7 @@ public class Search extends AbstractApiBean {
                         return errorResponse(Response.Status.FORBIDDEN, message);
                     }
                 } else {
-                    dataverseUser = GuestUser.get();
+                    dataverseUser = new GuestUser();
                 }
                 boolean dataRelatedToMe = false;
                 int numResultsPerPage = 10;

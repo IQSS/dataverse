@@ -73,6 +73,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
     public static final String DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "delete-layer-metadata/"; 
     public static final String DELETE_MAP_LAYER_DATA_API_PATH = BASE_PATH + DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
     
+    public static final String DELETE_WORLDMAP_TOKEN_PATH_FRAGMENT = "delete-token/"; 
+    public static final String DELETE_WORLDMAP_TOKEN_PATH = BASE_PATH + DELETE_WORLDMAP_TOKEN_PATH_FRAGMENT;
+
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
 
@@ -213,7 +216,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (jsonTokenInfo==null){
             return null;
         }
-       // logger.info("retrieveTokenValueFromJson.jsonTokenInfo:"+ jsonTokenInfo);
+        logger.info("retrieveTokenValueFromJson.jsonTokenInfo:"+ jsonTokenInfo);
+        logger.info("token keys: " + jsonTokenInfo.keySet());
+        logger.info("key looked for: " + WorldMapToken.GEOCONNECT_TOKEN_KEY);
         if (!jsonTokenInfo.containsKey(WorldMapToken.GEOCONNECT_TOKEN_KEY)){
             logger.warning("Token not found.  Permission denied.");
             return null;
@@ -253,7 +258,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
         //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
         //----------------------------------
-
+        logger.info("(1) jsonTokenData: " + jsonTokenData);
         // Parse JSON 
         JsonObject jsonTokenInfo;
         try ( StringReader rdr = new StringReader(jsonTokenData) ) {
@@ -262,22 +267,27 @@ public class WorldMapRelatedData extends AbstractApiBean {
             logger.log(Level.SEVERE, "Json: " + jsonTokenData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
+        logger.info("(1a) jsonTokenInfo: " + jsonTokenInfo);
         
         // Retrieve token string
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonTokenInfo);
+        logger.info("(1b) token from JSON: " + worldmapTokenParam);
         if (worldmapTokenParam==null){
-            return errorResponse(Response.Status.UNAUTHORIZED, "Permission denied.");
+            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
 
         // Retrieve WorldMapToken and make sure it is valid
         //
         WorldMapToken wmToken = tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
+        logger.info("(2) token retrieved from db: " + wmToken);
+
         if (wmToken==null){
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
         
         // Make sure the token's User still has permissions to access the file
         //
+        logger.info("(3) check permissions");
         if (!(tokenServiceBean.canTokenUserEditFile(wmToken))){
             tokenServiceBean.expireToken(wmToken);
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
@@ -428,7 +438,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Retrieve token string
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
         if (worldmapTokenParam==null){
-            return errorResponse(Response.Status.UNAUTHORIZED, "Permission denied.");
+            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
 
         // Retrieve WorldMapToken and make sure it is valid
@@ -540,7 +550,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // (2) Retrieve token string
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
         if (worldmapTokenParam==null){
-            return errorResponse(Response.Status.UNAUTHORIZED, "Permission denied.");
+            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
 
         // (3) Retrieve WorldMapToken and make sure it is valid
@@ -568,11 +578,61 @@ public class WorldMapRelatedData extends AbstractApiBean {
        //   (note: permissions checked here for a second time by the mapLayerMetadataService call)
        //
        if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, wmToken.getDataverseUser()))){
-            return errorResponse(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");        
-       };
+            return errorResponse(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               };
        
        return okResponse("Map layer metadata deleted.");
         
     }  // end deleteWorldMapLayerData
+
+   /*
+        For WorldMap/GeoConnect Usage
+        Explicitly expire a WorldMap token, removing token from the database
+
+        POST params
+        {
+           "GEOCONNECT_TOKEN": "-- some 64 char token which contains a link to the DataFile --"
+        }
+    */
+    @POST
+    @Path(DELETE_WORLDMAP_TOKEN_PATH_FRAGMENT)
+    public Response deleteWorldMapToken(String jsonData){
+        
+        /*----------------------------------
+            Parse the json message.
+            - Auth check: GEOCONNECT_TOKEN
+        //----------------------------------*/
+        if (jsonData==null){
+            logger.log(Level.SEVERE, "jsonData is null");
+            return errorResponse( Response.Status.BAD_REQUEST, "No JSON data");
+        }
+        // (1) Parse JSON 
+        //
+        JsonObject jsonInfo;
+        try ( StringReader rdr = new StringReader(jsonData) ) {
+            jsonInfo = Json.createReader(rdr).readObject();
+        } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: " + jsonData);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+        }
+        
+        // (2) Retrieve token string
+        String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
+        if (worldmapTokenParam==null){
+            return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
+        }
+
+        // (3) Retrieve WorldMapToken
+        //
+        WorldMapToken wmToken = this.tokenServiceBean.findByName(worldmapTokenParam);
+        if (wmToken==null){
+            return errorResponse(Response.Status.NOT_FOUND, "Token not found.");
+        }
+
+        // (4) Delete the token
+        //
+        tokenServiceBean.deleteToken(wmToken);               
+        return okResponse("Token has been deleted.");
+        
+    }  // end deleteWorldMapLayerData    
     
 } // end class

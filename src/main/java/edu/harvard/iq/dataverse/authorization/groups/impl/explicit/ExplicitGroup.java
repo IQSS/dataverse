@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.authorization.groups.impl;
+package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
+import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +19,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Transient;
 import javax.servlet.ServletRequest;
 
+// TODO extends persisted group?
 @Entity
 public class ExplicitGroup implements Group, java.io.Serializable {
     
@@ -42,7 +43,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     private String title;
     
     @Transient
-    private ExplicitGroupCreator creator;
+    private ExplicitGroupProvider creator;
     
     /**
      * {@code true} If the guest is part of this group.
@@ -93,8 +94,8 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
-    public boolean contains(User aUser, ServletRequest aRequest) {
-        if ( aUser == GuestUser.get() ) {
+    public boolean contains(User aUser) {
+        if ( aUser.equals( new GuestUser() ) ) {
             return containsGuest;
         } else {
             // FIXEME implement
@@ -108,16 +109,15 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
-    public GroupCreator getCreator() {
+    public GroupProvider getGroupProvider() {
         return creator;
     }
     
-    void setCreator( ExplicitGroupCreator c ) {
+    void setCreator( ExplicitGroupProvider c ) {
         creator = c;
     }
 
-    @Override
-    public Set<Group> getDirectSubGroups() {
+    public Set<Group> getSubGroups() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
@@ -61,6 +63,10 @@ public interface CommandContext {
         public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
                    
         public DOIEZIdServiceBean doiEZId();
+        
+        public GuestbookServiceBean guestbooks();
+        
+        public GuestbookResponseServiceBean responses();
         
         public SettingsServiceBean settings();       
 	

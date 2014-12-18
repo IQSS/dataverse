@@ -242,7 +242,7 @@ public class WorldMapToken implements java.io.Serializable {
     }
 
     public boolean hasTokenExpired(){
-        
+        logger.info("hasTokenExpired");
  //       long currentTime = this.getCurrentTimestamp();//new Date().getTime();
         return this.hasTokenExpired(this.getCurrentTimestamp());
     }
@@ -287,6 +287,7 @@ public class WorldMapToken implements java.io.Serializable {
     }
     
     public boolean hasTokenExpired(Timestamp currentTimestamp){
+        logger.info("hasTokenExpired (w/timestamp)");
 
         if (this.getHasExpired()){
             return true;
@@ -296,8 +297,13 @@ public class WorldMapToken implements java.io.Serializable {
             this.expireToken();
             return true;
         }
+         logger.info("currentTimestamp: " + currentTimestamp);
+         logger.info("lastRefreshTime: " + lastRefreshTime);
+
         //System.out.println("  ..pre diff: "+ currentTimestamp);
         long hours = this.getElapsedHours(currentTimestamp, this.created);
+        logger.info("elapsed hours: " + hours);
+
         if (hours > MAX_HOURS_TOKEN_CAN_BE_USED){
             this.expireToken();
             return true;

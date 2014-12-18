@@ -1,4 +1,4 @@
-package edu.harvard.iq.ip;
+package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
 import java.util.Arrays;
 
@@ -33,6 +33,13 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
         this( new short[]{(short)a,(short)b,(short)c,(short)d} );
     }
     
+    public IPv4Address( long l ) {
+        bytes[0] = (short)((l >>> 24) & 0xFF);
+        bytes[1] = (short)((l >>> 16) & 0xFF);
+        bytes[2] = (short)((l >>>  8) & 0xFF);
+        bytes[3] = (short)(l & 0xFF);
+    }
+    
     @Override
     public boolean isLocalhost() {
         return Arrays.equals( new short[]{127,0,0,1} , bytes);
@@ -50,7 +57,11 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
     public short[] getBytes() {
         return bytes;
     }
-
+    
+    public long toLong() {
+        return (get(0)<<24) + (get(1)<<16) + (get(2)<<8) + get(3);
+    }
+    
     @Override
     public int hashCode() {
         int hash = 3;

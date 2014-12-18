@@ -158,41 +158,14 @@ public class Index extends AbstractApiBean {
     @GET
     @Path("status")
     public Response indexStatus() {
-        List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
-        List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
-        List<Long> dataversesInSolrOnly;
-        List<Long> datasetsInSolrOnly;
+        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr();
+
+        JsonObjectBuilder contentInSolrButNotDatabase;
         try {
-            dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
-            datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+            contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
         } catch (SearchException ex) {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
         }
-
-        JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
-        for (Dataverse dataverse : stateOrMissingDataverses) {
-            jsonStateOrMissingDataverses.add(dataverse.getId());
-        }
-        JsonArrayBuilder datasetsInDatabaseButNotSolr = Json.createArrayBuilder();
-        for (Dataset dataset : staleOrMissingDatasets) {
-            datasetsInDatabaseButNotSolr.add(dataset.getId());
-        }
-
-        JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
-        JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
-        for (Long dataverseId : dataversesInSolrOnly) {
-            dataversesInSolrButNotDatabase.add(dataverseId);
-        }
-        for (Long datasetId : datasetsInSolrOnly) {
-            datasetsInSolrButNotDatabase.add(datasetId);
-        }
-        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
-                .add("dataverses", jsonStateOrMissingDataverses)
-                .add("datasets", datasetsInDatabaseButNotSolr);
-
-        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
-                .add("dataverses", dataversesInSolrButNotDatabase)
-                .add("datasets", datasetsInSolrButNotDatabase);
 
         JsonObjectBuilder permissions = Json.createObjectBuilder()
                 .add("dataverses", "FIXME")
@@ -205,6 +178,40 @@ public class Index extends AbstractApiBean {
                 .add("permissions", permissions);
 
         return okResponse(data);
+    }
+
+    private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
+        List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
+        List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
+        JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
+        for (Dataverse dataverse : stateOrMissingDataverses) {
+            jsonStateOrMissingDataverses.add(dataverse.getId());
+        }
+        JsonArrayBuilder datasetsInDatabaseButNotSolr = Json.createArrayBuilder();
+        for (Dataset dataset : staleOrMissingDatasets) {
+            datasetsInDatabaseButNotSolr.add(dataset.getId());
+        }
+        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
+                .add("dataverses", jsonStateOrMissingDataverses)
+                .add("datasets", datasetsInDatabaseButNotSolr);
+        return contentInDatabaseButStaleInOrMissingFromSolr;
+    }
+
+    private JsonObjectBuilder getContentInSolrButNotDatabase() throws SearchException {
+        List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
+        List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+        JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
+        for (Long dataverseId : dataversesInSolrOnly) {
+            dataversesInSolrButNotDatabase.add(dataverseId);
+        }
+        JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
+        for (Long datasetId : datasetsInSolrOnly) {
+            datasetsInSolrButNotDatabase.add(datasetId);
+        }
+        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
+                .add("dataverses", dataversesInSolrButNotDatabase)
+                .add("datasets", datasetsInSolrButNotDatabase);
+        return contentInSolrButNotDatabase;
     }
 
 }

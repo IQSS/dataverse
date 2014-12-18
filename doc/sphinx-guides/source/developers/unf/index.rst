@@ -1,5 +1,9 @@
 .. _unf:
 
+====================================
+Universal Numerical Fingerprint (UNF)
+====================================
+
 Contents:
 
 .. toctree::
@@ -8,10 +12,6 @@ Contents:
   unf-v3
   unf-v5
   unf-v6
-
-====================================
-Universal Numerical Fingerprint (UNF)
-====================================
 
 .. figure:: ./img/unf-diagram.png
     :align: center

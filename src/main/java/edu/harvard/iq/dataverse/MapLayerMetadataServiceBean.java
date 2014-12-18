@@ -87,7 +87,7 @@ public class MapLayerMetadataServiceBean {
         }
         
         if (!permissionService.userOn(user, mapLayerMetadata.getDataFile()).has(Permission.EditDataset)) { 
-            em.remove(mapLayerMetadata);
+            em.remove(em.merge(mapLayerMetadata));
             return true;
         }
         return false;

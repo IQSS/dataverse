@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -75,7 +77,27 @@ public class JsonPrinter {
 		}
 		return bld;
 	}
-	
+    
+    public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
+        return jsonObjectBuilder()
+                .add( "title", d.getTitle() )
+                .add( "email", d.getEmailAddress() )
+                .add( "affiliation", d.getAffiliation() );
+    }
+    
+	public static JsonObjectBuilder json( IpGroup grp ) {
+        JsonArrayBuilder rangeBld = Json.createArrayBuilder();
+        for ( IpAddressRange r :grp.getRanges() ) {
+            rangeBld.add( Json.createArrayBuilder().add(r.getBottom().toString()).add(r.getTop().toString()) );
+        }
+        return jsonObjectBuilder()
+                .add("alias", grp.getAlias() )
+                .add("id", grp.getId() )
+                .add("name", grp.getName() )
+                .add("description", grp.getDescription() )
+                .add("ranges", rangeBld);
+    }
+    
 	public static JsonObjectBuilder json( DataverseRole role ) {
 		JsonObjectBuilder bld = jsonObjectBuilder()
 				.add("alias", role.getAlias()) 

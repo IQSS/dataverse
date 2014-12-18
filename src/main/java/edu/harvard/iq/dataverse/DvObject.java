@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.Objects;
 import javax.persistence.*;
 
@@ -63,7 +62,7 @@ public abstract class DvObject implements java.io.Serializable {
     private Timestamp modificationTime;
 
     private Timestamp indexTime;
-
+    
     public Timestamp getModificationTime() {
         return modificationTime;
     }

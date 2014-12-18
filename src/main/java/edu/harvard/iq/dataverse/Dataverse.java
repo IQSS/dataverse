@@ -62,7 +62,14 @@ public class Dataverse extends DvObjectContainer {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Please select a category for your dataverse.")
     private DataverseType dataverseType;
+    
+    /**
+     * When {@code true}, users are not granted permissions the got for parent
+     * dataverses.
+     */
+    protected boolean permissionRoot;
 
+    
     public DataverseType getDataverseType() {
         return dataverseType;
     }
@@ -142,7 +149,74 @@ public class Dataverse extends DvObjectContainer {
     private Template defaultTemplate;  
     
     @OneToMany(cascade = {CascadeType.MERGE})
-    private List<Template> templates;    
+    private List<Template> templates; 
+    
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<Guestbook> guestbooks;
+
+    public List<Guestbook> getGuestbooks() {
+        return guestbooks;
+    }
+
+    public void setGuestbooks(List<Guestbook> guestbooks) {
+        this.guestbooks = guestbooks;
+    } 
+    
+    public List<Guestbook> getParentGuestbooks() {
+        List<Guestbook> retList = new ArrayList();
+        Dataverse testDV = this;
+        while (testDV.getOwner() != null){   
+          
+           retList.addAll(testDV.getOwner().getGuestbooks());
+           
+           if(!testDV.getOwner().guestbookRoot){               
+               break;
+           }           
+           testDV = testDV.getOwner();
+        }
+            return  retList;
+    }
+    
+    public List<Guestbook> getAvailableGuestbooks(){
+        
+        List<Guestbook> retList = new ArrayList();
+        Dataverse testDV = this;
+        List<Guestbook> allGbs = new ArrayList();
+        if (!this.guestbookRoot){
+                    while (testDV.getOwner() != null){   
+          
+           allGbs.addAll(testDV.getOwner().getGuestbooks());
+           
+           if(!testDV.getOwner().guestbookRoot){               
+               break;
+           }           
+           testDV = testDV.getOwner();
+        }
+            
+        }
+        
+        allGbs.addAll(this.getGuestbooks());
+
+        
+        for (Guestbook gbt: allGbs){
+            if(gbt.isEnabled()){
+                retList.add(gbt);
+            }
+        }
+            return  retList;
+        
+    }
+    
+    private boolean guestbookRoot;
+    
+    public boolean isGuestbookRoot() {
+        return guestbookRoot;
+    }
+
+    public void setGuestbookRoot(boolean guestbookRoot) {
+        this.guestbookRoot = guestbookRoot;
+    } 
+    
     
     public void setDataverseFieldTypeInputLevels(List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels) {
         this.dataverseFieldTypeInputLevels = dataverseFieldTypeInputLevels;
@@ -367,8 +441,6 @@ public class Dataverse extends DvObjectContainer {
         this.displayFeatured = displayFeatured;
     }
 
-  
-
     public void addRole(DataverseRole role) {
         role.setOwner(this);
         roles.add(role);
@@ -414,7 +486,18 @@ public class Dataverse extends DvObjectContainer {
         return "Dataverse Deposit Terms of Use will be implemented in https://github.com/IQSS/dataverse/issues/551";
     }
     
+    @Override
     public String getDisplayName() {
         return getName() + " Dataverse";
     }
+    
+    @Override
+    public boolean isPermissionRoot() {
+        return permissionRoot;
+    }
+
+    public void setPermissionRoot(boolean permissionRoot) {
+        this.permissionRoot = permissionRoot;
+    }
+
 }
