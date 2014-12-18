@@ -32,7 +32,8 @@ public class DataverseContact implements Serializable {
         this.dataverse = dv; 
     }
     
-    public DataverseContact(String contactEmail) {
+    public DataverseContact(Dataverse dv, String contactEmail) {
+        this.dataverse = dv;        
         this.contactEmail = contactEmail;
     }      
     
