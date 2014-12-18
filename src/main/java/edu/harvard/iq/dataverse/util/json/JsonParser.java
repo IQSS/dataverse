@@ -66,9 +66,6 @@ public class JsonParser {
         return retVal;
     }
     
-    public DatasetVersion parseDatasetVersion( JsonObject obj ) throws JsonParseException {
-        try {
-            DatasetVersion dsv = new DatasetVersion();
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
         return parseDatasetVersion(obj, new DatasetVersion());
     }
