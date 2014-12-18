@@ -16,6 +16,7 @@ import java.util.List;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -38,7 +39,9 @@ public class Guestbook implements Serializable {
     @OneToMany(mappedBy="guestbook",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
     private List<CustomQuestion> customQuestions;
     
+    @NotBlank(message="Enter a name for the guestbook")
     private String name;
+    
     private boolean enabled;
     private boolean nameRequired;
     private boolean emailRequired;
