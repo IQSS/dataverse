@@ -7,12 +7,18 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Logger;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
@@ -27,6 +33,8 @@ import javax.validation.constraints.Pattern;
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
     //@NotBlank(message = "Please specify a file name.")
     @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
@@ -35,7 +43,7 @@ public class FileMetadata implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description = "";
     @Column(columnDefinition="TEXT")
-    private String category = "";
+    private String category = ""; // TODO: remove! -- L.A. 4.0 beta 10
 
     @ManyToOne
     @JoinColumn(nullable=false)
@@ -61,6 +69,7 @@ public class FileMetadata implements Serializable {
         this.description = description;
     }
 
+    // TODO: remove the following 2 methods: -- L.A. beta 10
     public String getCategory() {
         return category;
     }
@@ -69,6 +78,133 @@ public class FileMetadata implements Serializable {
         this.category = category;
     }
 
+    /* 
+     * File Categories to which this version of the DataFile belongs: 
+     */
+    @ManyToMany (cascade = {CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    private List<DataFileCategory> fileCategories;
+    
+    public List<DataFileCategory> getCategories() {
+        return fileCategories;
+    }
+    
+    public void setCategories(List<DataFileCategory> fileCategories) {
+        this.fileCategories = fileCategories; 
+    }
+    
+    public void addCategory(DataFileCategory category) {
+        if (fileCategories == null) {
+            fileCategories = new ArrayList<>();
+        }
+        fileCategories.add(category);
+    }
+
+    public List<String> getCategoriesByName() {
+        ArrayList<String> ret = new ArrayList<>();
+        if (fileCategories != null) {
+            for (int i = 0; i < fileCategories.size(); i++) {
+                ret.add(fileCategories.get(i).getName());
+            }
+        }
+        return ret;
+    }
+    
+    // alternative, experimental method: 
+
+    public void setCategoriesByName(List<String> newCategoryNames) {
+        setCategories(null);
+
+        if (newCategoryNames != null) {
+
+            for (int i = 0; i < newCategoryNames.size(); i++) {
+                    // Dataset.getCategoryByName() will check if such a category 
+                // already exists for the parent dataset; it will be created 
+                // if not. The method will return null if the supplied 
+                // category name is null or empty. -- L.A. 4.0 beta 10
+                DataFileCategory fileCategory = null;
+                try {
+                    // Using "try {}" to catch any null pointer exceptions, 
+                    // just in case: 
+                    fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryNames.get(i));
+                } catch (Exception ex) {
+                    fileCategory = null;
+                }
+                if (fileCategory != null) {
+                    this.addCategory(fileCategory);
+                    fileCategory.addFileMetadata(this);
+                }
+            }
+        }
+    }
+    /*
+    public void setCategoriesByName(List<String> newCategoryNames) {
+                setCategories(null);
+
+        if (newCategoryNames != null) {
+            Collection<String> oldCategoryNames = getCategoriesByName();
+            
+            
+            for (int i = 0; i < newCategoryNames.size(); i++) {
+                if (!oldCategoryNames.contains(newCategoryNames.get(i))) {
+                    // Dataset.getCategoryByName() will check if such a category 
+                    // already exists for the parent dataset; it will be created 
+                    // if not. The method will return null if the supplied 
+                    // category name is null or empty. -- L.A. 4.0 beta 10
+                    DataFileCategory fileCategory = null; 
+                    try { 
+                        // Using "try {}" to catch any null pointer exceptions, 
+                        // just in case: 
+                        fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryNames.get(i));
+                    } catch (Exception ex) {
+                        fileCategory = null; 
+                    }
+                    if (fileCategory != null) { 
+                        this.addCategory(fileCategory);
+                        fileCategory.addFileMetadata(this);
+                    }
+                } else {
+                    // don't do anything - this file metadata is already in 
+                    // this category.
+                }
+            }
+        }
+    }*/
+    
+    public void addCategoryByName(String newCategoryName) {
+        if (newCategoryName != null && !newCategoryName.equals("")) {
+            Collection<String> oldCategoryNames = getCategoriesByName();
+            if (!oldCategoryNames.contains(newCategoryName)) {
+                DataFileCategory fileCategory = null;
+                // Dataset.getCategoryByName() will check if such a category 
+                // already exists for the parent dataset; it will be created 
+                // if not. The method will return null if the supplied 
+                // category name is null or empty. -- L.A. 4.0 beta 10
+                try {
+                    // Using "try {}" to catch any null pointer exceptions, 
+                    // just in case: 
+                    fileCategory = this.getDatasetVersion().getDataset().getCategoryByName(newCategoryName);
+                } catch (Exception ex) {
+                    fileCategory = null;
+                }
+
+                
+                if (fileCategory != null) {
+                    logger.info("Found file category for "+newCategoryName);
+
+                    this.addCategory(fileCategory);
+                    fileCategory.addFileMetadata(this);
+                } else {
+                    logger.info("Could not find file category for "+newCategoryName);
+                }
+            } else {
+                // don't do anything - this file metadata already belongs to
+                // this category.
+            }
+        }
+    }
+    
+  
+    
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }

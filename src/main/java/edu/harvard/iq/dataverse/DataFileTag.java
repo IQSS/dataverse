@@ -20,7 +20,7 @@ import javax.persistence.ManyToOne;
 
 /**
  *
- * @author landreev
+ * @author Leonid Andreev
  */
 @Entity
 public class DataFileTag implements Serializable {

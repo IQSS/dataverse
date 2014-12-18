@@ -75,6 +75,7 @@ import org.primefaces.context.RequestContext;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import javax.faces.model.SelectItem;
+import java.util.Collection;
 
 /**
  *
@@ -1609,20 +1610,20 @@ public class DatasetPage implements java.io.Serializable {
         return dataURL;
     }
     
-    private FileMetadata fileForAdvancedOptions = null; 
+    private FileMetadata fileMetadataSelected = null; 
     
-    public void setAdvfile(FileMetadata fm) {
-        fileForAdvancedOptions = fm;
-        logger.fine("set the file for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
+    public void setFileMetadataSelected(FileMetadata fm) {
+        fileMetadataSelected = fm;
+        logger.fine("set the file for the advanced options popup ("+fileMetadataSelected.getLabel()+")");
     }
 
-    public FileMetadata getAdvfile() {
-        if (fileForAdvancedOptions != null) {
-            logger.fine("returning file metadata for the advanced options popup ("+fileForAdvancedOptions.getLabel()+")");
+    public FileMetadata getFileMetadataSelected() {
+        if (fileMetadataSelected != null) {
+            logger.fine("returning file metadata for the advanced options popup ("+fileMetadataSelected.getLabel()+")");
         } else {
             logger.fine("file metadata for the advanced options popup is null.");
         }
-        return fileForAdvancedOptions;
+        return fileMetadataSelected;
     }
     
     /* Items for the "Advanced Options" popup. 
@@ -1650,15 +1651,15 @@ public class DatasetPage implements java.io.Serializable {
         selectedTags = null;
         selectedTags = new String[0];
         
-        if (fileForAdvancedOptions != null) {
-            if (fileForAdvancedOptions.getDataFile() != null 
-                    && fileForAdvancedOptions.getDataFile().getTags() != null
-                    && fileForAdvancedOptions.getDataFile().getTags().size() > 0) {
+        if (fileMetadataSelected != null) {
+            if (fileMetadataSelected.getDataFile() != null 
+                    && fileMetadataSelected.getDataFile().getTags() != null
+                    && fileMetadataSelected.getDataFile().getTags().size() > 0) {
                 
-                selectedTags = new String[ fileForAdvancedOptions.getDataFile().getTags().size()];
+                selectedTags = new String[ fileMetadataSelected.getDataFile().getTags().size()];
                 
-                for (int i = 0; i < fileForAdvancedOptions.getDataFile().getTags().size(); i++) {
-                    selectedTags[i] = fileForAdvancedOptions.getDataFile().getTags().get(i).getTypeLabel();
+                for (int i = 0; i < fileMetadataSelected.getDataFile().getTags().size(); i++) {
+                    selectedTags[i] = fileMetadataSelected.getDataFile().getTags().get(i).getTypeLabel();
                 }
             }
         }
@@ -1671,11 +1672,11 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean getUseAsDatasetThumbnail() {
         
-        if (fileForAdvancedOptions != null) {
-            if (fileForAdvancedOptions.getDataFile() != null) {
-                if (fileForAdvancedOptions.getDataFile().getId() != null) {
-                    if (fileForAdvancedOptions.getDataFile().getOwner() != null) {
-                        if (fileForAdvancedOptions.getDataFile().equals(fileForAdvancedOptions.getDataFile().getOwner().getThumbnailFile())) {
+        if (fileMetadataSelected != null) {
+            if (fileMetadataSelected.getDataFile() != null) {
+                if (fileMetadataSelected.getDataFile().getId() != null) {
+                    if (fileMetadataSelected.getDataFile().getOwner() != null) {
+                        if (fileMetadataSelected.getDataFile().equals(fileMetadataSelected.getDataFile().getOwner().getThumbnailFile())) {
                             return true;
                         }
                     }
@@ -1686,14 +1687,14 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void setUseAsDatasetThumbnail(boolean useAsThumbnail) {
-        if (fileForAdvancedOptions != null) {
-            if (fileForAdvancedOptions.getDataFile() != null) {
-                if (fileForAdvancedOptions.getDataFile().getId() != null) { // ?
-                    if (fileForAdvancedOptions.getDataFile().getOwner() != null) {
+        if (fileMetadataSelected != null) {
+            if (fileMetadataSelected.getDataFile() != null) {
+                if (fileMetadataSelected.getDataFile().getId() != null) { // ?
+                    if (fileMetadataSelected.getDataFile().getOwner() != null) {
                         if (useAsThumbnail) {
-                            fileForAdvancedOptions.getDataFile().getOwner().setThumbnailFile(fileForAdvancedOptions.getDataFile());
+                            fileMetadataSelected.getDataFile().getOwner().setThumbnailFile(fileMetadataSelected.getDataFile());
                         } else if (getUseAsDatasetThumbnail()) {
-                            fileForAdvancedOptions.getDataFile().getOwner().setThumbnailFile(null);
+                            fileMetadataSelected.getDataFile().getOwner().setThumbnailFile(null);
                         }
                     }
                 }
@@ -1705,14 +1706,14 @@ public class DatasetPage implements java.io.Serializable {
         // DataFile Tags: 
         
         if (selectedTags != null) {
-            if (fileForAdvancedOptions != null && fileForAdvancedOptions.getDataFile() != null) {
-                fileForAdvancedOptions.getDataFile().setTags(null);
+            if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
+                fileMetadataSelected.getDataFile().setTags(null);
                 for (int i = 0; i < selectedTags.length; i++) {
                     DataFileTag tag = new DataFileTag();
                     try { 
                         tag.setTypeByLabel(selectedTags[i]);
-                        tag.setDataFile(fileForAdvancedOptions.getDataFile());
-                        fileForAdvancedOptions.getDataFile().addTag(tag);
+                        tag.setDataFile(fileMetadataSelected.getDataFile());
+                        fileMetadataSelected.getDataFile().addTag(tag);
                     } catch (IllegalArgumentException iax) {
                         // ignore 
                     }
@@ -1748,4 +1749,44 @@ public class DatasetPage implements java.io.Serializable {
         
         return "";
     }
+    
+    
+    private String newCategoryName = null; 
+    
+    public String getNewCategoryName() {
+        return newCategoryName;
+    }
+    
+    public void setNewCategoryName(String newCategoryName) {
+        this.newCategoryName = newCategoryName;
+    }
+    
+    public void addFileCategory() {
+        logger.info("New category name: "+newCategoryName);
+        
+        if (fileMetadataSelected != null && newCategoryName != null) {
+            logger.info("Adding new category, for file "+fileMetadataSelected.getLabel());
+            fileMetadataSelected.addCategoryByName(newCategoryName);
+        } else {
+            logger.info("No FileMetadata selected!");
+        }
+    }
+    /*
+    public Collection<String> getFileCategoriesAvailable() {
+        return dataset.getCategoriesByName();
+    }
+    
+    public List<String> getSelectedCategoriesForSelectedFile() {
+        if (fileMetadataSelected != null) {
+            return fileMetadataSelected.getCategoriesByName();
+        }
+        return null; 
+    }
+    
+    public void setSelectedCategoriesForSelectedFile(List<String> categoriesByName) {
+        if (fileMetadataSelected != null) {
+            fileMetadataSelected.setCategoriesByName(categoriesByName);
+        }
+    }
+    */
 }

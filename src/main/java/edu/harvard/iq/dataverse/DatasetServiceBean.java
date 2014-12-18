@@ -252,14 +252,14 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         xmlw.writeStartElement("record");
 
-        // "Ref-type" indicate which of the (numerous!) available EndNote
+        // "Ref-type" indicates which of the (numerous!) available EndNote
         // schemas this record will be interpreted as. 
         // This is relatively important. Certain fields with generic 
         // names like "custom1" and "custom2" become very specific things
-        // in certain schemas; for example, custom1 shows as "legal notice"
+        // in specific schemas; for example, custom1 shows as "legal notice"
         // in "Journal Article" (ref-type 84), or as "year published" in 
         // "Government Document". 
-        // We don't want our UNF to show as a "legal notice"! 
+        // We don't want the UNF to show as a "legal notice"! 
         // We have found a ref-type that works ok for our purposes - 
         // "Online Database" (type 45). In this one, the fields Custom1 
         // and Custom2 are not translated and just show as is. 

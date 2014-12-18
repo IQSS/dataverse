@@ -571,7 +571,6 @@
                                                     <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">A file with this MD5 already exists in the dataset.</span></div>
                                                 </ui:fragment>
                                             </div>
-
                                             <!-- UNF + Variables, Obsersvations -->
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
                                                 <div>
@@ -602,8 +601,33 @@
                                                         <p:watermark for="fileDescription" value="Add file description..."/>
                                                         <p:message for="fileDescription"/>
                                                     </ui:fragment>
+                                                    
                                                 </div>
                                             </ui:fragment>
+                                            
+                                             <!-- ui:fragment rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.categories)}" -->
+                                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
+                                                <div>
+                                                    <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" rendered="#{!(empty fileMetadata.categories)}"/ -->
+                                                    <ui:repeat value="#{fileMetadata.categories}" var="cat">
+                                                        <h:outputText value="#{cat.name}" styleClass="label label-info"/>
+                                                        <h:outputText value=" "/>
+                                                    </ui:repeat>
+                                                <!-- /div -->
+                                            <!-- /ui:fragment -->
+                                            <!-- *old* file category code - removed from here. - L.A. beta 10 -->
+                                            <!-- ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" -->
+                                            <h:outputText value=" "/>
+
+                                            <p:commandButton id="fileCategoriesButton" 
+                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}" 
+                                                           update=":datasetForm:fileCategoriesPopup" 
+                                                           oncomplete="fileCategoriesPopup.show()" 
+                                                           value="Edit Categories"
+                                                           rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                                </div>
+                                            </ui:fragment>
+                                            <p/>
 
                                         </p:column>
 
@@ -611,7 +635,7 @@
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image)}">
                                                 <p:commandLink id="advancedIngestOptionsButton" 
                                                                styleClass="btn btn-default" 
-                                                               actionListener="#{DatasetPage.setAdvfile(fileMetadata)}"
+                                                               actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
                                                                update=":datasetForm:fileAdvancedOptions"
                                                                oncomplete="fileAdvancedOptions.show()">
                                                     <span class="glyphicon glyphicon-cog" style="margin-right:.3em;"/> Advanced Options
@@ -1530,7 +1554,7 @@
                         </style>
                         <div class="form-inline clearfix" style="min-width:800px;">
                             <!-- "Data File Tags" - these only apply to tabular files, for now: -->
-                            <ui:fragment rendered="#{DatasetPage.advfile.dataFile.tabularData}">
+                            <ui:fragment rendered="#{DatasetPage.fileMetadataSelected.dataFile.tabularData}">
                                 <div class="form-group col-sm-12">
                                     <label for="tabularDataTags" class="col-sm-4 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -1608,6 +1632,7 @@
                         <p:commandButton id="fileAdvancedOptionsSaveButton" value="Save Changes" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
                         <p:commandButton id="fileAdvancedOptionsCancelButton" value="Cancel" onclick="fileAdvancedOptions.hide()"/>
                     </p:dialog>
+
                     <p:dialog  header="Download File" widgetVar="downloadPopup">
                         Please complete the following before downloading
                         <ui:fragment rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
@@ -1656,6 +1681,46 @@
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="downloadPopup.hide()" type="button" />
                     </p:dialog>  
+                    
+                    <p:dialog id="fileCategoriesPopup" header="Edit File Categories" widgetVar="fileCategoriesPopup" modal="true">
+                        <p class="help-block"></p>
+                        <style type="text/css">
+                                    .form-group table.noBorders {width:100%;}
+                                    .form-group table.noBorders td {width:50%;}
+                                    .form-group table.noBorders td .form-control {width:100%;}
+                        </style>
+                        <div class="form-inline clearfix" style="min-width:800px;">
+                            <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
+                                <div class="form-group col-sm-12">
+                                    <label for="fileCategoriesMenu" class="col-sm-3 control-label">
+                                         Select Categories: 
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:selectManyMenu id="fileCategoriesMenu" value="#{DatasetPage.fileMetadataSelected.categoriesByName}" showCheckbox="true">
+                                                <f:selectItems value="#{DatasetPage.fileMetadataSelected.datasetVersion.dataset.categoriesByName}"/>          
+                                            </p:selectManyMenu>
+                                            <p:message for="fileCategoriesMenu" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-group col-sm-12">
+                                    <label for="fileCategoryAddNew" class="col-sm-3 control-label">
+                                         Add New Category: 
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:inputText id="fileCategoryAddNew" type="text" value="#{DatasetPage.newCategoryName}" placeholder="new category name"/>
+                                            <p:message for="fileCategoryAddNew" display="text" />
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                        </div>
+                        <p:commandButton id="fileCategoriesPopupSaveButton" value="Save Changes" oncomplete="fileCategoriesPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.addFileCategory()}"/>
+                        <p:commandButton id="fileCategoriesPopupCancelButton" value="Cancel" onclick="fileCategoriesPopup.hide()"/>
+                    </p:dialog>
+>>>>>>> Stashed changes
                 </h:form>
             </ui:define>
         </ui:composition>

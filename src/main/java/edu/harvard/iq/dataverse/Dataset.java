@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +56,8 @@ public class Dataset extends DvObjectContainer {
     private Guestbook guestbook;
     
     private boolean fileAccessRequest;
+    @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataFileCategory> dataFileCategories = null;
 
     public Dataset() {
         //this.versions = new ArrayList();
@@ -218,7 +221,13 @@ public class Dataset extends DvObjectContainer {
         if (latestVersion != null) {
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
+                // TODO: 
+                // the "category" will be removed, shortly. 
+                // (replaced by multiple, tag-like categories of 
+                // type DataFileCategory) -- L.A. beta 10
                 newFm.setCategory(fm.getCategory());
+                // yep, these are the new categories:
+                newFm.setCategories(fm.getCategories());
                 newFm.setDescription(fm.getDescription());
                 newFm.setLabel(fm.getLabel());
                 newFm.setDataFile(fm.getDataFile());
@@ -286,6 +295,91 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
 
+    public List<DataFileCategory> getCategories() {
+        return dataFileCategories;
+    }
+
+    public void setFileCategories(List<DataFileCategory> categories) {
+        this.dataFileCategories = categories;
+    }
+    
+    public void addFileCategory(DataFileCategory category) {
+        if (dataFileCategories == null) {
+            dataFileCategories = new ArrayList<>(); 
+        }
+        dataFileCategories.add(category);
+    } 
+    
+    public Collection<String> getCategoriesByName() {
+        Collection<String> ret = getCategoryNames();
+        
+        // "Documentation" and "Data" are basic categories that we 
+        // want to be present by default:
+        if (!ret.contains("Documentation")) {
+            ret.add("Documentation");
+        }
+        if (!ret.contains("Data")) {
+            ret.add("Data");
+        }
+        
+        return ret;
+    }
+    
+    public void setCategoriesByName(List<String> newCategoryNames) {
+        if (newCategoryNames != null) {
+            Collection<String> oldCategoryNames = getCategoryNames();
+            
+            for (int i = 0; i < newCategoryNames.size(); i++) {
+                if (!oldCategoryNames.contains(newCategoryNames.get(i))) {
+                    DataFileCategory newCategory = new DataFileCategory();
+                    newCategory.setName(newCategoryNames.get(i));
+                    newCategory.setDataset(this);
+                    this.addFileCategory(newCategory);
+                }
+            }
+        }
+    }
+    
+    public void addCategoryByName(String newCategoryName) {
+        if (newCategoryName != null && !newCategoryName.equals("")) {
+            Collection<String> oldCategoryNames = getCategoryNames();
+            if (!oldCategoryNames.contains(newCategoryName)) {
+                DataFileCategory newCategory = new DataFileCategory();
+                newCategory.setName(newCategoryName);
+                newCategory.setDataset(this);
+                this.addFileCategory(newCategory);
+            }
+        }
+    }
+    
+    public DataFileCategory getCategoryByName(String categoryName) {
+        if (categoryName != null && !categoryName.equals("")) {
+            for (int i = 0; i < dataFileCategories.size(); i++) {
+                if (categoryName.equals(dataFileCategories.get(i).getName())) {
+                    return dataFileCategories.get(i);
+                }
+            } 
+            
+            DataFileCategory newCategory = new DataFileCategory();
+            newCategory.setName(categoryName);
+            newCategory.setDataset(this);
+            this.addFileCategory(newCategory);
+            
+            return newCategory;
+        }
+        return null;
+    }
+    
+    private Collection<String> getCategoryNames() {
+        ArrayList<String> ret = new ArrayList<>();
+        if (dataFileCategories != null) {
+            for (int i = 0; i < dataFileCategories.size(); i++) {
+                ret.add(dataFileCategories.get(i).getName());
+            }
+        }
+        return ret;
+    }
+    
     public Path getFileSystemDirectory() {
         Path studyDir = null;
 
