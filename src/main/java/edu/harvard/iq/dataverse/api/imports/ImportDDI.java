@@ -1130,6 +1130,7 @@ public class ImportDDI {
         } else {
             datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
+        datasetDTO.setDoiSeparator("/");
         datasetDTO.setProtocol("hdl");
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
@@ -1162,7 +1163,8 @@ public class ImportDDI {
             datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
         datasetDTO.setProtocol("doi");
-      
+        datasetDTO.setDoiSeparator("/");
+       
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
     // Helper methods
