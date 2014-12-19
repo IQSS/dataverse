@@ -37,25 +37,33 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     private final Dataset theDataset;
     private final boolean registrationRequired;
+    private final boolean migrate;
 
     public CreateDatasetCommand(Dataset theDataset, User user) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = false;
+        this.migrate=false;
     }
 
     public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
+        this.migrate=false;
     }
-    
+      public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, boolean migrate) {
+        super(user, theDataset.getOwner());
+        this.theDataset = theDataset;
+        this.registrationRequired = registrationRequired;
+        this.migrate=migrate;
+    }
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
         logger.log(Level.INFO, "start "  + formatter.format(new Date().getTime()));
-        // Test for duplicate identifier
-        if (!ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
+        // If this is not a migrated dataset, Test for duplicate identifier
+        if (!migrate && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);

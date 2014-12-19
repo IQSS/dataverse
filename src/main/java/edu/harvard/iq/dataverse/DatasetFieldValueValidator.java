@@ -50,9 +50,10 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             lengthOnly = true;
         }
         
-        if (StringUtils.isBlank(value.getValue())) {
+        if (StringUtils.isBlank(value.getValue()) || StringUtils.equals(value.getValue(),DatasetField.NA_VALUE)) {
             return true;
         }
+        
         
         if (fieldType.equals("date") && !lengthOnly) {
             boolean valid = false;
