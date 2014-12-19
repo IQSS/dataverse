@@ -605,28 +605,28 @@
                                                 </div>
                                             </ui:fragment>
                                             
-                                             <!-- ui:fragment rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.categories)}" -->
-                                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
-                                                <div>
-                                                    <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" rendered="#{!(empty fileMetadata.categories)}"/ -->
+                                            <div>
+                                                <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
+                                                       <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" / -->
                                                     <ui:repeat value="#{fileMetadata.categories}" var="cat">
                                                         <h:outputText value="#{cat.name}" styleClass="label label-info"/>
                                                         <h:outputText value=" "/>
                                                     </ui:repeat>
-                                                <!-- /div -->
-                                            <!-- /ui:fragment -->
-                                            <!-- *old* file category code - removed from here. - L.A. beta 10 -->
-                                            <!-- ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" -->
-                                            <h:outputText value=" "/>
+                                                    <h:outputText value=" "/>
 
-                                            <p:commandButton id="fileCategoriesButton" 
-                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}" 
-                                                           update=":datasetForm:fileCategoriesPopup" 
-                                                           oncomplete="fileCategoriesPopup.show()" 
-                                                           value="Edit Categories"
-                                                           rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
-                                                </div>
-                                            </ui:fragment>
+                                                </ui:fragment>
+                                                <!-- *old* file category code - removed from here. - L.A. beta 10 -->
+                                                <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+
+                                                    <p:commandButton id="fileCategoriesButton" 
+                                                                     actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}" 
+                                                                     update=":datasetForm:fileCategoriesPopup" 
+                                                                     oncomplete="fileCategoriesPopup.show()" 
+                                                                     value="Edit Categories"
+                                                                     rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                                </ui:fragment>
+                                            </div>
+
                                             <p/>
 
                                         </p:column>
@@ -699,9 +699,20 @@
                                                         </li>
                                                         <li role="presentation" class="divider"></li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <ui:fragment rendered="#{!(DatasetPage.downloadPopupRequired)}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="Tab-Delimited"/>
                                                             </h:outputLink>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
+                                                                <p:commandLink id="downloadPopupButtonTab" 
+                                                                    action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
+                                                                    update="@form,:messagePanel"
+                                                                    oncomplete="downloadPopup.show();">
+                                                                        Tab-Delimited
+                                                                </p:commandLink>    
+                                                            </ui:fragment>
+                                                            
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
