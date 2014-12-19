@@ -4,8 +4,8 @@
 */
 function load_navbar(){
     //var navbar_url = 'http://127.0.0.1:8000/nav-only-json/?callback=?';    
-    var navbar_url = 'http://beta.dataverse.org/nav-only-json/?callback=?';    
-    //var navbar_url = 'http://dataverse.org/nav-only-json/?callback=?';    
+    //var navbar_url = 'http://beta.dataverse.org/nav-only-json/?callback=?';    
+    var navbar_url = 'http://dataverse.org/nav-only-json/?callback=?';    
     
     var jqxhr = $.getJSON( navbar_url, function(data) {
         console.log( "success" );
