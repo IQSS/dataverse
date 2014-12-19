@@ -943,7 +943,23 @@ public class DatasetVersion implements Serializable {
         }
     }
 
-
+    public Set<ConstraintViolation> validateRequired() {
+        Set<ConstraintViolation> returnSet = new HashSet();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        for (DatasetField dsf : this.getFlatDatasetFields()) {
+            dsf.setValidationMessage(null); // clear out any existing validation message
+            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
+            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
+                dsf.setValidationMessage(constraintViolation.getMessage());
+                returnSet.add(constraintViolation);
+                break; // currently only support one message, so we can break out of the loop after the first constraint violation
+            }
+            
+        }
+        return returnSet;
+    }
+    
     public Set<ConstraintViolation> validate() {
         Set<ConstraintViolation> returnSet = new HashSet();
 
