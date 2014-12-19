@@ -60,7 +60,7 @@
         </div>
 
         <p:commandLink styleClass="btn btn-default" value="Save Changes" 
-                       update="assignedRoles :#{p:component('assignmentMessages')}"
+                       update="assignedRoles @([id$=Messages])"
                        actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()"/>
         <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">Cancel</button>
     </p:dialog>
