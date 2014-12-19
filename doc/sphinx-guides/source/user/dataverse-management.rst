@@ -41,7 +41,7 @@ where you will be presented with the following editing options:
 - :ref:`Featured Dataverses <featured-dataverses>` : if you have one or more dataverses, you can use this option to show them at the top of your dataverse page to help others easily find interesting or important dataverses
 - :ref:`Permissions <dataverse-permissions>` : give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
 - :ref:`Dataset Templates <dataset-templates>` : these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
-- :ref: `Dataset Guestbooks <dataset-guestbooks>` : 
+- :ref:`Dataset Guestbooks <dataset-guestbooks>` : 
 - **Delete Dataverse**: you are able to delete your dataverse as long as it is not published and does not have any draft datasets 
 
 .. _general-information:
