@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -80,7 +81,7 @@ public class DataverseRole implements Serializable  {
     @Pattern(regexp=".+", message="A Role must have a name.")
     private String name;
     
-	@Size(max = 1000, message = "Description must be at most 1000 characters.")
+    @Column(columnDefinition = "TEXT")
     private String description;
     
     @Size(max = 16, message = "Alias must be at most 16 characters.")
