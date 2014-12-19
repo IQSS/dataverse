@@ -602,7 +602,7 @@ public class DatasetPage implements java.io.Serializable {
         
         boolean valid = true;
         
-        if (workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
+        if (workingVersion.getLicense() != null && workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
             valid &= this.acceptedTerms;
         }
         
@@ -626,7 +626,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (cq.isRequired()){
                     for(CustomQuestionResponse cqr: guestbookResponse.getCustomQuestionResponses()){
                         if(cqr.getCustomQuestion().equals(cq)){
-                            valid &= !cqr.getResponse().isEmpty();
+                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
                         }
                     }
                 }
@@ -635,10 +635,11 @@ public class DatasetPage implements java.io.Serializable {
         
 
         if (!valid) {
+            logger.info("Guestbook response isn't valid.");
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-    /* need to get file and connect to actual download
+        
         Command cmd;
         try {
             cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
@@ -648,7 +649,17 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
 
         }
-        */
+        
+        if (guestbookResponse.getDataFile() != null) {
+            String fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId();
+            logger.info("Returning file download url: "+fileDownloadUrl);
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+            } catch (IOException ex) {
+                logger.info("Failed to issue a redirect to file download url.");
+            }
+            return fileDownloadUrl; 
+        }
         return "";
     }
 
@@ -1355,7 +1366,7 @@ public class DatasetPage implements java.io.Serializable {
         this.datasetVersionDifference = datasetVersionDifference;
     }
 
-    public void initGuestbookResponse() {
+    public void initGuestbookResponse(FileMetadata fileMetadata) {
         
         if(this.guestbookResponse == null){
             this.guestbookResponse= new GuestbookResponse();
@@ -1397,8 +1408,9 @@ public class DatasetPage implements java.io.Serializable {
             }
             
         }
-        //TODO - get real datafile
-        //this.guestbookResponse.setDataFile(datafileService.find(new Long(5)));
+        if (fileMetadata != null) {
+            this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
+        }
         this.guestbookResponse.setDataset(dataset);
     }
     
@@ -1771,22 +1783,32 @@ public class DatasetPage implements java.io.Serializable {
             logger.info("No FileMetadata selected!");
         }
     }
-    /*
-    public Collection<String> getFileCategoriesAvailable() {
-        return dataset.getCategoriesByName();
-    }
     
-    public List<String> getSelectedCategoriesForSelectedFile() {
-        if (fileMetadataSelected != null) {
-            return fileMetadataSelected.getCategoriesByName();
-        }
-        return null; 
-    }
     
-    public void setSelectedCategoriesForSelectedFile(List<String> categoriesByName) {
-        if (fileMetadataSelected != null) {
-            fileMetadataSelected.setCategoriesByName(categoriesByName);
+    public boolean isDownloadPopupRequired() {
+        // Each of these conditions is sufficient reason to have to 
+        // present the user with the popup: 
+        
+        // 1. License and Terms of Use:
+        
+        if (!"CC0".equals(workingVersion.getLicense()) && 
+                !(workingVersion.getTermsOfUse() == null ||
+                  workingVersion.getTermsOfUse().equals(""))) {
+            return true; 
         }
+        
+        // 2. Terms of Access:
+        
+        if (!(workingVersion.getTermsOfAccess() == null) && !workingVersion.getTermsOfAccess().equals("")) {
+            return true; 
+        }
+        
+        // 3. Guest Book: 
+        
+        if (dataset.getGuestbook() != null) {
+            return true;
+        }
+        
+        return false; 
     }
-    */
 }
