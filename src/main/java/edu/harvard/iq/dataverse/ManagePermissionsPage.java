@@ -249,8 +249,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public void revokeRole(Long roleAssignmentId) {
         try {
-            commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
-            JsfHelper.addSuccessMessage("The role assignment was removed.");
+            RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
+            commandEngine.submit(new RevokeRoleCommand(ra, session.getUser()));
+            JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role assignment was not able to be removed.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
