@@ -54,7 +54,6 @@ public class Dataverse extends DvObjectContainer {
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
 
-    // #VALIDATION: page defines maxlength in input:textarea component
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 

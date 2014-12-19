@@ -18,10 +18,11 @@ Creating a dataverse is easy but first you must be a registered user (see Create
 #. Once you are logged in click on the "Add Data" button and in the dropdown menu select "Create Dataverse".
 #. Once on the "New Dataverse" page fill in the following fields:
     * **Name**: Enter the name of your dataverse.
-    * **Alias**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse URL field, the URL for your Dataverse changes (http//.../dv/'url'), which affects links to this page.
-    * **E-mail**: This is the email address you will receive notifications for, for this particular dataverse.
+    * **URL**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse URL field, the URL for your Dataverse changes (http//.../'url'), which affects links to this page.
+    * **E-mail**: This is the email address you will receive notifications for, for this particular dataverse. You can have more than one contact email address for your dataverse.
     * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
     * **Description**: Provide a description of this dataverse. This will display on the home page of your dataverse and in the search result list.
+    * **Category**: Select a category that best describes the type of dataverse this will be. For example, if this is a dataverse for an individual researcher's datasets, select researcher. If this is a dataverse for an institution, select Organization & Institution.
     * **Choose the sets of Metadata Elements for datasets in this dataverse**: by default the metadata elements will be from the host dataverse that this new dataverse is created in. Dataverse offers metadata standards for multiple domains. To learn more about the metadata standards in Dataverse please check out the appendix (insert link here)
     * **Select facets for this dataverse**: by default the facets that will appear on your dataverse landing page will be from the host dataverse that this new dataverse was created in. The facets are simply metadata fields that can be used to help others easily find dataverses and datasets within this dataverse. You can select as many facets as you would like.
 #. Selected metadata elements are also used to pick which metadata fields you would like to use for creating templates for your datasets. Metadata fields can be hidden, or selected as required or optional. Once you have selected all the fields you would like to use, you can create your template(s) after you finish creating your dataverse.
@@ -41,6 +42,7 @@ where you will be presented with the following editing options:
 - :ref:`Featured Dataverses <featured-dataverses>` : if you have one or more dataverses, you can use this option to show them at the top of your dataverse page to help others easily find interesting or important dataverses
 - :ref:`Permissions <dataverse-permissions>` : give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
 - :ref:`Dataset Templates <dataset-templates>` : these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
+- :ref:`Dataset Guestbooks <dataset-guestbooks>` : 
 - **Delete Dataverse**: you are able to delete your dataverse as long as it is not published and does not have any draft datasets 
 
 .. _general-information:
@@ -81,7 +83,10 @@ Note: Featured Dataverses can only be used with published dataverses.
 Permissions 
 =======================================================
 
+.. _dataset-guestbooks:
 
+Dataset Guestbooks
+===========================================================
 
 Publish Your Dataverse
 =================================================================
