@@ -195,7 +195,7 @@ html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> Documentation".
-#html_title = None
+html_title = 'Dataverse.org'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
