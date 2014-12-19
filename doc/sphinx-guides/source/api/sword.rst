@@ -51,7 +51,7 @@ New features as of v1.1
 
 - "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: <dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>
 
-- "Contact E-mail" is automatically populated with the email on file for the parent dataverse.
+- "Contact E-mail" is automatically populated from dataset owners email.
 
 - "Subject" is automatically populated with "N/A". #769 
 
