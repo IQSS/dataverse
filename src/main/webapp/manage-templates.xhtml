@@ -19,7 +19,6 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <h:form id="manageTemplatesForm">
-
                     <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null and manageTemplatesPage.inheritTemplatesAllowed}">
                         <label for="templateRoot" style="margin-top:.75em;">
                             <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
@@ -43,7 +42,7 @@
                         </ui:fragment>    
                         <ui:fragment rendered="#{!empty manageTemplatesPage.templates}">    
 
-                            <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}">
+                            <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates">
                                 <p:column width="35%" sortBy="name" headerText="Template Name">
                                     <h:outputText value="#{template.name} " />
                                 </p:column>
@@ -58,13 +57,13 @@
                                                    value="Make Default"
                                                    rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
                                                    actionListener="#{manageTemplatesPage.makeDefault(template)}"
-                                                   update="@form"
+                                                   update="@form,:messagePanel"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Default"                                                 
                                                    rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
                                                    actionListener="#{manageTemplatesPage.unselectDefault(template)}"
-                                                   update="@form"
+                                                   update="@form,:messagePanel"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" rendered="false"
                                                   value="/template.xhtml?id=#{template.id}&#38;ownerId=#{template.dataverse.id}">
@@ -87,7 +86,8 @@
                                         <h:outputText value="Edit"/>
                                     </h:outputLink>
                                     <p:commandLink styleClass="btn btn-default" 
-                                                   value="Delete" 
+                                                   value="Delete"
+                                                   update="@form,:messagePanel"
                                                    action="#{manageTemplatesPage.setSelectedTemplate(template)}"
                                                    rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
                                                    oncomplete="deleteConfirmation.show()"
