@@ -72,7 +72,36 @@ public class BatchImport extends AbstractApiBean {
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
                 if (!file.isHidden()) {
-                    DatasetDTO dsDTO = null;
+                    if (file.isDirectory()) {
+                        handleDirectory( u, file);
+                    } else {
+                        handleFile(u, owner, file);
+                    }
+                }
+            }
+
+        }
+        return this.okResponse("completed");
+    }
+    
+    private Response handleDirectory(User u, File dir) {
+        Dataverse owner = findDataverse(dir.getName());
+        if (owner==null) {
+            return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dir.getName() + "'");
+ 
+        }
+        for (File file : dir.listFiles()) {
+            Response response= handleFile(u, owner, file);
+            if (response!=null) {
+                return response;
+            }
+        }
+        return null;
+    }
+    
+   private Response handleFile(User u, Dataverse owner, File file) {
+     
+    DatasetDTO dsDTO = null;
                     try {
                         // Read XML into DTO object
                         String ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
@@ -81,7 +110,7 @@ public class BatchImport extends AbstractApiBean {
                         // EMK TODO: replace this hard-coded version state
                         dsDTO.getDatasetVersion().setVersionState(VersionState.DRAFT);
                     } catch (IOException e) {
-                        return errorResponse(Response.Status.NOT_FOUND, "Error reading path " + fileDir);
+                        return errorResponse(Response.Status.NOT_FOUND, "Error reading path " + file);
                     } catch (XMLStreamException e) {
                         e.printStackTrace();
                         return errorResponse(Response.Status.BAD_REQUEST, "XMLStreamException");
@@ -124,12 +153,9 @@ public class BatchImport extends AbstractApiBean {
                     } catch (WrappedResponse e) {
                         return e.getResponse();
                     }
-                }
-            }
+                    return null;
+                } 
 
-        }
-        return this.okResponse("completed");
-    }
 
     
 }
