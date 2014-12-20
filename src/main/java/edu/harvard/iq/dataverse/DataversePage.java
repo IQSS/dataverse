@@ -377,7 +377,7 @@ public class DataversePage implements java.io.Serializable {
             cmd = new CreateDataverseCommand(dataverse, session.getUser(), facets.getTarget(), listDFTIL);
         } else {
             create=Boolean.FALSE;
-            cmd = new UpdateDataverseCommand(null, facets.getTarget(), featuredDataverses.getTarget(), session.getUser(), listDFTIL);
+            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), featuredDataverses.getTarget(), session.getUser(), listDFTIL);
         }
 
         try {
