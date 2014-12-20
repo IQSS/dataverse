@@ -605,28 +605,28 @@
                                                 </div>
                                             </ui:fragment>
                                             
-                                             <!-- ui:fragment rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.categories)}" -->
-                                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
-                                                <div>
-                                                    <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" rendered="#{!(empty fileMetadata.categories)}"/ -->
+                                            <div>
+                                                <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
+                                                       <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" / -->
                                                     <ui:repeat value="#{fileMetadata.categories}" var="cat">
                                                         <h:outputText value="#{cat.name}" styleClass="label label-info"/>
                                                         <h:outputText value=" "/>
                                                     </ui:repeat>
-                                                <!-- /div -->
-                                            <!-- /ui:fragment -->
-                                            <!-- *old* file category code - removed from here. - L.A. beta 10 -->
-                                            <!-- ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" -->
-                                            <h:outputText value=" "/>
+                                                    <h:outputText value=" "/>
 
-                                            <p:commandButton id="fileCategoriesButton" 
-                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}" 
-                                                           update=":datasetForm:fileCategoriesPopup" 
-                                                           oncomplete="fileCategoriesPopup.show()" 
-                                                           value="Edit Categories"
-                                                           rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
-                                                </div>
-                                            </ui:fragment>
+                                                </ui:fragment>
+                                                <!-- *old* file category code - removed from here. - L.A. beta 10 -->
+                                                <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+
+                                                    <p:commandButton id="fileCategoriesButton" 
+                                                                     actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}" 
+                                                                     update=":datasetForm:fileCategoriesPopup" 
+                                                                     oncomplete="fileCategoriesPopup.show()" 
+                                                                     value="Edit Categories"
+                                                                     rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                                </ui:fragment>
+                                            </div>
+
                                             <p/>
 
                                         </p:column>
@@ -666,11 +666,24 @@
                                                     <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
                                                 </a>
                                             </ui:fragment>
-                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
+                                            <!-- non-tabular data file: -->
+                                            <!-- no guest book/terms of use/etc. - straight to the download API url: -->
+                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired)}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
                                                 </a>
                                             </ui:fragment>
+                                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired}">
+                                                <p:commandLink id="downloadPopupButton" 
+                                                               styleClass="btn btn-default" 
+                                                               action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
+                                                               update="@form,:messagePanel"
+                                                               oncomplete="downloadPopup.show();">
+                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
+                                                </p:commandLink>
+                                            </ui:fragment>
+                                            
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
                                                 <div class="btn-group">
@@ -686,9 +699,20 @@
                                                         </li>
                                                         <li role="presentation" class="divider"></li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <ui:fragment rendered="#{!(DatasetPage.downloadPopupRequired)}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="Tab-Delimited"/>
                                                             </h:outputLink>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
+                                                                <p:commandLink id="downloadPopupButtonTab" 
+                                                                    action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
+                                                                    update="@form,:messagePanel"
+                                                                    oncomplete="downloadPopup.show();">
+                                                                        Tab-Delimited
+                                                                </p:commandLink>    
+                                                            </ui:fragment>
+                                                            
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
@@ -729,15 +753,7 @@
                                             </ui:fragment>
                                         </p:column>
                                     </p:dataTable>
-                                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                                        <div style="float:right;">
-                                            <p:commandButton value="Command show download button" id="showDownloadButton"                                                   
-                                                             oncomplete="downloadPopup.show();"
-                                                             update="@form"
-                                                             action="#{DatasetPage.initGuestbookResponse()}">
-                                            </p:commandButton>
-                                        </div>
-                                    </ui:fragment>
+                                    
                                 </p:tab>
 
                                 <p:tab  id="metadataMapTab" title="Metadata"
@@ -1662,7 +1678,7 @@
                                 Position <h:inputText value="#{DatasetPage.guestbookResponse.position}"/>
                             </div>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
+                        <ui:fragment rendered="#{(DatasetPage.dataset.guestbook != null) and (!empty DatasetPage.dataset.guestbook.customQuestions)}">
                             <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
                                 <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='text'}">
                                     <h:outputText value ="#{customQuestionResponse.customQuestion.questionString}"/>
@@ -1677,7 +1693,7 @@
                                 </ui:fragment>
                             </ui:repeat>
                         </ui:fragment>    
-                        <p:commandButton value="Continue" onclick="downloadPopup.hide()" action="#{DatasetPage.saveGuestbookResponse()}" >
+                        <p:commandButton value="Continue" onclick="downloadPopup.hide()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse()}" >
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="downloadPopup.hide()" type="button" />
                     </p:dialog>  
