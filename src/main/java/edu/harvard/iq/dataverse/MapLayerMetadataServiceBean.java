@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -33,6 +34,8 @@ public class MapLayerMetadataServiceBean {
     @EJB
     PermissionServiceBean permissionService;
    
+    private static final Logger logger = Logger.getLogger(MapLayerMetadataServiceBean.class.getCanonicalName());
+
     
     public MapLayerMetadata find(Object pk) {
         if (pk==null){
@@ -59,15 +62,18 @@ public class MapLayerMetadataServiceBean {
         Given a datafile id, return the associated MapLayerMetadata object
     
     */
-    public MapLayerMetadata findMetadataByDatafileId(Long datafile){
+    public MapLayerMetadata findMetadataByDatafile(DataFile datafile){
         
         if (datafile == null){
             return null;
         }
      
         try{
+ //           String sqlStatement = 
             Query query = em.createQuery("select m from MapLayerMetadata m WHERE m.dataFile=:datafile",  MapLayerMetadata.class);
             query.setParameter("datafile", datafile);
+            query.setMaxResults(1);
+            //entityManager.createQuery(SQL_QUERY).setParameter(arg0,arg1).setMaxResults(10).getResultList();
             return (MapLayerMetadata) query.getSingleResult();
         } catch ( NoResultException nre ) {
             return null;
@@ -82,11 +88,13 @@ public class MapLayerMetadataServiceBean {
         
     */
     public boolean deleteMapLayerMetadataObject(MapLayerMetadata mapLayerMetadata, User user){
+        logger.info("deleteMapLayerMetadataObject");
+        
         if ((mapLayerMetadata == null)||(user==null)){
             return false;
         }
         
-        if (!permissionService.userOn(user, mapLayerMetadata.getDataFile()).has(Permission.EditDataset)) { 
+        if (permissionService.userOn(user, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
             em.remove(em.merge(mapLayerMetadata));
             return true;
         }

@@ -569,7 +569,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         // (5) Attempt to retrieve DataFile and mapLayerMetadata   
         DataFile dfile = wmToken.getDatafile();
-        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafileId(dfile.getId());
+        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafile(dfile);
         if (mapLayerMetadata==null){
             return errorResponse(Response.Status.EXPECTATION_FAILED, "No map layer metadata found.");
         }
@@ -578,7 +578,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
        //   (note: permissions checked here for a second time by the mapLayerMetadataService call)
        //
        if (!(this.mapLayerMetadataService.deleteMapLayerMetadataObject(mapLayerMetadata, wmToken.getDataverseUser()))){
-            return errorResponse(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               };
+            return errorResponse(Response.Status.PRECONDITION_FAILED, "Failed to delete layer");               
+       };
        
        return okResponse("Map layer metadata deleted.");
         
