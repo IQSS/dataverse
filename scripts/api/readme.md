@@ -131,14 +131,16 @@ Deletes the draft version of dataset `{{id}}`. Only the draft version can be del
 ### users
 
 This endopint deals with users of the built-in authentication provider. Note that users may come from different authentication services as well, such as Shibboleth.
+For this service to work, the setting `BuiltinUsers.KEY` has to be set, and its value passed as `{{key}}` to
+each of the calls.
 
-	GET http://$SERVER/api/users
+	GET http://$SERVER/api/users?key={{key}]
 
 List all users.
 
-	POST http://$SERVER/api/users?password={{password}}
+	POST http://$SERVER/api/users?password={{password}}&key={{key}]
 
-Generates a new user. Note that the password is passed as a parameter in the query.
+Generates a new user. Data about the user are posted via JSON. *Note that the password is passed as a parameter in the query*.
 
 ### roles
 
