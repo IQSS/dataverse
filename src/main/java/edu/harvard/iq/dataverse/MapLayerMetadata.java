@@ -16,7 +16,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -43,8 +45,9 @@ public class MapLayerMetadata implements Serializable {
     private Long id;
 
     // ForeignKey to DataFile
-    @ManyToOne
-    @JoinColumn(nullable=false)
+    //x@ManyToOne
+    // For now, make this unique:  Each DataFile may only have one map
+    @JoinColumn(nullable=false, unique=true)
     private DataFile dataFile;
 
     // ForeignKey to Dataset.

@@ -482,23 +482,29 @@ public class WorldMapRelatedData extends AbstractApiBean {
            return errorResponse(Response.Status.FORBIDDEN, errMsg);
         }
         
-        MapLayerMetadata mapLayer;
-        // (5) See if a MapLayerMetadata already exists
-        mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(jsonInfo.getString("layerName"));//, dfile);
-        if (mapLayer == null){
-            mapLayer = new MapLayerMetadata();
+        
+        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafile(dfile);
+        if (mapLayerMetadata==null){
+            mapLayerMetadata = new MapLayerMetadata();
         }
 
+        // (5) See if a MapLayerMetadata already exists
+        //  
+        //mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(jsonInfo.getString("layerName"));//, dfile);
+       // if (mapLayer == null){
+       //     mapLayer = new MapLayerMetadata();
+        //}
+
         // Create/Update new MapLayerMetadata object and save it
-        mapLayer.setDataFile(dfile);
-        mapLayer.setDataset(dfile.getOwner());
-        mapLayer.setLayerName(jsonInfo.getString("layerName"));
-        mapLayer.setLayerLink(jsonInfo.getString("layerLink"));
-        mapLayer.setEmbedMapLink(jsonInfo.getString("embedMapLink"));
-        mapLayer.setWorldmapUsername(jsonInfo.getString("worldmapUsername"));
+        mapLayerMetadata.setDataFile(dfile);
+        mapLayerMetadata.setDataset(dfile.getOwner());
+        mapLayerMetadata.setLayerName(jsonInfo.getString("layerName"));
+        mapLayerMetadata.setLayerLink(jsonInfo.getString("layerLink"));
+        mapLayerMetadata.setEmbedMapLink(jsonInfo.getString("embedMapLink"));
+        mapLayerMetadata.setWorldmapUsername(jsonInfo.getString("worldmapUsername"));
 
         //mapLayer.save();
-        MapLayerMetadata saved_map_layer = mapLayerMetadataService.save(mapLayer);
+        MapLayerMetadata saved_map_layer = mapLayerMetadataService.save(mapLayerMetadata);
         if (saved_map_layer==null){
             logger.log(Level.SEVERE, "Json: " + jsonLayerData);
             return errorResponse( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
