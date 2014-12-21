@@ -68,18 +68,23 @@ public class Dataverses extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
 
 	@POST
-	public Response addRoot( JsonObject body, @QueryParam("key") String apiKey ) {
+	public Response addRoot( String body, @QueryParam("key") String apiKey ) {
         logger.info("Creating root dataverse");
 		return addDataverse( body, "", apiKey);
 	}
 	
 	@POST
 	@Path("{identifier}")
-	public Response addDataverse( JsonObject dvJson, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+	public Response addDataverse( String body, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
 		
         Dataverse d;
-        try {
+        JsonObject dvJson;
+        try ( StringReader rdr = new StringReader(body) ) {
+            dvJson = Json.createReader(rdr).readObject();
             d = JsonParser.parseDataverse(dvJson);
+        } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: {0}", body);
+            return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         } catch (JsonParseException ex) {
             Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
             return errorResponse( Response.Status.BAD_REQUEST,

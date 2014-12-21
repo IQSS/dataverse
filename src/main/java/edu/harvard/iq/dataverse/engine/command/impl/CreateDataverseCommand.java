@@ -11,10 +11,10 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -76,7 +76,11 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         created.setThemeRoot(true);
         // @todo for now we are saying all dataverses are permission root
         created.setPermissionRoot(true);
-
+        
+        if ( ctxt.dataverses().findByAlias( created.getAlias()) != null ) {
+            throw new IllegalCommandException("A dataverse with alias " + created.getAlias() + " already exists", this );
+        }
+        
         // Save the dataverse
         Dataverse managedDv = ctxt.dataverses().save(created);
 

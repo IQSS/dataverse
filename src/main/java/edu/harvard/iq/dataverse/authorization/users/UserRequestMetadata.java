@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -14,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class UserRequestMetadata {
    
+    private static final Logger logger = Logger.getLogger(UserRequestMetadata.class.getName());
+    
     private final IpAddress ipAddress;
     
     private final HttpServletRequest httpRequest;
@@ -22,10 +25,26 @@ public class UserRequestMetadata {
     
     public UserRequestMetadata( HttpServletRequest aHttpServletRequest ) {
         httpRequest = aHttpServletRequest;
+        String remoteAddressStr = null;
+        try {
+            remoteAddressStr = httpRequest.getHeader("X-Forwarded-For");
+        } catch ( NullPointerException npe ) {
+            // ignore
+        }
         
-        ipAddress = IpAddress.valueOf( (httpRequest.getHeader("X-Forwarded-For") != null)
-                    ? httpRequest.getHeader("X-Forwarded-For")
-                    : httpRequest.getRemoteAddr() );
+        if ( remoteAddressStr == null ) {
+            try {
+                remoteAddressStr = httpRequest.getRemoteAddr();
+            } catch ( NullPointerException npe ) {
+                logger.warning("HTTP request has no remote server address");
+            }
+        }
+        
+        if ( remoteAddressStr == null ) {
+            remoteAddressStr = "0.0.0.0";
+        }
+        
+        ipAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
     public IpAddress getIpAddress() {
