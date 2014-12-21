@@ -21,7 +21,7 @@ Generates root dataverse and some other dataverses for Pete and Uma.
 
     POST http://$SERVER/api/dvs/{{id}}?key=$apiKey
 
-Generates a new dataverse under `{{id}}`. Expects a `json` content descripting the dataverse.
+Generates a new dataverse under `{{id}}`. Expects a `json` content describing the dataverse.
 If `{{id}}` is omitted, a root dataverse is created. `{{id}}` can either be a dataverse id (long) or a dataverse alias (more robust).
 
     GET http://$SERVER/api/dvs/{{id}}
@@ -51,6 +51,10 @@ List all the role assignments at the given dataverse.
 	POST http://$SERVER/api/dvs/{{id}}/assignments?key=$apiKey
 
 Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"userName\": \"uma\",\"roleId\": 11}"`). Roles and users can be identifier by id (`"userId"`) or by name (`"userName"` and `"roleAlias"`).
+
+	DELETE http://$SERVER/api/dvs/{{id}}/assignments/{{id}}?key=$apiKey
+
+Delete the assignment whose id is `{{id}}`.
 
 	GET http://$SERVER/api/dvs/{{id}}/metadatablocks?key=$apiKey
 
