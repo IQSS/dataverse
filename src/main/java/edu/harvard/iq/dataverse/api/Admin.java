@@ -83,8 +83,7 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response listAuthProviderFactories() {
         JsonArrayBuilder arb = Json.createArrayBuilder();
-        for ( AuthenticationProviderFactory f :
-                authSvc.listProviderFactories() ){
+        for ( AuthenticationProviderFactory f : authSvc.listProviderFactories() ){
             arb.add( jsonObjectBuilder()
                         .add("alias", f.getAlias() )
                         .add("info", f.getInfo() ));
@@ -122,9 +121,8 @@ public class Admin extends AbstractApiBean {
                 authSvc.deregisterProvider(provider.getId());
                 authSvc.registerProvider(provider);
             }
-            return Response.created( new URI("/s/authenticationProviders/"+managed.getId()))
-                    .build();
-        } catch ( AuthorizationSetupException | URISyntaxException e ) {
+            return createdResponse("/s/authenticationProviders/"+managed.getId(), json(managed));
+        } catch ( AuthorizationSetupException e ) {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage() );
         }
     }

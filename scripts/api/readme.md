@@ -235,3 +235,12 @@ Enable or disable an authentication provider (denoted by `id`). The body of the 
 	DELETE http://$SERVER/api/s/authenticationProviders/{id}/
 
 Deletes an authentication provider from the system. The command succeeds even if there is no such provider, as the postcondition holds: there is no provider by that id after the command returns.
+
+
+    POST http://$SERVER/api/s/roles
+
+Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON.
+
+    POST http://$SERVER/api/s/superuser/{identifier}
+
+Toggles superuser mode on the `AuthenticatedUser` whose identifier is passed.
