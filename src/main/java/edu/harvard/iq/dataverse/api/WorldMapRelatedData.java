@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
@@ -20,6 +21,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import java.io.StringReader;
@@ -29,6 +31,7 @@ import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -63,6 +66,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
     public static final String MAP_IT_API_PATH_FRAGMENT =  "map-it/";  
     public static final String MAP_IT_API_PATH = BASE_PATH + MAP_IT_API_PATH_FRAGMENT;
     
+    public static final String MAP_IT_API_TOKEN_ONLY_PATH_FRAGMENT =  "map-it-token-only/";  
+    public static final String MAP_IT_API_TOKEN_ONLY_PATH = BASE_PATH + MAP_IT_API_TOKEN_ONLY_PATH_FRAGMENT;
+
     public static final String GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT =  "datafile/";  
     public static final String GET_WORLDMAP_DATAFILE_API_PATH =  BASE_PATH + GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT;
     
@@ -100,6 +106,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @EJB
     PermissionServiceBean permissionService;
     
+    @Inject
+    DataverseSession session;
     /**
      *  Create URL for API call to WorldMapRelatedData.mapDataFile(...)   
      * 
@@ -126,21 +134,58 @@ public class WorldMapRelatedData extends AbstractApiBean {
     }
     */
     
-    /*
-        Link used within Dataverse for MapIt button
-        Sends file link to GeoConnect using a Redirect
     
-    */
+    
     @GET    
     @Path( MAP_IT_API_PATH_FRAGMENT + "{datafile_id}/{dvuser_id}")
     public Response mapDataFile(@Context HttpServletRequest request
                                 , @PathParam("datafile_id") Long datafile_id
                                 , @PathParam("dvuser_id") Long dvuser_id){ 
+    
+        return this.mapDataFileTokenOnlyOption(request, datafile_id, dvuser_id, false);
+    }
+    
+    @GET
+    @Path(MAP_IT_API_TOKEN_ONLY_PATH_FRAGMENT + "{datafile_id}/{dvuser_id}")
+    public Response getMapDataFileToken(@Context HttpServletRequest request
+                                , @PathParam("datafile_id") Long datafile_id
+                                , @PathParam("dvuser_id") Long dvuser_id){ 
+    
+        //request.
+        return this.mapDataFileTokenOnlyOption(request, datafile_id, dvuser_id, true);
+    }
+    
+   
+    /*
+        Link used within Dataverse for MapIt button
+        Sends file link to GeoConnect using a Redirect
+    
+    */
+    //@GET    
+    //@Path( MAP_IT_API_PATH_FRAGMENT + "token-option/{datafile_id}/{dvuser_id}/{token_only}")
+    private Response mapDataFileTokenOnlyOption(@Context HttpServletRequest request
+                                ,  Long datafile_id
+                                , Long dvuser_id
+                                , boolean tokenOnly
+    ){ 
         
         logger.log(Level.INFO, "mapDataFile datafile_id: {0}", datafile_id);
         logger.log(Level.INFO, "mapDataFile dvuser_id: {0}", dvuser_id);
         
+        AuthenticatedUser user = null;
 
+        if (session != null) {
+            if (session.getUser() != null) {
+                if (session.getUser().isAuthenticated()) {
+                    user = (AuthenticatedUser) session.getUser();
+                } 
+            }
+        } 
+        if (user==null){
+            return errorResponse(Response.Status.FORBIDDEN, "Not logged in");
+        }
+        
+        
         if (true){
             //return okResponse( "Looks good " + datafile_id);
            //tokenAppServiceBean.getGeoConnectApplication();           
@@ -167,6 +212,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         WorldMapToken token = tokenServiceBean.getNewToken(dfile, dvUser);
 
+        if (tokenOnly){
+            // Return only the token in a JSON object
+            final JsonObjectBuilder jsonInfo = Json.createObjectBuilder();
+            jsonInfo.add(WorldMapToken.GEOCONNECT_TOKEN_KEY, token.getToken()); 
+            return okResponse(jsonInfo);
+        }
+            
         // Redirect to geoconnect url
  //       String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH + dfile.getId();
         String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH;
@@ -196,6 +248,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         String http_prefix = "https://";
         if (serverName.contains("localhost")){
+            http_prefix = "http://";
+        }else if(serverName.contains("127.0.0.1")){
             http_prefix = "http://";
         }
         if (portNumber==80){
@@ -298,8 +352,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //
         // Make sure token user and file are still available
         //
-        AuthenticatedUser dv_user = wmToken.getDataverseUser();
-        if (dv_user == null) {
+        AuthenticatedUser dvUser = wmToken.getDataverseUser();
+        if (dvUser == null) {
             return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }
         DataFile dfile = wmToken.getDatafile();
@@ -335,66 +389,66 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // (4) Roll it all up in a JSON response
-        final JsonObjectBuilder dfile_json = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonData = Json.createObjectBuilder();
         
         
         //------------------------------------
         // DataverseUser Info
         //------------------------------------
-        dfile_json.add("dv_user_id", dv_user.getId());
-        dfile_json.add("dv_username", dv_user.getUserIdentifier()); 
-        dfile_json.add("dv_user_email", dv_user.getEmail());
+        jsonData.add("dv_user_id", dvUser.getId());
+        jsonData.add("dv_username", dvUser.getUserIdentifier()); 
+        jsonData.add("dv_user_email", dvUser.getEmail());
                 
         //------------------------------------
         // Dataverse URLs to this server 
         //------------------------------------
         String serverName =  this.getServerNamePort(request);
-        dfile_json.add("return_to_dataverse_url", dset_version.getReturnToDatasetURL(serverName, dset));
-        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
+        jsonData.add("return_to_dataverse_url", dset_version.getReturnToDatasetURL(serverName, dset));
+        jsonData.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
 
         //------------------------------------
         // Dataverse
         //------------------------------------
-        dfile_json.add("dataverse_installation_name", "Harvard Dataverse"); // todo / fix
-        dfile_json.add("dataverse_id", dverse.getId());      
-        dfile_json.add("dataverse_name", dverse.getName());
-        dfile_json.add("dataverse_description", dverse.getDescription());
+        jsonData.add("dataverse_installation_name", "Harvard Dataverse"); // todo / fix
+        jsonData.add("dataverse_id", dverse.getId());      
+        jsonData.add("dataverse_name", dverse.getName());
+        jsonData.add("dataverse_description", dverse.getDescription());
 
         //------------------------------------
         // Dataset Info
         //------------------------------------
-        dfile_json.add("dataset_id", dset.getId());
+        jsonData.add("dataset_id", dset.getId());
 
         //------------------------------------
         // DatasetVersion Info
         //------------------------------------
-        dfile_json.add("dataset_version_id", dset_version.getId());   // database id
-        dfile_json.add("dataset_semantic_version", dset_version.getSemanticVersion());  // major/minor version number, e.g. 3.1
+        jsonData.add("dataset_version_id", dset_version.getId());   // database id
+        jsonData.add("dataset_semantic_version", dset_version.getSemanticVersion());  // major/minor version number, e.g. 3.1
         
-        dfile_json.add("dataset_name", dset_version.getTitle());
-        dfile_json.add("dataset_citation", dset_version.getCitation());
+        jsonData.add("dataset_name", dset_version.getTitle());
+        jsonData.add("dataset_citation", dset_version.getCitation());
 
-        dfile_json.add("dataset_description", "");  // Need to fix to/do
+        jsonData.add("dataset_description", "");  // Need to fix to/do
 
-        dfile_json.add("dataset_is_public", dset_version.isReleased());
+        jsonData.add("dataset_is_public", dset_version.isReleased());
                 
         //------------------------------------
         // DataFile/FileMetaData Info
         //------------------------------------
-        dfile_json.add("datafile_id", dfile.getId());
-        dfile_json.add("datafile_label", dfile_meta.getLabel());
-        //dfile_json.add("filename", dfile_meta.getLabel());
-        dfile_json.add("datafile_expected_md5_checksum", dfile.getmd5());
+        jsonData.add("datafile_id", dfile.getId());
+        jsonData.add("datafile_label", dfile_meta.getLabel());
+        //jsonData.add("filename", dfile_meta.getLabel());
+        jsonData.add("datafile_expected_md5_checksum", dfile.getmd5());
         Long fsize = dfile.getFilesize();
         if (fsize == null){
             fsize= new Long(-1);
         }
             
-        dfile_json.add("datafile_filesize", fsize); 
-        dfile_json.add("datafile_content_type", dfile.getContentType());
-        dfile_json.add("datafile_create_datetime", dfile.getCreateDate().toString());
+        jsonData.add("datafile_filesize", fsize); 
+        jsonData.add("datafile_content_type", dfile.getContentType());
+        jsonData.add("datafile_create_datetime", dfile.getCreateDate().toString());
         
-        return okResponse(dfile_json);
+        return okResponse(jsonData);
  
     }
 
@@ -512,7 +566,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         // notify user
         // FIXME: this should be un-commented, but use an AuthenticatedUser, not a DataverseUser.
-        // userNotificationService.sendNotification(dv_user, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
+        // userNotificationService.sendNotification(dvUser, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
 
         
         return okResponse("map layer object saved!");
