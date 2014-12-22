@@ -561,7 +561,11 @@ public class WorldMapRelatedData extends AbstractApiBean {
         mapLayerMetadata.setLayerLink(jsonInfo.getString("layerLink"));
         mapLayerMetadata.setEmbedMapLink(jsonInfo.getString("embedMapLink"));
         mapLayerMetadata.setWorldmapUsername(jsonInfo.getString("worldmapUsername"));
-
+        if (jsonInfo.containsKey("mapImageLink")){
+            mapLayerMetadata.setMapImageLink(jsonInfo.getString("mapImageLink"));
+        }
+      
+        
         //mapLayer.save();
         MapLayerMetadata saved_map_layer = mapLayerMetadataService.save(mapLayerMetadata);
         if (saved_map_layer==null){

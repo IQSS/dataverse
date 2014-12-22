@@ -69,6 +69,10 @@ public class MapLayerMetadata implements Serializable {
     @NotBlank(message = "Please specify am embedded map link.")
     private String embedMapLink;
     
+    @Column(nullable=true)
+    @NotBlank(message = "Please specify a map image link.")
+    private String mapImageLink;
+    
     @Column(nullable=false)
     @NotBlank(message = "Please specify a WorldMap username.")
     private String worldmapUsername;
@@ -105,7 +109,24 @@ public class MapLayerMetadata implements Serializable {
     public void setLayerLink(String layerLink) {
             this.layerLink = layerLink;
     }
+    
+        /**
+     * Get property mapImageLink.
+     * @return value of property mapImageLink.
+     */
+    public String getMapImageLink() {
+            return this.mapImageLink;
+    }
 
+    /**
+     * Set property mapImageLink.
+     * @param mapImageLink new value of property layerLink.
+     */
+    public void setMapImageLink(String mapImageLink) {
+            this.mapImageLink = mapImageLink;
+    }
+    
+    
     /**
      * Get property embedMapLink.
      * @return value of property embedMapLink.
