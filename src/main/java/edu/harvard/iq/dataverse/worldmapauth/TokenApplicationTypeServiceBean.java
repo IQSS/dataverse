@@ -44,8 +44,8 @@ public class TokenApplicationTypeServiceBean {
         tat.setHostname("geoconnect.datascience.iq.harvard.edu");
         tat.setIpAddress("140.247.115.127");
         tat.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
-        tat.setMapitLink(TokenApplicationType.LOCAL_DEV_MAPIT_LINK);
-        //tat.setMapitLink(TokenApplicationType.DEV_MAPIT_LINK);
+        //tat.setMapitLink(TokenApplicationType.LOCAL_DEV_MAPIT_LINK);
+        tat.setMapitLink(TokenApplicationType.DEV_MAPIT_LINK);
         
         return this.save(tat);
         
