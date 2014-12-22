@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationTypeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -202,6 +203,14 @@ public class WorldMapRelatedData extends AbstractApiBean {
         DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
            return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
+        }
+        
+        /*
+            Is the dataset public?
+        */
+        if (!dfile.getOwner().isReleased()){
+           return errorResponse(Response.Status.FORBIDDEN, "Mapping is only permitted for public datasets/files");
+            
         }
         
         // Does this user have permission to edit metadata for this file?    
@@ -456,7 +465,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
    
     /*
         For WorldMap/GeoConnect Usage
-        Create a MayLayerMetadata object for a given Datafile id
+        Create/Updated a MapLayerMetadata object for a given Datafile id
         
         Example of jsonLayerData String:
         {
@@ -537,17 +546,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         
-        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafile(dfile);
-        if (mapLayerMetadata==null){
-            mapLayerMetadata = new MapLayerMetadata();
-        }
-
         // (5) See if a MapLayerMetadata already exists
         //  
-        //mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(jsonInfo.getString("layerName"));//, dfile);
-       // if (mapLayer == null){
-       //     mapLayer = new MapLayerMetadata();
-        //}
+        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafile(dfile);
+        if (mapLayerMetadata==null){
+            // Create a new mapLayerMetadata object
+            mapLayerMetadata = new MapLayerMetadata();
+        }
 
         // Create/Update new MapLayerMetadata object and save it
         mapLayerMetadata.setDataFile(dfile);
@@ -564,9 +569,10 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return errorResponse( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
         }
         
+        
+        
         // notify user
-        // FIXME: this should be un-commented, but use an AuthenticatedUser, not a DataverseUser.
-        // userNotificationService.sendNotification(dvUser, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
+        userNotificationService.sendNotification(dvUser, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
 
         
         return okResponse("map layer object saved!");
