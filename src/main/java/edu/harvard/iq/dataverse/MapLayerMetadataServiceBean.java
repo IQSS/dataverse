@@ -134,7 +134,28 @@ public class MapLayerMetadataServiceBean {
     }    
     
     
-        
+    /**
+     * Use the mapLayerMetadata.mapImageLink to retrieve a PNG file directly from WorldMap
+     * 
+     * Next step: Save this image as the default icon
+     * 
+     * Example mapImageLink: http://worldmap.harvard.edu/download/wms/14708/png?layers=geonode:power_plants_enipedia_jan_2014_kvg&width=948&bbox=76.04800165,18.31860358,132.0322222,50.78441&service=WMS&format=image/png&srs=EPSG:4326&request=GetMap&height=550
+     * 
+     * Parameter by parameter (note width/height):
+     * http://worldmap.harvard.edu/download/wms/14708/png?
+     *           layers=geonode:power_plants_enipedia_jan_2014_kvg
+     *           width=948
+     *           bbox=76.04800165,18.31860358,132.0322222,50.78441
+     *           service=WMS
+     *           format=image/png
+     *           srs=EPSG:4326
+     *           request=GetMap
+     *           height=550
+     * 
+     * @param mapLayerMetadata
+     * @return boolean
+     * @throws IOException 
+     */
     public boolean retrieveMapImageForIcon(MapLayerMetadata mapLayerMetadata) throws IOException {
         if (mapLayerMetadata==null){
             logger.warning("mapLayerMetadata is null");
