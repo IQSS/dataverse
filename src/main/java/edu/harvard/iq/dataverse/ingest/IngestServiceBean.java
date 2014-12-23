@@ -987,6 +987,7 @@ public class IngestServiceBean {
         produceCharacterSummaryStatistics(dataFile);
         
         recalculateDataFileUNF(dataFile);
+        recalculateDatasetVersionUNF(dataFile.getFileMetadata().getDatasetVersion());
     }
     
     public void produceContinuousSummaryStatistics(DataFile dataFile) throws IOException {
@@ -1098,6 +1099,41 @@ public class IngestServiceBean {
         
         if (fileUnfValue != null) {
             dataFile.getDataTable().setUnf(fileUnfValue);
+        }
+    }
+    
+    public void recalculateDatasetVersionUNF(DatasetVersion version) {
+        String[] unfValues = new String[0];
+        String datasetUnfValue = null; 
+        List<String> unfValueList = new ArrayList<>();
+        
+        logger.fine("recalculating UNF for dataset version.");
+        Iterator<FileMetadata> itfm = version.getFileMetadatas().iterator();
+        while (itfm.hasNext()) {            
+            FileMetadata fileMetadata = itfm.next();
+            if (fileMetadata != null &&
+                    fileMetadata.getDataFile() != null &&
+                    fileMetadata.getDataFile().isTabularData() &&
+                    fileMetadata.getDataFile().getUnf() != null) {
+                String varunf = fileMetadata.getDataFile().getUnf();
+                unfValueList.add(varunf);
+            }
+        }
+        
+        if (unfValueList.size() > 0) {
+            unfValues = unfValueList.toArray(unfValues);
+        
+            logger.fine("Attempting to calculate new UNF from total of " + unfValueList.size() + " file-level signatures.");
+            try {
+                datasetUnfValue = UNF5Util.calculateUNF(unfValues);
+            } catch (IOException ex) {
+                logger.warning("Failed to recalculate the UNF for the dataset version id="+version.getId());
+            }
+        
+            if (datasetUnfValue != null) {
+                version.setUNF(datasetUnfValue);
+                logger.fine("Recalculated the UNF for the dataset version id="+version.getId()+", new signature: "+datasetUnfValue);
+            }
         }
     }
     
