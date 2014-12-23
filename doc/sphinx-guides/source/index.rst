@@ -6,7 +6,7 @@
 Dataverse 4.0 Beta Guides
 =======================================================
 
-Contents:
+These guides are for the most recent version of Dataverse (beta v4.0). For the guides for **version 3.6.2** please go `here <http://guides.dataverse.org/en/3.6.2/>`_.
 
 .. toctree::
   :glob:
