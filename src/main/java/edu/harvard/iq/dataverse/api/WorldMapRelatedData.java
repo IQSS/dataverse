@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -567,8 +568,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
       
         
         //mapLayer.save();
-        MapLayerMetadata saved_map_layer = mapLayerMetadataService.save(mapLayerMetadata);
-        if (saved_map_layer==null){
+        MapLayerMetadata savedMapLayerMetadata = mapLayerMetadataService.save(mapLayerMetadata);
+        if (savedMapLayerMetadata==null){
             logger.log(Level.SEVERE, "Json: " + jsonLayerData);
             return errorResponse( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
         }
@@ -578,6 +579,12 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // notify user
         userNotificationService.sendNotification(dvUser, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
 
+        try {
+            // attempt to retrieve icon image
+            this.mapLayerMetadataService.retrieveMapImageForIcon(savedMapLayerMetadata);
+        } catch (IOException ex) {
+            Logger.getLogger(WorldMapRelatedData.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         return okResponse("map layer object saved!");
 

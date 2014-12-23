@@ -8,6 +8,11 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -128,5 +133,48 @@ public class MapLayerMetadataServiceBean {
         return query.getResultList();
     }    
     
+    
+        
+    public boolean retrieveMapImageForIcon(MapLayerMetadata mapLayerMetadata) throws IOException {
+        if (mapLayerMetadata==null){
+            logger.warning("mapLayerMetadata is null");
+            return false;
+        }
+        if ((mapLayerMetadata.getMapImageLink()==null)||mapLayerMetadata.getMapImageLink().isEmpty()){
+            logger.warning("mapLayerMetadata does not have a 'map_image_link' attribute");
+            return false;
+        }
+        
+        String imageUrl = mapLayerMetadata.getMapImageLink();
+        logger.info("Attempt to retrieve map image: " + imageUrl);
+        
+        String destinationFile = mapLayerMetadata.getDataFile().getFileSystemLocation().toString() +  "-test-png-image.png";
+        logger.info("destinationFile: getFileSystemLocation()" + mapLayerMetadata.getDataFile().getFileSystemLocation());
+        logger.info("destinationFile: " + destinationFile);
+        
+        URL url = new URL(imageUrl);
+        logger.info("retrieve url : " + imageUrl);
+
+        logger.info("try to open InputStream");
+        InputStream is = url.openStream();
+        
+        logger.info("try to start OutputStream");
+        OutputStream os = new FileOutputStream(destinationFile);
+
+        byte[] b = new byte[2048];
+        int length;
+
+        logger.info("Writing file...");
+        while ((length = is.read(b)) != -1) {
+            os.write(b, 0, length);
+        }
+
+        logger.info("Closing streams...");
+        is.close();
+        os.close();
+        
+        logger.info("Done");
+        return true;
+    }   
 }
 
