@@ -10,12 +10,13 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Account - #{dataverseServiceBean.findRootDataverse().name} Dataverse"/>
+            <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
+                <f:loadBundle basename="Bundle" var="bundle"/>
                 <f:metadata>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
@@ -46,10 +47,10 @@
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
-                                            <span class="glyphicon glyphicon-pencil"/> Edit Account <span class="caret"></span>
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']} <span class="caret"></span>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
-                                            Account Information <span class="caret"></span>
+                                            #{bundle['account.info']} <span class="caret"></span>
                                         </ui:fragment>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -69,22 +70,22 @@
                                         <li class="divider" role="presentation"></li>
                                         <li>
                                             <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" rendered="#{!empty DataverseUserPage.builtinUser}" update="@form">
-                                                <h:outputText value="Account Information" />
+                                                <h:outputText value="#{bundle['account.info']}" />
                                             </p:commandLink>
                                         </li>
                                         <li>
                                             <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" rendered="#{!empty DataverseUserPage.builtinUser}" update="@form">
-                                                <h:outputText value="Password" />
+                                                <h:outputText value="#{bundle.passwd}" />
                                             </p:commandLink>
                                         </li>
                                         <li>
                                             <h:outputLink value="/apitoken.xhtml">
-                                                <h:outputText value="API Token" />
+                                                <h:outputText value="#{bundle.apiTaken}" />
                                             </h:outputLink>
                                         </li>
                                         <li>
                                             <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
-                                                You have logged in through your institution. To edit account details, please visit the account page for your institution.
+                                                #{bundle['user.toEditDetail']}
                                             </ui:fragment>
                                         </li>
                                     </ul>
@@ -94,12 +95,12 @@
                     </ui:fragment>
 
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
-                        <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
+                        <h:outputText value="#{bundle['user.lostPasswdTip']}" style="color: green" />
                     </p:panel>
 
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" />
-                        <p:tab id="dataRelatedToMe" title="Data Related To Me">
+                        <p:tab id="dataRelatedToMe" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:fragment>
                                 <ui:include src="search-include-fragment.xhtml">
                                     <ui:param name="showFacets" value="true"/>
@@ -108,62 +109,62 @@
                                 </ui:include>
                             </ui:fragment>
                         </p:tab>
-                        <p:tab id="notifications" title="Notifications">
+                        <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
                                 <div style="border-bottom:1px solid #DDDDDD; padding:5px;" class="#{item.displayAsRead ? '' : 'bg-warning'}">
                                     <ui:fragment rendered="#{item.type == 'CREATEDV'}">
-                                        <h:graphicImage value="/resources/images/icon_dataverse.png" alt="Dataverse" style="height:18px;margin-right:6px;" />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse">
-                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse" />
+                                        <h:graphicImage value="/resources/images/icon_dataverse.png" alt="#{bundle.dataverse}" style="height:18px;margin-right:6px;" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value=", was created in " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse">
-                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse" />
+                                        <h:outputText value="#{bundle.wasCreatedIn}" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}  #{bundle.dataverse}">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value=". Don't forget to publish it!" />
+                                        <h:outputText value="#{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="Dataset" style="height:18px;margin-right:6px;" />
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
                                         <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
                                         </h:outputLink>
-                                        <h:outputText value=", was added to " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse">
-                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse" />
+                                        <h:outputText value="#{bundle.wasCreatedTo}" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value=". Don't forget to publish it!" />
+                                        <h:outputText value="#{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="Dataset" style="height:18px;margin-right:6px;" />
-                                        <h:outputText value="The Dataset " />
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <h:outputText value="#{bundle.theDataset} " />
                                         <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
                                         </h:outputLink>
-                                        <h:outputText value=" had WorldMap layer data added to it." />
+                                        <h:outputText value=" #{bundle['worldMap.added']}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                        <h:outputText value="Welcome to Dataverse 4.0 Beta! Please take a look around, try everything out, and check out our " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
+                                        <h:outputText value="#{bundle.welcome} " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
                                         <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
-                                            <h:outputText value="Google Group" style="color: blue" />
+                                            <h:outputText value="#{bundle.googleGroup}" style="color: blue" />
                                         </h:outputLink>
-                                        <h:outputText value=" to leave feedback." />
+                                        <h:outputText value=" #{bundle.leaveFeedBack}" />
                                     </ui:fragment>
                                     <h:outputText value="#{item.sendDate}" style="color:#999999; margin-left:1em; font-size:.85em;"/>
                                     <!--<h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
                                     <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />-->
-                                    <h:commandLink action="#{DataverseUserPage.remove(item.id)}" title="Remove notification" styleClass="pull-right">
+                                    <h:commandLink action="#{DataverseUserPagetitle.pre.remove(item.id)}" title="#{bundle.removeNotification}" styleClass="pull-right">
                                         <span class="glyphicon glyphicon-remove"></span>
                                     </h:commandLink>
                                 </div>
                             </ui:repeat>
                         </p:tab>
-                        <p:tab id="groupsRoles" title="Groups + Roles">
-                            <span class="glyphicon glyphicon-info-sign"></span> Here is where you can access and manage all the groups you belong to, and the roles you have been assigned.
+                        <p:tab id="groupsRoles" title="#{bundle['header.user.selectTab.groupsAndRoles']}">
+                            <span class="glyphicon glyphicon-info-sign"></span> #{bundle['groupAndRoles.manageTips']}
                         </p:tab>
                     </p:tabView>
 
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
-                        <p:tab id="accountInfo" title="Account Information">
+                        <p:tab id="accountInfo" title="#{bundle['account.info']}">
                             <div class="clearfix" style="padding-bottom:.75em; border-bottom:1px solid #DDDDDD;">
                                 <style type="text/css">
                                     .form-group table.noBorders {width:100%;}
@@ -175,8 +176,8 @@
                                     <!-- Username -->
                                         <div class="form-group col-sm-12">
                                             <label for="userNameEmail" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Between 2-60 characters, and can use &#34;a-z&#34;, &#34;0-9&#34;, &#34;_&#34; for your username.">
-                                                    Username <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.username.illegal.tip']}">
+                                                    #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
@@ -192,13 +193,13 @@
                                     <!-- Current Password -->
                                         <div class="form-group col-sm-12">
                                             <label for="currentPassword" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Please enter the current password for this account.">
-                                                    Current Password <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.currentPasswd.tip']}">
+                                                    #{bundle['user.currentPasswd']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="currentPassword" tabindex="1" label="Current Password" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
+                                                    <p:password id="currentPassword" tabindex="1" label="#{bundle['user.currentPasswd']}" styleClass="form-control" validator="#{DataverseUserPage.validateCurrentPassword}" value="#{DataverseUserPage.currentPassword}" />
                                                     <p:message for="currentPassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -208,7 +209,7 @@
                                     <!-- Password -->
                                         <div class="form-group col-sm-12">
                                             <label for="inputPassword" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Your password needs to be at least 6 characters and include one letter and one number.">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.passwd.illegal.tip']}">
                                                     <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
                                                     <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
@@ -225,13 +226,13 @@
                                     <!-- Retype Password -->
                                         <div class="form-group col-sm-12">
                                             <label for="retypePassword" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Please retype the password you entered above.">
-                                                    Retype Password <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.rePasswd.tip']}">
+                                                    #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:password id="retypePassword" tabindex="3" label="Retype Password" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
+                                                    <p:password id="retypePassword" tabindex="3" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" />
                                                     <p:message for="retypePassword" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -242,8 +243,8 @@
                                     <!-- First Name -->
                                         <div class="form-group col-sm-12">
                                             <label for="firstName" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The first name or name you would like to use for this account.">
-                                                    Given Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.firstName.tip']}">
+                                                    #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
@@ -258,8 +259,8 @@
                                     <!-- Last Name -->
                                         <div class="form-group col-sm-12">
                                             <label for="lastName" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The last name you would like to use for this account.">
-                                                    Family Name <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.lastName.tip']}">
+                                                    #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
@@ -275,8 +276,8 @@
                                     <!-- Email -->
                                         <div class="form-group col-sm-12">
                                             <label for="email" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A valid email address you have access to in order to be contacted.">
-                                                    Email
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{email.tip}">
+                                                    #{bundle.email}
                                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
                                                         <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                     </ui:fragment>
@@ -295,8 +296,8 @@
                                     <!-- Affiliation -->
                                         <div class="form-group col-sm-12">
                                             <label for="affiliation" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The organization with which you are affiliated.">
-                                                    Affiliation
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.affiliation.tip']}">
+                                                    #{bundle['user.affiliation']}
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
@@ -312,8 +313,8 @@
                                     <!-- Position -->
                                         <div class="form-group col-sm-12">
                                             <label for="position" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Your role or title at the organization you are affiliated with; such as staff, faculty, student, etc.">
-                                                    Position
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.position.tip']}">
+                                                    #{bundle['user.position']}
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
@@ -326,8 +327,8 @@
                                     </ui:fragment>
                                 </div>
                                 <p:panel styleClass="panelLayoutButtonBlock">
-                                    <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? 'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
-                                    <p:commandButton id="cancel" tabindex="10" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
+                                    <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
+                                    <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
                                         <p:resetInput target="@form" />
                                     </p:commandButton>
                                 </p:panel>
