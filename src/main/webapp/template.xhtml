@@ -11,7 +11,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? 'Create Dataset Template' : TemplatePage.template.name} - #{TemplatePage.template.dataverse.name} Dataverse"/>
+            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.template.pageTitle'] : TemplatePage.template.name} - #{TemplatePage.template.dataverse.name} #{bundle.dataverse}"/>
             <ui:param name="dataverse" value="#{TemplatePage.template.dataverse}"/>
             <ui:param name="template" value="#{TemplatePage.template}"/>
             <ui:param name="showBreadcrumbs" value="#{true}"/>
@@ -35,7 +35,7 @@
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The name of the dataset template.">
-                                        Template Name 
+                                         
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
