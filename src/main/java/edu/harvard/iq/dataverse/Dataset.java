@@ -233,10 +233,7 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
                 dsv.getFileMetadatas().add(newFm);
-                dsv.setLicense(latestVersion.getLicense());
             }
-        } else {
-         dsv.setLicense(DatasetVersion.License.CC0);           
         }
 
         // I'm adding the version to the list so it will be persisted when
@@ -273,7 +270,7 @@ public class Dataset extends DvObjectContainer {
         dsv.setDataset(this);
         dsv.setDatasetFields(dsv.initDatasetFields());;
         dsv.setFileMetadatas(new ArrayList());
-        
+
         this.setVersions(new ArrayList());
         getVersions().add(0, dsv);
 

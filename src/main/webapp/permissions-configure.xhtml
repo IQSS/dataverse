@@ -24,16 +24,16 @@
     </ui:remove>
     <div class="form-group clearfix">
         <label for="accessRadios" class="col-sm-3 control-label">
-            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
-                Who can add to this dataverse?
+            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle.toolTipDescription}">
+                #{bundle['dataverse.permissions.Q1']}
             </a>
         </label>
         <div class="col-sm-9">
             <p:selectOneRadio id="authenticatedUsersContributorRoleRadio" value="#{managePermissionsPage.authenticatedUsersContributorRoleAlias}" layout="grid" columns="1">
-                <f:selectItem itemLabel="Anyone adding to this dataverse needs to be given access" itemValue="" />
-                <f:selectItem itemLabel="Anyone with a Dataverse account can add sub dataverses" itemValue="dvContributor" />
-                <f:selectItem itemLabel="Anyone with a Dataverse account can add datasets" itemValue="dsContributor" />
-                <f:selectItem itemLabel="Anyone with a Dataverse account can add sub dataverses and datasets" itemValue="fullContributor" />                
+                <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer1']}" itemValue="" />
+                <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer2']}" itemValue="dvContributor" />
+                <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer3']}" itemValue="dsContributor" />
+                <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer4']}" itemValue="fullContributor" />                
             </p:selectOneRadio>            
             
             
@@ -70,37 +70,37 @@
 
     <div class="form-group clearfix">
         <label for="contributorRadios" class="col-sm-3 control-label">
-            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
-                What type of contributor should be the default for this dataverse?
+            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle.toolTipDescription}">
+                #{bundle['dataverse.permissions.Q2']}
             </a>
         </label>
         <div class="col-sm-9">
-            A contributor can be a(n)…
+            #{bundle['dataverse.permissions.Q2.answer']}
             <p:selectOneRadio id="defaultContributorRoleRadio" value="#{managePermissionsPage.defaultContributorRoleAlias}" layout="custom">
-                <f:selectItem itemLabel="Editor" itemValue="editor" />
-                <f:selectItem itemLabel="Manager" itemValue="manager" />
-                <f:selectItem itemLabel="Curator" itemValue="curator" />
+                <f:selectItem itemLabel="#{bundle.editor}" itemValue="editor" />
+                <f:selectItem itemLabel="#{bundle.manager}" itemValue="manager" />
+                <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator" />
             </p:selectOneRadio>
 
             <div class="radio">
                 <label>
                     <p:radioButton id="opt1" for="defaultContributorRoleRadio" itemIndex="0" />
-                    <h:outputLabel for="opt1" value="Editor" />
-                    <span class="text-muted">- Edit metadata, upload files, and edit the files for a dataset</span>
+                    <h:outputLabel for="opt1" value="#{bundle.editor}" />
+                    <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.editor.description']}</span>
                 </label>
             </div>
             <div class="radio">
                 <label>
                     <p:radioButton id="opt2" for="defaultContributorRoleRadio" itemIndex="1" />
-                    <h:outputLabel for="opt2" value="Manager" />
-                    <span class="text-muted">- Edit metadata, upload files, and edit files, edit License, Terms, Guestbook, File Restrictions (Files Access + Use)</span>
+                    <h:outputLabel for="opt2" value="#{bundle.manager}" />
+                    <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.manager.description']}</span>
                 </label>
             </div>
             <div class="radio">
                 <label>
                     <p:radioButton id="opt3" for="defaultContributorRoleRadio" itemIndex="2" />
-                    <h:outputLabel for="opt3" value="Curator" />
-                    <span class="text-muted">- Edit metadata, upload files, and edit files, edit License, Terms, Guestbook, File Restrictions (Files Access + Use), Edit Permissions/Assign Roles + Publish</span>
+                    <h:outputLabel for="opt3" value="#{bundle.curator}" />
+                    <span class="text-muted"></span>
                 </label>
             </div>
         </div>

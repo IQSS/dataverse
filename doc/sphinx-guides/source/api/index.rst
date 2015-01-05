@@ -19,4 +19,5 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+  search
   sword
