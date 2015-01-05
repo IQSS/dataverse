@@ -134,7 +134,7 @@ public class Search extends AbstractApiBean {
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("count_in_response", solrSearchResults.size())
-                    .add("items", solrSearchResults.toString());
+                    .add("items", itemsArrayBuilder.build());
             if (showRelevance) {
                 value.add("relevance", relevancePerResult.build());
             }
