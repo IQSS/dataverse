@@ -506,8 +506,8 @@
                                             itemValue="#{featureddataverse}" converter="dataverseConverter"
                                             showSourceFilter="true" showTargetFilter="true" />
                             </div>
-                            <h:commandButton type="submit" action="#{DataversePage.saveFeature()}" class="btn btn-success" value="Save Changes"/>
-                            <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">#{bundle.cancel}</button>
+                            <h:commandButton type="submit" action="#{DataversePage.saveFeature()}" class="btn btn-success" value="#{bundle.saveChanges}"/>
+                            <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="#{bundle.cancel}"/>
                         </p:dialog>
 
                         <ui:include src="rolesAndPermissionsFragment.xhtml"/>
@@ -629,7 +629,7 @@
                         </div>
 
                         <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}"/>
-                        <button type="button" class="btn btn-default" onclick="contactForm.hide()" value="Cancel">#{bundle.cancel}</button>
+                        <button type="button" class="btn btn-default" onclick="contactForm.hide()" value="#{bundle.cancel}"/>
                     </h:form>
                 </p:dialog>
 

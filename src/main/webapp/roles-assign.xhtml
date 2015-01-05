@@ -59,9 +59,9 @@
             </div>
         </div>
 
-        <p:commandLink styleClass="btn btn-default" value="Save Changes" 
+        <p:commandLink styleClass="btn btn-default" value="#{bundle.saveChanges}" 
                        update="assignedRoles @([id$=Messages])"
-                       actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()">#{bundle.saveChanges}</p:commandLink>
+                       actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()" />
         <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">#{bundle.cancel}</button>
     </p:dialog>
 </div>

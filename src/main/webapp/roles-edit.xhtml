@@ -53,11 +53,11 @@
             </p:panel>
             <p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
                 <p:commandLink styleClass="btn btn-default" 
-                               value="Save Changes" 
+                               value="#{bundle.saveChanges}" 
                                oncomplete="roleForm.hide()"
                                update="roleDisplay availableRoles @([id$=Messages])"
                                actionListener="#{managePermissionsPage.updateRole}"
-                               style="color:black;margin-right:0.5em;">#{bundle.saveChanges}</p:commandLink>                    
+                               style="color:black;margin-right:0.5em;" />
                 <button type="button" class="btn btn-default" onclick="roleForm.hide()" value="Cancel">#{bundle.cancel}</button>
             </p:panel>
         </p:panel>

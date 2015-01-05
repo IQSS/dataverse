@@ -11,7 +11,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.template.pageTitle'] : TemplatePage.template.name} - #{TemplatePage.template.dataverse.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name} - #{TemplatePage.template.dataverse.name} #{bundle.dataverse}"/>
             <ui:param name="dataverse" value="#{TemplatePage.template.dataverse}"/>
             <ui:param name="template" value="#{TemplatePage.template}"/>
             <ui:param name="showBreadcrumbs" value="#{true}"/>
@@ -34,8 +34,8 @@
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The name of the dataset template.">
-                                         
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.template.name.tip']}">
+                                         #{bundle['dataset.template.name.tip']}
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -45,7 +45,7 @@
                         </div>
 
                         <h:outputLink styleClass="btn" value="/manage-templates.xhtml?dataverseId=#{TemplatePage.ownerId}">
-                            <h:outputText value="Return to Manage Templates"/>
+                            <h:outputText value="#{bundle['dataset.template.returnBtn']}"/>
                         </h:outputLink>
                         <h:outputText value="#{TeplatePage.template.name}"/>
                         <ui:include src="metadataFragment.xhtml"/>
@@ -56,8 +56,8 @@
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Enter a unique name for the template.">
-                                        Template Name <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.template.name.title']}">
+                                        #{bundle['dataset.manageTemplates.tab.header.templte']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -72,9 +72,9 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty TemplatePage.editMode}" >
                         <h:commandButton type="submit" action="#{TemplatePage.save()}" class="btn btn-default" 
-                                         value="#{TemplatePage.editMode == 'CREATE' ? 'Create Dataset Template' : 'Save Changes'}" />
+                                         value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : bundle.saveChanges}" />
                         <h:button  class="btn btn-default" 
-                                   value="Cancel" outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}" />
+                                   value="#{bundle.cancel}" outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}" ></h:button>
                     </p:panel>
 
                 </h:form>

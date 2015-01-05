@@ -270,7 +270,7 @@
             </div>
             
             <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}"/>
-            <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">#{bundle.cancel}</button>
+            <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="#{bundle.cancel}"/>
         </h:form>
     </p:dialog>
 </div>
