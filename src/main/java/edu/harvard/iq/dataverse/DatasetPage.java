@@ -249,6 +249,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDisplayCitation() {
+        //displayCitation = dataset.getCitation(false, workingVersion);
         return displayCitation;
     }
 
@@ -886,6 +887,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("refreshing working version, from version id.");
             workingVersion = datasetVersionService.find(versionId);
         }
+        displayCitation = dataset.getCitation(false, workingVersion);
     }
 
     public String deleteDataset() {
