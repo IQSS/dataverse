@@ -813,7 +813,7 @@
                                                         <ui:fragment rendered ="#{!empty DatasetPage.editMode }">
                                                             <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
                                                                 <f:selectItem itemLabel="Yes, apply CC0 - Public Domain Dedication licensing to this dataset." itemValue="CC0" />
-                                                                <f:selectItem itemLabel="No, do not apply CC0 - Public Domain Dedication licensing to this dataset." itemValue="NONE" />
+                                                                <f:selectItem itemLabel="No, do not apply CC0 - Public Domain Dedication licensing to this dataset." itemValue="" />
                                                                 <p:ajax update=":datasetForm" />                                                
                                                             </p:selectOneRadio>      
                                                             <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">

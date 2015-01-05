@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateRootCommand;
-import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -104,12 +103,11 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         try {
             created = engineService.submit(new CreateGuestbookCommand(newOne, session.getUser(), dataverse));
             saveDataverse("");
-            String msg =  "The guestbook has been copied.";
-            JsfHelper.addFlashMessage(msg);
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse Guestbook created");
             created.setDataverse(dataverse);
             return "/guestbook.xhtml?id=" + created.getId() + "&ownerId=" + dataverse.getId() + "&editMode=METADATA&faces-redirect=true";
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The guestbook cannot be copied");
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: " + ex.getMessage());
         }
         return "";
     }
@@ -118,7 +116,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         if (selectedGuestbook != null) {
             guestbooks.remove(selectedGuestbook);
             dataverse.getGuestbooks().remove(selectedGuestbook);
-            saveDataverse("The guestbook has been deleted.");
+            saveDataverse("Guestbook deleted from dataverse");
         } else {
             System.out.print("Selected Guestbook is null");
         }
@@ -140,9 +138,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser(), null));
-            JsfHelper.addSuccessMessage(successMessage);
+            JH.addMessage(FacesMessage.SEVERITY_INFO, successMessage);
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Update failed: " + ex.getMessage());
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: " + ex.getMessage());
         }
 
     }
@@ -206,7 +204,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         try {
             dataverse = engineService.submit(new UpdateDataverseGuestbookCommand(dataverse, selectedGuestbook, session.getUser()));
             init();
-            JsfHelper.addSuccessMessage("The guestbook has been enabled.");
             return "";
         } catch (CommandException ex) {
             Logger.getLogger(ManageGuestbooksPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -219,7 +216,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         try {
             dataverse = engineService.submit(new UpdateDataverseGuestbookCommand(dataverse, selectedGuestbook, session.getUser()));
             init();
-            JsfHelper.addSuccessMessage("The guestbook has been disabled.");
             return "";
         } catch (CommandException ex) {
             Logger.getLogger(ManageGuestbooksPage.class.getName()).log(Level.SEVERE, null, ex);

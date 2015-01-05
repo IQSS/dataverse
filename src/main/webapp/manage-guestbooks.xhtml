@@ -74,13 +74,13 @@
                                                    value="Enable"  
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
-                                                   update="@form,:messagePanel"
+                                                   update="@form"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Disable"  
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
-                                                   update="@form,:messagePanel"
+                                                   update="@form"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" 
                                                   rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
