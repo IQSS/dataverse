@@ -25,8 +25,9 @@
     </h:head>
 
     <h:body>
+        <f:loadBundle basename="Bundle" var="bundle"/>
         <a href="#content" class="sr-only">Skip to main content</a>
-        <ui:include src="dataverse_header.xhtml">
+        <ui:include src="dataverse_header.xhtml">            
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
             <ui:param name="showBreadcrumbs" value="#{showBreadcrumbs != null ? showBreadcrumbs : true}"/>
