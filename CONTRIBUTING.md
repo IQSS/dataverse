@@ -8,8 +8,8 @@ The [Dataverse roadmap][] might already capture your idea or feature request but
 
 See also our [Community and Support][] page.
 
-[#dataverse IRC channel]: http://webchat.freenode.net/?channels=dvn
-[Dataverse roadmap]: http://datascience.iq.harvard.edu/dataverse/roadmap
+[#dataverse IRC channel]: http://webchat.freenode.net/?channels=dataverse
+[Dataverse roadmap]: http://roadmap.datascience.iq.harvard.edu
 [@thedataorg]: http://twitter.com/thedataorg
 [Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
 
@@ -55,7 +55,7 @@ All of our documentation is in the GitHub repo under the "[doc][]" folder. If yo
 
 ## Code/Pull Requests
 
-To get started developing code for Dataverse, please read our Developer's Guide at http://dataverse-demo.iq.harvard.edu/guides/index.html or in the "[doc][]" folder mentioned above.
+To get started developing code for Dataverse, please read our Developer's Guide at http://guides.dataverse.org/en/latest/developers in the "[doc][]" folder mentioned above.
 
 [doc]: https://github.com/IQSS/dataverse/tree/master/doc
 
