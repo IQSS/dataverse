@@ -51,13 +51,13 @@ You can attach an image or screenshot by dragging and dropping, selecting them, 
 
 ## Documentation
 
-All of our documentation is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request!
+The source for the documentation at http://guides.dataverse.org is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request!
 
 ## Code/Pull Requests
 
-To get started developing code for Dataverse, please read our Developer's Guide at http://guides.dataverse.org/en/latest/developers in the "[doc][]" folder mentioned above.
+To get started developing code for Dataverse, please read our Developer's Guide at http://guides.dataverse.org/en/latest/developers
 
-[doc]: https://github.com/IQSS/dataverse/tree/master/doc
+[doc]: https://github.com/IQSS/dataverse/tree/master/doc/sphinx-guides/source
 
 Before you start coding, please reach out to us either on our [dataverse-community Google Group][], [IRC][], or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts.
 
