@@ -133,6 +133,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
         dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
         dvt.setTextColor(DEFAULT_TEXT_COLOR);
+        dvt.setDataverse(editDv);
         return dvt;
     }
     

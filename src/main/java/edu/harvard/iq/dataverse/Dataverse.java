@@ -123,9 +123,8 @@ public class Dataverse extends DvObjectContainer {
     private boolean displayByType;
     private boolean displayFeatured;
     
-    @OneToOne(cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
-    @JoinColumn(name="dataversetheme_id")
-    private DataverseTheme dataverseTheme;
+    @OneToOne(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+      private DataverseTheme dataverseTheme;
 
     @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     @OrderBy("displayOrder")
