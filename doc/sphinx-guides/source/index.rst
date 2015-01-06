@@ -51,7 +51,7 @@ questions, or offer suggestions for improvement. Go to
 
 **Follow Us on Twitter**
 
-For up to date news, information and developments, follow our twitter account: `https://twitter.com/thedataorg <https://twitter.com/thedataorg>`__
+For up to date news, information and developments, follow our twitter account: `https://twitter.com/dataverseorg <https://twitter.com/dataverseorg>`__
 
 **Support**
 

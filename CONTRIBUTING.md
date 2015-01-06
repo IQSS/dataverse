@@ -4,13 +4,13 @@ Thank you for your interest in contributing to Dataverse! We welcome contributio
 
 ## Ideas/Feature Requests
 
-The [Dataverse roadmap][] might already capture your idea or feature request but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mentioning [@thedataorg][] on Twitter.
+The [Dataverse roadmap][] might already capture your idea or feature request but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mentioning [@dataverseorg][] on Twitter.
 
 See also our [Community and Support][] page.
 
 [#dataverse IRC channel]: http://webchat.freenode.net/?channels=dataverse
 [Dataverse roadmap]: http://roadmap.datascience.iq.harvard.edu
-[@thedataorg]: http://twitter.com/thedataorg
+[@dataverseorg]: http://twitter.com/dataverseorg
 [Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
 
 ## Bug Reports/Issues
