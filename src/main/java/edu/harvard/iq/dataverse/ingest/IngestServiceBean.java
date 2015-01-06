@@ -224,7 +224,7 @@ public class IngestServiceBean {
                         || contentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
                         || contentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
                         || recognizedType.equals("application/fits-gzipped")
-                        || recognizedType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)
+                        || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
                         || recognizedType.equals(MIME_TYPE_ZIP)) {
                     finalType = recognizedType;
                 }
@@ -379,7 +379,7 @@ public class IngestServiceBean {
                 return datafiles;
             }
             
-        } else if (finalType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
+        } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             // Shape files may have to be split into multiple files, 
             // one zip archive per each complete set of shape files:
                        
