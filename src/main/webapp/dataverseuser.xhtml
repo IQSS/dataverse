@@ -117,22 +117,22 @@
                                         <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}">
                                             <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value="#{bundle.wasCreatedIn}" />
+                                        <h:outputText value="#{bundle.wasCreatedIn} " />
                                         <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}  #{bundle.dataverse}">
                                             <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value="#{bundle.toPublish}" />
+                                        <h:outputText value=" #{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
                                         <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
                                         </h:outputLink>
-                                        <h:outputText value="#{bundle.wasCreatedTo}" />
+                                        <h:outputText value="#{bundle.wasCreatedTo} " />
                                         <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value="#{bundle.toPublish}" />
+                                        <h:outputText value=" #{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
@@ -276,7 +276,7 @@
                                     <!-- Email -->
                                         <div class="form-group col-sm-12">
                                             <label for="email" class="col-sm-2 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{email.tip}">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{user.email.tip}">
                                                     #{bundle.email}
                                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
                                                         <span class="glyphicon glyphicon-asterisk text-danger"></span>
