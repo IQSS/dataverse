@@ -221,7 +221,7 @@ public class JsonParser {
     }
     
     public List<DatasetFieldCompoundValue> parseCompoundValue( DatasetFieldType compoundType, JsonObject json ) throws JsonParseException {
-       
+        
         if ( json.getBoolean("multiple") ) {
             List<DatasetFieldCompoundValue> vals = new LinkedList<>();
             
@@ -231,6 +231,9 @@ public class JsonParser {
                 for ( String fieldName: obj.keySet() ) {
                     JsonObject childFieldJson = obj.getJsonObject(fieldName);
                     DatasetField f = parseField( childFieldJson );
+                    if (!compoundType.getChildDatasetFieldTypes().contains(f.getDatasetFieldType())) {
+                        throw new JsonParseException("field "+f.getDatasetFieldType().getName()+" is not a child of "+ compoundType.getName());
+                    }
                     f.setParentDatasetFieldCompoundValue(cv);
                     fields.add( f );
                 }
