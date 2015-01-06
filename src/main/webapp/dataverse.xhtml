@@ -111,7 +111,7 @@
                                     </div>
 
                                     <label class="col-sm-3 control-label" for="dataverseCategory">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.category']}">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.category.title']}">
                                             #{bundle['dataverse.category']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
                                         </a>
                                     </label>
@@ -507,7 +507,7 @@
                                             showSourceFilter="true" showTargetFilter="true" />
                             </div>
                             <h:commandButton type="submit" action="#{DataversePage.saveFeature()}" class="btn btn-success" value="#{bundle.saveChanges}"/>
-                            <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="#{bundle.cancel}"/>
+                            <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">#{bundle.cancel}</button>
                         </p:dialog>
 
                         <ui:include src="rolesAndPermissionsFragment.xhtml"/>
