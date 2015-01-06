@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.SortBy;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang.StringUtils;
 
 @Path("search")
 public class Search extends AbstractApiBean {
@@ -44,37 +46,49 @@ public class Search extends AbstractApiBean {
     SolrIndexServiceBean SolrIndexService;
 
     @GET
-    public Response search(@QueryParam("key") String apiToken,
+    public Response search(
             @QueryParam("q") String query,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("sort") String sortField,
             @QueryParam("order") String sortOrder,
             @QueryParam("start") final int paginationStart,
-            @QueryParam("showrelevance") boolean showRelevance) {
+            @QueryParam("show_relevance") boolean showRelevance,
+            @QueryParam("show_facets") boolean showFacets,
+            @QueryParam("show_spelling_alternatives") boolean showSpellingAlternatives,
+            @QueryParam("subtree") String subtreeRequested
+    ) {
         if (query != null) {
-            if (sortField == null) {
-                // predictable default
-                sortField = SearchFields.RELEVANCE;
+            User user = getUser();
+            boolean dataRelatedToMe = getDataRelatedToMe();
+            int numResultsPerPage = getNumberOfResultsPerPage();
+
+            Dataverse subtree;
+            try {
+                subtree = getSubtree(subtreeRequested);
+            } catch (Exception ex) {
+                return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
-            if (sortOrder == null) {
-                // asc for alphabetical by default despite GitHub using desc by default: "The sort order if sort parameter is provided. One of asc or desc. Default: desc" -- http://developer.github.com/v3/search/
-                sortOrder = "desc"; // descending for Relevance
+
+            SortBy sortBy;
+            try {
+                sortBy = getSortBy(sortField, sortOrder);
+            } catch (Exception ex) {
+                return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
+
             SolrQueryResponse solrQueryResponse;
             try {
-                User dataverseUser = null;
-                if (apiToken != null) {
-                    dataverseUser = findUserByApiToken(apiToken);
-                    if (dataverseUser == null) {
-                        String message = "Unable to find a user with API token provided.";
-                        return errorResponse(Response.Status.FORBIDDEN, message);
-                    }
-                } else {
-                    dataverseUser = new GuestUser();
-                }
-                boolean dataRelatedToMe = false;
-                int numResultsPerPage = 10;
-                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+                solrQueryResponse = searchService.search(
+                        user,
+                        subtree,
+                        query,
+                        filterQueries,
+                        sortBy.getField(),
+                        sortBy.getOrder(),
+                        paginationStart,
+                        dataRelatedToMe,
+                        numResultsPerPage
+                );
             } catch (SearchException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
@@ -126,25 +140,29 @@ public class Search extends AbstractApiBean {
 //                logger.info(string + ":" + string1);
             }
 
-            List filterQueriesActual = solrQueryResponse.getFilterQueriesActual();
             JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
                     .add("fq_provided", filterQueries.toString())
-                    .add("fq_actual", filterQueriesActual.toString())
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
+                    /**
+                     * @todo consider removing count_in_response and letting
+                     * client calculate it
+                     */
                     .add("count_in_response", solrSearchResults.size())
                     .add("items", itemsArrayBuilder.build());
             if (showRelevance) {
+                /**
+                 * @todo rather than adding relevance as a separate array, have
+                 * relevance per item in the main "items" array.
+                 */
                 value.add("relevance", relevancePerResult.build());
             }
-            if (false) {
-                /*
-                 * @todo: add booleans to enable these
-                 * You can use SettingsServiceBeans for this
-                 */
-                value.add("spelling_alternatives", spelling_alternatives);
+            if (showFacets) {
                 value.add("facets", facets);
+            }
+            if (showSpellingAlternatives) {
+                value.add("spelling_alternatives", spelling_alternatives);
             }
             if (solrQueryResponse.getError() != null) {
                 /**
@@ -156,6 +174,93 @@ public class Search extends AbstractApiBean {
             return okResponse(value);
         } else {
             return errorResponse(Response.Status.BAD_REQUEST, "q parameter is missing");
+        }
+    }
+
+    private User getUser() {
+        /**
+         * @todo support searching as non-guest:
+         * https://github.com/IQSS/dataverse/issues/1299
+         */
+        User user = new GuestUser();
+        return user;
+    }
+
+    private boolean getDataRelatedToMe() {
+        /**
+         * @todo support Data Related To Me:
+         * https://github.com/IQSS/dataverse/issues/1299
+         */
+        boolean dataRelatedToMe = false;
+        return dataRelatedToMe;
+    }
+
+    private int getNumberOfResultsPerPage() {
+        /**
+         * @todo Raise the limit of results per page.
+         */
+        int numResultsPerPage = 10;
+        return numResultsPerPage;
+    }
+
+    /**
+     * @todo implement this!
+     */
+    private SortBy getSortBy(String sortField, String sortOrder) throws Exception {
+
+        if (StringUtils.isBlank(sortField)) {
+            sortField = SearchFields.RELEVANCE;
+        } else if (sortField.equals("name")) {
+            // "name" sounds better than "name_sort" so we convert it here so users don't have to pass in "name_sort"
+            sortField = SearchFields.NAME_SORT;
+        } else if (sortField.equals("date")) {
+            // "date" sounds better than "release_or_create_date_dt"
+            sortField = SearchFields.RELEASE_OR_CREATE_DATE;
+        }
+
+        if (StringUtils.isBlank(sortOrder)) {
+            if (StringUtils.isNotBlank(sortField)) {
+                // default sorting per field if not specified
+                if (sortField.equals(SearchFields.RELEVANCE)) {
+                    sortOrder = SortBy.DESCENDING;
+                } else if (sortField.equals(SearchFields.NAME_SORT)) {
+                    sortOrder = SortBy.ASCENDING;
+                } else if (sortField.equals(SearchFields.RELEASE_OR_CREATE_DATE)) {
+                    sortOrder = SortBy.DESCENDING;
+                }
+            } else {
+                // asc for alphabetical by default despite GitHub using desc by default:
+                // "The sort order if sort parameter is provided. One of asc or desc. Default: desc"
+                // http://developer.github.com/v3/search/
+                sortOrder = SortBy.ASCENDING;
+            }
+        }
+
+        List<String> allowedSortOrderValues = SortBy.allowedOrderStrings();
+        if (!allowedSortOrderValues.contains(sortOrder)) {
+            throw new Exception("The 'order' parameter was '" + sortOrder + "' but expected one of " + allowedSortOrderValues + ". (The 'sort' parameter was/became '" + sortField + "'.)");
+        }
+
+        return new SortBy(sortField, sortOrder);
+    }
+
+    private Dataverse getSubtree(String alias) throws Exception {
+        if (true) {
+            /**
+             * @todo remove this "if true" after moving the subtree logic from
+             * SearchIncludeFragment to SearchServiceBean
+             */
+            return dataverseService.findRootDataverse();
+        }
+        if (StringUtils.isBlank(alias)) {
+            return dataverseService.findRootDataverse();
+        } else {
+            Dataverse subtree = dataverseService.findByAlias(alias);
+            if (subtree != null) {
+                return subtree;
+            } else {
+                throw new Exception("Could not find dataverse with alias" + alias);
+            }
         }
     }
 
@@ -183,7 +288,7 @@ public class Search extends AbstractApiBean {
         Dataverse subtreeScope = dataverseService.findRootDataverse();
 
         String sortField = SearchFields.ID;
-        String sortOrder = "asc";
+        String sortOrder = SortBy.ASCENDING;
         int paginationStart = 0;
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;

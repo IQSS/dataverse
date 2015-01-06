@@ -224,6 +224,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             String dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
+                /**
+                 * @todo centralize this into SearchServiceBean
+                 */
                 filterQueriesFinal.add(filterDownToSubtree);
 //                this.dataverseSubtreeContext = dataversePath;
             } else {

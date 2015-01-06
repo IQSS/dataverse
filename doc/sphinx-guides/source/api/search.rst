@@ -14,7 +14,7 @@ Parameters
 =====  ===========
 Name   Description
 =====  ===========
-q      The search term or terms. Use "title:data" will search only the "title" field.
+q      The search term or terms. Using "title:data" will search only the "title" field.
 fq     A filter query on the search term. Multiple "fq" parameters can be used.
 sort   The sort field.
 order  The order in which to sort, either be "asc" or "desc".
