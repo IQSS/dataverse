@@ -169,7 +169,7 @@ public class MapLayerMetadataServiceBean {
         String imageUrl = mapLayerMetadata.getMapImageLink();
         logger.info("Attempt to retrieve map image: " + imageUrl);
         
-        String destinationFile = mapLayerMetadata.getDataFile().getFileSystemLocation().toString() +  "-test-png-image.png";
+        String destinationFile = mapLayerMetadata.getDataFile().getFileSystemLocation().toString() +  ".img";
         logger.info("destinationFile: getFileSystemLocation()" + mapLayerMetadata.getDataFile().getFileSystemLocation());
         logger.info("destinationFile: " + destinationFile);
         

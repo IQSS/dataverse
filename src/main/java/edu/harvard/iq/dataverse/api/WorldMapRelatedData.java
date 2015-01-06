@@ -110,6 +110,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     
     @Inject
     DataverseSession session;
+    
     /**
      *  Create URL for API call to WorldMapRelatedData.mapDataFile(...)   
      * 
@@ -127,14 +128,25 @@ public class WorldMapRelatedData extends AbstractApiBean {
     
     
     // test call to track down problems
-    /*
+    // http://127.0.0.1:8080/api/worldmap/t/
     @GET
     @Path("t/{identifier}")
     public Response checkWorldMapAPI(@Context HttpServletRequest request
                                     , @PathParam("identifier") int identifier) {
-       return okResponse( "Looks good " + identifier);
+
+        MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.find(new Long(identifier));
+        logger.info("mapLayerMetadata retrieved. Try to retrieve image:<br />" + mapLayerMetadata.getMapImageLink());
+        
+        try {
+            this.mapLayerMetadataService.retrieveMapImageForIcon(mapLayerMetadata);
+        } catch (IOException ex) {
+            logger.info("Failed to retrieve image. Error:" + ex);
+          //  Logger.getLogger(WorldMapRelatedData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return okResponse( "Looks good " + identifier + " " + mapLayerMetadata.getLayerName());
     }
-    */
+    
     
     
     
