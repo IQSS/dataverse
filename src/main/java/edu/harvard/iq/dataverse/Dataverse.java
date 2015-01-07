@@ -241,7 +241,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Template> getParentTemplates() {
-        List<Template> retList = new ArrayList();
+        List<Template> retList = new ArrayList<Template>();
         Dataverse testDV = this;
         while (testDV.getOwner() != null){   
             
@@ -277,9 +277,6 @@ public class Dataverse extends DvObjectContainer {
     public void setTemplateRoot(boolean templateRoot) {
         this.templateRoot = templateRoot;
     }
-
-   
-
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
