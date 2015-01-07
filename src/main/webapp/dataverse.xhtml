@@ -45,7 +45,7 @@
 
                 <h:form id="dataverseForm">
                         <p:focus context="dataverseForm"/>
-                        
+
                         <!-- Name Panel -->
                         <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                             <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
@@ -105,7 +105,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2">
-                                            <p:inputText id="affiliation" tabindex="5" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
+                                            <p:inputText id="affiliation" tabindex="4" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                             <p:message for="affiliation" display="text"/>
                                         </p:panelGrid>
                                     </div>
@@ -117,7 +117,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2">
-                                            <h:selectOneMenu id="dataverseCategory" tabindex="6" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
+                                            <h:selectOneMenu id="dataverseCategory" tabindex="5" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
                                                 <f:selectItem id="dvSelect" itemLabel="#{bundle['dataverse.type.selectTab.top']}" itemValue="" />
                                                 <f:selectItem id="dvResearch" itemLabel="#{bundle['dataverse.type.selectTab.researchers']}" itemValue="RESEARCHERS" />
                                                 <f:selectItem id="dvResearchProj" itemLabel="#{bundle['dataverse.type.selectTab.researchProjects']}" itemValue="RESEARCH_PROJECTS" />
@@ -129,57 +129,63 @@
                                             <p:message for="dataverseCategory" display="text"/>
                                         </p:panelGrid>
                                     </div>
+                                </div>
+                                <div class="col-xs-6 form-group">
                                     <label class="col-sm-3 control-label" for="description">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.description.title']}">
                                             #{bundle.description}
                                         </a>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p:inputTextarea id="description" tabindex="7" styleClass="form-control" value="#{DataversePage.dataverse.description}"
+                                        <p:inputTextarea id="description" tabindex="6" styleClass="form-control" value="#{DataversePage.dataverse.description}"
                                                          rows="6" cols="50"
                                                          autoResize="false">
                                         </p:inputTextarea>
                                     </div>
                                     <div class="col-sm-2 control-label">
                                         <p:message for="description" display="text"/>
-                                    </div>                                    
+                                    </div>
                                 </div>
-                                <div class="col-xs-6 form-group">
+                            </div>
+                        </p:panel>
+                        <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
+                            <div class="row form-horizontal">
+                                <div class="col-sm-12 form-group">
                                     <p:fragment autoUpdate="true">
-                                    <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.email.title']}">
-                                            #{bundle['dataverse.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
-                                        </a>
-                                    </label>
-                                    <div class="form-col-container col-sm-12">
-                                        <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
-                                            <div class="form-group">
-                                                <div class="form-col-container col-sm-9">
-                                                    <p:panelGrid columns="2">
-                                                        <p:inputText id="contactEmail" tabindex="4" styleClass="form-control" value="#{contacts.contactEmail}">
-                                                            <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
-                                                        </p:inputText>
-                                                        <p:message for="contactEmail" display="text"/>
-                                                    </p:panelGrid>
+                                        <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.email.title']}">
+                                                #{bundle['dataverse.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
+                                            </a>
+                                        </label>
+                                        <div class="col-sm-9 form-group">
+                                            <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
+                                                <div class="form-group">
+                                                    <div class="col-sm-6">
+                                                        <p:panelGrid columns="2" style="width:100%;">
+                                                            <p:inputText id="contactEmail" tabindex="7" styleClass="form-control" value="#{contacts.contactEmail}">
+                                                                <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
+                                                            </p:inputText>
+                                                            <p:message for="contactEmail" display="text"/>
+                                                        </p:panelGrid>
+                                                    </div>
+                                                    <!-- Add / Remove buttons -->
+                                                    <div class="col-sm-3">
+                                                        <p:commandButton styleClass="btn btn-default btn-sm" style="#{'margin:0 1em 0 0;'}"
+                                                                         title="#{bundle['dataverse.record.add']}" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
+                                                                         actionListener="#{DataversePage.dataverse.addDataverseContact(valCount.index + 1)}">
+                                                            <f:param name="SKIP_VALIDATION" value="true"/>
+                                                        </p:commandButton>
+                                                        <p:commandButton styleClass="btn btn-default btn-sm"
+                                                                         title="#{bundle['dataverse.record.delete']}" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
+                                                                         rendered="#{DataversePage.dataverse.dataverseContacts.size() > 1}"
+                                                                         actionListener="#{DataversePage.dataverse.removeDataverseContact(valCount.index)}">
+                                                            <f:param name="SKIP_VALIDATION" value="true"/>
+                                                        </p:commandButton>
+                                                    </div>
                                                 </div>
-                                                <!-- Add / Remove buttons -->
-                                                <div class="col-xs-3">
-                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="#{'margin:0 1em 0 0;'}"
-                                                                     title="#{bundle['dataverse.record.add']}" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
-                                                                     actionListener="#{DataversePage.dataverse.addDataverseContact(valCount.index + 1)}">
-                                                        <f:param name="SKIP_VALIDATION" value="true"/>
-                                                    </p:commandButton>
-                                                    <p:commandButton styleClass="btn btn-default btn-sm"
-                                                                     title="#{bundle['dataverse.record.delete']}" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
-                                                                     rendered="#{DataversePage.dataverse.dataverseContacts.size() > 1}"
-                                                                     actionListener="#{DataversePage.dataverse.removeDataverseContact(valCount.index)}">
-                                                        <f:param name="SKIP_VALIDATION" value="true"/>
-                                                    </p:commandButton>
-                                                </div>
-                                            </div>   
-                                        </ui:repeat>
-                                    </div> 
-                                    </p:fragment>                                    
+                                            </ui:repeat>
+                                        </div>
+                                    </p:fragment>
                                 </div>
                             </div>
                         </p:panel>
@@ -201,7 +207,7 @@
                                     <div class="col-sm-9">
                                         <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> #{bundle['dataverse.metadataElements.tip']}</p>
 
-                                        <p:selectBooleanCheckbox tabindex="7" styleClass="metadata-blocks-default" rendered="#{DataversePage.dataverse.owner != null}" 
+                                        <p:selectBooleanCheckbox tabindex="7" styleClass="metadata-blocks-default" rendered="#{DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="#{bundle['dataverse.metadataElements.from.tip']}">
                                             <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
                                         </p:selectBooleanCheckbox>
@@ -242,7 +248,7 @@
                                                         </input>
                                                     </label>
                                                     <!--<p class="help-block">
-                                                        Examples: #{DataversePage.getMetadataBlockPreview(mdb,3)} 
+                                                        Examples: #{DataversePage.getMetadataBlockPreview(mdb,3)}
                                                     </p>-->
                                                     <p:commandLink style="display:block;" id="showDSFT" rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock}"
                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
@@ -261,13 +267,13 @@
                                                     <div class="panel-body" style="max-height:400px;overflow-y:scroll;">
                                                         <table id="metadataFieldOptions" class="table table-striped">
                                                             <tbody>
-                                                                <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">                                                                
-                                                                    <tr>                                                               
+                                                                <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">
+                                                                    <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
                                                                                                      disabled="#{!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required) }">
                                                                                 <p:ajax  update="@widgetVar(OptButton#{dsft.id})"  listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"   />
-                                                                            </p:selectBooleanCheckbox> 
+                                                                            </p:selectBooleanCheckbox>
                                                                             <ui:fragment rendered="#{dsft.hasParent}">
                                                                                 <div class="checkbox">
                                                                                     <label>
@@ -276,9 +282,9 @@
                                                                                 </div>
                                                                             </ui:fragment>
                                                                         </td>
-                                                                        <td>  
+                                                                        <td>
 
-                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" 
+                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}"
                                                                                               rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren  and dsft.hasRequiredChildren))}">
                                                                                 <f:selectItems value="#{dsft.optionSelectItems}"/>
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id})"   />
@@ -287,8 +293,8 @@
                                                                             <ui:fragment rendered="#{(!dsft.hasChildren  and dsft.required) or (dsft.hasChildren  and dsft.hasRequiredChildren)}">
                                                                                 #{bundle['dataverse.field.requiredByDataverse']}
                                                                             </ui:fragment>
-                                                                        </td>                                                                  
-                                                                    </tr>                                                               
+                                                                        </td>
+                                                                    </tr>
                                                                 </ui:repeat>
                                                             </tbody>
                                                         </table>
@@ -307,7 +313,7 @@
                                     <div class="col-sm-9">
                                         <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> #{bundle['dataverse.facetPickList.tip']}</p>
 
-                                        <p:selectBooleanCheckbox tabindex="8" styleClass="facet-category-default" rendered="#{DataversePage.dataverse.owner != null}" 
+                                        <p:selectBooleanCheckbox tabindex="8" styleClass="facet-category-default" rendered="#{DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.inheritFacetFromParent}" itemLabel="#{bundle['dataverse.facetPickList.facersFromHost.text']}">
                                             <p:ajax update="editFacets" listener="#{DataversePage.editFacets}"/>
                                         </p:selectBooleanCheckbox>
@@ -369,7 +375,7 @@
                                                         <h:outputText value="#{bundle['dataverse.option.permissions']}" />
                                                         <f:param name="id" value="#{DataversePage.dataverse.id}" />
                                                     </h:link>
-                                                </li>                                            
+                                                </li>
                                                 <li>
                                                     <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
                                                         <h:outputText value="#{bundle['dataverse.option.datasetTemplates']}" />
