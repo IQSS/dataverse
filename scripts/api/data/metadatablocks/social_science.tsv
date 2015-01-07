@@ -1,4 +1,4 @@
-\#metadataBlock	name	displayName												
+#metadataBlock	name	displayName												
 	socialscience	Social Science and Humanities Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	unitOfAnalysis	Unit of Analysis	Basic unit of analysis or observation that this Dataset describes, such as individuals, families/households, groups, institutions/organizations, administrative units, and more. For information about the DDI's controlled vocabulary for this element, please refer to the DDI web page at http://www.ddialliance.org/Specification/DDI-CV/.		textbox	0	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		socialscience
