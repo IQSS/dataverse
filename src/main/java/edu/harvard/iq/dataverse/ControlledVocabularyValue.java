@@ -60,7 +60,19 @@ public class ControlledVocabularyValue implements Serializable  {
     public void setStrValue(String strValue) {
         this.strValue = strValue;
         
-    } 
+    }
+    
+    private String identifier;
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+    
+    
     
     private int displayOrder;
     public int getDisplayOrder() { return this.displayOrder;}
