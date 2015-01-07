@@ -33,7 +33,7 @@
                         <p:fragment id ="configureSettings">
                             <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}">                                    
                                 <ui:include src="permissions-configure.xhtml"/>
-                                <p:commandLink styleClass="btn btn-default" value="#{bundle['dataverse.permissions.title']}" 
+                                <p:commandLink styleClass="btn btn-default" value="#{bundle['saveChanges']}" 
                                                update="assignedRoles :#{p:component('configureMessages')} @([id$=Messages])"
                                                actionListener="#{managePermissionsPage.saveConfiguration}"/>                                
                             </c:if>
