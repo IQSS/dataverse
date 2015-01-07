@@ -256,7 +256,8 @@ public class DatasetFieldServiceApi {
         ControlledVocabularyValue cvv = new ControlledVocabularyValue();
         cvv.setDatasetFieldType(datasetFieldService.findByName(values[1]));
         cvv.setStrValue(values[2]);
-        cvv.setDisplayOrder(new Integer(values[3]).intValue());
+        cvv.setIdentifier(values[3]);
+        cvv.setDisplayOrder(new Integer(values[4]).intValue());
 
         datasetFieldService.save(cvv);
         return cvv.getStrValue();
