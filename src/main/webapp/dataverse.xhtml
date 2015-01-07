@@ -314,7 +314,7 @@
                                     <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> #{bundle['dataverse.facetPickList.tip']}</p>
 
                                     <p:selectBooleanCheckbox tabindex="8" styleClass="facet-category-default" rendered="#{DataversePage.dataverse.owner != null}"
-                                                             value="#{DataversePage.inheritFacetFromParent}" itemLabel="#{bundle['dataverse.facetPickList.facersFromHost.text']}">
+                                                             value="#{DataversePage.inheritFacetFromParent}" itemLabel="#{bundle['dataverse.facetPickList.facetsFromHost.text']}">
                                         <p:ajax update="editFacets" listener="#{DataversePage.toggleFacetRoot}"/>
                                     </p:selectBooleanCheckbox>
 
@@ -326,7 +326,7 @@
                                             <p:selectOneMenu styleClass="facet-category-default"
                                                              disabled ="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null }"
                                                              value="#{DataversePage.facetMetadataBlockId}">
-                                                <f:selectItem itemLabel="All" itemValue=""/>
+                                                <f:selectItem itemLabel="#{bundle['dataverse.facetPickList.metadataBlockList.all']}" itemValue=""/>
                                                 <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.displayName}" itemValue="#{mdb.id}" />
                                                 <p:ajax process="editFacets" update="editFacets" listener="#{DataversePage.changeFacetsMetadataBlock}"/>
                                             </p:selectOneMenu>
