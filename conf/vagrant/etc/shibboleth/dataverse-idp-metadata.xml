@@ -28,8 +28,8 @@
                     <mdui:DisplayName xml:lang="en">TestShib Test IdP</mdui:DisplayName>
                     <mdui:Description xml:lang="en">TestShib IdP. Use this as a source of attributes
                         for your test SP.</mdui:Description>
-                    <mdui:Logo height="88" width="253"
-                        >https://www.testshib.org/testshibtwo.jpg</mdui:Logo>
+                    <mdui:Logo height="88" width="75"
+                        >https://www.testshib.org/images/testshib-transp.png</mdui:Logo>
                 </mdui:UIInfo>
 
             </Extensions>
@@ -184,7 +184,7 @@
                     <mdui:Description xml:lang="en">TestShib SP. Log into this to test your machine.
                         Once logged in check that all attributes that you expected have been
                         released.</mdui:Description>
-                    <mdui:Logo height="88" width="253">https://www.testshib.org/testshibtwo.jpg</mdui:Logo>
+                    <mdui:Logo height="88" width="75">https://www.testshib.org/images/testshib-transp.png</mdui:Logo>
                 </mdui:UIInfo>
             </Extensions>
 

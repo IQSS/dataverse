@@ -4,18 +4,18 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui">
-    <p:dialog id="userGroupDialog" header="Edit Users/Groups" widgetVar="userGroupsForm" modal="true" style="min-width:600px;">
+    <p:dialog id="userGroupDialog" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="userGroupsForm" modal="true" style="min-width:600px;">
         <div>
-            <p class="help-block">Grant permissions to users and groups by assigning them a role.</p>
+            <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.description']}</p>
             <div class="form-group clearfix">
                 <label for="userGroupAccessInput" class="col-sm-3 control-label">
-                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
-                        User/Group
+                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.title']}">
+                        #{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup']}
                     </a>
                 </label>
                 <div class="col-sm-9">
-                    <p:autoComplete id="userGroupNameAssign" placeholder="Enter User/Group Name"
-                                    multiple="true" forceSelection="true" emptyMessage="No matches found."
+                    <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
+                                    multiple="true" forceSelection="true" emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
                                     value="#{managePermissionsPage.selectedRoleAssignees}"  completeMethod="#{managePermissionsPage.completeRoleAssignee}"
                                     var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">                  
                         <p:column>
@@ -31,8 +31,8 @@
             </div>
             <div class="form-group clearfix">
                 <label for="assignRoleRadios" class="col-sm-3 control-label">
-                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
-                        Role
+                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role.title']}">
+                        #{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}
                     </a>
                 </label>
                 <div class="col-sm-9">  
@@ -45,7 +45,7 @@
                     <p:fragment id="roleDetails">
                         <div id="assignRolePermissionLabels" style="margin-left:0;">
                             <div style="margin-bottom:1em;padding:5px;background:#f5f5f5;">
-                                <p class="help-block">These are the permissions associated with the selected role.</p>
+                                <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>
                                 <span style="font-weight:bold">#{managePermissionsPage.assignedRole.name}</span>
                                 <div style="width:388px;">
                                     <ui:repeat value="#{managePermissionsPage.assignedRole.permissions().toArray()}" var="prm">
@@ -59,9 +59,9 @@
             </div>
         </div>
 
-        <p:commandLink styleClass="btn btn-default" value="Save Changes" 
-                       update="assignedRoles"
-                       actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()"/>
-        <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">Cancel</button>
+        <p:commandLink styleClass="btn btn-default" value="#{bundle.saveChanges}" 
+                       update="assignedRoles @([id$=Messages])"
+                       actionListener="#{managePermissionsPage.assignRole}" oncomplete="userGroupsForm.hide()" />
+        <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">#{bundle.cancel}</button>
     </p:dialog>
 </div>

@@ -51,7 +51,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
     
     public boolean isLoggedIn() {
-        return dataverseSession.getUser() != GuestUser.get();
+        return dataverseSession.getUser().isAuthenticated();
     }
     
     public String loggedInUserEmail() {

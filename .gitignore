@@ -16,4 +16,5 @@ Thumbs.db
 scripts/api/py_api_wrapper/demo-data/*
 scripts/api/py_api_wrapper/test_data/*
 scripts/api/py_api_wrapper/local-data/*
-doc/Sphinx/build
+doc/sphinx-guides/build
+faces-config.NavData

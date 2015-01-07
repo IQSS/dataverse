@@ -28,6 +28,8 @@ import javax.persistence.UniqueConstraint;
 @NamedQueries({
 	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId" ),
+	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier" ),
 	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.listByRoleId",

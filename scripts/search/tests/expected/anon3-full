@@ -1,0 +1,71 @@
+{
+    "data": {
+        "count_in_response": 4,
+        "fq_provided": "[]",
+        "items": [
+            {
+                "dvtype": "dataverses",
+                "entityid": 7,
+                "id": "dataverse_7",
+                "matched_fields": "[]",
+                "name_sort": "Trees",
+                "parent": {
+                    "id": "1",
+                    "name": "Root"
+                },
+                "type_specific": {
+                    "name": "Trees"
+                }
+            },
+            {
+                "dvtype": "datasets",
+                "entityid": 10,
+                "id": "dataset_10",
+                "matched_fields": "[]",
+                "name_sort": "Spruce Goose",
+                "parent": {
+                    "id": "8",
+                    "name": "Spruce"
+                },
+                "type_specific": {
+                    "dataset_version_id_l": 1,
+                    "dsPublicationDate_s": "Jan 6, 2015",
+                    "title_s": "Spruce Goose"
+                }
+            },
+            {
+                "dvtype": "files",
+                "entityid": 12,
+                "id": "datafile_12",
+                "matched_fields": "[]",
+                "name_sort": "trees.png",
+                "parent": {
+                    "id": "10",
+                    "name": "Spruce Goose"
+                },
+                "type_specific": {
+                    "filetypemime_s": "PNG Image",
+                    "name": "trees.png"
+                }
+            },
+            {
+                "dvtype": "dataverses",
+                "entityid": 8,
+                "id": "dataverse_8",
+                "matched_fields": "[]",
+                "name_sort": "Spruce",
+                "parent": {
+                    "id": "7",
+                    "name": "Trees"
+                },
+                "type_specific": {
+                    "name": "Spruce"
+                }
+            }
+        ],
+        "q": "*",
+        "start": 0,
+        "total_count": 4
+    },
+    "status": "OK"
+}

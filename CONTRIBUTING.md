@@ -4,13 +4,13 @@ Thank you for your interest in contributing to Dataverse! We welcome contributio
 
 ## Ideas/Feature Requests
 
-The [Dataverse roadmap][] might already capture your idea or feature request but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mentioning [@thedataorg][] on Twitter.
+The [Dataverse roadmap][] might already capture your idea or feature request but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mentioning [@dataverseorg][] on Twitter.
 
 See also our [Community and Support][] page.
 
-[#dataverse IRC channel]: http://webchat.freenode.net/?channels=dvn
-[Dataverse roadmap]: http://datascience.iq.harvard.edu/dataverse/roadmap
-[@thedataorg]: http://twitter.com/thedataorg
+[#dataverse IRC channel]: http://webchat.freenode.net/?channels=dataverse
+[Dataverse roadmap]: http://roadmap.datascience.iq.harvard.edu
+[@dataverseorg]: http://twitter.com/dataverseorg
 [Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
 
 ## Bug Reports/Issues
@@ -51,13 +51,13 @@ You can attach an image or screenshot by dragging and dropping, selecting them, 
 
 ## Documentation
 
-All of our documentation is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request!
+The source for the documentation at http://guides.dataverse.org is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request!
 
 ## Code/Pull Requests
 
-To get started developing code for Dataverse, please read our Developer's Guide at http://dataverse-demo.iq.harvard.edu/guides/index.html or in the "[doc][]" folder mentioned above.
+To get started developing code for Dataverse, please read our Developer's Guide at http://guides.dataverse.org/en/latest/developers
 
-[doc]: https://github.com/IQSS/dataverse/tree/master/doc
+[doc]: https://github.com/IQSS/dataverse/tree/master/doc/sphinx-guides/source
 
 Before you start coding, please reach out to us either on our [dataverse-community Google Group][], [IRC][], or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts.
 

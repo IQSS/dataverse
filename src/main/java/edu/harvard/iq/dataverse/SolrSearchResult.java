@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.Highlight;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -239,6 +240,7 @@ public class SolrSearchResult {
              */
             typeSpecificFields.add("title_s", this.title);
             typeSpecificFields.add(SearchFields.DATASET_VERSION_ID, this.datasetVersionId);
+            typeSpecificFields.add(SearchFields.DATASET_PUBLICATION_DATE, this.dateToDisplayOnCard);
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
             typeSpecificFields.add(SearchFields.FILE_TYPE_MIME, this.filetype);

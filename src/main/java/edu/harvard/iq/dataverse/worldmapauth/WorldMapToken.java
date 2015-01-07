@@ -180,7 +180,7 @@ public class WorldMapToken implements java.io.Serializable {
      * @return boolean, value of property hasExpired.
      */
     public boolean getHasExpired() {
-            return this.hasExpired;
+        return this.hasExpired;
     }
 
     /**
@@ -188,7 +188,7 @@ public class WorldMapToken implements java.io.Serializable {
      * @param hasExpired new value of property hasExpired.
      */
     public void setHasExpired(boolean hasExpired) {
-            this.hasExpired = hasExpired;
+        this.hasExpired = hasExpired;
     }
 
 
@@ -242,7 +242,7 @@ public class WorldMapToken implements java.io.Serializable {
     }
 
     public boolean hasTokenExpired(){
-        
+        logger.info("hasTokenExpired");
  //       long currentTime = this.getCurrentTimestamp();//new Date().getTime();
         return this.hasTokenExpired(this.getCurrentTimestamp());
     }
@@ -287,32 +287,43 @@ public class WorldMapToken implements java.io.Serializable {
     }
     
     public boolean hasTokenExpired(Timestamp currentTimestamp){
+        logger.info("hasTokenExpired (w/timestamp)");
 
         if (this.getHasExpired()){
             return true;
         }
         
         if ((currentTimestamp==null)||(this.lastRefreshTime==null)){            
-            this.setHasExpired(true);
+            this.expireToken();
             return true;
         }
+         logger.info("currentTimestamp: " + currentTimestamp);
+         logger.info("lastRefreshTime: " + lastRefreshTime);
+
         //System.out.println("  ..pre diff: "+ currentTimestamp);
         long hours = this.getElapsedHours(currentTimestamp, this.created);
+        logger.info("elapsed hours: " + hours);
+
         if (hours > MAX_HOURS_TOKEN_CAN_BE_USED){
-            this.setHasExpired(true);
-            return false;
+            this.expireToken();
+            return true;
         }
         
         long diffSeconds = this.getElapsedSeconds(currentTimestamp, this.lastRefreshTime);
         //System.out.println("  ..diffSeconds: "+ diffSeconds);
         //logger.info("this.application.getTimeLimitSeconds: "+ this.application.getTimeLimitSeconds());
         if (diffSeconds > this.application.getTimeLimitSeconds()){
-            this.setHasExpired(true);
+            this.expireToken();
             return true;
         }
         return false;
                 
     }
+    
+    public void expireToken(){
+        this.setHasExpired(true);
+    }
+    
     
     public Timestamp getCurrentTimestamp(){
         return new Timestamp(new Date().getTime());

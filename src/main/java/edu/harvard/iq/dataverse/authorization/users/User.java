@@ -11,6 +11,13 @@ public interface User extends RoleAssignee, Serializable {
 
     public boolean isAuthenticated();
 
+    // TODO remove this, should be handles in a more generic fashion,
+    // e.g. getUserProvider and get the provider's URL from there. This
+    // would allow Shib-based editing as well.
     public boolean isBuiltInUser();
 
+    // TODO remove when we reverse the UserRequest and User composition.
+    public UserRequestMetadata getRequestMetadata();
+    
+    public void setRequestMetadata( UserRequestMetadata mtd );
 }

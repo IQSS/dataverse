@@ -82,8 +82,8 @@ public class Roles extends AbstractApiBean {
 	@POST
 	@Path("assignments")
 	public Response assignRole( @FormParam("username") String username, 
-			@FormParam("roleId") long roleId, 
-			@FormParam("definitionPointId") long dvObjectId,
+			@FormParam("roleId") Long roleId, 
+			@FormParam("definitionPointId") Long dvObjectId,
 			@QueryParam("key") String key ) {
 		
         User issuer = findUserByApiToken(key);
@@ -92,8 +92,12 @@ public class Roles extends AbstractApiBean {
         RoleAssignee ras = findAssignee(username);
 		if ( ras == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
 		
-        DvObject d = dvSvc.find( dvObjectId );
-		if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no DvObject with id " + dvObjectId );
+        
+        DvObject d = null;
+        if ( dvObjectId != null ) {
+            d = dvSvc.find( dvObjectId );
+            if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no DvObject with id " + dvObjectId );
+        }
 		DataverseRole r = rolesSvc.find(roleId);
 		if ( r == null ) return errorResponse( Status.BAD_REQUEST, "no role with id " + roleId );
 		

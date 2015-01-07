@@ -65,7 +65,8 @@ import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dvn.unf.*;
+//import edu.harvard.iq.dvn.unf.*;
+import org.dataverse.unf.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -223,7 +224,7 @@ public class IngestServiceBean {
                         || contentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
                         || contentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
                         || recognizedType.equals("application/fits-gzipped")
-                        || recognizedType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)
+                        || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
                         || recognizedType.equals(MIME_TYPE_ZIP)) {
                     finalType = recognizedType;
                 }
@@ -378,7 +379,7 @@ public class IngestServiceBean {
                 return datafiles;
             }
             
-        } else if (finalType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
+        } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             // Shape files may have to be split into multiple files, 
             // one zip archive per each complete set of shape files:
                        
@@ -638,6 +639,13 @@ public class IngestServiceBean {
 
         DataFile datafile = new DataFile(contentType);
         datafile.setModificationTime(new Timestamp(new Date().getTime()));
+        /**
+         * @todo Think more about when permissions on files are modified.
+         * Obviously, here at create time files have some sort of permissions,
+         * even if these permissions are *implied*, by ViewUnpublishedDataset at
+         * the dataset level, for example.
+         */
+        datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         FileMetadata fmd = new FileMetadata();
         
         fmd.setLabel(checkForDuplicateFileNames(version,fileName));
@@ -980,6 +988,7 @@ public class IngestServiceBean {
         produceCharacterSummaryStatistics(dataFile);
         
         recalculateDataFileUNF(dataFile);
+        recalculateDatasetVersionUNF(dataFile.getFileMetadata().getDatasetVersion());
     }
     
     public void produceContinuousSummaryStatistics(DataFile dataFile) throws IOException {
@@ -1084,13 +1093,52 @@ public class IngestServiceBean {
         }
         
         try {
-            fileUnfValue = UNF5Util.calculateUNF(unfValues);
+            fileUnfValue = UNFUtil.calculateUNF(unfValues);
         } catch (IOException ex) {
             logger.warning("Failed to recalculate the UNF for the datafile id="+dataFile.getId());
+        } catch (UnfException uex) {
+                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id="+dataFile.getId());
         }
         
         if (fileUnfValue != null) {
             dataFile.getDataTable().setUnf(fileUnfValue);
+        }
+    }
+    
+    public void recalculateDatasetVersionUNF(DatasetVersion version) {
+        String[] unfValues = new String[0];
+        String datasetUnfValue = null; 
+        List<String> unfValueList = new ArrayList<>();
+        
+        logger.fine("recalculating UNF for dataset version.");
+        Iterator<FileMetadata> itfm = version.getFileMetadatas().iterator();
+        while (itfm.hasNext()) {            
+            FileMetadata fileMetadata = itfm.next();
+            if (fileMetadata != null &&
+                    fileMetadata.getDataFile() != null &&
+                    fileMetadata.getDataFile().isTabularData() &&
+                    fileMetadata.getDataFile().getUnf() != null) {
+                String varunf = fileMetadata.getDataFile().getUnf();
+                unfValueList.add(varunf);
+            }
+        }
+        
+        if (unfValueList.size() > 0) {
+            unfValues = unfValueList.toArray(unfValues);
+        
+            logger.fine("Attempting to calculate new UNF from total of " + unfValueList.size() + " file-level signatures.");
+            try {
+                datasetUnfValue = UNFUtil.calculateUNF(unfValues);
+            } catch (IOException ex) {
+                logger.warning("IO Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
+            } catch (UnfException uex) {
+                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
+            }        
+        
+            if (datasetUnfValue != null) {
+                version.setUNF(datasetUnfValue);
+                logger.fine("Recalculated the UNF for the dataset version id="+version.getId()+", new signature: "+datasetUnfValue);
+            }
         }
     }
     
@@ -1905,10 +1953,13 @@ public class IngestServiceBean {
     private void calculateUNF(DataFile dataFile, int varnum, Double[] dataVector) {
         String unf = null;
         try {
-            unf = UNF5Util.calculateUNF(dataVector);
+            unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
             logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
+        } catch (UnfException uex) {
+            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
         }
+        
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
@@ -1919,10 +1970,13 @@ public class IngestServiceBean {
     private void calculateUNF(DataFile dataFile, int varnum, Long[] dataVector) {
         String unf = null;
         try {
-            unf = UNF5Util.calculateUNF(dataVector);
+            unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
             logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
+        }  catch (UnfException uex) {
+            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
         }
+        
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
@@ -2013,13 +2067,16 @@ public class IngestServiceBean {
         try {
             if (dateFormats == null) {
                 logger.fine("calculating the UNF value for string vector; first value: "+dataVector[0]);
-                unf = UNF5Util.calculateUNF(dataVector);
+                unf = UNFUtil.calculateUNF(dataVector);
             } else {
-                unf = UNF5Util.calculateUNF(dataVector, dateFormats);
+                unf = UNFUtil.calculateUNF(dataVector, dateFormats);
             }
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for (character) variable " + varnum);
+            logger.warning("IO exception thrown when attempted to calculate UNF signature for (character) variable " + varnum);
+        } catch (UnfException uex) {
+            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (character) variable " + varnum);
         }
+        
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
@@ -2038,10 +2095,13 @@ public class IngestServiceBean {
     private void calculateUNF(DataFile dataFile, int varnum, Float[] dataVector) {
         String unf = null;
         try {
-            unf = UNF5Util.calculateUNF(dataVector);
+            unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
             logger.warning("exception thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable " + varnum);
+        } catch (UnfException uex) {
+            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable" + varnum);
         }
+        
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {

@@ -34,6 +34,8 @@ import org.apache.commons.lang.StringUtils;
 @ValidateDatasetFieldType
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    public static final String NA_VALUE = "N/A";
 
     /**
      * Orders dataset fields by their display order.
@@ -202,6 +204,13 @@ public class DatasetField implements Serializable {
             return new DatasetFieldValue(this);
         }
     }
+    
+    public void setSingleValue(String value) {
+        if (datasetFieldValues.isEmpty()) {
+            datasetFieldValues.add(new DatasetFieldValue(this));
+        }
+        datasetFieldValues.get(0).setValue(value);
+    }
 
     public ControlledVocabularyValue getSingleControlledVocabularyValue() {
         if (!controlledVocabularyValues.isEmpty()) {
@@ -218,7 +227,7 @@ public class DatasetField implements Serializable {
             controlledVocabularyValues.add(cvv);
         }
     }
-
+    
     public String getValue() {
         if (!datasetFieldValues.isEmpty()) {
             return datasetFieldValues.get(0).getValue();

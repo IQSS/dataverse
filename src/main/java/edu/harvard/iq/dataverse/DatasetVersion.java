@@ -45,18 +45,18 @@ import javax.validation.ValidatorFactory;
 public class DatasetVersion implements Serializable {
 
     /**
-     * Convenience comparator to compare dataset versions by their version
-     * number. The draft version is considered the latest.
+     * Convenience comparator to compare dataset versions by their version number.
+     * The draft version is considered the latest.
      */
     public static final Comparator<DatasetVersion> compareByVersion = new Comparator<DatasetVersion>() {
         @Override
         public int compare(DatasetVersion o1, DatasetVersion o2) {
-            if (o1.isDraft()) {
+            if ( o1.isDraft() ) {
                 return o2.isDraft() ? 0 : 1;
             } else {
-                return (int) Math.signum((o1.getVersionNumber().equals(o2.getVersionNumber()))
-                        ? o1.getMinorVersionNumber() - o2.getMinorVersionNumber()
-                        : o1.getVersionNumber() - o2.getVersionNumber());
+               return (int)Math.signum( (o1.getVersionNumber().equals(o2.getVersionNumber())) ?
+                        o1.getMinorVersionNumber() - o2.getMinorVersionNumber()
+                       : o1.getVersionNumber() - o2.getVersionNumber() );
             }
         }
     };
@@ -68,6 +68,11 @@ public class DatasetVersion implements Serializable {
 
         DRAFT, IN_REVIEW, RELEASED, ARCHIVED, DEACCESSIONED
     };
+    
+    public enum License {
+        NONE, CC0
+    }
+
 
     public DatasetVersion() {
 
@@ -85,13 +90,21 @@ public class DatasetVersion implements Serializable {
         this.id = id;
     }
 
+    public String getUNF() {
+        return UNF;
+    }
+
+    public void setUNF(String UNF) {
+        this.UNF = UNF;
+    }
+    
+    private String UNF;
+
     @Version
     private Long version;
 
     /**
-     * This is JPA's optimistic locking mechanism, and has no semantic meaning
-     * in the DV object model.
-     *
+     * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
      * @return the object db version
      */
     public Long getVersion() {
@@ -106,9 +119,20 @@ public class DatasetVersion implements Serializable {
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
-
+    
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
+    
+    @Enumerated(EnumType.STRING)
+    private License license;
+
+    public License getLicense() {
+        return license;
+    }
+
+    public void setLicense(License license) {
+        this.license = license;
+    }
 
     @ManyToOne
     private Dataset dataset;
@@ -134,14 +158,12 @@ public class DatasetVersion implements Serializable {
     }
 
     /**
-     * Sets the dataset fields for this version. Also updates the fields to have
-     *
-     * @{code this} as their dataset version.
-     *
+     * Sets the dataset fields for this version. Also updates the fields to 
+     * have @{code this} as their dataset version.
      * @param datasetFields
      */
     public void setDatasetFields(List<DatasetField> datasetFields) {
-        for (DatasetField dsf : datasetFields) {
+        for ( DatasetField dsf : datasetFields ) {
             dsf.setDatasetVersion(this);
         }
         this.datasetFields = datasetFields;
@@ -163,6 +185,144 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     private String deaccessionLink;
+        private String termsOfUse;
+    private String termsOfAccess;
+    private String confidentialityDeclaration;
+    private String specialPermissions;
+    private String restrictions;
+    private String citationRequirements;
+    private String depositorRequirements;
+    private String conditions;
+    private String disclaimer;
+    private String dataAccessPlace;
+    private String originalArchive;
+    private String availabilityStatus;
+    private String contactForAccess;
+    private String sizeOfCollection;
+    private String studyCompletion;
+
+    public String getStudyCompletion() {
+        return studyCompletion;
+    }
+
+    public void setStudyCompletion(String studyCompletion) {
+        this.studyCompletion = studyCompletion;
+    }
+        
+    
+    public String getTermsOfUse() {
+        return termsOfUse;
+    }
+
+    public void setTermsOfUse(String termsOfUse) {
+        this.termsOfUse = termsOfUse;
+    }
+
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+    
+        
+    public String getConfidentialityDeclaration() {
+        return confidentialityDeclaration;
+    }
+
+    public void setConfidentialityDeclaration(String confidentialityDeclaration) {
+        this.confidentialityDeclaration = confidentialityDeclaration;
+    }
+
+    public String getSpecialPermissions() {
+        return specialPermissions;
+    }
+
+    public void setSpecialPermissions(String specialPermissions) {
+        this.specialPermissions = specialPermissions;
+    }
+
+    public String getRestrictions() {
+        return restrictions;
+    }
+
+    public void setRestrictions(String restrictions) {
+        this.restrictions = restrictions;
+    }
+
+    public String getCitationRequirements() {
+        return citationRequirements;
+    }
+
+    public void setCitationRequirements(String citationRequirements) {
+        this.citationRequirements = citationRequirements;
+    }
+
+    public String getDepositorRequirements() {
+        return depositorRequirements;
+    }
+
+    public void setDepositorRequirements(String depositorRequirements) {
+        this.depositorRequirements = depositorRequirements;
+    }
+
+    public String getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(String conditions) {
+        this.conditions = conditions;
+    }
+
+    public String getDisclaimer() {
+        return disclaimer;
+    }
+
+    public void setDisclaimer(String disclaimer) {
+        this.disclaimer = disclaimer;
+    }
+
+    public String getDataAccessPlace() {
+        return dataAccessPlace;
+    }
+
+    public void setDataAccessPlace(String dataAccessPlace) {
+        this.dataAccessPlace = dataAccessPlace;
+    }
+
+    public String getOriginalArchive() {
+        return originalArchive;
+    }
+
+    public void setOriginalArchive(String originalArchive) {
+        this.originalArchive = originalArchive;
+    }
+
+    public String getAvailabilityStatus() {
+        return availabilityStatus;
+    }
+
+    public void setAvailabilityStatus(String availabilityStatus) {
+        this.availabilityStatus = availabilityStatus;
+    }
+
+    public String getContactForAccess() {
+        return contactForAccess;
+    }
+
+    public void setContactForAccess(String contactForAccess) {
+        this.contactForAccess = contactForAccess;
+    }
+
+    public String getSizeOfCollection() {
+        return sizeOfCollection;
+    }
+
+    public void setSizeOfCollection(String sizeOfCollection) {
+        this.sizeOfCollection = sizeOfCollection;
+    }
+
 
     public Date getArchiveTime() {
         return archiveTime;
@@ -265,6 +425,7 @@ public class DatasetVersion implements Serializable {
         this.contributorNames = contributorNames;
     }
 
+ 
     public String getVersionNote() {
         return versionNote;
     }
@@ -318,7 +479,7 @@ public class DatasetVersion implements Serializable {
         }
         this.versionNote = note;
     }
-
+   
     public Long getVersionNumber() {
         return versionNumber;
     }
@@ -567,13 +728,14 @@ public class DatasetVersion implements Serializable {
             str += " DEACCESSIONED VERSION ";
 
         }
-        /*UNF is not calculated yet
+        /*UNF is not calculated yet*/
          if (!StringUtil.isEmpty(getUNF())) {
-         if (!StringUtil.isEmpty(str)) {
-         str += " ";
-         }
-         str += getUNF();
-         }
+            if (!StringUtil.isEmpty(str)) {
+                str += " ";
+            }
+            str += getUNF();
+        }
+         /*
          String distributorNames = getDistributorNames();
          if (distributorNames.trim().length() > 0) {
          str += " " + distributorNames;
@@ -587,13 +749,10 @@ public class DatasetVersion implements Serializable {
         return "Distribution Date";
     }
 
-    public String getUNF() {
-        //todo get dist date from datasetfieldvalue table
-        return "UNF";
-    }
-
-    public String getRootDataverseNameforCitation() {
-        //Get root dataverse name for Citation
+    
+    
+    public String getRootDataverseNameforCitation(){
+                    //Get root dataverse name for Citation
         Dataverse root = this.getDataset().getOwner();
         while (root.getOwner() != null) {
             root = root.getOwner();
@@ -784,7 +943,23 @@ public class DatasetVersion implements Serializable {
         }
     }
 
-
+    public Set<ConstraintViolation> validateRequired() {
+        Set<ConstraintViolation> returnSet = new HashSet();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        for (DatasetField dsf : this.getFlatDatasetFields()) {
+            dsf.setValidationMessage(null); // clear out any existing validation message
+            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
+            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
+                dsf.setValidationMessage(constraintViolation.getMessage());
+                returnSet.add(constraintViolation);
+                break; // currently only support one message, so we can break out of the loop after the first constraint violation
+            }
+            
+        }
+        return returnSet;
+    }
+    
     public Set<ConstraintViolation> validate() {
         Set<ConstraintViolation> returnSet = new HashSet();
 

@@ -58,14 +58,6 @@ public class DatasetVersionUI implements Serializable {
     public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
-
-    public DatasetVersionUI(DatasetVersion datasetVersion) {
-        // @todo make sure this is not called anywhere, except by commands
-        // we may want to move this logic away from here
-        setDatasetVersion(datasetVersion);      
-        datasetVersion.setDatasetFields(initDatasetFields());
-
-    }
     
     public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion) {
         /*takes in the values of a dataset version 

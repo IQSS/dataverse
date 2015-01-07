@@ -41,10 +41,10 @@ public class TokenApplicationTypeServiceBean {
         // Make a default application for GeoConnect
         tat.setName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
         tat.setContactEmail("info@iq.harvard.edu");
-        tat.setHostname("localhost");
-        tat.setIpAddress("127.0.0.1");
+        tat.setHostname("geoconnect.datascience.iq.harvard.edu");
+        tat.setIpAddress("140.247.115.127");
         tat.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
-        //tat.setMapitLink(TokenApplicationType.TEST_MAPIT_LINK);
+        //tat.setMapitLink(TokenApplicationType.LOCAL_DEV_MAPIT_LINK);
         tat.setMapitLink(TokenApplicationType.DEV_MAPIT_LINK);
         
         return this.save(tat);

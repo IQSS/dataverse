@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
 import javax.ejb.EJB;
@@ -74,16 +75,33 @@ public class Index extends AbstractApiBean {
         }
     }
 
+    /**
+     * @todo return Response rather than String
+     */
     @GET
     @Path("{type}/{id}")
     public String indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
         try {
             if (type.equals("dataverses")) {
                 Dataverse dataverse = dataverseService.find(id);
-                return indexService.indexDataverse(dataverse) + "\n";
+                if (dataverse != null) {
+                    return indexService.indexDataverse(dataverse) + "\n";
+                } else {
+                    String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataverse + id);
+                    return "Could not find dataverse with id of " + id + ". Result from deletion attempt: " + response;
+                }
             } else if (type.equals("datasets")) {
                 Dataset dataset = datasetService.find(id);
-                return indexService.indexDataset(dataset) + "\n";
+                if (dataset != null) {
+                    return indexService.indexDataset(dataset) + "\n";
+                } else {
+                    /**
+                     * @todo what about published, deaccessioned, etc.? Need
+                     * method to target those, not just drafts!
+                     */
+                    String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataset + id + IndexServiceBean.draftSuffix);
+                    return "Could not find dataset with id of " + id + ". Result from deletion attempt: " + response;
+                }
             } else if (type.equals("files")) {
                 DataFile dataFile = dataFileService.find(id);
                 Dataset datasetThatOwnsTheFile = datasetService.find(dataFile.getOwner().getId());
@@ -140,28 +158,93 @@ public class Index extends AbstractApiBean {
     @GET
     @Path("status")
     public Response indexStatus() {
-        List<Dataverse> staleDataverses = indexService.findStaleDataverses();
-        List<Dataset> staleDatasets = indexService.findStaleDatasets();
+        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr();
 
-        JsonObjectBuilder staleCounts = Json.createObjectBuilder()
-                .add("dataverses", staleDataverses.size())
-                .add("datasets", staleDatasets.size());
+        JsonObjectBuilder contentInSolrButNotDatabase;
+        try {
+            contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
+        } catch (SearchException ex) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
+        }
 
-        JsonArrayBuilder staleDataverseIds = Json.createArrayBuilder();
-        for (Dataverse staleDataverse : staleDataverses) {
-            staleDataverseIds.add(staleDataverse.getId());
+        JsonObjectBuilder permissionsInDatabaseButMissingFromSolr;
+        try {
+            permissionsInDatabaseButMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
+        } catch (Exception ex) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
-        JsonArrayBuilder staleDatasetIds = Json.createArrayBuilder();
-        for (Dataset staleDataset : staleDatasets) {
-            staleDatasetIds.add(staleDataset.getId());
-        }
+        JsonObjectBuilder permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
 
         JsonObjectBuilder data = Json.createObjectBuilder()
-                .add("staleCounts", staleCounts)
-                .add("staleDataverseIds", staleDataverseIds)
-                .add("staleDatasetIds", staleDatasetIds);
+                .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
+                .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
+                .add("permissionsInDatabaseButMissingFromSolr", permissionsInDatabaseButMissingFromSolr)
+                .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
 
         return okResponse(data);
+    }
+
+    private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
+        List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
+        List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
+        JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
+        for (Dataverse dataverse : stateOrMissingDataverses) {
+            jsonStateOrMissingDataverses.add(dataverse.getId());
+        }
+        JsonArrayBuilder datasetsInDatabaseButNotSolr = Json.createArrayBuilder();
+        for (Dataset dataset : staleOrMissingDatasets) {
+            datasetsInDatabaseButNotSolr.add(dataset.getId());
+        }
+        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
+                /**
+                 * @todo What about files? Currently files are always indexed
+                 * along with their parent dataset
+                 */
+                .add("dataverses", jsonStateOrMissingDataverses)
+                .add("datasets", datasetsInDatabaseButNotSolr);
+        return contentInDatabaseButStaleInOrMissingFromSolr;
+    }
+
+    private JsonObjectBuilder getContentInSolrButNotDatabase() throws SearchException {
+        List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
+        List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+        JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
+        for (Long dataverseId : dataversesInSolrOnly) {
+            dataversesInSolrButNotDatabase.add(dataverseId);
+        }
+        JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
+        for (Long datasetId : datasetsInSolrOnly) {
+            datasetsInSolrButNotDatabase.add(datasetId);
+        }
+        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
+                /**
+                 * @todo What about files? Currently files are always indexed
+                 * along with their parent dataset
+                 */
+                .add("dataverses", dataversesInSolrButNotDatabase)
+                .add("datasets", datasetsInSolrButNotDatabase);
+        return contentInSolrButNotDatabase;
+    }
+
+    private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() throws Exception {
+        List<Long> staleOrMissingPermissions;
+        staleOrMissingPermissions = solrIndexService.findPermissionsMissingFromSolr();
+        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
+        for (Long dvObjectId : staleOrMissingPermissions) {
+            stalePermissionList.add(dvObjectId);
+        }
+        return Json.createObjectBuilder()
+                .add("dvobjects", stalePermissionList);
+    }
+
+    private JsonObjectBuilder getPermissionsInSolrButNotDatabase() {
+        List<Long> staleOrMissingPermissions = solrIndexService.findPermissionsInSolrNoLongerInDatabase();
+        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
+        for (Long dvObjectId : staleOrMissingPermissions) {
+            stalePermissionList.add(dvObjectId);
+        }
+        return Json.createObjectBuilder()
+                .add("dvobjects", stalePermissionList);
     }
 
 }

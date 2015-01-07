@@ -1,8 +1,12 @@
- {
- 	"alias":"umaSub2",
-    "name":"Uma's restricted",
-    "affiliation":"Affiliation value",
-    "contactEmail":"Uma@mailinator.com",
-    "permissionRoot":true,
-    "description":"Pete can't get here"
+{
+  "alias": "umaSub2",
+  "name": "Uma's restricted",
+  "affiliation": "Affiliation value",
+  "permissionRoot": true,
+  "description": "Pete can't get here",
+  "dataverseContacts": [
+    {
+      "contactEmail": "Uma@mailinator.com"
+    }
+  ]
 }

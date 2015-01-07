@@ -16,7 +16,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -43,8 +45,9 @@ public class MapLayerMetadata implements Serializable {
     private Long id;
 
     // ForeignKey to DataFile
-    @ManyToOne
-    @JoinColumn(nullable=false)
+    //x@ManyToOne
+    // For now, make this unique:  Each DataFile may only have one map
+    @JoinColumn(nullable=false, unique=true)
     private DataFile dataFile;
 
     // ForeignKey to Dataset.
@@ -65,6 +68,10 @@ public class MapLayerMetadata implements Serializable {
     @Column(nullable=false)
     @NotBlank(message = "Please specify am embedded map link.")
     private String embedMapLink;
+    
+    @Column(nullable=true)
+    @NotBlank(message = "Please specify a map image link.")
+    private String mapImageLink;
     
     @Column(nullable=false)
     @NotBlank(message = "Please specify a WorldMap username.")
@@ -102,7 +109,24 @@ public class MapLayerMetadata implements Serializable {
     public void setLayerLink(String layerLink) {
             this.layerLink = layerLink;
     }
+    
+        /**
+     * Get property mapImageLink.
+     * @return value of property mapImageLink.
+     */
+    public String getMapImageLink() {
+            return this.mapImageLink;
+    }
 
+    /**
+     * Set property mapImageLink.
+     * @param mapImageLink new value of property layerLink.
+     */
+    public void setMapImageLink(String mapImageLink) {
+            this.mapImageLink = mapImageLink;
+    }
+    
+    
     /**
      * Get property embedMapLink.
      * @return value of property embedMapLink.

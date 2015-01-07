@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_LINK_COLOR = "428BCA";
     static final String DEFAULT_TEXT_COLOR = "888888";
     private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
+
     @Inject DataversePage dataversePage;
     private File tempDir;
     private File uploadedFile;
@@ -131,6 +133,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
         dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
         dvt.setTextColor(DEFAULT_TEXT_COLOR);
+        dvt.setDataverse(editDv);
         return dvt;
     }
     
@@ -189,7 +192,9 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
      * Copy filename into Dataverse logo 
      * @param event 
      */
-        public void handleImageFileUpload(FileUploadEvent event) {
+
+    public void handleImageFileUpload(FileUploadEvent event) {
+
             logger.finer("entering fileUpload");
             if (this.tempDir==null) {
                 createTempDir();
@@ -250,7 +255,6 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
     
 
     public String save() {
-        System.out.println("in save");
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
         if (!editDv.isThemeRoot()) {
@@ -265,6 +269,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());          
         }
+        JsfHelper.addFlashMessage("You have successfully updated the theme for this dataverse!");
         this.cleanupTempDirectory();
         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }

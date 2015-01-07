@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateRootCommand;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -79,12 +80,12 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     public void makeDefault(Template templateIn) {
         dataverse.setDefaultTemplate(templateIn);
-        saveDataverse("Dataverse Default Template updated");
+        saveDataverse("The template has been selected as the default template for this dataverse");
     }
 
     public void unselectDefault(Template templateIn) {
         dataverse.setDefaultTemplate(null);
-        saveDataverse("Dataverse Default Template updated");
+        saveDataverse("The template has been removed as the default template for this dataverse");
     }
 
     public String cloneTemplate(Template templateIn) {
@@ -99,11 +100,11 @@ public class ManageTemplatesPage implements java.io.Serializable {
         try {
             created = engineService.submit(new CreateTemplateCommand(newOne, session.getUser(), dataverse));
             saveDataverse("");
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse Template created");
-            created.setDataverse(dataverse);
+            String msg =  "The template has been copied";
+            JsfHelper.addFlashMessage(msg);
             return "/template.xhtml?id=" + created.getId() + "&ownerId=" + dataverse.getId() + "&editMode=METADATA&faces-redirect=true";
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: " + ex.getMessage());
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Template could not be copied. " );
         }
         return "";
     }
@@ -112,7 +113,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         if (selectedTemplate != null) {
             templates.remove(selectedTemplate);
             dataverse.getTemplates().remove(selectedTemplate);
-            saveDataverse("Template deleted from dataverse");
+            saveDataverse("The template has been deleted");
         } else {
             System.out.print("selected template is null");
         }
@@ -124,13 +125,21 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     private void saveDataverse(String successMessage) {
         if (successMessage.isEmpty()) {
-            successMessage = "Dataverse Template data updated";
+            successMessage = "Template data updated";
         }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser(), null));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, successMessage);
+            //JH.addMessage(FacesMessage.SEVERITY_INFO, successMessage);
+            JsfHelper.addFlashMessage(successMessage);
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: " + ex.getMessage());
+            String failMessage = "Template update failed";
+            if(successMessage.equals("The template has been deleted")){
+                failMessage = "The dataset template cannot be deleted. Please try again or contact support.";
+            }
+            if(successMessage.equals("The template has been selected as the default template for this dataverse")){
+                failMessage = "The dataset template cannot be made default. Please try again or contact support.";
+            }
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
         }
 
     }

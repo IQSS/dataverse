@@ -11,7 +11,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="thisPageTitle" value="Advanced Search"/>
+            <ui:param name="thisPageTitle" value="Advanced Search - #{dataverseServiceBean.findRootDataverse().name} Dataverse"/>
             <ui:param name="pageTitle" value="#{thisPageTitle}"/>
             <ui:param name="dataverse" value="#{AdvancedSearchPage.dataverse}"/>
             <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>

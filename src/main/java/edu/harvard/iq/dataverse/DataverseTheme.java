@@ -14,6 +14,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 /**
@@ -137,7 +138,8 @@ public class DataverseTheme implements Serializable {
     public void setBackgroundColor(String backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
-    @OneToOne(mappedBy = "dataverseTheme")
+    @OneToOne
+    @JoinColumn(name="dataverse_id")
     private Dataverse dataverse;
 
     public Dataverse getDataverse() {

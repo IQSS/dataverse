@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDateverseTemplateCommand;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
@@ -168,7 +169,7 @@ public class TemplatePage implements java.io.Serializable {
         if (dontSave) {
             return "";
         }
-        
+        boolean create = false;
         Command<Dataverse> cmd;
         try {
             if (editMode == EditMode.CREATE) {
@@ -176,6 +177,7 @@ public class TemplatePage implements java.io.Serializable {
                 template.setUsageCount(new Long(0));
                 dataverse.getTemplates().add(template);
                 cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser(), null);
+                create = true;
                 commandEngine.submit(cmd);
             } else {
                 cmd = new UpdateDateverseTemplateCommand(dataverse, template, session.getUser());
@@ -205,6 +207,8 @@ public class TemplatePage implements java.io.Serializable {
             //logger.severe(ex.getMessage());
         }
         editMode = null;
+        String msg = (create)? "Template has been created.": "Template has been edited and saved.";
+        JsfHelper.addFlashMessage(msg);
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
 

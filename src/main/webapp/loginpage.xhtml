@@ -14,7 +14,7 @@
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Log In - Dataverse"/>
+            <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
@@ -24,9 +24,11 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="alert alert-danger">
-                                <h3>There are no active authentication providers</h3>
-                                If you are a system administrator, please enable one using the api.<br />
-                                If you are not a system administrator, please talk to one.
+                                <h:outputFormat value="#{bundle['authenticationProvidersAvailable.tip']}" escape="false">
+                                    <f:param value="&lt;h3&gt;"/>
+                                    <f:param value="&lt;/h3&gt;"/>
+                                    <f:param value="&lt;br /&gt;"/>
+                                </h:outputFormat>
                             </div>
                         </div>
                     </div>
@@ -39,7 +41,7 @@
                                 <ui:remove>
                                     <ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
                                         <div class="form-group">
-                                            <p:outputLabel value="Login System" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
+                                            <p:outputLabel value="#{bundle['login.System']}" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
                                             <h:selectOneMenu id="loginSystemSelect" value="#{LoginPage.credentialsAuthProviderId}">
                                                 <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
                                                                itemLabel="#{ap.title}" itemValue="#{ap.id}" />
@@ -61,13 +63,13 @@
                                 </ui:repeat>
                                 <div class="form-group">
                                     <div class="col-sm-offset-2 col-sm-9">
-                                        <p:commandButton id="login" value="Log In" action="#{LoginPage.login}"/>
-                                        <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
+                                        <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
+                                        <p:button value="#{bundle.cancel}" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
                                     </div>
                                 </div>
                                 <div style="margin-top:.5em;">
                                     <a href="passwordreset.xhtml">
-                                        Forgot your password?
+                                        #{bundle['login.forgot.text']}
                                     </a>
                                 </div>
                             </h:form>
@@ -77,7 +79,7 @@
                         <div class="col-md-7" style="margin-top:3em;">
                             <div class="panel panel-default highlight">
                                 <div class="panel-body">
-                                    <h2 style="margin-top:0;">Institution Log In</h2>
+                                    <h2 style="margin-top:0;">#{bundle['login.institution']}</h2>
 
                                     <div id="idpSelect"></div>
 

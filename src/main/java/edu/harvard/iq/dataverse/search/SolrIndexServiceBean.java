@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
@@ -11,6 +12,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +45,8 @@ public class SolrIndexServiceBean {
     SearchPermissionsServiceBean searchPermissionsService;
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DataverseRoleServiceBean rolesSvc;
 
     public List<DvObjectSolrDoc> determineSolrDocs(Long dvObjectId) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
@@ -187,7 +191,8 @@ public class SolrIndexServiceBean {
 
         List<DvObjectSolrDoc> definitionPoints = new ArrayList<>();
         Map<Long, List<Long>> filesPerDataset = new HashMap<>();
-        for (DvObject dvObject : dvObjectService.findAll()) {
+        List<DvObject> allExceptFiles = dvObjectService.findAll();
+        for (DvObject dvObject : allExceptFiles) {
             logger.info("determining definition points for dvobject id " + dvObject.getId());
             if (dvObject.isInstanceofDataFile()) {
                 Long dataset = dvObject.getOwner().getId();
@@ -204,8 +209,15 @@ public class SolrIndexServiceBean {
             }
         }
 
+        List<DvObject> all = allExceptFiles;
         for (Map.Entry<Long, List<Long>> filePerDataset : filesPerDataset.entrySet()) {
             definitionPoints.addAll(determineSolrDocsForFilesFromDataset(filePerDataset));
+            for (long fileId : filePerDataset.getValue()) {
+                DvObject file = dvObjectService.findDvObject(fileId);
+                if (file != null) {
+                    all.add(file);
+                }
+            }
         }
 
         for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
@@ -220,6 +232,9 @@ public class SolrIndexServiceBean {
              * @todo Do we need a separate permissionIndexTime timestamp?
              * Probably. Update it here.
              */
+            for (DvObject dvObject : all) {
+                dvObjectService.updatePermissionIndexTime(dvObject);
+            }
             return new IndexResponse("indexed all permissions");
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");
@@ -238,11 +253,12 @@ public class SolrIndexServiceBean {
         }
         try {
             persistToSolr(docs);
-            /**
-             * @todo Do we need a separate permissionIndexTime timestamp?
-             * Probably. Update it here.
-             */
-            return new IndexResponse("attempted to index permissions for DvObject " + dvObjectId);
+            DvObject savedDvObject = dvObjectService.updatePermissionIndexTime(dvObjectService.findDvObject(dvObjectId));
+            boolean updatePermissionTimeSuccessful = false;
+            if (savedDvObject != null) {
+                updatePermissionTimeSuccessful = true;
+            }
+            return new IndexResponse("attempted to index permissions for DvObject " + dvObjectId + " and updatePermissionTimeSuccessful was " + updatePermissionTimeSuccessful);
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");
         }
@@ -329,13 +345,23 @@ public class SolrIndexServiceBean {
             return new IndexResponse("Unable to execute indexPermissionsOnSelfAndChildren on " + definitionPoint.getId() + ":" + definitionPoint.getDisplayName() + ". Exception: " + ex.toString());
         }
 
+        List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
         for (Long dvObjectId : dvObjectsToReindexPermissionsFor) {
             /**
              * @todo do something with this response
              */
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObjectId);
+            DvObject managedDefinitionPoint = dvObjectService.updatePermissionIndexTime(definitionPoint);
+            boolean updatePermissionTimeSuccessful = false;
+            if (managedDefinitionPoint != null) {
+                updatePermissionTimeSuccessful = true;
+            }
+            updatePermissionTimeSuccessStatus.add(dvObjectId + ":" + updatePermissionTimeSuccessful);
         }
-        return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint + ": " + dvObjectsToReindexPermissionsFor.size());
+        return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
+                + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
+                + "): " + dvObjectsToReindexPermissionsFor.size()
+        );
     }
 
     public IndexResponse deleteMultipleSolrIds(List<String> solrIdsToDelete) {
@@ -352,5 +378,51 @@ public class SolrIndexServiceBean {
             return new IndexResponse("problem deleting the following documents from Solr: " + solrIdsToDelete);
         }
         return new IndexResponse("no known problem deleting the following documents from Solr:" + solrIdsToDelete);
+    }
+
+    /**
+     * @return A list of dvobject ids that should have their permissions
+     * re-indexed Solr was down when a permission was added. The permission
+     * should be added to Solr.
+     */
+    public List<Long> findPermissionsMissingFromSolr() throws Exception {
+        List<Long> indexingRequired = new ArrayList<>();
+        for (DvObject dvObject : dvObjectService.findAll()) {
+//            logger.info("examining dvObjectId " + dvObject.getId() + "...");
+            Timestamp permissionModificationTime = dvObject.getPermissionModificationTime();
+            Timestamp permissionIndexTime = dvObject.getPermissionIndexTime();
+            if (permissionIndexTime == null) {
+                indexingRequired.add(dvObject.getId());
+            } else {
+                if (permissionModificationTime == null) {
+                    /**
+                     * @todo What should we do here? Permissions should always
+                     * be there. They are assigned at create time. For now,
+                     * we'll throw an exception. Set this to true and figure it
+                     * out!
+                     */
+                    if (false) {
+                        throw new Exception("Problem finding missing Solr permissions. No permission modification time for dvObject id " + dvObject.getId());
+                    }
+                } else {
+                    if (permissionIndexTime.before(permissionModificationTime)) {
+                        indexingRequired.add(dvObject.getId());
+                    }
+                }
+            }
+        }
+        return indexingRequired;
+    }
+
+    /**
+     * @return A list of dvobject ids that should have their permissions
+     * re-indexed because Solr was down when a permission was revoked. The
+     * permission should be removed from Solr.
+     */
+    public List<Long> findPermissionsInSolrNoLongerInDatabase() {
+        /**
+         * @todo Implement this!
+         */
+        return new ArrayList<>();
     }
 }

@@ -224,6 +224,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             String dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
+                /**
+                 * @todo centralize this into SearchServiceBean
+                 */
                 filterQueriesFinal.add(filterDownToSubtree);
 //                this.dataverseSubtreeContext = dataversePath;
             } else {
@@ -335,6 +338,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
+                    Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
+                    Dataverse parentDataverse = dataverseService.find(dataverseId);
+                    solrSearchResult.setDataverseAlias(parentDataverse.getAlias());
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {
                         DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
@@ -458,7 +464,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         // being explicit about the user, could just call permissionService.on(dataverse)
 
         // TODO: decide on rules for this button and check actual permissions
-        return session.getUser() != null && (session.getUser() != GuestUser.get());
+        return session.getUser() != null && session.getUser().isAuthenticated();
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
@@ -834,7 +840,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean userLoggedIn() {
-        return (session.getUser() != GuestUser.get());
+        return session.getUser().isAuthenticated();
     }
 
     public boolean publishedSelected() {

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -87,7 +88,7 @@ public class JsonParserTest {
         sut = new JsonParser(datasetFieldTypeSvc, null);
     }
     
-    @Test
+    @Test 
     public void testCompoundRepeatsRoundtrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
         expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("coordinate") );
@@ -138,11 +139,41 @@ public class JsonParserTest {
                  fieldType.getControlledVocabularyValue("law"),
                  fieldType.getControlledVocabularyValue("cs")));
         
-        JsonObject json = JsonPrinter.json(expected);
+        JsonObject json = JsonPrinter.json(expected);      
         DatasetField actual = sut.parseField(json);
         assertFieldsEqual(expected, actual);
         
     }
+    
+    
+    @Test(expected=JsonParseException.class)
+     public void testChildValidation() throws JsonParseException {
+        // This Json String is a compound field that contains the wrong
+        // fieldType as a child ("description" is not a child of "coordinate").
+        // It should throw a JsonParseException when it encounters the invalid child.
+        String compoundString = "{ " +
+"            \"typeClass\": \"compound\"," +
+"            \"multiple\": true," +
+"            \"typeName\": \"coordinate\"," +
+"            \"value\": [" +
+"              {" +
+"                \"description\": {" +
+"                  \"value\": \"0\"," +
+"                  \"typeClass\": \"primitive\"," +
+"                  \"multiple\": false," +
+"                  \"typeName\": \"description\"" +
+"                }" +
+"              }" +
+"            ]" +
+"            " +
+"          }"; 
+   
+        String text = compoundString;
+        JsonReader jsonReader = Json.createReader(new StringReader(text));
+        JsonObject obj = jsonReader.readObject();
+
+        sut.parseField(obj);
+       }
     
     
     @Test

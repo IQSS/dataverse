@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -46,7 +48,10 @@ public class ApiTokenPage implements java.io.Serializable {
 
             apiToken = authSvc.findApiTokenByUser(au);
             if (apiToken != null) {
-                logger.info("An API token has already been generated for " + au.getIdentifier());
+                String logMsg = "An API token has already been generated for authenticated user id " + au.getId();
+                String userMsg = "API token could not be generated.";
+                logger.info(userMsg + " " + logMsg);
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, userMsg);
             } else {
                 /**
                  * @todo DRY! Stolen from BuiltinUsers API page

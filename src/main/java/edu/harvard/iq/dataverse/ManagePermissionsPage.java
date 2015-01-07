@@ -16,9 +16,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RenameDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
@@ -145,36 +145,35 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void setDefaultContributorRoleAlias(String defaultContributorRoleAlias) {
         this.defaultContributorRoleAlias = defaultContributorRoleAlias;
     }
-    
+
     public void initAccessSettings() {
         /* commented out, while we test having just radio buttons
         
-        allowUsersAddDataverse = false;
-        allowUsersAddDataset = false;
+         allowUsersAddDataverse = false;
+         allowUsersAddDataset = false;
         
-        List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
-        for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
-            String roleAlias = roleAssignment.getRole().getAlias();
-            if (roleAlias.equals(DataverseRole.FULL_CONTRIBUTOR) || roleAlias.equals(DataverseRole.DV_CONTRIBUTOR) ) {
-                allowUsersAddDataverse = true;
-            }
-            if (roleAlias.equals(DataverseRole.FULL_CONTRIBUTOR) || roleAlias.equals(DataverseRole.DS_CONTRIBUTOR) ) {
-                allowUsersAddDataset = true;   
-            }
-        }
-        */
+         List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
+         for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
+         String roleAlias = roleAssignment.getRole().getAlias();
+         if (roleAlias.equals(DataverseRole.FULL_CONTRIBUTOR) || roleAlias.equals(DataverseRole.DV_CONTRIBUTOR) ) {
+         allowUsersAddDataverse = true;
+         }
+         if (roleAlias.equals(DataverseRole.FULL_CONTRIBUTOR) || roleAlias.equals(DataverseRole.DS_CONTRIBUTOR) ) {
+         allowUsersAddDataset = true;   
+         }
+         }
+         */
 
         authenticatedUsersContributorRoleAlias = "";
-        
+
         List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
         for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
             String roleAlias = roleAssignment.getRole().getAlias();
             authenticatedUsersContributorRoleAlias = roleAlias;
             break;
             // @todo handle case where more than one role has been assigned to the AutenticatedUsers group!
-        }        
-        
-        
+        }
+
     }
 
     public void saveConfiguration(ActionEvent e) {
@@ -185,19 +184,18 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (!StringUtil.isEmpty(authenticatedUsersContributorRoleAlias)) {
             roleToAssign = roleService.findBuiltinRoleByAlias(authenticatedUsersContributorRoleAlias);
         }
-        
+
         /* commented out, while we test having just radio buttons
         
-        // first, determine role from page selection
-        if (allowUsersAddDataverse && allowUsersAddDataset) {
-            roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.FULL_CONTRIBUTOR);
-        } else if (allowUsersAddDataverse) {
-            roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.DV_CONTRIBUTOR);
-        } else if (allowUsersAddDataset) {
-            roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.DS_CONTRIBUTOR);
-        }
-        */
-
+         // first, determine role from page selection
+         if (allowUsersAddDataverse && allowUsersAddDataset) {
+         roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.FULL_CONTRIBUTOR);
+         } else if (allowUsersAddDataverse) {
+         roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.DV_CONTRIBUTOR);
+         } else if (allowUsersAddDataset) {
+         roleToAssign = roleService.findBuiltinRoleByAlias(DataverseRole.DS_CONTRIBUTOR);
+         }
+         */
         // then, check current contributor role
         List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
         for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
@@ -214,7 +212,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (roleToAssign != null) {
             assignRole(AuthenticatedUsers.get(), roleToAssign);
         }
-        
 
         // set dataverse default contributor role
         if (dvObject instanceof Dataverse) {
@@ -223,18 +220,16 @@ public class ManagePermissionsPage implements java.io.Serializable {
             if (!defaultRole.equals(dv.getDefaultContributorRole())) {
                 try {
                     commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, session.getUser(), dv));
-                    JH.addMessage(FacesMessage.SEVERITY_INFO, "Default contributor role assigned successfully");
+                    JsfHelper.addSuccessMessage("The default permissions for this dataverse have been updated.");
                 } catch (PermissionException ex) {
-                    JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default contributor role - you're missing permission", ex.getRequiredPermissions().toString());
-                    logger.log(Level.SEVERE, "Error assigning default contributor role: " + ex.getMessage(), ex);
-
+                    JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default permissions.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
                 } catch (CommandException ex) {
-                    JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default contributor role: " + ex.getMessage());
-                    logger.log(Level.SEVERE, "Error assigning default contributor role: " + ex.getMessage(), ex);
+                    JH.addMessage(FacesMessage.SEVERITY_FATAL, "Cannot assign default permissions.");
+                    logger.log(Level.SEVERE, "Error assigning default permissions: " + ex.getMessage(), ex);
                 }
             }
         }
-
+        showConfigureMessages();
     }
 
     public List<RoleAssignmentRow> getRoleAssignments() {
@@ -254,18 +249,18 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public void revokeRole(Long roleAssignmentId) {
         try {
-            commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role assignment revoked successfully");
+            RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
+            commandEngine.submit(new RevokeRoleCommand(ra, session.getUser()));
+            JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment - you're missing permission", ex.getRequiredPermissions().toString());
-            logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
-
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role assignment was not able to be removed.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment: " + ex.getMessage());
-            logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role assignment could not be removed.");
+            logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
         }
-        
+
         initAccessSettings();
+        showAssignmentMessages();
     }
 
     public List<DataverseRole> getRoles() {
@@ -366,10 +361,15 @@ public class ManagePermissionsPage implements java.io.Serializable {
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, session.getUser()));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + ra.getDisplayInfo().getTitle() + " on " + dvObject.getDisplayName());
+            JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + dvObject.getDisplayName() + ".");
+        } catch (PermissionException ex) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be assigned.");
+            logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
         }
+        
+        showAssignmentMessages();
     }
 
     /*
@@ -413,13 +413,17 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 role.addPermission(Permission.valueOf(pmsnStr));
             }
             try {
+                String roleState = role.getId() != null ? "updated" : "created";
                 setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) role.getOwner())));
-                JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
+                JsfHelper.addSuccessMessage("The role was " + roleState + ". To assign it to a user and/or group, click on the Assign Roles to Users/Groups button in the Users/Groups section of this page.");
+            } catch (PermissionException ex) {
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be saved.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());
-                Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be saved.");
+                logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
             }
         }
+        showRoleMessages();
     }
 
     // currently not used
@@ -433,6 +437,52 @@ public class ManagePermissionsPage implements java.io.Serializable {
         for (RoleAssignee roleAssignee : selectedRoleAssignees) {
             assignRole(roleAssignee, roleService.findBuiltinRoleByAlias("filedownloader"));
         }
+    }
+
+    boolean renderConfigureMessages = false;
+    boolean renderAssignmentMessages = false;
+    boolean renderRoleMessages = false;
+
+    private void showConfigureMessages() {
+        renderConfigureMessages = true;
+        renderAssignmentMessages = false;
+        renderRoleMessages = false;
+    }
+    
+    private void showAssignmentMessages() {
+        renderConfigureMessages = false;
+        renderAssignmentMessages = true;
+        renderRoleMessages = false;
+    }
+    
+    private void showRoleMessages() {
+        renderConfigureMessages = false;
+        renderAssignmentMessages = false;
+        renderRoleMessages = true;
+    }    
+
+    public Boolean getRenderConfigureMessages() {
+        return renderConfigureMessages;
+    }
+
+    public void setRenderConfigureMessages(Boolean renderConfigureMessages) {
+        this.renderConfigureMessages = renderConfigureMessages;
+    }
+
+    public Boolean getRenderAssignmentMessages() {
+        return renderAssignmentMessages;
+    }
+
+    public void setRenderAssignmentMessages(Boolean renderAssignmentMessages) {
+        this.renderAssignmentMessages = renderAssignmentMessages;
+    }
+
+    public Boolean getRenderRoleMessages() {
+        return renderRoleMessages;
+    }
+
+    public void setRenderRoleMessages(Boolean renderRoleMessages) {
+        this.renderRoleMessages = renderRoleMessages;
     }
 
     // inner class used fordisplay of role assignments

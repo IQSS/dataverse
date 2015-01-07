@@ -48,7 +48,7 @@ public class Template implements Serializable {
         return this.id;
     }
 
-    @NotBlank(message = "Please enter a name.")
+    @NotBlank(message = "Please add in a name for the dataset template.")
     @Size(max = 255, message = "Name must be at most 255 characters.")
     private String name;
 

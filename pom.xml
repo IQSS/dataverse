@@ -113,6 +113,11 @@
             <version>1.3.1</version>
         </dependency>
         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.4</version>
+            <scope>compile</scope>
+        </dependency>                 <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
@@ -188,11 +193,17 @@
              <artifactId>fits</artifactId>
 	     <version>2012-10-25-generated</version>
 	</dependency>
-	<!-- UNF v5 (buggy), being added for testing ingest against DVN v3  - L.A. -->
-	<dependency>
+	<!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
+     	<dependency>
 	     <groupId>edu.harvard.iq.dvn</groupId>
 	     <artifactId>unf5</artifactId>
 	     <version>5.0</version>
+	</dependency>
+	<!-- (new) UNF v6: -->
+	<dependency>
+	     <groupId>org.dataverse</groupId>
+	     <artifactId>unf</artifactId>
+	     <version>6.0</version>
 	</dependency>
 	<!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty -->
 	<!-- TODO: see if there's another, better maintained maven repository for Rosuda libraries? - L.A. -->

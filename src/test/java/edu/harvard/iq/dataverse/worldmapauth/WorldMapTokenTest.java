@@ -38,7 +38,7 @@ public class WorldMapTokenTest {
         TokenApplicationType tat = new TokenApplicationType();
         tat.setName("GeoConnect");
         tat.setContactEmail("info@iq.harvard.edu");
-        tat.setHostname("geoconnect.iq.harvard.edu");
+        tat.setHostname("geoconnect.datascience.iq.harvard.edu");
         tat.setIpAddress("127.0.0.1");
         tat.setTimeLimitMinutes(timeLimitMinutes);
         return tat;

@@ -19,26 +19,10 @@
 */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import java.io.File;
 import java.io.InputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.util.Iterator;
-
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageFilter;
-import java.awt.image.ImageProducer;
-import java.awt.image.RGBImageFilter;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
 import java.io.OutputStream;
@@ -62,21 +46,20 @@ public class DataFileZipper {
     }
     
     public void zipFiles(List<DataFile> files, OutputStream outstream) throws IOException {
-        zipFiles(files, outstream, DEFAULT_ZIPFILE_LIMIT); 
+        zipFiles(files, outstream, null, DEFAULT_ZIPFILE_LIMIT); 
     }
     
-    public void zipFiles(List<DataFile> files, OutputStream outstream, long sizeLimit) throws IOException {
-        String fileManifest = "";
+    public void zipFiles(List<DataFile> files, OutputStream outstream, long sizelimit) throws IOException {
+        zipFiles(files, outstream, null, sizelimit);
+    }
+    
+    public void zipFiles(List<DataFile> files, OutputStream outstream, String fileManifest) throws IOException {
+        zipFiles(files, outstream, fileManifest, DEFAULT_ZIPFILE_LIMIT);
+    }
+    
+    public void zipFiles(List<DataFile> files, OutputStream outstream, String fileManifest, long sizeLimit) throws IOException {
+        boolean createManifest = fileManifest != null;
 
-        // check for restricted files
-        //Iterator iter = files.iterator();
-        //while (iter.hasNext()) {
-        //    DataFile file = (DataFile) iter.next();
-        //    if ( ... FILE RESTRICTED ... )) {
-        //        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
-        //        iter.remove();
-        //    }
-        //}
         if (files.size() < 1) {
             throw new IOException("Empty files list.");
         }
@@ -112,9 +95,11 @@ public class DataFileZipper {
 
                     InputStream instream = accessObject.getInputStream();
                     if (instream == null) {
-                        fileManifest = fileManifest + fileName
-                                + " (" + mimeType
-                                + ") COULD NOT be downloaded because an I/O error has occured. \r\n";
+                        if (createManifest) {
+                            fileManifest = fileManifest + fileName
+                                    + " (" + mimeType
+                                    + ") COULD NOT be downloaded because an I/O error has occured. \r\n";
+                        }
 
                         Success = false;
                     } else {
@@ -150,7 +135,9 @@ public class DataFileZipper {
                         zout.closeEntry();
                         logger.info("clozed zip entry for " + zipEntryName);
 
-                        fileManifest = fileManifest + zipEntryName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";
+                        if (createManifest) {
+                            fileManifest = fileManifest + zipEntryName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";
+                        }
 
                         if (fileSize > 0) {
                             successList.add(file.getId());
@@ -158,17 +145,21 @@ public class DataFileZipper {
                         }
                     }
                 } else {
-                    fileManifest = fileManifest + fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + sizeLimit + " bytes.\r\n";
+                    if (createManifest) {
+                        fileManifest = fileManifest + fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + sizeLimit + " bytes.\r\n";
+                    }
                 }
             }
         }
 
-        // finally, let's create the manifest entry:
-        ZipEntry e = new ZipEntry("MANIFEST.TXT");
+        // finally, let's create the manifest entry (if requested):
+        if (createManifest) {
+            ZipEntry e = new ZipEntry("MANIFEST.TXT");
 
-        zout.putNextEntry(e);
-        zout.write(fileManifest.getBytes());
-        zout.closeEntry();
+            zout.putNextEntry(e);
+            zout.write(fileManifest.getBytes());
+            zout.closeEntry();
+        }
 
         zout.close();
 

@@ -44,6 +44,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			return aRole;
 		} else {
                     DataverseRole merged = em.merge(aRole);
+                    /**
+                     * @todo update permissionModificationTime here.
+                     */
                     IndexResponse indexDefinitionPountResult = indexDefinitionPoint(merged.getOwner());
                     logger.info("aRole getId was not null. Indexing result: " + indexDefinitionPountResult);
                     return merged;
@@ -57,6 +60,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		} else {
 			assignment = em.merge( assignment );
 		}
+            /**
+             * @todo update permissionModificationTime here.
+             */
             IndexResponse indexDefinitionPountResult = indexDefinitionPoint(assignment.getDefinitionPoint());
             logger.info("output from indexing operations: " + indexDefinitionPountResult);
                 return assignment;
@@ -121,6 +127,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			ra = em.merge(ra);
 		}
 		em.remove(ra);
+            /**
+             * @todo update permissionModificationTime here.
+             */
             IndexResponse indexDefinitionPointResult = indexDefinitionPoint(ra.getDefinitionPoint());
             logger.info("indexing operation results: " + indexDefinitionPointResult);
 	}

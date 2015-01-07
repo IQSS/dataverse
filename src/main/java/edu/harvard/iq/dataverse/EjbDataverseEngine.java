@@ -14,7 +14,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 
-import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.EnumSet;
@@ -77,8 +76,15 @@ public class EjbDataverseEngine {
 
     @EJB
     DOIEZIdServiceBean doiEZId;
+    
     @EJB
     SettingsServiceBean settings;
+    
+    @EJB
+    GuestbookServiceBean guestbookService;
+    
+    @EJB
+    GuestbookResponseServiceBean responses;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -210,7 +216,16 @@ public class EjbDataverseEngine {
                 public SettingsServiceBean settings() {
                     return settings;
                 }
+                
+                @Override
+                public GuestbookServiceBean guestbooks() {
+                    return guestbookService;
+                }
 
+                @Override
+                public GuestbookResponseServiceBean responses() {
+                    return responses;
+                }
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {

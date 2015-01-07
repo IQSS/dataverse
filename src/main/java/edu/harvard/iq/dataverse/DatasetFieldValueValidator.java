@@ -50,9 +50,10 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             lengthOnly = true;
         }
         
-        if (StringUtils.isBlank(value.getValue())) {
+        if (StringUtils.isBlank(value.getValue()) || StringUtils.equals(value.getValue(),DatasetField.NA_VALUE)) {
             return true;
         }
+        
         
         if (fieldType.equals("date") && !lengthOnly) {
             boolean valid = false;
@@ -109,10 +110,6 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                  return false;
         }
         
-        if (fieldType.equals("textbox")  && value.getValue().length() > 1000) {
-                 context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " may not be more than 1000 characters.").addConstraintViolation(); 
-                 return false;
-        }
         if (fieldType.equals("url") && !lengthOnly) {
             try {
                 URL url = new URL(value.getValue());

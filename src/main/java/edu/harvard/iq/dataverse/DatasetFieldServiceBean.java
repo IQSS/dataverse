@@ -116,6 +116,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
     }
     
+    // return singleton NA Controled Vocabulary Value
+    public ControlledVocabularyValue findNAControlledVocabularyValue() {
+        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
+        typedQuery.setParameter("strvalue", DatasetField.NA_VALUE);
+        return typedQuery.getSingleResult();
+    }    
+    
     public DatasetFieldType save(DatasetFieldType dsfType) {
        return em.merge(dsfType);
     }
