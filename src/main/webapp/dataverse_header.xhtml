@@ -19,7 +19,7 @@
                 <a href="/">
                     <i id="icon-dataverse" class="icon-dataverse"></i>
                     <span class="navbar-brand"> #{bundle.dataverse}</span>
-                </a>                
+                </a>
                 <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community" title="#{bundle['header.beta.title']}" target="_blank">
                     <span class="label label-default beta">#{bundle['header.beta']}</span>
                 </h:outputLink>
@@ -92,6 +92,7 @@
                             <ul class="dropdown-menu">
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml">
+                                        <f:param name="selectTab" value="dataRelatedToMe" />
                                         <h:outputText value="#{bundle['header.user.selectTab.dataRelated']}" />
                                     </h:outputLink>
                                 </li>
@@ -99,13 +100,21 @@
                                     <h:outputLink value="/dataverseuser.xhtml">
                                         <f:param name="selectTab" value="notifications" />
                                         <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
-                                        <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />                                        
+                                        <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
                                     </h:outputLink>
                                 </li>
+                                <ui:remove>
+                                    <li>
+                                        <h:outputLink value="/dataverseuser.xhtml">
+                                            <f:param name="selectTab" value="groupsRoles" />
+                                            <h:outputText value="#{bundle['header.user.selectTab.groupsAndRoles']}" />
+                                        </h:outputLink>
+                                    </li>
+                                </ui:remove>
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml">
-                                        <f:param name="selectTab" value="groupsRoles" />
-                                        <h:outputText value="#{bundle['header.user.selectTab.groupsAndRoles']}" />                                       
+                                        <f:param name="selectTab" value="accountInfo" />
+                                        <h:outputText value="Account Information" />
                                     </h:outputLink>
                                 </li>
                                 <li class="divider"></li>
@@ -123,7 +132,7 @@
             </div>
         </div>
     </nav>
-                <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
+    <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
 
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
@@ -141,7 +150,7 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
                     <div class="dataverseHeaderCell dataverseHeaderName">
-                        <a href="/dataverse/#{dataverse.alias}" style="font-size: 1.3em; color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name} #{bundle.dataverse}</a> 
+                        <a href="/dataverse/#{dataverse.alias}" style="font-size: 1.3em; color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name} #{bundle.dataverse}</a>
                         <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                         <h:outputText value="#{bundle.unpublished}" styleClass="label label-danger" rendered="#{!dataverse.released}"/>
                     </div>
@@ -268,7 +277,7 @@
                     <h:inputTextarea id="userMessage" styleClass="form-control" rows="10" value="#{sendFeedbackDialog.userMessage}"/>
                 </div>
             </div>
-            
+
             <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}"/>
             <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">#{bundle.cancel}</button>
         </h:form>
