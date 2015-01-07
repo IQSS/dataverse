@@ -6,41 +6,41 @@
 	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	2	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayOrganism	Organism	The taxonomic name of the organism used in a study or from which the  starting biological material derives.		text	3	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	4	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-#controlledVocabulary	DatasetField	Value	displayOrder											
-	studyDesignType	Case Control	0											
-	studyDesignType	Cross Sectional	1											
-	studyDesignType	Not Specified	2											
-	studyDesignType	Parallel Group Design	3											
-	studyDesignType	Perturbation Design	4											
-	studyDesignType	Technological Design	5											
-	studyFactorType	Age	0											
-	studyFactorType	Biomarkers	1											
-	studyFactorType	Developmental Stage	2											
-	studyFactorType	Cell Surface Markers	3											
-	studyFactorType	Cell Type/Cell Line	4											
-	studyFactorType	Disease State	5											
-	studyFactorType	Extract Molecule	6											
-	studyFactorType	Genetic Characteristics	7											
-	studyFactorType	Immunoprecipitation Antibody	8											
-	studyFactorType	Organism	9											
-	studyFactorType	Other	10											
-	studyFactorType	Passages	11											
-	studyFactorType	Platform	12											
-	studyFactorType	Sex	13											
-	studyFactorType	Strain	14											
-	studyFactorType	Time Point	15											
-	studyFactorType	Tissue Type	16											
-	studyFactorType	Treatment Compound	17											
-	studyFactorType	Treatment Type	18											
-	studyAssayMeasurementType	DNA Methylation Profiling (Bisulfite-Seq)	0											
-	studyAssayMeasurementType	DNA Methylation Profiling (MeDIP-Seq)	1											
-	studyAssayMeasurementType	Histone Modification (ChIP-Seq)	2											
-	studyAssayMeasurementType	Protein-RNA Binding (RIP-Seq)	3											
-	studyAssayMeasurementType	Transcription Factor Binding (ChIP-Seq)	4											
-	studyAssayMeasurementType	Transcription Profiling (Microarray)	5											
-	studyAssayMeasurementType	Transcription Profiling (RNA-Seq)	6											
-	studyAssayMeasurementType	TRAP Translational Profiling	7											
-	studyAssayOrganism	Danio rerio	0											
-	studyAssayOrganism	Homo sapiens	1											
-	studyAssayOrganism	Mus musculus	2											
-	studyAssayOrganism	Rattus norvegicus	3											
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder										
+	studyDesignType	Case Control		0										
+	studyDesignType	Cross Sectional		1										
+	studyDesignType	Not Specified		2										
+	studyDesignType	Parallel Group Design		3										
+	studyDesignType	Perturbation Design		4										
+	studyDesignType	Technological Design		5										
+	studyFactorType	Age		0										
+	studyFactorType	Biomarkers		1										
+	studyFactorType	Developmental Stage		2										
+	studyFactorType	Cell Surface Markers		3										
+	studyFactorType	Cell Type/Cell Line		4										
+	studyFactorType	Disease State		5										
+	studyFactorType	Extract Molecule		6										
+	studyFactorType	Genetic Characteristics		7										
+	studyFactorType	Immunoprecipitation Antibody		8										
+	studyFactorType	Organism		9										
+	studyFactorType	Other		10										
+	studyFactorType	Passages		11										
+	studyFactorType	Platform		12										
+	studyFactorType	Sex		13										
+	studyFactorType	Strain		14										
+	studyFactorType	Time Point		15										
+	studyFactorType	Tissue Type		16										
+	studyFactorType	Treatment Compound		17										
+	studyFactorType	Treatment Type		18										
+	studyAssayMeasurementType	DNA Methylation Profiling (Bisulfite-Seq)		0										
+	studyAssayMeasurementType	DNA Methylation Profiling (MeDIP-Seq)		1										
+	studyAssayMeasurementType	Histone Modification (ChIP-Seq)		2										
+	studyAssayMeasurementType	Protein-RNA Binding (RIP-Seq)		3										
+	studyAssayMeasurementType	Transcription Factor Binding (ChIP-Seq)		4										
+	studyAssayMeasurementType	Transcription Profiling (Microarray)		5										
+	studyAssayMeasurementType	Transcription Profiling (RNA-Seq)		6										
+	studyAssayMeasurementType	TRAP Translational Profiling		7										
+	studyAssayOrganism	Danio rerio		0										
+	studyAssayOrganism	Homo sapiens		1										
+	studyAssayOrganism	Mus musculus		2										
+	studyAssayOrganism	Rattus norvegicus		3										
