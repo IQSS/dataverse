@@ -38,8 +38,11 @@
                 </div>
                 <p:confirmDialog header="Add Data" widgetVar="addData_popup">                                           
                     <f:facet name="message">
-                        You need to <a href="/dataverseuser.xhtml#{dataverseHeaderFragment.loginRedirectPage}&amp;editMode=CREATE">Sign Up</a>
-                        or <a href="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">Log In</a> to create a dataverse or add a dataset.
+                        You need to 
+                        <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
+                            <a href="/dataverseuser.xhtml#{dataverseHeaderFragment.loginRedirectPage}&amp;editMode=CREATE">Sign Up</a> or 
+                        </ui:fragment>
+                        <a href="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">Log In</a> to create a dataverse or add a dataset.
                     </f:facet>
                 </p:confirmDialog>  
             </ui:fragment>
