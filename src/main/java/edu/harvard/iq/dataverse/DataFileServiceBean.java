@@ -35,6 +35,8 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
 
     public DataFile find(Object pk) {
         return (DataFile) em.find(DataFile.class, pk);
@@ -115,5 +117,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         logger.fine("timestamp/UUID hybrid: "+storageIdentifier);
         return storageIdentifier; 
     }
+    
+    public boolean isSpssPorFile (DataFile file) {
+        return MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType());
+    }
+    
+    /*
+    public boolean isSpssPorFile (FileMetadata fileMetadata) {
+        if (fileMetadata != null && fileMetadata.getDataFile() != null) {
+            return isSpssPorFile(fileMetadata.getDataFile());
+        }
+        return false; 
+    }
+    */
         
 }

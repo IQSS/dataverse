@@ -634,7 +634,7 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image)}">
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image) or ((empty fileMetadata.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))}">
                                                 <p:commandLink id="advancedIngestOptionsButton" 
                                                                styleClass="btn btn-default" 
                                                                actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
@@ -1593,7 +1593,7 @@
                                 </div>
                             </ui:fragment>
 
-                            <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
+                            <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
                             <ui:fragment rendered="false">
                                 <div class="form-group col-sm-12">
                                     <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
@@ -1612,6 +1612,8 @@
                                     </div>
                                 </div>
                             </ui:fragment>
+                            
+                            <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
                             <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected.id) and DatasetPage.fileMetadataSelected.dataFile.image}">
                                 <div class="form-group col-sm-12">
                                     <label for="datasetThumbnailImage" class="col-sm-4 control-label">
@@ -1630,24 +1632,26 @@
                                     </div>
                                 </div>
                             </ui:fragment>
-                            <ui:fragment rendered="false">
+                            
+                            <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
+                            <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssPorFile(DatasetPage.fileMetadataSelected.dataFile)}">
                                 <div class="form-group col-sm-12">
-                                    <label for="fileTags" class="col-sm-4 control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.fileTags.title']}">
-                                            #{bundle['file.fileTags']}
+                                    <label for="labelsFileUpload" class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Upload text file with variable labels">
+                                            Upload text file with variable labels
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <h:outputText value="**REMOVE ME** Multiple Select Dropdown w/Checkboxes"/>
-                                            <h:outputText value="Error Msg **REMOVE ME**"/>
-                                        </p:panelGrid>
-                                        <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                            <p:inputText id="fileTags" styleClass="form-control"/>
-                                            <p:message for="fileTags" display="text" /> -->
+                                            
+                                            <p:growl id="messageForLabelsFileUpload" showDetail="true" />
+                                            <p:fileUpload  id="labelsFileUpload" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{DatasetPage.handleLabelsFileUpload}"/>
+                                                                                        
+                                        </p:panelGrid>                                            
                                     </div>
                                 </div>
                             </ui:fragment>
+                            
                         </div>
                         <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
                         <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()"/>

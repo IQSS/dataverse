@@ -1716,6 +1716,20 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
+    public void handleLabelsFileUpload(FileUploadEvent event) {
+        logger.fine("entering handleUpload method.");
+        UploadedFile file = event.getFile();
+        if (file != null) {
+            FacesMessage message = new FacesMessage("Succesful", file.getFileName() + " is uploaded.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+                        
+            logger.fine(file.getFileName() + " is successfully uploaded.");
+        } 
+        
+        // process file (i.e., just save it in a temp location; for now):
+    }
+    
+    
     public void saveAdvancedOptions() {
         // DataFile Tags: 
         
