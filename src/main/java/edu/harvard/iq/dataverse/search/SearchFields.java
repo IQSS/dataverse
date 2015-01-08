@@ -20,7 +20,22 @@ public class SearchFields {
      * See also https://redmine.hmdc.harvard.edu/issues/3745
      */
     public static final String DESCRIPTION = "description";
-
+    /**
+     * Identifiers differ per DvObject: alias for dataverses, globalId for
+     * datasets, and database id for files.
+     *
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String IDENTIFIER = "identifier_s";
+    /**
+     * For files, the URL will be the parent dataset.
+     *
+     * @todo Shouldn't we have a direct link to files?
+     */
+    public static final String PERSISTENT_URL = "persistent_url_s";
+    /**
+     * @todo rename this to just dvName
+     */
     public static final String DATAVERSE_NAME = "dvName_en";
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation_en";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription_en";
@@ -107,8 +122,16 @@ public class SearchFields {
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";
     public static final String PARENT_ID = "parentid";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String PARENT_IDENTIFIER = "parent_identifier_s";
 
     public static final String DATASET_DESCRIPTION = "dsDescription";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String DATASET_CITATION = "citation_s";
     /**
      * In contrast to PUBLICATION_DATE, this field applies only to datasets for
      * more targeted results.

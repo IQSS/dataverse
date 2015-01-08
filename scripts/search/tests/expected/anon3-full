@@ -4,63 +4,42 @@
         "fq_provided": "[]",
         "items": [
             {
-                "dvtype": "dataverses",
-                "entityid": 7,
-                "id": "dataverse_7",
-                "matched_fields": "[]",
-                "name_sort": "Trees",
-                "parent": {
-                    "id": "1",
-                    "name": "Root"
-                },
-                "type_specific": {
-                    "name": "Trees"
-                }
+                "alias": "trees",
+                "description": "A tree dataverse with some birds",
+                "name": "Trees",
+                "published_at": "2015-01-08T03:27Z",
+                "type": "dataverses",
+                "url": "https://murphy.local/dataverse/trees"
             },
             {
-                "dvtype": "datasets",
-                "entityid": 10,
-                "id": "dataset_10",
-                "matched_fields": "[]",
-                "name_sort": "Spruce Goose",
-                "parent": {
-                    "id": "8",
-                    "name": "Spruce"
-                },
-                "type_specific": {
-                    "dataset_version_id_l": 1,
-                    "dsPublicationDate_s": "Jan 6, 2015",
-                    "title_s": "Spruce Goose"
-                }
+                "authors": [
+                    "Spruce, Sabrina"
+                ],
+                "citation": "Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/I4VPEZ,  Root Dataverse,  V0",
+                "global_id": "doi:10.5072/FK2/I4VPEZ",
+                "name": "Spruce Goose",
+                "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
+                "published_at": "2015-01-08T03:27Z",
+                "type": "datasets",
+                "url": "https://murphy.local/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ"
             },
             {
-                "dvtype": "files",
-                "entityid": 12,
-                "id": "datafile_12",
-                "matched_fields": "[]",
-                "name_sort": "trees.png",
-                "parent": {
-                    "id": "10",
-                    "name": "Spruce Goose"
-                },
-                "type_specific": {
-                    "filetypemime_s": "PNG Image",
-                    "name": "trees.png"
-                }
+                "description": "",
+                "file_id": "12",
+                "file_type": "PNG Image",
+                "name": "trees.png",
+                "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
+                "published_at": "2015-01-08T03:27Z",
+                "type": "files",
+                "url": "https://murphy.local/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ"
             },
             {
-                "dvtype": "dataverses",
-                "entityid": 8,
-                "id": "dataverse_8",
-                "matched_fields": "[]",
-                "name_sort": "Spruce",
-                "parent": {
-                    "id": "7",
-                    "name": "Trees"
-                },
-                "type_specific": {
-                    "name": "Spruce"
-                }
+                "alias": "spruce",
+                "description": "A spruce with some birds",
+                "name": "Spruce",
+                "published_at": "2015-01-08T03:27Z",
+                "type": "dataverses",
+                "url": "https://murphy.local/dataverse/spruce"
             }
         ],
         "q": "*",

@@ -108,7 +108,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder relevancePerResult = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject());
+                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance));
                 relevancePerResult.add(solrSearchResult.getRelevance());
             }
 

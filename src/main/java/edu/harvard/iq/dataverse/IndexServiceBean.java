@@ -131,6 +131,7 @@ public class IndexServiceBean {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField(SearchFields.ID, solrDocIdentifierDataverse + dataverse.getId());
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataverse.getId());
+        solrInputDocument.addField(SearchFields.IDENTIFIER, dataverse.getAlias());
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
@@ -487,6 +488,8 @@ public class IndexServiceBean {
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
+        solrInputDocument.addField(SearchFields.IDENTIFIER, dataset.getGlobalId());
+        solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
         Date datasetSortByDate = new Date();
@@ -534,6 +537,7 @@ public class IndexServiceBean {
         if (datasetVersion != null) {
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+            solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation());
 
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
@@ -627,6 +631,8 @@ public class IndexServiceBean {
                 SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
                 Long fileEntityId = fileMetadata.getDataFile().getId();
                 datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
+                datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
+                datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                 datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
 
                 String filenameCompleteFinal = "";
@@ -731,6 +737,7 @@ public class IndexServiceBean {
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
                 // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
                 datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
+                datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId());
 
                 datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
 

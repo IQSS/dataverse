@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -45,12 +44,15 @@ public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
+    /**
+     * We're trying to make the SearchServiceBean lean, mean, and fast, with as
+     * few injections of EJBs as possible.
+     */
+    /**
+     * @todo Can we do without the DatasetFieldServiceBean?
+     */
     @EJB
     DatasetFieldServiceBean datasetFieldService;
-    @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
-    AuthenticationServiceBean authSvc;
     @EJB
     SystemConfig systemConfig;
 
@@ -290,11 +292,15 @@ public class SearchServiceBean {
         }
         Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
         Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
+        String baseUrl = systemConfig.getDataverseSiteUrl();
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
+            String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
+            String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
+            String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
@@ -302,6 +308,9 @@ public class SearchServiceBean {
             Long datasetVersionId = (Long) solrDocument.getFieldValue(SearchFields.DATASET_VERSION_ID);
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
+            /**
+             * @todo Investigate odd variable naming of MIME vs. non-MIME.
+             */
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
@@ -352,6 +361,8 @@ public class SearchServiceBean {
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
+            solrSearchResult.setIdentifier(identifier);
+            solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
@@ -365,17 +376,28 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
+                solrSearchResult.setUrl(baseUrl + "/dataverse/" + identifier);
             } else if (type.equals("datasets")) {
+                solrSearchResult.setUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 String datasetDescription = (String) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                 solrSearchResult.setDescriptionNoSnippet(datasetDescription);
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
+                solrSearchResult.setCitation(citation);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
                 } else {
                     solrSearchResult.setTitle("NULL: NO TITLE INDEXED OR PROBLEM FINDING TITLE DATASETFIELD");
                 }
+                ArrayList authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
+                solrSearchResult.setDatasetAuthors(authors);
             } else if (type.equals("files")) {
+                String parentGlobalId = null;
+                Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
+                if (parentGlobalIdObject != null) {
+                    parentGlobalId = (String) parentGlobalIdObject;
+                }
+                solrSearchResult.setUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
                 solrSearchResult.setDatasetVersionId(datasetVersionId);

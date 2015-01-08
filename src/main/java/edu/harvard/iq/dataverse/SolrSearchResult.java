@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.Highlight;
-import java.math.BigDecimal;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class SolrSearchResult {
 
@@ -19,7 +21,10 @@ public class SolrSearchResult {
 
     private String id;
     private Long entityId;
+    private String identifier;
     private String type;
+    private String url;
+    private String persistentUrl;
     private String query;
     private String name;
     private String nameSort;
@@ -32,6 +37,7 @@ public class SolrSearchResult {
      */
     private String title;
     private String descriptionNoSnippet;
+    private List<String> datasetAuthors = new ArrayList<>();
     private List<Highlight> highlightsAsList = new ArrayList<>();
     private Map<SolrField, Highlight> highlightsMap;
     private Map<String, Highlight> highlightsAsMap;
@@ -46,6 +52,11 @@ public class SolrSearchResult {
     private String dataverseAlias;
     private String dataverseParentAlias;
 //    private boolean statePublished;
+    /**
+     * @todo Investigate/remove this "unpublishedState" variable. For files that
+     * have been published along with a dataset it says "true", which makes no
+     * sense.
+     */
     private boolean unpublishedState;
     private boolean draftState;
     private boolean deaccessionedState;
@@ -201,6 +212,9 @@ public class SolrSearchResult {
                 snippetArrayBuilder.add(snippet);
             }
             JsonObjectBuilder detailsObjectBuilder = Json.createObjectBuilder();
+            /**
+             * @todo show the friendly name here rather than the solr field
+             */
             detailsObjectBuilder.add(highlight.getSolrField().getNameSearchable(), snippetArrayBuilder);
             detailsArrayBuilder.add(detailsObjectBuilder);
         }
@@ -224,40 +238,109 @@ public class SolrSearchResult {
         return jsonObject;
     }
 
-    public JsonObject toJsonObject() {
-        JsonObjectBuilder parentBuilder = Json.createObjectBuilder();
-        for (String key : parent.keySet()) {
-            parentBuilder.add(key, parent.get(key) != null ? parent.get(key) : "NONE-ROOT-DATAVERSE-OR-EMPTY-STRING-DATASET-TITLE-OR-GROUP");
+    public JsonObject toJsonObject(boolean showRelevance) {
+        return json(showRelevance).build();
+    }
+
+    public JsonObjectBuilder json(boolean showRelevance) {
+
+        if (this.type == null) {
+            return jsonObjectBuilder();
         }
-        JsonObjectBuilder typeSpecificFields = Json.createObjectBuilder();
+
+        String displayName = null;
+
+        String identifierLabel = null;
         if (this.type.equals("dataverses")) {
-            typeSpecificFields.add(SearchFields.NAME, this.name);
-//            typeSpecificFields.add(SearchFields.AFFILIATION, dataverseAffiliation);
+            displayName = this.name;
+            identifierLabel = "alias";
         } else if (this.type.equals("datasets")) {
-//            typeSpecificFields.add(SearchFields.TITLE, this.title);
+            displayName = this.title;
+            identifierLabel = "global_id";
             /**
-             * @todo: don't hard code this
+             * @todo Should we show the name of the parent dataverse?
              */
-            typeSpecificFields.add("title_s", this.title);
-            typeSpecificFields.add(SearchFields.DATASET_VERSION_ID, this.datasetVersionId);
-            typeSpecificFields.add(SearchFields.DATASET_PUBLICATION_DATE, this.dateToDisplayOnCard);
         } else if (this.type.equals("files")) {
-            typeSpecificFields.add(SearchFields.NAME, this.name);
-            typeSpecificFields.add(SearchFields.FILE_TYPE_MIME, this.filetype);
+            displayName = this.name;
+            identifierLabel = "file_id";
+            /**
+             * @todo show more information for a file's parent, such as the
+             * title of the dataset it belongs to.
+             */
         }
-        if (this.id == null) {
-            this.id = "bug3809";
+
+        //displayName = null; // testing NullSafeJsonBuilder
+        // because we are using NullSafeJsonBuilder key/value pairs will be dropped if the value is null
+        NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
+                /**
+                 * @todo There is probably no harm in exposing the
+                 * database/entity id. And it might be valuable for use in
+                 * subsequent API calls.
+                 */
+                .add("name", displayName)
+                /**
+                 * @todo We should probably change it to "type=dataset"
+                 * (singular) for example.
+                 */
+                .add("type", getType())
+                /**
+                 * @todo We should probably have a metadata_url concept. For
+                 * datasets, this would be http://example.com/api/datasets/10 or
+                 * whatever (to get more detailed JSON), but right now this
+                 * requires an API token. Discuss at
+                 * https://docs.google.com/document/d/1d8sT2GLSavgiAuMTVX8KzTCX0lROEET1edhvHHRDZOs/edit?usp=sharing";
+                 */
+                .add("url", getUrl())
+                .add("persistent_url", this.persistentUrl)
+                /**
+                 * @todo How much value is there in exposing the identifier for
+                 * dataverses? For
+                 */
+                .add(identifierLabel, this.identifier)
+                /**
+                 * @todo Get dataset description from dsDescriptionValue. Also,
+                 * is descriptionNoSnippet the right field to use generally?
+                 *
+                 * @todo What about the fact that datasets can now have multiple
+                 * descriptions? Should we create an array called
+                 * "additional_descriptions" that gets populated if there is
+                 * more than one dataset description?
+                 *
+                 * @todo Why aren't file descriptions ever null? They always
+                 * have an empty string at least.
+                 */
+                .add("description", this.descriptionNoSnippet)
+                /**
+                 * @todo In the future we'd like to support non-public datasets
+                 * per https://github.com/IQSS/dataverse/issues/1299 but for now
+                 * we are only supporting non-public searches.
+                 */
+                .add("published_at", getDateTimePublished())
+                /**
+                 * @todo Maybe we should expose MIME Type also.
+                 */
+                .add("file_type", this.filetype)
+                .add("citation", this.citation);
+        if (showRelevance) {
+            nullSafeJsonBuilder.add("relevance", getRelevance());
         }
-        JsonObject jsonObject = Json.createObjectBuilder()
-                .add(SearchFields.ID, this.id)
-                .add(SearchFields.ENTITY_ID, this.entityId)
-                .add(SearchFields.TYPE, this.type)
-                .add(SearchFields.NAME_SORT, this.nameSort)
-                .add("matched_fields", this.matchedFields.toString())
-                .add("parent", parentBuilder)
-                .add("type_specific", typeSpecificFields)
-                .build();
-        return jsonObject;
+        // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
+        if (!datasetAuthors.isEmpty()) {
+            JsonArrayBuilder authors = Json.createArrayBuilder();
+            for (String datasetAuthor : datasetAuthors) {
+                authors.add(datasetAuthor);
+            }
+            nullSafeJsonBuilder.add("authors", authors);
+        }
+        return nullSafeJsonBuilder;
+    }
+
+    private String getDateTimePublished() {
+        String datePublished = null;
+        if (draftState == false) {
+            datePublished = Util.getDateTimeFormatToReturnIn(releaseOrCreateDate);
+        }
+        return datePublished;
     }
 
     public String getId() {
@@ -276,12 +359,36 @@ public class SolrSearchResult {
         this.entityId = entityId;
     }
 
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getPersistentUrl() {
+        return persistentUrl;
+    }
+
+    public void setPersistentUrl(String persistentUrl) {
+        this.persistentUrl = persistentUrl;
     }
 
     public String getQuery() {
@@ -314,6 +421,14 @@ public class SolrSearchResult {
 
     public void setDescriptionNoSnippet(String descriptionNoSnippet) {
         this.descriptionNoSnippet = descriptionNoSnippet;
+    }
+
+    public List<String> getDatasetAuthors() {
+        return datasetAuthors;
+    }
+
+    public void setDatasetAuthors(List<String> datasetAuthors) {
+        this.datasetAuthors = datasetAuthors;
     }
 
     public List<Highlight> getHighlightsAsListOrig() {
