@@ -185,7 +185,7 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     private String deaccessionLink;
-        private String termsOfUse;
+    private String termsOfUse;
     private String termsOfAccess;
     private String confidentialityDeclaration;
     private String specialPermissions;

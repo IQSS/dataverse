@@ -810,7 +810,7 @@
                                                         <ui:fragment rendered ="#{!empty DatasetPage.editMode }">
                                                             <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
                                                                 <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.CCO']}" itemValue="CC0" />
-                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.notCCO']}" itemValue="" />
+                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.notCCO']}" itemValue="NONE" />
                                                                 <p:ajax update=":datasetForm" />
                                                             </p:selectOneRadio>
                                                             <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
@@ -1112,7 +1112,7 @@
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
                                                                 </label>
                                                                 <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersiont.studyCompletion}"/>
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.studyCompletion}"/>
                                                                 </div>
                                                             </ui:fragment>
                                                         </ui:fragment>

@@ -603,7 +603,7 @@ public class DatasetPage implements java.io.Serializable {
         
         boolean valid = true;
         
-        if (workingVersion.getLicense() != null && workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
+        if (workingVersion.getLicense() != null && !workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
             valid &= this.acceptedTerms;
         }
         

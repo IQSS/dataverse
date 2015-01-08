@@ -215,6 +215,21 @@ public class Dataset extends DvObjectContainer {
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
             }
+            dsv.setTermsOfUse(latestVersion.getTermsOfUse());
+            dsv.setTermsOfAccess(latestVersion.getTermsOfAccess());
+            dsv.setConfidentialityDeclaration(latestVersion.getConfidentialityDeclaration());
+            dsv.setSpecialPermissions(latestVersion.getSpecialPermissions());
+            dsv.setRestrictions(latestVersion.getRestrictions());
+            dsv.setCitationRequirements(latestVersion.getCitationRequirements());
+            dsv.setDepositorRequirements(latestVersion.getDepositorRequirements());
+            dsv.setConditions(latestVersion.getConditions());
+            dsv.setDisclaimer(latestVersion.getDisclaimer());
+            dsv.setDataAccessPlace(latestVersion.getDataAccessPlace());
+            dsv.setOriginalArchive(latestVersion.getOriginalArchive());
+            dsv.setAvailabilityStatus(latestVersion.getAvailabilityStatus());
+            dsv.setContactForAccess(latestVersion.getContactForAccess());
+            dsv.setSizeOfCollection(latestVersion.getSizeOfCollection());
+            dsv.setStudyCompletion(latestVersion.getStudyCompletion());
         }
 
         dsv.setFileMetadatas(new ArrayList());
@@ -232,8 +247,11 @@ public class Dataset extends DvObjectContainer {
                 newFm.setLabel(fm.getLabel());
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
-                dsv.getFileMetadatas().add(newFm);
+                dsv.getFileMetadatas().add(newFm);                
             }
+            dsv.setLicense(latestVersion.getLicense());
+        } else {            
+            dsv.setLicense(DatasetVersion.License.CC0); 
         }
 
         // I'm adding the version to the list so it will be persisted when
