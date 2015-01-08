@@ -581,7 +581,7 @@ public class SolrSearchResult {
         } else if (type.equals(SearchConstants.DATASETS)) {
             return SearchConstants.DATASET;
         } else if (type.equals(SearchConstants.FILES)) {
-            return SearchConstants.DATASET;
+            return SearchConstants.FILE;
         } else {
             return null;
         }

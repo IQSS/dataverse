@@ -18,6 +18,7 @@ q               string   The search term or terms. Using "title:data" will searc
 type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.
 sort            string   The sort field. Supported values include "name" and "date". 
 order           string   The order in which to sort, either be "asc" or "desc".
+start           int      A cursor for paging through search results. See iteration example below.
 show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default.
 show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default.
 fq              string   A filter query on the search term. Multiple "fq" parameters can be used.
@@ -81,3 +82,47 @@ https://apitest.dataverse.org/api/search?q=*
       "status": "OK"
     }
 
+Iteration example
+
+.. code-block:: python
+
+    #!/usr/bin/env python
+    import urllib2
+    import json
+    base = 'https://apitest.dataverse.org'
+    rows = 10
+    start = 0
+    page = 1
+    condition = True # emulate do-while
+    while (condition):
+        url = base + '/api/search?q=*' + "&start=" + str(start)
+        data = json.load(urllib2.urlopen(url))
+        total = data['data']['total_count']
+        print "=== Page", page, "==="
+        print "start:", start, " total:", total
+        for i in data['data']['items']:
+            print "- ", i['name'], "(" + i['type'] + ")"
+        start = start + rows
+        page += 1
+        condition = start < total
+
+Output from iteration example
+
+.. code-block:: none
+
+    === Page 1 ===
+    start: 0  total: 12
+    -  Spruce Goose (dataset)
+    -  trees.png (file)
+    -  Spruce (dataverse)
+    -  Trees (dataverse)
+    -  Darwin's Finches (dataset)
+    -  Finches (dataverse)
+    -  Birds (dataverse)
+    -  Rings of Conifers (dataset)
+    -  Chestnut Trees (dataverse)
+    -  Sparrows (dataverse)
+    === Page 2 ===
+    start: 10  total: 12
+    -  Chestnut Sparrows (dataverse)
+    -  Wrens (dataverse)
