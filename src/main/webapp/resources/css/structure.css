@@ -406,3 +406,6 @@ button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14p
 .ui-widget-overlay {background:#CCC;}
 .ui-confirm-dialog-severity {margin-top:3px;}
 .ui-widget-content a.btn-default {color:#333;}
+.ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
+    margin-left: 0px;
+}

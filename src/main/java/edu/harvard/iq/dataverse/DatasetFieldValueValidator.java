@@ -81,7 +81,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                 
             }
             if (!valid ) {
-                context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid date. \""+ YYYYformat + "\" is a supported format.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid date. \""+ YYYYformat + "\" is a supported format.").addConstraintViolation();
                 return false;
             }
         } 
@@ -91,7 +91,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                 Double.parseDouble(value.getValue());
             } catch (Exception e) {
                 logger.fine("Float value failed validation: "+value.getValue()+" ("+dsfType.getDisplayName()+")");
-                context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid number.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid number.").addConstraintViolation();
                 return false;
             }
         }
@@ -100,13 +100,13 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             try {
                 Integer.parseInt(value.getValue());
             } catch (Exception e) {
-                context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid integer.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid integer.").addConstraintViolation();
                 return false;
             }
         }
         
         if (fieldType.equals("text")  && value.getValue().length() > 255) {
-                 context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " may not be more than 255 characters.").addConstraintViolation(); 
+                 context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " may not be more than 255 characters.").addConstraintViolation(); 
                  return false;
         }
         
@@ -114,7 +114,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             try {
                 URL url = new URL(value.getValue());
             } catch (MalformedURLException e) {
-                context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid URL.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid URL.").addConstraintViolation();
                 return false;
             }
         }
@@ -127,7 +127,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             Matcher m = p.matcher(value.getValue());
             boolean matchFound = m.matches();
             if (!matchFound) {
-                context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid email address.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid email address.").addConstraintViolation();
                 return false;
             }
         }

@@ -24,14 +24,14 @@
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
     <ui:fragment rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
-        <div class="alert-danger">
-            <strong>#{dsfv.datasetField.validationMessage}</strong>
+        <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" style="margin:6px 0;">
+            <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
         </div>
     </ui:fragment>    
 
     <ui:fragment rendered="#{!empty dsfv.validationMessage}">
-        <div class="alert-danger">
-            <strong>#{dsfv.validationMessage}</strong>
+        <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" style="margin:6px 0;">
+            <span class="ui-message-error-detail">#{dsfv.validationMessage}</span>
         </div>
     </ui:fragment>
 
