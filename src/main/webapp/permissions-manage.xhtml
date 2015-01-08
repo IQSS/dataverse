@@ -20,22 +20,49 @@
             <ui:param name="dataverse" value="#{managePermissionsPage.dvObject.dataverseContext}"/>
             <ui:param name="dataset" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject : null}"/>
             <ui:param name="version" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject.latestVersion : null}"/>
-            <ui:param name="showMessagePanel" value="true"/>
+            <ui:param name="showMessagePanel" value="false"/>
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm">
                     <div>
                         <!-- Permissions Configure -->
-                        <p:fragment id="configureMessages">      
-                            <div class="container messagePanel">
-                                <iqbs:messages  collapsible="true" rendered="#{managePermissionsPage.renderConfigureMessages}"/>
-                            </div>
-                        </p:fragment>                        
-                        <p:fragment id ="configureSettings">
-                            <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}">                                    
-                                <ui:include src="permissions-configure.xhtml"/>
-                                <p:commandLink styleClass="btn btn-default" value="#{bundle['saveChanges']}" 
-                                               update="assignedRoles :#{p:component('configureMessages')} @([id$=Messages])"
-                                               actionListener="#{managePermissionsPage.saveConfiguration}"/>                                
+                        <p:fragment id="configureSettings">                        
+                            <c:if test="#{managePermissionsPage.dvObject.instanceofDataverse}">
+                                <p:fragment id="configureMessages">      
+                                    <div class="container messagePanel">
+                                        <iqbs:messages  collapsible="true" rendered="#{managePermissionsPage.renderConfigureMessages}"/>
+                                    </div>
+                                </p:fragment>
+                                <div class="form-group clearfix">
+                                    <label for="accessRadios" class="col-sm-3 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.Q1']}">
+                                            #{bundle['dataverse.permissions.Q1']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer1']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq ''}" />
+                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer2']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dvContributor'}" />
+                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer3']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dsContributor'}" />
+                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer4']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'fullContributor'}" />
+                                    </div>
+                                </div>
+                                <div class="form-group clearfix">
+                                    <label for="contributorRadios" class="col-sm-3 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.Q2.title']}">
+                                            #{bundle['dataverse.permissions.Q2']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{bundle.editor}" rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'editor'}" />
+                                        <h:outputText value="#{bundle.manager}" rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'manager'}" />
+                                        <h:outputText value="#{bundle.curator}" rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'curator'}" />
+                                    </div>
+                                </div>         
+                                <p:commandLink id="configureButton" styleClass="btn btn-default"
+                                               actionListener="#{managePermissionsPage.initAccessSettings}"
+                                               update="configureDialog"
+                                               oncomplete="configureForm.show();">
+                                    <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> #{bundle['dataverse.permissions.configure.configureBtn']}
+                                </p:commandLink>   
                             </c:if>
                         </p:fragment>
                         <!-- Role Assignments Panel -->
@@ -55,7 +82,7 @@
                                                        styleClass="btn btn-default pull-right" 
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
-                                                       oncomplete="userGroupsForm.show();bind_bsui_components();">
+                                                       oncomplete="userGroupsForm.show();bind_bsui_components();">                                          
                                             <span class="glyphicon glyphicon-user" style="margin-right:0.3em;"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
                                         <p class="help-block clearfix">#{bundle['dataverse.permissions.usersOrGroups.description']}</p>
@@ -69,12 +96,12 @@
                                                 </p:column>
                                                 <p:column width="40%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.action']}">                                        
                                                     <h:outputFormat styleClass="text-muted italic" value="#{bundle['dataverse.permissions.usersOrGroups.assignedAt']}" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}">
-                                                                    <f:param value="#{roleAssignment.assignedDvName}"/>
+                                                        <f:param value="#{roleAssignment.assignedDvName}"/>
                                                     </h:outputFormat>
                                                     <p:commandLink styleClass="btn btn-default" 
-                                                                   action="#{managePermissionsPage.revokeRole(roleAssignment.id)}"
+                                                                   action="#{managePermissionsPage.removeRoleAssignment(roleAssignment.id)}"
                                                                    rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
-                                                                   update="assignedRoles :#{p:component('configureSettings')} @([id$=Messages])"
+                                                                   update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
                                                                    style="color:black;margin-right:0.5em;"><span class="glyphicon glyphicon-remove" style="margin-right:0.3em;"/> #{bundle['dataverse.permissions.usersOrGroups.removeBtn']}</p:commandLink>
                                                 </p:column>
                                             </p:dataTable>
@@ -136,6 +163,16 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Users/Groups Popup -->
+                    <!-- Defined this way as we may reuse the include not in a popup -->    
+                    <p:dialog id="configureDialog" header="#{bundle['dataverse.permissions.configureDialog.header']}" widgetVar="configureForm" modal="true" style="min-width:600px;">                                                      
+                        <ui:include src="permissions-configure.xhtml"/>
+                        <p:commandLink styleClass="btn btn-default" value="#{bundle['saveChanges']}" 
+                                       update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
+                                       actionListener="#{managePermissionsPage.saveConfiguration}"
+                                       oncomplete="configureForm.hide();"/>                                
+                    </p:dialog>                    
 
                     <!-- Users/Groups Popup -->
                     <ui:include src="roles-assign.xhtml"/>
