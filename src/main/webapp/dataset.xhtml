@@ -519,6 +519,23 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
+                                            <div class="btn-group" style="margin-right:1em;">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <h:outputLink value="#">
+                                                            <h:outputText value="All Files From This Dataset"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                    <li class="disabled">
+                                                        <h:outputLink value="#">
+                                                            <h:outputText value="Selected Files"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{bundle['file.uploadOrEdit']}
@@ -531,6 +548,8 @@
                                                  selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable"
                                                  emptyMessage="#{bundle['file.notFound.tip']}">
                                         <p:column headerText="#{bundle['file.delete.header']}" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                                  style="width:2%;text-align:center"/>
+                                        <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
