@@ -9,24 +9,24 @@
 	resolution.Spectral	Spectral Resolution	The spectral resolution that is typical of the observations, given as the ratio λ/Δλ.		text	5	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		astrophysics
 	resolution.Temporal	Time Resolution	The temporal resolution that is typical of the observations, given in seconds.		text	6	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Spectral.Bandpass	Bandpass	Conventional bandpass name		text	7	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
-	coverage.Spectral.CentralWavelength	Central Wavelength (m)	The central wavelength of the spectral bandpass, in meters.		float	8	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		astrophysics
-	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.		float	9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
-	coverage.Spectral.MinimumWavelength	Minimum (m)	The minimum wavelength of the spectral bandpass, in meters.		float	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
-	coverage.Spectral.MaximumWavelength	Maximum (m)	The maximum wavelength of the spectral bandpass, in meters.		float	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
+	coverage.Spectral.CentralWavelength	Central Wavelength (m)	The central wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	8	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		astrophysics
+	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.	Enter a floating-point number.	float	9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	coverage.Spectral.MinimumWavelength	Minimum (m)	The minimum wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
+	coverage.Spectral.MaximumWavelength	Maximum (m)	The maximum wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
 	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		text	12	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Temporal.StartTime	Start	Dataset Start Date	YYYY-MM-DD	date	13	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
 	coverage.Temporal.StopTime	End	Dataset End Date	YYYY-MM-DD	date	14	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
 	coverage.Spatial	Sky Coverage	The sky coverage of the data object.		text	15	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
-	coverage.Depth	Depth Coverage	The (typical) depth coverage, or sensitivity, of the data object in Jy.		float	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
-	coverage.ObjectDensity	Object Density	The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree.		float	17	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
-	coverage.ObjectCount	Object Count	The total number of objects, catalog entries, etc., in the data object.		int	18	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
-	coverage.SkyFraction	Fraction of Sky	The fraction of the sky represented in the observations, ranging from 0 to 1.		float	19	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
+	coverage.Depth	Depth Coverage	The (typical) depth coverage, or sensitivity, of the data object in Jy.	Enter a floating-point number.	float	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
+	coverage.ObjectDensity	Object Density	The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree.	Enter a floating-point number.	float	17	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
+	coverage.ObjectCount	Object Count	The total number of objects, catalog entries, etc., in the data object.	Enter an integer.	int	18	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
+	coverage.SkyFraction	Fraction of Sky	The fraction of the sky represented in the observations, ranging from 0 to 1.	Enter a floating-point number.	float	19	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Polarization	Polarization	The polarization coverage		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	redshiftType	RedshiftType	RedshiftType string C "Redshift"; or "Optical" or "Radio" definitions of Doppler velocity used in the data object.		text	21	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
-	resolution.Redshift	Redshift Resolution	The resolution in redshift (unitless) or Doppler velocity (km/s) in the data object.		float	22	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
-	coverage.RedshiftValue	Redshift Value	The value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	23	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
-	coverage.Redshift.MinimumValue	Minimum	The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	24	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
-	coverage.Redshift.MaximumValue	Maximum	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
+	resolution.Redshift	Redshift Resolution	The resolution in redshift (unitless) or Doppler velocity (km/s) in the data object.	Enter a floating-point number.	float	22	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
+	coverage.RedshiftValue	Redshift Value	The value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	23	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	coverage.Redshift.MinimumValue	Minimum	The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	24	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
+	coverage.Redshift.MaximumValue	Maximum	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.	Enter a floating-point number.	float	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder										
 	astroType	Image		0										
 	astroType	Mosaic		1										
