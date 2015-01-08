@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.Highlight;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -251,16 +252,16 @@ public class SolrSearchResult {
         String displayName = null;
 
         String identifierLabel = null;
-        if (this.type.equals("dataverses")) {
+        if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
             identifierLabel = "alias";
-        } else if (this.type.equals("datasets")) {
+        } else if (this.type.equals(SearchConstants.DATASETS)) {
             displayName = this.title;
             identifierLabel = "global_id";
             /**
              * @todo Should we show the name of the parent dataverse?
              */
-        } else if (this.type.equals("files")) {
+        } else if (this.type.equals(SearchConstants.FILES)) {
             displayName = this.name;
             identifierLabel = "file_id";
             /**
@@ -282,7 +283,7 @@ public class SolrSearchResult {
                  * @todo We should probably change it to "type=dataset"
                  * (singular) for example.
                  */
-                .add("type", getType())
+                .add("type", getDisplayType(getType()))
                 /**
                  * @todo We should probably have a metadata_url concept. For
                  * datasets, this would be http://example.com/api/datasets/10 or
@@ -572,6 +573,18 @@ public class SolrSearchResult {
      */
     public void setDataverseParentAlias(String dataverseParentAlias) {
         this.dataverseParentAlias = dataverseParentAlias;
+    }
+
+    private String getDisplayType(String type) {
+        if (type.equals(SearchConstants.DATAVERSES)) {
+            return SearchConstants.DATAVERSE;
+        } else if (type.equals(SearchConstants.DATASETS)) {
+            return SearchConstants.DATASET;
+        } else if (type.equals(SearchConstants.FILES)) {
+            return SearchConstants.DATASET;
+        } else {
+            return null;
+        }
     }
 
 }

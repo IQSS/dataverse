@@ -14,9 +14,12 @@ import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,13 +51,13 @@ public class Search extends AbstractApiBean {
     @GET
     public Response search(
             @QueryParam("q") String query,
+            @QueryParam("type") final List<String> types,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("sort") String sortField,
             @QueryParam("order") String sortOrder,
             @QueryParam("start") final int paginationStart,
             @QueryParam("show_relevance") boolean showRelevance,
             @QueryParam("show_facets") boolean showFacets,
-            @QueryParam("show_spelling_alternatives") boolean showSpellingAlternatives,
             @QueryParam("subtree") String subtreeRequested
     ) {
         if (query != null) {
@@ -74,6 +77,14 @@ public class Search extends AbstractApiBean {
                 sortBy = getSortBy(sortField, sortOrder);
             } catch (Exception ex) {
                 return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+            }
+
+            if (!types.isEmpty()) {
+                try {
+                    filterQueries.add(getFilterQueryFromTypes(types));
+                } catch (Exception ex) {
+                    return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+                }
             }
 
             SolrQueryResponse solrQueryResponse;
@@ -142,14 +153,9 @@ public class Search extends AbstractApiBean {
 
             JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
-                    .add("fq_provided", filterQueries.toString())
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
-                    /**
-                     * @todo consider removing count_in_response and letting
-                     * client calculate it
-                     */
-                    .add("count_in_response", solrSearchResults.size())
+                    .add("spelling_alternatives", spelling_alternatives)
                     .add("items", itemsArrayBuilder.build());
             if (showRelevance) {
                 /**
@@ -161,9 +167,15 @@ public class Search extends AbstractApiBean {
             if (showFacets) {
                 value.add("facets", facets);
             }
-            if (showSpellingAlternatives) {
-                value.add("spelling_alternatives", spelling_alternatives);
-            }
+            /**
+             * @todo Consider adding count_in_response so the client doesn't
+             * have to calculate it.
+             */
+            value.add("count_in_response", solrSearchResults.size());
+            /**
+             * @todo Returning the fq might be useful as a troubleshooting aid.
+             */
+//            value.add("fq_provided", filterQueries.toString());
             if (solrQueryResponse.getError() != null) {
                 /**
                  * @todo You get here if you pass only ":" as a query, for
@@ -242,6 +254,27 @@ public class Search extends AbstractApiBean {
         }
 
         return new SortBy(sortField, sortOrder);
+    }
+
+    private String getFilterQueryFromTypes(List<String> types) throws Exception {
+        String filterQuery = null;
+        List<String> typeRequested = new ArrayList<>();
+        List<String> validTypes = Arrays.asList(SearchConstants.DATAVERSE, SearchConstants.DATASET, SearchConstants.FILE);
+        for (String type : types) {
+            if (validTypes.contains(type)) {
+                if (type.equals(SearchConstants.DATAVERSE)) {
+                    typeRequested.add(SearchConstants.DATAVERSES);
+                } else if (type.equals(SearchConstants.DATASET)) {
+                    typeRequested.add(SearchConstants.DATASETS);
+                } else if (type.equals(SearchConstants.FILE)) {
+                    typeRequested.add(SearchConstants.FILES);
+                }
+            } else {
+                throw new Exception("Invalid type '" + type + "'. Must be one of " + validTypes);
+            }
+        }
+        filterQuery = SearchFields.TYPE + ":(" + StringUtils.join(typeRequested, " OR ") + ")";
+        return filterQuery;
     }
 
     private Dataverse getSubtree(String alias) throws Exception {

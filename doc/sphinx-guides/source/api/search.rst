@@ -11,19 +11,73 @@ The parameters and JSON response are partly inspired by the `GitHub Search API <
 Parameters
 ----------
 
-=====  ===========
-Name   Description
-=====  ===========
-q      The search term or terms. Using "title:data" will search only the "title" field.
-fq     A filter query on the search term. Multiple "fq" parameters can be used.
-sort   The sort field.
-order  The order in which to sort, either be "asc" or "desc".
-=====  ===========
+==============  =======  ===========
+Name            Type     Description
+==============  =======  ===========
+q               string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*").
+type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.
+sort            string   The sort field. Supported values include "name" and "date". 
+order           string   The order in which to sort, either be "asc" or "desc".
+show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default.
+show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default.
+fq              string   A filter query on the search term. Multiple "fq" parameters can be used.
+==============  =======  ===========
 
-Examples
---------
+Example
+-------
 
-Searching a title
-~~~~~~~~~~~~~~~~~
+https://apitest.dataverse.org/api/search?q=*
 
-https://apitest.dataverse.org/api/search?q=title:awesome+data
+.. code-block:: json 
+
+    {
+      "data": {
+        "count_in_response": 4,
+        "items": [
+          {
+            "authors": [
+              "Spruce, Sabrina"
+            ],
+            "citation": "Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/I4VPEZ,  Root Dataverse,  V0",
+            "published_at": "2015-01-08T03:27Z",
+            "global_id": "doi:10.5072/FK2/I4VPEZ",
+            "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
+            "url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
+            "type": "dataset",
+            "name": "Spruce Goose"
+          },
+          {
+            "file_type": "PNG Image",
+            "published_at": "2015-01-08T03:27Z",
+            "description": "",
+            "file_id": "12",
+            "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
+            "url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
+            "type": "dataset",
+            "name": "trees.png"
+          },
+          {
+            "published_at": "2015-01-08T03:27Z",
+            "description": "A spruce with some birds",
+            "alias": "spruce",
+            "url": "https://apitest.dataverse.org/dataverse/spruce",
+            "type": "dataverse",
+            "name": "Spruce"
+          },
+          {
+            "published_at": "2015-01-08T03:27Z",
+            "description": "A tree dataverse with some birds",
+            "alias": "trees",
+            "url": "https://apitest.dataverse.org/dataverse/trees",
+            "type": "dataverse",
+            "name": "Trees"
+          }
+        ],
+        "spelling_alternatives": {},
+        "start": 0,
+        "total_count": 4,
+        "q": "*"
+      },
+      "status": "OK"
+    }
+
