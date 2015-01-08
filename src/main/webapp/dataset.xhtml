@@ -736,7 +736,7 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData" rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData" rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}" disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="#{bundle['file.downloadBtn.format.rdata']}"/>
                                                             </h:outputLink>
                                                         </li>

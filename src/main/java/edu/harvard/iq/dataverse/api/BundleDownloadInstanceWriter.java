@@ -97,13 +97,15 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     instream.close();
                     zout.closeEntry();
 
-                // Now, the original format: 
+                    // Now, the original format: 
+                    String origFormat = null; 
                     try {
-                        accessObject = StoredOriginalFile.retrieve(sf, (FileAccessObject) accessObject);
-                        if (accessObject != null) {
-                            instream = accessObject.getInputStream();
+                        DataAccessObject accessObjectOrig = StoredOriginalFile.retrieve(sf, (FileAccessObject) accessObject);
+                        if (accessObjectOrig != null) {
+                            instream = accessObjectOrig.getInputStream();
                         }
-                        String origFileName = accessObject.getFileName();
+                        String origFileName = accessObjectOrig.getFileName();
+                        origFormat = accessObject.getMimeType();
                         e = new ZipEntry(origFileName);
                         zout.putNextEntry(e);
 
@@ -115,11 +117,43 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         instream.close();
                         zout.closeEntry();
                     } catch (IOException ioex) {
-                    // ignore; if for whatever reason the original is not
+                        // ignore; if for whatever reason the original is not
                         // available, we'll just skip it. 
+                        logger.warning("failed to retrieve saved original for "+fileName);
                     }
                     
-                // And the variable metadata (DDI/XML), if available: 
+                    // And, if the original format was NOT RData, 
+                    // add an RData version: 
+                    if (!"application/x-rlang-transport".equals(origFormat)) {
+                        try {
+                            DataAccessObject accessObjectRdata
+                                    = DataFileConverter.performFormatConversion(
+                                            sf,
+                                            (FileAccessObject) accessObject,
+                                            "RData", "application/x-rlang-transport");
+
+                            if (accessObjectRdata != null) {
+                                instream = accessObjectRdata.getInputStream();
+                            }
+                            String rdataFileName = accessObjectRdata.getFileName();
+                            e = new ZipEntry(rdataFileName);
+                            zout.putNextEntry(e);
+
+                            i = 0;
+                            while ((i = instream.read(data)) > 0) {
+                                zout.write(data, 0, i);
+                                zout.flush();
+                            }
+                            instream.close();
+                            zout.closeEntry();
+                        } catch (IOException ioex) {
+                            // ignore; if for whatever reason RData conversion is not
+                            // available, we'll just skip it.
+                            logger.warning("failed to convert tabular data file "+fileName+" to RData.");
+                        }
+                    }
+                        
+                    // And the variable metadata (DDI/XML), if available: 
                     if (di.getFileDDIXML() != null) {
                         e = new ZipEntry(fileName.replaceAll("\\.tab$", "-ddi.xml"));
 
@@ -128,7 +162,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         zout.closeEntry();
                     }
 
-                // And now the citations: 
+                    // And now the citations: 
                     if (di.getFileCitationEndNote() != null) {
                         e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-endnote.xml"));
 

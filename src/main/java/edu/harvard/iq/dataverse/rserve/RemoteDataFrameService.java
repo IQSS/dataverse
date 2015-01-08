@@ -63,7 +63,7 @@ public class RemoteDataFrameService {
     private static String RSERVE_PWD = null;    
     private static int    RSERVE_PORT = -1;
         
-    private static String DATAVERSE_R_FUNCTIONS = "dataverse_r_functions.R";
+    private static String DATAVERSE_R_FUNCTIONS = "scripts/dataverse_r_functions.R";
     private static String DATAVERSE_R_PREPROCESSING = "scripts/preprocess.R";
                     
     public static String LOCAL_TEMP_DIR = System.getProperty("java.io.tmpdir");
@@ -213,41 +213,8 @@ public class RemoteDataFrameService {
             // We need to initialize our R session:
             // send custom R code library over to the Rserve and load the code:
             
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-            String rFunctionsFileName = domainRoot+"/config/"+DATAVERSE_R_FUNCTIONS;
-
-            dbgLog.fine("Source code for the custom DVN R functions: "+rFunctionsFileName);
-
-            File rFunctionsFile = new File (rFunctionsFileName); 
-            if ( !rFunctionsFile.exists() ) {
-                throw new IOException("Could not find R source code file "+rFunctionsFileName);
-            }
-            
-            /* 
-             * Send the R code file across:
-             */
-            
-            inb = new BufferedInputStream(new FileInputStream(rFunctionsFile));
-
-            String remoteRCodeFileName = RSERVE_TMP_DIR + "/" + DATAVERSE_R_FUNCTIONS;
-            os = c.createFile(remoteRCodeFileName);
-            
-            while ((bufsize = inb.read(bffr)) != -1) {
-                    os.write(bffr, 0, bufsize);
-            }
-            os.close();
-            inb.close();
-            
-            /* 
-             * And load it into R:
-             */
-            
-            String remoteLibrarySetup = "source(\"" + remoteRCodeFileName + "\");";
-            dbgLog.fine("RserveComm: "+remoteLibrarySetup);
-            c.voidEval(remoteLibrarySetup);
-            dbgLog.fine("Dataverse R Code library has been loaded.");
-            
+            String rscript = readLocalResource(DATAVERSE_R_FUNCTIONS);
+            c.voidEval(rscript);
             
             
             dbgLog.fine("raw variable type="+sro.getVariableTypes());
@@ -730,7 +697,7 @@ public class RemoteDataFrameService {
     
     private static String readLocalResource(String path) {
         
-        dbgLog.fine(String.format("Data Frame Service: readLocalResource: reading local path \"%s\"", path));
+        dbgLog.info(String.format("Data Frame Service: readLocalResource: reading local path \"%s\"", path));
 
         // Get stream
         InputStream resourceStream = RemoteDataFrameService.class.getResourceAsStream(path);
