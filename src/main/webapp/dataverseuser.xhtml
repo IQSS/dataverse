@@ -138,9 +138,10 @@
                                     <h:outputText value="#{item.sendDate}" style="color:#999999; margin-left:1em; font-size:.85em;"/>
                                     <!--<h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
                                     <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />-->
-                                    <h:commandLink action="#{DataverseUserPagetitle.pre.remove(item.id)}" title="#{bundle.removeNotification}" styleClass="pull-right">
+                                    <p:commandLink title="#{bundle.removeNotification}" styleClass="pull-right"
+                                                   action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}">
                                         <span class="glyphicon glyphicon-remove"></span>
-                                    </h:commandLink>
+                                    </p:commandLink>
                                 </div>
                             </ui:repeat>
                         </p:tab>
