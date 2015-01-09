@@ -1726,7 +1726,7 @@
                         <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
                     </p:dialog>
                     
-                    <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup" modal="true">
+                    <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup" rendered="#{!empty DatasetPage.fileMetadataSelected}" modal="true">
                         <div class="form-inline clearfix" style="width:600px;">
                             <ui:include src="/subset/gui_subset.xhtml"/>
                         </div>
