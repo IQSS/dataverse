@@ -745,6 +745,14 @@
                                                                 <h:outputText value="#{bundle['file.downloadBtn.format.var']}"/>
                                                             </h:outputLink>
                                                         </li>
+                                                        <li>
+                                                            <p:commandLink id="fileDowloadDataSubsetButton"
+                                                                     actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                                     update=":datasetForm:downloadDataSubsetPopup"
+                                                                     oncomplete="downloadDataSubsetPopup.show()"
+                                                                     value="Data Subset"
+                                                                     disabled="#{empty fileMetadata.dataFile.id}"/>
+                                                        </li>
                                                         <li class="dropdown-submenu">
                                                             <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
                                                             <ul class="dropdown-menu">
@@ -1716,6 +1724,12 @@
                         <p:commandButton value="#{bundle.saveChanges}" onclick="downloadPopup.hide()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse()}" >
                         </p:commandButton>
                         <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
+                    </p:dialog>
+                    
+                    <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup" modal="true">
+                        <div class="form-inline clearfix" style="width:600px;">
+                            <ui:include src="/subset/gui_subset.xhtml"/>
+                        </div>
                     </p:dialog>
 
                     <p:dialog id="fileCategoriesPopup" header="#{bundle['file.editCategoriesDialog.header']}" widgetVar="fileCategoriesPopup" modal="true">
