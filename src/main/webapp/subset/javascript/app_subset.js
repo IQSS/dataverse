@@ -334,5 +334,5 @@ function tabLeft(tab) {
 }
 
 function API() {
-    alert(apicall);
+    window.open(apicall);
 }
