@@ -519,11 +519,11 @@
                                                     <p:column headerText="Title" style="font-size: smaller; width: 90%">
                                                         <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset" />
                                                         <h:outputLink value="/dataset.xhtml?id=#{dataset.id}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                                            <h:outputText value="#{dataset.getLatestVersion().getTitle()}" />
+                                                            <h:outputText value="#{dataset.releasedVersion.title}" />
                                                         </h:outputLink>
                                                     </p:column>
                                                     <p:column headerText="Files" style="font-size: smaller; width: 10%; text-align: right">
-                                                        <h:outputText value="#{dataset.getFiles().size()} #{dataset.getFiles().size() == 0 or dataset.getFiles().size() > 1 ? 'Files' : 'File'}" />
+                                                        <h:outputText value="#{dataset.releasedVersion.fileMetadatas.size()} #{dataset.releasedVersion.fileMetadatas.size() == 0 or dataset.releasedVersion.fileMetadatas.size() > 1 ? 'Files' : 'File'}" />
                                                     </p:column>
                                                     <f:facet name="footer">  
                                                         <h:outputLink value="#{dataversePage}?id=#{result.entityId}" target="#{showFacets == true ? '_self' : '_blank'}" style="font-weight:normal; font-size: smaller;">
