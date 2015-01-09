@@ -532,6 +532,8 @@ public class DatasetPage implements java.io.Serializable {
             // now get the correct version
             if (versionId == null) {
                 // If we don't have a version ID, we will get the latest published version; if not published, then go ahead and get the latest
+                // @todo: handle case where all versions are deaccessioned, except one draft:
+                //  currently not possible to get into this state, but should return latest deaccessioned view
                 workingVersion = dataset.getReleasedVersion();
                 if (workingVersion == null) {
                     workingVersion = dataset.getLatestVersion();
@@ -542,7 +544,7 @@ public class DatasetPage implements java.io.Serializable {
 
             if (workingVersion == null) {
                 return "/404.xhtml";
-            } else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
+            } else if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }
 
