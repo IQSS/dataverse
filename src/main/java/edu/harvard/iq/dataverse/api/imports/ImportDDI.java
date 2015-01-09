@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.xml.stream.XMLInputFactory;
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -706,15 +707,29 @@ public class ImportDDI {
 		<version date="2014-05-21" type="RELEASED">1</version>
 	</verStmt>
     Question:  what to do with these two different dates?  Need to review with Eleni
+    Note: we should use the verStmt with source="DVN" as the 'official' version statement
+    DDI's that we are migrating should have one and only one DVN version statement
     */
     private void processVerStmt(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
-        if (!importType.equals(ImportType.NEW)) {
+        if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
             for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
                 if (event == XMLStreamConstants.START_ELEMENT) {
+                    if (xmlr.getLocalName().equals("verStmt")) {
+                        String source = xmlr.getAttributeValue(null,"source");
+                        System.out.println("found source:"+ source);
+                    } 
                     if (xmlr.getLocalName().equals("version")) {
                         dvDTO.setReleaseDate(xmlr.getAttributeValue(null, "date"));
-                        dvDTO.setVersionState(Enum.valueOf(VersionState.class, xmlr.getAttributeValue(null,"type")));
-                        dvDTO.setVersionNumber(Long.parseLong(parseText(xmlr)));
+                        String versionState =xmlr.getAttributeValue(null,"type");
+                        if (versionState!=null ) {
+                            if( versionState.equals("ARCHIVED")) {
+                                versionState="RELEASED";
+                            }
+                            dvDTO.setVersionState(Enum.valueOf(VersionState.class, versionState));  
+                        }
+                       
+                        parseVersionNumber(dvDTO, parseText(xmlr));
+                      //  dvDTO.setVersionNumber(Long.parseLong(parseText(xmlr)));
                         // EMK TODO: add note processing
                         // } else if (xmlr.getLocalName().equals("notes")) { processNotes(xmlr, metadata); 
                     }
@@ -727,13 +742,32 @@ public class ImportDDI {
             }
         }
         if (importType.equals(ImportType.NEW)) {
+            // If this is a new, Draft version, versionNumber and minor versionNumber are null.
             dvDTO.setVersionState(VersionState.DRAFT);
         } else if (importType.equals(ImportType.HARVEST)) {
             dvDTO.setVersionState(VersionState.RELEASED);
         } 
     }
+  
+   /**
+    * Separate the versionNumber into two parts - before the first '.' 
+    * is the versionNumber, and after is the minorVersionNumber.
+    * If no minorVersionNumber exists, set to "0".
+    * @param dvDTO
+    * @param versionNumber 
+    */
+    private void parseVersionNumber(DatasetVersionDTO dvDTO, String versionNumber) {
+        int firstIndex = versionNumber.indexOf('.');
+        if (firstIndex == -1) {
+            dvDTO.setVersionNumber(Long.parseLong(versionNumber));
+            dvDTO.setMinorVersionNumber("0");
+        } else {
+            dvDTO.setVersionNumber(Long.parseLong(versionNumber.substring(0, firstIndex - 1)));
+            dvDTO.setMinorVersionNumber(versionNumber.substring(firstIndex + 1));
+        }
+       
 
- 
+    }
    
    private void processSerStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
           FieldDTO seriesName=null;
