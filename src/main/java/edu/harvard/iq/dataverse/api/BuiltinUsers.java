@@ -17,6 +17,7 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -51,10 +52,24 @@ public class BuiltinUsers extends AbstractApiBean {
 		
 		return okResponse( bld );
 	}
+        
+        /**
+         * Created this new API command because the save method could not be run from the RestAssured API.  RestAssured doesn't
+         * allow a Post request to contain both a body and request parameters.
+         * TODO: replace current usage of save() with create?
+         * @param user
+         * @param password
+         * @param key
+         * @return 
+         */
+        @POST
+        @Path("{password}/{key}")  
+        public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key ) {
+            return internalSave(user, password,key);
+        }
 	
-	@POST
-	public Response save( BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key ) {
-        String expectedKey = settingsSvc.get( API_KEY_IN_SETTINGS );
+        private Response internalSave(BuiltinUser user, String password,String key) {
+             String expectedKey = settingsSvc.get( API_KEY_IN_SETTINGS );
         if ( expectedKey==null ) {
             return errorResponse(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
         }
@@ -89,6 +104,11 @@ public class BuiltinUsers extends AbstractApiBean {
 			logger.log( Level.WARNING, "Error saving user", e );
 			return errorResponse( Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage() );
 		}
+        }
+        
+	@POST     
+	public Response save( BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key ) {
+            return internalSave(user,password,key);
 	}
 
 }
