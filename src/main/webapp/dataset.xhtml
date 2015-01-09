@@ -798,7 +798,9 @@
                                         <ui:include src="metadataFragment.xhtml"/>
                                     </div>
                                 </p:tab>
-                                <p:tab id="licensingTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE'}">
+                                <p:tab id="licensingTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}" 
+                                       rendered="#{ !DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}"
+                                                                       >
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
