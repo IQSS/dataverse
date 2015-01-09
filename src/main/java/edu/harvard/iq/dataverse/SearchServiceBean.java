@@ -374,6 +374,9 @@ public class SearchServiceBean {
             Map<String, String> parent = new HashMap<>();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
+            /**
+             * @todo start using SearchConstants class here
+             */
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setUrl(baseUrl + "/dataverse/" + identifier);
