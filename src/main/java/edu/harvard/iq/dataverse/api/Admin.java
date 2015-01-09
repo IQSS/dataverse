@@ -194,6 +194,13 @@ public class Admin extends AbstractApiBean {
                             ? "WARNING: no enabled authentication providers left." : ""));
     }
     
+    @DELETE
+    @Path("authenticatedUsers/{id}/")
+    public Response deleteAuthenticatedUser(@PathParam("id") Long id) {
+        authSvc.deleteAuthenticatedUser(id);
+        return okResponse("AuthenticatedUser " +id + " deleted. ");
+    }
+    
     @Path("roles")
     @POST
     public Response createNewBuiltinRole(RoleDTO roleDto) {
@@ -204,11 +211,11 @@ public class Admin extends AbstractApiBean {
         }
     }
     
-    @Path("superuser/{identifier}")
+    @Path("superuser/{id}")
     @GET
-    public Response toggleSuperuser(@PathParam("identifier") String identifier) {
+    public Response toggleSuperuser(@PathParam("id") Long id) {
         try {
-            AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+            AuthenticatedUser user = authSvc.findByID(id);
             user.setSuperuser(!user.isSuperuser());
             
             return okResponse("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set": "removed") + " as a superuser.");
