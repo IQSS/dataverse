@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetVersionUI;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 
 /**
  * Creates a {@link Dataset} in the passed {@link CommandContext}.
@@ -37,43 +36,46 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     private final Dataset theDataset;
     private final boolean registrationRequired;
-    private final boolean migrate;
+    // TODO: rather than have a boolean, create a sub-command for creating a dataset during import
+    private final boolean importMode;
 
     public CreateDatasetCommand(Dataset theDataset, User user) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = false;
-        this.migrate=false;
+        this.importMode=false;
     }
 
     public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
-        this.migrate=false;
+        this.importMode=false;
     }
-      public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, boolean migrate) {
+      public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, boolean importMode) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
-        this.migrate=migrate;
+        this.importMode=importMode;
     }
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
         logger.log(Level.INFO, "start "  + formatter.format(new Date().getTime()));
         // If this is not a migrated dataset, Test for duplicate identifier
-        if (!migrate && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
+        if (!importMode && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
         }
-
+        // If we are in importMode, then we don't want to create an editable version, 
+        // just save the version is already in theDataset.
+        DatasetVersion dsv = importMode? theDataset.getLatestVersion() : theDataset.getEditVersion();
         // validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
-        theDataset.getEditVersion().setDatasetFields(theDataset.getEditVersion().initDatasetFields());
-        Set<ConstraintViolation> constraintViolations = theDataset.getEditVersion().validate();
+        dsv.setDatasetFields(dsv.initDatasetFields());
+        Set<ConstraintViolation> constraintViolations = dsv.validate();
         if (!constraintViolations.isEmpty()) {
             String validationFailedString = "Validation failed:";
             for (ConstraintViolation constraintViolation : constraintViolations) {
@@ -89,19 +91,19 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
         
-        Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
+        Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
             if (dsfIt.next().removeBlankDatasetFieldValues()) {
                 dsfIt.remove();
             }
         }
-        Iterator<DatasetField> dsfItSort = theDataset.getEditVersion().getDatasetFields().iterator();
+        Iterator<DatasetField> dsfItSort = dsv.getDatasetFields().iterator();
         while (dsfItSort.hasNext()) {
             dsfItSort.next().setValueDisplayOrder();
         }
         Timestamp createDate = new Timestamp(new Date().getTime());
-        theDataset.getEditVersion().setCreateTime(createDate);
-        theDataset.getEditVersion().setLastUpdateTime(createDate);
+        dsv.setCreateTime(createDate);
+        dsv.setLastUpdateTime(createDate);
         theDataset.setModificationTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
