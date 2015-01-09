@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -130,5 +131,58 @@ public class DataFileServiceBean implements java.io.Serializable {
         return false; 
     }
     */
+    
+    
+    /* 
+     * This method tells you if thumbnail generation is *supported* 
+     * on this type of file. i.e., if true, it does not guarantee that a thumbnail 
+     * can/will be generated; but it means that we can try. 
+     */
+    public boolean thumbnailSupported (DataFile file) {
+        if (file == null) {
+            return false;
+        }
+        
+        String contentType = file.getContentType();
+        
+        // Some browsers (Chrome?) seem to identify FITS files as mime
+        // type "image/fits" on upload; this is both incorrect (the official
+        // mime type for FITS is "application/fits", and problematic: then
+        // the file is identified as an image, and the page will attempt to 
+        // generate a preview - which of course is going to fail...
+        if ("image/fits".equalsIgnoreCase(contentType)) {
+            return false;
+        }
+        // besides most image/* types, we can generate thumbnails for 
+        // pdf and "world map" files:
+        
+        return (contentType != null && 
+                (contentType.startsWith("image/") || 
+                contentType.equalsIgnoreCase("application/pdf") ||
+                contentType.equalsIgnoreCase("application/zipped-shapefile")));
+    }
+    
+    /* 
+     * This method will return true if the thumbnail is *actually available* and
+     * ready to be downloaded. (it will try to generate a thumbnail for supported
+     * file types, if not yet available)
+    */
+    public boolean isThumbnailAvailable (DataFile file) {
+        if (!thumbnailSupported(file)) {
+            return false;
+        }
+        
+       return ImageThumbConverter.isThumbnailAvailable(file);      
+    }
+    
+    /* 
+     * TODO: 
+     * similar method, but for non-default thumbnail sizes:
+    */
+    
+    public boolean isThumbnailAvailableForSize (DataFile file) {
+        return false; 
+    }
+    
         
 }

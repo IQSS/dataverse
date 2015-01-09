@@ -171,11 +171,7 @@ public class Access extends AbstractApiBean {
         
         DownloadInfo dInfo = new DownloadInfo(df);
 
-        /*
-         * (and yes, this is a hack)
-         * TODO: un-hack this. -- L.A. 4.0 alpha 1
-         */
-        if (df.getContentType() != null && (df.getContentType().startsWith("image/") || df.getContentType().equalsIgnoreCase("application/pdf"))) {
+        if (dataFileService.thumbnailSupported(df)) {
             dInfo.addServiceAvailable(new OptionalAccessService("thumbnail", "image/png", "imageThumb=true", "Image Thumbnail (64x64)"));
         }
 

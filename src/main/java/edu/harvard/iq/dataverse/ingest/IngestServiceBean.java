@@ -143,6 +143,9 @@ public class IngestServiceBean {
     @Resource(mappedName = "jms/IngestQueueConnectionFactory")
     QueueConnectionFactory factory;
     
+    // TODO: [in process!]
+    // move all the type-related lookups into the file service (L.A.)
+    
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";

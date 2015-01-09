@@ -57,6 +57,32 @@ public class ImageThumbConverter {
     public ImageThumbConverter() {
     }
     
+    public static boolean isThumbnailAvailable (DataFile file) {
+        return isThumbnailAvailable(file, DEFAULT_THUMBNAIL_SIZE);
+    }
+    
+    public static boolean isThumbnailAvailable (DataFile file, int size) {
+        if (file == null) {
+            return false; 
+        }
+        
+        String imageThumbFileName = null;
+
+        if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
+            imageThumbFileName = generateImageThumb(file.getFileSystemLocation().toString(), size);
+        } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
+            imageThumbFileName = generatePDFThumb(file.getFileSystemLocation().toString(), size);
+        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
+            imageThumbFileName = generateWorldMapThumb(file.getFileSystemLocation().toString(), size);
+        }
+        
+        if (imageThumbFileName != null) {
+            return true; 
+        }
+        
+        return false; 
+    }
+    
     public static FileAccessObject getImageThumb (DataFile file, FileAccessObject fileDownload) {
         return getImageThumb (file, fileDownload, DEFAULT_THUMBNAIL_SIZE);
     }
@@ -68,6 +94,8 @@ public class ImageThumbConverter {
             imageThumbFileName = generateImageThumb(file.getFileSystemLocation().toString(), size);
         } else if (file != null && file.getContentType().equalsIgnoreCase("application/pdf")) {
             imageThumbFileName = generatePDFThumb(file.getFileSystemLocation().toString(), size);
+        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
+            imageThumbFileName = generateWorldMapThumb(file.getFileSystemLocation().toString(), size);
         }
         
         if (imageThumbFileName != null) {
@@ -203,7 +231,7 @@ public class ImageThumbConverter {
             lowRes.flush();
             return thumbFileLocation;
         } catch (Exception e) {
-            // something went wrong, returning "false":
+            // something went wrong...
 	    //dbgLog.fine("ImageIO: caught an exception while trying to generate a thumbnail for "+fileLocation);
 
             return null;
@@ -278,6 +306,33 @@ public class ImageThumbConverter {
 
         return null; 
         
+    }
+    
+    public static String generateWorldMapThumb(String fileLocation, int size) {
+        String thumbFileLocation = fileLocation + ".img.thumb" + size;
+
+        // see if the thumb is already generated and saved:
+
+        if (new File(thumbFileLocation).exists()) {
+            return thumbFileLocation;
+        }
+        
+        // if not, see if the full-size image has already been generated for this
+        // WM image. 
+        // (we can't generate it here, on demand; it gets generated the first 
+        // time the world map app is called for this file!)
+        // if it does exist, we can try to generate a thumbnail, using the 
+        // normal image thumb method:
+        
+        String worldMapImageLocation = fileLocation + ".img";
+        
+        if (new File(thumbFileLocation).exists()) {
+            return generateImageThumb(worldMapImageLocation, size);
+        }
+        
+        // nothing we can do, sorry.
+        
+        return null; 
     }
     
     /*
