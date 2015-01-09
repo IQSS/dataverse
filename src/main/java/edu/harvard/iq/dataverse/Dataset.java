@@ -178,6 +178,20 @@ public class Dataset extends DvObjectContainer {
         }
         return false;
     }
+    
+    public boolean isDeaccessioned() {
+        // return true, if all published versions were deaccessioned
+        boolean hasDeaccessionedVersions = false;
+        for (DatasetVersion testDsv : getVersions()) {
+            if (testDsv.isReleased()) {
+                return false;  
+            }
+            if (testDsv.isDeaccessioned()) {
+                hasDeaccessionedVersions = true;
+            }
+        }
+        return hasDeaccessionedVersions; // since any published version would have already returned
+    }    
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);
