@@ -200,9 +200,9 @@ public abstract class AbstractApiBean {
     }
     
     protected Response okResponse( JsonArrayBuilder bld ) {
-        return Response.ok( Json.createObjectBuilder()
+        return Response.ok(Util.jsonObject2prettyString( Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", bld).build() ).build();
+            .add("data", bld).build() )).build();
     }
     
     protected Response okResponse(JsonArrayBuilder bld, Format format) {
@@ -223,9 +223,9 @@ public abstract class AbstractApiBean {
     }
     
     protected Response okResponse( JsonObjectBuilder bld ) {
-        return Response.ok( Json.createObjectBuilder()
+        return Response.ok(Util.jsonObject2prettyString( Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", bld).build() )
+            .add("data", bld).build() ))
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
@@ -245,9 +245,9 @@ public abstract class AbstractApiBean {
      * @return a HTTP OK response with the passed value as data.
      */
     protected Response okResponseWithValue( String value ) {
-        return Response.ok().entity(Json.createObjectBuilder()
+        return Response.ok(Util.jsonObject2prettyString(Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", value).build() ).build();
+            .add("data", value).build()), MediaType.APPLICATION_JSON_TYPE ).build();
     }
 
     protected Response okResponseWithValue( boolean value ) {
