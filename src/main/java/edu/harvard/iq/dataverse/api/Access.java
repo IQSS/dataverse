@@ -510,10 +510,7 @@ public class Access extends AbstractApiBean {
         
         // If there's no uploaded logo for this dataverse, go through its 
         // [released] datasets and see if any of them have card images:
-        
-        List<Dataset> childDatasets = datasetService.findByOwnerId(dataverseId, Boolean.TRUE);
-
-        for (Dataset dataset : datasetService.findByOwnerId(dataverseId, Boolean.TRUE)) {
+        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
             if (dataset != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 // TODO: 
