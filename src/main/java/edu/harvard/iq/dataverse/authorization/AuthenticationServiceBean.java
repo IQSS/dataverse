@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupExcep
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
@@ -160,6 +161,19 @@ public class AuthenticationServiceBean {
         return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
     }
             
+    public void deleteAuthenticatedUser(Object pk) {
+        AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
+        
+        
+        if (user!=null) {
+            ApiToken apiToken = findApiTokenByUser(user);
+            em.remove(apiToken);
+            BuiltinUser builtin = builtinUserServiceBean.findByUserName(user.getUserIdentifier());
+            em.remove(builtin);
+            em.remove(user.getAuthenticatedUserLookup());         
+            em.remove(user);
+        }
+    }
             
     public AuthenticatedUser getAuthenticatedUser( String identifier ) {
         try {
@@ -206,6 +220,8 @@ public class AuthenticationServiceBean {
             return null;
         }
     }
+    
+   
     
     public ApiToken findApiTokenByUser(AuthenticatedUser au) {
         ApiToken apiToken = null;
