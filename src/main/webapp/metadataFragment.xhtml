@@ -188,6 +188,11 @@
                                                                                 <f:selectItem itemLabel="Select..." itemValue="" noSelectionOption="true"/>
                                                                                 <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
                                                                             </p:selectOneMenu>
+                                                                            <ui:fragment rendered="#{!empty subdsf.validationMessage}">
+                                                                                    <div class="alert-danger">
+                                                                                        <strong>#{subdsf.validationMessage}</strong>
+                                                                                    </div>
+                                                                                </ui:fragment>
                                                                             <ui:fragment rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                                 <div class="ui-inputfield form-control select-scroll-block">
                                                                                     <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"

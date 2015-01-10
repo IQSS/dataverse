@@ -231,8 +231,10 @@ public class DatasetField implements Serializable {
     public String getValue() {
         if (!datasetFieldValues.isEmpty()) {
             return datasetFieldValues.get(0).getValue();
-        } else if (!controlledVocabularyValues.isEmpty()) {
-            return controlledVocabularyValues.get(0).getStrValue();
+        } else if (controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty()) {
+            if (controlledVocabularyValues.get(0) != null){
+                return controlledVocabularyValues.get(0).getStrValue();                
+            }
         }
         return null;
     }

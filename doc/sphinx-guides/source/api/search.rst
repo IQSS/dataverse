@@ -18,6 +18,7 @@ q               string   The search term or terms. Using "title:data" will searc
 type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.
 sort            string   The sort field. Supported values include "name" and "date". 
 order           string   The order in which to sort, either be "asc" or "desc".
+per_page        int      The number of results to return per request. The default is 10. The max is 1000.
 start           int      A cursor for paging through search results. See iteration example below.
 show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default.
 show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default.

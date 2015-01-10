@@ -34,6 +34,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * User-facing documentation:
+ * <a href="http://guides.dataverse.org/en/latest/api/search.html">http://guides.dataverse.org/en/latest/api/search.html</a>
+ */
 @Path("search")
 public class Search extends AbstractApiBean {
 
@@ -52,40 +56,38 @@ public class Search extends AbstractApiBean {
     public Response search(
             @QueryParam("q") String query,
             @QueryParam("type") final List<String> types,
-            @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("sort") String sortField,
             @QueryParam("order") String sortOrder,
+            @QueryParam("per_page") final int numResultsPerPageRequested,
             @QueryParam("start") final int paginationStart,
             @QueryParam("show_relevance") boolean showRelevance,
             @QueryParam("show_facets") boolean showFacets,
+            @QueryParam("fq") final List<String> filterQueries,
+            /**
+             * @todo Support narrowing to a dataverse subtree.
+             */
             @QueryParam("subtree") String subtreeRequested
     ) {
         if (query != null) {
-            User user = getUser();
-            boolean dataRelatedToMe = getDataRelatedToMe();
-            int numResultsPerPage = getNumberOfResultsPerPage();
 
+            // sanity checking on user-supplied arguments
+            SortBy sortBy;
+            int numResultsPerPage;
             Dataverse subtree;
             try {
+                if (!types.isEmpty()) {
+                    filterQueries.add(getFilterQueryFromTypes(types));
+                }
+                sortBy = getSortBy(sortField, sortOrder);
+                numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
                 subtree = getSubtree(subtreeRequested);
             } catch (Exception ex) {
                 return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
 
-            SortBy sortBy;
-            try {
-                sortBy = getSortBy(sortField, sortOrder);
-            } catch (Exception ex) {
-                return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
-            }
-
-            if (!types.isEmpty()) {
-                try {
-                    filterQueries.add(getFilterQueryFromTypes(types));
-                } catch (Exception ex) {
-                    return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
-                }
-            }
+            // users can't change these (yet anyway)
+            boolean dataRelatedToMe = getDataRelatedToMe();
+            User user = getUser();
 
             SolrQueryResponse solrQueryResponse;
             try {
@@ -171,11 +173,14 @@ public class Search extends AbstractApiBean {
              * @todo Consider adding count_in_response so the client doesn't
              * have to calculate it.
              */
+            /**
+             * @todo Remove this or not?
+             */
             value.add("count_in_response", solrSearchResults.size());
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid.
              */
-//            value.add("fq_provided", filterQueries.toString());
+            value.add("fq_provided", filterQueries.toString());
             if (solrQueryResponse.getError() != null) {
                 /**
                  * @todo You get here if you pass only ":" as a query, for
@@ -193,6 +198,10 @@ public class Search extends AbstractApiBean {
         /**
          * @todo support searching as non-guest:
          * https://github.com/IQSS/dataverse/issues/1299
+         *
+         * Note that superusers can't currently use the Search API because they
+         * see permission documents (all Solr documents, really) and we get a
+         * NPE when trying to determine the DvObject type.
          */
         User user = new GuestUser();
         return user;
@@ -207,12 +216,35 @@ public class Search extends AbstractApiBean {
         return dataRelatedToMe;
     }
 
-    private int getNumberOfResultsPerPage() {
+    private int getNumberOfResultsPerPage(int numResultsPerPage) {
         /**
-         * @todo Raise the limit of results per page.
+         * @todo should maxLimit be configurable?
          */
-        int numResultsPerPage = 10;
-        return numResultsPerPage;
+        int maxLimit = 1000;
+        if (numResultsPerPage == 0) {
+            int defaultLimit = 10;
+            return defaultLimit;
+        } else if (numResultsPerPage < 0) {
+            throw new IllegalArgumentException(numResultsPerPage + " results per page requested but can not be less than zero.");
+        } else if (numResultsPerPage > maxLimit) {
+            /**
+             * @todo numbers higher than 2147483647 emit HTML rather than the
+             * expected JSON response below.
+             *
+             * It also returns a 404 but
+             * http://docs.oracle.com/javaee/7/tutorial/jaxrs002.htm says 'an
+             * HTTP 400 ("Client Error") response is returned' if an int "cannot
+             * be parsed as a 32-bit signed integer".
+             *
+             * Is this perhaps due a change to web.xml and all the prettyfaces
+             * stuff in https://github.com/IQSS/dataverse/issues/958 ?
+             *
+             */
+            throw new IllegalArgumentException(numResultsPerPage + " results per page requested but max limit is " + maxLimit + ".");
+        } else {
+            // ok, fine, you get what you asked for
+            return numResultsPerPage;
+        }
     }
 
     /**
@@ -239,6 +271,12 @@ public class Search extends AbstractApiBean {
                     sortOrder = SortBy.ASCENDING;
                 } else if (sortField.equals(SearchFields.RELEASE_OR_CREATE_DATE)) {
                     sortOrder = SortBy.DESCENDING;
+                } else {
+                    /**
+                     * @todo for when sort="foo" but why should we remove the
+                     * else below?
+                     */
+                    sortOrder = SortBy.ASCENDING;
                 }
             } else {
                 // asc for alphabetical by default despite GitHub using desc by default:
