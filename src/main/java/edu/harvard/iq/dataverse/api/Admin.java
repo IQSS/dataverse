@@ -195,10 +195,11 @@ public class Admin extends AbstractApiBean {
     }
     
     @DELETE
-    @Path("authenticatedUsers/{id}/")
-    public Response deleteAuthenticatedUser(@PathParam("id") Long id) {
-        authSvc.deleteAuthenticatedUser(id);
-        return okResponse("AuthenticatedUser " +id + " deleted. ");
+    @Path("authenticatedUsers/{identifier}/")
+    public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        authSvc.deleteAuthenticatedUser(user.getId());
+        return okResponse("AuthenticatedUser " +identifier + " deleted. ");
     }
     
     @Path("roles")
@@ -211,11 +212,12 @@ public class Admin extends AbstractApiBean {
         }
     }
     
-    @Path("superuser/{id}")
+    @Path("superuser/{identifier}")
     @GET
-    public Response toggleSuperuser(@PathParam("id") Long id) {
-        try {
-            AuthenticatedUser user = authSvc.findByID(id);
+    public Response toggleSuperuser(@PathParam("identifier") String identifier) {
+       try {
+          AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+          
             user.setSuperuser(!user.isSuperuser());
             
             return okResponse("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set": "removed") + " as a superuser.");
