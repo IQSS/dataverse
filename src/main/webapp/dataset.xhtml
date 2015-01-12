@@ -684,7 +684,7 @@
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired)}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
-                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/>
+                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download}
                                                 </a>
                                             </ui:fragment>
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
@@ -1604,6 +1604,7 @@
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
+                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Select one or more tags to describe the type of data file this file is.</p>
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:selectCheckboxMenu id="tabularDataTags" value="#{DatasetPage.selectedTags}" label="#{bundle['file.addTags']}"
                                                                   filter="false" panelStyle="width:300px">
@@ -1644,6 +1645,7 @@
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
+                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Select if you would like this image to be used as the image that is displayed in the search results card for this dataset.</p>
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:column>
                                                 <p:selectBooleanCheckbox  id="datasetThumbnailImage" itemLabel="#{bundle['file.useThisIamge']}" value="#{DatasetPage.useAsDatasetThumbnail}"/>
