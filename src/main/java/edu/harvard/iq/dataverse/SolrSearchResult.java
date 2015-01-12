@@ -24,7 +24,7 @@ public class SolrSearchResult {
     private Long entityId;
     private String identifier;
     private String type;
-    private String url;
+    private String htmlUrl;
     private String persistentUrl;
     private String downloadUrl;
     private String query;
@@ -259,18 +259,22 @@ public class SolrSearchResult {
 
         String identifierLabel = null;
         String datasetCitation = null;
+        String preferredUrl = null;
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
             identifierLabel = "identifier";
+            preferredUrl = getHtmlUrl();
         } else if (this.type.equals(SearchConstants.DATASETS)) {
             displayName = this.title;
             identifierLabel = "global_id";
+            preferredUrl = getPersistentUrl();
             /**
              * @todo Should we show the name of the parent dataverse?
              */
         } else if (this.type.equals(SearchConstants.FILES)) {
             displayName = this.name;
             identifierLabel = "file_id";
+            preferredUrl = getDownloadUrl();
             /**
              * @todo show more information for a file's parent, such as the
              * title of the dataset it belongs to.
@@ -291,9 +295,9 @@ public class SolrSearchResult {
                  * Discuss at
                  * https://docs.google.com/document/d/1d8sT2GLSavgiAuMTVX8KzTCX0lROEET1edhvHHRDZOs/edit?usp=sharing";
                  */
-                .add("html_url", getUrl())
-                .add("persistent_url", this.persistentUrl)
-                .add("download_url", this.downloadUrl)
+                .add("url", preferredUrl)
+                //                .add("persistent_url", this.persistentUrl)
+                //                .add("download_url", this.downloadUrl)
                 /**
                  * @todo How much value is there in exposing the identifier for
                  * dataverses? For
@@ -383,12 +387,12 @@ public class SolrSearchResult {
         this.type = type;
     }
 
-    public String getUrl() {
-        return url;
+    public String getHtmlUrl() {
+        return htmlUrl;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setHtmlUrl(String htmlUrl) {
+        this.htmlUrl = htmlUrl;
     }
 
     public String getPersistentUrl() {
