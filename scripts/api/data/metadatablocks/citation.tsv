@@ -13,7 +13,7 @@
 	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	9	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
 	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
 	datasetContact	Contact	Contact information.		text	11	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.		text	12	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
+	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	12	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	13	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	14	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
 	dsDescription	Description Information	A summary describing the purpose, nature, and scope of the Dataset.		text	15	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
@@ -40,7 +40,7 @@
 	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	36	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	37	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	38	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
-	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URLfor image, starting with http://	url	39	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerLogoURL	Logo URL	URL for the producer's logo, which points to this  producer's web-accessible logo image. Enter an absolute URL where the producer's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	39	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	40	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	41	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		text	42	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
@@ -54,7 +54,7 @@
 	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	50	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	51	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	52	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URLfor image, starting with http://	url	53	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	53	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	54	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	55	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		text	56	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
