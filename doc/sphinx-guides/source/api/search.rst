@@ -1,6 +1,8 @@
 Search API
 ==========
 
+.. contents:: :local:
+
 About
 -----
 
@@ -18,7 +20,7 @@ q               string   The search term or terms. Using "title:data" will searc
 type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.
 subtree         string   The alias of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.
 sort            string   The sort field. Supported values include "name" and "date". 
-order           string   The order in which to sort, either be "asc" or "desc".
+order           string   The order in which to sort. Can either be "asc" or "desc".
 per_page        int      The number of results to return per request. The default is 10. The max is 1000.
 start           int      A cursor for paging through search results. See iteration example below.
 show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default.
@@ -31,7 +33,7 @@ Example
 
 https://apitest.dataverse.org/api/search?q=*
 
-.. code-block:: json 
+.. code-block:: json
 
     {
       "data": {
@@ -45,7 +47,7 @@ https://apitest.dataverse.org/api/search?q=*
             "published_at": "2015-01-08T03:27Z",
             "global_id": "doi:10.5072/FK2/I4VPEZ",
             "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
-            "url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
+            "html_url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
             "type": "dataset",
             "name": "Spruce Goose"
           },
@@ -55,7 +57,7 @@ https://apitest.dataverse.org/api/search?q=*
             "description": "",
             "file_id": "12",
             "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
-            "url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
+            "html_url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
             "type": "dataset",
             "name": "trees.png"
           },
@@ -63,7 +65,7 @@ https://apitest.dataverse.org/api/search?q=*
             "published_at": "2015-01-08T03:27Z",
             "description": "A spruce with some birds",
             "alias": "spruce",
-            "url": "https://apitest.dataverse.org/dataverse/spruce",
+            "html_url": "https://apitest.dataverse.org/dataverse/spruce",
             "type": "dataverse",
             "name": "Spruce"
           },
@@ -71,7 +73,7 @@ https://apitest.dataverse.org/api/search?q=*
             "published_at": "2015-01-08T03:27Z",
             "description": "A tree dataverse with some birds",
             "alias": "trees",
-            "url": "https://apitest.dataverse.org/dataverse/trees",
+            "html_url": "https://apitest.dataverse.org/dataverse/trees",
             "type": "dataverse",
             "name": "Trees"
           }
@@ -84,7 +86,34 @@ https://apitest.dataverse.org/api/search?q=*
       "status": "OK"
     }
 
-Iteration example
+Relevance
+---------
+
+By setting ``show_relevance=true`` matches per field are shown:
+
+.. code-block:: json
+
+    "matches":[
+        {
+            "description":{
+                "snippets":[
+                    "A <span class=\"search-term-match\">tree</span> dataverse with some birds"
+                ]
+            }
+        },
+        {
+            "name":{
+                "snippets":[
+                    "<span class=\"search-term-match\">Trees</span>"
+                ]
+            }
+        }
+    ]
+
+Iteration
+---------
+
+Be default, up to 10 results are returned with every request (though this can be increased with the ``per_page`` parameter). To iterate through many results, increase the ``start`` parameter on each iteration until you reach the ``total_count`` in the response. An example in Python is below.
 
 .. code-block:: python
 

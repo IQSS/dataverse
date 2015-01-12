@@ -290,13 +290,14 @@ public class SolrSearchResult {
                  */
                 .add("type", getDisplayType(getType()))
                 /**
-                 * @todo We should probably have a metadata_url concept. For
-                 * datasets, this would be http://example.com/api/datasets/10 or
-                 * whatever (to get more detailed JSON), but right now this
-                 * requires an API token. Discuss at
+                 * @todo We should probably have a metadata_url or api_url
+                 * concept. For datasets, this would be
+                 * http://example.com/api/datasets/10 or whatever (to get more
+                 * detailed JSON), but right now this requires an API token.
+                 * Discuss at
                  * https://docs.google.com/document/d/1d8sT2GLSavgiAuMTVX8KzTCX0lROEET1edhvHHRDZOs/edit?usp=sharing";
                  */
-                .add("url", getUrl())
+                .add("html_url", getUrl())
                 .add("persistent_url", this.persistentUrl)
                 /**
                  * @todo How much value is there in exposing the identifier for
