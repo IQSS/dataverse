@@ -315,12 +315,12 @@
                                                 </li>
                                                 <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
                                                            end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
-                                                           var="pageListItem">
-                                                    <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
+                                                           varStatus="pageStatus">
+                                                    <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
                                                         <h:outputLink>
-                                                            <h:outputText value="#{pageListItem}"/>
-                                                            <span class="#{SearchIncludeFragment.page == pageListItem ? 'sr-only' : ''}">
-                                                                <h:outputText value="#{SearchIncludeFragment.page == pageListItem ? ' (current)' : ''}"/>
+                                                            <h:outputText value="#{pageStatus.index}"/>
+                                                            <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
+                                                                <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? ' (current)' : ''}"/>
                                                             </span>
                                                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -330,7 +330,7 @@
                                                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                                            <f:param name="page" value="#{pageListItem}"/>
+                                                            <f:param name="page" value="#{pageStatus.index}"/>
                                                         </h:outputLink>
                                                     </li>
                                                 </c:forEach>
@@ -695,12 +695,12 @@
                                         </li>
                                         <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
                                                    end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
-                                                   var="pageListItem">
-                                            <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
+                                                   varStatus="pageStatus">
+                                            <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
                                                 <h:outputLink>
-                                                    <h:outputText value="#{pageListItem}"/>
-                                                    <span class="#{SearchIncludeFragment.page == pageListItem ? 'sr-only' : ''}">
-                                                        <h:outputText value="#{SearchIncludeFragment.page == pageListItem ? ' (current)' : ''}"/>
+                                                    <h:outputText value="#{pageStatus.index}"/>
+                                                    <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
+                                                        <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? ' (current)' : ''}"/>
                                                     </span>
                                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -710,7 +710,7 @@
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                                    <f:param name="page" value="#{pageListItem}"/>
+                                                    <f:param name="page" value="#{pageStatus.index}"/>
                                                 </h:outputLink>
                                             </li>
                                         </c:forEach>
