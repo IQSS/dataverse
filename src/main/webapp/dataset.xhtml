@@ -601,14 +601,16 @@
                                                 </div>
                                             </ui:fragment>
 
+                                            <ui:remove>
                                             <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
                                                  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
                                                 <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->                                           
                                                  |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a>
-                                                <!--
+                                                <!-- 
                                                 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
                                                 -->
                                             </ui:fragment>
+                                            </ui:remove>
 
                                             <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
                                                 <div class="fileDescription">
@@ -669,7 +671,7 @@
                                             
                                             <!-- WorldMap explore option -->
                                             <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                  <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">
+                                                  <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
