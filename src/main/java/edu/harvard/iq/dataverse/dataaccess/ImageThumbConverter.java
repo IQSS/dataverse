@@ -325,8 +325,8 @@ public class ImageThumbConverter {
         // normal image thumb method:
         
         String worldMapImageLocation = fileLocation + ".img";
-        
-        if (new File(thumbFileLocation).exists()) {
+        //logger.info ("worldMapImageLocation: " + worldMapImageLocation);
+        if (new File(worldMapImageLocation).exists()) {
             return generateImageThumb(worldMapImageLocation, size);
         }
         
