@@ -379,9 +379,9 @@ public class SearchServiceBean {
              */
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
-                solrSearchResult.setUrl(baseUrl + "/dataverse/" + identifier);
+                solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
             } else if (type.equals("datasets")) {
-                solrSearchResult.setUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
+                solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 String datasetDescription = (String) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                 solrSearchResult.setDescriptionNoSnippet(datasetDescription);
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
@@ -400,7 +400,7 @@ public class SearchServiceBean {
                 if (parentGlobalIdObject != null) {
                     parentGlobalId = (String) parentGlobalIdObject;
                 }
-                solrSearchResult.setUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
+                solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
