@@ -11,7 +11,8 @@ The document is primarily intended for those who are interested in implementing 
 
 UNF v5, on which v6 is based, was originally described in Dr. Micah Altman's paper "A Fingerprint Method for Verification of Scientific Data", Springer Verlag, 2008. The reader is encouraged to consult it for the explanation of the theory behind UNF. However, various changes and clarifications concerning the specifics of normalization have been made to the algorithm since the publication. These crucial details were only documented in the author's unpublished edits of the article and in private correspondence. With this document, a serious effort has been made to produce a complete step-by-step description of the entire process. It should be fully sufficient for the purposes of implementing the algorithm.
 
-**I. UNF of a Data Vector**
+I. UNF of a Data Vector
+-------------------------
 
 For each individual vector in a data frame, calculate its UNF signature as follows:
 
@@ -52,6 +53,8 @@ If an element is an ``IEEE 754``, non-finite, special floating-point value, repr
 | Positive infinity is normalized as ``+inf``
 | The number ``1.23456789``, normalized with the default rounding to 7 digits of precision, is normalized as ``+1.234568e+``
 
+An "official" list of pre-calculated sample UNFs is supplied with the source of the Java implementation of UNF v6; see the :ref:`Note <note4>` at the end of the document.
+
 **2. For a vector of character strings:**
 
 Encode each character string with Unicode bit encoding. In UNF Version 6 UTF-8 is used. Truncate each string to ``X`` characters; the default value of ``X`` is 128. No further normalization is performed.
@@ -66,21 +69,21 @@ Normalize bit fields by converting to big-endian form, truncating all leading em
 
 **5. Normalize dates, times and intervals as follows:**
 
-*5a. Dates.*
-Convert calendar dates to a character string of the form ``YYYY-MM-DD``, zero padded. Partial dates in the form ``YYYY`` or ``YYYY-MM`` are permitted
+| *5a. Dates.*
+| Convert calendar dates to a character string of the form ``YYYY-MM-DD``, zero padded. Partial dates in the form ``YYYY`` or ``YYYY-MM`` are permitted
 
-*5b. Time.*
-Time representation is based on an ``ISO 8601`` format ``hh:mm:ss.fffff``. ``hh``, ``mm`` and ``ss`` are 2 digit, zero-padded numbers. ``fffff`` represents fractions of a second, it must contain no trailing (non-significant) zeroes, and must be omitted altogether the value is zero. No other fractional representations, such as fractional minutes or hours, are permitted. If the time zone of the observation is known, convert the time value to the UTC time zone and append a ”``Z``” to the time representation. (In other words, no time zones other than UTC are allowed in the final normalized representation).
+| *5b. Time.*
+| Time representation is based on an ``ISO 8601`` format ``hh:mm:ss.fffff``. ``hh``, ``mm`` and ``ss`` are 2 digit, zero-padded numbers. ``fffff`` represents fractions of a second, it must contain no trailing (non-significant) zeroes, and must be omitted altogether the value is zero. No other fractional representations, such as fractional minutes or hours, are permitted. If the time zone of the observation is known, convert the time value to the UTC time zone and append a ”``Z``” to the time representation. (In other words, no time zones other than UTC are allowed in the final normalized representation).
 
 (see the :ref:`Note <note3>` at the end of this document for a discussion on :ref:`potential issues when calculating UNFs of time values <note3>`).
 
-*5c. Combined Date and Time values.*
-Format elements that comprise a combined date and time by concatenating the (full) date representation, a single letter “``T``”, and the time representation. Partial date representations are **prohibited** in combined date and time values.
+| *5c. Combined Date and Time values.*
+| Format elements that comprise a combined date and time by concatenating the (full) date representation, a single letter “``T``”, and the time representation. Partial date representations are **prohibited** in combined date and time values.
 
-*5d. Intervals.*
-Represent intervals by using two date-time values, each formatted as defined previously, and separated by a slash ("``/``").
+| *5d. Intervals.*
+| Represent intervals by using two date-time values, each formatted as defined previously, and separated by a slash ("``/``").
 
-*Durations*, that were mentioned in the old UNF v5 document are NOT in fact implemented and have been dropped from the spec.
+| *Durations*, that were mentioned in the old UNF v5 document are NOT in fact implemented and have been dropped from the spec.
 
 *Examples:*
 
@@ -104,21 +107,28 @@ Terminate each character string representing a NON-MISSING value with a ``POSIX`
 | ``SHA256`` hash. truncated to the default ``128`` bits: ``Do5dfAoOOFt4FSj0JcByEw==``
 | Printable UNF: ``UNF:6:Do5dfAoOOFt4FSj0JcByEw==``
 
-**II. Combining multiple UNFs to create UNFs of higher-level objects.**
+II. Combining multiple UNFs to create UNFs of higher-level objects.
+-------------------------------------------------------------------
 
-**IIa. Combine UNFs from multiple variables to form the UNF for an entire data frame as follows:**
+**IIa. Combine the UNFs of multiple variables to form the UNF for an entire data frame as follows:**
 
-Sort the printable representations of individual UNFs in POSIX locale sort order.
+| *UNF of a data frame (datafile) with 1 variable:* 
+| The UNF of the data frame is the same as the UNF of the variable.
 
-Apply the UNF algorithm to the resulting vector of character strings, with the character string truncation parameter ``X`` at least as large as the length of each individual UNF string. (i.e., do not truncate the UNFs of individual variables!)
+| *UNF of a data frame with the number of variables > 1:*
+| Sort the printable UTF8 representations of the individual UNFs in the POSIX locale sort order.
+| Apply the UNF algorithm to the resulting vector of character strings. 
 
-Do note the sorting part, above, it is important! In a vector of observations, the order is important; changing the order of observations changes the UNF. A data frame, however, is considered an unordered set of individual vectors. I.e., re-arranging the order in which data variable columns occur in an R or Stata file should not affect the UNF. Hence the UNFs of individual variables are sorted, before the combined UNF of the data frame is calculated.
+Do note the **sorting** part, above, it is important! In a vector of observations, the order is important; changing the order of observations changes the UNF. A data frame, however, is considered an unordered set of individual vectors. I.e., re-arranging the order in which data variable columns occur in an R or Stata file should not affect the UNF. Hence the UNFs of individual variables are sorted, before the combined UNF of the data frame is calculated.
 
 **IIb. Similarly, combine the UNFs for a set of data frames to form a single UNF that represents an entire research study ("dataset").**
 
+Again, the UNF of a study (dataset) with a single file = the UNF of the file; for more than one file, calculate the study UNF as described above. 
+
 Using a consistent UNF version and level of precision across an entire dataset is recommended when calculating the UNFs of individual data objects.
 
-**Footnotes:**
+Footnotes:
+----------
 
 .. _note1:
 
@@ -135,14 +145,17 @@ For example, to specify a non-default precision the parameter it is specified us
 | Other optional parameters supported: 
 | (**multiple parameters are added comma-separated, in any order**)
 
-| ``Xnnn`` - where ``nnn`` is the number of characters for truncation of character strings;
-| ``Hnnn`` - where ``nnn`` is the number of bits to which the ``SHA256`` hash should be truncated.
+| ``X###`` - where ``###`` is the number of bytes for truncation of character strings;
+| ``128`` is the default. 
+| ``H###`` - where ``###`` is the number of bits to which the ``SHA256`` hash should be truncated.
 | Allowed values are {``128`` , ``192`` , ``196`` , ``256``} with ``128`` being the default. 
-| ``R1`` - **truncate** numeric values to k digits, instead of rounding, as previously described.
+| ``R1`` - **truncate** numeric values to ``N`` digits, **instead of rounding**, as previously described.
 
 `Dr. Micah Altman's classic UNF v5 paper <http://www.researchgate.net/publication/200043172_A_Fingerprint_Method_for_Scientific_Data_Verification>`_ mentions another optional parameter ``T###``, for specifying rounding of date and time values (implemented as stripping the values of entire components - fractional seconds, seconds, minutes, hours... etc., progressively) - but it doesn't specify its syntax. It is left as an exercise for a curious reader to contact the author and work out the details, if so desired. (Not implemented in UNF Version 6 by the Dataverse Project).
 
-It should be noted that the Dataverse application never calculates UNFs with any non-default parameters. And we are not aware of anyone else actually doing so. If you are considering creating your own implementation of the UNF, it may be worth trying to create a simplified, defaults-only version first. Such an implementation would be sufficient to independently verify Dataverse-produced UNFs, among other things.
+Note: we do not recommend truncating character strings at fewer bytes than the default ``128`` (the ``X`` parameter). At the very least this number **must** be high enough so that the printable UNFs of individual variables or files are not truncated, when calculating combined UNFs of files or datasets, respectively. 
+
+It should also be noted that the Dataverse application never calculates UNFs with any non-default parameters. And we are not aware of anyone else actually doing so. If you are considering creating your own implementation of the UNF, it may be worth trying to create a simplified, defaults-only version first. Such an implementation would be sufficient to independently verify Dataverse-produced UNFs, among other things.
 
 .. _note2:
 
@@ -167,6 +180,13 @@ The fact that the same time value with and without the time zone specified produ
 
 it still results in R assuming the time is in the **current** time zone, and storing the UTC equivalent of that time. In fact R always stores its time values in UTC; specific time zones can be defined, as attributes, in which case the values will be adjusted accordingly for display. Otherwise the display representation will be readjusted each time the vector is viewed, according to the time zone **current to the viewer**. Meaning that the human readable representation of the same stored time value will be different when viewed on systems in different time zones. With that in mind, it appears that the only way to calculate a meaningful UNF of a time value from an R data frame is to use the stored UTC time - resulting in the "Z" in the normalized string. And that further means that it is impossible to convert a data frame with time values from STATA to R, or the other way around, and have the same UNF preserved.
 
-We do not consider this a problem with the algorithm. These differences between the two approaches to handling time values, in R and STATA, should in fact be considered as **significant**. Enough so to conclude that the format conversion actually changes the data **semantically**. Which, in turn, justifies a different UNF.
+We do not consider this a problem with the algorithm. These differences between the two approaches to handling time values, in R and STATA, should in fact be considered as **significant**. Enough so to conclude that the format conversion actually changes the data **semantically**. Which, in turn, justifies a new UNF.
 
 If for whatever reason it is important to produce an R version of a STATA file while preserving the UNF, it can still be done. One way to achieve that would be to convert the original time vector to a String vector in R, in the format identical to that used in the UNF normalization algorithm, e.g., "``yy-mm-ddThh:mm:ss``". One would not be able to use this resulting R vector in any time-based calculations without extra type conversion. But the data frame would produce the same UNF.
+
+.. _note4: 
+
+**More UNF Examples:**
+
+An "official" `list of sample UNFs <https://raw.githubusercontent.com/IQSS/UNF/master/doc/unf_examples.txt>`_ of various data types is provided with the source of the UNF v6 Java implementation.
+ 
