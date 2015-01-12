@@ -126,6 +126,10 @@ public class SearchFields {
      * @todo Add this to schema.xml with no "_s" and make it indexed=false
      */
     public static final String PARENT_IDENTIFIER = "parent_identifier_s";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String PARENT_CITATION = "parent_citation_s";
 
     public static final String DATASET_DESCRIPTION = "dsDescription";
     /**

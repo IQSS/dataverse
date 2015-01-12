@@ -26,6 +26,7 @@ public class SolrSearchResult {
     private String type;
     private String url;
     private String persistentUrl;
+    private String downloadUrl;
     private String query;
     private String name;
     private String nameSort;
@@ -257,6 +258,7 @@ public class SolrSearchResult {
         String displayName = null;
 
         String identifierLabel = null;
+        String datasetCitation = null;
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
             identifierLabel = "identifier";
@@ -273,13 +275,13 @@ public class SolrSearchResult {
              * @todo show more information for a file's parent, such as the
              * title of the dataset it belongs to.
              */
+            datasetCitation = parent.get("citation");
         }
 
         //displayName = null; // testing NullSafeJsonBuilder
         // because we are using NullSafeJsonBuilder key/value pairs will be dropped if the value is null
         NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
                 .add("name", displayName)
-                .add("entity_id", this.entityId)
                 .add("type", getDisplayType(getType()))
                 /**
                  * @todo We should probably have a metadata_url or api_url
@@ -291,6 +293,7 @@ public class SolrSearchResult {
                  */
                 .add("html_url", getUrl())
                 .add("persistent_url", this.persistentUrl)
+                .add("download_url", this.downloadUrl)
                 /**
                  * @todo How much value is there in exposing the identifier for
                  * dataverses? For
@@ -319,9 +322,15 @@ public class SolrSearchResult {
                  * @todo Maybe we should expose MIME Type also.
                  */
                 .add("file_type", this.filetype)
+                .add("dataset_citation", datasetCitation)
                 .add("citation", this.citation);
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
+        }
+        if (showEntityIds) {
+            if (this.entityId != null) {
+                nullSafeJsonBuilder.add("entity_id", this.entityId);
+            }
         }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
         if (!datasetAuthors.isEmpty()) {
@@ -388,6 +397,14 @@ public class SolrSearchResult {
 
     public void setPersistentUrl(String persistentUrl) {
         this.persistentUrl = persistentUrl;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
     }
 
     public String getQuery() {

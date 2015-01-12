@@ -401,6 +401,7 @@ public class SearchServiceBean {
                     parentGlobalId = (String) parentGlobalIdObject;
                 }
                 solrSearchResult.setUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
+                solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
@@ -410,6 +411,7 @@ public class SearchServiceBean {
              */
             parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
             parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
+            parent.put("citation", (String) solrDocument.getFieldValue(SearchFields.PARENT_CITATION));
             solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);
         }
