@@ -205,38 +205,43 @@ public class SolrSearchResult {
         }
     }
 
-    public JsonObject getRelevance() {
-        JsonArrayBuilder detailsArrayBuilder = Json.createArrayBuilder();
-        for (Highlight highlight : highlightsAsList) {
-            JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
-            for (String snippet : highlight.getSnippets()) {
-                snippetArrayBuilder.add(snippet);
-            }
-            JsonObjectBuilder detailsObjectBuilder = Json.createObjectBuilder();
-            /**
-             * @todo show the friendly name here rather than the solr field
-             */
-            detailsObjectBuilder.add(highlight.getSolrField().getNameSearchable(), snippetArrayBuilder);
-            detailsArrayBuilder.add(detailsObjectBuilder);
-        }
-
-        JsonObjectBuilder detailsObjectBuilder = Json.createObjectBuilder();
+    public JsonArrayBuilder getRelevance() {
+        JsonArrayBuilder matchedFieldsArray = Json.createArrayBuilder();
+        JsonObjectBuilder matchedFieldObject = Json.createObjectBuilder();
         for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
             SolrField solrField = entry.getKey();
             Highlight snippets = entry.getValue();
             JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
+            JsonObjectBuilder matchedFieldDetails = Json.createObjectBuilder();
             for (String highlight : snippets.getSnippets()) {
                 snippetArrayBuilder.add(highlight);
-                detailsObjectBuilder.add(solrField.getNameSearchable(), snippetArrayBuilder);
             }
+            /**
+             * @todo for the Search API, it might be nice to return offset
+             * numbers rather than html snippets surrounded by span tags or
+             * whatever.
+             *
+             * That's what the GitHub Search API does: "Requests can opt to
+             * receive those text fragments in the response, and every fragment
+             * is accompanied by numeric offsets identifying the exact location
+             * of each matching search term."
+             * https://developer.github.com/v3/search/#text-match-metadata
+             *
+             * It's not clear if getting the offset values is possible with
+             * Solr, however:
+             * stackoverflow.com/questions/13863118/can-solr-highlighting-also-indicate-the-position-or-offset-of-the-returned-fragments-within-the-original-field
+             */
+            matchedFieldDetails.add("snippets", snippetArrayBuilder);
+            /**
+             * @todo In addition to the name of the field used by Solr , it
+             * would be nice to show the "friendly" name of the field we show in
+             * the GUI.
+             */
+//            matchedFieldDetails.add("friendly", "FIXME");
+            matchedFieldObject.add(solrField.getNameSearchable(), matchedFieldDetails);
+            matchedFieldsArray.add(matchedFieldObject);
         }
-        JsonObject jsonObject = Json.createObjectBuilder()
-                .add(SearchFields.ID, this.id)
-                .add("matched_fields", this.matchedFields.toString())
-                .add("detailsArray", detailsArrayBuilder)
-                //                .add("detailsObject", detailsObjectBuilder)
-                .build();
-        return jsonObject;
+        return matchedFieldsArray;
     }
 
     public JsonObject toJsonObject(boolean showRelevance) {
@@ -323,7 +328,7 @@ public class SolrSearchResult {
                 .add("file_type", this.filetype)
                 .add("citation", this.citation);
         if (showRelevance) {
-            nullSafeJsonBuilder.add("relevance", getRelevance());
+            nullSafeJsonBuilder.add("matches", getRelevance());
         }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
         if (!datasetAuthors.isEmpty()) {

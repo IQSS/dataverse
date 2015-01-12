@@ -124,11 +124,9 @@ public class Search extends AbstractApiBean {
             }
 
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
-            JsonArrayBuilder relevancePerResult = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
                 itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance));
-                relevancePerResult.add(solrSearchResult.getRelevance());
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -151,13 +149,6 @@ public class Search extends AbstractApiBean {
                 facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
             }
             facets.add(facetCategoryBuilder);
-            Map<String, String> datasetfieldFriendlyNamesBySolrField = solrQueryResponse.getDatasetfieldFriendlyNamesBySolrField();
-//            logger.info("the hash: " + datasetfieldFriendlyNamesBySolrField);
-            for (Map.Entry<String, String> entry : datasetfieldFriendlyNamesBySolrField.entrySet()) {
-                String string = entry.getKey();
-                String string1 = entry.getValue();
-//                logger.info(string + ":" + string1);
-            }
 
             JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
@@ -165,13 +156,6 @@ public class Search extends AbstractApiBean {
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("spelling_alternatives", spelling_alternatives)
                     .add("items", itemsArrayBuilder.build());
-            if (showRelevance) {
-                /**
-                 * @todo rather than adding relevance as a separate array, have
-                 * relevance per item in the main "items" array.
-                 */
-                value.add("relevance", relevancePerResult.build());
-            }
             if (showFacets) {
                 value.add("facets", facets);
             }
