@@ -523,7 +523,12 @@ public class DatasetPage implements java.io.Serializable {
                 dataset = datasetService.find(dataset.getId());
             }
             if (globalId != null) {
-                dataset = datasetService.findByGlobalId(globalId);
+                try{
+                    dataset = datasetService.findByGlobalId(globalId);
+                }
+                catch (EJBException e){
+                    dataset = null;                    
+                }                
             }
 
             if (dataset == null) {
