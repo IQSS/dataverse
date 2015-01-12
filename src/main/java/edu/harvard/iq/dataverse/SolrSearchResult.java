@@ -244,11 +244,11 @@ public class SolrSearchResult {
         return matchedFieldsArray;
     }
 
-    public JsonObject toJsonObject(boolean showRelevance) {
-        return json(showRelevance).build();
+    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds) {
+        return json(showRelevance, showEntityIds).build();
     }
 
-    public JsonObjectBuilder json(boolean showRelevance) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds) {
 
         if (this.type == null) {
             return jsonObjectBuilder();
@@ -283,7 +283,7 @@ public class SolrSearchResult {
                  * database/entity id. And it might be valuable for use in
                  * subsequent API calls.
                  */
-                .add("name", displayName)
+                .add("entity_id", this.entityId)
                 /**
                  * @todo We should probably change it to "type=dataset"
                  * (singular) for example.

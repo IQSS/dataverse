@@ -63,7 +63,8 @@ public class Search extends AbstractApiBean {
             @QueryParam("start") final int paginationStart,
             @QueryParam("show_relevance") boolean showRelevance,
             @QueryParam("show_facets") boolean showFacets,
-            @QueryParam("fq") final List<String> filterQueries
+            @QueryParam("fq") final List<String> filterQueries,
+            @QueryParam("show_entity_ids") boolean showEntityIds
     ) {
         if (query != null) {
 
@@ -126,7 +127,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance));
+                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
