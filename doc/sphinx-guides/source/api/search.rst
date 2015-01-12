@@ -18,99 +18,182 @@ Parameters
 ==============  =======  ===========
 Name            Type     Description
 ==============  =======  ===========
-q               string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*").
-type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.
-subtree         string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.
-sort            string   The sort field. Supported values include "name" and "date". 
-order           string   The order in which to sort. Can either be "asc" or "desc".
-per_page        int      The number of results to return per request. The default is 10. The max is 1000.
+q               string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://apitest.dataverse.org/api/search?q=title:data
+type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://apitest.dataverse.org/api/search?q=*&type=dataset
+subtree         string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.  For example, https://apitest.dataverse.org/api/search?q=data&subtree=birds
+sort            string   The sort field. Supported values include "name" and "date". See example under "order".
+order           string   The order in which to sort. Can either be "asc" or "desc".  For example, https://apitest.dataverse.org/api/search?q=data&sort=name&order=asc
+per_page        int      The number of results to return per request. The default is 10. The max is 1000. See iteration example below.
 start           int      A cursor for paging through search results. See iteration example below.
-show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default.
-show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default.
-fq              string   A filter query on the search term. Multiple "fq" parameters can be used.
+show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default. See example below.
+show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See example below
+fq              string   A filter query on the search term. Multiple "fq" parameters can be used. See example below.
 ==============  =======  ===========
 
-Example
--------
+Basic Search Example
+--------------------
 
-https://apitest.dataverse.org/api/search?q=*
+https://apitest.dataverse.org/api/search?q=trees
 
 .. code-block:: json
 
     {
-      "data": {
-        "count_in_response": 4,
-        "items": [
-          {
-            "authors": [
-              "Spruce, Sabrina"
+        "status":"OK",
+        "data":{
+            "q":"trees",
+            "total_count":4,
+            "start":0,
+            "spelling_alternatives":{
+                "trees":"[tree]"
+            },
+            "items":[
+                {
+                    "name":"Trees",
+                    "type":"dataverse",
+                    "url":"https://apitest.dataverse.org/dataverse/trees",
+                    "identifier":"trees",
+                    "description":"A tree dataverse with some birds",
+                    "published_at":"2015-01-12T16:05Z"
+                },
+                {
+                    "name":"Chestnut Trees",
+                    "type":"dataverse",
+                    "url":"https://apitest.dataverse.org/dataverse/chestnuttrees",
+                    "identifier":"chestnuttrees",
+                    "description":"A dataverse with chestnut trees and an oriole",
+                    "published_at":"2015-01-12T18:02Z"
+                },
+                {
+                    "name":"trees.png",
+                    "type":"file",
+                    "url":"https://apitest.dataverse.org/api/access/datafile/12",
+                    "file_id":"12",
+                    "description":"",
+                    "published_at":"2015-01-12T16:05Z",
+                    "file_type":"PNG Image",
+                    "dataset_citation":"Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/Y6RGTQ,  Root Dataverse,  V0"
+                },
+                {
+                    "name":"Birds",
+                    "type":"dataverse",
+                    "url":"https://apitest.dataverse.org/dataverse/birds",
+                    "identifier":"birds",
+                    "description":"A bird dataverse with some trees",
+                    "published_at":"2015-01-12T18:01Z"
+                }
             ],
-            "citation": "Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/I4VPEZ,  Root Dataverse,  V0",
-            "published_at": "2015-01-08T03:27Z",
-            "global_id": "doi:10.5072/FK2/I4VPEZ",
-            "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
-            "html_url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
-            "type": "dataset",
-            "name": "Spruce Goose"
-          },
-          {
-            "file_type": "PNG Image",
-            "published_at": "2015-01-08T03:27Z",
-            "description": "",
-            "file_id": "12",
-            "persistent_url": "http://dx.doi.org/10.5072/FK2/I4VPEZ",
-            "html_url": "https://apitest.dataverse.org/dataset.xhtml?globalId=doi:10.5072/FK2/I4VPEZ",
-            "type": "dataset",
-            "name": "trees.png"
-          },
-          {
-            "published_at": "2015-01-08T03:27Z",
-            "description": "A spruce with some birds",
-            "identifier": "spruce",
-            "html_url": "https://apitest.dataverse.org/dataverse/spruce",
-            "type": "dataverse",
-            "name": "Spruce"
-          },
-          {
-            "published_at": "2015-01-08T03:27Z",
-            "description": "A tree dataverse with some birds",
-            "identifier": "trees",
-            "html_url": "https://apitest.dataverse.org/dataverse/trees",
-            "type": "dataverse",
-            "name": "Trees"
-          }
-        ],
-        "spelling_alternatives": {},
-        "start": 0,
-        "total_count": 4,
-        "q": "*"
-      },
-      "status": "OK"
+            "count_in_response":4
+        }
     }
 
-Relevance
----------
+Advanced Search Example
+-----------------------
 
-By setting ``show_relevance=true`` matches per field are shown:
+https://apitest.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publication_date_s:2015&subtree=birds
+
+In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publication_date_s:2015``. The search is being narrowed to the dataverse with the identifier "birds" with the parameter ``subtree=birds``.
 
 .. code-block:: json
 
-    "matches":[
-        {
-            "description":{
-                "snippets":[
-                    "A <span class=\"search-term-match\">tree</span> dataverse with some birds"
-                ]
-            }
-        },
-        {
-            "name":{
-                "snippets":[
-                    "<span class=\"search-term-match\">Trees</span>"
-                ]
-            }
+    {
+        "status":"OK",
+        "data":{
+            "q":"finch",
+            "total_count":2,
+            "start":0,
+            "spelling_alternatives":{
+            },
+            "items":[
+                {
+                    "name":"Finches",
+                    "type":"dataverse",
+                    "url":"https://apitest.dataverse.org/dataverse/finches",
+                    "identifier":"finches",
+                    "description":"A dataverse with finches",
+                    "published_at":"2015-01-12T18:01Z",
+                    "matches":[
+                        {
+                            "name":{
+                                "snippets":[
+                                    "<span class=\"search-term-match\">Finches</span>"
+                                ]
+                            }
+                        },
+                        {
+                            "description":{
+                                "snippets":[
+                                    "A dataverse with <span class=\"search-term-match\">finches</span>"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name":"Darwin's Finches",
+                    "type":"dataset",
+                    "url":"http://dx.doi.org/10.5072/FK2nullCE0052",
+                    "global_id":"doi:10.5072/FK2nullCE0052",
+                    "published_at":"2015-01-12T18:01Z",
+                    "citation":"Finch, Fiona, 2015, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2nullCE0052,  Root Dataverse,  V1",
+                    "matches":[
+                        {
+                            "title":{
+                                "snippets":[
+                                    "Darwin's <span class=\"search-term-match\">Finches</span>"
+                                ]
+                            }
+                        },
+                        {
+                            "dsDescriptionValue":{
+                                "snippets":[
+                                    "Darwin's <span class=\"search-term-match\">finches</span> (also known as the Galápagos <span class=\"search-term-match\">finches</span>) are a group of about fifteen species"
+                                ]
+                            }
+                        },
+                        {
+                            "authorName":{
+                                "snippets":[
+                                    "<span class=\"search-term-match\">Finch</span>, Fiona"
+                                ]
+                            }
+                        }
+                    ],
+                    "authors":[
+                        "Finch, Fiona"
+                    ]
+                }
+            ],
+            "facets":[
+                {
+                    "dvCategory_s":{
+                        "friendly":"Dataverse Category",
+                        "labels":[
+                            {
+                                "Uncategorized":1
+                            }
+                        ]
+                    },
+                    "affiliation_ss":{
+                        "friendly":"Affiliation",
+                        "labels":[
+                            {
+                                "Birds Inc.":1
+                            }
+                        ]
+                    },
+                    "publication_date_s":{
+                        "friendly":"Publication Date",
+                        "labels":[
+                            {
+                                "2015":2
+                            }
+                        ]
+                    }
+                }
+            ],
+            "count_in_response":2
         }
-    ]
+    }
 
 Iteration
 ---------
