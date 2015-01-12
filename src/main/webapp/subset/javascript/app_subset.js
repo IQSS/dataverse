@@ -271,7 +271,7 @@ function panelPlots() {
     }
     
     // this is where apicall is built
-    apicall=dataurl+"?vars="+varidArray.toString();
+    apicall=dataurl+"?variables="+varidArray.toString();
     console.log('apicall ' + apicall);
     
     // update the plots in subset tab
