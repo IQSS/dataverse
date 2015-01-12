@@ -8,6 +8,8 @@ About
 
 The Search API supports the same searching, sorting, and faceting operations as the Dataverse web interface.
 
+Unlike the web interface, this new API is limited to *published* data until `issue 1299 <https://github.com/IQSS/dataverse/issues/1299>`_ is resolved.
+
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
 Parameters
@@ -18,7 +20,7 @@ Name            Type     Description
 ==============  =======  ===========
 q               string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*").
 type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.
-subtree         string   The alias of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.
+subtree         string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.
 sort            string   The sort field. Supported values include "name" and "date". 
 order           string   The order in which to sort. Can either be "asc" or "desc".
 per_page        int      The number of results to return per request. The default is 10. The max is 1000.
@@ -64,7 +66,7 @@ https://apitest.dataverse.org/api/search?q=*
           {
             "published_at": "2015-01-08T03:27Z",
             "description": "A spruce with some birds",
-            "alias": "spruce",
+            "identifier": "spruce",
             "html_url": "https://apitest.dataverse.org/dataverse/spruce",
             "type": "dataverse",
             "name": "Spruce"
@@ -72,7 +74,7 @@ https://apitest.dataverse.org/api/search?q=*
           {
             "published_at": "2015-01-08T03:27Z",
             "description": "A tree dataverse with some birds",
-            "alias": "trees",
+            "identifier": "trees",
             "html_url": "https://apitest.dataverse.org/dataverse/trees",
             "type": "dataverse",
             "name": "Trees"

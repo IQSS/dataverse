@@ -259,7 +259,7 @@ public class SolrSearchResult {
         String identifierLabel = null;
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
-            identifierLabel = "alias";
+            identifierLabel = "identifier";
         } else if (this.type.equals(SearchConstants.DATASETS)) {
             displayName = this.title;
             identifierLabel = "global_id";
