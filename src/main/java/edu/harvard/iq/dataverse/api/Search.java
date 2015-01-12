@@ -56,17 +56,14 @@ public class Search extends AbstractApiBean {
     public Response search(
             @QueryParam("q") String query,
             @QueryParam("type") final List<String> types,
+            @QueryParam("subtree") String subtreeRequested,
             @QueryParam("sort") String sortField,
             @QueryParam("order") String sortOrder,
             @QueryParam("per_page") final int numResultsPerPageRequested,
             @QueryParam("start") final int paginationStart,
             @QueryParam("show_relevance") boolean showRelevance,
             @QueryParam("show_facets") boolean showFacets,
-            @QueryParam("fq") final List<String> filterQueries,
-            /**
-             * @todo Support narrowing to a dataverse subtree.
-             */
-            @QueryParam("subtree") String subtreeRequested
+            @QueryParam("fq") final List<String> filterQueries
     ) {
         if (query != null) {
 
@@ -81,6 +78,15 @@ public class Search extends AbstractApiBean {
                 sortBy = getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
                 subtree = getSubtree(subtreeRequested);
+                if (!subtree.equals(dataverseService.findRootDataverse())) {
+                    String dataversePath = dataverseService.determineDataversePath(subtree);
+                    String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+                    /**
+                     * @todo Should filterDownToSubtree logic be centralized in
+                     * SearchServiceBean?
+                     */
+                    filterQueries.add(filterDownToSubtree);
+                }
             } catch (Exception ex) {
                 return errorResponse(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
@@ -178,9 +184,11 @@ public class Search extends AbstractApiBean {
              */
             value.add("count_in_response", solrSearchResults.size());
             /**
-             * @todo Returning the fq might be useful as a troubleshooting aid.
+             * @todo Returning the fq might be useful as a troubleshooting aid
+             * but we don't want to expose the raw dataverse database ids in
+             * "subtree_ss" path like "/2/3".
              */
-            value.add("fq_provided", filterQueries.toString());
+//            value.add("fq_provided", filterQueries.toString());
             if (solrQueryResponse.getError() != null) {
                 /**
                  * @todo You get here if you pass only ":" as a query, for
@@ -316,13 +324,6 @@ public class Search extends AbstractApiBean {
     }
 
     private Dataverse getSubtree(String alias) throws Exception {
-        if (true) {
-            /**
-             * @todo remove this "if true" after moving the subtree logic from
-             * SearchIncludeFragment to SearchServiceBean
-             */
-            return dataverseService.findRootDataverse();
-        }
         if (StringUtils.isBlank(alias)) {
             return dataverseService.findRootDataverse();
         } else {
@@ -330,7 +331,7 @@ public class Search extends AbstractApiBean {
             if (subtree != null) {
                 return subtree;
             } else {
-                throw new Exception("Could not find dataverse with alias" + alias);
+                throw new Exception("Could not find dataverse with alias " + alias);
             }
         }
     }

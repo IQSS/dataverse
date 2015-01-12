@@ -16,6 +16,7 @@ Name            Type     Description
 ==============  =======  ===========
 q               string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*").
 type            string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.
+subtree         string   The alias of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.
 sort            string   The sort field. Supported values include "name" and "date". 
 order           string   The order in which to sort, either be "asc" or "desc".
 per_page        int      The number of results to return per request. The default is 10. The max is 1000.
