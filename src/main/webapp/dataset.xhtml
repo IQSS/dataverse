@@ -602,10 +602,12 @@
                                             </ui:fragment>
 
                                             <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
-                                                <br />
+                                                 <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
+                                                <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->                                           
+                                                 |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a>
+                                                <!--
                                                 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
-                                                <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->
+                                                -->
                                             </ui:fragment>
 
                                             <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
@@ -658,12 +660,49 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                            <!-- TwoRavens explore option -->
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}" target="_blank">
                                                     <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle.explore}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
-
+                                            
+                                            <!-- WorldMap explore option -->
+                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                  <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">
+                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
+                                                </h:outputLink>
+                                            </ui:fragment>
+                                                                                        
+                                            <!-- ( NOT ACTIVE:  Needed for mapping tabular data when there are 2 options for Explore ) -->
+                                            <!-- START: Explore dropdown for tabularData, ingestInProgress (?), or MapLayerMetadata -->
+                                            <ui:remove>
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress or DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                <div class="dropdown">
+                                                    <!-- explore button that toggles dropdown -->
+                                                    <button type="button" id="exploreDropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/>#{bundle.explore}<span class="caret"></span>
+                                                    </button>
+                                                    <!-- dropdown options -->
+                                                    <ul class="dropdown-menu pull-left" role="menu" style="text-align:left;">
+                                                        <!-- WorldMap explore option -->
+                                                        <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                            <li>
+                                                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']} WorldMap</a>
+                                                            </li>
+                                                        </ui:fragment>
+                                                       <!-- TwoRavens option -->
+                                                        <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
+                                                            <li>
+                                                                <a href="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}">#{bundle.explore} Two Ravens</a>                                                                
+                                                            </li>
+                                                        </ui:fragment>
+                                                    </ul>
+                                                </div>                                                                                            
+                                            </ui:fragment>
+                                            </ui:remove>
+                                            <!-- END  EXPLORE dropdown -->
+                                            
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
                                                 <a href="#" class="imageThumbPreview h2" style="margin:0 .5em 0 0;vertical-align:middle;" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
                                                     <span class="glyphicon glyphicon-warning-sign text-danger" style="top:5px;"></span></a>
