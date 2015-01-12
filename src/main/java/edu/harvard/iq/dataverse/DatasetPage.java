@@ -1048,6 +1048,7 @@ public class DatasetPage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE) {
+                workingVersion.setLicense(DatasetVersion.License.CC0);
                 cmd = new CreateDatasetCommand(dataset, session.getUser());
             } else {
                 cmd = new UpdateDatasetCommand(dataset, session.getUser());
