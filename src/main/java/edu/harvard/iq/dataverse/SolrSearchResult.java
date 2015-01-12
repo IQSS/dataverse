@@ -278,16 +278,8 @@ public class SolrSearchResult {
         //displayName = null; // testing NullSafeJsonBuilder
         // because we are using NullSafeJsonBuilder key/value pairs will be dropped if the value is null
         NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
-                /**
-                 * @todo There is probably no harm in exposing the
-                 * database/entity id. And it might be valuable for use in
-                 * subsequent API calls.
-                 */
+                .add("name", displayName)
                 .add("entity_id", this.entityId)
-                /**
-                 * @todo We should probably change it to "type=dataset"
-                 * (singular) for example.
-                 */
                 .add("type", getDisplayType(getType()))
                 /**
                  * @todo We should probably have a metadata_url or api_url
