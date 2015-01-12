@@ -159,13 +159,6 @@ public class Search extends AbstractApiBean {
             if (showFacets) {
                 value.add("facets", facets);
             }
-            /**
-             * @todo Consider adding count_in_response so the client doesn't
-             * have to calculate it.
-             */
-            /**
-             * @todo Remove this or not?
-             */
             value.add("count_in_response", solrSearchResults.size());
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid
@@ -214,6 +207,9 @@ public class Search extends AbstractApiBean {
          */
         int maxLimit = 1000;
         if (numResultsPerPage == 0) {
+            /**
+             * @todo should defaultLimit be configurable?
+             */
             int defaultLimit = 10;
             return defaultLimit;
         } else if (numResultsPerPage < 0) {
@@ -239,9 +235,6 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    /**
-     * @todo implement this!
-     */
     private SortBy getSortBy(String sortField, String sortOrder) throws Exception {
 
         if (StringUtils.isBlank(sortField)) {
@@ -264,17 +257,11 @@ public class Search extends AbstractApiBean {
                 } else if (sortField.equals(SearchFields.RELEASE_OR_CREATE_DATE)) {
                     sortOrder = SortBy.DESCENDING;
                 } else {
-                    /**
-                     * @todo for when sort="foo" but why should we remove the
-                     * else below?
-                     */
+                    // asc for alphabetical by default despite GitHub using desc by default:
+                    // "The sort order if sort parameter is provided. One of asc or desc. Default: desc"
+                    // http://developer.github.com/v3/search/
                     sortOrder = SortBy.ASCENDING;
                 }
-            } else {
-                // asc for alphabetical by default despite GitHub using desc by default:
-                // "The sort order if sort parameter is provided. One of asc or desc. Default: desc"
-                // http://developer.github.com/v3/search/
-                sortOrder = SortBy.ASCENDING;
             }
         }
 
