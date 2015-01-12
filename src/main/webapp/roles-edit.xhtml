@@ -31,10 +31,7 @@
                         <div class="col-sm-9">
                             <p:panelGrid columns="2" styleClass="noBorders">
                                 <h:panelGroup>
-                                    <p:inputTextarea id="roleDescription" value="#{managePermissionsPage.role.description}"
-                                                     rows="5" cols="50" counter="counter" maxlength="1000"
-                                                     counterTemplate="#{bundle['dataverse.permissions.roles.description.counter']}" autoResize="false"/>
-                                    <h:outputText id="counter" style="display:block;"/>
+                                    <p:inputText id="roleDescription" value="#{managePermissionsPage.role.description}" size="100"/>
                                 </h:panelGroup>
                                 <p:message for="roleDescription"/>
                             </p:panelGrid>
