@@ -8,11 +8,11 @@ Endpoints
 
 Dataverses (``dvs``)
 ~~~~~~~~~~~~~~~~~~~~
+Generates a new dataverse under `$id`. Expects a `json` content describing the dataverse.
+If `$id` is omitted, a root dataverse is created. `$id` can either be a dataverse id (long) or a dataverse alias (more robust). ::
 
     POST http://$SERVER/api/dvs/$id?key=$apiKey
 
-Generates a new dataverse under `$id`. Expects a `json` content describing the dataverse.
-If `$id` is omitted, a root dataverse is created. `$id` can either be a dataverse id (long) or a dataverse alias (more robust).
 
     GET http://$SERVER/api/dvs/$id
 
@@ -82,38 +82,38 @@ Datasets
 * ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
 * ``x`` same as ``x.0``
 
+Show the dataset whose id is passed::
+
   GET http://$SERVER/api/datasets/$id?key=$apiKey
 
-Show the dataset whose id is passed.
+Delete the dataset whose id is passed::
 
   DELETE http://$SERVER/api/datasets/$id?key=$apiKey
 
-Delete the dataset whose id is passed.
+List versions of the dataset::
 
   GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
 
-List versions of the dataset. 
+Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
   
   GET http://$SERVER/api/datasets/$id/versions/{{versionNumber}}?key=$apiKey
 
-Show a version of the dataset. The Dataset also include any metadata blocks the data might have.
+Lists all the metadata blocks and their content, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/{{versionId}}/metadata?key=$apiKey
 
-Lists all the metadata blocks and their content, for the given dataset and version.
+Lists the metadata block block named `blockname`, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/{{versionId}}/metadata/{{blockname}}?key=$apiKey
 
-Lists the metadata block block named `blockname`, for the given dataset and version.
+Updates the current draft version of dataset `$id`. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data::
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Updates the current draft version of dataset `$id`. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the `type` parameter. Passing `type=minor` increases the minor version number (2.3 &rarr; 2.4). Passing `type=major` increases the major version number (2.3 &rarr; 3.0)::
 
     POST http://$SERVER/api/datasets/$id/actions/:publish?type={{type}}&key=$apiKey
 
-Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the `type` parameter. Passing `type=minor` increases the minor version number (2.3 &rarr; 2.4). Passing `type=major` increases the major version number (2.3 &rarr; 3.0).
+Deletes the draft version of dataset `$id`. Only the draft version can be deleted::
 
-  DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
-
-Deletes the draft version of dataset `$id`. Only the draft version can be deleted.
+    DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
