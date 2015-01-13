@@ -43,7 +43,7 @@ public class UserRequestMetadata {
         if ( remoteAddressStr == null ) {
             remoteAddressStr = "0.0.0.0";
         }
-        logger.info( "Parsing remote address: " + remoteAddressStr );
+//        logger.info( "Parsing remote address: " + remoteAddressStr );
         ipAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
