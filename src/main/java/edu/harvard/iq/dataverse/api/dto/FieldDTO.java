@@ -112,7 +112,7 @@ public class FieldDTO {
         this.typeClass = typeClass;
     }
 
-    String getSinglePrimitive() {
+    public String getSinglePrimitive() {
         
         return value==null? "": value.getAsString();
     }

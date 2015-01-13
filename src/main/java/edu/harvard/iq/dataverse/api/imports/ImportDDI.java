@@ -204,7 +204,6 @@ public class ImportDDI {
         // In fact, we should only use these IDs when no ID is available down 
         // in the study description section!      
         
-        // EMK TODO:  need to add logic to handle multiple versions (can't assume this is the first version)
         processCodeBook(xmlr,  datasetDTO, filesMap);
         MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
      
@@ -348,9 +347,9 @@ public class ImportDDI {
                 // EMK TODO: add back in these sections
                 /*
                 else if (xmlr.getLocalName().equals("dataAccs")) processDataAccs(xmlr, metadata);
-                else if (xmlr.getLocalName().equals("othrStdyMat")) processOthrStdyMat(xmlr, metadata);
-                else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr, metadata);
-                */
+                else if (xmlr.getLocalName().equals("othrStdyMat")) processOthrStdyMat(xmlr, metadata);*/
+                else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr, datasetDTO.getDatasetVersion());
+                
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("stdyDscr")) return;
             }
@@ -374,8 +373,8 @@ public class ImportDDI {
                     if (_note != null) {
                         datasetDTO.getDatasetVersion().setUNF( parseUNF( _note ) );
                     } else {
-                        // EMK TODO: Add this back in
-                       // processNotes(xmlr, metadata);
+                      
+                       processNotes(xmlr,dvDTO);
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -383,7 +382,8 @@ public class ImportDDI {
             }
         }
     }
-    
+     
+ 
    /**
     * 
     * 
@@ -405,8 +405,8 @@ public class ImportDDI {
                     descriptions.add(set);
                     
                 } else if (xmlr.getLocalName().equals("sumDscr")) processSumDscr(xmlr, dvDTO);
-             // EMK TODO: add this back in
-             //   else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr, metadata);
+            
+                 else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr,dvDTO);
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("stdyInfo")) {
                     getCitation(dvDTO).getFields().add(FieldDTO.createMultipleCompoundFieldDTO("dsDescription", descriptions));
@@ -445,6 +445,26 @@ public class ImportDDI {
                
             }
         }
+    }
+    
+    private void processNotes (XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        String note = " Subject: "+xmlr.getAttributeValue(null, "subject")+" "
+        + " Type: "+xmlr.getAttributeValue(null, "type")+" "
+        + " Notes: "+parseText(xmlr, "notes")+";";
+        addNote(note, dvDTO);
+       
+    } 
+    
+    private void addNote(String noteText, DatasetVersionDTO dvDTO ) {
+        MetadataBlockDTO citation = getCitation(dvDTO);
+        FieldDTO field = citation.getField("notesText");
+        if (field==null) {
+            field = FieldDTO.createPrimitiveFieldDTO("notesText", "");
+            citation.getFields().add(field);
+        }
+        String noteValue = field.getSinglePrimitive();
+        noteValue+= noteText;
+        field.setSinglePrimitive(noteValue);
     }
   
     private void processSumDscr(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
@@ -572,13 +592,8 @@ public class ImportDDI {
                     // file, so I don't know if it's intended to allowMultiples.
                     String noteType = xmlr.getAttributeValue(null, "type");
                     if (!NOTE_TYPE_EXTENDED_METADATA.equalsIgnoreCase(noteType) ) {
-                        // EMK TODO: add back in (notes processing
-                        /*if (StringUtil.isEmpty( metadata.getStudyLevelErrorNotes() ) ) {
-                            metadata.setStudyLevelErrorNotes( parseText( xmlr,"notes" ) );
-                        } else {
-                            metadata.setStudyLevelErrorNotes( metadata.getStudyLevelErrorNotes() + "; " + parseText( xmlr, "notes" ) );
-                        }
-                        */
+                        addNote("Subject: Study Level Error Note, Notes: "+ parseText( xmlr,"notes" ) +";", dvDTO);
+                       
                         
                     }
                 } else if (xmlr.getLocalName().equals("anlyInfo")) {
@@ -726,12 +741,10 @@ public class ImportDDI {
                                 versionState="RELEASED";
                             }
                             dvDTO.setVersionState(Enum.valueOf(VersionState.class, versionState));  
-                        }
-                       
+                        }                     
                         parseVersionNumber(dvDTO, parseText(xmlr));
-                      //  dvDTO.setVersionNumber(Long.parseLong(parseText(xmlr)));
-                        // EMK TODO: add note processing
-                        // } else if (xmlr.getLocalName().equals("notes")) { processNotes(xmlr, metadata); 
+                      
+                         } else if (xmlr.getLocalName().equals("notes")) { processNotes(xmlr, dvDTO); 
                     }
                 } else if (event == XMLStreamConstants.END_ELEMENT) {
                     if (xmlr.getLocalName().equals("verStmt")) {
