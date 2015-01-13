@@ -192,12 +192,15 @@ public class Admin extends AbstractApiBean {
                             ? "WARNING: no enabled authentication providers left." : ""));
     }
     
-    @DELETE
+  @DELETE
     @Path("authenticatedUsers/{identifier}/")
     public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-        authSvc.deleteAuthenticatedUser(user.getId());
-        return okResponse("AuthenticatedUser " +identifier + " deleted. ");
+        if (user!=null) {
+            authSvc.deleteAuthenticatedUser(user.getId());
+            return okResponse("AuthenticatedUser " +identifier + " deleted. ");
+        }
+        return errorResponse(Response.Status.BAD_REQUEST, "User "+ identifier+" not found.");
     }
     
     @Path("roles")
