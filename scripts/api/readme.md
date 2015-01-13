@@ -196,9 +196,9 @@ List all settings.
 
 Get the setting under `name`.
 
-	PUT http://$SERVER/api/s/settings/$name/$content
+	PUT http://$SERVER/api/s/settings/$name
 
-Set `name` to `content`. Note that `content` is assumed to be url-encoded.
+Sets setting `name` to the body of the request.
 
 	DELETE http://$SERVER/api/s/settings/$name
 

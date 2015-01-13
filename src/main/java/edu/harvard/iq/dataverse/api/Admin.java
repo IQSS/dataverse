@@ -48,15 +48,11 @@ public class Admin extends AbstractApiBean {
         return okResponse(bld);
     }
     
-    @Path("settings/{name}/{content}")
+    @Path("settings/{name}")
     @PUT
-    public Response addSetting( @PathParam("name") String name, @PathParam("content") String content ) {
-        try {
-            Setting s = settingsSvc.set(name, URLDecoder.decode(content, "UTF-8"));
-            return okResponse( jsonObjectBuilder().add(s.getName(), s.getContent()) );
-        } catch (UnsupportedEncodingException ex) {
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
-        }
+    public Response putSetting( @PathParam("name") String name, String content ) {
+        Setting s = settingsSvc.set(name, content);
+        return okResponse( jsonObjectBuilder().add(s.getName(), s.getContent()) );
     }
     
     @Path("settings/{name}")
