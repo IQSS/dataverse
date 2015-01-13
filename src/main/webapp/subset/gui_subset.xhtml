@@ -50,7 +50,7 @@
     <script>
         $('#aboutTwoRavens').popover();
         
-        var fileid = #{DatasetPage.fileMetadataSelected.dataFile.id};
+        var fileid = #{!empty DatasetPage.fileMetadataSelected ? DatasetPage.fileMetadataSelected.dataFile.id : 0};
         var hostname = "localhost:8080";
         var ddiurl = "http://"+hostname+"/api/meta/datafile/"+fileid;
         var dataurl = "http://"+hostname+"/api/access/datafile/"+fileid;
