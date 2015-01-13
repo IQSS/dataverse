@@ -28,6 +28,7 @@ public class SolrSearchResult {
     private String persistentUrl;
     private String downloadUrl;
     private String apiUrl;
+    private String imageUrl;
     private String query;
     private String name;
     private String nameSort;
@@ -290,6 +291,7 @@ public class SolrSearchResult {
                 .add("name", displayName)
                 .add("type", getDisplayType(getType()))
                 .add("url", preferredUrl)
+                .add("image_url", getImageUrl())
                 //                .add("persistent_url", this.persistentUrl)
                 //                .add("download_url", this.downloadUrl)
                 /**
@@ -425,6 +427,14 @@ public class SolrSearchResult {
 
     public void setApiUrl(String apiUrl) {
         this.apiUrl = apiUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getQuery() {
