@@ -422,6 +422,17 @@ public class SearchServiceBean {
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/preview/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
+                Object fileSizeInBytesObject = solrDocument.getFieldValue(SearchFields.FILE_SIZE_IN_BYTES);
+                if (fileSizeInBytesObject != null) {
+                    try {
+                        long fileSizeInBytesLong = (long) fileSizeInBytesObject;
+                        solrSearchResult.setFileSizeInBytes(fileSizeInBytesLong);
+                    } catch (ClassCastException ex) {
+                        logger.info("Could not cast file " + entityid + " to long for " + SearchFields.FILE_SIZE_IN_BYTES + ": " + ex.getLocalizedMessage());
+                    }
+                }
+                solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
+                solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
             }
             /**

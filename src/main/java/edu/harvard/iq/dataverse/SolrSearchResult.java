@@ -52,7 +52,13 @@ public class SolrSearchResult {
     private List<Dataset> datasets;
     private String dataverseAffiliation;
     private String citation;
+    /**
+     * Files and datasets might have a UNF. Dataverses don't.
+     */
+    private String unf;
     private String filetype;
+    private Long fileSizeInBytes;
+    private String fileMd5;
     private String dataverseAlias;
     private String dataverseParentAlias;
 //    private boolean statePublished;
@@ -322,6 +328,9 @@ public class SolrSearchResult {
                  * @todo Maybe we should expose MIME Type also.
                  */
                 .add("file_type", this.filetype)
+                .add("size_in_bytes", getFileSizeInBytes())
+                .add("md5", getFileMd5())
+                .add("unf", getUnf())
                 .add("dataset_citation", datasetCitation)
                 .add("citation", this.citation);
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
@@ -542,6 +551,30 @@ public class SolrSearchResult {
 
     public void setFiletype(String filetype) {
         this.filetype = filetype;
+    }
+
+    public String getUnf() {
+        return unf;
+    }
+
+    public void setUnf(String unf) {
+        this.unf = unf;
+    }
+
+    public Long getFileSizeInBytes() {
+        return fileSizeInBytes;
+    }
+
+    public void setFileSizeInBytes(Long fileSizeInBytes) {
+        this.fileSizeInBytes = fileSizeInBytes;
+    }
+
+    public String getFileMd5() {
+        return fileMd5;
+    }
+
+    public void setFileMd5(String fileMd5) {
+        this.fileMd5 = fileMd5;
     }
 
     public String getNameSort() {

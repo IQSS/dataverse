@@ -34,6 +34,10 @@ public class SearchFields {
      */
     public static final String PERSISTENT_URL = "persistent_url_s";
     /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String UNF = "unf_s";
+    /**
      * @todo rename this to just dvName
      */
     public static final String DATAVERSE_NAME = "dvName_en";
@@ -84,6 +88,14 @@ public class SearchFields {
     public static final String FILE_TYPE_SEARCHABLE = "filetype_en";
     public static final String FILE_TYPE_MIME = "filetypemime_s";
     public static final String FILE_TYPE = "filetype_s";
+    /**
+     * @todo Add this to schema.xml with no "_l". Make it searchable.
+     */
+    public static final String FILE_SIZE_IN_BYTES = "file_size_in_bytes_l";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String FILE_MD5 = "file_md5_s";
     /**
      * @todo change from dynamic to static?
      */
