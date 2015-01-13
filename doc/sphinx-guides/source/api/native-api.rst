@@ -60,7 +60,7 @@ Get whether the dataverse is a metadata block root, or does it uses its parent b
   GET http://$SERVER/api/dvs/$id/metadatablocks/:isRoot?key=$apiKey
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
-values are ``true`` and ``false`` (both are valid JSON expressions).
+values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
   POST http://$SERVER/api/dvs/$id/metadatablocks/:isRoot?key=$apiKey
 
