@@ -23,11 +23,11 @@ type            string   Can be either "dataverse", "dataset", or "file". Multip
 subtree         string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.  For example, https://apitest.dataverse.org/api/search?q=data&subtree=birds
 sort            string   The sort field. Supported values include "name" and "date". See example under "order".
 order           string   The order in which to sort. Can either be "asc" or "desc".  For example, https://apitest.dataverse.org/api/search?q=data&sort=name&order=asc
-per_page        int      The number of results to return per request. The default is 10. The max is 1000. See iteration example below.
-start           int      A cursor for paging through search results. See iteration example below.
-show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default. See example below.
-show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See example below
-fq              string   A filter query on the search term. Multiple "fq" parameters can be used. See example below.
+per_page        int      The number of results to return per request. The default is 10. The max is 1000. See :ref:`iteration example <iteration-example>`.
+start           int      A cursor for paging through search results. See :ref:`iteration example <iteration-example>`.
+show_relevance  boolean  Whether or not to show details of which fields were matched by the query. False by default. See :ref:`advanced search example <advancedsearch-example>`.
+show_facets     boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
+fq              string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 ==============  =======  ===========
 
 Basic Search Example
@@ -51,7 +51,6 @@ https://apitest.dataverse.org/api/search?q=trees
                     "name":"Trees",
                     "type":"dataverse",
                     "url":"https://apitest.dataverse.org/dataverse/trees",
-                    "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/7",
                     "identifier":"trees",
                     "description":"A tree dataverse with some birds",
                     "published_at":"2015-01-12T16:05Z"
@@ -60,7 +59,6 @@ https://apitest.dataverse.org/api/search?q=trees
                     "name":"Chestnut Trees",
                     "type":"dataverse",
                     "url":"https://apitest.dataverse.org/dataverse/chestnuttrees",
-                    "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/9",
                     "identifier":"chestnuttrees",
                     "description":"A dataverse with chestnut trees and an oriole",
                     "published_at":"2015-01-12T18:02Z"
@@ -69,20 +67,16 @@ https://apitest.dataverse.org/api/search?q=trees
                     "name":"trees.png",
                     "type":"file",
                     "url":"https://apitest.dataverse.org/api/access/datafile/12",
-                    "image_url":"https://apitest.dataverse.org/api/access/preview/12",
                     "file_id":"12",
                     "description":"",
                     "published_at":"2015-01-12T16:05Z",
                     "file_type":"PNG Image",
-                    "size_in_bytes":8361,
-                    "md5":"0386269a5acb2c57b4eade587ff4db64",
                     "dataset_citation":"Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/Y6RGTQ,  Root Dataverse,  V0"
                 },
                 {
                     "name":"Birds",
                     "type":"dataverse",
                     "url":"https://apitest.dataverse.org/dataverse/birds",
-                    "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"birds",
                     "description":"A bird dataverse with some trees",
                     "published_at":"2015-01-12T18:01Z"
@@ -91,6 +85,8 @@ https://apitest.dataverse.org/api/search?q=trees
             "count_in_response":4
         }
     }
+
+.. _advancedsearch-example:
 
 Advanced Search Example
 -----------------------
@@ -114,22 +110,21 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "name":"Finches",
                     "type":"dataverse",
                     "url":"https://apitest.dataverse.org/dataverse/finches",
-                    "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/3",
                     "identifier":"finches",
                     "description":"A dataverse with finches",
                     "published_at":"2015-01-12T18:01Z",
                     "matches":[
                         {
-                            "description":{
+                            "name":{
                                 "snippets":[
-                                    "A dataverse with <span class=\"search-term-match\">finches</span>"
+                                    "<span class=\"search-term-match\">Finches</span>"
                                 ]
                             }
                         },
                         {
-                            "name":{
+                            "description":{
                                 "snippets":[
-                                    "<span class=\"search-term-match\">Finches</span>"
+                                    "A dataverse with <span class=\"search-term-match\">finches</span>"
                                 ]
                             }
                         }
@@ -139,15 +134,14 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "name":"Darwin's Finches",
                     "type":"dataset",
                     "url":"http://dx.doi.org/10.5072/FK2nullCE0052",
-                    "image_url":"https://apitest.dataverse.org/api/access/dsPreview/2",
                     "global_id":"doi:10.5072/FK2nullCE0052",
                     "published_at":"2015-01-12T18:01Z",
                     "citation":"Finch, Fiona, 2015, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2nullCE0052,  Root Dataverse,  V1",
                     "matches":[
                         {
-                            "authorName":{
+                            "title":{
                                 "snippets":[
-                                    "<span class=\"search-term-match\">Finch</span>, Fiona"
+                                    "Darwin's <span class=\"search-term-match\">Finches</span>"
                                 ]
                             }
                         },
@@ -159,9 +153,9 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                             }
                         },
                         {
-                            "title":{
+                            "authorName":{
                                 "snippets":[
-                                    "Darwin's <span class=\"search-term-match\">Finches</span>"
+                                    "<span class=\"search-term-match\">Finch</span>, Fiona"
                                 ]
                             }
                         }
@@ -203,6 +197,8 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
         }
     }
 
+.. _iteration-example:
+
 Iteration
 ---------
 
@@ -229,6 +225,7 @@ Be default, up to 10 results are returned with every request (though this can be
         start = start + rows
         page += 1
         condition = start < total
+
 
 Output from iteration example
 
