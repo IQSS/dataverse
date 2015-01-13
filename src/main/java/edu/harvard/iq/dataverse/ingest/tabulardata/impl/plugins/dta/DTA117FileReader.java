@@ -1140,7 +1140,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                     byte_offset += strVarLength;
                 } else if (varType.equals("STRL")) {
                     //throw new IOException("<Support for STRLs not yet implemented>");
-                    logger.info("STRL encountered.");
+                    logger.fine("STRL encountered.");
                     
                     if (cachedGSOs == null) {
                         cachedGSOs = new LinkedHashMap<>();
@@ -1232,65 +1232,120 @@ public class DTA117FileReader extends TabularDataFileReader{
             FileOutputStream fileOutTab = new FileOutputStream(finalTabFile);
             PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
             
+            logger.fine("Setting the tab-delimited file to "+finalTabFile.getName());
+            ingesteddata.setTabDelimitedFile(finalTabFile);
+            
             int nvar = dataTable.getVarQuantity().intValue();
             int nobs = dataTable.getCaseQuantity().intValue();
             
-            for (int caseindex = 0; caseindex < nobs; caseindex++) {
+            String[] line;
+            
+            for (int obsindex = 0; obsindex < nobs; obsindex++) {
                 if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split("\t", -1);
+                    line = (scanner.next()).split("\t", -1);
                     
-                    // ...
+                    for (int varindex = 0; varindex < nvar; varindex++) {
+                        if ("STRL".equals(variableTypes[varindex])) {
+                            // this is a STRL; needs to be re-processed:
+                            
+                            String voPair = line[varindex];
+                            long v; 
+                            long o; 
+                            if (voPair == null) {
+                                throw new IOException("Failed to read an intermediate v,o Pair for variable "+
+                                        varindex + ", observation "+obsindex);
+                            }
+                            
+                            if ("0,0".equals(voPair)) {
+                                // This is a code for an empty string - "";
+                                // doesn't need to be defined or looked up.
+                                
+                                line[varindex] = "";
+                            } else {
+                                String[] voTokens = voPair.split(",", 2);
+                            
+                                try {
+                                    v = new Long(voTokens[0]).longValue();
+                                    o = new Long(voTokens[1]).longValue();
+                                } catch (NumberFormatException nfex) {
+                                    throw new IOException("Illegal v,o value: "+voPair+" for variable "+
+                                            varindex + ", observation "+obsindex);
+                                }
+                                
+                                if (v == varindex + 1 && o == obsindex + 1) {
+                                    // This v,o must be defined in the STRLs section:
+                                    line[varindex] = readGSO(reader, v, o);
+                                    if (line[varindex] == null) {
+                                        throw new IOException ("Failed to read GSO value for "+voPair);
+                                    }
+                                    
+                                } else {
+                                    // This one must have been cached already:
+                                    if (cachedGSOs.get(voPair) != null &&
+                                       !cachedGSOs.get(voPair).equals("")) {
+                                        line[varindex] = cachedGSOs.get(voPair);
+                                    } else {
+                                        throw new IOException("GSO string unavailable for v,o value "+voPair);
+                                    }
+                                }
+                            }                            
+                        }
+                    }
+                    // Dump the row of data to the tab-delimited file:
+                    pwout.println(StringUtils.join(line, "\t"));
                 }
             }
             
-            while (readGSO(reader)) {
-                
-            }
             scanner.close();
             pwout.close();
-            
+                       
             reader.readClosingTag(TAG_STRLS);
         } else {
             // If this data file doesn't use STRLs, we can just skip 
             // this section, and assume that we are done with the 
             // tabular data file.
-            reader.readPrimitiveSection(TAG_STRLS);
-
-            
+            reader.readPrimitiveSection(TAG_STRLS);            
         }
         
         //reader.readClosingTag(TAG_STRLS);
     }
     
-    private boolean readGSO(DataReader reader) throws IOException {
+    private String readGSO(DataReader reader, long v, long o) throws IOException {
         if (!reader.checkTag(STRL_GSO_HEAD)) {
-            return false; 
+            return null; 
         }
         
         // Skipping the GSO header - fixed string "GSO":
         reader.readBytes(STRL_GSO_HEAD.length());
         
-        // Reading the (v,o) pair: 
+        // Reading the stored (v,o) pair: 
         
-        long v = reader.readInteger();
-        long o = reader.readInteger();
+        long vStored = reader.readInteger();
+        long oStored = reader.readInteger();
+        
         String voPair = v + "," + o;
+
+        
+        if (vStored != v || oStored != o) {
+            throw new IOException ("GSO reading mismatch: expected v,o pair: "+
+                    voPair+", found: "+vStored+","+oStored);
+        }
         
         short type = reader.readByte();
         boolean binary = false; 
         
         if (type == 129) {
-            logger.info("STRL TYPE: binary");
+            logger.fine("STRL TYPE: binary");
             binary = true; 
         } else if (type == 130) {
-            logger.info("STRL TYPE: ascii");
+            logger.fine("STRL TYPE: ascii");
         } else {
             logger.warning("WARNING: unknown STRL type: "+type);
         }
         
         long length = reader.readInteger();
         
-        logger.info("Advertised length of the STRL: "+length);
+        logger.fine("Advertised length of the STRL: "+length);
         
         // TODO:
         // length can technically be 0 < length < 2^^32;
@@ -1308,9 +1363,15 @@ public class DTA117FileReader extends TabularDataFileReader{
         // (and the trailing zero needs to be chopped, if it's the ASCII kind)
         //  -- L.A. 4.0 beta 11
         
-        String gsoString = new String(contents);
+        String gsoString = null; 
         
-        logger.info("GSO "+v+","+o+": "+gsoString);
+        if (binary) {
+            gsoString = new String(contents, "utf8"); // ?
+        } else {
+            gsoString = new String(contents, 0, (int)length-1, "US-ASCII");
+        }
+        
+        logger.fine("GSO "+v+","+o+": "+gsoString);
         
         if (cachedGSOs.containsKey(voPair)) {
             // We need to cache this GSO: 
@@ -1320,7 +1381,7 @@ public class DTA117FileReader extends TabularDataFileReader{
             cachedGSOs.put(voPair, gsoString);
         }
         
-        return true; 
+        return gsoString;     
     }
     
     private void readValueLabels(DataReader reader) throws IOException {
@@ -1402,7 +1463,7 @@ public class DTA117FileReader extends TabularDataFileReader{
             // DataVariables: 
             for (int i = 0; i < dataTable.getVarQuantity(); i++) {
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
-                    logger.info("cross-linking value label table for "+label_table_name);
+                    logger.fine("cross-linking value label table for "+label_table_name);
                     // it is actually a legit condition - when 
                     // a variable is advertised as linked to a category values
                     // table of a certain name, but no such table exists.
