@@ -380,8 +380,15 @@ public class SearchServiceBean {
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
+                /**
+                 * @todo Expose this API URL after "dvs" is changed to
+                 * "dataverses". Also, is an API token required for published
+                 * dataverses?
+                 */
+//                solrSearchResult.setApiUrl(baseUrl + "/api/dvs/" + entityid);
             } else if (type.equals("datasets")) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
+                solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 String datasetDescription = (String) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                 solrSearchResult.setDescriptionNoSnippet(datasetDescription);
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
@@ -402,6 +409,14 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
+                /**
+                 * @todo We are not yet setting the API URL for files because
+                 * not all files have metadata. Only subsettable files (those
+                 * with a datatable) seem to have metadata. Furthermore, the
+                 * response is in XML whereas the rest of the Search API returns
+                 * JSON.
+                 */
+//                solrSearchResult.setApiUrl(baseUrl + "/api/meta/datafile/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
                 solrSearchResult.setDatasetVersionId(datasetVersionId);

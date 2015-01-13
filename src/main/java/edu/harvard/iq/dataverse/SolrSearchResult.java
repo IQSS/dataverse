@@ -27,6 +27,7 @@ public class SolrSearchResult {
     private String htmlUrl;
     private String persistentUrl;
     private String downloadUrl;
+    private String apiUrl;
     private String query;
     private String name;
     private String nameSort;
@@ -245,11 +246,11 @@ public class SolrSearchResult {
         return matchedFieldsArray;
     }
 
-    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds) {
-        return json(showRelevance, showEntityIds).build();
+    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
+        return json(showRelevance, showEntityIds, showApiUrls).build();
     }
 
-    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
 
         if (this.type == null) {
             return jsonObjectBuilder();
@@ -260,6 +261,7 @@ public class SolrSearchResult {
         String identifierLabel = null;
         String datasetCitation = null;
         String preferredUrl = null;
+        String apiUrl = null;
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
             identifierLabel = "identifier";
@@ -287,14 +289,6 @@ public class SolrSearchResult {
         NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
                 .add("name", displayName)
                 .add("type", getDisplayType(getType()))
-                /**
-                 * @todo We should probably have a metadata_url or api_url
-                 * concept. For datasets, this would be
-                 * http://example.com/api/datasets/10 or whatever (to get more
-                 * detailed JSON), but right now this requires an API token.
-                 * Discuss at
-                 * https://docs.google.com/document/d/1d8sT2GLSavgiAuMTVX8KzTCX0lROEET1edhvHHRDZOs/edit?usp=sharing";
-                 */
                 .add("url", preferredUrl)
                 //                .add("persistent_url", this.persistentUrl)
                 //                .add("download_url", this.downloadUrl)
@@ -328,12 +322,26 @@ public class SolrSearchResult {
                 .add("file_type", this.filetype)
                 .add("dataset_citation", datasetCitation)
                 .add("citation", this.citation);
+        // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
         }
         if (showEntityIds) {
             if (this.entityId != null) {
                 nullSafeJsonBuilder.add("entity_id", this.entityId);
+            }
+        }
+        if (showApiUrls) {
+            /**
+             * @todo We should probably have a metadata_url or api_url concept
+             * enabled by default, not hidden behind an undocumented boolean.
+             * For datasets, this would be http://example.com/api/datasets/10 or
+             * whatever (to get more detailed JSON), but right now this requires
+             * an API token. Discuss at
+             * https://docs.google.com/document/d/1d8sT2GLSavgiAuMTVX8KzTCX0lROEET1edhvHHRDZOs/edit?usp=sharing";
+             */
+            if (getApiUrl() != null) {
+                nullSafeJsonBuilder.add("api_url", getApiUrl());
             }
         }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
@@ -409,6 +417,14 @@ public class SolrSearchResult {
 
     public void setDownloadUrl(String downloadUrl) {
         this.downloadUrl = downloadUrl;
+    }
+
+    public String getApiUrl() {
+        return apiUrl;
+    }
+
+    public void setApiUrl(String apiUrl) {
+        this.apiUrl = apiUrl;
     }
 
     public String getQuery() {
