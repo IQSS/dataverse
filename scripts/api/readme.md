@@ -1,7 +1,9 @@
 # API Guide
 
+* This document is deprecated. Use the sphinx docs instead *
+
 This is a quick and dirty guide to the API. Use it for quick setup of complex scenarios. Please add and revise as needed. This assumes unix shell (of cygwin if you run windows).
-The API uses `json`, and sometimes query parameters as well. Also, sometimes there is a `key`, which is currently the username of the user executing the command (safe choice for standard setup is `pete`).
+The API uses `json`, and sometimes query parameters as well. Also, sometimes there is a `key`, which is the API key of the authenticated user on issuing the command.
 
 To have a fresh start in the database, you can execute the script `drop-create.sh` in the `../database` folder.
 
