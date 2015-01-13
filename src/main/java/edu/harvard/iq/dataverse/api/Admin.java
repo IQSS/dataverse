@@ -23,8 +23,6 @@ import javax.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -204,6 +202,7 @@ public class Admin extends AbstractApiBean {
     
     @Path("roles")
     @POST
+    // TODO @michbarsinai: this is duplicating Roles#createNewRole.
     public Response createNewBuiltinRole(RoleDTO roleDto) {
         try {
             return okResponse(json(rolesSvc.save(roleDto.asRole())));
@@ -213,7 +212,7 @@ public class Admin extends AbstractApiBean {
     }
     
     @Path("superuser/{identifier}")
-    @GET
+    @POST
     public Response toggleSuperuser(@PathParam("identifier") String identifier) {
        try {
           AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);

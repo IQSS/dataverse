@@ -80,49 +80,15 @@ public class Roles extends AbstractApiBean {
 	}
 	
 	@POST
-	@Path("assignments")
-	public Response assignRole( @FormParam("username") String username, 
-			@FormParam("roleId") Long roleId, 
-			@FormParam("definitionPointId") Long dvObjectId,
-			@QueryParam("key") String key ) {
-		
-        User issuer = findUserByApiToken(key);
-		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
-		
-        RoleAssignee ras = findAssignee(username);
-		if ( ras == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
-		
-        
-        DvObject d = null;
-        if ( dvObjectId != null ) {
-            d = dvSvc.find( dvObjectId );
-            if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no DvObject with id " + dvObjectId );
-        }
-		DataverseRole r = rolesSvc.find(roleId);
-		if ( r == null ) return errorResponse( Status.BAD_REQUEST, "no role with id " + roleId );
-		
-		try {
-			return okResponse( json(execCommand( new AssignRoleCommand(ras,r,d, issuer), "Assign Role")) );
-			
-		} catch (WrappedResponse ex) {
-			logger.log( Level.WARNING, "Error Assigning role", ex );
-			return ex.getResponse();
-		}
-	}
-	
-	@POST
 	public Response createNewRole( RoleDTO roleDto,
 								 @QueryParam("dvo") String dvoIdtf,
 								 @QueryParam("key") String key ) {
         
-        User issuer = usersSvc.findByIdentifier(key);
-		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
-		
-		Dataverse d = findDataverse(dvoIdtf);
+        Dataverse d = findDataverse(dvoIdtf);
 		if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no dataverse with id " + dvoIdtf );
 		
 		try {
-			return okResponse(json(execCommand(new CreateRoleCommand(roleDto.asRole(), issuer, d), "Create New Role")));
+			return okResponse(json(execCommand(new CreateRoleCommand(roleDto.asRole(), findUserOrDie(key), d), "Create New Role")));
 		} catch ( WrappedResponse ce ) {
 			return ce.getResponse();
 		}

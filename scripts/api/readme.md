@@ -19,65 +19,65 @@ Generates root dataverse and some other dataverses for Pete and Uma.
 
 ### dvs (will be dataverses)
 
-    POST http://$SERVER/api/dvs/{{id}}?key=$apiKey
+    POST http://$SERVER/api/dvs/$id?key=$apiKey
 
-Generates a new dataverse under `{{id}}`. Expects a `json` content describing the dataverse.
-If `{{id}}` is omitted, a root dataverse is created. `{{id}}` can either be a dataverse id (long) or a dataverse alias (more robust).
+Generates a new dataverse under `$id`. Expects a `json` content describing the dataverse.
+If `$id` is omitted, a root dataverse is created. `$id` can either be a dataverse id (long) or a dataverse alias (more robust).
 
-    GET http://$SERVER/api/dvs/{{id}}
+    GET http://$SERVER/api/dvs/$id
 
-View data about the dataverse identified by `{{id}}`. `{{id}}` can be the id number of the dataverse, its alias, or the special value `:root`.
+View data about the dataverse identified by `$id`. `$id` can be the id number of the dataverse, its alias, or the special value `:root`.
 
-    DELETE http://$SERVER/api/dvs/{{id}}?key=$apiKey
+    DELETE http://$SERVER/api/dvs/$id?key=$apiKey
 
 Deletes the dataverse whose ID is given.
 
-    GET http://$SERVER/api/dvs/{{id}}/contents
+    GET http://$SERVER/api/dvs/$id/contents
 
 Lists all the DvObjects under dataverse `id`.
 
-	GET http://$SERVER/api/dvs/{{id}}/roles?key=$apiKey
+	GET http://$SERVER/api/dvs/$id/roles?key=$apiKey
 
 All the roles defined directly in the dataverse identified by `id`.
 
-	POST http://$SERVER/api/dvs/{{id}}/roles?key=$apiKey
+	POST http://$SERVER/api/dvs/$id/roles?key=$apiKey
 
 Creates a new role under dataverse `id`. Needs a `.json` file with the role description.
 
-	GET http://$SERVER/api/dvs/{{id}}/assignments?key=$apiKey
+	GET http://$SERVER/api/dvs/$id/assignments?key=$apiKey
 
 List all the role assignments at the given dataverse.
 
-	POST http://$SERVER/api/dvs/{{id}}/assignments?key=$apiKey
+	POST http://$SERVER/api/dvs/$id/assignments?key=$apiKey
 
 Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"userName\": \"uma\",\"roleId\": 11}"`). Roles and users can be identifier by id (`"userId"`) or by name (`"userName"` and `"roleAlias"`).
 
-	DELETE http://$SERVER/api/dvs/{{id}}/assignments/{{id}}?key=$apiKey
+	DELETE http://$SERVER/api/dvs/$id/assignments/$id?key=$apiKey
 
-Delete the assignment whose id is `{{id}}`.
+Delete the assignment whose id is `$id`.
 
-	GET http://$SERVER/api/dvs/{{id}}/metadatablocks?key=$apiKey
+	GET http://$SERVER/api/dvs/$id/metadatablocks?key=$apiKey
 
 Get the metadata blocks defined on the passed dataverse.
 
-	POST http://$SERVER/api/dvs/{{id}}/metadatablocks?key=$apiKey
+	POST http://$SERVER/api/dvs/$id/metadatablocks?key=$apiKey
 
 Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name).
 
-	GET http://$SERVER/api/dvs/{{id}}/metadatablocks/:isRoot?key={{apikey}}
+	GET http://$SERVER/api/dvs/$id/metadatablocks/:isRoot?key=$apiKey
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks.
 
-	POST http://$SERVER/api/dvs/{{id}}/metadatablocks/:isRoot?key={{apikey}}
+	POST http://$SERVER/api/dvs/$id/metadatablocks/:isRoot?key=$apiKey
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are `true` and `false` (both are valid JSON expressions).
 
-	POST http://$SERVER/api/dvs/{{id}}/datasets/?key={{apikey}}
+	POST http://$SERVER/api/dvs/$id/datasets/?key=$apiKey
 
 Create a new dataset in dataverse `id`. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of `"initialVersion"`. The initial versions version number will be set to `1.0`, and its state will be set to `DRAFT` regardless of the content of the json object. Example json can be found at `data/dataset-create-new.json`.
 
-	POST http://$SERVER/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
+	POST http://$SERVER/api/dvs/$identifier/actions/:publish?key=$apiKey
 
 Publish the Dataverse pointed by `identifier`, which can either by the dataverse alias or its numerical id.
 
@@ -92,41 +92,41 @@ In all commands below, dataset versions can be referred to as:
 * `x.y` a specific version, where `x` is the major version number and `y` is the minor version number.
 * `x` same as `x.0`
 
-	GET http://$SERVER/api/datasets/{{id}}?key={{apikey}}
+	GET http://$SERVER/api/datasets/$id?key=$apiKey
 
 Show the dataset whose id is passed.
 
-	DELETE http://$SERVER/api/datasets/{{id}}?key={{apikey}}
+	DELETE http://$SERVER/api/datasets/$id?key=$apiKey
 
 Delete the dataset whose id is passed.
 
-	GET http://$SERVER/api/datasets/{{id}}/versions?key={{apikey}}
+	GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
 
 List versions of the dataset. 
 	
-	GET http://$SERVER/api/datasets/{{id}}/versions/{{versionNumber}}?key={{apikey}}
+	GET http://$SERVER/api/datasets/$id/versions/{{versionNumber}}?key=$apiKey
 
 Show a version of the dataset. The Dataset also include any metadata blocks the data might have.
 
-	GET http://$SERVER/api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
+	GET http://$SERVER/api/datasets/$id/versions/{{versionId}}/metadata?key=$apiKey
 
 Lists all the metadata blocks and their content, for the given dataset and version.
 
-	GET http://$SERVER/api/datasets/{{id}}/versions/{{versionId}}/metadata/{{blockname}}?key={{apikey}}
+	GET http://$SERVER/api/datasets/$id/versions/{{versionId}}/metadata/{{blockname}}?key=$apiKey
 
 Lists the metadata block block named `blockname`, for the given dataset and version.
 
-    PUT http://$SERVER/api/datasets/{{id}}/versions/:draft?key={{apiKey}}
+    PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Updates the current draft version of dataset `{{id}}`. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
+Updates the current draft version of dataset `$id`. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
 
-    POST http://$SERVER/api/datasets/{{id}}/actions/:publish?type={{type}}&key={{apiKey}}
+    POST http://$SERVER/api/datasets/$id/actions/:publish?type={{type}}&key=$apiKey
 
 Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the `type` parameter. Passing `type=minor` increases the minor version number (2.3 &rarr; 2.4). Passing `type=major` increases the major version number (2.3 &rarr; 3.0).
 
-	DELETE http://$SERVER/api/datasets/{{id}}/versions/:draft?key={{apiKey}}
+	DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Deletes the draft version of dataset `{{id}}`. Only the draft version can be deleted.
+Deletes the draft version of dataset `$id`. Only the draft version can be deleted.
 
 ### users
 
@@ -134,34 +134,27 @@ This endopint deals with users of the built-in authentication provider. Note tha
 For this service to work, the setting `BuiltinUsers.KEY` has to be set, and its value passed as `{{key}}` to
 each of the calls.
 
-	GET http://$SERVER/api/users?key={{key}]
+	GET http://$SERVER/api/users?key={{key}}
 
 List all users.
 
-	POST http://$SERVER/api/users?password={{password}}&key={{key}]
+	POST http://$SERVER/api/users?password={{password}}&key={{key}}
 
 Generates a new user. Data about the user are posted via JSON. *Note that the password is passed as a parameter in the query*.
 
 ### roles
 
-	GET http://$SERVER/api/roles
-
-List all roles.
-
 	POST http://$SERVER/api/roles?dvo={{dataverseIdtf}}&key=$apiKey
 
 Creates a new role in dataverse object whose Id is `dataverseIdtf` (that's an id/alias).
 
-List all roles.
-
-	GET http://$SERVER/api/roles/{{id}}
+	GET http://$SERVER/api/roles/$id
 
 Shows the role with `id`.
 
-	DELETE http://$SERVER/api/roles/{{id}}
+	DELETE http://$SERVER/api/roles/$id
 
 Deletes the role with `id`.
-
 
 ### Metadata Blocks
 
@@ -169,9 +162,9 @@ Deletes the role with `id`.
 
 Lists brief info about all metadata blocks registered in the system.
 
-	GET http://$SERVER/api/metadatablocks/{{idtf}}
+	GET http://$SERVER/api/metadatablocks/$identifier
 
-Return data about the block whose `idtf` is passed. `idtf` can either be the block's id, or its name.
+Return data about the block whose `identifier` is passed. `identifier` can either be the block's id, or its name.
 
 ### Groups
 #### IpGroups
@@ -190,7 +183,7 @@ Returns a the group in a JSON format. `$groupIdtf` can either be the group id in
 
 	DELETE http://$SERVER/api/groups/ip/$groupIdtf
 
-Deletes the group specified by `$groupIdtf`. `$groupIdtf` can either be the group id in the database (in case it is numeric), or the group alias.
+Deletes the group specified by `$groupIdtf`. `$groupIdtf` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it.
 
 ### Admin (`/s/XXX`)
 This is a "secure" part of the api, dealing with setup. Future releases will only allow accessing this from a whilelisted IP address, or localhost.
@@ -199,15 +192,15 @@ This is a "secure" part of the api, dealing with setup. Future releases will onl
 
 List all settings.
 
-	GET http://$SERVER/api/s/settings/{{name}}
+	GET http://$SERVER/api/s/settings/$name
 
 Get the setting under `name`.
 
-	PUT http://$SERVER/api/s/settings/{{name}}/{{content}}
+	PUT http://$SERVER/api/s/settings/$name/$content
 
 Set `name` to `content`. Note that `content` is assumed to be url-encoded.
 
-	DELETE http://$SERVER/api/s/settings/{{name}}
+	DELETE http://$SERVER/api/s/settings/$name
 
 Delete the setting under `name`.
 
@@ -223,26 +216,25 @@ List all the authentication providers in the system (both enabled and disabled).
 
 Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's `GET` counterpart.
 
-	GET http://$SERVER/api/s/authenticationProviders/{id}
+	GET http://$SERVER/api/s/authenticationProviders/$id
 
 Show data about an authentication provider.
 
-	POST http://$SERVER/api/s/authenticationProviders/{id}/:enabled
+	POST http://$SERVER/api/s/authenticationProviders/$id/:enabled
 
 Enable or disable an authentication provider (denoted by `id`). The body of the request should be either `true` or `false`. Content type has to be `application/json`, like so:
 
 	curl -H "Content-type: application/json"  -X POST -d"false" http://localhost:8080/api/s/authenticationProviders/echo-dignified/:enabled
 
 
-	DELETE http://$SERVER/api/s/authenticationProviders/{id}/
+	DELETE http://$SERVER/api/s/authenticationProviders/$id/
 
 Deletes an authentication provider from the system. The command succeeds even if there is no such provider, as the postcondition holds: there is no provider by that id after the command returns.
-
 
     POST http://$SERVER/api/s/roles
 
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON.
 
-    POST http://$SERVER/api/s/superuser/{identifier}
+    POST http://$SERVER/api/s/superuser/$identifier
 
-Toggles superuser mode on the `AuthenticatedUser` whose identifier is passed.
+Toggles superuser mode on the `AuthenticatedUser` whose `identifier` is passed.
