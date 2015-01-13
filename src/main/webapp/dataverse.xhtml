@@ -44,6 +44,7 @@
                 </f:metadata>
 
                 <h:form id="dataverseForm">
+                    <!-- Edit Mode -->
                     <p:focus context="dataverseForm"/>
 
                     <!-- Name Panel -->
@@ -339,7 +340,7 @@
                         </div>
                     </p:panel>
 
-                    <!-- Description Panel / View Mode -->
+                    <!-- View Mode / Description Panel -->
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
 
                         <div id="actionButtonBlock" class="clearfix" style="margin-bottom:1em;">
@@ -429,11 +430,13 @@
                                     </ui:fragment>
                                 </div>
                             </ui:fragment>
+                            <!-- Email Dataverse Contact + Link Dataverse Button Group -->
                             <ui:fragment rendered="true">
                                 <div style="float:right;">
-                                    <button type="button" class="btn btn-default" onclick="contactForm.show()">
-                                        <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> #{bundle['dataverse.contact']}
-                                    </button>
+                                    <div class="btn-group" role="group" style="margin-right:.3em;">
+                                        <button type="button" class="btn btn-default" onclick="contactForm.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
+                                        <button type="button" class="btn btn-default" onclick="alert('Static button only for Linked Dataverse development purposes.')" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Link Dataset to Your Dataverse"><span class="glyphicon glyphicon-link"/></button>
+                                    </div>
                                 </div>
                             </ui:fragment>
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
@@ -708,7 +711,8 @@
                     }
 
                     function initPopover() {
-                        $('#content label.control-label[data-toggle="popover"]').popover();
+                        $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+                        $('[data-toggle="popover"]').popover();
                         $('body').on('click', function (e) {
                             $('label[data-toggle="popover"]').each(function () {
                                 //the 'is' for buttons that trigger popups

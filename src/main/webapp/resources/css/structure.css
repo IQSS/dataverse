@@ -336,7 +336,7 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
                                     
 #title {/*display:block;*/font-size:1.5em;font-weight:bold; /*margin-bottom:.5em;*/}
 #author, #contact {display:block; margin-bottom:.5em;}
-#citation {padding:.5em;}
+#citation, #citation-download {padding:.5em;}
 #whycitelink {margin:10px 0 0 1em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}

@@ -289,9 +289,10 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
-                                            <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
-                                                <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> #{bundle['dataset.email.datasetContactBtn']}
-                                            </button>
+                                            <div class="btn-group" role="group" style="margin-right:.3em;">
+                                                <button type="button" class="btn btn-default" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
+                                                <button type="button" class="btn btn-default" onclick="alert('Static button only for Linked Dataset development purposes.')" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Link Dataset to Your Dataverse"><span class="glyphicon glyphicon-link"/></button>
+                                            </div>
                                         </div>
                                     </ui:fragment>
                                     <p:confirmDialog message="#{bundle['dataset.email.tip']}" header="#{bundle['dataset.email.datasetContactBtn']}" widgetVar="contact_confirmation">
@@ -305,11 +306,10 @@
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                         </div>
-
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                        <div class="row" >
-                                            <div id="citation" class="bg-info col-md-9" style="margin-bottom:.5em;">
+                                        <div class="row bg-info" style="margin-bottom:.5em;">
+                                            <div id="citation" class="col-md-9">
                                                 <span>#{DatasetPage.displayCitation}</span>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                     <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"></span>
@@ -322,9 +322,9 @@
                                                 </ui:fragment>
                                                 <span id="whycitelink" class="bg-warning small"><a href="/guides/Data_Citation/index.html" target="_blank">#{bundle['dataset.cite.whyCite']}</a></span>
                                             </div>
-                                            <div class="col-md-3 text-right" style="padding-right:0; margin-bottom:.5em;">
+                                            <div id="citation-download" class="col-md-3 text-right">
                                                 <div class="dropdown">
-                                                    <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <button type="button" id="downloadCitation" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                                                     </button>
                                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
