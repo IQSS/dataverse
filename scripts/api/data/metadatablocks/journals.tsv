@@ -1,38 +1,39 @@
 #metadataBlock	name	displayName												
 	journal	Journal Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	volume	Volume	The journal volume which this dataset is associated with (e.g., Volume 4).		text	0	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		journal
-	issue	Issue	The journal issue number which this dataset is associated with (e.g., Number 2, Autumn).		text	1	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		journal
-	articleType	Type of Article	Indicates what kind of article this is, for example, a research article, a commentary, a book or product review, a case report, a calendar, etc (based on JATS). 		text	2	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		journal
+	journalVolume	Volume	The journal volume which this dataset is associated with (e.g., Volume 4).		text	0	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		journal
+	journalIssue	Issue	The journal issue number which this dataset is associated with (e.g., Number 2, Autumn).		text	1	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		journal
+	journalArticleType	Type of Article	Indicates what kind of article this is, for example, a research article, a commentary, a book or product review, a case report, a calendar, etc (based on JATS). 		text	2	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		journal
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder										
-	articleType	abstract		0										
-	articleType	addendum		1										
-	articleType	announcement		2										
-	articleType	article-commentary		3										
-	articleType	book-review		4										
-	articleType	books-received		5										
-	articleType	brief-report		6										
-	articleType	calendar		7										
-	articleType	case-report		8										
-	articleType	collection		9										
-	articleType	correction		10										
-	articleType	discussion		11										
-	articleType	dissertation		12										
-	articleType	editorial		13										
-	articleType	in-brief		14										
-	articleType	introduction		15										
-	articleType	letter		16										
-	articleType	meeting-report		17										
-	articleType	news		18										
-	articleType	obituary		19										
-	articleType	oration		20										
-	articleType	partial-retraction		21										
-	articleType	product-review		22										
-	articleType	rapid-communication		23										
-	articleType	reply		24										
-	articleType	reprint		25										
-	articleType	research-article		26										
-	articleType	retraction		27										
-	articleType	review-article		28										
-	articleType	translation		29										
-	articleType	other		30										
+	journalArticleType	abstract		0										
+	journalArticleType	addendum		1										
+	journalArticleType	announcement		2										
+	journalArticleType	article-commentary		3										
+	journalArticleType	book review		4										
+	journalArticleType	books received		5										
+	journalArticleType	brief report		6										
+	journalArticleType	calendar		7										
+	journalArticleType	case report		8										
+	journalArticleType	collection		9										
+	journalArticleType	correction		10										
+	journalArticleType	data paper		11										
+	journalArticleType	discussion		12										
+	journalArticleType	dissertation		13										
+	journalArticleType	editorial		14										
+	journalArticleType	in brief		15										
+	journalArticleType	introduction		16										
+	journalArticleType	letter		17										
+	journalArticleType	meeting report		18										
+	journalArticleType	news		19										
+	journalArticleType	obituary		20										
+	journalArticleType	oration		21										
+	journalArticleType	partial retraction		22										
+	journalArticleType	product review		23										
+	journalArticleType	rapid communication		24										
+	journalArticleType	reply		25										
+	journalArticleType	reprint		26										
+	journalArticleType	research article		27										
+	journalArticleType	retraction		28										
+	journalArticleType	review article		29										
+	journalArticleType	translation		30										
+	journalArticleType	other		31										
