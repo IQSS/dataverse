@@ -1115,27 +1115,9 @@ public class DTA117FileReader extends TabularDataFileReader{
                          * Some special characters, like new lines and tabs need to 
                          * be escaped - otherwise they will break our TAB file 
                          * structure! 
-                         * But before we escape anything, all the back slashes 
-                         * already in the string need to be escaped themselves.
                          */
-                        // TODO: 
-                        // replace this with the escape code from the parent class. 
-                        // -- L.A. Oct. 6 2014
-                        String escapedString = string_datum.replace("\\", "\\\\");
-                        // escape quotes: 
-                        escapedString = escapedString.replaceAll("\"", Matcher.quoteReplacement("\\\""));
-                        // escape tabs and new lines:
-                        escapedString = escapedString.replaceAll("\t", Matcher.quoteReplacement("\\t"));
-                        escapedString = escapedString.replaceAll("\n", Matcher.quoteReplacement("\\n"));
-                        escapedString = escapedString.replaceAll("\r", Matcher.quoteReplacement("\\r"));
-                        // the escaped version of the string is stored in the tab file 
-                        // enclosed in double-quotes; this is in order to be able 
-                        // to differentiate between an empty string (tab-delimited empty string in 
-                        // double quotes) and a missing value (tab-delimited empty string). 
-                        // Although the question still remains - is it even possible 
-                        // to store an empty string, that's not a missing value, in Stata? 
-                        // - see the comment in the missing value case above. -- L.A. 4.0
-                        dataRow[columnCounter] = "\"" + escapedString + "\"";
+                        
+                        dataRow[columnCounter] = escapeCharacterString(string_datum);
                     }
                     byte_offset += strVarLength;
                 } else if (varType.equals("STRL")) {
@@ -1260,7 +1242,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                                 // This is a code for an empty string - "";
                                 // doesn't need to be defined or looked up.
                                 
-                                line[varindex] = "";
+                                line[varindex] = "\"\"";
                             } else {
                                 String[] voTokens = voPair.split(",", 2);
                             
@@ -1373,15 +1355,17 @@ public class DTA117FileReader extends TabularDataFileReader{
         
         logger.fine("GSO "+v+","+o+": "+gsoString);
         
+        String escapedGsoString = escapeCharacterString(gsoString);
+        
         if (cachedGSOs.containsKey(voPair)) {
             // We need to cache this GSO: 
             if (!"".equals(cachedGSOs.get(voPair))) {
                 throw new IOException ("Multiple GSO definitions for v,o "+voPair);
             }
-            cachedGSOs.put(voPair, gsoString);
+            cachedGSOs.put(voPair, escapedGsoString);
         }
         
-        return gsoString;     
+        return escapedGsoString;     
     }
     
     private void readValueLabels(DataReader reader) throws IOException {
