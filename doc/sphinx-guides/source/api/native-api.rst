@@ -39,7 +39,7 @@ List all the role assignments at the given dataverse::
 
   GET http://$SERVER/api/dvs/$id/assignments?key=$apiKey
 
-Assigns a new role (passed in the ``POST`` part, for ``curl`` that's ``-d @{{filename}}`` or ``-d "{\"userName\": \"uma\",\"roleId\": 11}"``). Roles and users can be identifier by id (``"userId"``) or by name (``"userName"`` and ``"roleAlias"``). ::
+Assigns a new role (passed in the ``POST`` part, for ``curl`` that's ``-d @$filename`` or ``-d "{\"userName\": \"uma\",\"roleId\": 11}"``). Roles and users can be identifier by id (``"userId"``) or by name (``"userName"`` and ``"roleAlias"``). ::
 
   POST http://$SERVER/api/dvs/$id/assignments?key=$apiKey
 
@@ -98,23 +98,23 @@ List versions of the dataset::
 
 Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
   
-  GET http://$SERVER/api/datasets/$id/versions/{{versionNumber}}?key=$apiKey
+  GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
 
 Lists all the metadata blocks and their content, for the given dataset and version::
 
-  GET http://$SERVER/api/datasets/$id/versions/{{versionId}}/metadata?key=$apiKey
+  GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata?key=$apiKey
 
 Lists the metadata block block named `blockname`, for the given dataset and version::
 
-  GET http://$SERVER/api/datasets/$id/versions/{{versionId}}/metadata/{{blockname}}?key=$apiKey
+  GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata/$blockname?key=$apiKey
 
 Updates the current draft version of dataset ``$id``. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data::
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the `type` parameter. Passing `type=minor` increases the minor version number (2.3 &rarr; 2.4). Passing `type=major` increases the major version number (2.3 &rarr; 3.0)::
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0)::
 
-    POST http://$SERVER/api/datasets/$id/actions/:publish?type={{type}}&key=$apiKey
+    POST http://$SERVER/api/datasets/$id/actions/:publish?type=$type&key=$apiKey
 
 Deletes the draft version of dataset ``$id``. Only the draft version can be deleted::
 
@@ -133,14 +133,14 @@ List all users::
 
 Generates a new user. Data about the user are posted via JSON. *Note that the password is passed as a parameter in the query*. ::
 
-  POST http://$SERVER/api/users?password={{password}}&key={{key}}
+  POST http://$SERVER/api/users?password=$password&key=$key
 
 Roles
 ~~~~~
 
 Creates a new role in dataverse object whose Id is ``dataverseIdtf`` (that's an id/alias)::
   
-  POST http://$SERVER/api/roles?dvo={{dataverseIdtf}}&key=$apiKey
+  POST http://$SERVER/api/roles?dvo=$dataverseIdtf&key=$apiKey
 
 Shows the role with ``id``::
 
