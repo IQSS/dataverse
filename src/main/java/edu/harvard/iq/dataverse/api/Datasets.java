@@ -258,14 +258,20 @@ public class Datasets extends AbstractApiBean {
             Dataset ds = datasetService.find(id);
             if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
             JsonObject json = Json.createReader(rdr).readObject();
-            DatasetVersion version = jsonParser().parseDatasetVersion(json);
+            DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
             
-            version.setDataset(ds);
+            // clear possibly stale fields from the incoming dataset version.
+            // creation and modification dates are updated by the commands.
+            incomingVersion.setId(null);
+            incomingVersion.setVersionNumber(null);
+            incomingVersion.setMinorVersionNumber(null);
+            incomingVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+            incomingVersion.setDataset(ds);
 
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = engineSvc.submit( updateDraft
-                                                                ? new UpdateDatasetVersionCommand(u, version)
-                                                                : new CreateDatasetVersionCommand(u, ds, version) );
+                                                                ? new UpdateDatasetVersionCommand(u, incomingVersion)
+                                                                : new CreateDatasetVersionCommand(u, ds, incomingVersion) );
             return okResponse( json(managedVersion) );
                     
         } catch (CommandException ex) {
