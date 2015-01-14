@@ -1724,6 +1724,23 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
+    private String ingestLanguageEncoding = null; 
+    
+    public String getIngestLanguageEncoding() {
+        if (ingestLanguageEncoding == null) {
+            return "UTF8 (default)";
+        }
+        return ingestLanguageEncoding; 
+    }
+    
+    public void setIngestLanguageEncoding(String ingestLanguageEncoding) {
+        this.ingestLanguageEncoding = ingestLanguageEncoding; 
+    }
+    
+    public void setIngestEncoding(String ingestEncoding) {
+        ingestLanguageEncoding = ingestEncoding; 
+    }
+    
     public void handleLabelsFileUpload(FileUploadEvent event) {
         logger.fine("entering handleUpload method.");
         UploadedFile file = event.getFile();

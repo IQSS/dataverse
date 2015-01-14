@@ -650,7 +650,13 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image) or ((empty fileMetadata.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))}">
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData 
+                                                                     or 
+                                                                     (!(empty fileMetadata.id) and fileMetadata.dataFile.image) 
+                                                                     or 
+                                                                     ((empty fileMetadata.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
+                                                                     or
+                                                                     ((empty fileMetadata.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}">
                                                 <p:commandLink id="advancedIngestOptionsButton"
                                                                styleClass="btn btn-default"
                                                                actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
@@ -1658,17 +1664,169 @@
                             </ui:fragment>
 
                             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
-                            <ui:fragment rendered="false">
+                            <!-- ui:fragment rendered="false" -->
+                            <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssSavFile(DatasetPage.fileMetadataSelected.dataFile)}">
                                 <div class="form-group col-sm-12">
                                     <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.spss-savEncoding.title']}">
                                             #{bundle['file.spss-savEncoding']}
                                         </a>
+                                        <h:outputText id="selectedEncoding" value="Current selection: #{DatasetPage.ingestLanguageEncoding}"/>
                                     </label>
+                                    
                                     <div class="col-sm-8">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <h:outputText value="**REMOVE ME** Dropdown"/>
-                                            <h:outputText value="Error Msg **REMOVE ME**"/>
+                                            <p:tieredMenu id="spssSavEncodingLanguage" style="width:200px">
+                                                <p:submenu label="West European">
+                                                    <p:menuitem value="Western (ISO-8859-1)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-1')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Western (ISO-8859-15)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-15')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Western (Windows-1252)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('windows-1252')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Western (MacRoman)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('macintosh')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Western (IBM-850)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('ibm850')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Celtic (ISO-8859-14)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-14')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Greek (ISO-8859-7)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-7')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Greek (Windows-1253)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('windows-1253')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Greek (MacGreek)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-mac-greek')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Icelandic (MacIcelandic)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-mac-icelandic')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Nordic (ISO-8859-10)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-10')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="South European (ISO-8859-3)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-3')}">
+                                                    </p:menuitem>
+                                                </p:submenu>
+                                                <p:submenu label="East European">
+                                                    <p:menuitem value="Baltic (ISO-8859-4)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-4')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Baltic (ISO-8859-13)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-13')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Baltic (Windows-1257)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('windows-1257')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic (ISO-8859-5)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-5')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic (ISO-IR-111)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-ir-111')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic (Windows-1251)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('windows-1251')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic (MacCyrillic)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-mac-cyrillic')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic/Ukrainian (MacUkrainian)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-mac-ukrainian')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic (KOI8-R)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('koi8-r')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic/Ukrainian (KOI8-U)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('koi8-u')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Croatian (MacCroatian)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-mac-croatian')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Romanian (MacRomanian)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-mac-romanian')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Romanian (ISO-8859-16)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-16')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Central European (ISO-8859-2)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-8859-2')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Central European (Windows-1250)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('windows-1250')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Central European (MacCE)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-mac-ce')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Cyrillic (IBM-855)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('ibm855')}">
+                                                    </p:menuitem>
+                                                </p:submenu>
+                                                <p:submenu label="East Asian">
+                                                    <p:menuitem value="Japanese (ISO-2022-JP)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-2022-jp')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Japanese (Shift_JIS)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('shift_jis')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Japanese (EUC-JP)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('euc-jp')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Chinese Traditional (Big5)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('big5')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Chinese Traditional (Big5-HKSCS)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('big5-hkscs')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Chinese Traditional (EUC-TW)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-euc-tw')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Chinese Simplified (GB2312)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('gb2312')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Chinese Simplified (HZ)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('hz-gb-2312')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Chinese Simplified (GBK)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('gbk')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Chinese Simplified (ISO-2022-CN)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-2022-cn')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Korean (EUC-KR)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('euc-kr')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Korean (JOHAB)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('x-johab')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Korean (ISO-2022-KR)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('iso-2022-kr')}">
+                                                    </p:menuitem>
+                                                </p:submenu>
+                                                <p:submenu label="Unicode">
+                                                    <p:menuitem value="Unicode (UTF-8)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('utf-8')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Unicode (UTF-16LE)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('utf-16le')}">
+                                                    </p:menuitem>
+                                                    <p:menuitem value="Unicode (UTF-16BE)" update="selectedEncoding"
+                                                                actionListener="#{DatasetPage.setIngestEncoding('utf-16be')}">
+                                                    </p:menuitem>
+                                                </p:submenu>
+                                                <p:separator />
+                                                <p:menuitem value="US-ASCII" update="selectedEncoding"
+                                                            actionListener="#{DatasetPage.setIngestEncoding('US-ASCII')}">
+                                                </p:menuitem>
+                                            </p:tieredMenu>
+
+                                            <p:message for="spssSavEncodingLanguage" display="text" />
                                         </p:panelGrid>
                                         <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE
                                             <p:inputText id="spssSavEncodingLanguage" styleClass="form-control"/>

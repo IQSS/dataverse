@@ -38,6 +38,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     private EntityManager em;
     
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
+    private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
 
     public DataFile find(Object pk) {
         return (DataFile) em.find(DataFile.class, pk);
@@ -121,6 +122,10 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public boolean isSpssPorFile (DataFile file) {
         return MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType());
+    }
+    
+    public boolean isSpssSavFile (DataFile file) {
+        return MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType());
     }
     
     /*
