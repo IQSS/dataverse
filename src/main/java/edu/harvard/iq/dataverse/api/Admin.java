@@ -201,7 +201,6 @@ public class Admin extends AbstractApiBean {
     
     @Path("roles")
     @POST
-    // TODO @michbarsinai: this is duplicating Roles#createNewRole.
     public Response createNewBuiltinRole(RoleDTO roleDto) {
         try {
             return okResponse(json(rolesSvc.save(roleDto.asRole())));
