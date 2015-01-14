@@ -61,7 +61,7 @@ Encode each character string with Unicode bit encoding. In UNF Version 6 UTF-8 i
 
 **3. Vectors of Boolean values**
 
-Should be treated as numeric vectors of ``0``s and ``1``s.
+Should be treated as numeric vectors of ``0`` s and ``1`` s.
 
 **4. Bit fields.**
 
