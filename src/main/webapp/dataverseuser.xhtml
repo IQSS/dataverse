@@ -111,9 +111,7 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
-                                        <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
-                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
-                                        </h:outputLink>
+                                        <a href="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
                                         <h:outputText value="#{bundle.wasCreatedTo} " />
                                         <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}" />
@@ -123,9 +121,7 @@
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
                                         <h:outputText value="#{bundle.theDataset} " />
-                                        <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
-                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
-                                        </h:outputLink>
+                                        <a value="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
                                         <h:outputText value=" #{bundle['worldMap.added']}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEACC'}">

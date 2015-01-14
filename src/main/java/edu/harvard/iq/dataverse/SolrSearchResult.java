@@ -47,6 +47,11 @@ public class SolrSearchResult {
     private Map<String, Highlight> highlightsAsMap;
 
     // parent can be dataverse or dataset, store the name and id
+    /**
+     * The "identifier" of a file's parent (a dataset) is a globalId (often a
+     * doi).
+     */
+    public static String PARENT_IDENTIFIER = "identifier";
     private Map<String, String> parent;
     // used on the SearchPage but not the search API
     private List<Dataset> datasets;
@@ -618,11 +623,27 @@ public class SolrSearchResult {
     }
 
     public String getDatasetUrl() {
-        return "/dataset.xhtml?id=" + entityId + "&versionId=" + datasetVersionId;
+        if (identifier != null) {
+            /**
+             * Unfortunately, colons in the globalId (doi:10...) are converted
+             * to %3A (doi%3A10...). To prevent this we switched many JSF tags
+             * to a plain "a" tag with an href as suggested at
+             * http://stackoverflow.com/questions/24733959/houtputlink-value-escaped
+             */
+            logger.info("/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId);
+            return "/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId;
+        } else {
+            return "/dataset.xhtml?id=" + entityId + "&versionId=" + datasetVersionId;
+        }
     }
 
     public String getFileUrl() {
-        return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
+        String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);
+        if (parentDatasetGlobalId != null) {
+            return "/dataset.xhtml?globalId=" + parentDatasetGlobalId + "&versionId=" + datasetVersionId;
+        } else {
+            return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
+        }
     }
 
     /**

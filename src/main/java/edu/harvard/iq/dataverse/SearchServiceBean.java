@@ -408,6 +408,7 @@ public class SearchServiceBean {
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
                 if (parentGlobalIdObject != null) {
                     parentGlobalId = (String) parentGlobalIdObject;
+                    parent.put(SolrSearchResult.PARENT_IDENTIFIER, parentGlobalId);
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);

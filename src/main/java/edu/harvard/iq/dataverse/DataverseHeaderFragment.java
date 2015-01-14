@@ -140,7 +140,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             // that we don't want, so we filter through a list of paramters we do allow
             // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
             List acceptableParameters = new ArrayList();
-            acceptableParameters.addAll(Arrays.asList("id","alias","versionId","q","ownerId"));
+            acceptableParameters.addAll(Arrays.asList("id","alias","versionId","q","ownerId","globalId"));
             
             if (req.getParameterMap() != null) {
                 StringBuilder queryString = new StringBuilder(); 

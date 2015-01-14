@@ -518,9 +518,8 @@
                                                 <p:dataTable id="childDatasetTable" value="#{result.datasets}" var="dataset" rows="3" scrollable="true">
                                                     <p:column headerText="Title" style="font-size: smaller; width: 90%">
                                                         <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset" />
-                                                        <h:outputLink value="/dataset.xhtml?id=#{dataset.id}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                                            <h:outputText value="#{dataset.releasedVersion.title}" />
-                                                        </h:outputLink>
+                                                        <a href="/dataset.xhtml?globalId=#{dataset.globalId}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                                            <h:outputText value="#{dataset.releasedVersion.title}" /></a>
                                                     </p:column>
                                                     <p:column headerText="Files" style="font-size: smaller; width: 10%; text-align: right">
                                                         <h:outputText value="#{dataset.releasedVersion.fileMetadatas.size()} #{dataset.releasedVersion.fileMetadatas.size() == 0 or dataset.releasedVersion.fileMetadatas.size() > 1 ? 'Files' : 'File'}" />
@@ -538,11 +537,10 @@
                                 <!--DATASET CARDS-->
                                 <ui:fragment rendered="#{result.type == 'datasets'}">
                                     <div>
-                                        <h:outputLink value="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                        <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
-                                            <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
-                                        </h:outputLink>
+                                            <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.DEACCESSIONED}" styleClass="label label-info" rendered="#{result.deaccessionedState}"/>
@@ -596,26 +594,24 @@
                                 <!--FILE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'files'}">
                                     <div>
-                                        <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                        <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                                            <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
-                                        </h:outputLink>
+                                            <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                         <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
-                                        <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
+                                        <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
                                             <p:graphicImage value="/api/access/preview/#{result.entityId}"/>
-                                        </h:outputLink>
+                                        </a>
                                     </div>
                                     
                                     <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
 
-                                    <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                        <h:outputText value="#{result.parent.get('name')}"/>
-                                    </h:outputLink>
+                                    <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                        <h:outputText value="#{result.parent.get('name')}"/></a>
                                     
                                     <ui:fragment>
                                         <br/>

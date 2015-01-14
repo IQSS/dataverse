@@ -274,17 +274,17 @@
                                     <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
-                                            <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
+                                            <a class="btn btn-warning" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
                                                 <h:outputText value="#{bundle['dataset.viewVersion.unpublished']}"/>
-                                            </h:outputLink>
+                                            </a>
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion != DatasetPage.dataset.releasedVersion
                                                              and !empty(DatasetPage.releasedVersionTabList)}">
                                         <div style="float:right; margin-left:1em;">
-                                            <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.releasedVersion.id}">
+                                            <a class="btn btn-primary" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.releasedVersion.id}">
                                                 <h:outputText value="#{bundle['dataset.viewVersion.published']}"/>
-                                            </h:outputLink>
+                                            </a>
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
@@ -1371,12 +1371,10 @@
                                                   style="width:2%;text-align:center"/>
                                         <p:column>
                                             <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))}">
-                                                <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
+                                                <!--TODO: convert this from "h:link" to "a" so the colon in the globalId is not turned into "%3A"?--> 
+                                                <a id="versionLink" href="/dataset.xhtml?globalId=#{versionTab.dataset.globalId}&#38;versionId=#{versionTab.id}" class="ui-commandlink ui-widget" >
                                                     <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
-                                                    <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
-                                                    <f:param name="id" value="#{versionTab.dataset.id}" />
-                                                    <f:param name="versionId" value="#{versionTab.id}" />
-                                                </h:link>
+                                                    <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{versionTab.deaccessioned and  !(permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))}">
                                                 <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
