@@ -130,11 +130,11 @@ public class Dataverse extends DvObjectContainer {
     private List<DataverseContact> dataverseContacts = new ArrayList();
     
     @OneToMany(cascade = {CascadeType.MERGE})
-    private List<MetadataBlock> metadataBlocks = new ArrayList();
+    private List<MetadataBlock> metadataBlocks = new ArrayList<MetadataBlock>();
 
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
-    private List<DataverseFacet> dataverseFacets = new ArrayList();
+    private List<DataverseFacet> dataverseFacets = new ArrayList<DataverseFacet>();
     
     @OneToMany(mappedBy = "dataverse")
     private List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels = new ArrayList();
@@ -239,7 +239,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Template> getParentTemplates() {
-        List<Template> retList = new ArrayList();
+        List<Template> retList = new ArrayList<Template>();
         Dataverse testDV = this;
         while (testDV.getOwner() != null){   
             
@@ -275,9 +275,6 @@ public class Dataverse extends DvObjectContainer {
     public void setTemplateRoot(boolean templateRoot) {
         this.templateRoot = templateRoot;
     }
-
-   
-
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
@@ -446,7 +443,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Dataverse> getOwners() {
-        List owners = new ArrayList();
+        List<Dataverse> owners = new ArrayList<Dataverse>();
         if (getOwner() != null) {
             owners.addAll(getOwner().getOwners());
             owners.add(getOwner());
