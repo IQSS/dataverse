@@ -253,10 +253,13 @@ public class SolrIndexServiceBean {
         }
         try {
             persistToSolr(docs);
-            DvObject savedDvObject = dvObjectService.updatePermissionIndexTime(dvObjectService.findDvObject(dvObjectId));
             boolean updatePermissionTimeSuccessful = false;
-            if (savedDvObject != null) {
-                updatePermissionTimeSuccessful = true;
+            DvObject dvObjectToUpdatePermissionTimeOn = dvObjectService.findDvObject(dvObjectId);
+            if (dvObjectToUpdatePermissionTimeOn != null) {
+                DvObject savedDvObject = dvObjectService.updatePermissionIndexTime(dvObjectService.findDvObject(dvObjectToUpdatePermissionTimeOn.getId()));
+                if (savedDvObject != null) {
+                    updatePermissionTimeSuccessful = true;
+                }
             }
             return new IndexResponse("attempted to index permissions for DvObject " + dvObjectId + " and updatePermissionTimeSuccessful was " + updatePermissionTimeSuccessful);
         } catch (SolrServerException | IOException ex) {

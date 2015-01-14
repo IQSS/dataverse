@@ -128,6 +128,7 @@ public class DTA117FileReader extends TabularDataFileReader{
     // STRLs SECTION: 
     
     private static final String TAG_STRLS = "strls";
+    private static final String STRL_GSO_HEAD = "GSO";
     
     // VALUE LABELS SECTION:
     
@@ -319,6 +320,8 @@ public class DTA117FileReader extends TabularDataFileReader{
     private Map<String, Integer> byteLengthTable;
 
     private Map<Integer, String> variableTypeTable;
+    
+    private Map<String, String> cachedGSOs;
 
 
 
@@ -334,6 +337,8 @@ public class DTA117FileReader extends TabularDataFileReader{
     private int headerLength;
 
     private int dataLabelLength;
+    
+    private boolean hasSTRLs = false;
     
 
     // TODO: 
@@ -689,6 +694,7 @@ public class DTA117FileReader extends TabularDataFileReader{
 
             if (type == 32768) {
                 typeLabel = "STRL";
+                hasSTRLs = true; 
 
             } else if (type > 0 && type < 2046) {
                 typeLabel = "STR" + type;
@@ -871,6 +877,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         reader.skipDefinedSections(TAG_CHARACTERISTICS_SUBSECTION); 
         
         reader.readClosingTag(TAG_CHARACTERISTICS);
+        
     }
     
     /* 
@@ -1132,7 +1139,46 @@ public class DTA117FileReader extends TabularDataFileReader{
                     }
                     byte_offset += strVarLength;
                 } else if (varType.equals("STRL")) {
-                    throw new IOException("<Support for STRLs not yet implemented>");
+                    //throw new IOException("<Support for STRLs not yet implemented>");
+                    logger.fine("STRL encountered.");
+                    
+                    if (cachedGSOs == null) {
+                        cachedGSOs = new LinkedHashMap<>();
+                    }
+                    
+                    // Reading the (v,o) pair: 
+                    long v = 0; 
+                    long o = 0; 
+                    String voPair = null; 
+                    // first v:
+                    
+                    v = reader.readInteger();
+                    byte_offset += 4;
+                    
+                    // then o:
+                    
+                    o = reader.readInteger();
+                    byte_offset += 4; 
+                    
+                    // create v,o pair; save, for now:
+                    
+                    voPair = v + "," + o;
+                    dataRow[columnCounter] = voPair; 
+                    
+                    // TODO: 
+                    // Validate v and o? 
+                    // Making sure v <= varNum and o < numbObs; 
+                    // or, if o == numObs, v <= columnCounter; 
+                    // -- per the Stata 13 spec...
+                    
+                    if (!(v == columnCounter + 1 && o == i + 1)) {
+                        if (!cachedGSOs.containsKey(voPair)) {
+                            cachedGSOs.put(voPair, "");
+                            // this means we need to cache this GSO, when 
+                            // we read the STRLS section later on. 
+                        }
+                    }
+                    
                 } else {
                     logger.warning("unknown variable type found: " + varType);
                     String errorMessage
@@ -1173,13 +1219,169 @@ public class DTA117FileReader extends TabularDataFileReader{
         // check that we are at the right byte offset!
         //reader.readOpeningTag(TAG_STRLS);
         
-        // TODO: 
-        // just skipping the section, for now. 
-        // If there are STRLs defined, we'll have to read this section first, 
-        // before reading the data section, somehow....
-        reader.readPrimitiveSection(TAG_STRLS);
+        if (hasSTRLs) {
+            reader.readOpeningTag(TAG_STRLS);
+            
+            File intermediateTabFile = ingesteddata.getTabDelimitedFile();
+            FileInputStream fileInTab = new FileInputStream(intermediateTabFile);
+                    
+            Scanner scanner = new Scanner(fileInTab);
+            scanner.useDelimiter("\\n");
+            
+            File finalTabFile = File.createTempFile("finalTabfile.", ".tab");
+            FileOutputStream fileOutTab = new FileOutputStream(finalTabFile);
+            PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+            
+            logger.fine("Setting the tab-delimited file to "+finalTabFile.getName());
+            ingesteddata.setTabDelimitedFile(finalTabFile);
+            
+            int nvar = dataTable.getVarQuantity().intValue();
+            int nobs = dataTable.getCaseQuantity().intValue();
+            
+            String[] line;
+            
+            for (int obsindex = 0; obsindex < nobs; obsindex++) {
+                if (scanner.hasNext()) {
+                    line = (scanner.next()).split("\t", -1);
+                    
+                    for (int varindex = 0; varindex < nvar; varindex++) {
+                        if ("STRL".equals(variableTypes[varindex])) {
+                            // this is a STRL; needs to be re-processed:
+                            
+                            String voPair = line[varindex];
+                            long v; 
+                            long o; 
+                            if (voPair == null) {
+                                throw new IOException("Failed to read an intermediate v,o Pair for variable "+
+                                        varindex + ", observation "+obsindex);
+                            }
+                            
+                            if ("0,0".equals(voPair)) {
+                                // This is a code for an empty string - "";
+                                // doesn't need to be defined or looked up.
+                                
+                                line[varindex] = "";
+                            } else {
+                                String[] voTokens = voPair.split(",", 2);
+                            
+                                try {
+                                    v = new Long(voTokens[0]).longValue();
+                                    o = new Long(voTokens[1]).longValue();
+                                } catch (NumberFormatException nfex) {
+                                    throw new IOException("Illegal v,o value: "+voPair+" for variable "+
+                                            varindex + ", observation "+obsindex);
+                                }
+                                
+                                if (v == varindex + 1 && o == obsindex + 1) {
+                                    // This v,o must be defined in the STRLs section:
+                                    line[varindex] = readGSO(reader, v, o);
+                                    if (line[varindex] == null) {
+                                        throw new IOException ("Failed to read GSO value for "+voPair);
+                                    }
+                                    
+                                } else {
+                                    // This one must have been cached already:
+                                    if (cachedGSOs.get(voPair) != null &&
+                                       !cachedGSOs.get(voPair).equals("")) {
+                                        line[varindex] = cachedGSOs.get(voPair);
+                                    } else {
+                                        throw new IOException("GSO string unavailable for v,o value "+voPair);
+                                    }
+                                }
+                            }                            
+                        }
+                    }
+                    // Dump the row of data to the tab-delimited file:
+                    pwout.println(StringUtils.join(line, "\t"));
+                }
+            }
+            
+            scanner.close();
+            pwout.close();
+                       
+            reader.readClosingTag(TAG_STRLS);
+        } else {
+            // If this data file doesn't use STRLs, we can just skip 
+            // this section, and assume that we are done with the 
+            // tabular data file.
+            reader.readPrimitiveSection(TAG_STRLS);            
+        }
         
         //reader.readClosingTag(TAG_STRLS);
+    }
+    
+    private String readGSO(DataReader reader, long v, long o) throws IOException {
+        if (!reader.checkTag(STRL_GSO_HEAD)) {
+            return null; 
+        }
+        
+        // Skipping the GSO header - fixed string "GSO":
+        reader.readBytes(STRL_GSO_HEAD.length());
+        
+        // Reading the stored (v,o) pair: 
+        
+        long vStored = reader.readInteger();
+        long oStored = reader.readInteger();
+        
+        String voPair = v + "," + o;
+
+        
+        if (vStored != v || oStored != o) {
+            throw new IOException ("GSO reading mismatch: expected v,o pair: "+
+                    voPair+", found: "+vStored+","+oStored);
+        }
+        
+        short type = reader.readByte();
+        boolean binary = false; 
+        
+        if (type == 129) {
+            logger.fine("STRL TYPE: binary");
+            binary = true; 
+        } else if (type == 130) {
+            logger.fine("STRL TYPE: ascii");
+        } else {
+            logger.warning("WARNING: unknown STRL type: "+type);
+        }
+        
+        long length = reader.readInteger();
+        
+        logger.fine("Advertised length of the STRL: "+length);
+        
+        // TODO:
+        // length can technically be 0 < length < 2^^32;
+        // but Java arrays are only [int], i.e., can only have < 2^^31
+        // elements; readBytes() allocates and returns a byte[] array.
+        // so I should probably check the value of length - if it 
+        // can fit into a signed int; not that it's likely to happen 
+        // in real life. -- L.A. 4.0 beta 11
+        
+        byte[] contents = reader.readBytes((int)length);
+        
+        // TODO: 
+        // Depending on whether this GSO is advertised as ASCII or binary, 
+        // I should probably create the String as either ASCII or UTF8. 
+        // (and the trailing zero needs to be chopped, if it's the ASCII kind)
+        //  -- L.A. 4.0 beta 11
+        
+        String gsoString = null; 
+        
+        if (binary) {
+            gsoString = new String(contents, "utf8"); // ?
+        } else {
+            gsoString = new String(contents, 0, (int)length-1, "US-ASCII");
+        }
+        
+        logger.fine("GSO "+v+","+o+": "+gsoString);
+        
+        if (cachedGSOs.containsKey(voPair)) {
+            // We need to cache this GSO: 
+            if (!"".equals(cachedGSOs.get(voPair))) {
+                throw new IOException ("Multiple GSO definitions for v,o "+voPair);
+            }
+            cachedGSOs.put(voPair, gsoString);
+        }
+        
+        return gsoString;     
     }
     
     private void readValueLabels(DataReader reader) throws IOException {
@@ -1190,7 +1392,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VALUE_LABELS);
 
-        while (reader.checkTag(TAG_VALUE_LABELS_LBL_DEF)) {
+        while (reader.checkTag("<" + TAG_VALUE_LABELS_LBL_DEF + ">")) {
             // TODO: checktag should probably *read* the tag, if it is indeed
             // encountered, rather then stop at the beginning of the tag. 
             reader.readOpeningTag(TAG_VALUE_LABELS_LBL_DEF);
@@ -1261,6 +1463,7 @@ public class DTA117FileReader extends TabularDataFileReader{
             // DataVariables: 
             for (int i = 0; i < dataTable.getVarQuantity(); i++) {
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
+                    logger.fine("cross-linking value label table for "+label_table_name);
                     // it is actually a legit condition - when 
                     // a variable is advertised as linked to a category values
                     // table of a certain name, but no such table exists.
@@ -1961,7 +2164,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         
         public void skipDefinedSections(String tag) throws IOException {
             logger.fine("entering at offset "+buffer_byte_offset);
-            while (checkTag(tag)) {
+            while (checkTag("<" + tag + ">")) {
                 // TODO: checkTag() should probably *read* the tag, if it is indeed
                 // encountered, rather then stop at the beginning of the tag. 
                 logger.fine("tag "+tag+" encountered at offset "+buffer_byte_offset);
@@ -1986,15 +2189,16 @@ public class DTA117FileReader extends TabularDataFileReader{
                 throw new IOException("opening tag must be a non-empty string.");
             }
 
-            int n = tag.length() + 2;
+            int n = tag.length();
             
             if (this.buffer_size - buffer_byte_offset >= n) {
-                return ("<" + tag + ">").equals(new String(Arrays.copyOfRange(byte_buffer, buffer_byte_offset, buffer_byte_offset+n),"US-ASCII"));
+                return (tag).equals(new String(Arrays.copyOfRange(byte_buffer, buffer_byte_offset, buffer_byte_offset+n),"US-ASCII"));
             } else {
                 throw new IOException("Checking section tags across byte buffers not yet implemented.");
-            }
-            
+            }   
         }
+        
+        
         
         public void readOpeningTag(String tag) throws IOException {
             if (tag == null || tag.equals("")) {

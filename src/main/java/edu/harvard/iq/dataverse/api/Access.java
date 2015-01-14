@@ -171,11 +171,7 @@ public class Access extends AbstractApiBean {
         
         DownloadInfo dInfo = new DownloadInfo(df);
 
-        /*
-         * (and yes, this is a hack)
-         * TODO: un-hack this. -- L.A. 4.0 alpha 1
-         */
-        if (df.getContentType() != null && (df.getContentType().startsWith("image/") || df.getContentType().equalsIgnoreCase("application/pdf"))) {
+        if (dataFileService.thumbnailSupported(df)) {
             dInfo.addServiceAvailable(new OptionalAccessService("thumbnail", "image/png", "imageThumb=true", "Image Thumbnail (64x64)"));
         }
 
@@ -514,10 +510,7 @@ public class Access extends AbstractApiBean {
         
         // If there's no uploaded logo for this dataverse, go through its 
         // [released] datasets and see if any of them have card images:
-        
-        List<Dataset> childDatasets = datasetService.findByOwnerId(dataverseId, Boolean.TRUE);
-
-        for (Dataset dataset : datasetService.findByOwnerId(dataverseId, Boolean.TRUE)) {
+        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
             if (dataset != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 // TODO: 

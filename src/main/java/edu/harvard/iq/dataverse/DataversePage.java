@@ -29,11 +29,10 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import javax.ejb.EJBException;
 import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
+import org.primefaces.event.TransferEvent;
 
 /**
  *
@@ -151,19 +150,7 @@ public class DataversePage implements java.io.Serializable {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         }
 
-        List<DatasetFieldType> facetsSource = new ArrayList<>();
-        List<DatasetFieldType> facetsTarget = new ArrayList<>();
-
-        facetsSource.addAll(datasetFieldService.findAllFacetableFieldTypes());
-        
-
-        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getFacetRootId());
-        for (DataverseFacet dvFacet : facetsList) {
-            DatasetFieldType dsfType = dvFacet.getDatasetFieldType();
-            facetsTarget.add(dsfType);
-            facetsSource.remove(dsfType);
-        }
-        facets = new DualListModel<>(facetsSource, facetsTarget);
+        initFacets();
 
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
@@ -178,6 +165,55 @@ public class DataversePage implements java.io.Serializable {
         refreshAllMetadataBlocks();
         
         return null;
+    }
+    
+    public void initFacets() {        
+        List<DatasetFieldType> facetsSource = new ArrayList<>();
+        List<DatasetFieldType> facetsTarget = new ArrayList<>();
+        facetsSource.addAll(datasetFieldService.findAllFacetableFieldTypes());
+        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getFacetRootId());
+        for (DataverseFacet dvFacet : facetsList) {
+            DatasetFieldType dsfType = dvFacet.getDatasetFieldType();
+            facetsTarget.add(dsfType);
+            facetsSource.remove(dsfType);
+        }
+        facets = new DualListModel<>(facetsSource, facetsTarget);
+        facetMetadataBlockId = null;
+    }    
+    
+    private Long facetMetadataBlockId;
+
+    public Long getFacetMetadataBlockId() {
+        return facetMetadataBlockId;
+    }
+
+    public void setFacetMetadataBlockId(Long facetMetadataBlockId) {
+        this.facetMetadataBlockId = facetMetadataBlockId;
+    }
+    
+    public void changeFacetsMetadataBlock() {
+        if (facetMetadataBlockId == null) {
+            facets.setSource(datasetFieldService.findAllFacetableFieldTypes());
+        } else {
+            facets.setSource(datasetFieldService.findFacetableFieldTypesByMetadataBlock(facetMetadataBlockId));
+        }
+        
+        facets.getSource().removeAll(facets.getTarget());
+    }
+
+    public void toggleFacetRoot() {
+        if (!dataverse.isFacetRoot()) {
+            initFacets();
+        }
+    }
+    
+    public void onFacetTransfer(TransferEvent event) {
+        for (Object item : event.getItems()) {
+            DatasetFieldType facet = (DatasetFieldType) item;
+            if (facetMetadataBlockId != null && !facetMetadataBlockId.equals(facet.getMetadataBlock().getId())) {
+                facets.getSource().remove(facet);
+            }
+        }
     }
 
    
@@ -439,19 +475,6 @@ public class DataversePage implements java.io.Serializable {
         dataverse.setFacetRoot(!inheritFacetFromParent);
     }
 
-    public void editFacets() {
-
-        List<DatasetFieldType> facetsSource = new ArrayList<>();
-        List<DatasetFieldType> facetsTarget = new ArrayList<>();
-        facetsSource.addAll(datasetFieldService.findAllFacetableFieldTypes());
-        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getFacetRootId());
-        for (DataverseFacet dvFacet : facetsList) {
-            DatasetFieldType dsfType = dvFacet.getDatasetFieldType();
-            facetsTarget.add(dsfType);
-            facetsSource.remove(dsfType);
-        }
-        facets = new DualListModel<>(facetsSource, facetsTarget);
-    }
 
     public DualListModel<DatasetFieldType> getFacets() {
         return facets;

@@ -6,6 +6,8 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
+DOCROOT       ?= /usr/local/glassfish4/glassfish/domains/domain1/docroot
+GUIDESDIR       = $(DOCROOT)/guides
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -48,6 +50,15 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+
+htmldeploy: html $(GUIDESDIR)
+	@echo
+	@cp -Rf build/html/* $(GUIDESDIR)
+	@echo "HTML documentation deployed to $(GUIDESDIR)."
+	@echo "It should now be available at http://<YOURHOST>:<YOURPORT>/guides."
+
+$(GUIDESDIR):
+	@mkdir -p $(GUIDESDIR) 
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

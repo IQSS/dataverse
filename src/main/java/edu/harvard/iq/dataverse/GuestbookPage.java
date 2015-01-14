@@ -9,12 +9,11 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDateverseTemplateCommand;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -22,10 +21,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 /**
  *
@@ -173,7 +168,7 @@ public class GuestbookPage implements java.io.Serializable {
     }
 
     public String save() {
-        
+        boolean create = false;
         if (!(guestbook.getCustomQuestions() == null)) {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq.getQuestionType().equals("text")) {
@@ -190,6 +185,7 @@ public class GuestbookPage implements java.io.Serializable {
                 dataverse.getGuestbooks().add(guestbook);
                 cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser(), null);
                 commandEngine.submit(cmd);
+                create = true;
             } else {
                 cmd = new UpdateDataverseGuestbookCommand(dataverse, guestbook, session.getUser());
                 commandEngine.submit(cmd);
@@ -206,7 +202,7 @@ public class GuestbookPage implements java.io.Serializable {
                 error.append(cause.getMessage() + " ");
             }
             //
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - " + error.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + error.toString()));
             System.out.print("dataverse " + dataverse.getName());
             System.out.print("Ejb exception");
             System.out.print(error.toString());
@@ -214,10 +210,12 @@ public class GuestbookPage implements java.io.Serializable {
         } catch (CommandException ex) {
             System.out.print("command exception");
             System.out.print(ex.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }
         editMode = null;
+        String msg = (create)? "The guestbook has been created.": "The guestbook has been edited and saved.";
+        JsfHelper.addFlashMessage(msg);
         return "/manage-guestbooks.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
 

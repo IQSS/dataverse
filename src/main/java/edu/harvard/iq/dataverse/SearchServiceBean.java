@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -45,12 +44,15 @@ public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
+    /**
+     * We're trying to make the SearchServiceBean lean, mean, and fast, with as
+     * few injections of EJBs as possible.
+     */
+    /**
+     * @todo Can we do without the DatasetFieldServiceBean?
+     */
     @EJB
     DatasetFieldServiceBean datasetFieldService;
-    @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
-    AuthenticationServiceBean authSvc;
     @EJB
     SystemConfig systemConfig;
 
@@ -290,11 +292,15 @@ public class SearchServiceBean {
         }
         Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
         Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
+        String baseUrl = systemConfig.getDataverseSiteUrl();
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
+            String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
+            String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
+            String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
@@ -302,6 +308,9 @@ public class SearchServiceBean {
             Long datasetVersionId = (Long) solrDocument.getFieldValue(SearchFields.DATASET_VERSION_ID);
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
+            /**
+             * @todo Investigate odd variable naming of MIME vs. non-MIME.
+             */
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
@@ -352,6 +361,8 @@ public class SearchServiceBean {
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
+            solrSearchResult.setIdentifier(identifier);
+            solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
@@ -363,21 +374,65 @@ public class SearchServiceBean {
             Map<String, String> parent = new HashMap<>();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
+            /**
+             * @todo start using SearchConstants class here
+             */
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
+                solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
+                solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
+                /**
+                 * @todo Expose this API URL after "dvs" is changed to
+                 * "dataverses". Also, is an API token required for published
+                 * dataverses?
+                 */
+//                solrSearchResult.setApiUrl(baseUrl + "/api/dvs/" + entityid);
             } else if (type.equals("datasets")) {
+                solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
+                solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
+                solrSearchResult.setImageUrl(baseUrl + "/api/access/dsPreview/" + datasetVersionId);
                 String datasetDescription = (String) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                 solrSearchResult.setDescriptionNoSnippet(datasetDescription);
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
+                solrSearchResult.setCitation(citation);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
                 } else {
                     solrSearchResult.setTitle("NULL: NO TITLE INDEXED OR PROBLEM FINDING TITLE DATASETFIELD");
                 }
+                ArrayList authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
+                solrSearchResult.setDatasetAuthors(authors);
             } else if (type.equals("files")) {
+                String parentGlobalId = null;
+                Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
+                if (parentGlobalIdObject != null) {
+                    parentGlobalId = (String) parentGlobalIdObject;
+                }
+                solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
+                solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
+                /**
+                 * @todo We are not yet setting the API URL for files because
+                 * not all files have metadata. Only subsettable files (those
+                 * with a datatable) seem to have metadata. Furthermore, the
+                 * response is in XML whereas the rest of the Search API returns
+                 * JSON.
+                 */
+//                solrSearchResult.setApiUrl(baseUrl + "/api/meta/datafile/" + entityid);
+                solrSearchResult.setImageUrl(baseUrl + "/api/access/preview/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
+                Object fileSizeInBytesObject = solrDocument.getFieldValue(SearchFields.FILE_SIZE_IN_BYTES);
+                if (fileSizeInBytesObject != null) {
+                    try {
+                        long fileSizeInBytesLong = (long) fileSizeInBytesObject;
+                        solrSearchResult.setFileSizeInBytes(fileSizeInBytesLong);
+                    } catch (ClassCastException ex) {
+                        logger.info("Could not cast file " + entityid + " to long for " + SearchFields.FILE_SIZE_IN_BYTES + ": " + ex.getLocalizedMessage());
+                    }
+                }
+                solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
+                solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
             }
             /**
@@ -385,6 +440,7 @@ public class SearchServiceBean {
              */
             parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
             parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
+            parent.put("citation", (String) solrDocument.getFieldValue(SearchFields.PARENT_CITATION));
             solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);
         }

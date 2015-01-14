@@ -20,7 +20,26 @@ public class SearchFields {
      * See also https://redmine.hmdc.harvard.edu/issues/3745
      */
     public static final String DESCRIPTION = "description";
-
+    /**
+     * Identifiers differ per DvObject: alias for dataverses, globalId for
+     * datasets, and database id for files.
+     *
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String IDENTIFIER = "identifier_s";
+    /**
+     * For files, the URL will be the parent dataset.
+     *
+     * @todo Shouldn't we have a direct link to files?
+     */
+    public static final String PERSISTENT_URL = "persistent_url_s";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String UNF = "unf_s";
+    /**
+     * @todo rename this to just dvName
+     */
     public static final String DATAVERSE_NAME = "dvName_en";
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation_en";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription_en";
@@ -70,6 +89,14 @@ public class SearchFields {
     public static final String FILE_TYPE_MIME = "filetypemime_s";
     public static final String FILE_TYPE = "filetype_s";
     /**
+     * @todo Add this to schema.xml with no "_l". Make it searchable.
+     */
+    public static final String FILE_SIZE_IN_BYTES = "file_size_in_bytes_l";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String FILE_MD5 = "file_md5_s";
+    /**
      * @todo change from dynamic to static?
      */
     public static final String FILENAME_WITHOUT_EXTENSION = "filename_without_extension_en";
@@ -107,8 +134,20 @@ public class SearchFields {
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";
     public static final String PARENT_ID = "parentid";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String PARENT_IDENTIFIER = "parent_identifier_s";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String PARENT_CITATION = "parent_citation_s";
 
     public static final String DATASET_DESCRIPTION = "dsDescription";
+    /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String DATASET_CITATION = "citation_s";
     /**
      * In contrast to PUBLICATION_DATE, this field applies only to datasets for
      * more targeted results.

@@ -45,7 +45,7 @@
                         <div class="clearfix">
                             <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']} <span class="caret"></span>
                                         </ui:fragment>
@@ -54,20 +54,6 @@
                                         </ui:fragment>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
-                                        <li>
-                                            <div style="padding:.5em 1em .25em 1em; overflow:hidden; width:400px;">
-                                                <!--<div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                                    <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
-                                                </div>-->
-                                                <div style="float:left; width:300px;">
-                                                    <div style="font-weight:bold;">#{DataverseUserPage.currentUser.name}<h:outputText value=" (#{DataverseUserPage.currentUser.affiliation})" rendered="#{!empty DataverseUserPage.currentUser.affiliation}"/></div>
-                                                    <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser.userName}"><div style="color:#777;">#{DataverseUserPage.builtinUser.userName}</div></ui:fragment>
-                                                    <ui:fragment rendered="#{!empty DataverseUserPage.currentUser.email}"><div style="color:#777;">#{DataverseUserPage.currentUser.email}</div></ui:fragment>
-                                                    <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser.position}"><div style="color:#777;">#{DataverseUserPage.builtinUser.position}</div></ui:fragment>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li class="divider" role="presentation"></li>
                                         <li>
                                             <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" rendered="#{!empty DataverseUserPage.builtinUser}" update="@form">
                                                 <h:outputText value="#{bundle['account.info']}" />
@@ -152,26 +138,99 @@
                                     <h:outputText value="#{item.sendDate}" style="color:#999999; margin-left:1em; font-size:.85em;"/>
                                     <!--<h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
                                     <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />-->
-                                    <h:commandLink action="#{DataverseUserPagetitle.pre.remove(item.id)}" title="#{bundle.removeNotification}" styleClass="pull-right">
+                                    <p:commandLink title="#{bundle.removeNotification}" styleClass="pull-right"
+                                                   action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}">
                                         <span class="glyphicon glyphicon-remove"></span>
-                                    </h:commandLink>
+                                    </p:commandLink>
                                 </div>
                             </ui:repeat>
                         </p:tab>
-                        <p:tab id="groupsRoles" title="#{bundle['header.user.selectTab.groupsAndRoles']}">
-                            <span class="glyphicon glyphicon-info-sign"></span> #{bundle['groupAndRoles.manageTips']}
+                        <p:tab id="accountInfo" title="Account Information">
+                            <div class="form-horizontal">
+                                <!-- Username -->
+                                <div class="form-group">
+                                    <label for="userNameEmail" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.username.illegal.tip']}">
+                                            #{bundle['user.username']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.userName}</p>
+                                    </div>
+                                </div>
+
+                                <!-- First Name -->
+                                <div class="form-group">
+                                    <label for="firstName" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.firstName.tip']}">
+                                            #{bundle['user.firstName']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.firstName}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="form-group">
+                                    <label for="lastName" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.lastName.tip']}">
+                                            #{bundle['user.lastName']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.lastName}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="email" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.email.tip']}">
+                                            #{bundle.email}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.email}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Affiliation -->
+                                <div class="form-group">
+                                    <label for="affiliation" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.affiliation.tip']}">
+                                            #{bundle.affiliation}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.affiliation}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Position -->
+                                <div class="form-group">
+                                    <label for="position" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.position.tip']}">
+                                            #{bundle['user.position']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">#{DataverseUserPage.builtinUser.position}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </p:tab>
+                        <ui:remove>
+                            <p:tab id="groupsRoles" title="#{bundle['header.user.selectTab.groupsAndRoles']}">
+                                <span class="glyphicon glyphicon-info-sign"></span> #{bundle['groupAndRoles.manageTips']}
+                            </p:tab>
+                        </ui:remove>
                     </p:tabView>
 
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
-                        <p:tab id="accountInfo" title="#{bundle['account.info']}">
-                            <div class="clearfix" style="padding-bottom:.75em; border-bottom:1px solid #DDDDDD;">
-                                <style type="text/css">
-                                    .form-group table.noBorders {width:100%;}
-                                    .form-group table.noBorders td {width:50%;}
-                                    .form-group table.noBorders td .form-control {width:100%;}
-                                </style>
-                                <div class="form-inline">
+                        <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
+                            <div class="clearfix" style="padding-bottom:.75em;">
+                                <div class="form-horizontal">
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Username -->
                                         <div class="form-group col-sm-12">

@@ -128,7 +128,7 @@ public class JsonParser {
             if ( archiveNote != null ) dsv.setArchiveNote( archiveNote );
             
             dsv.setDeaccessionLink( obj.getString("deaccessionLink", null) );
-            dsv.setVersionNumber( parseLong(obj.getString("versionNumber", null)) );
+            dsv.setVersionNumber( (long)obj.getInt("versionNumber", -1) );
             dsv.setMinorVersionNumber( parseLong(obj.getString("minorVersionNumber", null)) );
             dsv.setId( parseLong(obj.getString("id", null)) );
             

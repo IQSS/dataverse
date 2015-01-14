@@ -27,28 +27,28 @@
 	coverage.RedshiftValue	Redshift Value	The value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	23	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Redshift.MinimumValue	Minimum	The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	24	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
 	coverage.Redshift.MaximumValue	Maximum	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage.RedshiftValue	astrophysics
-#controlledVocabulary	DatasetField	Value	displayOrder											
-	astroType	Image	0											
-	astroType	Mosaic	1											
-	astroType	EventList	2											
-	astroType	Spectrum	3											
-	astroType	Cube	4											
-	astroType	Table	5											
-	astroType	Catalog	6											
-	astroType	LightCurve	7											
-	astroType	Simulation	8											
-	astroType	Figure	9											
-	astroType	Artwork	10											
-	astroType	Animation	11											
-	astroType	PrettyPicture	12											
-	astroType	Documentation	13											
-	astroType	Other	14											
-	astroType	Library	15											
-	astroType	Press Release	16											
-	astroType	Facsimile	17											
-	astroType	Historical	18											
-	astroType	Observation	19											
-	astroType	Object	20											
-	astroType	Value	21											
-	astroType	ValuePair	22											
-	astroType	Survey	23											
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder										
+	astroType	Image		0										
+	astroType	Mosaic		1										
+	astroType	EventList		2										
+	astroType	Spectrum		3										
+	astroType	Cube		4										
+	astroType	Table		5										
+	astroType	Catalog		6										
+	astroType	LightCurve		7										
+	astroType	Simulation		8										
+	astroType	Figure		9										
+	astroType	Artwork		10										
+	astroType	Animation		11										
+	astroType	PrettyPicture		12										
+	astroType	Documentation		13										
+	astroType	Other		14										
+	astroType	Library		15										
+	astroType	Press Release		16										
+	astroType	Facsimile		17										
+	astroType	Historical		18										
+	astroType	Observation		19										
+	astroType	Object		20										
+	astroType	Value		21										
+	astroType	ValuePair		22										
+	astroType	Survey		23										

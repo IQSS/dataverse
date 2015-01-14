@@ -11,6 +11,13 @@ root, (sudo -i):
 python setup.py build
 python setup.py install
 
+Another option (Mac/Unix/Windows): Use pip
+* Unless you already have it, install pip (https://pip.pypa.io/en/latest/installing.html)
+* run
+    pip install sphinx
+
+
+
 This is all you need. You should now be able to build HTML/pdf documentation from git sources locally. 
 
 If you need more information on sphinx (probably not), for ex., on how to start a new

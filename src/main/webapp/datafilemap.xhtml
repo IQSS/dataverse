@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="blah" value="to the dv"/>
+            <f:viewParam name="name" value="#{DataFileMapPage.name}"/>
+            <f:viewParam name="mapid" value="#{DataFileMapPage.mapId}"/><!-- GET param -->
+            <f:viewAction action="#{DataFileMapPage.init}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="View Map"/>
+            <ui:param name="datafile" value="#{DataFileMapPage.dataFile}"/>
+            <ui:param name="dataset" value="#{DataFileMapPage.dataset}"/>
+            <ui:param name="dataverse" value="#{DataFileMapPage.dataverse}"/>
+            <ui:param name="datasetversion" value="#{DataFileMapPage.datasetVersion}"/>
+            <ui:param name="showDataverseHeader" value="true"/>
+            <ui:param name="showBreadcrumbs" value="true"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
+
+            <ui:define name="body">
+                <ui:fragment>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div id="datasetVersionBlock" class="container-fluid">
+                                    <ui:fragment rendered="#{!empty DataFileMapPage.datasetVersion}">
+                                        <div class="row" >
+                                            <span id="title">#{DataFileMapPage.datasetVersion.getTitle()}: #{datafile.getDisplayName()}</span>
+<!--
+                                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
+                                            <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+-->    
+                                        </div>
+                                    </ui:fragment>
+                            </div>
+                                 <br /><a href="#{ DataFileMapPage.mapLayerMetadata.getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
+                                 <br /><iframe id="id_iframe_map" height="400" width="100%" src="#{ DataFileMapPage.mapLayerMetadata.getEmbedMapLink() }"></iframe>
+                                 
+                                 <!--br />Metadata here: #{ DataFileMapPage.mapLayerMetadata.getId() }-->
+
+                            <div class="panel">
+                              	<h4>Welcome, <h:outputText value="#{DataFileMapPage.name}" />,  #{blah} </h4>
+                                <br />map id: #{DataFileMapPage.mapId}
+                                <br />dataset: #{DataFileMapPage.dataset.displayName}
+                                <br />mapLayerMetadata.layerName: #{DataFileMapPage.mapLayerMetadata.layerName}
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+                </ui:fragment>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+

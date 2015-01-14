@@ -330,8 +330,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
 
                     if (dataverseInCard != null) {
-                        //Omit deaccessioned datasets
-                        List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId(), true);
+                        List<Dataset> datasets = datasetService.findPublishedByOwnerId(dataverseInCard.getId());
                         solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
@@ -340,6 +339,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
                     Dataverse parentDataverse = dataverseService.find(dataverseId);
+                    /**
+                     * @todo can a dataverse alias ever be null?
+                     */
                     solrSearchResult.setDataverseAlias(parentDataverse.getAlias());
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {

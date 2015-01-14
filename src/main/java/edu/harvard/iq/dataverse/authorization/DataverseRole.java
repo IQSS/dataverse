@@ -81,7 +81,7 @@ public class DataverseRole implements Serializable  {
     @Pattern(regexp=".+", message="A Role must have a name.")
     private String name;
     
-    @Column(columnDefinition = "TEXT")
+    @Size(max = 255, message = "Description must be at most 255 characters.")
     private String description;
     
     @Size(max = 16, message = "Alias must be at most 16 characters.")

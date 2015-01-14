@@ -29,12 +29,9 @@
                     <div class="col-xs-6 form-group">
                         <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="#{bundle['dataverse.permissions.roles.description.title']}">#{bundle.description}</label>
                         <div class="col-sm-9">
-                            <p:panelGrid columns="2" styleClass="noBorders">
+                            <p:panelGrid columns="2" styleClass="noBorders" style="width:100%;">
                                 <h:panelGroup>
-                                    <p:inputTextarea id="roleDescription" value="#{managePermissionsPage.role.description}"
-                                                     rows="5" cols="50" counter="counter" maxlength="1000"
-                                                     counterTemplate="#{bundle['dataverse.permissions.roles.description.counter']}" autoResize="false"/>
-                                    <h:outputText id="counter" style="display:block;"/>
+                                    <p:inputText id="roleDescription" styleClass="form-control" value="#{managePermissionsPage.role.description}"/>
                                 </h:panelGroup>
                                 <p:message for="roleDescription"/>
                             </p:panelGrid>

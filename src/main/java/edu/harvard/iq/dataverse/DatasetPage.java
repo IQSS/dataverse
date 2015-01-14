@@ -523,7 +523,12 @@ public class DatasetPage implements java.io.Serializable {
                 dataset = datasetService.find(dataset.getId());
             }
             if (globalId != null) {
-                dataset = datasetService.findByGlobalId(globalId);
+                try{
+                    dataset = datasetService.findByGlobalId(globalId);
+                }
+                catch (EJBException e){
+                    dataset = null;                    
+                }                
             }
 
             if (dataset == null) {
@@ -532,6 +537,8 @@ public class DatasetPage implements java.io.Serializable {
             // now get the correct version
             if (versionId == null) {
                 // If we don't have a version ID, we will get the latest published version; if not published, then go ahead and get the latest
+                // @todo: handle case where all versions are deaccessioned, except one draft:
+                //  currently not possible to get into this state, but should return latest deaccessioned view
                 workingVersion = dataset.getReleasedVersion();
                 if (workingVersion == null) {
                     workingVersion = dataset.getLatestVersion();
@@ -542,7 +549,7 @@ public class DatasetPage implements java.io.Serializable {
 
             if (workingVersion == null) {
                 return "/404.xhtml";
-            } else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
+            } else if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }
 
@@ -603,7 +610,7 @@ public class DatasetPage implements java.io.Serializable {
         
         boolean valid = true;
         
-        if (workingVersion.getLicense() != null && workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
+        if (workingVersion.getLicense() != null && !workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
             valid &= this.acceptedTerms;
         }
         
@@ -1046,6 +1053,7 @@ public class DatasetPage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE) {
+                workingVersion.setLicense(DatasetVersion.License.CC0);
                 cmd = new CreateDatasetCommand(dataset, session.getUser());
             } else {
                 cmd = new UpdateDatasetCommand(dataset, session.getUser());
@@ -1715,6 +1723,20 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
+    
+    public void handleLabelsFileUpload(FileUploadEvent event) {
+        logger.fine("entering handleUpload method.");
+        UploadedFile file = event.getFile();
+        if (file != null) {
+            FacesMessage message = new FacesMessage("Succesful", file.getFileName() + " is uploaded.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+                        
+            logger.fine(file.getFileName() + " is successfully uploaded.");
+        } 
+        
+        // process file (i.e., just save it in a temp location; for now):
+    }
+    
     
     public void saveAdvancedOptions() {
         // DataFile Tags: 

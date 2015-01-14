@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<codeBook xmlns="http://www.icpsr.umich.edu/DDI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.icpsr.umich.edu/DDI http://www.icpsr.umich.edu/DDI/Version2-0.xsd" version="2.0" source="DVN_3_0">
+	<stdyDscr>
+		<citation>
+			<titlStmt>
+				<titl>Title (required)</titl>
+				<subTitl>Subtitle</subTitl>
+				<IDNo agency="Other ID Agency">Other ID</IDNo>
+				<IDNo agency="Other ID Agency 2">Other ID 2</IDNo>
+			</titlStmt>
+			<rspStmt>
+				<AuthEnty affiliation="Author Affiliation">AuthorLastName, AuthorFirstName (required)</AuthEnty>
+				<AuthEnty affiliation="Author Affiliation 2">AuthorLastName2, AuthorFirstName2</AuthEnty>
+			</rspStmt>
+			<prodStmt>
+				<producer abbr="Producer Abbreviation" affiliation="Producer Affiliation">Producer
+					<ExtLink URI="http://producerURL.org"/>
+					<ExtLink URI="http://producerLogoURL.org" role="image"/>
+				</producer>
+				<producer abbr="Producer Abbreviation 2" affiliation="Producer Affiliation 2">Producer 2
+					<ExtLink URI="http://producerURL2.org"/>
+					<ExtLink URI="http://producerLogoURL2.org" role="image"/>
+				</producer>
+				<prodDate date="2001-01-01">2001-01-01</prodDate>
+				<prodPlac>Production Place</prodPlac>
+				<software version="Software Version">Software</software>
+				<software version="Software Version 2">Software 2</software>
+				<fundAg>FundingAgency</fundAg>
+				<grantNo agency="Grant Number Agency">Grant Number</grantNo>
+				<grantNo agency="Grant Number Agency 2">Grant Number 2</grantNo>
+			</prodStmt>
+			<distStmt>
+				<distrbtr abbr="Distributor Abbreviation" affiliation="Distributor Affiliation">Harvard Dataverse Network (default) (required)<ExtLink URI="http://thedata.harvard.edu/dvn/"/>
+				<ExtLink URI="http://thedata.harvard.edu/dvn/resources/images/dvnPoweredByLogo.gif" role="image"/>
+			</distrbtr>
+			<distrbtr abbr="Distributor Abbreviation" affiliation="Distributor Affiliation">Distributor 2<ExtLink URI="http://distributorURL.org"/>
+			<ExtLink URI="http://distributorLogoURL.org" role="image"/>
+		</distrbtr>
+		<contact email="contact@email.org" affiliation="Contact Affiliation">Contact</contact>
+		<depositr>Depositor</depositr>
+		<depDate date="2003-03-03">2003-03-03</depDate>
+		<distDate date="2002-02-02">2002-02-02</distDate>
+	</distStmt>
+	<serStmt>
+		<serName>Series</serName>
+		<serInfo>Series Information</serInfo>
+	</serStmt>
+	<verStmt>
+		<version date="2004-04-04">1</version>
+	</verStmt>
+	<verStmt source="DVN">
+		<version date="2014-05-21" type="RELEASED">1</version>
+	</verStmt>
+</citation>
+<stdyInfo>
+	<subject>
+		<keyword vocab="Keyword Vocabulary" vocabURI="http://keywordURL.org">Keyword</keyword>
+		<keyword vocab="Keyword Vocabulary 2" vocabURI="http://keywordURL2.org">Keyword 2</keyword>
+		<topcClas vocab="Topic Classification Vocabulary" vocabURI="http://topicClassificationURL.org">Topic Classification</topcClas>
+		<topcClas vocab="Topic Classification Vocabulary 2" vocabURI="http://topicClassificationVocabulary2.org">Topic Classification 2</topcClas>
+	</subject>
+	<abstract date="2005-05-05">Description (required)</abstract>
+	<abstract date="2006-06-06">Description 2</abstract>
+	<sumDscr>
+		<timePrd event="start" date="2007-07-07">2007-07-07</timePrd>
+		<timePrd event="end" date="2008-08-08">2008-08-08</timePrd>
+		<collDate event="start" date="2009-09-09">2009-09-09</collDate>
+		<collDate event="end" date="2010-10-10">2010-10-10</collDate>
+		<nation>Canada</nation>
+		<geogCover>Geographic Coverage</geogCover>
+		<geogUnit>Geographic Unit</geogUnit>
+		<geoBndBox>
+			<westBL>1</westBL>
+			<eastBL>2</eastBL>
+			<southBL>4</southBL>
+			<northBL>3</northBL>
+		</geoBndBox>
+		<anlyUnit>Unit of Analysis</anlyUnit>
+		<universe>Universe</universe>
+		<dataKind>Kind of Data</dataKind>
+	</sumDscr>
+</stdyInfo>
+<method>
+	<dataColl>
+		<timeMeth>Time Method</timeMeth>
+		<dataCollector>Data Collector</dataCollector>
+		<frequenc>Frequency</frequenc>
+		<sampProc>Sampling Procedure</sampProc>
+		<deviat>Major Deviations for Sample Design</deviat>
+		<collMode>Collection Mode</collMode>
+		<resInstru>Type of Research Instrument</resInstru>
+		<sources>
+			<dataSrc>Data Sources</dataSrc>
+			<srcOrig>Origin of Sources</srcOrig>
+			<srcChar>Characteristic of Sources Noted</srcChar>
+			<srcDocu>Documentation and Access to Sources</srcDocu>
+		</sources>
+		<collSitu>Characteristics of Data Collection Situation</collSitu>
+		<actMin>Actions to Minimize Losses</actMin>
+		<ConOps>Control Operations</ConOps>
+		<weight>Weighting</weight>
+		<cleanOps>Cleaning Operations</cleanOps>
+	</dataColl>
+	<notes>Study Level Error Notes</notes>
+	<anlyInfo>
+		<respRate>Response Rate</respRate>
+		<EstSmpErr>Estimates of Sampling Error</EstSmpErr>
+		<dataAppr>Other Forms of Data Appraisal</dataAppr>
+	</anlyInfo>
+</method>
+<dataAccs>
+	<setAvail>
+		<accsPlac>Data Access Place</accsPlac>
+		<origArch>Original Archive</origArch>
+		<avlStatus>Availability Status</avlStatus>
+		<collSize>Size of Collection</collSize>
+		<complete>Study Completion</complete>
+	</setAvail>
+	<useStmt>
+		<confDec>Confidentiality Declaration</confDec>
+		<specPerm>Special Permissions</specPerm>
+		<restrctn>Restrictions</restrctn>
+		<contact>Contact</contact>
+		<citReq>Citation Requirements</citReq>
+		<deposReq>Depositor Requirements</deposReq>
+		<conditions>Conditions</conditions>
+		<disclaimer>Disclaimer</disclaimer>
+	</useStmt>
+</dataAccs>
+<othrStdyMat>
+	<relMat>Related Material</relMat>
+	<relMat>Related Material 2</relMat>
+	<relStdy>Related Studies</relStdy>
+	<relStdy>Related Studies 2</relStdy>
+	<relPubl>Publication Citation<citation source="DVN_3_0">
+		<titlStmt>
+			<IDNo agency="DOI">test:123/456</IDNo>
+		</titlStmt>
+		<biblCit>Publication Citation</biblCit>
+		<holdings URI="http://publicationURL.org">http://publicationURL.org</holdings>
+	</citation>
+</relPubl>
+<otherRefs>Other Referneces</otherRefs>
+<otherRefs>Other References 2</otherRefs>
+</othrStdyMat>
+<notes type="Note Type" subject="Note Subject">Note Text</notes>
+<notes type="Note Type 2" subject="Note Subject 2">Note Text 2</notes>
+</stdyDscr>
+</codeBook>

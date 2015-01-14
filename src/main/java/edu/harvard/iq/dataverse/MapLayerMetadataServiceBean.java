@@ -134,6 +134,19 @@ public class MapLayerMetadataServiceBean {
     }    
     
     
+    private boolean deleteOlderMapThumbnails(MapLayerMetadata mapLayerMetadata) throws IOException {
+        if (mapLayerMetadata==null){
+            logger.warning("mapLayerMetadata is null");
+            return false;
+        }
+        String iconBaseFilename = mapLayerMetadata.getDataFile().getFileSystemLocation().toString() +  ".img";
+
+        // look at files in dir
+        // delete all that start with (but not equal to) the iconBaseFilename
+        
+        return true;
+    }
+    
     /**
      * Use the mapLayerMetadata.mapImageLink to retrieve a PNG file directly from WorldMap
      * 

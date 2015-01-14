@@ -1,11 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -16,7 +21,9 @@ import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 
 public class Util {
-    
+
+    private static final Logger logger = Logger.getLogger(Util.class.getCanonicalName());
+
     static final Set<String> booleanValues;
     static final Set<String> booleanTrueValues;
     
@@ -119,4 +126,38 @@ public class Util {
 		}
 		return true;
 	}
+
+    /**
+     * @param date The Date object to convert.
+     * @return A ISO 8601 date with UTC time zone or null.
+     *
+     * <p>
+     *
+     * "Law #1: Use ISO-8601 for your dates"
+     * http://apiux.com/2013/03/20/5-laws-api-dates-and-times/
+     *
+     * <p>
+     * "All timestamps are returned in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ"
+     * https://developer.github.com/v3/#schema
+     *
+     * <p>
+     *
+     * "Law #4: Return it in UTC"
+     * http://apiux.com/2013/03/20/5-laws-api-dates-and-times/
+     *
+     */
+    public static String getDateTimeFormatToReturnIn(Date date) {
+        if (date == null) {
+            return null;
+        }
+        String otherFormatString = JsonPrinter.TIME_FORMAT_STRING;
+        String dateTimeFormatString = "yyyy-MM-dd'T'HH:mm'Z'";
+        if (!dateTimeFormatString.equals(otherFormatString)) {
+            logger.info("Warning. Two different date/time format strings in use: " + dateTimeFormatString + " and " + otherFormatString);
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat(dateTimeFormatString);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return dateFormat.format(date);
+    }
+
 }

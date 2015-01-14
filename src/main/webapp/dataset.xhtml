@@ -289,9 +289,10 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
-                                            <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
-                                                <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> #{bundle['dataset.email.datasetContactBtn']}
-                                            </button>
+                                            <div class="btn-group" role="group" style="margin-right:.3em;">
+                                                <button type="button" class="btn btn-default" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
+                                                <button type="button" class="btn btn-default" onclick="alert('Static button only for Linked Dataset development purposes.')" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Link Dataset to Your Dataverse"><span class="glyphicon glyphicon-link"/></button>
+                                            </div>
                                         </div>
                                     </ui:fragment>
                                     <p:confirmDialog message="#{bundle['dataset.email.tip']}" header="#{bundle['dataset.email.datasetContactBtn']}" widgetVar="contact_confirmation">
@@ -305,11 +306,10 @@
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                         </div>
-
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                        <div class="row" >
-                                            <div id="citation" class="bg-info col-md-9" style="margin-bottom:.5em;">
+                                        <div class="row bg-info" style="margin-bottom:.5em;">
+                                            <div id="citation" class="col-md-9">
                                                 <span>#{DatasetPage.displayCitation}</span>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                     <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"></span>
@@ -322,9 +322,9 @@
                                                 </ui:fragment>
                                                 <span id="whycitelink" class="bg-warning small"><a href="/guides/Data_Citation/index.html" target="_blank">#{bundle['dataset.cite.whyCite']}</a></span>
                                             </div>
-                                            <div class="col-md-3 text-right" style="padding-right:0; margin-bottom:.5em;">
+                                            <div id="citation-download" class="col-md-3 text-right">
                                                 <div class="dropdown">
-                                                    <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <button type="button" id="downloadCitation" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                                                     </button>
                                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
@@ -519,6 +519,23 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
+                                            <div class="btn-group" style="margin-right:1em;">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <h:outputLink value="#">
+                                                            <h:outputText value="All Files From This Dataset"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                    <li class="disabled">
+                                                        <h:outputLink value="#">
+                                                            <h:outputText value="Selected Files"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{bundle['file.uploadOrEdit']}
@@ -532,14 +549,16 @@
                                                  emptyMessage="#{bundle['file.notFound.tip']}">
                                         <p:column headerText="#{bundle['file.delete.header']}" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
+                                        <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
+                                                  style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
-                                            <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
+                                            <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}">
                                                 <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
                                                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                 </a>
                                             </ui:fragment>
 
-                                            <p:graphicImage value="/resources/images/icon_file.png" rendered="#{!fileMetadata.dataFile.image}"/>
+                                            <p:graphicImage value="/resources/images/icon_file.png" rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.image)}"/>
 
                                             <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and fileMetadata.dataFile.image}">
                                                 <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
@@ -553,7 +572,7 @@
                                                 <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                                     #{bundle['file.fileName']}
                                                 </label>
-                                                <p:inputText id="fileName" value="#{fileMetadata.label}" style="margin-bottom:.5em;"/>
+                                                <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;"/>
                                                 <p:message for="fileName"/>
                                             </ui:fragment>
 
@@ -582,13 +601,16 @@
                                                 </div>
                                             </ui:fragment>
 
+                                            <ui:remove>
                                             <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
-                                                <br />
+                                                 <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
+                                                <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->                                           
+                                                 |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a>
+                                                <!-- 
                                                 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
-
-                                                <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->
+                                                -->
                                             </ui:fragment>
+                                            </ui:remove>
 
                                             <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
                                                 <div class="fileDescription">
@@ -599,14 +621,13 @@
                                                         <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                                             #{bundle.description}
                                                         </label>
-                                                        <p:inputTextarea  id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="margin-top:.5em;"/>
+                                                        <p:inputTextarea  id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"/>
                                                         <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
                                                         <p:message for="fileDescription"/>
                                                     </ui:fragment>
-                                                    
                                                 </div>
                                             </ui:fragment>
-                                            
+
                                             <div>
                                                 <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                                                        <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" / -->
@@ -615,28 +636,23 @@
                                                         <h:outputText value=" "/>
                                                     </ui:repeat>
                                                     <h:outputText value=" "/>
-
                                                 </ui:fragment>
                                                 <!-- *old* file category code - removed from here. - L.A. beta 10 -->
                                                 <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-
-                                                    <p:commandButton id="fileCategoriesButton" 
-                                                                     actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}" 
-                                                                     update=":datasetForm:fileCategoriesPopup" 
-                                                                     oncomplete="fileCategoriesPopup.show()" 
+                                                    <p:commandButton id="fileCategoriesButton"
+                                                                     actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                                     update=":datasetForm:fileCategoriesPopup"
+                                                                     oncomplete="fileCategoriesPopup.show()"
                                                                      value="#{bundle['file.editCategories']}"
                                                                      rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
                                                 </ui:fragment>
                                             </div>
-
-                                            <p/>
-
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image)}">
-                                                <p:commandLink id="advancedIngestOptionsButton" 
-                                                               styleClass="btn btn-default" 
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or (!(empty fileMetadata.id) and fileMetadata.dataFile.image) or ((empty fileMetadata.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))}">
+                                                <p:commandLink id="advancedIngestOptionsButton"
+                                                               styleClass="btn btn-default"
                                                                actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
                                                                update=":datasetForm:fileAdvancedOptions"
                                                                oncomplete="fileAdvancedOptions.show()">
@@ -646,12 +662,49 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                            <!-- TwoRavens explore option -->
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}" target="_blank">
                                                     <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle.explore}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
-
+                                            
+                                            <!-- WorldMap explore option -->
+                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                  <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
+                                                </h:outputLink>
+                                            </ui:fragment>
+                                                                                        
+                                            <!-- ( NOT ACTIVE:  Needed for mapping tabular data when there are 2 options for Explore ) -->
+                                            <!-- START: Explore dropdown for tabularData, ingestInProgress (?), or MapLayerMetadata -->
+                                            <ui:remove>
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress or DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                <div class="dropdown">
+                                                    <!-- explore button that toggles dropdown -->
+                                                    <button type="button" id="exploreDropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/>#{bundle.explore}<span class="caret"></span>
+                                                    </button>
+                                                    <!-- dropdown options -->
+                                                    <ul class="dropdown-menu pull-left" role="menu" style="text-align:left;">
+                                                        <!-- WorldMap explore option -->
+                                                        <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                            <li>
+                                                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']} WorldMap</a>
+                                                            </li>
+                                                        </ui:fragment>
+                                                       <!-- TwoRavens option -->
+                                                        <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
+                                                            <li>
+                                                                <a href="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}">#{bundle.explore} Two Ravens</a>                                                                
+                                                            </li>
+                                                        </ui:fragment>
+                                                    </ul>
+                                                </div>                                                                                            
+                                            </ui:fragment>
+                                            </ui:remove>
+                                            <!-- END  EXPLORE dropdown -->
+                                            
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
                                                 <a href="#" class="imageThumbPreview h2" style="margin:0 .5em 0 0;vertical-align:middle;" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
                                                     <span class="glyphicon glyphicon-warning-sign text-danger" style="top:5px;"></span></a>
@@ -672,20 +725,20 @@
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired)}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
-                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> 
+                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download}
                                                 </a>
                                             </ui:fragment>
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired}">
-                                                <p:commandLink id="downloadPopupButton" 
-                                                               styleClass="btn btn-default" 
+                                                <p:commandLink id="downloadPopupButton"
+                                                               styleClass="btn btn-default"
                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                                update="@form,:messagePanel"
                                                                oncomplete="downloadPopup.show();">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download}
                                                 </p:commandLink>
                                             </ui:fragment>
-                                            
+
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
                                                 <div class="btn-group">
@@ -707,14 +760,14 @@
                                                             </h:outputLink>
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
-                                                                <p:commandLink id="downloadPopupButtonTab" 
+                                                                <p:commandLink id="downloadPopupButtonTab"
                                                                     action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                                     update="@form,:messagePanel"
                                                                     oncomplete="downloadPopup.show();">
                                                                         #{bundle['file.downloadBtn.format.tab']}
-                                                                </p:commandLink>    
+                                                                </p:commandLink>
                                                             </ui:fragment>
-                                                            
+
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
@@ -724,7 +777,7 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData" rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData" rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}" disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="#{bundle['file.downloadBtn.format.rdata']}"/>
                                                             </h:outputLink>
                                                         </li>
@@ -732,6 +785,14 @@
                                                             <h:outputLink value="/api/meta/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="#{bundle['file.downloadBtn.format.var']}"/>
                                                             </h:outputLink>
+                                                        </li>
+                                                        <li>
+                                                            <p:commandLink id="fileDowloadDataSubsetButton"
+                                                                     actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                                     update=":datasetForm:downloadDataSubsetPopup"
+                                                                     oncomplete="downloadDataSubsetPopup.show()"
+                                                                     value="Data Subset"
+                                                                     disabled="#{empty fileMetadata.dataFile.id}"/>
                                                         </li>
                                                         <li class="dropdown-submenu">
                                                             <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
@@ -757,7 +818,7 @@
                                             </ui:fragment>
                                         </p:column>
                                     </p:dataTable>
-                                    
+
                                 </p:tab>
 
                                 <p:tab  id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
@@ -778,7 +839,9 @@
                                         <ui:include src="metadataFragment.xhtml"/>
                                     </div>
                                 </p:tab>
-                                <p:tab id="licensingTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE'}">
+                                <p:tab id="licensingTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}" 
+                                       rendered="#{ !DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}"
+                                                                       >
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
@@ -817,18 +880,18 @@
                                                         <ui:fragment rendered ="#{!empty DatasetPage.editMode }">
                                                             <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
                                                                 <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.CCO']}" itemValue="CC0" />
-                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.notCCO']}" itemValue="" />
-                                                                <p:ajax update=":datasetForm" />                                                
-                                                            </p:selectOneRadio>      
+                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.notCCO']}" itemValue="NONE" />
+                                                                <p:ajax update=":datasetForm" />
+                                                            </p:selectOneRadio>
                                                             <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.tip']} 
+                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.tip']}
                                                                 <div class="col-sm-9">
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.description']}</p>
                                                                 </div>
                                                                 <div class="col-sm-9">
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.txt']}</p>
                                                                 </div>
-                                                            </ui:fragment>  
+                                                            </ui:fragment>
                                                         </ui:fragment>
                                                     </div>
                                                     <ui:fragment rendered="#{DatasetPage.workingVersion.license != 'CC0'}">
@@ -862,15 +925,15 @@
                                                     <div id="additionalTOU" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTOU">
                                                         <div class="panel-body">
                                                             <ui:fragment rendered ="#{empty DatasetPage.editMode}">
-                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.confidentialityDeclaration}">      
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">                                                                
+                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.confidentialityDeclaration}">
+                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
                                                             </label>
                                                                 <div class="col-sm-9"  >
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.confidentialityDeclaration}"/>
                                                                 </div>
-                                                                    </ui:fragment> 
-                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.specialPermissions}"> 
+                                                                    </ui:fragment>
+                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.specialPermissions}">
                                                             <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
                                                             </label>
@@ -878,7 +941,7 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.specialPermissions}"/>
                                                                 </div>
                                                                     </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.restrictions}"> 
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.restrictions}">
                                                             <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
                                                             </label>
@@ -886,7 +949,7 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.restrictions}"/>
                                                                 </div>
                                                                     </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.citationRequirements}"> 
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.citationRequirements}">
                                                             <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
                                                             </label>
@@ -894,15 +957,15 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersioncitationRequirements}"/>
                                                                 </div>
                                                                     </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.depositorRequirements}"> 
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.depositorRequirements}">
                                                             <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
                                                             </label>
                                                                 <div class="col-sm-9"  >
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.depositorRequirements}"/>
                                                                 </div>
-                                                                    </ui:fragment>  
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.conditions}"> 
+                                                                    </ui:fragment>
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.conditions}">
                                                             <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
                                                             </label>
@@ -910,7 +973,7 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.conditions}"/>
                                                                 </div>
                                                                     </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.disclaimer}"> 
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.disclaimer}">
                                                             <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
                                                             </label>
@@ -1001,7 +1064,7 @@
                                                             <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}</p>
                                                         </div>
                                                     </div>
-                                                   
+
                                                     <div class="form-group">
                                                         <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
@@ -1018,12 +1081,12 @@
                                                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                                             </a>
                                                         </label>
-                                                           
+
                                                         <div class="col-sm-9">
                                                             <h:outputText value ="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.dataset.fileAccessRequest}"/>
                                                             <h:outputText value ="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
                                                         </div>
-                                                               
+
                                                     </div>
                                                     </ui:fragment>
                                                     <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
@@ -1037,7 +1100,7 @@
                                                             <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.tip']}</p>
                                                         </div>
                                                     </div>
-                                                   
+
                                                     <div class="form-group">
                                                         <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
@@ -1054,12 +1117,12 @@
                                                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                                             </a>
                                                         </label>
-                                                           
+
                                                         <div class="col-sm-9">
                                                              <p:selectBooleanCheckbox  id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{DatasetPage.dataset.fileAccessRequest}"/>
                                                         </div>
-                                                               
-                                                    </div>                                                        
+
+                                                    </div>
                                                     </ui:fragment>
                                                 </div>
                                             </div>
@@ -1074,15 +1137,15 @@
                                                 <div id="collapseTOA" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTOA">
                                                     <div class="panel-body">
                                                         <ui:fragment rendered ="#{empty DatasetPage.editMode}">
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.dataAccessPlace}"> 
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.dataAccessPlace}">
                                                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
                                                                 </label>
                                                                 <div class="col-sm-9"  >
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.dataAccessPlace}"/>
                                                                 </div>
-                                                            </ui:fragment> 
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.originalArchive}"> 
+                                                            </ui:fragment>
+                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.originalArchive}">
                                                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
                                                                 </label>
@@ -1090,7 +1153,7 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.originalArchive}"/>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.availabilityStatus}"> 
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.availabilityStatus}">
                                                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
                                                                 </label>
@@ -1098,7 +1161,7 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.availabilityStatus}"/>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.contactForAccess}"> 
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.contactForAccess}">
                                                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
                                                                 </label>
@@ -1106,7 +1169,7 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.contactForAccess}"/>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.sizeOfCollection}"> 
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.sizeOfCollection}">
                                                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
                                                                 </label>
@@ -1114,12 +1177,12 @@
                                                                     <h:outputText value ="#{DatasetPage.workingVersion.sizeOfCollection}"/>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.studyCompletion}"> 
+                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.studyCompletion}">
                                                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
                                                                 </label>
                                                                 <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersiont.studyCompletion}"/>
+                                                                    <h:outputText value ="#{DatasetPage.workingVersion.studyCompletion}"/>
                                                                 </div>
                                                             </ui:fragment>
                                                         </ui:fragment>
@@ -1199,7 +1262,7 @@
                                                                 <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
 
                                                                 <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
-                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}" 
+                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                                                action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
                                                                                oncomplete="viewGuestbook.show()"
                                                                                update=":datasetForm"
@@ -1229,12 +1292,12 @@
                                                             <p:column selectionMode="single" rendered="true"
                                                                       style="width:2%;text-align:center"/>
 
-                                                            <p:column> 
+                                                            <p:column>
                                                                 <h:outputText value="#{guestbook.name} " />
                                                             </p:column>
-                                                            <p:column> 
-                                                                <p:commandLink styleClass="btn btn-default" 
-                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}" 
+                                                            <p:column>
+                                                                <p:commandLink styleClass="btn btn-default"
+                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                                                action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
                                                                                oncomplete="viewGuestbook.show()"
                                                                                update=":datasetForm"
@@ -1267,19 +1330,19 @@
                                             </div>
                                         </div>
                                         <div  style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}" 
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}"
                                                           rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString }"/>
                                         </div>
                                         <div style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}" 
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}"
                                                           rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString }"/>
                                         </div>
                                         <div style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}" 
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}"
                                                           rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString }"/>
                                         </div>
                                         <div style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}" 
+                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}"
                                                           rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString }"/>
                                         </div>
                                     </p:dialog>
@@ -1578,10 +1641,11 @@
                                 <div class="form-group col-sm-12">
                                     <label for="tabularDataTags" class="col-sm-4 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.tabularDataTags.title']}">
-                                            #{bundle['file.tabularDataTags']} 
+                                            #{bundle['file.tabularDataTags']}
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
+                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Select one or more tags to describe the type of data file this file is.</p>
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:selectCheckboxMenu id="tabularDataTags" value="#{DatasetPage.selectedTags}" label="#{bundle['file.addTags']}"
                                                                   filter="false" panelStyle="width:300px">
@@ -1593,7 +1657,7 @@
                                 </div>
                             </ui:fragment>
 
-                            <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
+                            <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
                             <ui:fragment rendered="false">
                                 <div class="form-group col-sm-12">
                                     <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
@@ -1606,12 +1670,14 @@
                                             <h:outputText value="**REMOVE ME** Dropdown"/>
                                             <h:outputText value="Error Msg **REMOVE ME**"/>
                                         </p:panelGrid>
-                                        <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
+                                        <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE
                                             <p:inputText id="spssSavEncodingLanguage" styleClass="form-control"/>
                                             <p:message for="spssSavEncodingLanguage" display="text" /> -->
                                     </div>
                                 </div>
                             </ui:fragment>
+
+                            <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
                             <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected.id) and DatasetPage.fileMetadataSelected.dataFile.image}">
                                 <div class="form-group col-sm-12">
                                     <label for="datasetThumbnailImage" class="col-sm-4 control-label">
@@ -1620,6 +1686,7 @@
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
+                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Select if you would like this image to be used as the image that is displayed in the search results card for this dataset.</p>
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:column>
                                                 <p:selectBooleanCheckbox  id="datasetThumbnailImage" itemLabel="#{bundle['file.useThisIamge']}" value="#{DatasetPage.useAsDatasetThumbnail}"/>
@@ -1630,24 +1697,26 @@
                                     </div>
                                 </div>
                             </ui:fragment>
-                            <ui:fragment rendered="false">
+
+                            <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
+                            <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssPorFile(DatasetPage.fileMetadataSelected.dataFile)}">
                                 <div class="form-group col-sm-12">
-                                    <label for="fileTags" class="col-sm-4 control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.fileTags.title']}">
-                                            #{bundle['file.fileTags']}
+                                    <label for="labelsFileUpload" class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Upload text file with variable labels">
+                                            Upload text file with variable labels
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <h:outputText value="**REMOVE ME** Multiple Select Dropdown w/Checkboxes"/>
-                                            <h:outputText value="Error Msg **REMOVE ME**"/>
+
+                                            <p:growl id="messageForLabelsFileUpload" showDetail="true" />
+                                            <p:fileUpload  id="labelsFileUpload" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{DatasetPage.handleLabelsFileUpload}"/>
+
                                         </p:panelGrid>
-                                        <!-- REPLACE THESE WITH YOUR DYNAMIC FORM COMPONENTS AND ERROR MSG AND PUT THEM INTO THE PANELGRID ABOVE 
-                                            <p:inputText id="fileTags" styleClass="form-control"/>
-                                            <p:message for="fileTags" display="text" /> -->
                                     </div>
                                 </div>
                             </ui:fragment>
+
                         </div>
                         <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
                         <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()"/>
@@ -1696,12 +1765,18 @@
                                     </p:selectOneMenu>
                                 </ui:fragment>
                             </ui:repeat>
-                        </ui:fragment>    
+                        </ui:fragment>
                         <p:commandButton value="#{bundle.saveChanges}" onclick="downloadPopup.hide()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse()}" >
                         </p:commandButton>
                         <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
-                    </p:dialog>  
+                    </p:dialog>
                     
+                    <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" modal="true">
+                        <div class="form-inline clearfix" style="width:600px;">
+                            <ui:include src="/subset/gui_subset.xhtml"/>
+                        </div>
+                    </p:dialog>
+
                     <p:dialog id="fileCategoriesPopup" header="#{bundle['file.editCategoriesDialog.header']}" widgetVar="fileCategoriesPopup" modal="true">
                         <p class="help-block"></p>
                         <style type="text/css">
@@ -1718,7 +1793,7 @@
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:selectManyMenu id="fileCategoriesMenu" value="#{DatasetPage.fileMetadataSelected.categoriesByName}" showCheckbox="true">
-                                                <f:selectItems value="#{DatasetPage.fileMetadataSelected.datasetVersion.dataset.categoriesByName}"/>          
+                                                <f:selectItems value="#{DatasetPage.fileMetadataSelected.datasetVersion.dataset.categoriesByName}"/>
                                             </p:selectManyMenu>
                                             <p:message for="fileCategoriesMenu" display="text" />
                                         </p:panelGrid>

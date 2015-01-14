@@ -139,7 +139,7 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("category") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
-    private List<FileMetadata> fileMetadatas;
+    private List<FileMetadata> fileMetadatas = new ArrayList();
 
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
@@ -185,7 +185,7 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     private String deaccessionLink;
-        private String termsOfUse;
+    private String termsOfUse;
     private String termsOfAccess;
     private String confidentialityDeclaration;
     private String specialPermissions;

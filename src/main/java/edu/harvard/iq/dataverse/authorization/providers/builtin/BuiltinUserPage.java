@@ -181,8 +181,12 @@ public class BuiltinUserPage implements java.io.Serializable {
                     activeIndex = 1;
                     displayNotification();
                     break;
-                case "groupsRoles":
+                // case "groupsRoles":
+                    // activeIndex = 2;
+                    // break;
+                case "accountInfo":
                     activeIndex = 2;
+                    // activeIndex = 3;
                     break;
                 default:
                     activeIndex = 0;

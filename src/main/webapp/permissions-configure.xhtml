@@ -35,36 +35,6 @@
                 <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer3']}" itemValue="dsContributor" />
                 <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer4']}" itemValue="fullContributor" />                
             </p:selectOneRadio>            
-            
-            
-            <ui:remove>
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="accessRadios" id="accessRadios1" value="option1"/>
-                        Anyone adding to this dataverse needs to be given access
-                    </label>
-                </div>
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="accessRadios" id="accessRadios2" value="option2" checked="checked"/>
-                        Anyone with a Dataverse account can add:
-                    </label>
-                </div>
-                <div id="openAccessOptions" style="margin-left:2em;">
-                    <div class="checkbox">
-                        <label>
-                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataverse}" />
-                            Dataverses
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <h:selectBooleanCheckbox value="#{managePermissionsPage.allowUsersAddDataset}" />
-                            Datasets
-                        </label>
-                    </div>
-                </div>
-            </ui:remove>
         </div>
     </div>
 
@@ -85,21 +55,21 @@
             <div class="radio">
                 <label>
                     <p:radioButton id="opt1" for="defaultContributorRoleRadio" itemIndex="0" />
-                    <h:outputLabel for="opt1" value="#{bundle.editor}" />
+                    <h:outputLabel for="opt1" value=" #{bundle.editor}" />
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.editor.description']}</span>
                 </label>
             </div>
             <div class="radio">
                 <label>
                     <p:radioButton id="opt2" for="defaultContributorRoleRadio" itemIndex="1" />
-                    <h:outputLabel for="opt2" value="#{bundle.manager}" />
+                    <h:outputLabel for="opt2" value=" #{bundle.manager}" />
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.manager.description']}</span>
                 </label>
             </div>
             <div class="radio">
                 <label>
                     <p:radioButton id="opt3" for="defaultContributorRoleRadio" itemIndex="2" />
-                    <h:outputLabel for="opt3" value="#{bundle.curator}" />
+                    <h:outputLabel for="opt3" value=" #{bundle.curator}" />
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
                 </label>
             </div>

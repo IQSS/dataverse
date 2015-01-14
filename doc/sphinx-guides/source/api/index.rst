@@ -19,5 +19,6 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+  native-api
   search
   sword

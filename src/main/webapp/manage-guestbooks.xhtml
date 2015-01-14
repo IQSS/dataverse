@@ -74,13 +74,13 @@
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"  
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
-                                                   update="@form"
+                                                   update="@form,:messagePanel"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"  
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
-                                                   update="@form"
+                                                   update="@form,:messagePanel"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" 
                                                   rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"

@@ -87,6 +87,7 @@ public class IpGroupsServiceBean {
     public void deleteGroup( IpGroup grp ) {
         if ( roleAssigneeSvc.getAssignmentsFor(grp.getIdentifier()).isEmpty() ) {
             em.remove( grp );
+            // TODO when adding explicit groups, need to check for group membership as well.
         } else {
             throw new IllegalArgumentException("Group " + grp.getAlias() + " has assignments and thus can't be deleted.");
         }

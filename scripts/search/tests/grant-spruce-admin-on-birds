@@ -1,3 +1,6 @@
 #!/bin/sh
 . scripts/search/assumptions
-curl -s -X POST -H 'Content-Type: application/x-www-form-urlencoded' "http://localhost:8080/api/roles/assignments?username=$SPRUCE_USERNAME&roleId=$ADMIN_ROLE&definitionPointId=$BIRDS_DATAVERSE&key=$FINCHKEY" | jq ' .data | {assignee,_roleAlias}'
+OUTPUT=`curl -s -X POST -H "Content-type:application/json" -d "{\"assignee\": \"@spruce\",\"role\": \"admin\"}" "http://localhost:8080/api/dvs/birds/assignments?key=$ADMINKEY"`
+echo $OUTPUT
+echo
+echo $OUTPUT | jq ' .data | {assignee,_roleAlias}'

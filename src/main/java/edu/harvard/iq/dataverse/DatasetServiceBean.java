@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import static java.lang.Math.max;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +25,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -59,21 +59,21 @@ public class DatasetServiceBean implements java.io.Serializable {
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
+    
+    public List<Dataset> findPublishedByOwnerId(Long ownerId) {
+        return findByOwnerId(ownerId, true);
+    }    
 
-    public List<Dataset> findByOwnerId(Long ownerId, Boolean omitDeaccessioned) {
+    private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList();
-        Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id");
+        TypedQuery<Dataset>  query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
         query.setParameter("ownerId", ownerId);
-        if (!omitDeaccessioned) {
+        if (!onlyPublished) {
             return query.getResultList();
         } else {
-            for (Object o : query.getResultList()) {
-                Dataset ds = (Dataset) o;
-                for (DatasetVersion dsv : ds.getVersions()) {
-                    if (!dsv.isDeaccessioned()) {
-                        retList.add(ds);
-                        break;
-                    }
+            for (Dataset ds : query.getResultList()) {
+                if (ds.isReleased() && !ds.isDeaccessioned()) {
+                    retList.add(ds);
                 }
             }
             return retList;
