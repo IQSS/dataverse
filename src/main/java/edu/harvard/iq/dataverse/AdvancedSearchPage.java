@@ -45,11 +45,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
         if (dataverseIdentifier != null) {
             dataverse = dataverseServiceBean.findByAlias(dataverseIdentifier);
         }
-        if (dataverse != null) {
-            metadataBlocks = dataverse.getMetadataBlocks();
-        } else {
-            metadataBlocks = dataverseServiceBean.findAllMetadataBlocks();
+        if (dataverse == null) {
+            dataverse = dataverseServiceBean.findRootDataverse();
         }
+        metadataBlocks = dataverse.getMetadataBlocks();
         this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypes();
 
         for (MetadataBlock mdb : metadataBlocks) {
@@ -72,7 +71,9 @@ public class AdvancedSearchPage implements java.io.Serializable {
         queryStrings.add(constructFileQuery());
         String dataverseSubtree = "";
         if (dataverse != null) {
-            dataverseSubtree = "&id=" + dataverse.getId();
+            if (!dataverse.equals(dataverseServiceBean.findRootDataverse())) {
+                dataverseSubtree = "&id=" + dataverse.getId();
+            }
         }
 
         String returnString = "/dataverse.xhtml?q=" + constructQuery(queryStrings, false, false) + dataverseSubtree + "&faces-redirect=true";
