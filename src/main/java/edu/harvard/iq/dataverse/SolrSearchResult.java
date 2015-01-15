@@ -623,6 +623,7 @@ public class SolrSearchResult {
     }
 
     public String getDatasetUrl() {
+        String failSafeUrl = "/dataset.xhtml?id=" + entityId + "&versionId=" + datasetVersionId;
         if (identifier != null) {
             /**
              * Unfortunately, colons in the globalId (doi:10...) are converted
@@ -630,10 +631,16 @@ public class SolrSearchResult {
              * to a plain "a" tag with an href as suggested at
              * http://stackoverflow.com/questions/24733959/houtputlink-value-escaped
              */
-            logger.info("/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId);
-            return "/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId;
+            String badString = "null";
+            if (!identifier.contains(badString)) {
+                return "/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId;
+            } else {
+                logger.info("Dataset identifier/globalId contains \"" + badString + "\" perhaps due to https://github.com/IQSS/dataverse/issues/1147 . Fix data in database and reindex. Returning failsafe URL: " + failSafeUrl);
+                return failSafeUrl;
+            }
         } else {
-            return "/dataset.xhtml?id=" + entityId + "&versionId=" + datasetVersionId;
+            logger.info("Dataset identifier/globalId was null. Returning failsafe URL: " + failSafeUrl);
+            return failSafeUrl;
         }
     }
 
