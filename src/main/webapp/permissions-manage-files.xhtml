@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="id" value="#{managePermissionsPage.dvObject.id}"/>
+            <f:viewAction action="#{managePermissionsPage.init}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle['dataverse.permissionsFiles.title']} - #{managePermissionsPage.dvObject.displayName}"/>
+            <ui:param name="dataverse" value="#{managePermissionsPage.dvObject.dataverseContext}"/>
+            <ui:param name="dataset" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject : null}"/>
+            <ui:param name="version" value="#{managePermissionsPage.dvObject.instanceofDataset ? managePermissionsPage.dvObject.latestVersion : null}"/>
+            <ui:param name="showMessagePanel" value="false"/>
+            <ui:define name="body">
+                <h:form id="rolesPermissionsForm">
+                    <div class="panel-group" style="margin-top:2em;">
+                        <!-- Users/Groups Access Panel -->
+                        <div class="panel panel-default" style="margin-bottom:1em;">
+                            <div data-toggle="collapse" data-target="#collapseUsersGroups" class="panel-heading text-info">
+                                #{bundle['dataverse.permissionsFiles.usersOrGroups']} <span class="glyphicon glyphicon-chevron-down" style="margin-left:.3em;top:3px;"/>
+                            </div>
+                            <div id="collapseUsersGroups" class="collapse">
+                                <p:fragment id="assignmentMessages">
+                                    <div class="messagePanel" style="width:100%; margin-left: auto; margin-right: auto; padding-left: 15px; padding-right: 15px;">
+                                        <iqbs:messages  collapsible="true" rendered="#{managePermissionsPage.renderAssignmentMessages}"/>
+                                    </div>
+                                </p:fragment>
+                                <div class="panel-body">
+                                    <p:commandLink id="userGroupsAdd"
+                                                   styleClass="btn btn-default pull-right"
+                                                   actionListener="#{managePermissionsPage.initAssigneeDialog}"
+                                                   update="userGroupDialog"
+                                                   oncomplete="userGroupsForm.show();bind_bsui_components();">
+                                        <span class="glyphicon glyphicon-user" style="margin-right:0.3em;"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
+                                    </p:commandLink>
+                                    <p class="help-block clearfix">#{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</p>
+                                    <div>
+                                        <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
+                                            <p:column width="35%"  headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
+                                                <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
+                                            </p:column>
+                                            <p:column width="25%"  headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.role']}">
+                                                <h:outputText value="#{roleAssignment.roleName}"/>
+                                            </p:column>
+                                            <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.action']}">
+                                                <h:outputFormat styleClass="text-muted italic" value="#{bundle['dataverse.permissionsFiles.usersOrGroups.assignedAt']}" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}">
+                                                    <f:param value="#{roleAssignment.assignedDvName}"/>
+                                                </h:outputFormat>
+                                                <p:commandLink styleClass="btn btn-default"
+                                                               action="#{managePermissionsPage.removeRoleAssignment(roleAssignment.id)}"
+                                                               rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
+                                                               update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
+                                                               style="color:black;margin-right:0.5em;"><span class="glyphicon glyphicon-remove" style="margin-right:0.3em;"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.removeBtn']}</p:commandLink>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Files (Restricted) Panel -->
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#collapseFiles" class="panel-heading text-info">
+                                #{bundle['dataverse.permissionsFiles.files']} <span class="glyphicon glyphicon-chevron-down" style="margin-left:.3em;top:3px;"/>
+                            </div>
+                            <div id="collapseFiles" class="collapse">
+                                <div class="panel-body">
+                                    Just copy the Users/Groups table, and apply it here for Files.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users/Groups Popup -->
+                    <!-- Defined this way as we may reuse the include not in a popup -->
+                    <p:dialog id="accessDialog" header="#{bundle['dataverse.permissionsFiles.accessDialog.header']}" widgetVar="accessForm" modal="true" style="min-width:600px;max-width:80%;">
+                        <ui:include src="permissions-configure.xhtml"/>
+                        <p:commandLink styleClass="btn btn-default" value="#{bundle['saveChanges']}"
+                                       update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
+                                       actionListener="#{managePermissionsPage.saveConfiguration}"
+                                       oncomplete="accessForm.hide();"/>
+                        <button type="button" class="btn btn-default" onclick="configureForm.hide()" value="Cancel">#{bundle.cancel}</button>
+                    </p:dialog>
+
+                    <!-- Users/Groups Popup -->
+                    <ui:include src="roles-assign.xhtml"/>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
