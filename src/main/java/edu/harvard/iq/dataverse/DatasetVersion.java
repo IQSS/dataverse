@@ -185,20 +185,50 @@ public class DatasetVersion implements Serializable {
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     private String archiveNote;
     private String deaccessionLink;
+    
+    @Column(columnDefinition="TEXT")      
     private String termsOfUse;
+    
+    @Column(columnDefinition="TEXT") 
     private String termsOfAccess;
+    
+    @Column(columnDefinition="TEXT") 
     private String confidentialityDeclaration;
+    
+    @Column(columnDefinition="TEXT") 
     private String specialPermissions;
+    
+    @Column(columnDefinition="TEXT") 
     private String restrictions;
+    
+    @Column(columnDefinition="TEXT") 
     private String citationRequirements;
+    
+    @Column(columnDefinition="TEXT") 
     private String depositorRequirements;
+    
+    @Column(columnDefinition="TEXT") 
     private String conditions;
+    
+    @Column(columnDefinition="TEXT") 
     private String disclaimer;
+    
+    @Column(columnDefinition="TEXT") 
     private String dataAccessPlace;
+    
+    @Column(columnDefinition="TEXT") 
     private String originalArchive;
+    
+    @Column(columnDefinition="TEXT") 
     private String availabilityStatus;
+    
+    @Column(columnDefinition="TEXT") 
     private String contactForAccess;
+    
+    @Column(columnDefinition="TEXT") 
     private String sizeOfCollection;
+    
+    @Column(columnDefinition="TEXT") 
     private String studyCompletion;
 
     public String getStudyCompletion() {
