@@ -2,22 +2,6 @@
 
 console.log("fileid: "+fileid);
 console.log("hostname: "+hostname);
-console.log("ddiurl: "+ddiurl);
-console.log("dataurl: "+dataurl);
-
-if (!hostname) {
-    hostname="localhost:8080";
-}
-
-if (fileid && !dataurl) {
-    // file id supplied; we are going to assume that we are dealing with
-    // a dataverse and cook a standard dataverse data access url,
-    // with the fileid supplied and the hostname we have
-    // either supplied or configured:
-    dataurl = "http://"+hostname+"/api/access/datafile/"+fileid;
-    // (it is also possible to supply dataurl to the script directly,
-    // as an argument -- L.A.)
-}
 
 var colors = d3.scale.category20();
 var zdata;
@@ -28,46 +12,37 @@ var d3Color = '#1f77b4';  // d3's default blue
 
 var lefttab = "tab1"; //global for current tab in left panel
 
+var ddiurl = hostname+"/api/meta/datafile/"+fileid;
+var dataurl = hostname+"/api/access/datafile/"+fileid;
+
+console.log("dataurl: "+dataurl);
+
 // Pre-processed data:
-var pURL = "";
-if (dataurl) {
-    // data url is supplied
-    pURL = dataurl+"?format=prep";
-} else {
-    // no dataurl/file id supplied; use one of the sample data files distributed with the
-    // app in the "data" directory:
-    //pURL = "data/preprocess2429360.txt";   // This is the Strezhnev Voeten JSON data
-    pURL = "/subset/data/fearonLaitin.txt";     // This is the Fearon Laitin JSON data
-    // pURL = "data/qog_pp.json";   // This is Qual of Gov
-}
+var pURL = dataurl+"?format=prep";
+
+// Uncomment the lines below, if you want to test the code with 
+// the sample data files distributed with the
+// app in the "data" directory:
+//if (!fileid) {
+//    //pURL = "data/preprocess2429360.txt";   // This is the Strezhnev Voeten JSON data
+//    pURL = "/subset/data/fearonLaitin.txt";     // This is the Fearon Laitin JSON data
+//    // pURL = "data/qog_pp.json";   // This is Qual of Gov
+//    ddiurl="/subset/data/fearonLaitin.xml"; // This is Fearon Laitin
+//}
+
+console.log("ddiurl: "+ddiurl);
 
 var preprocess = {};
 var valueKey = [];
 var lablArray = [];
-var hold = [];
+var hold = []; 
 var allNodes = [];
 var nodes = [];
 var apicall = "";
-var metadataurl = "";
 var brushable = false; // set to true if you want to turn on brushing over the plots
 
-// read DDI metadata with d3:
-if (ddiurl) {
-    // a complete ddiurl is supplied:
-    metadataurl=ddiurl;
-} else if (fileid) {
-    // file id supplied; we're going to cook a standard dataverse
-    // metadata url, with the file id provided and the hostname
-    // supplied or configured:
-    metadataurl="http://"+hostname+"/api/meta/datafile/"+fileid;
-} else {
-    // neither a full ddi url, nor file id supplied; use one of the sample DDIs that come with
-    // the app, in the data directory:
-    metadataurl="/subset/data/fearonLaitin.xml"; // This is Fearon Laitin
-}
-
-
 d3.json(pURL, function(error, json) {
+        //console.log("executing d3.json ("+pURL+")");
             if (error) return console.warn(error);
             var jsondata = json;
             
@@ -76,7 +51,8 @@ d3.json(pURL, function(error, json) {
                 preprocess[key] = jsondata[key];
             }
         
-        d3.xml(metadataurl, "application/xml", function(xml) {
+        d3.xml(ddiurl, "application/xml", function(xml) {
+            //console.log("executing d3.xml");
                var vars = xml.documentElement.getElementsByTagName("var");
                var temp = xml.documentElement.getElementsByTagName("fileName");
                zdata = temp[0].childNodes[0].nodeValue;
@@ -118,6 +94,7 @@ d3.json(pURL, function(error, json) {
 // functions
 
 function scaffolding() {
+    //console.log("executing scaffolding");
     var count = 0;
     d3.select("#tab1").selectAll("p")
     .data(valueKey)
@@ -146,6 +123,7 @@ function scaffolding() {
 
 
 function populatePopover () {
+    //console.log("executing populatePopover");
     
     d3.select("#tab1").selectAll("p")
     .attr("data-content", function(d) {
@@ -155,6 +133,7 @@ function populatePopover () {
 }
 
 function popoverContent(d) {
+    //console.log("executing popoverContent");
     
     var rint = d3.format("r");
     return "<div class='row'><label class='col-sm-4 control-label'>Label</label><div class='col-sm-6'><p class='form-control-static'><i>" + d.labl + "</i></p></div></div>" +
@@ -177,6 +156,7 @@ function popoverContent(d) {
 }
 
 function layout() {
+    //console.log("executing layout");
     var myValues=[];
     nodes = [];
     
@@ -245,6 +225,7 @@ function hexToRgba(hex) {
 
 
 function panelPlots() {
+    //console.log("executing panelPlots");
     
     // build arrays from nodes in main
     var dataArray = [];
@@ -307,6 +288,7 @@ var findNode = function(nodeName) {
 
 
 function tabLeft(tab) {
+    //console.log("executing tableft");
     
     if(tab == "tab3") {
         API();
