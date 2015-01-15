@@ -81,7 +81,7 @@ public class FileMetadata implements Serializable {
     /* 
      * File Categories to which this version of the DataFile belongs: 
      */
-    @ManyToMany (cascade = {CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @ManyToMany (cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataFileCategory> fileCategories;
     
     public List<DataFileCategory> getCategories() {
@@ -112,12 +112,12 @@ public class FileMetadata implements Serializable {
     // alternative, experimental method: 
 
     public void setCategoriesByName(List<String> newCategoryNames) {
-        setCategories(null);
+        setCategories(null); // ?? TODO: investigate! 
 
         if (newCategoryNames != null) {
 
             for (int i = 0; i < newCategoryNames.size(); i++) {
-                    // Dataset.getCategoryByName() will check if such a category 
+                // Dataset.getCategoryByName() will check if such a category 
                 // already exists for the parent dataset; it will be created 
                 // if not. The method will return null if the supplied 
                 // category name is null or empty. -- L.A. 4.0 beta 10
@@ -136,10 +136,11 @@ public class FileMetadata implements Serializable {
             }
         }
     }
-    /*
+    
+    /* 
+        note that this version only *adds* new categories, but does not 
+        remove the ones that has been unchecked!
     public void setCategoriesByName(List<String> newCategoryNames) {
-                setCategories(null);
-
         if (newCategoryNames != null) {
             Collection<String> oldCategoryNames = getCategoriesByName();
             
@@ -162,13 +163,11 @@ public class FileMetadata implements Serializable {
                         this.addCategory(fileCategory);
                         fileCategory.addFileMetadata(this);
                     }
-                } else {
-                    // don't do anything - this file metadata is already in 
-                    // this category.
-                }
+                } 
             }
         }
-    }*/
+    }
+    */
     
     public void addCategoryByName(String newCategoryName) {
         if (newCategoryName != null && !newCategoryName.equals("")) {
@@ -274,17 +273,34 @@ public class FileMetadata implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        // (Also, note that it returns "true" when comparing 2 filemetadatas 
-        // with id == null; in other words, 2 not-yet-saved filemetadatas 
-        // always compare as equal! -- L.A. 4.0 alpha)
         if (!(object instanceof FileMetadata)) {
             return false;
         }
         FileMetadata other = (FileMetadata) object;
+        
+        /* experimental comparison logic for 2 filemetadatas that 
+           haven't been persisted with the entity manager yet, 
+           and thus don't have db ids:
+           compare by the dataset versions and the file md5s, 
+           if available.
+           
+           (for it to work, comparison of dataset versions need to be
+            added; and new equals() method needs to be defined in the 
+            DatasetVersion class as well - that similarly does a better
+            work comparing DatasetVersions with null ids) 
+        
+        if (this.id == null && other.id == null) {
+            if (this.getDataFile() != null
+                    && this.getDataFile().getmd5() != null
+                    && other.getDataFile() != null) {
+                return this.getDataFile().getmd5().equals(other.getDataFile().getmd5());
+                
+            } 
+            return false; 
+        }
+        */
+        
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-        // Something like this would seem like a better choice:
-        //if ((this.id == null) || (!this.id.equals(other.id))) {
             return false;
         }
         return true;

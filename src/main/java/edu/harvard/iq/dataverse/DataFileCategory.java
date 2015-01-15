@@ -99,11 +99,23 @@ public class DataFileCategory implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof DataFileCategory)) {
             return false;
         }
         DataFileCategory other = (DataFileCategory) object;
+        
+        // Custom code for comparing 2 categories before the 
+        // objects have been persisted with the entity manager
+        // and assigned database ids: 
+        // (will also need to compare datasets for it to work - ?
+        /*
+        if (this.id == null && other.id == null) {
+            if (this.name != null) {
+                return this.name.equals(other.name);
+             }
+            return false; 
+        }*/
+        
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

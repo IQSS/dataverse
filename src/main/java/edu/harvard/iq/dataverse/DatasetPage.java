@@ -1648,6 +1648,9 @@ public class DatasetPage implements java.io.Serializable {
         return fileMetadataSelected;
     }
     
+    public void clearFileMetadataSelected() {
+        fileMetadataSelected = null; 
+    }
     /* Items for the "Advanced Options" popup. 
      * 
      * Tabular File Tags: 
@@ -1777,6 +1780,8 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // Use-as-the-thumbnail assignment (do nothing?)
+        
+        fileMetadataSelected = null; 
     }
     
     public String getFileDateToDisplay(FileMetadata fileMetadata) {
@@ -1821,8 +1826,11 @@ public class DatasetPage implements java.io.Serializable {
             logger.info("Adding new category, for file "+fileMetadataSelected.getLabel());
             fileMetadataSelected.addCategoryByName(newCategoryName);
         } else {
-            logger.info("No FileMetadata selected!");
+            logger.info("No FileMetadata selected, or no category specified!");
         }
+        newCategoryName = null; 
+        fileMetadataSelected = null; 
+        
     }
     
     

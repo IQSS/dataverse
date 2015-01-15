@@ -1874,7 +1874,7 @@
 
                         </div>
                         <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
-                        <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()"/>
+                        <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                     </p:dialog>
 
                     <p:dialog  header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
@@ -1968,7 +1968,7 @@
                             </ui:fragment>
                         </div>
                         <p:commandButton id="fileCategoriesPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileCategoriesPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.addFileCategory()}"/>
-                        <p:commandButton id="fileCategoriesPopupCancelButton" value="#{bundle.cancel}" onclick="fileCategoriesPopup.hide()"/>
+                        <p:commandButton id="fileCategoriesPopupCancelButton" value="#{bundle.cancel}" onclick="fileCategoriesPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                     </p:dialog>
                 </h:form>
             </ui:define>
