@@ -108,7 +108,7 @@ Lists the metadata block block named `blockname`, for the given dataset and vers
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata/$blockname?key=$apiKey
 
-Updates the current draft version of dataset ``$id``. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data::
+Updates the current draft version of dataset ``$id``. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data. The request body is a dataset version, in json format. ::
 
     PUT http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
