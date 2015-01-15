@@ -8,7 +8,7 @@
     </url-mapping>
         
     <url-mapping id="advancedSearch">
-        <pattern value="/search/advanced" />
+        <pattern value="/dataverse/#{dataverseIdentifier}/search" />
         <view-id value="/search/advanced.xhtml" />
     </url-mapping>
 

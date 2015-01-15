@@ -26,6 +26,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     DatasetFieldServiceBean datasetFieldService;
 
     private Dataverse dataverse;
+    private String dataverseIdentifier;
     private List<MetadataBlock> metadataBlocks;
     private Map<Long, List<DatasetFieldType>> metadataFieldMap = new HashMap();
     private List<DatasetFieldType> metadataFieldList;
@@ -40,12 +41,15 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String fileFieldVariableLabel;
 
     public void init() {
-        /**
-         * @todo: support advanced search at any depth in the dataverse
-         * hierarchy https://redmine.hmdc.harvard.edu/issues/3894
-         */
-        this.dataverse = dataverseServiceBean.findRootDataverse();
-        this.metadataBlocks = dataverseServiceBean.findAllMetadataBlocks();
+
+        if (dataverseIdentifier != null) {
+            dataverse = dataverseServiceBean.findByAlias(dataverseIdentifier);
+        }
+        if (dataverse != null) {
+            metadataBlocks = dataverse.getMetadataBlocks();
+        } else {
+            metadataBlocks = dataverseServiceBean.findAllMetadataBlocks();
+        }
         this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypes();
 
         for (MetadataBlock mdb : metadataBlocks) {
@@ -66,8 +70,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
         queryStrings.add(constructDataverseQuery());
         queryStrings.add(constructDatasetQuery());
         queryStrings.add(constructFileQuery());
+        String dataverseSubtree = "";
+        if (dataverse != null) {
+            dataverseSubtree = "&id=" + dataverse.getId();
+        }
 
-        return "/dataverse.xhtml?q=" + constructQuery(queryStrings, false, false) + "faces-redirect=true";
+        String returnString = "/dataverse.xhtml?q=" + constructQuery(queryStrings, false, false) + dataverseSubtree + "&faces-redirect=true";
+        logger.fine(returnString);
+        return returnString;
     }
 
     private String constructDatasetQuery() {
@@ -204,6 +214,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
+    }
+
+    public String getDataverseIdentifier() {
+        return dataverseIdentifier;
+    }
+
+    public void setDataverseIdentifier(String dataverseIdentifier) {
+        this.dataverseIdentifier = dataverseIdentifier;
     }
 
     public List<MetadataBlock> getMetadataBlocks() {
