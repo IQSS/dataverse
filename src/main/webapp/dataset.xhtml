@@ -1857,8 +1857,8 @@
                             <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssPorFile(DatasetPage.fileMetadataSelected.dataFile)}">
                                 <div class="form-group col-sm-12">
                                     <label for="labelsFileUpload" class="col-sm-4 control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Upload text file with variable labels">
-                                            Upload text file with variable labels
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.spss-porExtraLabels.title']}">
+                                            #{bundle['file.spss-porExtraLabels']}
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
