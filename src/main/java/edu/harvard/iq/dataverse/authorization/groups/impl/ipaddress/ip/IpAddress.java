@@ -8,9 +8,14 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 public abstract class IpAddress {
     
     public static IpAddress valueOf( String s ) {
-        try {
-            return IPv4Address.valueOf( s );
-        } catch ( IllegalArgumentException iae ) {
+        if ( s.contains(".") ) {
+            if ( s.contains(":") ){
+                return IPv6Address.valueOfMapped(s);
+            } else {
+                return IPv4Address.valueOf(s);
+            }
+            
+        } else {
             return IPv6Address.valueOf( s );
         }
     }

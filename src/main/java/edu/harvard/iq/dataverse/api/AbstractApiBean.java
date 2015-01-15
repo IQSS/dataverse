@@ -223,9 +223,9 @@ public abstract class AbstractApiBean {
     }
     
     protected Response okResponse( JsonObjectBuilder bld ) {
-        return Response.ok(Util.jsonObject2prettyString( Json.createObjectBuilder()
+        return Response.ok( Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", bld).build() ))
+            .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
     }

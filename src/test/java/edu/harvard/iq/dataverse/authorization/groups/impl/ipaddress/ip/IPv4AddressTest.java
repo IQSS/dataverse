@@ -1,4 +1,4 @@
-package edu.harvard.iq.ip;
+package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import java.util.Arrays;

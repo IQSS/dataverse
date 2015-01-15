@@ -1,7 +1,7 @@
 /*
  *  (C) Michael Bar-Sinai
  */
-package edu.harvard.iq.ip;
+package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Range;
@@ -180,7 +180,7 @@ public class IPv6AddressTest {
     }
    }
    
-     @Test
+    @Test
     public void testInclusionBelow() {
         IPv6Range r = new IPv6Range( IPv6Address.valueOf("dd:2:2:2:2:2:2:2"),
                                      IPv6Address.valueOf("dd:a:a:a:a:a:a:a"));

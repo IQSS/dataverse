@@ -35,8 +35,7 @@ public class DataverseSession implements Serializable{
         }
         
         
-        if (FacesContext.getCurrentInstance() != null)
-        {
+        if (FacesContext.getCurrentInstance() != null) {
             user.setRequestMetadata( new UserRequestMetadata((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()) );
         }
         return user;
