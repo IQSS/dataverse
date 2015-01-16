@@ -139,7 +139,7 @@ public class PORFileReader  extends TabularDataFileReader{
     private String[] variableFormatTypeList;
     private String[] dateFormatList;
 
-
+    private Map<String,String> extendedLabels;
 
     // Constructor -----------------------------------------------------------//
 
@@ -159,11 +159,14 @@ public class PORFileReader  extends TabularDataFileReader{
         doubleNumberFormatter.setMaximumFractionDigits(340); // TODO: 340?? -- L.A. 4.0 beta
     }
     
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException{
+    public TabularDataIngest read(BufferedInputStream stream, File additionalData) throws IOException{
         dbgLog.fine("PORFileReader: read() start");
         
-        if (dataFile != null) {
-            throw new IOException ("this plugin does not support external raw data files");
+        if (additionalData != null) {
+            //throw new IOException ("this plugin does not support external raw data files");
+            dbgLog.fine("Using extended variable labels from file "+additionalData.getName());
+            
+            extendedLabels = createLabelMap(additionalData);
         }
         
         
@@ -240,8 +243,16 @@ public class PORFileReader  extends TabularDataFileReader{
             String varLabel = variableLabelMap.get(varName);
             if (varLabel != null && varLabel.length() > 255) {
                 varLabel = varLabel.substring(0, 255);
+            } 
+            // TODO: do we still need to enforce the 255 byte limit on 
+            // labels? is that enough to store whatever they have 
+            // in their POR files at ODUM?
+            // -- L.A. 4.0, beta11
+            if (extendedLabels != null && extendedLabels.get(varName) != null) {
+                dv.setLabel(extendedLabels.get(varName));
+            } else {
+                dv.setLabel(varLabel);
             }
-            dv.setLabel(varLabel);
             
             dv.setInvalidRanges(new ArrayList());
             dv.setSummaryStatistics( new ArrayList() );
@@ -1671,6 +1682,47 @@ public class PORFileReader  extends TabularDataFileReader{
             dbgLog.fine(StringUtils.join(datatable[i], "|"));
         }
     }    
+    
+    private Map<String,String> createLabelMap (File extendedLabelsFile) {
+        Map<String,String> varLabelMap = new HashMap<>();
+
+        // Simply open the text file supplied, and read the variable-lable                                                                   
+        // pairs supplied:                                                                                                                   
+
+        BufferedReader labelsFileReader = null;
+
+        try {
+            labelsFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(extendedLabelsFile)));
+
+            String inLine;
+
+            while ((inLine = labelsFileReader.readLine() ) != null) {
+                String[] valueTokens = inLine.split("\t", 2);
+
+                if (valueTokens[0] != null && !"".equals(valueTokens[0]) &&
+                    valueTokens[1] != null && !"".equals(valueTokens[1])) {
+
+                    valueTokens[1] = valueTokens[1].replaceAll("[\n\r]", "");
+                    varLabelMap.put(valueTokens[0], valueTokens[1]);
+                }
+            }
+
+        } catch (java.io.FileNotFoundException fnfex) {
+            dbgLog.warning("Ingest: could not open Extended Labels file");
+            dbgLog.warning(fnfex.getMessage());
+            return null;
+        } catch (IOException ioex) {
+            dbgLog.warning("Ingest: caught exception trying to process Labels File");
+            dbgLog.warning(ioex.getMessage());
+            return null;
+        } finally {
+            if (labelsFileReader != null) {
+                try {labelsFileReader.close();}catch(Exception x){};
+            }
+        }
+
+        return varLabelMap;
+    }
 
     
 }

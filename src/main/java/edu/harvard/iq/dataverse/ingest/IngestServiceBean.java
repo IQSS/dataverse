@@ -1180,6 +1180,7 @@ public class IngestServiceBean {
         }
 
         FileInputStream tempFileInputStream = null; 
+        File additionalData = null; 
         
         try {
             tempFileInputStream = new FileInputStream(new File(tempFileLocation));
@@ -1201,16 +1202,21 @@ public class IngestServiceBean {
         if (ingestRequest != null) {
             if (ingestRequest.getTextEncoding() != null 
                     && !ingestRequest.getTextEncoding().equals("") ) {
-                logger.info("Setting language encoding to "+ingestRequest.getTextEncoding());
+                logger.fine("Setting language encoding to "+ingestRequest.getTextEncoding());
                 ingestPlugin.setDataLanguageEncoding(ingestRequest.getTextEncoding());
             }
-        } else {
-            logger.info("ingest request is null");
-        }
+            if (ingestRequest.getLabelsFile() != null) {
+                additionalData = new File(ingestRequest.getLabelsFile());
+            }
+        } 
         
         TabularDataIngest tabDataIngest = null; 
         try {
-            tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), null);
+            if (additionalData != null) {
+                tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), additionalData);
+            } else {
+                tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), null);
+            }
         } catch (IOException ingestEx) {
             dataFile.SetIngestProblem();
             createIngestFailureReport(dataFile, ingestEx.getMessage());
@@ -1275,9 +1281,11 @@ public class IngestServiceBean {
                     produceSummaryStatistics(dataFile);
 
                     dataFile.setIngestDone();
-                    // delete the ingest request:
-                    dataFile.getIngestRequest().setDataFile(null);
-                    dataFile.setIngestRequest(null);
+                    // delete the ingest request, if exists:
+                    if (dataFile.getIngestRequest() != null) {
+                        dataFile.getIngestRequest().setDataFile(null);
+                        dataFile.setIngestRequest(null);
+                    }
                     dataFile = fileService.save(dataFile);
                     FacesMessage facesMessage = new FacesMessage("ingest done");
                     pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
