@@ -1,16 +1,10 @@
 #!/bin/bash
-# attempting to edit a draft for https://github.com/IQSS/dataverse/issues/773
 . scripts/search/export-keys
-FIRST_FINCH_ID=11
-GET_OUTPUT=`curl -s GET http://localhost:8080/api/datasets/$FIRST_FINCH_ID?key=$FINCHKEY`
-echo $GET_OUTPUT | jq .data > /tmp/old
+FIRST_FINCH_ID=126
+GET_VERSION_OUTPUT=`curl -s GET http://localhost:8080/api/datasets/$FIRST_FINCH_ID/versions/:draft?key=$FINCHKEY`
+echo $GET_VERSION_OUTPUT | jq .data > /tmp/old
 cp /tmp/old /tmp/new
-#sed -i -e "s/latestVersion/initialVersion/" /tmp/new # suggested at https://docs.google.com/a/harvard.edu/document/d/1aR6AoFvx-X5VklBXNdb5ERvXiZTROpfivnxqfCFwSEg/edit?usp=sharing
-#sed -i -e "s/FK2/FK2\//" /tmp/new # for https://github.com/IQSS/dataverse/issues/1147
-#sed -i -e "s/null//" /tmp/new # https://github.com/IQSS/dataverse/issues/1147
-# getting a NullPointerException here :(
-cp scripts/api/data/dataset-version.json /tmp/new # this json seems to work: https://github.com/IQSS/dataverse/issues/773#issuecomment-70163823
-# FIXME: Rather than using the static JSON above, how do we download JSON, update it (i.e. change the title), and then overwrite the draft version with the updated metatata (i.e. new title)? That's what this script is trying to do.
+sed -i -e "s/Darwin's Finches/Darwins Galápagos Finches/" /tmp/new
 EDIT_OUTPUT=`curl -s -H "Content-type:application/json" -X PUT -d @/tmp/new http://localhost:8080/api/datasets/$FIRST_FINCH_ID/versions/:draft?key=$FINCHKEY`
 echo $EDIT_OUTPUT
 echo $EDIT_OUTPUT | jq .
