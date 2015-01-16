@@ -27,7 +27,7 @@ Required Glassfish Versiion 4.1 is with weld v.2.2.4 module.
 - Download weld v.2.2.4 and copy in the modules folder::
 
 	$ wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.4.Final/weld-osgi-bundle-2.2.4.Final.jar
-	$ cp weld-osgi-bundle-2.2.4.Final.jar /
+	$ cp weld-osgi-bundle-2.2.4.Final.jar /usr/local/glassfish4/glassfish/modules/
 	$ service glassfish start
 
 - Verify Weld version::
