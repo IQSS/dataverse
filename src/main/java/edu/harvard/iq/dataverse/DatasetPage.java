@@ -1834,7 +1834,11 @@ public class DatasetPage implements java.io.Serializable {
         if (ingestLanguageEncoding != null) {
             if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
                 if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
-                    fileMetadataSelected.getDataFile().setIngestRequest(new IngestRequest());
+                    IngestRequest ingestRequest = new IngestRequest();
+                    ingestRequest.setDataFile(fileMetadataSelected.getDataFile());
+                    fileMetadataSelected.getDataFile().setIngestRequest(ingestRequest);
+                    
+                    
                 }
                 fileMetadataSelected.getDataFile().getIngestRequest().setTextEncoding(ingestLanguageEncoding);
             }
@@ -1850,7 +1854,9 @@ public class DatasetPage implements java.io.Serializable {
         if (savedLabelsTempFile != null) {
             if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
                 if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
-                    fileMetadataSelected.getDataFile().setIngestRequest(new IngestRequest());
+                    IngestRequest ingestRequest = new IngestRequest();
+                    ingestRequest.setDataFile(fileMetadataSelected.getDataFile());
+                    fileMetadataSelected.getDataFile().setIngestRequest(ingestRequest);
                 }
                 fileMetadataSelected.getDataFile().getIngestRequest().setLabelsFile(savedLabelsTempFile);
             }
