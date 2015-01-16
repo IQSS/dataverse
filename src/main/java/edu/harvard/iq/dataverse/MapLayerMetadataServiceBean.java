@@ -103,6 +103,8 @@ public class MapLayerMetadataServiceBean {
         
         if (permissionService.userOn(user, mapLayerMetadata.getDataFile().getOwner()).has(Permission.EditDataset)) { 
             em.remove(em.merge(mapLayerMetadata));
+
+            this.deleteOlderMapThumbnails(mapLayerMetadata);
             return true;
         }
         return false;
