@@ -61,6 +61,10 @@ public abstract class DvObject implements java.io.Serializable {
     @Column(nullable = false)
     private Timestamp modificationTime;
 
+    /**
+     * @todo Rename this to contentIndexTime (or something) to differentiate it
+     * from permissionIndexTime. Content Solr docs vs. permission Solr docs.
+     */
     private Timestamp indexTime;
 
     /**

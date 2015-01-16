@@ -198,7 +198,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        dvObjectService.updateIndexTime(dataverse);
+        dvObjectService.updateContentIndexTime(dataverse);
         return "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias();
 
     }
@@ -789,7 +789,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        dvObjectService.updateIndexTime(dataset);
+        dvObjectService.updateContentIndexTime(dataset);
 
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;

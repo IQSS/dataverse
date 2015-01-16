@@ -9,6 +9,8 @@ cp /tmp/old /tmp/new
 #sed -i -e "s/FK2/FK2\//" /tmp/new # for https://github.com/IQSS/dataverse/issues/1147
 #sed -i -e "s/null//" /tmp/new # https://github.com/IQSS/dataverse/issues/1147
 # getting a NullPointerException here :(
+cp scripts/api/data/dataset-version.json /tmp/new # this json seems to work: https://github.com/IQSS/dataverse/issues/773#issuecomment-70163823
+# FIXME: Rather than using the static JSON above, how do we download JSON, update it (i.e. change the title), and then overwrite the draft version with the updated metatata (i.e. new title)? That's what this script is trying to do.
 EDIT_OUTPUT=`curl -s -H "Content-type:application/json" -X PUT -d @/tmp/new http://localhost:8080/api/datasets/$FIRST_FINCH_ID/versions/:draft?key=$FINCHKEY`
 echo $EDIT_OUTPUT
 echo $EDIT_OUTPUT | jq .
