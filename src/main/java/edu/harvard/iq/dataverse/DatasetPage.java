@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -34,6 +35,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -660,7 +662,7 @@ public class DatasetPage implements java.io.Serializable {
         
         if (guestbookResponse.getDataFile() != null) {
             String fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId();
-            logger.info("Returning file download url: "+fileDownloadUrl);
+            logger.fine("Returning file download url: "+fileDownloadUrl);
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
             } catch (IOException ex) {
@@ -1744,19 +1746,64 @@ public class DatasetPage implements java.io.Serializable {
         ingestLanguageEncoding = ingestEncoding; 
     }
     
+    private String savedLabelsTempFile = null; 
+    
     public void handleLabelsFileUpload(FileUploadEvent event) {
         logger.fine("entering handleUpload method.");
         UploadedFile file = event.getFile();
+
         if (file != null) {
+            
+            
+            InputStream uploadStream = null; 
+            try {
+                uploadStream = file.getInputstream();
+            } catch (IOException ioex) {
+                logger.warning("the file " + file.getFileName() + " failed to upload!");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "upload failure", "the file " + file.getFileName() + " failed to upload!");
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                return;
+            }
+            
+            savedLabelsTempFile = saveTempFile(uploadStream);
+            
+            logger.fine(file.getFileName() + " is successfully uploaded.");
             FacesMessage message = new FacesMessage("Succesful", file.getFileName() + " is uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
-                        
-            logger.fine(file.getFileName() + " is successfully uploaded.");
         } 
         
         // process file (i.e., just save it in a temp location; for now):
     }
     
+    private String saveTempFile (InputStream input) {
+        if (input == null) {
+            return null; 
+        }
+        byte[] buffer = new byte[8192];
+        int bytesRead = 0;
+        File labelsFile = null; 
+        FileOutputStream output = null;
+        try {
+            labelsFile = File.createTempFile("tempIngestLabels.", ".txt");
+            output = new FileOutputStream(labelsFile);
+            while ((bytesRead = input.read(buffer)) > -1) {
+                output.write(buffer,0,bytesRead);
+            }
+        } catch (IOException ioex) {
+            if (input != null) {
+                try{input.close();}catch(IOException e){} 
+            }
+            if (output != null) {
+                try{output.close();}catch(IOException e){} 
+            }
+            return null; 
+        }
+     
+        if (labelsFile != null) {
+            return labelsFile.getAbsolutePath();
+        }
+        return null; 
+    }
     
     public void saveAdvancedOptions() {
         // DataFile Tags: 
@@ -1780,7 +1827,36 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // Use-as-the-thumbnail assignment (do nothing?)
+        // (it's already attached to the selected datafile)
         
+        // Language encoding for SPSS SAV (and, possibley, other tabular ingests:) 
+        
+        if (ingestLanguageEncoding != null) {
+            if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
+                if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
+                    fileMetadataSelected.getDataFile().setIngestRequest(new IngestRequest());
+                }
+                fileMetadataSelected.getDataFile().getIngestRequest().setTextEncoding(ingestLanguageEncoding);
+            }
+        }
+        ingestLanguageEncoding = null; 
+        
+        // Extra labels for SPSS POR (and, possibley, other tabular ingests:)
+        // (we are adding this parameter to the IngestRequest now, instead of back
+        // when it was uploaded. This is because we want the user to be able to 
+        // hit cancel and bail out, until they actually click 'save' in the 
+        // "advanced options" popup) -- L.A. 4.0 beta 11
+        
+        if (savedLabelsTempFile != null) {
+            if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
+                if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
+                    fileMetadataSelected.getDataFile().setIngestRequest(new IngestRequest());
+                }
+                fileMetadataSelected.getDataFile().getIngestRequest().setLabelsFile(savedLabelsTempFile);
+            }
+        }
+        savedLabelsTempFile = null; 
+         
         fileMetadataSelected = null; 
     }
     
@@ -1820,13 +1896,13 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void addFileCategory() {
-        logger.info("New category name: "+newCategoryName);
+        logger.fine("New category name: "+newCategoryName);
         
         if (fileMetadataSelected != null && newCategoryName != null) {
-            logger.info("Adding new category, for file "+fileMetadataSelected.getLabel());
+            logger.fine("Adding new category, for file "+fileMetadataSelected.getLabel());
             fileMetadataSelected.addCategoryByName(newCategoryName);
         } else {
-            logger.info("No FileMetadata selected, or no category specified!");
+            logger.fine("No FileMetadata selected, or no category specified!");
         }
         newCategoryName = null; 
         fileMetadataSelected = null; 

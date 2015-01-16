@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.io.IOException;
@@ -67,6 +68,9 @@ public class DataFile extends DvObject {
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<IngestReport> ingestReports;
+    
+    @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private IngestRequest ingestRequest;
     
     @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataFileTag> dataFileTags;
@@ -170,6 +174,14 @@ public class DataFile extends DvObject {
         }
 
         ingestReports.add(report);
+    }
+    
+    public IngestRequest getIngestRequest() {
+        return ingestRequest;
+    }
+    
+    public void setIngestRequest(IngestRequest ingestRequest) {
+        this.ingestRequest = ingestRequest;
     }
     
     public String getIngestReportMessage() {
