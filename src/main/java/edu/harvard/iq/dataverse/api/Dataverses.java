@@ -152,7 +152,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setAuthority(  failIfNull(json.getString("authority", null), "Authority cannot be null") );
             ds.setProtocol(   failIfNull(json.getString("protocol", null), "Protocol cannot be null") );
 
-            JsonObject jsonVersion = json.getJsonObject("initialVersion");
+            JsonObject jsonVersion = json.getJsonObject("datasetVersion");
             if ( jsonVersion == null) {
                 return errorResponse(Status.BAD_REQUEST, "Json POST data are missing initialVersion object.");
             }
