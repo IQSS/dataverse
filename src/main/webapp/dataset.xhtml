@@ -168,17 +168,28 @@
                                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
                                                         </p:commandLink>
                                                     </li>
-                                                   <li>
+                                                    <li>
                                                         <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_metadata()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                                         </p:commandLink>
                                                     </li>
-                                                    <li>
-                                                        <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissions']}" />
-                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                        </h:link>
+                                                    <li class="dropdown-submenu">
+                                                        <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                                    <h:outputText value="Dataset" />
+                                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                                </h:link> 
+                                                            </li>
+                                                            <li>
+                                                                <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
+                                                                    <h:outputText value="File" />
+                                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                                </h:link>                                                            
+                                                            </li>   
+                                                        </ul>                                                        
                                                     </li>
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
@@ -300,7 +311,7 @@
                                 </div>
                                 <div id="datasetVersionBlock" class="container-fluid">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <div class="row" >
+                                        <div class="form-group" >
                                             <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
@@ -471,7 +482,7 @@
                             </ui:fragment>
                             <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                                 <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
-                                                                                   (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
+                                                                  (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                     <!-- Upload -->
                                     <!--<p:message for="fileUpload" showDetail="true"/>-->
                                     <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
@@ -602,14 +613,14 @@
                                             </ui:fragment>
 
                                             <ui:remove>
-                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                 <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
-                                                <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->                                           
-                                                 |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a>
-                                                <!-- 
-                                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
-                                                -->
-                                            </ui:fragment>
+                                                <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                    <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
+                                                    <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->
+                                                    |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a>
+                                                    <!--
+                                                    <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                                                    -->
+                                                </ui:fragment>
                                             </ui:remove>
 
                                             <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
@@ -630,7 +641,7 @@
 
                                             <div>
                                                 <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
-                                                       <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" / -->
+                                                    <!-- TODO: do we need this label? L.A., beta 10 --><!-- h:outputText value="Categories: " styleClass="text-muted" / -->
                                                     <ui:repeat value="#{fileMetadata.categories}" var="cat">
                                                         <h:outputText value="#{cat.name}" styleClass="label label-info"/>
                                                         <h:outputText value=" "/>
@@ -650,10 +661,10 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData 
-                                                                     or 
-                                                                     (!(empty fileMetadata.id) and fileMetadata.dataFile.image) 
-                                                                     or 
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData
+                                                                     or
+                                                                     (!(empty fileMetadata.id) and fileMetadata.dataFile.image)
+                                                                     or
                                                                      ((empty fileMetadata.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
                                                                      or
                                                                      ((empty fileMetadata.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}">
@@ -674,43 +685,43 @@
                                                     <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle.explore}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
-                                            
+
                                             <!-- WorldMap explore option -->
                                             <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                  <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                                                <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
-                                                                                        
+
                                             <!-- ( NOT ACTIVE:  Needed for mapping tabular data when there are 2 options for Explore ) -->
                                             <!-- START: Explore dropdown for tabularData, ingestInProgress (?), or MapLayerMetadata -->
                                             <ui:remove>
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress or DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <div class="dropdown">
-                                                    <!-- explore button that toggles dropdown -->
-                                                    <button type="button" id="exploreDropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                        <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/>#{bundle.explore}<span class="caret"></span>
-                                                    </button>
-                                                    <!-- dropdown options -->
-                                                    <ul class="dropdown-menu pull-left" role="menu" style="text-align:left;">
-                                                        <!-- WorldMap explore option -->
-                                                        <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                            <li>
-                                                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']} WorldMap</a>
-                                                            </li>
-                                                        </ui:fragment>
-                                                       <!-- TwoRavens option -->
-                                                        <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
-                                                            <li>
-                                                                <a href="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}">#{bundle.explore} Two Ravens</a>                                                                
-                                                            </li>
-                                                        </ui:fragment>
-                                                    </ul>
-                                                </div>                                                                                            
-                                            </ui:fragment>
+                                                <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress or DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                    <div class="dropdown">
+                                                        <!-- explore button that toggles dropdown -->
+                                                        <button type="button" id="exploreDropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/>#{bundle.explore}<span class="caret"></span>
+                                                        </button>
+                                                        <!-- dropdown options -->
+                                                        <ul class="dropdown-menu pull-left" role="menu" style="text-align:left;">
+                                                            <!-- WorldMap explore option -->
+                                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                                <li>
+                                                                    <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']} WorldMap</a>
+                                                                </li>
+                                                            </ui:fragment>
+                                                            <!-- TwoRavens option -->
+                                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
+                                                                <li>
+                                                                    <a href="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}">#{bundle.explore} Two Ravens</a>
+                                                                </li>
+                                                            </ui:fragment>
+                                                        </ul>
+                                                    </div>
+                                                </ui:fragment>
                                             </ui:remove>
                                             <!-- END  EXPLORE dropdown -->
-                                            
+
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
                                                 <a href="#" class="imageThumbPreview h2" style="margin:0 .5em 0 0;vertical-align:middle;" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
                                                     <span class="glyphicon glyphicon-warning-sign text-danger" style="top:5px;"></span></a>
@@ -744,8 +755,6 @@
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download}
                                                 </p:commandLink>
                                             </ui:fragment>
-
-
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -761,19 +770,18 @@
                                                         <li role="presentation" class="divider"></li>
                                                         <li>
                                                             <ui:fragment rendered="#{!(DatasetPage.downloadPopupRequired)}">
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="#{bundle['file.downloadBtn.format.tab']}"/>
-                                                            </h:outputLink>
+                                                                <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
+                                                                    <h:outputText value="#{bundle['file.downloadBtn.format.tab']}"/>
+                                                                </h:outputLink>
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
                                                                 <p:commandLink id="downloadPopupButtonTab"
-                                                                    action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
-                                                                    update="@form,:messagePanel"
-                                                                    oncomplete="downloadPopup.show();">
-                                                                        #{bundle['file.downloadBtn.format.tab']}
+                                                                               action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
+                                                                               update="@form,:messagePanel"
+                                                                               oncomplete="downloadPopup.show();">
+                                                                    #{bundle['file.downloadBtn.format.tab']}
                                                                 </p:commandLink>
                                                             </ui:fragment>
-
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
@@ -794,11 +802,11 @@
                                                         </li>
                                                         <li>
                                                             <p:commandLink id="fileDowloadDataSubsetButton"
-                                                                     actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
-                                                                     update=":datasetForm:downloadDataSubsetPopup"
-                                                                     oncomplete="downloadDataSubsetPopup.show()"
-                                                                     value="Data Subset"
-                                                                     disabled="#{empty fileMetadata.dataFile.id}"/>
+                                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                                           update=":datasetForm:downloadDataSubsetPopup"
+                                                                           oncomplete="downloadDataSubsetPopup.show()"
+                                                                           value="Data Subset"
+                                                                           disabled="#{empty fileMetadata.dataFile.id}"/>
                                                         </li>
                                                         <li class="dropdown-submenu">
                                                             <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
@@ -818,18 +826,15 @@
                                                     </ul>
                                                 </div>
                                             </ui:fragment>
-
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputText id="txtInprogess" value="#{bundle['file.ingestInproGress']}" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
                                         </p:column>
                                     </p:dataTable>
-
                                 </p:tab>
 
-                                <p:tab  id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
-                                        rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}"
-                                        >
+                                <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
+                                       rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
@@ -845,9 +850,8 @@
                                         <ui:include src="metadataFragment.xhtml"/>
                                     </div>
                                 </p:tab>
-                                <p:tab id="licensingTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}" 
-                                       rendered="#{ !DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}"
-                                                                       >
+                                <p:tab id="licenseTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
+                                       rendered="#{ !DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
@@ -855,7 +859,7 @@
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon glyphicon-briefcase" style="margin-right:.3em;"/> #{bundle['file.dataFilesTab.terms.editLicensingBtn']}
+                                                <span class="glyphicon glyphicon-briefcase" style="margin-right:.3em;"/> #{bundle['file.dataFilesTab.terms.editLicenseBtn']}
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
@@ -863,39 +867,39 @@
                                     <div class="panel-group">
                                         <div class="panel panel-default" style="margin-bottom:1em;">
                                             <div data-toggle="collapse" data-target="#collapseLiscensingTOU" class="panel-heading text-info">
-                                                 #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']}<span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']}<span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
                                             </div>
                                             <div id="collapseLiscensingTOU" class="collapse in">
                                                 <div class="panel-body">
                                                     <div class="form-group">
-                                                        <label for="metadata_Licensing" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.title']}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing']}
+                                                        <label for="metadata_License" class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.title']}">
+                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.license']}
                                                             </a>
                                                         </label>
-                                                        <ui:fragment rendered ="#{empty DatasetPage.editMode}">
+                                                        <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                                             <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
                                                                 <div class="col-sm-9">
-                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.txt']}</p>
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']}</p>
                                                                 </div>
                                                                 <div class="col-sm-9">
-                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.txt.description']}</p>
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}</p>
                                                                 </div>
                                                             </ui:fragment>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered ="#{!empty DatasetPage.editMode }">
+                                                        <ui:fragment rendered="#{!empty DatasetPage.editMode }">
                                                             <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
-                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.CCO']}" itemValue="CC0" />
-                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.notCCO']}" itemValue="NONE" />
+                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.CCO']}" itemValue="CC0" />
+                                                                <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.notCCO']}" itemValue="NONE" />
                                                                 <p:ajax update=":datasetForm" />
                                                             </p:selectOneRadio>
                                                             <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.tip']}
+                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.tip']}
                                                                 <div class="col-sm-9">
-                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.select.description']}</p>
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.description']}</p>
                                                                 </div>
                                                                 <div class="col-sm-9">
-                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.licensing.txt']}</p>
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']}</p>
                                                                 </div>
                                                             </ui:fragment>
                                                         </ui:fragment>
@@ -907,14 +911,14 @@
                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                                                 </a>
                                                             </label>
-                                                            <ui:fragment rendered ="#{empty DatasetPage.editMode}">
+                                                            <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                                                 <div class="col-sm-9">
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.termsOfUse}"/>
+                                                                    <h:outputText value="#{DatasetPage.workingVersion.termsOfUse}"/>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
+                                                            <ui:fragment rendered="#{!empty DatasetPage.editMode}">
                                                                 <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUse}" rows="5" cols="60"  styleClass="form-control" />
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUse}" rows="5" cols="60" styleClass="form-control" />
                                                                 </div>
                                                             </ui:fragment>
                                                         </div>
@@ -930,123 +934,164 @@
                                                     </div>
                                                     <div id="additionalTOU" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTOU">
                                                         <div class="panel-body">
-                                                            <ui:fragment rendered ="#{empty DatasetPage.editMode}">
-                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.confidentialityDeclaration}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
-                                                            </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.confidentialityDeclaration}"/>
-                                                                </div>
-                                                                    </ui:fragment>
-                                                                <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.specialPermissions}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
-                                                            </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.specialPermissions}"/>
-                                                                </div>
-                                                                    </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.restrictions}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
-                                                            </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.restrictions}"/>
-                                                                </div>
-                                                                    </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.citationRequirements}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
-                                                            </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersioncitationRequirements}"/>
-                                                                </div>
-                                                                    </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.depositorRequirements}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
-                                                            </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.depositorRequirements}"/>
-                                                                </div>
-                                                                    </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.conditions}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
-                                                            </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.conditions}"/>
-                                                                </div>
-                                                                    </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.disclaimer}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
-                                                            </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.disclaimer}"/>
-                                                                </div>
-                                                                    </ui:fragment>
+                                                            <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.confidentialityDeclaration}">
+                                                                    <div class="form-group">
+                                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
+                                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
+                                                                            </a>
+                                                                        </label>
+                                                                        <div class="col-sm-9">
+                                                                            <h:outputText value="#{DatasetPage.workingVersion.confidentialityDeclaration}"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.specialPermissions}">
+                                                                    <div class="form-group">
+                                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}">
+                                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
+                                                                            </a>
+                                                                        </label>
+                                                                        <div class="col-sm-9">
+                                                                            <h:outputText value="#{DatasetPage.workingVersion.specialPermissions}"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.restrictions}">
+                                                                    <div class="form-group">
+                                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}">
+                                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
+                                                                            </a>
+                                                                        </label>
+                                                                        <div class="col-sm-9">
+                                                                            <h:outputText value="#{DatasetPage.workingVersion.restrictions}"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.citationRequirements}">
+                                                                    <div class="form-group">
+                                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}">
+                                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
+                                                                            </a>
+                                                                        </label>
+                                                                        <div class="col-sm-9">
+                                                                            <h:outputText value="#{DatasetPage.workingVersioncitationRequirements}"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.depositorRequirements}">
+                                                                    <div class="form-group">
+                                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}">
+                                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
+                                                                            </a>
+                                                                        </label>
+                                                                        <div class="col-sm-9">
+                                                                            <h:outputText value="#{DatasetPage.workingVersion.depositorRequirements}"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.conditions}">
+                                                                    <div class="form-group">
+                                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}">
+                                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
+                                                                            </a>
+                                                                        </label>
+                                                                        <div class="col-sm-9">
+                                                                            <h:outputText value="#{DatasetPage.workingVersion.conditions}"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.disclaimer}">
+                                                                    <div class="form-group">
+                                                                        <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}">
+                                                                                #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
+                                                                            </a>
+                                                                        </label>
+                                                                        <div class="col-sm-9">
+                                                                            <h:outputText value="#{DatasetPage.workingVersion.disclaimer}"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:fragment>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
-                                                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
-                                                                </a>
-                                                            </label>
-                                                                <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.confidentialityDeclaration}" rows="5" cols="60"  styleClass="form-control" />
+                                                            <ui:fragment rendered="#{!empty DatasetPage.editMode}">
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <p:inputTextarea value="#{DatasetPage.workingVersion.confidentialityDeclaration}" rows="5" cols="60" styleClass="form-control" />
+                                                                    </div>
                                                                 </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
-                                                                </a>
-                                                            </label>
-                                                                <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.specialPermissions}" rows="5" cols="60"  styleClass="form-control" />
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <p:inputTextarea value="#{DatasetPage.workingVersion.specialPermissions}" rows="5" cols="60" styleClass="form-control" />
+                                                                    </div>
                                                                 </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
-                                                                </a>
-                                                            </label>
-                                                                <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.restrictions}" rows="5" cols="60"  styleClass="form-control" />
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <p:inputTextarea value="#{DatasetPage.workingVersion.restrictions}" rows="5" cols="60" styleClass="form-control" />
+                                                                    </div>
                                                                 </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
-                                                                </a>
-                                                            </label>
-                                                                <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.citationRequirements}" rows="5" cols="60"  styleClass="form-control" />
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <p:inputTextarea value="#{DatasetPage.workingVersion.citationRequirements}" rows="5" cols="60" styleClass="form-control" />
+                                                                    </div>
                                                                 </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
-                                                                </a>
-                                                            </label>
-                                                                <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.depositorRequirements}" rows="5" cols="60"  styleClass="form-control" />
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <p:inputTextarea value="#{DatasetPage.workingVersion.depositorRequirements}" rows="5" cols="60" styleClass="form-control" />
+                                                                    </div>
                                                                 </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
-                                                                </a>
-                                                            </label>
-                                                                <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.conditions}" rows="5" cols="60"  styleClass="form-control" />
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <p:inputTextarea value="#{DatasetPage.workingVersion.conditions}" rows="5" cols="60" styleClass="form-control" />
+                                                                    </div>
                                                                 </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
-                                                                </a>
-                                                            </label>
-                                                                <div class="col-sm-9">
-                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.disclaimer}" rows="5" cols="60"  styleClass="form-control" />
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <p:inputTextarea value="#{DatasetPage.workingVersion.disclaimer}" rows="5" cols="60" styleClass="form-control" />
+                                                                    </div>
                                                                 </div>
                                                             </ui:fragment>
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1059,76 +1104,70 @@
                                             </div>
                                             <div id="collapseRestrictedFilesTOA" class="collapse in">
                                                 <div class="panel-body">
-                                                     <ui:fragment rendered ="#{empty DatasetPage.editMode}">
-                                                    <div class="form-group">
-                                                        <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
-                                                            </a>
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}</p>
+                                                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                                                        <div class="form-group">
+                                                            <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-
-                                                    <div class="form-group">
-                                                        <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                                            </a>
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            <h:outputText value ="#{DatasetPage.workingVersion.termsOfAccess}"/>
+                                                        <div class="form-group">
+                                                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}"/>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                       <div class="form-group">
-                                                        <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                                            </a>
-                                                        </label>
-
-                                                        <div class="col-sm-9">
-                                                            <h:outputText value ="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.dataset.fileAccessRequest}"/>
-                                                            <h:outputText value ="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
+                                                        <div class="form-group">
+                                                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.dataset.fileAccessRequest}"/>
+                                                                <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
+                                                            </div>
                                                         </div>
-
-                                                    </div>
                                                     </ui:fragment>
-                                                    <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
-                                                    <div class="form-group">
-                                                        <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
-                                                            </a>
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.tip']}</p>
+                                                    <ui:fragment rendered="#{!empty DatasetPage.editMode}">
+                                                        <div class="form-group">
+                                                            <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.tip']}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-
-                                                    <div class="form-group">
-                                                        <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                                            </a>
-                                                        </label>
-                                                        <div >
-                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfAccess}" rows="5" cols="60"  styleClass="form-control" />
+                                                        <div class="form-group">
+                                                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfAccess}" rows="5" styleClass="form-control" />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                       <div class="form-group">
-                                                        <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
-                                                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                                            </a>
-                                                        </label>
-
-                                                        <div class="col-sm-9">
-                                                             <p:selectBooleanCheckbox  id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{DatasetPage.dataset.fileAccessRequest}"/>
+                                                        <div class="form-group">
+                                                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{DatasetPage.dataset.fileAccessRequest}"/>
+                                                            </div>
                                                         </div>
-
-                                                    </div>
                                                     </ui:fragment>
                                                 </div>
                                             </div>
@@ -1142,105 +1181,140 @@
                                                 </div>
                                                 <div id="collapseTOA" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTOA">
                                                     <div class="panel-body">
-                                                        <ui:fragment rendered ="#{empty DatasetPage.editMode}">
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.dataAccessPlace}">
-                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
-                                                                </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.dataAccessPlace}"/>
+                                                        <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.dataAccessPlace}">
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <h:outputText value="#{DatasetPage.workingVersion.dataAccessPlace}"/>
+                                                                    </div>
                                                                 </div>
                                                             </ui:fragment>
-                                                             <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.originalArchive}">
-                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
-                                                                </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.originalArchive}"/>
+                                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.originalArchive}">
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <h:outputText value="#{DatasetPage.workingVersion.originalArchive}"/>
+                                                                    </div>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.availabilityStatus}">
-                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
-                                                                </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.availabilityStatus}"/>
+                                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.availabilityStatus}">
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <h:outputText value="#{DatasetPage.workingVersion.availabilityStatus}"/>
+                                                                    </div>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.contactForAccess}">
-                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
-                                                                </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.contactForAccess}"/>
+                                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.contactForAccess}">
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <h:outputText value="#{DatasetPage.workingVersion.contactForAccess}"/>
+                                                                    </div>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.sizeOfCollection}">
-                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
-                                                                </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.sizeOfCollection}"/>
+                                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.sizeOfCollection}">
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <h:outputText value="#{DatasetPage.workingVersion.sizeOfCollection}"/>
+                                                                    </div>
                                                                 </div>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered ="#{!empty DatasetPage.workingVersion.studyCompletion}">
-                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
-                                                                </label>
-                                                                <div class="col-sm-9"  >
-                                                                    <h:outputText value ="#{DatasetPage.workingVersion.studyCompletion}"/>
+                                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.studyCompletion}">
+                                                                <div class="form-group">
+                                                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}">
+                                                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
+                                                                        </a>
+                                                                    </label>
+                                                                    <div class="col-sm-9">
+                                                                        <h:outputText value="#{DatasetPage.workingVersion.studyCompletion}"/>
+                                                                    </div>
                                                                 </div>
                                                             </ui:fragment>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
-
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
-                                                                </a>
-                                                            </label>
-                                                            <div class="col-sm-9">
-                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.dataAccessPlace}" rows="5" cols="60"  styleClass="form-control" />
+                                                        <ui:fragment rendered="#{!empty DatasetPage.editMode}">
+                                                            <div class="form-group">
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
+                                                                    </a>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.dataAccessPlace}" rows="5" cols="60" styleClass="form-control" />
+                                                                </div>
                                                             </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
-                                                                </a>
-                                                            </label>
-                                                            <div class="col-sm-9">
-                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.originalArchive}" rows="5" cols="60"  styleClass="form-control" />
+                                                            <div class="form-group">
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
+                                                                    </a>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.originalArchive}" rows="5" cols="60" styleClass="form-control" />
+                                                                </div>
                                                             </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
-                                                                </a>
-                                                            </label>
-                                                            <div class="col-sm-9">
-                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.availabilityStatus}" rows="5" cols="60"  styleClass="form-control" />
+                                                            <div class="form-group">
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
+                                                                    </a>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.availabilityStatus}" rows="5" cols="60" styleClass="form-control" />
+                                                                </div>
                                                             </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
-                                                                </a>
-                                                            </label>
-                                                            <div class="col-sm-9">
-                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.contactForAccess}" rows="5" cols="60"  styleClass="form-control" />
+                                                            <div class="form-group">
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
+                                                                    </a>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.contactForAccess}" rows="5" cols="60" styleClass="form-control" />
+                                                                </div>
                                                             </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
-                                                                </a>
-                                                            </label>
-                                                            <div class="col-sm-9">
-                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.sizeOfCollection}" rows="5" cols="60"  styleClass="form-control" />
+                                                            <div class="form-group">
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
+                                                                    </a>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.sizeOfCollection}" rows="5" cols="60" styleClass="form-control" />
+                                                                </div>
                                                             </div>
-                                                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
-                                                                </a>
-                                                            </label>
-                                                            <div class="col-sm-9">
-                                                                <p:inputTextarea value="#{DatasetPage.workingVersion.studyCompletion}" rows="5" cols="60"  styleClass="form-control" />
+                                                            <div class="form-group">
+                                                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
+                                                                    </a>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <p:inputTextarea value="#{DatasetPage.workingVersion.studyCompletion}" rows="5" cols="60" styleClass="form-control" />
+                                                                </div>
                                                             </div>
                                                         </ui:fragment>
                                                     </div>
@@ -1250,73 +1324,71 @@
 
                                         <div class="panel panel-default" style="margin-bottom:1em;">
                                             <div data-toggle="collapse" data-target="#collapseGuestbook" class="panel-heading text-info">
-                                                 #{bundle['file.dataFilesTab.terms.list.guestbook']}<span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                                #{bundle['file.dataFilesTab.terms.list.guestbook']}<span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
                                             </div>
                                             <div id="collapseGuestbook" class="collapse in">
                                                 <div class="panel-body">
                                                     <div class="form-group">
-                                                       <ui:fragment rendered ="#{empty DatasetPage.editMode}">
-                                                           <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
+                                                        <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                                                            <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
+                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
+                                                                    </a>
+                                                                </label>
+                                                            </ui:fragment>
 
-                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
-                                                                </a>
-                                                            </label>
+                                                            <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
+
+                                                            <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
+                                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                                           action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
+                                                                           oncomplete="viewGuestbook.show()"
+                                                                           update=":datasetForm"
+                                                                           style="color:black;margin-right:0.5em;"/>
+
+                                                            <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
+                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.noSelected']}
+                                                                    </a>
+                                                                </label>
+                                                            </ui:fragment>
                                                         </ui:fragment>
+                                                        <ui:fragment rendered="#{!empty DatasetPage.editMode}">
+                                                            <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
+                                                                    </a>
+                                                                </label>
+                                                            </ui:fragment>
+                                                            <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
+                                                            <p:dataTable id="guestbookTable" value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
+                                                                         rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
+                                                                         rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}"  rowKey="#{guestbook}">
+                                                                <p:column selectionMode="single" rendered="true"
+                                                                          style="width:2%;text-align:center"/>
 
-                                                                <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
-
-                                                                <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
-                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                                               action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                                               oncomplete="viewGuestbook.show()"
-                                                                               update=":datasetForm"
-                                                                               style="color:black;margin-right:0.5em;"/>
-
-                                                        <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
-                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.noSelected']}
-                                                                </a>
-                                                            </label>
-                                                        </ui:fragment>
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered ="#{!empty DatasetPage.editMode}">
-                                                        <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-
-                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
-                                                                </a>
-                                                            </label>
-                                                        </ui:fragment>
-                                                        <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
-                                                        <p:dataTable id="guestbookTable" value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
-                                                                     rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
-                                                                     rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}"  rowKey="#{guestbook}">
-                                                            <p:column selectionMode="single" rendered="true"
-                                                                      style="width:2%;text-align:center"/>
-
-                                                            <p:column>
-                                                                <h:outputText value="#{guestbook.name} " />
-                                                            </p:column>
-                                                            <p:column>
-                                                                <p:commandLink styleClass="btn btn-default"
-                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                                               action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
-                                                                               oncomplete="viewGuestbook.show()"
-                                                                               update=":datasetForm"
-                                                                               style="color:black;margin-right:0.5em;"/>
-                                                            </p:column>
-                                                        </p:dataTable>
-                                                        <ui:fragment rendered="#{empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable']}
-                                                                </a>
-                                                            </label>
-                                                        </ui:fragment>
+                                                                <p:column>
+                                                                    <h:outputText value="#{guestbook.name} " />
+                                                                </p:column>
+                                                                <p:column>
+                                                                    <p:commandLink styleClass="btn btn-default"
+                                                                                   value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                                                   action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
+                                                                                   oncomplete="viewGuestbook.show()"
+                                                                                   update=":datasetForm"
+                                                                                   style="color:black;margin-right:0.5em;"/>
+                                                                </p:column>
+                                                            </p:dataTable>
+                                                            <ui:fragment rendered="#{empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.title']}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable']}
+                                                                    </a>
+                                                                </label>
+                                                            </ui:fragment>
                                                         </ui:fragment>
                                                     </div>
                                                 </div>
@@ -1325,7 +1397,6 @@
                                     </div>
                                     <p:dialog id="viewGuestbook" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
                                         <div class="form-horizontal">
-
                                             <div class="form-group">
                                                 <label for="select_DatasetTemplate" class="col-sm-3 control-label">
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</a>
@@ -1670,7 +1741,7 @@
                                         </a>
                                         <h:outputText id="selectedEncoding" value="Current selection: #{DatasetPage.ingestLanguageEncoding}"/>
                                     </label>
-                                    
+
                                     <div class="col-sm-8">
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:tieredMenu id="spssSavEncodingLanguage" style="width:200px">
@@ -1909,11 +1980,11 @@
                         <ui:fragment rendered="#{(DatasetPage.dataset.guestbook != null) and (!empty DatasetPage.dataset.guestbook.customQuestions)}">
                             <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
                                 <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='text'}">
-                                    <h:outputText value ="#{customQuestionResponse.customQuestion.questionString}"/>
+                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
                                     <h:inputText value="#{customQuestionResponse.response}"/>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
-                                    <h:outputText value ="#{customQuestionResponse.customQuestion.questionString}"/>
+                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
                                     <p:selectOneMenu value="#{customQuestionResponse.response}" >
                                         <f:selectItem itemLabel="Select" itemValue="" />
                                         <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
@@ -1925,8 +1996,8 @@
                         </p:commandButton>
                         <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
                     </p:dialog>
-                    
-                    <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup" 
+
+                    <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
                               rendered="#{empty DatasetPage.editMode}" modal="true">
                         <div class="form-inline clearfix" style="width:600px;">
                             <ui:include src="/subset/gui_subset.xhtml"/>
@@ -1936,15 +2007,15 @@
                     <p:dialog id="fileCategoriesPopup" style="max-width:80%;" header="#{bundle['file.editCategoriesDialog.header']}" widgetVar="fileCategoriesPopup" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"></span> #{bundle['file.editCategoriesDialog.tip']}</p>
                         <style type="text/css">
-                                    .form-group table.noBorders {width:100%;}
-                                    .form-group table.noBorders td {width:50%;}
-                                    .form-group table.noBorders td .form-control {width:100%;}
+                            .form-group table.noBorders {width:100%;}
+                            .form-group table.noBorders td {width:50%;}
+                            .form-group table.noBorders td .form-control {width:100%;}
                         </style>
                         <div class="form-inline clearfix" style="min-width:800px;">
                             <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
                                 <div class="form-group col-sm-12">
                                     <label for="fileCategoriesMenu" class="col-sm-3 control-label">
-                                         #{bundle['file.editCategoriesDialog.select']}
+                                        #{bundle['file.editCategoriesDialog.select']}
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
@@ -1957,7 +2028,7 @@
                                 </div>
                                 <div class="form-group col-sm-12">
                                     <label for="fileCategoryAddNew" class="col-sm-3 control-label">
-                                         #{bundle['file.editCategoriesDialog.add']}
+                                        #{bundle['file.editCategoriesDialog.add']}
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
