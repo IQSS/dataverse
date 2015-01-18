@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,8 +43,8 @@ public class UserRequestMetadata {
         
         if ( remoteAddressStr == null ) {
             remoteAddressStr = "0.0.0.0";
+            logger.log(Level.INFO, "Error parsing remote address: {0}. Setting address to undefined (0.0.0.0).", remoteAddressStr);
         }
-        logger.fine( "Parsing remote address: " + remoteAddressStr );
         ipAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
