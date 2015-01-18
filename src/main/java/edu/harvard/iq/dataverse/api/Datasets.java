@@ -267,7 +267,8 @@ public class Datasets extends AbstractApiBean {
             incomingVersion.setMinorVersionNumber(null);
             incomingVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
             incomingVersion.setDataset(ds);
-
+            incomingVersion.setCreateTime(null);
+            incomingVersion.setLastUpdateTime(null);
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = engineSvc.submit( updateDraft
                                                                 ? new UpdateDatasetVersionCommand(u, incomingVersion)

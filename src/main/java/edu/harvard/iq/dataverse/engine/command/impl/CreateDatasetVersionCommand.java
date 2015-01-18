@@ -16,7 +16,7 @@ import java.util.Date;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.AddDataset)
+@RequiredPermissions( Permission.AddDataset )
 public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     
     final DatasetVersion newVersion;
@@ -32,7 +32,7 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
-            throw new IllegalCommandException("Latests version is already a draft. Cannot add another draft", this);
+            throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
         }
         
         Timestamp now = new Timestamp(new Date().getTime());
