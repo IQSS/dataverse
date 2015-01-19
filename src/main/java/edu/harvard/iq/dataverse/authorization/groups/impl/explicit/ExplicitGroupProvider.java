@@ -32,4 +32,9 @@ public class ExplicitGroupProvider implements GroupProvider {
     public Set groupsFor(User u) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public Group get(String groupAlias) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

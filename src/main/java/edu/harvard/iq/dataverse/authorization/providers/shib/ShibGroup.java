@@ -2,11 +2,11 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class ShibGroup extends PersistedGroup {
+public class ShibGroup extends PersistedGlobalGroup {
 
     private Map<String, Pattern> headerMatches;
 

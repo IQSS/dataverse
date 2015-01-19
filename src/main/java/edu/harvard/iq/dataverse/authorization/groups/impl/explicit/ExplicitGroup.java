@@ -19,7 +19,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Transient;
 import javax.servlet.ServletRequest;
 
-// TODO extends persisted group?
+//  Cannot extend persisted group, the requirements for the uniqeness of the group alias are too strict.
 @Entity
 public class ExplicitGroup implements Group, java.io.Serializable {
     
@@ -84,7 +84,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
-    public String getName() {
+    public String getDisplayName() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

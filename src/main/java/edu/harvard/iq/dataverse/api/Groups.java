@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
@@ -29,8 +30,14 @@ public class Groups extends AbstractApiBean {
     public Response createIpGroups( JsonObject dto ){
         try {
             IpGroup grp = new JsonParser(null,null).parseIpGroup(dto);
+            
+            if ( grp.getPersistedGroupAlias()== null ) {
+                return errorResponse(Response.Status.BAD_REQUEST, "Must provide valid group alias");
+            }
+            grp.setProvider( groupSvc.getIpGroupProvider() );
+            
             grp = ipGroupsSvc.store(grp);
-            return createdResponse("/groups/ip/" + grp.getAlias(), json(grp) );
+            return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
         
         } catch ( Exception e ) {
             logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
@@ -58,7 +65,7 @@ public class Groups extends AbstractApiBean {
         if ( isNumeric(groupIdtf) ) {
             grp = ipGroupsSvc.get( Long.parseLong(groupIdtf) );
         } else {
-            grp = ipGroupsSvc.getByAlias(groupIdtf);
+            grp = ipGroupsSvc.getByGroupName(groupIdtf);
         }
         
         return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : okResponse(json(grp));
@@ -71,7 +78,7 @@ public class Groups extends AbstractApiBean {
         if ( isNumeric(groupIdtf) ) {
             grp = ipGroupsSvc.get( Long.parseLong(groupIdtf) );
         } else {
-            grp = ipGroupsSvc.getByAlias(groupIdtf);
+            grp = ipGroupsSvc.getByGroupName(groupIdtf);
         }
         
         if (grp == null) return notFound( "Group " + groupIdtf + " not found");

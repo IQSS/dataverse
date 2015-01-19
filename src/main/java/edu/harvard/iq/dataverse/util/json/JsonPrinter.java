@@ -91,9 +91,10 @@ public class JsonPrinter {
             rangeBld.add( Json.createArrayBuilder().add(r.getBottom().toString()).add(r.getTop().toString()) );
         }
         return jsonObjectBuilder()
-                .add("alias", grp.getAlias() )
+                .add("alias", grp.getPersistedGroupAlias() )
+                .add("identifier", grp.getIdentifier())
                 .add("id", grp.getId() )
-                .add("name", grp.getName() )
+                .add("name", grp.getDisplayName() )
                 .add("description", grp.getDescription() )
                 .add("ranges", rangeBld);
     }

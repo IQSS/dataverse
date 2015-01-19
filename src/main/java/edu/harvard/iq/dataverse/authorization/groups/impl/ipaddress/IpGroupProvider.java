@@ -3,28 +3,22 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  * Creates {@link IpGroup}s.
  * @author michael
  */
-@Stateless
 public class IpGroupProvider implements GroupProvider<IpGroup> {
     
-    @PersistenceContext()
-    private EntityManager em;
-    
-    @EJB
-    IpGroupsServiceBean ipGroupsService;
-    
+    private final IpGroupsServiceBean ipGroupsService;
+
+    public IpGroupProvider(IpGroupsServiceBean ipGroupsService) {
+        this.ipGroupsService = ipGroupsService;
+    }
     
     @Override
     public String getGroupProviderAlias() {
-        return "IpGroupProvider";
+        return "ip";
     }
 
     @Override
@@ -35,6 +29,11 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     @Override
     public Set<IpGroup> groupsFor(User u) {
         return ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress());
+    }
+
+    @Override
+    public IpGroup get(String groupAlias) {
+        return ipGroupsService.getByGroupName(groupAlias );
     }
 
     

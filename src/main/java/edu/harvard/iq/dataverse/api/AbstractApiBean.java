@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
@@ -98,6 +99,9 @@ public abstract class AbstractApiBean {
     
     @EJB
     protected IpGroupsServiceBean ipGroupsSvc;
+    
+    @EJB
+    protected GroupServiceBean groupSvc;
     
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;

@@ -2,23 +2,24 @@ package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 
 
 /**
  * An object that contains unbounded number of {@link RoleAssignee}s (e.g Users, other groups).
- * Implementors might want to look at {@link PersistedGroup} for a more convenient implementation.
+ * Implementors might want to look at {@link PersistedGlobalGroup} for a more convenient implementation.
  * 
  * @author michael
  */
 public interface Group extends RoleAssignee {
     
     public static final String IDENTIFIER_PREFIX = "&";
+    public static final String PATH_SEPARATOR = "/";
     
     /**
      * A unique identifier of this group within a Dataverse system installation.
      * @return unique id of this group
-     * @see #getName() 
+     * @see #getDisplayName() 
      */
     public String getAlias();
     
@@ -26,7 +27,7 @@ public interface Group extends RoleAssignee {
      * @return Name of the group (for display purposes)
      * @see #getAlias() 
      */
-    public String getName();
+    public String getDisplayName();
     
     /**
      * @return Description of this group

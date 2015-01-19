@@ -83,9 +83,9 @@ public class JsonParser {
         if ( obj.containsKey("id") ) {
             retVal.setId( Long.valueOf(obj.getString("id")) );
         }
-        retVal.setName( obj.getString("name",null) );
+        retVal.setDisplayName( obj.getString("name",null) );
         retVal.setDescription( obj.getString("description",null) );
-        retVal.setAlias( obj.getString("alias", null) );
+        retVal.setPersistedGroupAlias( obj.getString("alias", null) );
         
         JsonArray rangeArray = obj.getJsonArray("ranges");
         for ( JsonValue range : rangeArray ) {

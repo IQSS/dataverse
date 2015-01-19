@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
 import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
 import java.util.Set;
 
 /**
@@ -73,6 +74,11 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public Set groupsFor(User u) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Group get(String groupAlias) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
