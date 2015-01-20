@@ -85,6 +85,12 @@ public class EjbDataverseEngine {
     
     @EJB
     GuestbookResponseServiceBean responses;
+    
+        @EJB
+    DataverseLinkingServiceBean dvLinking;
+    
+    @EJB
+    DatasetLinkingServiceBean dsLinking;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -97,22 +103,22 @@ public class EjbDataverseEngine {
         // Check permissions - or throw an exception
         Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
         if (requiredMap == null) {
-            throw new RuntimeException("Command class " + aCommand.getClass() + " does not define required permissions. "
+            throw new RuntimeException("Command " + aCommand + " does not define required permissions. "
                     + "Please use the RequiredPermissions annotation.");
         }
 
         User user = aCommand.getUser();
 
-        Map<String, DvObject> affectedDataverses = aCommand.getAffectedDvObjects();
+        Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
 
         for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
             String dvName = pair.getKey();
-            if (!affectedDataverses.containsKey(dvName)) {
+            if (!affectedDvObjects.containsKey(dvName)) {
                 throw new RuntimeException("Command instance " + aCommand + " does not have a DvObject named '" + dvName + "'");
             }
-            DvObject dvo = affectedDataverses.get(dvName);
-
-            Set<Permission> granted = (dvo != null) ? permissionService.permissionsFor(user, dvo)
+            DvObject dvo = affectedDvObjects.get(dvName);
+            
+            Set<Permission> granted = (dvo != null) ? permissionService.permissionsForUser(user, dvo)
                     : EnumSet.allOf(Permission.class);
             Set<Permission> required = requiredMap.get(dvName);
             if (!granted.containsAll(required)) {
@@ -225,6 +231,16 @@ public class EjbDataverseEngine {
                 @Override
                 public GuestbookResponseServiceBean responses() {
                     return responses;
+                }
+                
+                @Override
+                public DataverseLinkingServiceBean dvLinking() {
+                    return dvLinking;
+                }
+                                
+                @Override
+                public DatasetLinkingServiceBean dsLinking() {
+                    return dsLinking;
                 }
                 @Override
                 public DataverseEngine engine() {

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +33,7 @@ public class RoleAssigneeServiceBean {
     @EJB
     GroupServiceBean groupSvc;
     
+    // TODO: Michael: this has to go. the ":" prefix is ambiguous. role assignee resolution process has to follow the class hierarchy.
     Map<String, RoleAssignee> predefinedRoleAssignees = new TreeMap<>();
     
     @PostConstruct

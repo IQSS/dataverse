@@ -28,7 +28,7 @@
                 </h:form>
             </ui:fragment>
             
-            <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.AuthenticatedUsers" />
+            <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
             <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                      or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
                 

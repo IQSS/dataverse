@@ -10,7 +10,9 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.groups.impl.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -37,7 +39,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.validation.constraints.NotNull;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -62,6 +63,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
     AuthenticationServiceBean authenticationService;
     @EJB
     EjbDataverseEngine commandEngine;
+    
+    @EJB 
+    GroupServiceBean groupService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -291,6 +295,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (roleAssigneeList.isEmpty()) {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
                 roleAssigneeList.add(au);
+            }
+            for ( Group g : groupService.findAllGroups() ) {
+                roleAssigneeList.add( g );
             }
         }
         List<RoleAssignee> returnList = new ArrayList();

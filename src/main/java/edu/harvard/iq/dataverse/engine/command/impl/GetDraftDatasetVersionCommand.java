@@ -8,14 +8,12 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import java.util.Collections;
 
 /**
  *
  * @author Naomi
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions( Permission.ViewUnpublishedDataset )
 public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
     private final Dataset ds;
 
@@ -26,14 +24,7 @@ public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersio
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        // @todo remove this if check (check is handled at constructor)
-        if (ctxt.permissions().on(ds).user(getUser()).has(Permission.EditDataset)) {
-            return ds.getEditVersion();
-        } else {
-            throw new PermissionException("User does not have permission to view draft version",
-                    this, Collections.singleton(Permission.EditDataset), ds);
-        }
-            
+        return ds.getEditVersion();
     }
     
 }

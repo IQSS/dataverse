@@ -6,221 +6,105 @@
   "initialVersion": {
     "metadataBlocks": {
       "citation": {
+        "displayName": "Citation Metadata",
         "fields": [
           {
-            "value": "SampleTitle",
-            "typeClass": "primitive",
+            "typeName": "title",
             "multiple": false,
-            "typeName": "title"
-          },
-          {
-            "value": [
-              {
-                "authorAffiliation": {
-                  "value": "Top",
-                  "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "authorAffiliation"
-                },
-                "authorName": {
-                  "value": "Privileged, Pete",
-                  "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "authorName"
-                }
-              },
-              {
-                "authorAffiliation": {
-                  "value": "UMASS, Amherst",
-                  "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "authorAffiliation"
-                },
-                "authorName": {
-                  "value": "Borrator, Colla",
-                  "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "authorName"
-                }
-              }
-            ],
-            "typeClass": "compound",
-            "multiple": true,
-            "typeName": "author"
-          },
-          {
-            "value": "lorem ipsum dolor sit amet. That must've been pretty interesting, I bet.",
             "typeClass": "primitive",
-            "multiple": false,
-            "typeName": "dsDescription"
+            "value": "Dataset Two"
           },
           {
-            "value": [
-              "kw1",
-              "kw2",
-              "kw3"
-            ],
-            "typeClass": "primitive",
-            "multiple": true,
-            "typeName": "keyword"
-          },
-          {
-            "value": [
-              "Arts and Humanities",
-              "Astronomy and Astrophysics"
-            ],
-            "typeClass": "controlledVocabulary",
-            "multiple": true,
-            "typeName": "subject"
-          },
-          {
-            "value": "Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note.\r\nNOTANOTANOTANOTANnot.e\r\n",
-            "typeClass": "primitive",
-            "multiple": false,
-            "typeName": "notesText"
-          },
-          {
-            "typeName": "distributor",
+            "typeName": "author",
             "multiple": true,
             "typeClass": "compound",
             "value": [
               {
-                "distributorName": {
-                  "typeName": "distributorName",
+                "authorName": {
+                  "typeName": "authorName",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "Ibutor, Dist r."
+                  "value": "Gironi, Moe"
                 },
-                "distributorAffiliation": {
-                  "typeName": "distributorAffiliation",
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "Science Mag"
-                },
-                "distributorAbbreviation": {
-                  "typeName": "distributorAbbreviation",
-                  "multiple": false,
-                  "typeClass": "primitive",
-                  "value": "dst"
+                  "value": "Ciao Bella Ristorante"
                 }
               }
             ]
           },
           {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
             "value": [
               {
-                "otherIdAgency": {
-                  "value": "NSF",
-                  "typeClass": "primitive",
+                "datasetContactName": {
+                  "typeName": "datasetContactName",
                   "multiple": false,
-                  "typeName": "otherIdAgency"
+                  "typeClass": "primitive",
+                  "value": "Dataverse, Admin"
                 },
-                "otherIdValue": {
-                  "value": "NSF1234",
-                  "typeClass": "primitive",
+                "datasetContactAffiliation": {
+                  "typeName": "datasetContactAffiliation",
                   "multiple": false,
-                  "typeName": "otherIdValue"
+                  "typeClass": "primitive",
+                  "value": "Sample Datasets, ltd."
+                },
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "susie@sample.com"
                 }
               }
-            ],
-            "typeClass": "compound",
+            ]
+          },
+          {
+            "typeName": "dsDescription",
             "multiple": true,
-            "typeName": "otherId"
-          },
-          {
-            "value": "2014-02-03",
-            "typeClass": "primitive",
-            "multiple": false,
-            "typeName": "productionDate"
-          },
-          {
-            "value": "Cambridge, MA",
-            "typeClass": "primitive",
-            "multiple": false,
-            "typeName": "productionPlace"
-          },
-          {
+            "typeClass": "compound",
             "value": [
               {
-                "grantNumberAgency": {
-                  "value": "NIH",
-                  "typeClass": "primitive",
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
                   "multiple": false,
-                  "typeName": "grantNumberAgency"
+                  "typeClass": "primitive",
+                  "value": "Description field filled with descriptions. "
                 },
-                "grantNumberValue": {
-                  "value": "NIH1231245154",
-                  "typeClass": "primitive",
+                "dsDescriptionDate": {
+                  "typeName": "dsDescriptionDate",
                   "multiple": false,
-                  "typeName": "grantNumberValue"
-                }
-              },
-              {
-                "grantNumberAgency": {
-                  "value": "NIH",
                   "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "grantNumberAgency"
-                },
-                "grantNumberValue": {
-                  "value": "NIH99999999",
-                  "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "grantNumberValue"
+                  "value": "2015-01-19"
                 }
               }
-            ],
-            "typeClass": "compound",
-            "multiple": true,
-            "typeName": "grantNumber"
+            ]
           },
           {
-            "value": "Privileged, Pete",
-            "typeClass": "primitive",
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Chemistry"
+            ]
+          },
+          {
+            "typeName": "depositor",
             "multiple": false,
-            "typeName": "depositor"
+            "typeClass": "primitive",
+            "value": "D. Positor"
           },
           {
-            "value": "2014-05-20",
-            "typeClass": "primitive",
+            "typeName": "dateOfDeposit",
             "multiple": false,
-            "typeName": "dateOfDeposit"
-          },
-          {
-            "value": [
-              "Bananas"
-            ],
             "typeClass": "primitive",
-            "multiple": true,
-            "typeName": "relatedMaterial"
-          },
-          {
-            "value": [
-              "Data about bananas"
-            ],
-            "typeClass": "primitive",
-            "multiple": true,
-            "typeName": "relatedDatasets"
-          },
-          {
-            "value": [
-              "other ref other ref other ref ef ef"
-            ],
-            "typeClass": "primitive",
-            "multiple": true,
-            "typeName": "otherReferences"
+            "value": "2015-01-19"
           }
-        ],
-        "displayName": "Citation Metadata"
+        ]
       }
-    },
-    "createTime": "2014-05-20 11:52:55 -04",
-    "UNF": "UNF",
-    "id": 1,
-    "versionNumber": 1,
-    "versionMinorNumber": 0,
-    "versionState": "DRAFT",
-    "distributionDate": "Distribution Date",
-    "productionDate": "Production Date"
+    }
   }
 }

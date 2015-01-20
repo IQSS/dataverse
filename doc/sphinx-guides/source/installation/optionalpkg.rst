@@ -5,7 +5,7 @@ Optional Packages
 
 Apache Installation and Configuration
 --------------------------------------
-``Note: Apache is required when enforcing HTTPS>``
+``Note: Apache is required when enforcing HTTPS``
 
 - Install Apache HTTPD. ::
 

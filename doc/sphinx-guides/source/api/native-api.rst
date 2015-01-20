@@ -39,9 +39,16 @@ List all the role assignments at the given dataverse::
 
   GET http://$SERVER/api/dvs/$id/assignments?key=$apiKey
 
-Assigns a new role (passed in the ``POST`` part, for ``curl`` that's ``-d @$filename`` or ``-d "{\"userName\": \"uma\",\"roleId\": 11}"``). Roles and users can be identifier by id (``"userId"``) or by name (``"userName"`` and ``"roleAlias"``). ::
+Assigns a new role, based on the POSTed JSON. ::
 
   POST http://$SERVER/api/dvs/$id/assignments?key=$apiKey
+
+POSTed JSON example::
+
+  {
+    "assignee": "@uma",
+    "role": "curator"
+  }
 
 Delete the assignment whose id is ``$id``::
 
@@ -75,6 +82,8 @@ Publish the Dataverse pointed by ``identifier``, which can either by the dataver
 
 Datasets
 ~~~~~~~~
+
+**Note** Creation of new datasets is done by ``POST``ing them onto dataverses. See dataverse section.
 
 **Note** In all commands below, dataset versions can be referred to as:
 
@@ -233,6 +242,10 @@ The body of the request should be either ``true`` or ``false``. Content type has
 Deletes an authentication provider from the system. The command succeeds even if there is no such provider, as the postcondition holds: there is no provider by that id after the command returns. ::
 
   DELETE http://$SERVER/api/s/authenticationProviders/$id/
+
+List all global roles in the system. ::
+
+    GET http://$SERVER/api/s/roles
 
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 

@@ -4,7 +4,9 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.groups.impl.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -21,7 +23,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -49,6 +51,9 @@ public class PermissionServiceBean {
     @PersistenceContext
     EntityManager em;
 
+    @EJB
+    GroupServiceBean groupService;
+    
     @Inject
     DataverseSession session;
 
@@ -105,7 +110,31 @@ public class PermissionServiceBean {
         return em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
                 .setParameter("definitionPointId", d.getId()).getResultList();
     }
+    
+    /**
+     * Returns the set of permission a user has over a dataverse object. 
+     * This method takes into consideration group memberships as well.
+     * @param u The user
+     * @param d The {@link DvObject} on which the user wants to operate
+     * @return the set of premissions {@code u} has over {@code d}.
+     */
+    public Set<Permission> permissionsForUser(User u, DvObject d) {
 
+        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
+        
+        // Add permissions specifically given to the user
+        permissions.addAll( permissionsFor(u,d) );
+        
+        // Add permissions gained form intallation-wide groups
+        for ( Group g : groupService.groupsFor(u) ) {
+            permissions.addAll( permissionsFor(g,d) );
+        }
+        
+        // TODO: query for groups defined over d
+        
+        return permissions;
+    }
+    
     public Set<Permission> permissionsFor(RoleAssignee ra, DvObject d) {
         // super user check
         // @todo for 4.0, we are allowing superusers all permissions
@@ -119,7 +148,7 @@ public class PermissionServiceBean {
         for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
             retVal.addAll(asmnt.getRole().permissions());
         }
-
+        
         return retVal;
     }
 
@@ -205,7 +234,7 @@ public class PermissionServiceBean {
      */
     public List<Dataverse> getDataversesUserHasPermissionOn(User user, Permission permission) {
         List<Dataverse> allDataverses = dataverseService.findAll();
-        List<Dataverse> dataversesUserHasPermissionOn = new ArrayList<>();
+        List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
         for (Dataverse dataverse : allDataverses) {
             if (userOn(user, dataverse).has(permission)) {
                 dataversesUserHasPermissionOn.add(dataverse);

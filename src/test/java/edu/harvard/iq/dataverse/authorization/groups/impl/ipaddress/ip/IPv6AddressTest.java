@@ -1,10 +1,5 @@
-/*
- *  (C) Michael Bar-Sinai
- */
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Address;
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Range;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
@@ -200,6 +195,12 @@ public class IPv6AddressTest {
         
     }
    }
+    
+    @Test
+    public void testNetworkInterfaceIgnore() {
+        assertEquals( IPv6Address.valueOf("fe80:0:0:0:0:0:0:1%1]]"),
+                      IPv6Address.valueOf("fe80:0:0:0:0:0:0:1"));
+    }
     
     public boolean above( long[] top, long[] addr ) {
         return top[0]>addr[0]

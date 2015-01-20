@@ -29,16 +29,4 @@ public class TestApi extends AbstractApiBean {
                 : okResponse(json(ra.getDisplayInfo()));
     }
     
-    @Path("ipgroups/inclusion/{ipAddress}")
-    @GET
-    public Response ipGroupsForIp( @PathParam("ipAddress") String ipAddress ) {
-        IpAddress addr = IpAddress.valueOf(ipAddress);
-        Set<IpGroup> groups = ipGroupsSvc.findAllIncludingIp(addr);
-        JsonArrayBuilder arrb = Json.createArrayBuilder();
-        
-        for ( IpGroup g : groups ) {
-            arrb.add( json(g) );
-        }
-        return okResponse( arrb );
-    }
 }

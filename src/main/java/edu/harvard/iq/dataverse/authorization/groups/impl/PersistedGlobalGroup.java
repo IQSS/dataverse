@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
-import edu.harvard.iq.dataverse.api.Groups;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.io.Serializable;
@@ -12,29 +11,38 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
 /**
- * Convenience class for implementing {@link Groups}.
+ * Convenience base class for implementing groups that apply to the entire Dataverse
+ * installation, and are persisted to the DB.
+ * 
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="PersistedGroup.findByAlias",
-                query="SELECT g FROM PersistedGroup g WHERE g.alias=:alias" )
+    @NamedQuery( name="PersistedGlobalGroup.persistedGroupAlias",
+                query="SELECT g FROM PersistedGlobalGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias" )
 })
 @Entity
-public abstract class PersistedGroup implements Group, Serializable {
+public abstract class PersistedGlobalGroup implements Group, Serializable {
     
     @Id
     @GeneratedValue
     private Long id;
     
+    /**
+     * A unique alias within the persisted group table. 
+     */
     @Column(unique = true)
-    private String alias;
-    private String name;
+    private String persistedGroupAlias;
+    private String displayName;
     private String description;
 
-    protected void setAlias(String alias) {
-        this.alias = alias;
+    public void setPersistedGroupAlias(String alias) {
+        this.persistedGroupAlias = alias;
     }
 
+    public String getPersistedGroupAlias() {
+        return persistedGroupAlias;
+    }
+    
     public Long getId() {
         return id;
     }
@@ -45,16 +53,16 @@ public abstract class PersistedGroup implements Group, Serializable {
     
     @Override
     public String getAlias() {
-        return alias;
+        return getGroupProvider().getGroupProviderAlias() + Group.PATH_SEPARATOR + persistedGroupAlias;
     }
 
-    protected void setName(String name) {
-        this.name = name;
+    public void setDisplayName(String name) {
+        this.displayName = name;
     }
     
     @Override
-    public String getName() {
-        return name;
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override
@@ -62,19 +70,18 @@ public abstract class PersistedGroup implements Group, Serializable {
         return description;
     }
 
-    protected void setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(name, null);
+        return new RoleAssigneeDisplayInfo(displayName, null);
     }
 
     @Override
     public String getIdentifier() {
         return Group.IDENTIFIER_PREFIX + getAlias();
     }
-    
     
 }

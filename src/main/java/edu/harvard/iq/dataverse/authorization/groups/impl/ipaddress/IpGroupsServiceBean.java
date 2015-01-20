@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -15,12 +17,15 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 /**
- *
+ * Provides CRUD tools to efficiently manage IP groups in a Java EE container.
+ * 
  * @author michael
  */
 @Named
 @Stateless
 public class IpGroupsServiceBean {
+    
+    private static final Logger logger = Logger.getLogger(IpGroupsServiceBean.class.getName());
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
@@ -30,8 +35,25 @@ public class IpGroupsServiceBean {
     
     public IpGroup store( IpGroup grp ) {
         if ( grp.getId() == null ) {
-            em.persist( grp );
-            return grp;
+            if ( grp.getPersistedGroupAlias() != null ) {
+                IpGroup existing = getByGroupName( grp.getPersistedGroupAlias() );
+                if ( existing == null ) {
+                    // new group
+                    em.persist( grp );
+                    return grp;
+                    
+                } else {
+                    logger.log(Level.INFO, "Updating ip group {0}", grp.getPersistedGroupAlias());
+                    existing.setDescription(grp.getDescription());
+                    existing.setDisplayName( grp.getDisplayName() );
+                    existing.setIpv4Ranges( grp.getIpv4Ranges() );
+                    existing.setIpv6Ranges( grp.getIpv6Ranges() );
+                    return em.merge(existing);
+                }
+            } else {
+                em.persist( grp );
+                return grp;
+            }
         } else {
             return em.merge(grp);
         }
@@ -41,10 +63,10 @@ public class IpGroupsServiceBean {
        return em.find( IpGroup.class, id);
     }
     
-    public IpGroup getByAlias( String alias ) {
+    public IpGroup getByGroupName( String alias ) {
         try {
-            return em.createNamedQuery("IpGroup.findByAlias", IpGroup.class)
-              .setParameter("alias", alias)
+            return em.createNamedQuery("IpGroup.findByPersistedGroupAlias", IpGroup.class)
+              .setParameter("persistedGroupAlias", alias)
               .getSingleResult();
         } catch ( NoResultException nre ) {
             return null;

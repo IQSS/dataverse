@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCom
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
@@ -137,6 +138,10 @@ public class DatasetPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     GuestbookResponseServiceBean guestbookServiceBean;
+    @EJB
+    DataverseLinkingServiceBean dvLinkingService;
+    @EJB
+    DatasetLinkingServiceBean dsLinkingService;
     @Inject
     DatasetVersionUI datasetVersionUI;
  
@@ -168,6 +173,82 @@ public class DatasetPage implements java.io.Serializable {
     private String authority = "";
     private String separator = "";
     private boolean acceptedTerms = false;
+    
+    private List<Dataverse> dataversesForLinking;
+    private Long linkingDataverseId;
+    private List<SelectItem> linkingDVSelectItems;
+    private Dataverse linkingDataverse;
+
+    public Dataverse getLinkingDataverse() {
+        return linkingDataverse;
+    }
+
+    public void setLinkingDataverse(Dataverse linkingDataverse) {
+        this.linkingDataverse = linkingDataverse;
+    }
+
+    public List<SelectItem> getLinkingDVSelectItems() {
+        return linkingDVSelectItems;
+    }
+
+    public void setLinkingDVSelectItems(List<SelectItem> linkingDVSelectItems) {
+        this.linkingDVSelectItems = linkingDVSelectItems;
+    }
+
+    public Long getLinkingDataverseId() {
+        System.out.print("in getter " + linkingDataverseId);
+        return linkingDataverseId;
+    }
+
+    public void setLinkingDataverseId(Long linkingDataverseId) {
+        System.out.print("in setter " + linkingDataverseId);
+        this.linkingDataverseId = linkingDataverseId;
+    }
+
+    public List<Dataverse> getDataversesForLinking() {
+        return dataversesForLinking;
+    }
+
+    public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
+        
+        this.dataversesForLinking = dataversesForLinking;
+    }
+
+    public void updateLinkableDataverses(){
+        dataversesForLinking = new ArrayList();
+        linkingDVSelectItems = new ArrayList();
+        List<Dataverse> testingDataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
+        for (Dataverse testDV: testingDataverses ){
+            Dataverse rootDV = dataverseService.findRootDataverse();
+            if(!testDV.equals(rootDV) && !testDV.equals(dataset.getOwner()) 
+                    && !testDV.getOwner().equals(dataset.getOwner()) 
+                    && !dataset.getOwner().equals(testDV) && testDV.isReleased()){
+                dataversesForLinking.add(testDV);
+                
+            } 
+        }
+        for (Dataverse removeLinked: dsLinkingService.findLinkingDataverses(dataset.getId())){
+            dataversesForLinking.remove(removeLinked);
+        }
+        for (Dataverse removeLinked: dvLinkingService.findLinkingDataverses(dataset.getOwner().getId())){
+            dataversesForLinking.remove(removeLinked);
+        }
+        
+        for(Dataverse selectDV : dataversesForLinking){
+            
+            linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
+        }
+        
+        if (!dataversesForLinking.isEmpty() && dataversesForLinking.size() == 1  && dataversesForLinking.get(0) != null){
+            linkingDataverse = dataversesForLinking.get(0);
+            linkingDataverseId = linkingDataverse.getId();
+        }
+    }
+    
+    public void updateSelectedLinkingDV(ValueChangeEvent event) {
+        linkingDataverseId = (Long) event.getNewValue();
+    }
+
 
     public boolean isAcceptedTerms() {
         return acceptedTerms;
@@ -941,6 +1022,36 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setSelectedFiles(List<FileMetadata> selectedFiles) {
         this.selectedFiles = selectedFiles;
+    }
+    
+        public String saveLinkedDataset(){
+        System.out.print("start of save action");
+        if (linkingDataverseId == null){
+           JsfHelper.addFlashMessage( "You must select a linking dataverse."); 
+           System.out.print("no linking dv...");
+           return "";
+        }  
+        linkingDataverse = dataverseService.find(linkingDataverseId);
+        LinkDatasetCommand cmd = new LinkDatasetCommand(session.getUser(), linkingDataverse, dataset );
+        try {
+            commandEngine.submit(cmd);          
+            JsfHelper.addFlashMessage( "This dataset is now linked to yours.");
+                    System.out.print("command seems to have worked");
+            //return "";
+
+        } catch (CommandException ex) {
+            String msg = "There was a problem linking this dataset to yours: " + ex;
+            System.out.print("in catch exception... " + ex);
+            logger.severe(msg);
+            /**
+             * @todo how do we get this message to show up in the GUI?
+             */
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetNotLinked", msg);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            //return "";
+
+        }
+        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
     
 
@@ -1834,7 +1945,11 @@ public class DatasetPage implements java.io.Serializable {
         if (ingestLanguageEncoding != null) {
             if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
                 if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
-                    fileMetadataSelected.getDataFile().setIngestRequest(new IngestRequest());
+                    IngestRequest ingestRequest = new IngestRequest();
+                    ingestRequest.setDataFile(fileMetadataSelected.getDataFile());
+                    fileMetadataSelected.getDataFile().setIngestRequest(ingestRequest);
+                    
+                    
                 }
                 fileMetadataSelected.getDataFile().getIngestRequest().setTextEncoding(ingestLanguageEncoding);
             }
@@ -1850,7 +1965,9 @@ public class DatasetPage implements java.io.Serializable {
         if (savedLabelsTempFile != null) {
             if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
                 if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
-                    fileMetadataSelected.getDataFile().setIngestRequest(new IngestRequest());
+                    IngestRequest ingestRequest = new IngestRequest();
+                    ingestRequest.setDataFile(fileMetadataSelected.getDataFile());
+                    fileMetadataSelected.getDataFile().setIngestRequest(ingestRequest);
                 }
                 fileMetadataSelected.getDataFile().getIngestRequest().setLabelsFile(savedLabelsTempFile);
             }

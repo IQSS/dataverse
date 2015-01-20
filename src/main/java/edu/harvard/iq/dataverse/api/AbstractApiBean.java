@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
@@ -97,7 +98,7 @@ public abstract class AbstractApiBean {
     protected PermissionServiceBean permissionSvc;
     
     @EJB
-    protected IpGroupsServiceBean ipGroupsSvc;
+    protected GroupServiceBean groupSvc;
     
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
@@ -200,9 +201,9 @@ public abstract class AbstractApiBean {
     }
     
     protected Response okResponse( JsonArrayBuilder bld ) {
-        return Response.ok(Util.jsonObject2prettyString( Json.createObjectBuilder()
+        return Response.ok(Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", bld).build() )).build();
+            .add("data", bld).build()).build();
     }
     
     protected Response okResponse(JsonArrayBuilder bld, Format format) {
