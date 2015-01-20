@@ -2,8 +2,11 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Creates {@link IpGroup}s.
@@ -11,6 +14,8 @@ import java.util.Set;
  */
 public class IpGroupProvider implements GroupProvider<IpGroup> {
     
+    private static final Logger logger = Logger.getLogger(IpGroupProvider.class.getCanonicalName());
+
     private final IpGroupsServiceBean ipGroupsService;
 
     public IpGroupProvider(IpGroupsServiceBean ipGroupsService) {
@@ -29,6 +34,11 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
 
     @Override
     public Set<IpGroup> groupsFor(User u) {
+        UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
+        if (userRequestMetadata == null) {
+            logger.info("In the groupsFor(User u) method, u.getRequestMetadata() was null for user \"" + u.getIdentifier() + "\". Returning empty set. See also https://github.com/IQSS/dataverse/issues/1354");
+            return Collections.EMPTY_SET;
+        }
         return updateProvider(ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress()));
     }
 
