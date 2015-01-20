@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -30,6 +31,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
 import javax.ejb.EJBException;
+import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.TransferEvent;
@@ -71,13 +73,84 @@ public class DataversePage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    DataverseLinkingServiceBean linkingService;
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
     private Long ownerId;
     private DualListModel<DatasetFieldType> facets;
     private DualListModel<Dataverse> featuredDataverses;
+    private List<Dataverse> dataversesForLinking;
+    private Long linkingDataverseId;
+    private List<SelectItem> linkingDVSelectItems;
+    private Dataverse linkingDataverse;
 
+    public Dataverse getLinkingDataverse() {
+        return linkingDataverse;
+    }
+
+    public void setLinkingDataverse(Dataverse linkingDataverse) {
+        this.linkingDataverse = linkingDataverse;
+    }
+
+    public List<SelectItem> getLinkingDVSelectItems() {
+        return linkingDVSelectItems;
+    }
+
+    public void setLinkingDVSelectItems(List<SelectItem> linkingDVSelectItems) {
+        this.linkingDVSelectItems = linkingDVSelectItems;
+    }
+
+    public Long getLinkingDataverseId() {
+        return linkingDataverseId;
+    }
+
+    public void setLinkingDataverseId(Long linkingDataverseId) {
+        this.linkingDataverseId = linkingDataverseId;
+    }
+
+    public List<Dataverse> getDataversesForLinking() {
+        return dataversesForLinking;
+    }
+
+    public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
+        
+        this.dataversesForLinking = dataversesForLinking;
+    }
+
+    public void updateLinkableDataverses(){
+        dataversesForLinking = new ArrayList();
+        linkingDVSelectItems = new ArrayList();
+        List<Dataverse> testingDataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
+        for (Dataverse testDV: testingDataverses ){
+            Dataverse rootDV = dataverseService.findRootDataverse();
+            if(!testDV.equals(rootDV) && !testDV.equals(dataverse) 
+                    && !testDV.getOwner().equals(dataverse) 
+                    && !dataverse.getOwner().equals(testDV) && testDV.isReleased()){
+                dataversesForLinking.add(testDV);
+            } 
+        }
+        for (Dataverse removeLinked: linkingService.findLinkingDataverses(dataverse.getId())){
+            System.out.print("remove from list " + removeLinked.getDisplayName());
+            dataversesForLinking.remove(removeLinked);
+        }
+        
+        for(Dataverse selectDV : dataversesForLinking){
+            linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
+        }
+        
+        if (!dataversesForLinking.isEmpty() && dataversesForLinking.size() == 1  && dataversesForLinking.get(0) != null){
+            linkingDataverse = dataversesForLinking.get(0);
+            linkingDataverseId = linkingDataverse.getId();
+            System.out.print("Only one " + linkingDataverse.getDisplayName());
+        }
+    }
+    
+    public void updateSelectedLinkingDV(ValueChangeEvent event) {
+        linkingDataverseId = (Long) event.getNewValue();
+    }
 //    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
     public Dataverse getDataverse() {
         return dataverse;
@@ -438,6 +511,10 @@ public class DataversePage implements java.io.Serializable {
         
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
+    
+    public void openLinkDataverse(){
+          List<Dataverse> dataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.AddDataset);
+    }
 
     public void cancel(ActionEvent e) {
         // reset values
@@ -490,6 +567,34 @@ public class DataversePage implements java.io.Serializable {
 
     public void setFeaturedDataverses(DualListModel<Dataverse> featuredDataverses) {
         this.featuredDataverses = featuredDataverses;
+    }
+    
+    public String saveLinkedDataverse(){
+        
+        if (linkingDataverseId == null){
+           System.out.print("linkingDataverse == null");
+           JsfHelper.addFlashMessage( "You must select a linking dataverse."); 
+           return "";
+        }  
+        linkingDataverse = dataverseService.find(linkingDataverseId);
+        LinkDataverseCommand cmd = new LinkDataverseCommand(session.getUser(), linkingDataverse, dataverse );
+        try {
+            commandEngine.submit(cmd);          
+            JsfHelper.addFlashMessage( "This dataverse is now linked to yours.");
+            //return "";
+             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+        } catch (CommandException ex) {
+            String msg = "There was a problem linking this dataverse to yours: " + ex;
+            System.out.print("in catch exception... " + ex);
+            logger.severe(msg);
+            /**
+             * @todo how do we get this message to show up in the GUI?
+             */
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotLinked", msg);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            //return "";
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+        }
     }
 
     public String releaseDataverse() {

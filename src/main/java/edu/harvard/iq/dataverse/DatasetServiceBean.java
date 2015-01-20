@@ -98,7 +98,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);        
         int index2 = globalId.indexOf(separator, index1 + 1);
         int index3 = 0;
-        if (index1 == -1) {
+        if (index1 == -1) {            
             throw new EJBException("Error parsing identifier: " + globalId + ". ':' not found in string");
         } else {
             protocol = globalId.substring(0, index1);

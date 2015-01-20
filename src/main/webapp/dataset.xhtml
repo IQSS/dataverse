@@ -303,6 +303,14 @@
                                             <div class="btn-group" role="group" style="margin-right:.3em;">
                                                 <button type="button" class="btn btn-default" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
                                                 <button type="button" class="btn btn-default" onclick="alert('Static button only for Linked Dataset development purposes.')" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Link Dataset to Your Dataverse"><span class="glyphicon glyphicon-link"/></button>
+                                                <ui:fragment rendered="#{dataverseSession.user.authenticated}">
+                                                    <p:commandLink styleClass="btn btn-default glyphicon glyphicon-link"  rendered="#{dataverseSession.user.authenticated}"                                                          
+                                                                   action="#{DatasetPage.updateLinkableDataverses()}"                                                          
+                                                                   oncomplete="PF('linkDatasetForm').show()"
+                                                                   update="linkDatasetForm"
+                                                                   style="color:black;margin-right:0.5em;"/>
+
+                                                </ui:fragment>
                                             </div>
                                         </div>
                                     </ui:fragment>
@@ -2032,6 +2040,32 @@
                         <p:commandButton id="fileCategoriesPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileCategoriesPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.addFileCategory()}"/>
                         <p:commandButton id="fileCategoriesPopupCancelButton" value="#{bundle.cancel}" onclick="fileCategoriesPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                     </p:dialog>
+                    <p:dialog id="linkDatasetForm" header="#{bundle['dataverse.link']}" widgetVar="linkDatasetForm"  style="min-width:500px;">
+                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
+                            <h:form>
+                                <h:selectOneMenu value="#{DatasetPage.linkingDataverseId}">
+                                    <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
+                                </h:selectOneMenu>
+                                <h:commandButton value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkedDataset}" />
+                            </h:form>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
+                        #{bundle['dataverse.link.no.choice']} #{DatasetPage.linkingDataverse.displayName}
+
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
+                        #{bundle['dataverse.link.no.linkable']}
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
+                        <p:commandButton id="hiddenLink"   onclick="linkDatasetForm.hide()" 
+                                         value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"/>
+                        </ui:fragment>
+                        <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()">
+                                           #{bundle['cancel']}
+                        </button>
+                        
+                    </p:dialog>
+
                 </h:form>
             </ui:define>
         </ui:composition>

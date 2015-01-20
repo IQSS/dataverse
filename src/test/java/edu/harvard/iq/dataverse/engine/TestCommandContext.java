@@ -104,6 +104,16 @@ public class TestCommandContext implements CommandContext {
 	public GuestbookResponseServiceBean responses() {
 		return null;
 	}
+ 
+        @Override
+	public DataverseLinkingServiceBean dvLinking() {
+		return null;
+	}
+        
+        @Override
+	public DatasetLinkingServiceBean dsLinking() {
+		return null;
+	}
         
 	@Override
         

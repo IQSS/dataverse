@@ -85,6 +85,12 @@ public class EjbDataverseEngine {
     
     @EJB
     GuestbookResponseServiceBean responses;
+    
+        @EJB
+    DataverseLinkingServiceBean dvLinking;
+    
+    @EJB
+    DatasetLinkingServiceBean dsLinking;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -225,6 +231,16 @@ public class EjbDataverseEngine {
                 @Override
                 public GuestbookResponseServiceBean responses() {
                     return responses;
+                }
+                
+                @Override
+                public DataverseLinkingServiceBean dvLinking() {
+                    return dvLinking;
+                }
+                                
+                @Override
+                public DatasetLinkingServiceBean dsLinking() {
+                    return dsLinking;
                 }
                 @Override
                 public DataverseEngine engine() {
