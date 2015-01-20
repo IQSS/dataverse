@@ -37,4 +37,9 @@ public class ExplicitGroupProvider implements GroupProvider {
     public Group get(String groupAlias) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public Set findAll() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

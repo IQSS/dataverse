@@ -59,6 +59,14 @@ public class GroupServiceBean {
         return groups;
     }
     
+    public Set<Group> findAllGroups() {
+        Set<Group> groups = new HashSet<>();
+        for ( GroupProvider gp : groupProviders.values() ) {
+            groups.addAll( gp.findAll() );
+        }
+        return groups;
+    }
+    
     private void addGroupProvider( GroupProvider gp ) {
         groupProviders.put( gp.getGroupProviderAlias(), gp );
     }

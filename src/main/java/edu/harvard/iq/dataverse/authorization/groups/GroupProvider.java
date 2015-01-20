@@ -29,4 +29,6 @@ public interface GroupProvider<T extends Group> {
     public Set<T> groupsFor( User u );
     
     public T get( String groupAlias );
+
+    public Set<T> findAll();
 }

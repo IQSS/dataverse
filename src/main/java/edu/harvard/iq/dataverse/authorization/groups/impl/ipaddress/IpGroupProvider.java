@@ -41,6 +41,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
         return setProvider(ipGroupsService.get(id));
     }
     
+    @Override
     public Set<IpGroup> findAll() {
         return updateProvider( new HashSet<>(ipGroupsService.findAll()));
     }

@@ -48,4 +48,9 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
                 : ( groupAlias.equals(AuthenticatedUsers.get().getDisplayName()) ? AuthenticatedUsers.get() : null );
     }
 
+    @Override
+    public Set<Group> findAll() {
+        return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
+    }
+
 }
