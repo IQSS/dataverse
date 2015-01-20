@@ -20,7 +20,6 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.core.Context;
 import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
