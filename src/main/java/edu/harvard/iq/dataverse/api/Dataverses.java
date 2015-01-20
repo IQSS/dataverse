@@ -427,28 +427,27 @@ public class Dataverses extends AbstractApiBean {
 	@DELETE
 	@Path("{identifier}/assignments/{id}")
 	public Response deleteAssignment( @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		RoleAssignment ra = em.find( RoleAssignment.class, assignmentId );
-		if ( ra != null ) {
-            try {
-                User actingUser = findUserOrDie(apiKey);
-                findDataverseOrDie(dvIdtf);
+        try {
+            User actingUser = findUserOrDie(apiKey);
+            findDataverseOrDie(dvIdtf);
+            RoleAssignment ra = em.find( RoleAssignment.class, assignmentId );
+            if ( ra != null ) {
                 execCommand( new RevokeRoleCommand(ra, actingUser), "revoking role");
                 return okResponse("Role " + ra.getRole().getName() 
                                             + " revoked for assignee " + ra.getAssigneeIdentifier()
                                             + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter) );
-            } catch (WrappedResponse ex) {
-                return ex.getResponse();
+            } else {
+                return errorResponse( Status.NOT_FOUND, "Role assignment " + assignmentId + " not found" );
             }
-		} else {
-			return errorResponse( Status.NOT_FOUND, "Role assignment " + assignmentId + " not found" );
-		}
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
 	}
 	
     @POST
     @Path("{identifier}/actions/:publish") 
     public Response publishDataverse( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
         try {
-
             Dataverse dv = findDataverseOrDie(dvIdtf);
             User u = findUserOrDie(apiKey);
             

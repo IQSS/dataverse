@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -25,6 +26,13 @@ import javax.ws.rs.PathParam;
 public class Groups extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Groups.class.getName());
     
+    private IpGroupProvider ipGroupPrv;
+    
+    @PostConstruct
+    void postConstruct() {
+        ipGroupPrv = groupSvc.getIpGroupProvider();
+    }
+    
     @POST
     @Path("ip")
     public Response createIpGroups( JsonObject dto ){
@@ -36,7 +44,7 @@ public class Groups extends AbstractApiBean {
             }
             grp.setProvider( groupSvc.getIpGroupProvider() );
             
-            grp = ipGroupsSvc.store(grp);
+            grp = ipGroupPrv.store(grp);
             return createdResponse("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
         
         } catch ( Exception e ) {
@@ -52,7 +60,7 @@ public class Groups extends AbstractApiBean {
     public Response listIpGroups() {
          
         JsonArrayBuilder arrBld = Json.createArrayBuilder();
-        for ( IpGroup g : ipGroupsSvc.findAll() ) {
+        for ( IpGroup g : ipGroupPrv.findAll() ) {
             arrBld.add( json(g) );
         }
         return okResponse( arrBld );
@@ -63,9 +71,9 @@ public class Groups extends AbstractApiBean {
     public Response getIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
         IpGroup grp;
         if ( isNumeric(groupIdtf) ) {
-            grp = ipGroupsSvc.get( Long.parseLong(groupIdtf) );
+            grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );
         } else {
-            grp = ipGroupsSvc.getByGroupName(groupIdtf);
+            grp = ipGroupPrv.get(groupIdtf);
         }
         
         return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : okResponse(json(grp));
@@ -76,15 +84,15 @@ public class Groups extends AbstractApiBean {
     public Response deleteIpGroup( @PathParam("groupIdtf") String groupIdtf ) {
         IpGroup grp;
         if ( isNumeric(groupIdtf) ) {
-            grp = ipGroupsSvc.get( Long.parseLong(groupIdtf) );
+            grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );
         } else {
-            grp = ipGroupsSvc.getByGroupName(groupIdtf);
+            grp = ipGroupPrv.get(groupIdtf);
         }
         
         if (grp == null) return notFound( "Group " + groupIdtf + " not found");
         
         try {
-            ipGroupsSvc.deleteGroup(grp);
+            ipGroupPrv.deleteGroup(grp);
             return okResponse("Group " + grp.getAlias() + " deleted.");
         } catch ( IllegalArgumentException ex ) {
             return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());

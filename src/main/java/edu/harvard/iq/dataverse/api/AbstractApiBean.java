@@ -98,9 +98,6 @@ public abstract class AbstractApiBean {
     protected PermissionServiceBean permissionSvc;
     
     @EJB
-    protected IpGroupsServiceBean ipGroupsSvc;
-    
-    @EJB
     protected GroupServiceBean groupSvc;
     
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -204,9 +201,9 @@ public abstract class AbstractApiBean {
     }
     
     protected Response okResponse( JsonArrayBuilder bld ) {
-        return Response.ok(Util.jsonObject2prettyString( Json.createObjectBuilder()
+        return Response.ok(Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", bld).build() )).build();
+            .add("data", bld).build()).build();
     }
     
     protected Response okResponse(JsonArrayBuilder bld, Format format) {

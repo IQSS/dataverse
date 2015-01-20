@@ -243,6 +243,10 @@ Deletes an authentication provider from the system. The command succeeds even if
 
   DELETE http://$SERVER/api/s/authenticationProviders/$id/
 
+List all global roles in the system. ::
+
+    GET http://$SERVER/api/s/roles
+
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/s/roles

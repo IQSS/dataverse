@@ -188,7 +188,7 @@ public class Admin extends AbstractApiBean {
                             ? "WARNING: no enabled authentication providers left." : ""));
     }
     
-  @DELETE
+    @DELETE
     @Path("authenticatedUsers/{identifier}/")
     public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
@@ -208,6 +208,17 @@ public class Admin extends AbstractApiBean {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+    
+    @Path("roles")
+    @GET
+    public Response listBuiltinRoles() {
+        try {
+            return okResponse( rolesToJson(rolesSvc.findBuiltinRoles()) );
+        } catch (Exception e) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+    
     
     @Path("superuser/{identifier}")
     @POST

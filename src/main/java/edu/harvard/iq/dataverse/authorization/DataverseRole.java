@@ -60,8 +60,8 @@ public class DataverseRole implements Serializable  {
 			int cmp = o1.getName().compareTo(o2.getName());
 			if ( cmp != 0 ) return cmp;
                         
-                        Long o1OwnerId = o1.getOwner() == null ? new Long(0) : o1.getOwner().getId();
-                        Long o2OwnerId = o2.getOwner() == null ? new Long(0) : o2.getOwner().getId();
+            Long o1OwnerId = o1.getOwner() == null ? 0l : o1.getOwner().getId();
+            Long o2OwnerId = o2.getOwner() == null ? 0l : o2.getOwner().getId();
 
 			return o1OwnerId.compareTo( o2OwnerId );
 		}
@@ -79,6 +79,7 @@ public class DataverseRole implements Serializable  {
     private Long id;
     
     @Pattern(regexp=".+", message="A Role must have a name.")
+    @Column( nullable = false )
     private String name;
     
     @Size(max = 255, message = "Description must be at most 255 characters.")
@@ -86,6 +87,7 @@ public class DataverseRole implements Serializable  {
     
     @Size(max = 16, message = "Alias must be at most 16 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "Alias cannot be empty. Valid characters are a-Z, 0-9, '_', and '-'.")
+    @Column( nullable = false )
     private String alias;
 	
 	/** Stores the permissions in a bit set.  */

@@ -99,6 +99,14 @@ public class JsonPrinter {
                 .add("ranges", rangeBld);
     }
     
+	public static JsonArrayBuilder rolesToJson( List<DataverseRole> role ) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        for ( DataverseRole r : role ) {
+            bld.add( json(r) );
+        }
+        return bld;
+    }
+    
 	public static JsonObjectBuilder json( DataverseRole role ) {
 		JsonObjectBuilder bld = jsonObjectBuilder()
 				.add("alias", role.getAlias()) 

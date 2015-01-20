@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -28,13 +29,40 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
 
     @Override
     public Set<IpGroup> groupsFor(User u) {
-        return ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress());
+        return updateProvider(ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress()));
     }
 
     @Override
     public IpGroup get(String groupAlias) {
-        return ipGroupsService.getByGroupName(groupAlias );
+        return setProvider(ipGroupsService.getByGroupName(groupAlias));
+    }
+    
+    public IpGroup get(Long id) {
+        return setProvider(ipGroupsService.get(id));
+    }
+    
+    public Set<IpGroup> findAll() {
+        return updateProvider( new HashSet<>(ipGroupsService.findAll()));
+    }
+    
+    private IpGroup setProvider( IpGroup g ) {
+        g.setProvider(this);
+        return g;
+    }
+    
+    private Set<IpGroup> updateProvider( Set<IpGroup> groups ) {
+        for ( IpGroup g : groups ) {
+            g.setProvider(this);
+        }
+        return groups;
+    }
+    
+    public IpGroup store(IpGroup grp) {
+        grp.setProvider(this);
+        return ipGroupsService.store(grp);
     }
 
-    
+    public void deleteGroup(IpGroup grp) {
+        ipGroupsService.deleteGroup(grp);
+    }
 }
