@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import org.junit.Test;
 public class JsonParserTest {
     
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    MockSettingsSvc settingsSvc = null;
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -85,7 +87,7 @@ public class JsonParserTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
-        sut = new JsonParser(datasetFieldTypeSvc, null);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
     }
     
     @Test 
@@ -257,6 +259,20 @@ public class JsonParserTest {
         }
         
         throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
+    }
+    
+    static class MockSettingsSvc extends SettingsServiceBean {
+        @Override
+        public String getValueForKey( Key key, String defaultValue ) {
+            if (key.equals(SettingsServiceBean.Key.Authority)) {
+                return "10.5072/FK2";
+            } else if (key.equals(SettingsServiceBean.Key.Protocol)) {
+                return "doi";
+            } else if( key.equals(SettingsServiceBean.Key.DoiSeparator)) {
+                return "/";
+            }
+             return null;
+        }
     }
     
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {

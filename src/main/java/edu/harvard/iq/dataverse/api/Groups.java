@@ -37,7 +37,7 @@ public class Groups extends AbstractApiBean {
     @Path("ip")
     public Response createIpGroups( JsonObject dto ){
         try {
-            IpGroup grp = new JsonParser(null,null).parseIpGroup(dto);
+           IpGroup grp = new JsonParser(null,null,null).parseIpGroup(dto);
             
             if ( grp.getPersistedGroupAlias()== null ) {
                 return errorResponse(Response.Status.BAD_REQUEST, "Must provide valid group alias");

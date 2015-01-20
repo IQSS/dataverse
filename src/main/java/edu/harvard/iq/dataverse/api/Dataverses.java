@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
@@ -36,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -63,6 +65,7 @@ import javax.ws.rs.core.Response.Status;
 @Stateless
 @Path("dvs")
 public class Dataverses extends AbstractApiBean {
+       
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
 
 	@POST
@@ -148,13 +151,11 @@ public class Dataverses extends AbstractApiBean {
             
             Dataset ds = new Dataset();
             ds.setOwner(owner);
-            ds.setIdentifier( failIfNull(json.getString("identifier", null), "Identifier cannot be null") );
-            ds.setAuthority(  failIfNull(json.getString("authority", null), "Authority cannot be null") );
-            ds.setProtocol(   failIfNull(json.getString("protocol", null), "Protocol cannot be null") );
-
-            JsonObject jsonVersion = json.getJsonObject("initialVersion");
+          
+         
+            JsonObject jsonVersion = json.getJsonObject("datasetVersion");
             if ( jsonVersion == null) {
-                return errorResponse(Status.BAD_REQUEST, "Json POST data are missing initialVersion object.");
+                return errorResponse(Status.BAD_REQUEST, "Json POST data are missing datasetVersion object.");
             }
             try {
                 try {
@@ -427,27 +428,28 @@ public class Dataverses extends AbstractApiBean {
 	@DELETE
 	@Path("{identifier}/assignments/{id}")
 	public Response deleteAssignment( @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-        try {
-            User actingUser = findUserOrDie(apiKey);
-            findDataverseOrDie(dvIdtf);
-            RoleAssignment ra = em.find( RoleAssignment.class, assignmentId );
-            if ( ra != null ) {
+		RoleAssignment ra = em.find( RoleAssignment.class, assignmentId );
+		if ( ra != null ) {
+            try {
+                User actingUser = findUserOrDie(apiKey);
+                findDataverseOrDie(dvIdtf);
                 execCommand( new RevokeRoleCommand(ra, actingUser), "revoking role");
                 return okResponse("Role " + ra.getRole().getName() 
                                             + " revoked for assignee " + ra.getAssigneeIdentifier()
                                             + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter) );
-            } else {
-                return errorResponse( Status.NOT_FOUND, "Role assignment " + assignmentId + " not found" );
+            } catch (WrappedResponse ex) {
+                return ex.getResponse();
             }
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
+		} else {
+			return errorResponse( Status.NOT_FOUND, "Role assignment " + assignmentId + " not found" );
+		}
 	}
 	
     @POST
     @Path("{identifier}/actions/:publish") 
     public Response publishDataverse( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
         try {
+
             Dataverse dv = findDataverseOrDie(dvIdtf);
             User u = findUserOrDie(apiKey);
             

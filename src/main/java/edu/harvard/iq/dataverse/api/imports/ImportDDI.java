@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
@@ -27,7 +28,6 @@ import javax.xml.stream.XMLStreamReader;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.xml.stream.XMLInputFactory;
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -114,7 +114,7 @@ public class ImportDDI {
         return datasetDTO;
     }
     
-     public void importDDI(String xmlToParse, DatasetVersion datasetVersion, DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService) {
+     public void importDDI(String xmlToParse, DatasetVersion datasetVersion, DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         DatasetDTO datasetDTO = this.initializeDataset();
         try {
             // Read docDescr and studyDesc into DTO objects.
@@ -126,7 +126,7 @@ public class ImportDDI {
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
             //and call parse Json to read it into a datasetVersion
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService).parseDatasetVersion(obj, datasetVersion);
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
         } catch (Exception e) {
             // EMK TODO: exception handling
             e.printStackTrace();
@@ -344,10 +344,10 @@ public class ImportDDI {
                 if (xmlr.getLocalName().equals("citation")) processCitation(xmlr, datasetDTO);
                 else if (xmlr.getLocalName().equals("stdyInfo")) processStdyInfo(xmlr, datasetDTO.getDatasetVersion());
                 else if (xmlr.getLocalName().equals("method")) processMethod(xmlr, datasetDTO.getDatasetVersion());
-                // EMK TODO: add back in these sections
-                /*
-                else if (xmlr.getLocalName().equals("dataAccs")) processDataAccs(xmlr, metadata);
-                else if (xmlr.getLocalName().equals("othrStdyMat")) processOthrStdyMat(xmlr, metadata);*/
+                
+                else if (xmlr.getLocalName().equals("dataAccs")) processDataAccs(xmlr, datasetDTO.getDatasetVersion()); /*
+                   // EMK TODO: add back in these sections
+             else if (xmlr.getLocalName().equals("othrStdyMat")) processOthrStdyMat(xmlr, metadata);*/
                 else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr, datasetDTO.getDatasetVersion());
                 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -761,7 +761,74 @@ public class ImportDDI {
             dvDTO.setVersionState(VersionState.RELEASED);
         } 
     }
-  
+    
+      private void processDataAccs(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("setAvail")) processSetAvail(xmlr,dvDTO);
+                else if (xmlr.getLocalName().equals("useStmt")) processUseStmt(xmlr,dvDTO);
+                else if (xmlr.getLocalName().equals("notes")) {
+                    String noteType = xmlr.getAttributeValue(null, "type");
+                    if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
+                       // Ignore Harvest Terms of Use, not relevant in Dataverse 4.0
+                       // because we are not presenting harvested data for download
+                    } else {
+                        processNotes( xmlr, dvDTO );
+                    }
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("dataAccs")) return;
+            }
+        }
+    }
+    
+    private void processSetAvail(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("accsPlac")) {
+                    dvDTO.setDataAccessPlace( parseText( xmlr, "accsPlac" ) );
+                } else if (xmlr.getLocalName().equals("origArch")) {
+                    dvDTO.setOriginalArchive( parseText( xmlr, "origArch" ) );
+                } else if (xmlr.getLocalName().equals("avlStatus")) {
+                    dvDTO.setAvailabilityStatus( parseText( xmlr, "avlStatus" ) );
+                } else if (xmlr.getLocalName().equals("collSize")) {                
+                    dvDTO.setSizeOfCollection(parseText( xmlr, "collSize" ) );
+                } else if (xmlr.getLocalName().equals("complete")) {
+                    dvDTO.setStudyCompletion( parseText( xmlr, "complete" ) );
+                } else if (xmlr.getLocalName().equals("notes")) {
+                    processNotes( xmlr, dvDTO );
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("setAvail")) return;
+            }
+        }
+    }
+
+    private void processUseStmt(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("confDec")) {
+                    dvDTO.setConfidentialityDeclaration( parseText( xmlr, "confDec" ) );
+                } else if (xmlr.getLocalName().equals("specPerm")) {
+                    dvDTO.setSpecialPermissions( parseText( xmlr, "specPerm" ) );
+                } else if (xmlr.getLocalName().equals("restrctn")) {
+                    dvDTO.setRestrictions( parseText( xmlr, "restrctn" ) );
+                } else if (xmlr.getLocalName().equals("contact")) {
+                    dvDTO.setContactForAccess( parseText( xmlr, "contact" ) );
+                } else if (xmlr.getLocalName().equals("citReq")) {
+                    dvDTO.setCitationRequirements( parseText( xmlr, "citReq" ) );
+                } else if (xmlr.getLocalName().equals("deposReq")) {
+                    dvDTO.setDepositorRequirements( parseText( xmlr, "deposReq" ) );
+                } else if (xmlr.getLocalName().equals("conditions")) {
+                    dvDTO.setConditions( parseText( xmlr, "conditions" ) );
+                } else if (xmlr.getLocalName().equals("disclaimer")) {
+                    dvDTO.setDisclaimer( parseText( xmlr, "disclaimer" ) );
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("useStmt")) return;
+            }
+        }
+    }
    /**
     * Separate the versionNumber into two parts - before the first '.' 
     * is the versionNumber, and after is the minorVersionNumber.

@@ -18,12 +18,12 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.Set;
 import java.util.logging.Level;
@@ -56,13 +56,27 @@ public class BatchImport extends AbstractApiBean {
     DatasetFieldServiceBean datasetfieldService;
     @EJB
     MetadataBlockServiceBean metadataBlockService;
+    @EJB
+    SettingsServiceBean settingsService;
     
       
     @GET
     @Path("migrate/{identifier}")
     public Response migrate(@QueryParam("path") String fileDir, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+        return doImport(fileDir, parentIdtf, apiKey, ImportType.MIGRATION);
+    }
+    
+    @GET 
+    @Path("import/{identifier}")
+    public Response batchImport(@QueryParam("path") String fileDir, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+        return doImport(fileDir, parentIdtf, apiKey, ImportType.NEW);
+    }
+    
+   
+    
+    private Response doImport(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
         JsonArrayBuilder status = Json.createArrayBuilder();
-        ImportType importType = ImportType.MIGRATION;
+        
         User u = findUserByApiToken(apiKey);
         if (u == null) {
             return badApiKey(apiKey);
@@ -94,7 +108,7 @@ public class BatchImport extends AbstractApiBean {
             e.printStackTrace();
             return this.errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
         }
-        return this.okResponse(status);
+        return this.okResponse(status); 
     }
     
     private JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType)throws ImportException {
@@ -141,7 +155,7 @@ public class BatchImport extends AbstractApiBean {
                      //and call parse Json to read it into a dataset
         // TODO: add more information in Http Response
         try {
-            Dataset ds = new JsonParser(datasetFieldSvc, metadataBlockService).parseDataset(obj);
+            Dataset ds = new JsonParser(datasetFieldSvc, metadataBlockService, settingsService).parseDataset(obj);
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
