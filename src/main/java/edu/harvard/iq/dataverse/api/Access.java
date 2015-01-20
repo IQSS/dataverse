@@ -377,6 +377,8 @@ public class Access extends AbstractApiBean {
             imageThumbFileName = ImageThumbConverter.generatePDFThumb(df.getFileSystemLocation().toString(), 48);
         } else if (df != null && df.isImage()) {
             imageThumbFileName = ImageThumbConverter.generateImageThumb(df.getFileSystemLocation().toString(), 48);
+        } else if ("application/zipped-shapefile".equalsIgnoreCase(df.getContentType())) {
+            imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(df.getFileSystemLocation().toString(), 48);
         } else {
             imageThumbFileName = getWebappImageResource (DEFAULT_FILE_ICON);
         }
@@ -447,7 +449,10 @@ public class Access extends AbstractApiBean {
                 } else if (dataFile.isImage()) {
                     imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
                     break;
-                } 
+                } else if ("application/zipped-shapefile".equalsIgnoreCase(dataFile.getContentType())) {
+                    imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(dataFile.getFileSystemLocation().toString(), 48);
+                    break;
+                }
             }
         }
         
@@ -518,6 +523,9 @@ public class Access extends AbstractApiBean {
                 // share it between this and the "dataset card image" method 
                 // above. 
                 // -- L.A. 4.0 beta 8
+                // TODO: 
+                // yeah, this needs to be cleaned up - after 4.0. 
+                // -- L.A. 4.0 beta 11
                 if (releasedVersion != null) {
                     for (FileMetadata fileMetadata : releasedVersion.getFileMetadatas()) {
                         DataFile dataFile = fileMetadata.getDataFile();
@@ -526,6 +534,9 @@ public class Access extends AbstractApiBean {
                             break;
                         } else if (dataFile.isImage()) {
                             imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                            break;
+                        } else if ("application/zipped-shapefile".equalsIgnoreCase(dataFile.getContentType())) {
+                            imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(dataFile.getFileSystemLocation().toString(), 48);
                             break;
                         }
                     }
