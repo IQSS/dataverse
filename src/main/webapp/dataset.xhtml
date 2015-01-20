@@ -2028,7 +2028,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="fileCategoryAddNew" type="text" value="#{DatasetPage.newCategoryName}" placeholder="#{bundle['file.editCategoriesDialog.newName']}"/>
+                                            <p:inputText id="fileCategoryAddNew" onkeypress="if (event.keyCode == 13) {return false;}" type="text" value="#{DatasetPage.newCategoryName}" placeholder="#{bundle['file.editCategoriesDialog.newName']}"/>
                                             <p:message for="fileCategoryAddNew" display="text" />
                                         </p:panelGrid>
                                     </div>
