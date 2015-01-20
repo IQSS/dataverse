@@ -28,7 +28,7 @@ public class Groups extends AbstractApiBean {
     @Path("ip")
     public Response createIpGroups( JsonObject dto ){
         try {
-            IpGroup grp = new JsonParser(null,null).parseIpGroup(dto);
+            IpGroup grp = new JsonParser(null,null,null).parseIpGroup(dto);
             grp = ipGroupsSvc.store(grp);
             return createdResponse("/groups/ip/" + grp.getAlias(), json(grp) );
         

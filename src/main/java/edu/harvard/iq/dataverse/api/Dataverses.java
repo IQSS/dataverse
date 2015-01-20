@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
@@ -36,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -63,6 +65,7 @@ import javax.ws.rs.core.Response.Status;
 @Stateless
 @Path("dvs")
 public class Dataverses extends AbstractApiBean {
+       
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
 
 	@POST
@@ -148,13 +151,11 @@ public class Dataverses extends AbstractApiBean {
             
             Dataset ds = new Dataset();
             ds.setOwner(owner);
-            ds.setIdentifier( failIfNull(json.getString("identifier", null), "Identifier cannot be null") );
-            ds.setAuthority(  failIfNull(json.getString("authority", null), "Authority cannot be null") );
-            ds.setProtocol(   failIfNull(json.getString("protocol", null), "Protocol cannot be null") );
-
+          
+         
             JsonObject jsonVersion = json.getJsonObject("datasetVersion");
             if ( jsonVersion == null) {
-                return errorResponse(Status.BAD_REQUEST, "Json POST data are missing initialVersion object.");
+                return errorResponse(Status.BAD_REQUEST, "Json POST data are missing datasetVersion object.");
             }
             try {
                 try {
