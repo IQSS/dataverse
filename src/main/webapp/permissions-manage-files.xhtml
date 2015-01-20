@@ -4,7 +4,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <h:head>
@@ -85,11 +85,11 @@
                                     <p class="help-block clearfix">#{bundle['dataverse.permissionsFiles.files.description']}</p>
                                     <p:dataTable id="restrictedFiles" var="fileEntry" value="#{manageFilePermissionsPage.fileMap.entrySet().toArray()}">
                                         <p:column width="35%"  headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}">
-                                            <h:outputText value="#{!empty fileEntry.key ? fileEntry.key.label :'All Files'}"/>
+                                            <h:outputText value="#{fileEntry.key.displayName}"/>
                                         </p:column>
                                         <p:column width="25%"  headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.roleAssignees']}">
                                             <p:commandLink id="viewUserGroups"
-                                                           actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByFile(fileEntry.key.dataFile, fileEntry.value)}"
+                                                           actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByFile(fileEntry.key, fileEntry.value)}"
                                                            update=":#{p:component('viewRemoveDialog')}"
                                                            oncomplete="viewRemoveWidget.show();">
                                                 <h:outputText value="#{fileEntry.value.size()} #{fileEntry.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.files.roleAssignee'] : bundle['dataverse.permissionsFiles.files.roleAssignees']}"/>
@@ -165,11 +165,12 @@
                                     </div>                           
                                 </div>
                                 <div>
-                                    <p:dataTable id="restrictedFilesForAccess" var="fmd" value="#{manageFilePermissionsPage.dataset.latestVersion.fileMetadatas}"
-                                                 selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{fmd.id}">
+                                    <o:importFunctions type="java.util.Arrays" />
+                                    <p:dataTable id="restrictedFilesForAccess" var="file" value="#{Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray())}"
+                                                 selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}">
                                         <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                         <p:column  headerText="#{bundle['dataverse.permissionsFiles.assignDialog.file']}">
-                                            <h:outputText value="#{fmd.label}"/>
+                                            <h:outputText value="#{file.displayName}"/>
                                         </p:column>                                            
                                     </p:dataTable>                                    
                                 </div>
