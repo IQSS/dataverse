@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,16 +118,18 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         fileMap.clear();
                
         for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
-            Set<RoleAssignment> ras = roleService.rolesAssignments(fmd.getDataFile());
+            // we get the direct role assignments assigned to the file
+            List<RoleAssignment> ras = roleService.directRoleAssignments(fmd.getDataFile());
             List raList = new ArrayList<>(ras.size());
             for (RoleAssignment ra : ras) {
                 // for files, only show role assignments which can download
                 if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                    raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo(), fmd.getDataFile()));                   
+                    raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));                   
                     addFileToRoleAssignee(ra, fmd);                    
-                }
-            fileMap.put(fmd, raList);    
-            }            
+                }    
+            }  
+            
+            fileMap.put(fmd, raList);
         }        
     }
     private void addFileToRoleAssignee(RoleAssignment assignment, FileMetadata fmd) {
@@ -136,12 +139,22 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             assignments = new ArrayList();
             roleAssigneeMap.put(ra, assignments);
         }
-        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo(), fmd.getDataFile()));
+        
+        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo()));
     }
 
     /* 
      main page
      */
+    
+    public void removeRoleAssignments(List<RoleAssignmentRow> raRows) {
+        for (RoleAssignmentRow raRow : raRows) {
+            revokeRole(raRow.getId());
+        }
+        
+        initMaps();
+        showUserGroupMessages();
+    }    
 
 
     /*
@@ -336,12 +349,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         private final RoleAssigneeDisplayInfo assigneeDisplayInfo;
         private final RoleAssignment ra;
-        private final DvObject assignmentPoint;
 
-        public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf, DvObject assignmentPoint) {
+        public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf) {
             this.ra = anRa;
             this.assigneeDisplayInfo = disInf;
-            this.assignmentPoint = assignmentPoint;
         }        
         
 
@@ -353,13 +364,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return ra.getDefinitionPoint();
         }
 
-        public DvObject getAssignmentPoint() {
-            return assignmentPoint;
-        }
         
         public Long getId() {
             return ra.getId();
         }
-
+    
     }   
 }
