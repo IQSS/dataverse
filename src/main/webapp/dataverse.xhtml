@@ -435,7 +435,13 @@
                                 <div style="float:right;">
                                     <div class="btn-group" role="group" style="margin-right:.3em;">
                                         <button type="button" class="btn btn-default" onclick="contactForm.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
-                                        <button type="button" class="btn btn-default" onclick="alert('Static button only for Linked Dataverse development purposes.')" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Link Dataset to Your Dataverse"><span class="glyphicon glyphicon-link"/></button>
+                                        <ui:fragment rendered="#{dataverseSession.user.authenticated}">
+                                            <p:commandLink styleClass="btn btn-default glyphicon glyphicon-link"  rendered="#{dataverseSession.user.authenticated}"                                                          
+                                                           action="#{DataversePage.updateLinkableDataverses()}"                                                          
+                                                           oncomplete="PF('linkDataverseForm').show()"
+                                                           update=":linkDataverseForm"
+                                                           style="color:black;margin-right:0.5em;"/>
+                                        </ui:fragment>
                                     </div>
                                 </div>
                             </ui:fragment>
@@ -606,6 +612,33 @@
                         <ui:param name="showSearch" value="true"/>
                     </ui:include>
                 </ui:fragment>
+                <!-- Dialog Link Dataverse Form -->
+                <p:dialog id="linkDataverseForm" header="#{bundle['dataverse.link']}" widgetVar="linkDataverseForm"  style="min-width:500px;">
+                    <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() > 1}">
+
+                        <h:form>
+                            <h:selectOneMenu value="#{DataversePage.linkingDataverseId}">
+
+                                <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
+                            </h:selectOneMenu>
+                            <h:commandButton value=value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
+                        </h:form>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
+                        #{bundle['dataverse.link.no.choice']} #{DataversePage.linkingDataverse.displayName}
+                    </ui:fragment>
+                    <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
+                        #{bundle['dataverse.link.no.linkable']}
+                    </ui:fragment>
+                    <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() > 0}">
+                        <p:commandButton onclick="linkDataverseForm.hide()"
+                                         action="#{DataversePage.saveLinkedDataverse}" 
+                                         value="#{bundle['dataverse.link.save']}"/>
+                    </ui:fragment>
+                    <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
+                                           #{bundle['cancel']}
+                    </button>
+                </p:dialog>
 
                 <!-- Dialog Contact Form -->
                 <p:dialog header="#{bundle['dataverse.contact']}" widgetVar="contactForm" modal="true" style="min-width:500px;">
@@ -650,7 +683,7 @@
                         </div>
 
                         <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}"/>
-                        <button type="button" class="btn btn-default" onclick="contactForm.hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                        <button type="button" class="btn btn-default" onclick="contactForm.hide()" value="#{bundle.cancel}"/>
                     </h:form>
                 </p:dialog>
 
