@@ -1698,13 +1698,7 @@
 
                     <ui:include src="rolesAndPermissionsFragment.xhtml"/>
 
-                    <p:dialog id="fileAdvancedOptions" header="#{bundle['file.advancedOptions']}" widgetVar="fileAdvancedOptions" modal="true">
-                        <p class="help-block"></p>
-                        <style type="text/css">
-                            .form-group table.noBorders {width:100%;}
-                            .form-group table.noBorders td {width:50%;}
-                            .form-group table.noBorders td .form-control {width:100%;}
-                        </style>
+                    <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu" header="#{bundle['file.advancedOptions']}" widgetVar="fileAdvancedOptions" modal="true">
                         <div class="form-inline clearfix" style="min-width:800px;">
                             <!-- "Data File Tags" - these only apply to tabular files, for now: -->
                             <ui:fragment rendered="#{DatasetPage.fileMetadataSelected.dataFile.tabularData}">
