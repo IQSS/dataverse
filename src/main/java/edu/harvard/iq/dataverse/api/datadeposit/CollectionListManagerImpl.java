@@ -5,11 +5,13 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 import org.apache.abdera.Abdera;
 import org.apache.abdera.i18n.iri.IRI;
@@ -34,11 +36,13 @@ public class CollectionListManagerImpl implements CollectionListManager {
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
+    
+    private HttpServletRequest request;
 
     @Override
     public Feed listCollectionContents(IRI iri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordAuthException, SwordError {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-
+        user.setRequestMetadata( new UserRequestMetadata(request) );
         urlManager.processUrl(iri.toString());
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
@@ -95,4 +99,8 @@ public class CollectionListManagerImpl implements CollectionListManager {
         }
     }
 
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+    }
+    
 }

@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
@@ -16,8 +17,10 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.core.Context;
 import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
@@ -51,13 +54,16 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     SwordServiceBean swordService;
     @EJB
     SettingsServiceBean settingsService;
-
+    
+    private HttpServletRequest request;
+    
     @Override
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
 
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-
+        user.setRequestMetadata( new UserRequestMetadata(request) );
+        
         urlManager.processUrl(collectionUri);
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
@@ -179,6 +185,10 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine target type or identifier from URL: " + collectionUri);
         }
+    }
+    
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
     }
 
 }
