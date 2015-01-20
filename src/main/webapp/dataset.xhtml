@@ -983,7 +983,7 @@
                                                                             </a>
                                                                         </label>
                                                                         <div class="col-sm-9">
-                                                                            <h:outputText value="#{DatasetPage.workingVersioncitationRequirements}"/>
+                                                                            <h:outputText value="#{DatasetPage.workingVersion.citationRequirements}"/>
                                                                         </div>
                                                                     </div>
                                                                 </ui:fragment>
@@ -2042,28 +2042,25 @@
                     </p:dialog>
                     <p:dialog id="linkDatasetForm" header="#{bundle['dataverse.link']}" widgetVar="linkDatasetForm"  style="min-width:500px;">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                            <h:form>
-                                <h:selectOneMenu value="#{DatasetPage.linkingDataverseId}">
-                                    <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
-                                </h:selectOneMenu>
-                                <h:commandButton value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkedDataset}" />
-                            </h:form>
+                            <p:selectOneMenu value="#{DatasetPage.linkingDataverseId}">
+                                <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
+                            </p:selectOneMenu>
+                            <p:commandButton value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkedDataset}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
                         #{bundle['dataverse.link.no.choice']} #{DatasetPage.linkingDataverse.displayName}
+                            <p:commandButton id="hiddenLink"   onclick="linkDatasetForm.hide()" 
+                                             value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"/>
 
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
                         #{bundle['dataverse.link.no.linkable']}
                         </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
-                        <p:commandButton id="hiddenLink"   onclick="linkDatasetForm.hide()" 
-                                         value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"/>
-                        </ui:fragment>
+
                         <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()">
                                            #{bundle['cancel']}
                         </button>
-                        
+
                     </p:dialog>
 
                 </h:form>
