@@ -54,13 +54,28 @@ JVM Options
 dataverse.fqdn
 --------------
 
-If you need to change the hostname the Data Deposit API returns:
+If the Dataverse server has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.foobar.edu, and not the less appealling server-123.socsci.foobar.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc. 
+
+To change the option on the command line: 
 
 ``asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
 
 ``asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
 The ``dataverse.fqdn`` JVM option also affects the password reset feature.
+
+| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e., 
+| ``https://{dataverse.fqdn}/``
+| If that does not suit your setup, you can define an additional option - 
+
+dataverse.siteUrl
+-----------------
+
+| and specify the alternative protocol and port number. 
+| For example, configured in domain.xml:
+| ``<jvm-options>-Ddataverse.fqdn=dataverse.foobar.edu</jvm-options>``
+| ``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+
 
 dataverse.auth.password-reset-timeout-in-minutes
 ------------------------------------------------
