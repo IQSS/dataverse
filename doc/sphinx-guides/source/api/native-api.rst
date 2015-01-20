@@ -39,9 +39,16 @@ List all the role assignments at the given dataverse::
 
   GET http://$SERVER/api/dvs/$id/assignments?key=$apiKey
 
-Assigns a new role (passed in the ``POST`` part, for ``curl`` that's ``-d @$filename`` or ``-d "{\"userName\": \"uma\",\"roleId\": 11}"``). Roles and users can be identifier by id (``"userId"``) or by name (``"userName"`` and ``"roleAlias"``). ::
+Assigns a new role, based on the POSTed JSON. ::
 
   POST http://$SERVER/api/dvs/$id/assignments?key=$apiKey
+
+POSTed JSON example::
+
+  {
+    "assignee": "@uma",
+    "role": "curator"
+  }
 
 Delete the assignment whose id is ``$id``::
 
