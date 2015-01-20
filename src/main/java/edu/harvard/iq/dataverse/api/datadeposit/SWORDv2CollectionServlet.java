@@ -24,12 +24,20 @@ public class SWORDv2CollectionServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        setRequest(req);
         this.api.get(req, resp);
+        setRequest(null);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        setRequest(req);
         this.api.post(req, resp);
+        setRequest(null);
     }
-
+    
+    private void setRequest( HttpServletRequest r ) {
+        collectionDepositManagerImpl.setRequest(r);
+        collectionListManagerImpl.setRequest(r);
+    }
 }
