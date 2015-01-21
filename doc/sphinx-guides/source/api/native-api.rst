@@ -71,7 +71,7 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
   POST http://$SERVER/api/dvs/$id/metadatablocks/:isRoot?key=$apiKey
 
-Create a new dataset in dataverse ``id``. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of ``"initialVersion"``. The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT`` regardless of the content of the json object. Example json can be found at ``data/dataset-create-new.json``. ::
+Create a new dataset in dataverse ``id``. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of ``"datasetVersion"``. The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT`` regardless of the content of the json object. Example json can be found at ``data/dataset-create-new.json``. ::
 
   POST http://$SERVER/api/dvs/$id/datasets/?key=$apiKey
 

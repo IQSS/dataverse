@@ -3,7 +3,7 @@
   "identifier": "dataset-two",
   "persistentUrl": "http://dx.doi.org/10.5072/FK2/9",
   "protocol": "chadham-house-rule",
-  "initialVersion": {
+  "datasetVersion": {
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",

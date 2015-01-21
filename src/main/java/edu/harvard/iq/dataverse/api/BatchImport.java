@@ -202,7 +202,7 @@ public class BatchImport extends AbstractApiBean {
 
         } catch (JsonParseException ex) {
             logger.log(Level.INFO, "Error parsing dataset version from Json", ex);
-            throw new ImportException("Error parsing initialVersion: " + ex.getMessage(), ex);
+            throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
         } catch (WrappedResponse e) {
             throw new ImportException("Error executing command" + e.getMessage(), e.getCause());
         }

@@ -175,10 +175,10 @@ public class Dataverses extends AbstractApiBean {
                 }
             } catch (JsonParseException ex) {
                 logger.log( Level.INFO, "Error parsing dataset version from Json", ex);
-                return errorResponse(Status.BAD_REQUEST, "Error parsing initialVersion: " + ex.getMessage() );
+                return errorResponse(Status.BAD_REQUEST, "Error parsing datasetVersion: " + ex.getMessage() );
             } catch ( Exception e ) {
                 logger.log( Level.WARNING, "Error parsing dataset version from Json", e);
-                return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing initialVersion: " + e.getMessage() );
+                return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing datasetVersion: " + e.getMessage() );
             }
             
             Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u), "Creating Dataset");
