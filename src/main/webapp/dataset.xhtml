@@ -49,9 +49,13 @@
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
                             deleteFileConfirmation.show();
-                        } else {
-                            $('button[id$="datasetSave"]').trigger('click');
                         }
+                    }
+                    
+                    function checkNewlyRestricted() {
+                        //todo: add logic to check if any file was newly restricted
+                        //and show access popup
+                        $('button[id$="datasetSave"]').trigger('click');
                     }
 
                     function updateHiddenReason(textArea) {
@@ -467,7 +471,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;" rendered="#{DatasetPage.editMode == 'METADATA'}">
-                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkFilesSelected();" />
+                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();" />
                         <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -560,20 +564,41 @@
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
+                                    <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                        <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
+                                            <div class="btn-group" style="margin-right:1em;">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-lock" style="margin-right:.3em;"/> #{bundle['file.restrict']} <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <p:commandLink  update="filesTable" actionListener="#{DatasetPage.restrictFiles(true)}">
+                                                            <h:outputText value="#{bundle['file.restrict']}"/>
+                                                        </p:commandLink>
+                                                    </li>
+                                                    <li>
+                                                        <p:commandLink update="filesTable" actionListener="#{DatasetPage.restrictFiles(false)}">
+                                                            <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                                        </p:commandLink>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
+                                                <span class="glyphicon glyphicon-remove" style="margin-right:.3em;"/> #{bundle['file.delete']}
+                                            </p:commandLink>
+                                        </div>                                    
+                                    </ui:fragment>                                    
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" style="margin-top:1em;" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
                                                  rowIndexVar="rowNum"
                                                  selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable"
                                                  emptyMessage="#{bundle['file.notFound.tip']}">
-                                        <p:column headerText="#{bundle['file.delete.header']}" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                        <p:column selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
                                                   style="width:2%;text-align:center"/>
-                                        <p:column headerText="#{bundle['file.restricted.header']}" style="width:2%;text-align:center">
-                                            <p:selectBooleanCheckbox styleClass="metadata-blocks-default" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                                     value="#{fileMetadata.restricted}">
-                                            </p:selectBooleanCheckbox>    
-                                            <ui:fragment rendered="#{empty DatasetPage.editMode and fileMetadata.restricted}">
+                                        <p:column style="width:2%;text-align:center"> 
+                                            <ui:fragment rendered="#{fileMetadata.restricted}">
                                                 <span class="glyphicon glyphicon-lock"></span>
                                             </ui:fragment>
                                         </p:column>                                           
@@ -1567,7 +1592,7 @@
                         <ui:fragment rendered="#{DatasetPage.dataset.released}">
                             #{bundle['file.deleteFileDialog.failed.tip']}
                         </ui:fragment>
-                        <p:commandButton value="#{bundle.continue}" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.save()}">
+                        <p:commandButton value="#{bundle.continue}" update=":#{p:component('filesTable')}" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.deleteFiles()}">
                         </p:commandButton>
                         <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
@@ -1720,7 +1745,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkFilesSelected();" >
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();" >
                         </p:commandButton>
                         <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
