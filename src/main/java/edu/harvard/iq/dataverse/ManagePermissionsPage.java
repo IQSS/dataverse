@@ -119,10 +119,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject != null && dvObject.getId() != null) {
             Set<RoleAssignment> ras = roleService.rolesAssignments(dvObject);
             raList = new ArrayList<>(ras.size());
-            for (RoleAssignment ra : ras) {
+            for (RoleAssignment roleAssignment : ras) {
                 // for files, only show role assignments which can download
-                if (!(dvObject instanceof DataFile) || ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                    raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));
+                if (!(dvObject instanceof DataFile) || roleAssignment.getRole().permissions().contains(Permission.DownloadFile)) {
+                    raList.add(new RoleAssignmentRow(roleAssignment,
+                            roleAssigneeService.getRoleAssignee(roleAssignment.getAssigneeIdentifier()).getDisplayInfo()));
                 }
             }
         }
@@ -291,7 +292,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         showNoMessages();
     }
 
-    public List<RoleAssignee> completeRoleAssignee(String query) {
+    public List<RoleAssignee> completeRoleAssignee( String query ) {
         if (roleAssigneeList.isEmpty()) {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
                 roleAssigneeList.add(au);

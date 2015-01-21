@@ -32,7 +32,7 @@ public class AuthenticatedUsers implements Group {
 
     @Override
     public String getIdentifier() {
-        return Group.IDENTIFIER_PREFIX + getAlias();
+        return ":authenticated-users";
     }
 
     @Override

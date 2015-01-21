@@ -44,8 +44,8 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
 
     @Override
     public Group get(String groupAlias) {
-        return groupAlias.equals(AllUsers.get().getDisplayName()) ? AllUsers.get()
-                : ( groupAlias.equals(AuthenticatedUsers.get().getDisplayName()) ? AuthenticatedUsers.get() : null );
+        return groupAlias.equals(AllUsers.get().getAlias()) ? AllUsers.get()
+                : ( groupAlias.equals(AuthenticatedUsers.get().getAlias()) ? AuthenticatedUsers.get() : null );
     }
 
     @Override

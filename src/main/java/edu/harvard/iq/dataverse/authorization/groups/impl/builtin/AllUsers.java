@@ -18,7 +18,7 @@ public final class AllUsers implements Group {
 
     public static final AllUsers instance = new AllUsers();
        
-    private final String identifier = Group.IDENTIFIER_PREFIX + getAlias();
+    private final String identifier = ":AllUsers";
     
     public static final AllUsers get() { return instance; }
     
