@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +66,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     Dataset dataset = new Dataset(); 
     private Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
-    private Map<FileMetadata,List<RoleAssignmentRow>> fileMap = new HashMap();
+    private Map<DataFile,List<RoleAssignmentRow>> fileMap = new HashMap();
 
     public Dataset getDataset() {
         return dataset;
@@ -83,11 +84,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.roleAssigneeMap = roleAssigneeMap;
     }
 
-    public Map<FileMetadata, List<RoleAssignmentRow>> getFileMap() {
+    public Map<DataFile, List<RoleAssignmentRow>> getFileMap() {
         return fileMap;
     }
 
-    public void setFileMap(Map<FileMetadata, List<RoleAssignmentRow>> fileMap) {
+    public void setFileMap(Map<DataFile, List<RoleAssignmentRow>> fileMap) {
         this.fileMap = fileMap;
     }    
 
@@ -116,32 +117,44 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         roleAssigneeMap.clear();
         fileMap.clear();
                
-        for (FileMetadata fmd : dataset.getLatestVersion().getFileMetadatas()) {
-            Set<RoleAssignment> ras = roleService.rolesAssignments(fmd.getDataFile());
+        for (DataFile file : dataset.getFiles()) {
+            // we get the direct role assignments assigned to the file
+            List<RoleAssignment> ras = roleService.directRoleAssignments(file);
             List raList = new ArrayList<>(ras.size());
             for (RoleAssignment ra : ras) {
                 // for files, only show role assignments which can download
                 if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                    raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo(), fmd.getDataFile()));                   
-                    addFileToRoleAssignee(ra, fmd);                    
-                }
-            fileMap.put(fmd, raList);    
-            }            
+                    raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));                   
+                    addFileToRoleAssignee(ra);                    
+                }    
+            }  
+            
+            fileMap.put(file, raList);
         }        
     }
-    private void addFileToRoleAssignee(RoleAssignment assignment, FileMetadata fmd) {
+    private void addFileToRoleAssignee(RoleAssignment assignment) {
         RoleAssignee ra = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
         List<RoleAssignmentRow> assignments = roleAssigneeMap.get(ra);
         if (assignments == null) {
             assignments = new ArrayList();
             roleAssigneeMap.put(ra, assignments);
         }
-        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo(), fmd.getDataFile()));
+        
+        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo()));
     }
 
     /* 
      main page
      */
+    
+    public void removeRoleAssignments(List<RoleAssignmentRow> raRows) {
+        for (RoleAssignmentRow raRow : raRows) {
+            revokeRole(raRow.getId());
+        }
+        
+        initMaps();
+        showUserGroupMessages();
+    }    
 
 
     /*
@@ -225,7 +238,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
      assign roles dialog
      */
     private List<RoleAssignee> selectedRoleAssignees;
-    private List<FileMetadata> selectedFiles;
+    private List<DataFile> selectedFiles;
     private List<RoleAssignee> roleAssigneeList = new ArrayList();
 
     public List<RoleAssignee> getSelectedRoleAssignees() {
@@ -236,11 +249,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.selectedRoleAssignees = selectedRoleAssignees;
     }
 
-    public List<FileMetadata> getSelectedFiles() {
+    public List<DataFile> getSelectedFiles() {
         return selectedFiles;
     }
 
-    public void setSelectedFiles(List<FileMetadata> selectedFiles) {
+    public void setSelectedFiles(List<DataFile> selectedFiles) {
         this.selectedFiles = selectedFiles;
     }
 
@@ -251,10 +264,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         showUserGroupMessages();
     }
     
-    public void initPreselectedAssignDialog(FileMetadata fmd) {
+    public void initPreselectedAssignDialog(DataFile file) {
         selectedRoleAssignees = null;
         selectedFiles.clear();
-        selectedFiles.add(fmd);
+        selectedFiles.add(file);
         showFileMessages();
     }    
 
@@ -277,8 +290,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void grantAccess(ActionEvent evt) {
         // Find the built in file downloader role (currently by alias) 
         for (RoleAssignee roleAssignee : selectedRoleAssignees) {
-            for (FileMetadata fmd : selectedFiles) {
-                assignRole(roleAssignee, fmd.getDataFile(), roleService.findBuiltinRoleByAlias("filedownloader"));                
+            for (DataFile file : selectedFiles) {
+                assignRole(roleAssignee, file, roleService.findBuiltinRoleByAlias("filedownloader"));                
             }
         }
         
@@ -336,12 +349,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         private final RoleAssigneeDisplayInfo assigneeDisplayInfo;
         private final RoleAssignment ra;
-        private final DvObject assignmentPoint;
 
-        public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf, DvObject assignmentPoint) {
+        public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf) {
             this.ra = anRa;
             this.assigneeDisplayInfo = disInf;
-            this.assignmentPoint = assignmentPoint;
         }        
         
 
@@ -353,13 +364,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return ra.getDefinitionPoint();
         }
 
-        public DvObject getAssignmentPoint() {
-            return assignmentPoint;
-        }
         
         public Long getId() {
             return ra.getId();
         }
-
+    
     }   
 }

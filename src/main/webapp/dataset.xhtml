@@ -571,9 +571,10 @@
                                         <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
+                                            <!-- add hover here -->
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}">
                                                 <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                                                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                                                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/> 
                                                 </a>
                                             </ui:fragment>
 
@@ -620,16 +621,37 @@
                                                 </div>
                                             </ui:fragment>
 
-                                            <ui:remove>
+                                            <ui:remove></ui:remove>
                                                 <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                    <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
+                                                    <!-- <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a> -->
                                                     <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->
-                                                    |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a>
+                                                    <!-- |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a> -->
                                                     <!--
                                                     <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
                                                     -->
+                                                    <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                          <div class="modal-content">
+                                                            <div class="modal-header">
+                                                              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+                                                              <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">Preview Map:</span>  #{fileMetadata.label}</h4>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                              <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                              <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="WorldMap logo" style="border:none;float:left;" xclass="text-left" /></a>
+                                                              <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-primary btn-xs" target="_blank"><span style="color:#fff;"> #{bundle['file.metaData.viewOnWorldMap']}</span></a>
+                                                              <button type="button" class="btn btn-default btn-xs" data-dismiss="modal">Close</button>
+                                                              <div style="clear:both;"></div>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                     <!-- end: modal map it -->
+                                                     <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"><small>preview</small></a>
                                                 </ui:fragment>
-                                            </ui:remove>
+                                            
 
                                             <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
                                                 <div class="fileDescription">
@@ -740,7 +762,7 @@
                                             </ui:fragment>-->
 
                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->
-                                                <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" target="_blank" role="button">
+                                                <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/>
                                                     <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="#{bundle['file.reMapData']}" />
                                                     <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="#{bundle['file.mapData']}" />
@@ -1332,67 +1354,70 @@
                                                 <div class="panel-body">
                                                     <div class="form-group">
                                                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                                                            <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
-                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.title']}">
-                                                                        Guestbook
-                                                                    </a>
-                                                                </label>
-                                                                <div>
+                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.title']}">
+                                                                    Guestbook
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
                                                                     #{bundle['file.dataFilesTab.terms.list.guestbook.noSelected']}
-                                                                </div>
-                                                            </ui:fragment>
-                                                            <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
-                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}">
-                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
-                                                                    </a>
-                                                                </label>
-                                                            </ui:fragment>
-
-                                                            <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
-
-                                                            <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
-                                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                                           action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                                           oncomplete="viewGuestbook.show()"
-                                                                           update=":datasetForm"
-                                                                           style="color:black;margin-right:0.5em;"/>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
+                                                                    <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
+                                                                    <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
+                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                                               action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
+                                                                               oncomplete="viewGuestbook.show()"
+                                                                               update=":datasetForm"
+                                                                               style="color:black;margin-right:0.5em;"/>
+                                                                    <p>#{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}</p>
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
+                                                                </ui:fragment>
+                                                            </div>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty DatasetPage.editMode}">
-                                                            <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}">
-                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
-                                                                    </a>
-                                                                </label>
-                                                            </ui:fragment>
-                                                            <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
-                                                            <p:dataTable id="guestbookTable" value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
-                                                                         rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
-                                                                         rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}"  rowKey="#{guestbook}">
-                                                                <p:column selectionMode="single" rendered="true"
-                                                                          style="width:2%;text-align:center"/>
+                                                            <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.title']}">
+                                                                    Guestbook
+                                                                </a>
+                                                            </label>
+                                                            <div class="col-sm-9">
+                                                                <ui:fragment rendered="#{empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable']}
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.title']}</p>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
+                                                                    <p class="help-text">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
+                                                                    
+                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}</p>
+                                                                    
+                                                                    <p>
+                                                                        <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
+                                                                    </p>
+                                                                    <p:dataTable id="guestbookTable" styleClass="headerless-table"
+                                                                                 value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
+                                                                                 rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
+                                                                                 rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}" rowKey="#{guestbook}">
+                                                                        <p:column selectionMode="single" rendered="true"
+                                                                                  style="width:2%;text-align:center"/>
 
-                                                                <p:column>
-                                                                    <h:outputText value="#{guestbook.name} " />
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <p:commandLink styleClass="btn btn-default"
-                                                                                   value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                                                   action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
-                                                                                   oncomplete="viewGuestbook.show()"
-                                                                                   update=":datasetForm"
-                                                                                   style="color:black;margin-right:0.5em;"/>
-                                                                </p:column>
-                                                            </p:dataTable>
-                                                            <ui:fragment rendered="#{empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-                                                                <label for="metadata_Guestbook" class="col-sm-3 control-label">
-                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.title']}">
-                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable']}
-                                                                    </a>
-                                                                </label>
-                                                            </ui:fragment>
+                                                                        <p:column>
+                                                                            <h:outputText value="#{guestbook.name} " />
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            <p:commandLink styleClass="btn btn-default"
+                                                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                                                           action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
+                                                                                           oncomplete="viewGuestbook.show()"
+                                                                                           update=":datasetForm"
+                                                                                           style="color:black;margin-right:0.5em;"/>
+                                                                        </p:column>
+                                                                    </p:dataTable>
+                                                                </ui:fragment>
+                                                            </div>
                                                         </ui:fragment>
                                                     </div>
                                                 </div>
@@ -1402,29 +1427,25 @@
                                     <p:dialog id="viewGuestbook" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
                                         <div class="form-horizontal">
                                             <div class="form-group">
-                                                <label for="select_DatasetTemplate" class="col-sm-3 control-label">
+                                                <label for="select_DatasetTemplate" class="col-sm-4 control-label">
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</a>
                                                 </label>
-                                                <div class="col-sm-7" style="padding-top: 7px;">
-                                                    #{DatasetPage.selectedGuestbook.name}
+                                                <div class="col-sm-8" style="padding-top: 7px;">
+                                                    <p>
+                                                        #{DatasetPage.selectedGuestbook.name}
+                                                    </p>
+                                                    <p>
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}"
+                                                                      rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString }"/>
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}"
+                                                                      rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString }"/>
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}"
+                                                                      rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString }"/>
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}"
+                                                                      rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString }"/>
+                                                    </p>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div  style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}"
-                                                          rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString }"/>
-                                        </div>
-                                        <div style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}"
-                                                          rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString }"/>
-                                        </div>
-                                        <div style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}"
-                                                          rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString }"/>
-                                        </div>
-                                        <div style="padding-top: 7px;">
-                                            <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}"
-                                                          rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString }"/>
                                         </div>
                                     </p:dialog>
                                 </p:tab>

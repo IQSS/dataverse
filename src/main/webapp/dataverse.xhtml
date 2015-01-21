@@ -621,7 +621,7 @@
 
                                 <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
                             </h:selectOneMenu>
-                            <h:commandButton value=value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
+                            <h:commandButton value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
                         </h:form>
                     </ui:fragment>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">

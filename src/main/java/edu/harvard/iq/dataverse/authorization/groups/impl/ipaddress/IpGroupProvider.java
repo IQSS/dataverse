@@ -34,11 +34,12 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
 
     @Override
     public Set<IpGroup> groupsFor(User u) {
-        UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
-        if (userRequestMetadata == null) {
-            logger.info("In the groupsFor(User u) method, u.getRequestMetadata() was null for user \"" + u.getIdentifier() + "\". Returning empty set. See also https://github.com/IQSS/dataverse/issues/1354");
-            return Collections.EMPTY_SET;
-        }
+//        Un-comment below lines if request metadata is null to get a workaround. Then open a bug and assign to @michbarsinai
+//        UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
+//        if (userRequestMetadata == null) {
+//            logger.info("In the groupsFor(User u) method, u.getRequestMetadata() was null for user \"" + u.getIdentifier() + "\". Returning empty set. See also https://github.com/IQSS/dataverse/issues/1354");
+//            return Collections.EMPTY_SET;
+//        }
         return updateProvider(ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress()));
     }
 
