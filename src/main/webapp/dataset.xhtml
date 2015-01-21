@@ -1396,15 +1396,17 @@
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.title']}</p>
                                                                 </ui:fragment>
                                                                 <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
-                                                                    <p class="help-text">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
-
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
-                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}</p>
-
-                                                                    <p>
-                                                                        <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
-                                                                    </p>
+                                                                    <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
+                                                                        <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}</p>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
+                                                                        #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
+                                                                        <p class="help-text">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
+                                                                        <p>
+                                                                            <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
+                                                                        </p>
+                                                                    </ui:fragment>
                                                                     <p:dataTable id="guestbookTable" styleClass="headerless-table"
                                                                                  value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
                                                                                  rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
