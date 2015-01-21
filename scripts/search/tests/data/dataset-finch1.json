@@ -1,8 +1,4 @@
 {
-  "authority": "10.5072/FK2",
-  "identifier": "123456",
-  "persistentUrl": "http://dx.doi.org/10.5072/FK2/17",
-  "protocol": "doi",
   "datasetVersion": {
     "metadataBlocks": {
       "citation": {
@@ -70,14 +66,6 @@
         ],
         "displayName": "Citation Metadata"
       }
-    },
-    "createTime": "2014-05-20 11:52:55 -04",
-    "UNF": "UNF",
-    "id": 1,
-    "versionNumber": 1,
-    "versionMinorNumber": 0,
-    "versionState": "DRAFT",
-    "distributionDate": "Distribution Date",
-    "productionDate": "Production Date"
+    }
   }
 }
