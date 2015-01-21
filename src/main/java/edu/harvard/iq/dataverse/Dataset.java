@@ -217,6 +217,7 @@ public class Dataset extends DvObjectContainer {
     private DatasetVersion createNewDatasetVersion(Template template) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+        dsv.setFileMetadatas(new ArrayList());        
         DatasetVersion latestVersion = null;
 
         //if the latest version has values get them copied over
@@ -224,6 +225,7 @@ public class Dataset extends DvObjectContainer {
             if (!template.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(template.getDatasetFields()));
             }
+            dsv.setLicense(DatasetVersion.License.CC0); 
         } else {
             latestVersion = getLatestVersionForCopy();
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
@@ -244,10 +246,7 @@ public class Dataset extends DvObjectContainer {
             dsv.setContactForAccess(latestVersion.getContactForAccess());
             dsv.setSizeOfCollection(latestVersion.getSizeOfCollection());
             dsv.setStudyCompletion(latestVersion.getStudyCompletion());
-        }
 
-        dsv.setFileMetadatas(new ArrayList());
-        if (latestVersion != null) {
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
                 // TODO: 
@@ -259,13 +258,12 @@ public class Dataset extends DvObjectContainer {
                 newFm.setCategories(fm.getCategories());
                 newFm.setDescription(fm.getDescription());
                 newFm.setLabel(fm.getLabel());
+                newFm.setRestricted(fm.isRestricted());                
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
                 dsv.getFileMetadatas().add(newFm);                
             }
             dsv.setLicense(latestVersion.getLicense());
-        } else {            
-            dsv.setLicense(DatasetVersion.License.CC0); 
         }
 
         // I'm adding the version to the list so it will be persisted when
