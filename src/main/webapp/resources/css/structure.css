@@ -299,6 +299,9 @@ div[id$='resultsTable'] > .ui-datatable-tablewrapper > table {border-collapse:se
 
 div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
 
+/* -------- TABLES -------- */
+div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
+
 /* -------- POPUP -------- */
 div.ui-dialog.largePopUp {min-width:60%;}
 
