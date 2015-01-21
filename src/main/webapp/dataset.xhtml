@@ -570,6 +570,14 @@
                                                   style="width:2%;text-align:center"/>
                                         <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
                                                   style="width:2%;text-align:center"/>
+                                        <p:column style="width:2%;text-align:center">
+                                            <p:selectBooleanCheckbox styleClass="metadata-blocks-default" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                                                     value="#{fileMetadata.restricted}">
+                                            </p:selectBooleanCheckbox>    
+                                            <ui:fragment rendered="#{empty DatasetPage.editMode and fileMetadata.restricted}">
+                                                <span class="glyphicon glyphicon-lock"></span>
+                                            </ui:fragment>
+                                        </p:column>                                           
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
                                             <!-- add hover here -->
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}">
@@ -622,36 +630,36 @@
                                             </ui:fragment>
 
                                             <ui:remove></ui:remove>
-                                                <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                    <!-- <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a> -->
-                                                    <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->
-                                                    <!-- |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a> -->
-                                                    <!--
-                                                    <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
-                                                    -->
-                                                    <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog">
-                                                          <div class="modal-content">
+                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                <!-- <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a> -->
+                                                <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->
+                                                <!-- |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a> -->
+                                                <!--
+                                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                                                -->
+                                                <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
                                                             <div class="modal-header">
-                                                              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
-                                                              <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">Preview Map:</span>  #{fileMetadata.label}</h4>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+                                                                <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">Preview Map:</span>  #{fileMetadata.label}</h4>
                                                             </div>
                                                             <div class="modal-body">
-                                                              <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                                                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
                                                             </div>
                                                             <div class="modal-footer">
-                                                              <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="WorldMap logo" style="border:none;float:left;" xclass="text-left" /></a>
-                                                              <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-primary btn-xs" target="_blank"><span style="color:#fff;"> #{bundle['file.metaData.viewOnWorldMap']}</span></a>
-                                                              <button type="button" class="btn btn-default btn-xs" data-dismiss="modal">Close</button>
-                                                              <div style="clear:both;"></div>
+                                                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="WorldMap logo" style="border:none;float:left;" xclass="text-left" /></a>
+                                                                <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-primary btn-xs" target="_blank"><span style="color:#fff;"> #{bundle['file.metaData.viewOnWorldMap']}</span></a>
+                                                                <button type="button" class="btn btn-default btn-xs" data-dismiss="modal">Close</button>
+                                                                <div style="clear:both;"></div>
                                                             </div>
-                                                          </div>
                                                         </div>
-                                                      </div>
-                                                     <!-- end: modal map it -->
-                                                     <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"><small>preview</small></a>
-                                                </ui:fragment>
-                                            
+                                                    </div>
+                                                </div>
+                                                <!-- end: modal map it -->
+                                                <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"><small>preview</small></a>
+                                            </ui:fragment>
+
 
                                             <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
                                                 <div class="fileDescription">
@@ -951,7 +959,7 @@
                                                             </ui:fragment>
                                                         </div>
                                                     </ui:fragment>
-                                                    
+
                                                     <!-- Additional Information -->
                                                     <div>
                                                         <p>
@@ -1195,7 +1203,7 @@
                                                             </div>
                                                         </div>
                                                     </ui:fragment>
-                                                    
+
                                                     <!-- Additional Information -->
                                                     <div>
                                                         <p>
@@ -1366,11 +1374,11 @@
                                                                 <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
                                                                     <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
                                                                     <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
-                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                                               action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                                               oncomplete="viewGuestbook.show()"
-                                                                               update=":datasetForm"
-                                                                               style="color:black;margin-right:0.5em;"/>
+                                                                                   value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                                                   action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
+                                                                                   oncomplete="viewGuestbook.show()"
+                                                                                   update=":datasetForm"
+                                                                                   style="color:black;margin-right:0.5em;"/>
                                                                     <p>#{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}</p>
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
                                                                 </ui:fragment>
@@ -1390,10 +1398,10 @@
                                                                 <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
                                                                     #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
                                                                     <p class="help-text">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
-                                                                    
+
                                                                     #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}</p>
-                                                                    
+
                                                                     <p>
                                                                         <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
                                                                     </p>
@@ -2051,7 +2059,9 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:inputText id="fileCategoryAddNew" onkeypress="if (event.keyCode == 13) {return false;}" type="text" value="#{DatasetPage.newCategoryName}" placeholder="#{bundle['file.editCategoriesDialog.newName']}"/>
+                                            <p:inputText id="fileCategoryAddNew" onkeypress="if (event.keyCode == 13) {
+                                                        return false;
+                                                    }" type="text" value="#{DatasetPage.newCategoryName}" placeholder="#{bundle['file.editCategoriesDialog.newName']}"/>
                                             <p:message for="fileCategoryAddNew" display="text" />
                                         </p:panelGrid>
                                     </div>
@@ -2069,17 +2079,17 @@
                             <p:commandButton value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkedDataset}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                        #{bundle['dataverse.link.no.choice']} #{DatasetPage.linkingDataverse.displayName}
+                            #{bundle['dataverse.link.no.choice']} #{DatasetPage.linkingDataverse.displayName}
                             <p:commandButton id="hiddenLink"   onclick="linkDatasetForm.hide()" 
                                              value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"/>
 
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
-                        #{bundle['dataverse.link.no.linkable']}
+                            #{bundle['dataverse.link.no.linkable']}
                         </ui:fragment>
 
                         <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()">
-                                           #{bundle['cancel']}
+                            #{bundle['cancel']}
                         </button>
 
                     </p:dialog>
