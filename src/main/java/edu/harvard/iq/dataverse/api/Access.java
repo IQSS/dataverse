@@ -610,7 +610,28 @@ public class Access extends AbstractApiBean {
         return null;
     }
     
+    
+    // TODO: 
+    // duplicated code in the 2 methods below. 
+    // -- L.A. 4.0, beta11
+    
     private void checkAuthorization(DataFile df, String apiToken) throws WebApplicationException {
+        // We don't even need to check permissions on files that are 
+        // from released Dataset versions and not restricted: 
+        
+        //logger.info("checking if file is restricted:");
+        if (!df.isRestricted()) {
+            //logger.info("nope.");
+            if (df.getOwner().getReleasedVersion() != null) {
+                //logger.info("file belongs to a dataset with a released version.");
+                if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
+                    if (df.getOwner().getReleasedVersion().getFileMetadatas().contains(df.getFileMetadata())) {
+                        return;
+                    }
+                }
+            }
+        }
+        
         AuthenticatedUser user = null;
        
         /** 
@@ -651,9 +672,9 @@ public class Access extends AbstractApiBean {
             // User from the Session object, just like in the code fragment 
             // above. That's why it's not passed along as an argument.
             if (user != null) {
-                logger.info("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
+                logger.fine("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
             } else {
-                logger.info("Session-based auth: guest user is granted access to the datafile.");
+                logger.fine("Session-based auth: guest user is granted access to the datafile.");
             }
         } else if ((apiToken != null)&&(apiToken.length()==64)){
             /* 
@@ -669,7 +690,7 @@ public class Access extends AbstractApiBean {
             
             // Yes! User may access file
             //
-            logger.info("WorldMap token-based auth: Token is valid for the requested datafile");
+            logger.fine("WorldMap token-based auth: Token is valid for the requested datafile");
             
         } else if ((apiToken != null)&&(apiToken.length()!=64)) {
             // Will try to obtain the user information from the API token, 
@@ -684,13 +705,13 @@ public class Access extends AbstractApiBean {
             } 
             
             if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
-                logger.info("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
+                logger.fine("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
                 throw new WebApplicationException(Response.Status.FORBIDDEN);
             }
             
-            logger.info("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
+            logger.fine("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
         } else {
-            logger.info("Unauthenticated access: No guest access to the datafile.");
+            logger.fine("Unauthenticated access: No guest access to the datafile.");
             // throwing "authorization required" (401) instead of "access denied" (403) here:
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         }
@@ -702,6 +723,22 @@ public class Access extends AbstractApiBean {
     private boolean isAccessAuthorized(DataFile df, String apiToken) {
         AuthenticatedUser user = null;
        
+        // We don't even need to check permissions on files that are 
+        // from released Dataset versions and not restricted: 
+        
+        //logger.info("checking if file is restricted:");
+        if (!df.isRestricted()) {
+            //logger.info("nope.");
+            if (df.getOwner().getReleasedVersion() != null) {
+                //logger.info("file belongs to a dataset with a released version.");
+                if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
+                    if (df.getOwner().getReleasedVersion().getFileMetadatas().contains(df.getFileMetadata())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
         if (session != null) {
             if (session.getUser() != null) {
                 if (session.getUser().isAuthenticated()) {
@@ -729,9 +766,9 @@ public class Access extends AbstractApiBean {
             // User from the Session object, just like in the code fragment 
             // above. That's why it's not passed along as an argument.
             if (user != null) {
-                logger.info("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
+                logger.fine("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
             } else {
-                logger.info("Session-based auth: guest user is granted access to the datafile.");
+                logger.fine("Session-based auth: guest user is granted access to the datafile.");
             }
         } else if (apiToken != null) {
             // Will try to obtain the user information from the API token, 
@@ -746,13 +783,13 @@ public class Access extends AbstractApiBean {
             } 
             
             if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
-                logger.info("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
+                logger.fine("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
                 return false; 
             }
             
-            logger.info("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
+            logger.fine("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
         } else {
-            logger.info("Unauthenticated access: No guest access to the datafile.");
+            logger.fine("Unauthenticated access: No guest access to the datafile.");
             // throwing "authorization required" (401) instead of "access denied" (403) here:
             return false; 
         }
