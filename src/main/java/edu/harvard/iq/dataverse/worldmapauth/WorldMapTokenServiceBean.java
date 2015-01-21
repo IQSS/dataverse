@@ -231,7 +231,8 @@ public class WorldMapTokenServiceBean {
     
     */
     public boolean isWorldMapTokenAuthorizedForDataFileDownload(String worldmapTokenParam, DataFile df){
-        logger.info("-- isWorldMapTokenAuthorizedForDataFile?");
+        logger.info("-- isWorldMapTokenAuthorizedForDataFileworldmapTokenParam " + worldmapTokenParam);
+        
         if ((worldmapTokenParam == null)||(df == null)){
             logger.info("nope: worldmapTokenParam or data file is null");
             return false;
@@ -245,10 +246,10 @@ public class WorldMapTokenServiceBean {
             return false;
         }
         
-               
+
         // Check 2:  Does this WorldMap token's datafile match the requested datafile?
         //
-        if (!(token.getDatafile().getId()==df.getId())){
+        if (!(token.getDatafile().getId().equals(df.getId()))){
             logger.info("WorldMap token-based auth: Token's datafile does not match the requested datafile.");
             return false;
         }
