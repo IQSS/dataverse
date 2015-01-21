@@ -302,7 +302,6 @@
                                         <div style="float:right;">
                                             <div class="btn-group" role="group" style="margin-right:.3em;">
                                                 <button type="button" class="btn btn-default" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
-                                                <button type="button" class="btn btn-default" onclick="alert('Static button only for Linked Dataset development purposes.')" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Link Dataset to Your Dataverse"><span class="glyphicon glyphicon-link"/></button>
                                                 <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                                                     <p:commandLink styleClass="btn btn-default glyphicon glyphicon-link"  rendered="#{dataverseSession.user.authenticated}"                                                          
                                                                    action="#{DatasetPage.updateLinkableDataverses()}"                                                          

@@ -580,7 +580,7 @@ public class DataversePage implements java.io.Serializable {
         LinkDataverseCommand cmd = new LinkDataverseCommand(session.getUser(), linkingDataverse, dataverse );
         try {
             commandEngine.submit(cmd);          
-            JsfHelper.addFlashMessage( "This dataverse is now linked to yours.");
+            JsfHelper.addFlashMessage( "This dataverse is now linked to " + linkingDataverse.getDisplayName() );
             //return "";
              return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {

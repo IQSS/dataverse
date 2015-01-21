@@ -1024,8 +1024,7 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
     
-        public String saveLinkedDataset(){
-        System.out.print("start of save action");
+    public String saveLinkedDataset(){
         if (linkingDataverseId == null){
            JsfHelper.addFlashMessage( "You must select a linking dataverse."); 
            System.out.print("no linking dv...");
@@ -1035,7 +1034,7 @@ public class DatasetPage implements java.io.Serializable {
         LinkDatasetCommand cmd = new LinkDatasetCommand(session.getUser(), linkingDataverse, dataset );
         try {
             commandEngine.submit(cmd);          
-            JsfHelper.addFlashMessage( "This dataset is now linked to yours.");
+            JsfHelper.addFlashMessage( "This dataset is now linked to " + linkingDataverse.getDisplayName());
                     System.out.print("command seems to have worked");
             //return "";
 
