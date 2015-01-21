@@ -626,6 +626,8 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
                         #{bundle['dataverse.link.no.choice']} #{DataversePage.linkingDataverse.displayName}
+                        <p:commandButton id="hiddenLink"   onclick="linkDataverseForm.hide()" 
+                                             value="#{bundle['dataverse.link.save']}" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
                     </ui:fragment>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
                         #{bundle['dataverse.link.no.linkable']}
