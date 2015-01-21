@@ -35,11 +35,19 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     @Override
     public Set<IpGroup> groupsFor(User u) {
 //        Un-comment below lines if request metadata is null to get a workaround. Then open a bug and assign to @michbarsinai
-//        UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
-//        if (userRequestMetadata == null) {
-//            logger.info("In the groupsFor(User u) method, u.getRequestMetadata() was null for user \"" + u.getIdentifier() + "\". Returning empty set. See also https://github.com/IQSS/dataverse/issues/1354");
-//            return Collections.EMPTY_SET;
-//        }
+        /**
+         * @todo Per above, uncommenting the lines below and assigning a new
+         * ticket to @michbarsinai: IP Groups: can no longer upload files via
+         * SWORD - https://github.com/IQSS/dataverse/issues/1360
+         *
+         * What other SWORD operation may not be working? They are documented at
+         * http://guides.dataverse.org/en/latest/api/sword.html
+         */
+        UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
+        if (userRequestMetadata == null) {
+            logger.info("In the groupsFor(User u) method, u.getRequestMetadata() was null for user \"" + u.getIdentifier() + "\". Returning empty set. See also https://github.com/IQSS/dataverse/issues/1354");
+            return Collections.EMPTY_SET;
+        }
         return updateProvider(ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress()));
     }
 
