@@ -569,7 +569,7 @@
                                                   style="width:2%;text-align:center"/>
                                         <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
                                                   style="width:2%;text-align:center"/>
-                                        <p:column style="width:2%;text-align:center">
+                                        <p:column headerText="#{bundle['file.restricted.header']}" style="width:2%;text-align:center">
                                             <p:selectBooleanCheckbox styleClass="metadata-blocks-default" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                                      value="#{fileMetadata.restricted}">
                                             </p:selectBooleanCheckbox>    
