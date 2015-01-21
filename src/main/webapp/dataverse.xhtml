@@ -630,11 +630,7 @@
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
                         #{bundle['dataverse.link.no.linkable']}
                     </ui:fragment>
-                    <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() > 0}">
-                        <p:commandButton onclick="linkDataverseForm.hide()"
-                                         action="#{DataversePage.saveLinkedDataverse}" 
-                                         value="#{bundle['dataverse.link.save']}"/>
-                    </ui:fragment>
+
                     <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
                                            #{bundle['cancel']}
                     </button>
