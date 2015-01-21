@@ -111,7 +111,13 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         logger.log(Level.INFO,"after datascrub "  + formatter.format(new Date().getTime()));        
         String nonNullDefaultIfKeyNotFound = "";
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+        String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        String  doiSeparator = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        if (theDataset.getProtocol()==null) theDataset.setProtocol(protocol);
+        if (theDataset.getAuthority()==null) theDataset.setAuthority(authority);
+        if (theDataset.getDoiSeparator()==null) theDataset.setDoiSeparator(doiSeparator);
+       
         if (theDataset.getIdentifier()==null) {
             theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
         }
