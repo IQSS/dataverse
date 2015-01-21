@@ -571,9 +571,10 @@
                                         <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
+                                            <!-- add hover here -->
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}">
                                                 <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                                                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                                                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/> 
                                                 </a>
                                             </ui:fragment>
 
@@ -620,16 +621,37 @@
                                                 </div>
                                             </ui:fragment>
 
-                                            <ui:remove>
+                                            <ui:remove></ui:remove>
                                                 <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                    <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a>
+                                                    <!-- <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{bundle['file.metaData.viewOnWorldMap']}</a> -->
                                                     <!-- Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getId() }-->
-                                                    |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a>
+                                                    <!-- |  <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getExploreMapLink() }">#{bundle['file.mapData.viewMap']}</a> -->
                                                     <!--
                                                     <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
                                                     -->
+                                                    <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                          <div class="modal-content">
+                                                            <div class="modal-header">
+                                                              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+                                                              <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">Preview Map:</span>  #{fileMetadata.label}</h4>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                              <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                              <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="WorldMap logo" style="border:none;float:left;" xclass="text-left" /></a>
+                                                              <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-primary btn-xs" target="_blank"><span style="color:#fff;"> #{bundle['file.metaData.viewOnWorldMap']}</span></a>
+                                                              <button type="button" class="btn btn-default btn-xs" data-dismiss="modal">Close</button>
+                                                              <div style="clear:both;"></div>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                     <!-- end: modal map it -->
+                                                     <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"><small>preview</small></a>
                                                 </ui:fragment>
-                                            </ui:remove>
+                                            
 
                                             <ui:fragment rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
                                                 <div class="fileDescription">
