@@ -114,6 +114,10 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             if (dataFile.getPublicationDate() == null) {
                 dataFile.setPublicationDate(updateTime);
             }
+            // set the files restriction flag to the same as the latest version's
+            if (dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
+                dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
+            }
         }
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
