@@ -44,6 +44,7 @@ public class FileMetadata implements Serializable {
     private String description = "";
     @Column(columnDefinition="TEXT")
     private String category = ""; // TODO: remove! -- L.A. 4.0 beta 10
+    private boolean restricted;
 
     @ManyToOne
     @JoinColumn(nullable=false)
@@ -77,6 +78,16 @@ public class FileMetadata implements Serializable {
     public void setCategory(String category) {
         this.category = category;
     }
+
+    public boolean isRestricted() {
+        return restricted;
+    }
+
+    public void setRestricted(boolean restricted) {
+        this.restricted = restricted;
+    }
+    
+    
 
     /* 
      * File Categories to which this version of the DataFile belongs: 
