@@ -1053,7 +1053,21 @@ public class DatasetPage implements java.io.Serializable {
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
     
+    public void restrictFiles(boolean restricted) {
+        for (FileMetadata fmd : this.getSelectedFiles()) {
+            fmd.setRestricted(restricted);
+        }
+    }
 
+    public void deleteFiles() {
+        filesToBeDeleted.addAll(selectedFiles);
+        // remove from the files list
+        dataset.getLatestVersion().getFileMetadatas().removeAll(selectedFiles);
+    }
+    
+    private List<FileMetadata> filesToBeDeleted = new ArrayList();
+    
+    
     public String save() {
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
@@ -1075,11 +1089,11 @@ public class DatasetPage implements java.io.Serializable {
         // File deletes (selected by the checkboxes on the page)
         //
         // First Remove Any that have never been ingested;
-        if (this.selectedFiles != null) {
+        if (this.filesToBeDeleted != null) {
             Iterator<DataFile> dfIt = newFiles.iterator();
             while (dfIt.hasNext()) {
                 DataFile dfn = dfIt.next();
-                for (FileMetadata markedForDelete : this.selectedFiles) {
+                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
                     if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
                         dfIt.remove();
                     }
@@ -1089,7 +1103,7 @@ public class DatasetPage implements java.io.Serializable {
             dfIt = dataset.getFiles().iterator();
             while (dfIt.hasNext()) {
                 DataFile dfn = dfIt.next();
-                for (FileMetadata markedForDelete : this.selectedFiles) {
+                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
                     if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
                         dfIt.remove();
                     }
@@ -1101,7 +1115,7 @@ public class DatasetPage implements java.io.Serializable {
             while (fmIt.hasNext()) {
                 FileMetadata dfn = fmIt.next();
                 dfn.getDataFile().setModificationTime(new Timestamp(new Date().getTime()));
-                for (FileMetadata markedForDelete : this.selectedFiles) {
+                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
                     if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getDataFile().getFileSystemName())) {
                         fmIt.remove();
                         break;
@@ -1110,7 +1124,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 //delete for files that have been injested....
 
-            for (FileMetadata fmd : selectedFiles) {
+            for (FileMetadata fmd : filesToBeDeleted) {
                 if (fmd.getId() != null && fmd.getId().intValue() > 0) {
                     Command cmd;
                     fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
