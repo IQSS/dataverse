@@ -118,20 +118,24 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         fileMap.clear();
                
         for (DataFile file : dataset.getFiles()) {
-            // we get the direct role assignments assigned to the file
-            List<RoleAssignment> ras = roleService.directRoleAssignments(file);
-            List raList = new ArrayList<>(ras.size());
-            for (RoleAssignment ra : ras) {
-                // for files, only show role assignments which can download
-                if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                    raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));                   
-                    addFileToRoleAssignee(ra);                    
-                }    
+            // only include if the file is restricted (or it's draft version is restricted)
+            if (file.isRestricted() || file.getFileMetadata().isRestricted()) {
+                // we get the direct role assignments assigned to the file
+                List<RoleAssignment> ras = roleService.directRoleAssignments(file);
+                List raList = new ArrayList<>(ras.size());
+                for (RoleAssignment ra : ras) {
+                    // for files, only show role assignments which can download
+                    if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
+                        raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));                   
+                        addFileToRoleAssignee(ra);                    
+                    }
+                }
+                
+                fileMap.put(file, raList);                
             }  
-            
-            fileMap.put(file, raList);
         }        
     }
+    
     private void addFileToRoleAssignee(RoleAssignment assignment) {
         RoleAssignee ra = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
         List<RoleAssignmentRow> assignments = roleAssigneeMap.get(ra);
