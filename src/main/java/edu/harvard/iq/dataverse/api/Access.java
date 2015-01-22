@@ -291,7 +291,7 @@ public class Access extends AbstractApiBean {
                         downloadInstance.addDataFile(file);
                     } else {
                         downloadInstance.setManifest(downloadInstance.getManifest() + 
-                                file.getFilename() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                                file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
                     }
 
                 } else {
