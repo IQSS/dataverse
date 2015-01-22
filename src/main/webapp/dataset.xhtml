@@ -538,10 +538,11 @@
                                     </ui:fragment>
                                     <!-- View -->
                                     <p:panel id="zipDownloadPanel">
-                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{(dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')) or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
                                         <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
+                                            <ui:fragment rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
                                             <div class="btn-group" style="margin-right:1em;">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
@@ -568,7 +569,10 @@
                                                     </ui:fragment>
                                                 </ul>
                                             </div>
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                            </ui:fragment>
+                                            <p:commandLink rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}" style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{bundle['file.uploadOrEdit']}
                                             </p:commandLink>
