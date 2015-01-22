@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -21,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -55,6 +55,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB 
+    GroupServiceBean groupService;    
     @EJB
     EjbDataverseEngine commandEngine;
 
@@ -280,6 +282,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
                 roleAssigneeList.add(au);
             }
+            for ( Group g : groupService.findAllGroups() ) {
+                roleAssigneeList.add( g );
+            }            
         }
         List<RoleAssignee> returnList = new ArrayList();
         for (RoleAssignee ra : roleAssigneeList) {
