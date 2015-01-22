@@ -2106,7 +2106,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     */
     public String getSelectedDownloadIds() {
-        if (this.downloadSelection == null || this.downloadSelection.size() < 2) {
+        if (this.downloadSelection == null || this.downloadSelection.size() < 1) {
             return null; 
         }
         

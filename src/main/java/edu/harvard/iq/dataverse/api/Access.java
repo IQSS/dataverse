@@ -39,6 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Properties;
 import javax.inject.Inject;
 
@@ -625,8 +626,12 @@ public class Access extends AbstractApiBean {
             if (df.getOwner().getReleasedVersion() != null) {
                 //logger.info("file belongs to a dataset with a released version.");
                 if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas().contains(df.getFileMetadata())) {
-                        return;
+                    //logger.info("going through the list of filemetadatas that belong to the released version.");
+                    for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
+                        if (df.equals(fm.getDataFile())) {
+                            //logger.info("found a match!");
+                            return;
+                        }
                     }
                 }
             }
@@ -732,8 +737,12 @@ public class Access extends AbstractApiBean {
             if (df.getOwner().getReleasedVersion() != null) {
                 //logger.info("file belongs to a dataset with a released version.");
                 if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas().contains(df.getFileMetadata())) {
-                        return true;
+                    //logger.info("going through the list of filemetadatas that belong to the released version.");
+                    for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
+                        if (df.equals(fm.getDataFile())) {
+                            //logger.info("found a match!");
+                            return true;
+                        }
                     }
                 }
             }
