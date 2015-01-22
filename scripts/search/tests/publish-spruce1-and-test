@@ -4,4 +4,4 @@ scripts/search/tests/publish-dataverse-trees
 scripts/search/tests/publish-dataverse-spruce
 scripts/search/tests/publish-dataset-spruce1
 #scripts/search/tests/permissions3
-scripts/search/tests/permissions3-full-anon
+#scripts/search/tests/permissions3-full-anon
