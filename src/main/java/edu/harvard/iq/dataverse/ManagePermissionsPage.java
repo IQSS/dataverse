@@ -61,11 +61,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB 
+    GroupServiceBean groupService;
     @EJB
     EjbDataverseEngine commandEngine;
     
-    @EJB 
-    GroupServiceBean groupService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -132,8 +132,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
     
     public void removeRoleAssignment(Long roleAssignmentId) {
         revokeRole(roleAssignmentId);
-        
-        initAccessSettings(); // in case the revoke was for the AuthenticatedUsers group
+
+        if (dvObject instanceof Dataverse) {
+            initAccessSettings(); // in case the revoke was for the AuthenticatedUsers group
+        }        
+
         showAssignmentMessages();        
     }
     
@@ -181,7 +184,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     /*
-     edit configuration dialog
+     edit configuration dialog // only for dataverse version of page
      */
     
     private String authenticatedUsersContributorRoleAlias = null;
@@ -203,18 +206,20 @@ public class ManagePermissionsPage implements java.io.Serializable {
         this.defaultContributorRoleAlias = defaultContributorRoleAlias;
     }    
     
-   public void initAccessSettings() {       
-        authenticatedUsersContributorRoleAlias = "";
+   public void initAccessSettings() {
+       if (dvObject instanceof Dataverse) {
+            authenticatedUsersContributorRoleAlias = "";
 
-        List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
-        for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
-            String roleAlias = roleAssignment.getRole().getAlias();
-            authenticatedUsersContributorRoleAlias = roleAlias;
-            break;
-            // @todo handle case where more than one role has been assigned to the AutenticatedUsers group!
-        }
-        
-        defaultContributorRoleAlias = ((Dataverse) dvObject).getDefaultContributorRole().getAlias();      
+            List<RoleAssignment> aUsersRoleAssignments = roleService.directRoleAssignments(AuthenticatedUsers.get(), dvObject);
+            for (RoleAssignment roleAssignment : aUsersRoleAssignments) {
+                String roleAlias = roleAssignment.getRole().getAlias();
+                authenticatedUsersContributorRoleAlias = roleAlias;
+                break;
+                // @todo handle case where more than one role has been assigned to the AutenticatedUsers group!
+            }
+
+            defaultContributorRoleAlias = ((Dataverse) dvObject).getDefaultContributorRole().getAlias();   
+       }
     }
    
     
