@@ -79,6 +79,8 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import javax.faces.model.SelectItem;
 import java.util.Collection;
+import java.util.HashSet;
+import javax.faces.component.UIInput;
 
 /**
  *
@@ -2065,5 +2067,87 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         return false; 
+    }
+    
+    private Set<Long> downloadSelection = new HashSet<>(); 
+    
+    /*
+    public DownloadSelection getDownloadSelection(Long fileId) {
+        if (downloadSelection.contains(fileId)) {
+            return new DownloadSelection(fileId, true);
+        }
+        return new DownloadSelection(fileId, false);
+        
+    }
+    */
+    
+    /*
+    public String getSelectedDownloadIds() {
+        if (this.selectedFiles == null) {
+            return null; 
+        }
+        
+        Iterator itr = this.selectedFiles.iterator();
+        String retlist = null;
+        while (itr.hasNext()) {
+            FileMetadata fileMetadata= (FileMetadata)itr.next();
+            if (retlist == null) {
+                retlist = fileMetadata.getDataFile().getId().toString();
+            } else {
+                retlist = retlist + "," + fileMetadata.getDataFile().getId().toString();
+            }
+        }
+        logger.info("ret list: "+retlist);
+        if (retlist == null) {
+            return "";
+        }
+        return retlist;
+    }
+    */
+    public String getSelectedDownloadIds() {
+        if (this.downloadSelection == null || this.downloadSelection.size() < 2) {
+            return null; 
+        }
+        
+        Iterator itr = this.downloadSelection.iterator();
+        String retlist = null;
+        while (itr.hasNext()) {
+            Long fileId = (Long)itr.next();
+            if (retlist == null) {
+                retlist = fileId.toString();
+            } else {
+                retlist = retlist + "," + fileId.toString();
+            }
+        }
+        logger.fine("ret list: "+retlist);
+        return retlist;
+    }
+    
+    public void updateDownloadSelected(ValueChangeEvent event) {
+        logger.fine("entering updateDownloadSelected");
+
+        Boolean checked = (Boolean)event.getNewValue();
+        
+        logger.fine("value of checked is"+checked);
+        
+        Long fileId = (Long) ((UIInput) event.getSource()).getAttributes().get("fileId");
+        
+        logger.fine("file id is "+fileId);
+        
+        if (fileId != null) {
+            if (checked != null) {
+                if (checked.booleanValue()) {
+                    logger.fine("adding "+fileId+" to the download list;");
+                    if (!downloadSelection.contains(fileId)) {
+                        downloadSelection.add(fileId);
+                    }
+                } else {
+                    logger.fine("removing "+fileId+" from the download list;");
+                    if (downloadSelection.contains(fileId)) {
+                        downloadSelection.remove(fileId);
+                    }
+                }
+            }
+        }
     }
 }

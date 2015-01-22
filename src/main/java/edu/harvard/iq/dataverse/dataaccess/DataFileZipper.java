@@ -105,7 +105,7 @@ public class DataFileZipper {
                     } else {
                         String zipEntryName = checkZipEntryName(fileName, nameList);
                         ZipEntry e = new ZipEntry(zipEntryName);
-                        logger.info("created new zip entry for " + zipEntryName);
+                        logger.fine("created new zip entry for " + zipEntryName);
                         // support for categories: (not yet implemented)
                         //String zipEntryDirectoryName = file.getCategory(versionNum);
                         //ZipEntry e = new ZipEntry(zipEntryDirectoryName + "/" + zipEntryName);
@@ -126,14 +126,14 @@ public class DataFileZipper {
                         int i = 0;
                         while ((i = instream.read(data)) > 0) {
                             zout.write(data, 0, i);
-                            logger.info("wrote " + i + " bytes;");
+                            logger.fine("wrote " + i + " bytes;");
 
                             fileSize += i;
                             //zout.flush();
                         }
                         instream.close();
                         zout.closeEntry();
-                        logger.info("clozed zip entry for " + zipEntryName);
+                        logger.fine("closed zip entry for " + zipEntryName);
 
                         if (createManifest) {
                             fileManifest = fileManifest + zipEntryName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";

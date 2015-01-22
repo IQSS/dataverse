@@ -521,7 +521,7 @@
                                         </script>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                       fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                                      oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
+                                                      oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
                                         <ui:fragment rendered="#{!empty DatasetPage.dropBoxKey}">
                                             <div id="dropboxUploadBlock" class="panel panel-default" style="margin-top:1em;">
@@ -537,6 +537,7 @@
                                         <p:message for="fileUpload" id="uploadMessage" display="text"/>
                                     </ui:fragment>
                                     <!-- View -->
+                                    <p:panel id="zipDownloadPanel">
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
@@ -546,16 +547,25 @@
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
-                                                    <li>
+                                                    <li  class="disabled">
                                                         <h:outputLink value="#">
                                                             <h:outputText value="All Files From This Dataset"/>
                                                         </h:outputLink>
                                                     </li>
-                                                    <li class="disabled">
-                                                        <h:outputLink value="#">
+                                                    <ui:fragment rendered="#{empty DatasetPage.selectedDownloadIds}">
+                                                        <li  class="disabled">
+                                                            <h:outputLink value="#">
+                                                                <h:outputText value="Selected Files"/>
+                                                            </h:outputLink>
+                                                        </li>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{!(empty DatasetPage.selectedDownloadIds)}">
+                                                    <li>
+                                                        <h:outputLink  value="/api/access/datafiles/#{DatasetPage.selectedDownloadIds}">
                                                             <h:outputText value="Selected Files"/>
                                                         </h:outputLink>
                                                     </li>
+                                                    </ui:fragment>
                                                 </ul>
                                             </div>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
@@ -564,6 +574,7 @@
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
+                                    </p:panel>
                                     <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                         <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
                                             <div class="btn-group" style="margin-right:1em;">
@@ -595,12 +606,15 @@
                                                  emptyMessage="#{bundle['file.notFound.tip']}">
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
-                                        <p:column headerText="#{bundle['file.download.header']}" selectionMode="multiple" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"
-                                                  style="width:2%;text-align:center"/>
                                         <p:column style="width:2%;text-align:center"> 
                                             <ui:fragment rendered="#{fileMetadata.restricted}">
                                                 <span class="glyphicon glyphicon-lock"></span>
                                             </ui:fragment>
+                                            <p:selectBooleanCheckbox styleClass="metadata-blocks-default"  rendered="#{empty DatasetPage.editMode}" 
+                                                                     valueChangeListener="#{DatasetPage.updateDownloadSelected}">
+                                                <f:attribute name="fileId" value="#{fileMetadata.dataFile.id}"/>
+                                                <p:ajax update=":datasetForm:tabView:zipDownloadPanel" process="@this"/>
+                                            </p:selectBooleanCheckbox>
                                         </p:column>                                           
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
                                             <!-- add hover here -->
@@ -2052,9 +2066,11 @@
 
                     <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
                               rendered="#{empty DatasetPage.editMode}" modal="true">
-                        <div class="form-inline clearfix" style="width:600px;">
-                            <ui:include src="/subset/gui_subset.xhtml"/>
-                        </div>
+                        <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
+                            <div class="form-inline clearfix" style="width:600px;">
+                                <ui:include src="/subset/gui_subset.xhtml"/>
+                            </div>
+                        </ui:fragment>
                     </p:dialog>
 
                     <p:dialog id="fileCategoriesPopup" style="max-width:80%;" header="#{bundle['file.editCategoriesDialog.header']}" widgetVar="fileCategoriesPopup" modal="true">
