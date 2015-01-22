@@ -224,7 +224,8 @@ public class DatasetPage implements java.io.Serializable {
             Dataverse rootDV = dataverseService.findRootDataverse();
             if(!testDV.equals(rootDV) && !testDV.equals(dataset.getOwner()) 
                     && !testDV.getOwner().equals(dataset.getOwner()) 
-                    && !dataset.getOwner().equals(testDV) && testDV.isReleased()){
+                    && !dataset.getOwner().equals(testDV) //&& testDV.isReleased() remove released as requirement for linking dv
+                    ){
                 dataversesForLinking.add(testDV);
                 
             } 

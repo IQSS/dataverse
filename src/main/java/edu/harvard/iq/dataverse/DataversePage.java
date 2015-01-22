@@ -128,7 +128,8 @@ public class DataversePage implements java.io.Serializable {
             Dataverse rootDV = dataverseService.findRootDataverse();
             if(!testDV.equals(rootDV) && !testDV.equals(dataverse) 
                     && !testDV.getOwner().equals(dataverse) 
-                    && !dataverse.getOwner().equals(testDV) && testDV.isReleased()){
+                    && !dataverse.getOwner().equals(testDV) // && testDV.isReleased() remove released as requirement for linking dv
+                    ){               
                 dataversesForLinking.add(testDV);
             } 
         }

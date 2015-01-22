@@ -307,7 +307,7 @@
                                             <div class="btn-group" role="group" style="margin-right:.3em;">
                                                 <button type="button" class="btn btn-default" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
                                                 <ui:fragment rendered="#{dataverseSession.user.authenticated}">
-                                                    <p:commandLink styleClass="btn btn-default glyphicon glyphicon-link"  rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.released}"                                                          
+                                                    <p:commandLink styleClass="btn btn-default glyphicon glyphicon-link"  rendered="#{dataverseSession.user.authenticated}"                                                          
                                                                    action="#{DatasetPage.updateLinkableDataverses()}"                                                          
                                                                    oncomplete="PF('linkDatasetForm').show()"
                                                                    update="linkDatasetForm"
