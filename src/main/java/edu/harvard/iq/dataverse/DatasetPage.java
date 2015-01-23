@@ -1056,21 +1056,48 @@ public class DatasetPage implements java.io.Serializable {
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
     
+    
+
+    private boolean showAccessPopup = false;
+    
+    public boolean isShowAccessPopup() {
+        return showAccessPopup;
+    }
+
+    public void setShowAccessPopup(boolean showAccessPopup) {
+        this.showAccessPopup = showAccessPopup;
+    }
+    
+    
     public void restrictFiles(boolean restricted) {
         for (FileMetadata fmd : this.getSelectedFiles()) {
+            if (restricted && !fmd.isRestricted()) {
+                // show popup when a file is newly restricted
+                showAccessPopup = true;
+            }
             fmd.setRestricted(restricted);
         }
     }
+    
+    public int getRestrictedFileCount() {
+        int restrictedFileCount = 0;
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (fmd.isRestricted()) {
+                restrictedFileCount++;
+            }
+        }
 
+        return restrictedFileCount;
+    }    
+
+    private List<FileMetadata> filesToBeDeleted = new ArrayList();
+    
     public void deleteFiles() {
         filesToBeDeleted.addAll(selectedFiles);
         // remove from the files list
         dataset.getLatestVersion().getFileMetadatas().removeAll(selectedFiles);
     }
-    
-    private List<FileMetadata> filesToBeDeleted = new ArrayList();
-    
-    
+        
     public String save() {
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
