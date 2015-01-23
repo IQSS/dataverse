@@ -1703,6 +1703,12 @@ public class PORFileReader  extends TabularDataFileReader{
                     valueTokens[1] != null && !"".equals(valueTokens[1])) {
 
                     valueTokens[1] = valueTokens[1].replaceAll("[\n\r]", "");
+                    // A very temporary fix for the varstr limit in the database!
+                    // -- L.A. 4.0 beta 11
+                    // TODO: change the label field to "text" by beta 12!!
+                    if (valueTokens[1].length() > 255) {
+                        valueTokens[1] = valueTokens[1].substring(0, 255);
+                    }
                     varLabelMap.put(valueTokens[0], valueTokens[1]);
                 }
             }
