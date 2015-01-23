@@ -37,6 +37,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -63,18 +64,52 @@ public class BatchImport extends AbstractApiBean {
     @GET
     @Path("migrate/{identifier}")
     public Response migrate(@QueryParam("path") String fileDir, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-        return doImport(fileDir, parentIdtf, apiKey, ImportType.MIGRATION);
+        return processFilePath(fileDir, parentIdtf, apiKey, ImportType.MIGRATION);
     }
-    
+    /**
+     * Import a new Dataset with DDI xml data posted in the request
+     * @param body  the xml 
+     * @param parentIdtf the dataverse to import into (id or alias)
+     * @param apiKey  user's api key
+     * @return import status (including id of the dataset created)
+     */
+    @POST 
+    @Path("import/{identifier}")
+    public Response importNew(String body, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+           
+        User u = findUserByApiToken(apiKey);
+        if (u == null) {
+            return badApiKey(apiKey);
+        }
+        if (parentIdtf == null) {
+            parentIdtf = "root";
+        }
+        Dataverse owner = findDataverse(parentIdtf);
+        if (owner == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
+        }
+        try { 
+            JsonObjectBuilder status = doImport(u,owner,body, ImportType.NEW);
+            return this.okResponse(status);
+        } catch(ImportException e) {
+            return this.errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+    /**
+     * Import single or multiple datasets that are in the local filesystem
+     * @param fileDir the absolute path of the file or directory (all files within the directory will be imported
+     * @param parentIdtf the dataverse to import into (id or alias)
+     * @param apiKey  user's api key
+     * @return import status (including id's of the datasets created)
+     */
     @GET 
     @Path("import/{identifier}")
     public Response batchImport(@QueryParam("path") String fileDir, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-        return doImport(fileDir, parentIdtf, apiKey, ImportType.NEW);
+        return processFilePath(fileDir, parentIdtf, apiKey, ImportType.NEW);
     }
     
-   
     
-    private Response doImport(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
+    private Response processFilePath(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
         JsonArrayBuilder status = Json.createArrayBuilder();
         
         User u = findUserByApiToken(apiKey);
@@ -131,29 +166,34 @@ public class BatchImport extends AbstractApiBean {
     }
     
     private JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException {
-        System.out.println("handling file: "+file.getAbsolutePath());
+       System.out.println("handling file: "+file.getAbsolutePath());
+       String ddiXMLToParse;
+       try {
+            // Read XML into DTO object
+             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
+             return doImport(u,owner,ddiXMLToParse,importType);
+        } catch (IOException e) {
+            throw new ImportException("Error reading file " + file.getAbsolutePath(), e);
+        } 
+    }
+    
+     private JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException {
+      
         String status = "";
         Long createdId = null;
         DatasetDTO dsDTO = null;
-        try {
-            // Read XML into DTO object
-            String ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
+        try {            
             ImportDDI importDDI = new ImportDDI(importType);
-            dsDTO = importDDI.doImport(ddiXMLToParse);
-
-        } catch (IOException e) {
-            throw new ImportException("Error reading path " + file.getAbsolutePath(), e);
+            dsDTO = importDDI.doImport(xmlToParse);
         } catch (XMLStreamException e) {
-
-            throw new ImportException("XMLStreamException" + file.getName(), e);
+            throw new ImportException("XMLStreamException" +  e);
         }
         // convert DTO to Json, 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject obj = jsonReader.readObject();
-                     //and call parse Json to read it into a dataset
-        // TODO: add more information in Http Response
+        //and call parse Json to read it into a dataset   
         try {
             Dataset ds = new JsonParser(datasetFieldSvc, metadataBlockService, settingsService).parseDataset(obj);
             ds.setOwner(owner);
@@ -207,6 +247,9 @@ public class BatchImport extends AbstractApiBean {
             throw new ImportException("Error executing command" + e.getMessage(), e.getCause());
         }
         return Json.createObjectBuilder().add("message", status).add("id", createdId);
-    }
+     }
+   
+    
+       
 
 }
