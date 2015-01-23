@@ -51,11 +51,14 @@
                             deleteFileConfirmation.show();
                         }
                     }
-                    
+
                     function checkNewlyRestricted() {
-                        //todo: add logic to check if any file was newly restricted
-                        //and show access popup
-                        $('button[id$="datasetSave"]').trigger('click');
+                        if ($('input[id$="showAccessPopup"]').val() == 'true') {
+                            accessPopup.show();
+                        }
+                        else {
+                            $('button[id$="datasetSave"]').trigger('click');
+                        }
                     }
 
                     function updateHiddenReason(textArea) {
@@ -538,46 +541,46 @@
                                     </ui:fragment>
                                     <!-- View -->
                                     <p:panel id="zipDownloadPanel">
-                                    <ui:fragment rendered="#{(dataverseSession.user.authenticated and empty DatasetPage.editMode
-                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')) or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
-                                        <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
-                                            <ui:fragment rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
-                                            <div class="btn-group" style="margin-right:1em;">
-                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
-                                                    <li  class="disabled">
-                                                        <h:outputLink value="#">
-                                                            <h:outputText value="All Files From This Dataset"/>
-                                                        </h:outputLink>
-                                                    </li>
-                                                    <ui:fragment rendered="#{empty DatasetPage.selectedDownloadIds}">
-                                                        <li  class="disabled">
-                                                            <h:outputLink value="#">
-                                                                <h:outputText value="Selected Files"/>
-                                                            </h:outputLink>
-                                                        </li>
-                                                    </ui:fragment>
-                                                    <ui:fragment rendered="#{!(empty DatasetPage.selectedDownloadIds)}">
-                                                    <li>
-                                                        <h:outputLink  value="/api/access/datafiles/#{DatasetPage.selectedDownloadIds}">
-                                                            <h:outputText value="Selected Files"/>
-                                                        </h:outputLink>
-                                                    </li>
-                                                    </ui:fragment>
-                                                </ul>
+                                        <ui:fragment rendered="#{(dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                                                 and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                                 and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')) or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
+                                            <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
+                                                <ui:fragment rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
+                                                    <div class="btn-group" style="margin-right:1em;">
+                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
+                                                        </button>
+                                                        <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
+                                                            <li  class="disabled">
+                                                                <h:outputLink value="#">
+                                                                    <h:outputText value="All Files From This Dataset"/>
+                                                                </h:outputLink>
+                                                            </li>
+                                                            <ui:fragment rendered="#{empty DatasetPage.selectedDownloadIds}">
+                                                                <li  class="disabled">
+                                                                    <h:outputLink value="#">
+                                                                        <h:outputText value="Selected Files"/>
+                                                                    </h:outputLink>
+                                                                </li>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{!(empty DatasetPage.selectedDownloadIds)}">
+                                                                <li>
+                                                                    <h:outputLink  value="/api/access/datafiles/#{DatasetPage.selectedDownloadIds}">
+                                                                        <h:outputText value="Selected Files"/>
+                                                                    </h:outputLink>
+                                                                </li>
+                                                            </ui:fragment>
+                                                        </ul>
+                                                    </div>
+                                                </ui:fragment>
+                                                <p:commandLink rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                                                           and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                                           and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}" style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                    <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{bundle['file.uploadOrEdit']}
+                                                </p:commandLink>
                                             </div>
-                                            </ui:fragment>
-                                            <p:commandLink rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
-                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}" style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{bundle['file.uploadOrEdit']}
-                                            </p:commandLink>
-                                        </div>
-                                    </ui:fragment>
+                                        </ui:fragment>
                                     </p:panel>
                                     <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                         <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
@@ -605,7 +608,7 @@
                                     </ui:fragment>                                    
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" style="margin-top:1em;" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
-                                                 rowIndexVar="rowNum"
+                                                 rowIndexVar="rowNum" 
                                                  selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable"
                                                  emptyMessage="#{bundle['file.notFound.tip']}">
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
@@ -614,6 +617,7 @@
                                             <ui:fragment rendered="#{fileMetadata.restricted}">
                                                 <span class="glyphicon glyphicon-lock"></span>
                                             </ui:fragment>
+                                            <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}" rendered="#{rowNum eq 0}"/>                                            
                                             <p:selectBooleanCheckbox styleClass="metadata-blocks-default"  rendered="#{empty DatasetPage.editMode}" 
                                                                      valueChangeListener="#{DatasetPage.updateDownloadSelected}">
                                                 <f:attribute name="fileId" value="#{fileMetadata.dataFile.id}"/>
@@ -1192,7 +1196,11 @@
                                                                 </a>
                                                             </label>
                                                             <div class="col-sm-9">
-                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}</p>
+                                                                <p class="help-block">
+                                                                    <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}">
+                                                                        <f:param value="#{DatasetPage.restrictedFileCount}"/>
+                                                                    </h:outputFormat>
+                                                                </p>
                                                             </div>
                                                         </div>
                                                         <div class="form-group">
@@ -1218,16 +1226,6 @@
                                                         </div>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!empty DatasetPage.editMode}">
-                                                        <div class="form-group">
-                                                            <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
-                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
-                                                                </a>
-                                                            </label>
-                                                            <div class="col-sm-9">
-                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.tip']}</p>
-                                                            </div>
-                                                        </div>
                                                         <div class="form-group">
                                                             <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
@@ -2145,6 +2143,40 @@
                         </button>
 
                     </p:dialog>
+
+                    <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup"
+                              rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}" modal="true">
+                        <ui:fragment>
+                            <div class="form-inline clearfix" style="width:600px;">
+
+                                <div class="form-group">
+                                    <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfAccess}" rows="5" styleClass="form-control" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}">
+                                            #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{DatasetPage.dataset.fileAccessRequest}"/>
+                                    </div>
+                                </div>                                
+                            </div>
+
+                            <p:commandButton value="#{bundle.continue}" onclick="accessPopup.hide()" action="#{DatasetPage.save()}">
+                            </p:commandButton>
+                            <p:commandButton value="#{bundle.cancel}" onclick="accessPopup.hide()" type="button" />  
+                        </ui:fragment>                                
+                    </p:dialog>                    
+
 
                 </h:form>
             </ui:define>
