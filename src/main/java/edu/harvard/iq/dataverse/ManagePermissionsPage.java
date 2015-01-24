@@ -318,12 +318,27 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
-        if (dvObject != null && dvObject.getId() != null && (dvObject instanceof Dataverse || dvObject instanceof Dataset)) {
-            // current the available roles for a dataset are gotten from its parent
-            Dataverse dv = dvObject instanceof Dataverse ? (Dataverse) dvObject : ((Dataset) dvObject).getOwner();
+        if (dvObject != null && dvObject.getId() != null) {
 
-            roles.addAll(roleService.availableRoles(dv.getId()));
-
+            if (dvObject instanceof Dataverse) {
+                roles.addAll(roleService.availableRoles(dvObject.getId()));
+                
+            } else if (dvObject instanceof Dataset) {
+                // don't show roles that only have Dataverse level permissions
+                // current the available roles for a dataset are gotten from its parent
+                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getId())) {
+                    for (Permission permission : role.permissions()) {
+                        if (permission.appliesTo(Dataset.class) || permission.appliesTo(DataFile.class)) {
+                            roles.add(role);
+                            break;
+                        }
+                    }
+                }
+                
+            } else if (dvObject instanceof DataFile) {
+                roles.add(roleService.findBuiltinRoleByAlias("filedownloader"/*DataverseRole.FILE_DOWNLOADER*/));
+            }
+            
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);
         }
         return roles;
@@ -410,18 +425,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
         showRoleMessages();
     }
 
-    // currently not used
-    public void toggleFileRestrict(ActionEvent evt) {
-        DataFile file = (DataFile) dvObject;
-        file.setRestricted(!file.isRestricted());
-    }
-
-    public void grantAccess(ActionEvent evt) {
-        // Find the built in file downloader role (currently by alias) 
-        for (RoleAssignee roleAssignee : selectedRoleAssignees) {
-            assignRole(roleAssignee, roleService.findBuiltinRoleByAlias("filedownloader"));
-        }
-    }
 
     boolean renderConfigureMessages = false;
     boolean renderAssignmentMessages = false;
