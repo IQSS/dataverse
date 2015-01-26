@@ -54,7 +54,7 @@ https://apitest.dataverse.org/api/search?q=trees
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/7",
                     "identifier":"trees",
                     "description":"A tree dataverse with some birds",
-                    "published_at":"2015-01-12T16:05Z"
+                    "published_at":"2015-01-12T16:05:12Z"
                 },
                 {
                     "name":"Chestnut Trees",
@@ -63,7 +63,7 @@ https://apitest.dataverse.org/api/search?q=trees
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/9",
                     "identifier":"chestnuttrees",
                     "description":"A dataverse with chestnut trees and an oriole",
-                    "published_at":"2015-01-12T18:02Z"
+                    "published_at":"2015-01-12T18:02:32Z"
                 },
                 {
                     "name":"trees.png",
@@ -72,7 +72,7 @@ https://apitest.dataverse.org/api/search?q=trees
                     "image_url":"https://apitest.dataverse.org/api/access/preview/12",
                     "file_id":"12",
                     "description":"",
-                    "published_at":"2015-01-12T16:05Z",
+                    "published_at":"2015-01-12T16:05:44Z",
                     "file_type":"PNG Image",
                     "size_in_bytes":8361,
                     "md5":"0386269a5acb2c57b4eade587ff4db64",
@@ -85,7 +85,7 @@ https://apitest.dataverse.org/api/search?q=trees
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"birds",
                     "description":"A bird dataverse with some trees",
-                    "published_at":"2015-01-12T18:01Z"
+                    "published_at":"2015-01-12T18:01:51Z"
                 }
             ],
             "count_in_response":4
@@ -119,7 +119,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "image_url":"https://apitest.dataverse.org/api/access/dvCardImage/3",
                     "identifier":"finches",
                     "description":"A dataverse with finches",
-                    "published_at":"2015-01-12T18:01Z",
+                    "published_at":"2015-01-12T18:01:15Z",
                     "matches":[
                         {
                             "description":{
@@ -143,7 +143,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "url":"http://dx.doi.org/10.5072/FK2/CE0052",
                     "image_url":"https://apitest.dataverse.org/api/access/dsPreview/2",
                     "global_id":"doi:10.5072/FK2/CE0052",
-                    "published_at":"2015-01-12T18:01Z",
+                    "published_at":"2015-01-12T18:01:37Z",
                     "citation":"Finch, Fiona, 2015, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/CE0052,  Root Dataverse,  V1",
                     "matches":[
                         {
