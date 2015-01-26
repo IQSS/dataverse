@@ -73,6 +73,11 @@ public class DatasetVersion implements Serializable {
         NONE, CC0
     }
 
+    /**
+     * @todo What does the GUI use for a default license? What does the "native"
+     * API use? See also https://github.com/IQSS/dataverse/issues/1385
+     */
+    public static DatasetVersion.License defaultLicense = DatasetVersion.License.CC0;
 
     public DatasetVersion() {
 

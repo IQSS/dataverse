@@ -36,13 +36,13 @@ public class CollectionListManagerImpl implements CollectionListManager {
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
-    
+
     private HttpServletRequest request;
 
     @Override
     public Feed listCollectionContents(IRI iri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordAuthException, SwordError {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        user.setRequestMetadata( new UserRequestMetadata(request) );
+        user.setRequestMetadata(new UserRequestMetadata(request));
         urlManager.processUrl(iri.toString());
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
@@ -57,9 +57,9 @@ public class CollectionListManagerImpl implements CollectionListManager {
                     /**
                      * @todo For the supplied dataverse, should we should only
                      * the datasets that are *owned* by the user? Probably not!
-                     * We be using the permission system? Show the equivalent of
-                     * datasets the user is "admin" on? What permission should
-                     * we check?
+                     * We should be using the permission system? Show the
+                     * equivalent of datasets the user is "admin" on? What
+                     * permission should we check?
                      *
                      * And should we only show datasets at the current level or
                      * should we show datasets that are in sub-dataverses as
@@ -102,5 +102,5 @@ public class CollectionListManagerImpl implements CollectionListManager {
     public void setRequest(HttpServletRequest request) {
         this.request = request;
     }
-    
+
 }

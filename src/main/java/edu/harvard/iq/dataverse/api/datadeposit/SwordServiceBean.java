@@ -64,12 +64,54 @@ public class SwordServiceBean {
     }
 
     /**
-     * @todo make sure this is called from both "create" and "edit"
+     * The rules (from https://github.com/IQSS/dataverse/issues/805 ) are below.
+     *
+     * If you don't provide `<dcterms:license>` the license should be set to
+     * "CC0" on dataset creation.
+     *
+     * If you don't provide `<dcterms:license>` the license on dataset
+     * modification, the license should not change.
+     *
+     * To provide `<dcterms:rights>` you much either omit `<dcterms:license>`
+     * (for backwards compatibility since `<dcterms:license>` was not a required
+     * field for SWORD in DVN 3.6) or set `<dcterms:license>` to "NONE".
+     *
+     * It is invalid to provide "CC0" under `<dcterms:license>` in combination
+     * with any value under `<dcterms:rights>`.
+     *
+     * It is invalid to attempt to change the license to "CC0" if Terms of Use
+     * (`<dcterms:rights>`) is already on file.
+     *
+     * Both `<dcterms:rights>` and `<dcterms:license>` can only be specified
+     * once. Multiples are not allowed. Neither are blank values.
+     * murphy:dataverse pdurbin$ *
+     *
+     * @todo What about the "native" API? Are similar rules enforced? See also
+     * https://github.com/IQSS/dataverse/issues/1385
      */
-    public void addDatasetLicense(DatasetVersion datasetVersionToMutate, SwordEntry swordEntry) throws SwordError {
+    public void setDatasetLicenseAndTermsOfUse(DatasetVersion datasetVersionToMutate, SwordEntry swordEntry) throws SwordError {
         Map<String, List<String>> dcterms = swordEntry.getDublinCore();
         List<String> listOfLicensesProvided = dcterms.get("license");
         if (listOfLicensesProvided == null) {
+            DatasetVersion.License existingLicense = datasetVersionToMutate.getLicense();
+            if (existingLicense != null) {
+                // leave the license alone but set terms of use
+                setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense);
+            } else {
+                DatasetVersion.License unspecifiedLicense = DatasetVersion.defaultLicense;
+                List<String> listOfRights = dcterms.get("rights");
+                if (listOfRights != null) {
+                    int numRightsProvided = listOfRights.size();
+                    if (numRightsProvided != 1) {
+                        throw new SwordError("Only one Terms of Use (dcterms:rights) can be provided per dataset, not " + numRightsProvided);
+                    } else {
+                        // Set to NONE for backwards combatibility. We didn't require a license for SWORD in DVN 3.x.
+                        unspecifiedLicense = DatasetVersion.License.NONE;
+                    }
+                }
+                datasetVersionToMutate.setLicense(unspecifiedLicense);
+                setTermsOfUse(datasetVersionToMutate, dcterms, unspecifiedLicense);
+            }
             return;
         }
         int numLicensesProvided = listOfLicensesProvided.size();
@@ -87,6 +129,34 @@ public class SwordServiceBean {
             throw new SwordError("License provided was \"" + licenseProvided + "\" but one " + Arrays.toString(DatasetVersion.License.values()) + " was expected.");
         }
         datasetVersionToMutate.setLicense(licenseToSet);
+        setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet);
+    }
+
+    private void setTermsOfUse(DatasetVersion datasetVersionToMutate, Map<String, List<String>> dcterms, DatasetVersion.License providedLicense) throws SwordError {
+        if (providedLicense.equals(DatasetVersion.License.CC0)) {
+            String existingTermsOfUse = datasetVersionToMutate.getTermsOfUse();
+            if (existingTermsOfUse != null) {
+                throw new SwordError("Can not change license to \"" + DatasetVersion.License.CC0 + "\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a license of \"" + DatasetVersion.License.NONE + "\'.");
+            }
+        }
+        List<String> listOfRightsProvided = dcterms.get("rights");
+        if (listOfRightsProvided != null) {
+            int numRightsProvided = listOfRightsProvided.size();
+            if (providedLicense.equals(DatasetVersion.License.CC0)) {
+                if (numRightsProvided > 0) {
+                    throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with the license \"" + DatasetVersion.License.CC0 + "\". A license of \"" + DatasetVersion.License.NONE + "\" can be used instead.");
+                }
+            } else {
+                if (numRightsProvided != 1) {
+                    throw new SwordError("Only one Terms of Use (dcterms:rights) can be provided per dataset, not " + numRightsProvided);
+                }
+                String termsOfUseProvided = listOfRightsProvided.get(0);
+                if (StringUtils.isBlank(termsOfUseProvided)) {
+                    throw new SwordError("Terms of Use (dcterms:rights) provided was blank.");
+                }
+                datasetVersionToMutate.setTermsOfUse(termsOfUseProvided);
+            }
+        }
     }
 
 }

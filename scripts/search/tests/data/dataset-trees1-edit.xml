@@ -2,11 +2,11 @@
 <entry xmlns="http://www.w3.org/2005/Atom" xmlns:dcterms="http://purl.org/dc/terms/">
    <dcterms:title>Spruce Goose</dcterms:title>
    <dcterms:creator>Spruce, Sabrina</dcterms:creator>
-   <dcterms:description>What the Spruce Goose was really made of.</dcterms:description>
-   <dcterms:rights>Creative Commons CC-BY 3.0 (unported) http://creativecommons.org/licenses/by/3.0/</dcterms:rights>
-   <!--
-   <dcterms:license>CC0</dcterms:license>
+   <dcterms:description>What the Spruce Goose was *really* made of.</dcterms:description>
    <dcterms:license>NONE</dcterms:license>
+   <!--
    <dcterms:rights>Creative Commons CC-BY 3.0 (unported) http://creativecommons.org/licenses/by/3.0/</dcterms:rights>
+   <dcterms:license>NONE</dcterms:license>
+   <dcterms:license>NONE</dcterms:license>
    -->
 </entry>
