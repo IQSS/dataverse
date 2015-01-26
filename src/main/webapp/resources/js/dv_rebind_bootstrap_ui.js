@@ -19,19 +19,15 @@ function bind_bsui_components(){
        $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
 
-    // Permissions + Dataset Tooltips/Popovers                
-    $("[data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
-    $("a[data-toggle='popover']").popover();
-    
-    // Metadata add/edit; tooltips for "+" button
-    bind_tooltip_plus_minus_buttons();
+    // Tooltip + popover functionality
+    bind_tooltip_popover();
     
 }
 
-function bind_tooltip_plus_minus_buttons(){
-    // rebind tooltips to metadata "+" and "-" buttons
-    $("button[title='Add Record']").attr("data-toggle", "tooltip").attr("data-placement", "auto right").tooltip();
-    $("button[title='Delete Record']").attr("data-toggle", "tooltip").attr("data-placement", "auto right").tooltip();
+function bind_tooltip_popover(){
+    // rebind tooltips and popover to all necessary elements
+    $(".bootstrap-button-tooltip, [data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
+    $("a[data-toggle='popover']").popover();
 }
 
 /*
