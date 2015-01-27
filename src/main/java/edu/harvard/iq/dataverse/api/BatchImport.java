@@ -59,11 +59,24 @@ public class BatchImport extends AbstractApiBean {
     MetadataBlockServiceBean metadataBlockService;
     @EJB
     SettingsServiceBean settingsService;
-    
+   
+    /**
+     * 
+     * @param fileDir - the full path of the a parent directory
+     * @param apiKey
+     * @return 
+     */  
+   // @GET
+  //  @Path("migrate")
+  //  public Response migrate(@QueryParam("path") String fileDir,  @QueryParam("key") String apiKey) {
+        // if path is a file, then process it in root directory,
+        // else read directory 
+ //       return processFilePath(fileDir, null, apiKey, ImportType.MIGRATION);
+ //   }
       
     @GET
-    @Path("migrate/{identifier}")
-    public Response migrate(@QueryParam("path") String fileDir, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+    @Path("migrate")
+    public Response migrate(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
         return processFilePath(fileDir, parentIdtf, apiKey, ImportType.MIGRATION);
     }
     /**
@@ -74,8 +87,8 @@ public class BatchImport extends AbstractApiBean {
      * @return import status (including id of the dataset created)
      */
     @POST 
-    @Path("import/{identifier}")
-    public Response importNew(String body, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+    @Path("import")
+    public Response postImport(String body, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
            
         User u = findUserByApiToken(apiKey);
         if (u == null) {
@@ -103,8 +116,8 @@ public class BatchImport extends AbstractApiBean {
      * @return import status (including id's of the datasets created)
      */
     @GET 
-    @Path("import/{identifier}")
-    public Response batchImport(@QueryParam("path") String fileDir, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+    @Path("import")
+    public Response getImport(@QueryParam("path") String fileDir, @QueryParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
         return processFilePath(fileDir, parentIdtf, apiKey, ImportType.NEW);
     }
     
@@ -154,12 +167,14 @@ public class BatchImport extends AbstractApiBean {
  
         }
         for (File file : dir.listFiles()) {
-            try {
-                JsonObjectBuilder fileStatus = handleFile(u, owner, file, importType);
-                status.add( fileStatus);
-            } catch (ImportException e) {
-                status.add(Json.createObjectBuilder().add("importStatus","Exception importing "+ file.getName()+", message = "+ e.getMessage()));
-                
+            if (!file.isHidden()) {
+                try {
+                    JsonObjectBuilder fileStatus = handleFile(u, owner, file, importType);
+                    status.add(fileStatus);
+                } catch (ImportException e) {
+                    status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
+
+                }
             }
         }
         return status;
