@@ -304,21 +304,18 @@
                                         </a>
                                     </div>
                                 </ui:fragment>
-                                <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                                    <div style="float:right;">
-                                        <div class="btn-group" role="group" style="margin-right:.3em;">
-                                            <button type="button" class="btn btn-default" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
-                                            <ui:fragment rendered="#{dataverseSession.user.authenticated}">
-                                                <p:commandLink styleClass="btn btn-default glyphicon glyphicon-link"  rendered="#{dataverseSession.user.authenticated}"                                                          
-                                                               action="#{DatasetPage.updateLinkableDataverses()}"                                                          
-                                                               oncomplete="PF('linkDatasetForm').show()"
-                                                               update="linkDatasetForm"
-                                                               style="color:black;margin-right:0.5em;"/>
-
-                                            </ui:fragment>
-                                        </div>
-                                    </div>
-                                </ui:fragment>
+                                <div class="btn-group pull-right" jsf:id="datasetButtonBar" jsf:rendered="#{empty DatasetPage.editMode}" role="group" style="margin-right:.3em;">
+                                    <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
+                                        <span class="glyphicon glyphicon-envelope"/>
+                                    </button>
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated}" 
+                                                   title="Link Dataset to Your Dataverse"
+                                                   action="#{DatasetPage.updateLinkableDataverses()}"                                                          
+                                                   oncomplete="PF('linkDatasetForm').show()"
+                                                   update="linkDatasetForm">
+                                        <span class="glyphicon glyphicon-link"/>
+                                    </p:commandLink>
+                                </div>
                                 <p:confirmDialog message="#{bundle['dataset.email.tip']}" header="#{bundle['dataset.email.datasetContactBtn']}" widgetVar="contact_confirmation">
                                 </p:confirmDialog>
                             </div>
