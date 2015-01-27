@@ -3,7 +3,9 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:pt="http://java.sun.com/jsf/passthrough">
 
     <h:head>
     </h:head>
@@ -41,66 +43,69 @@
                         <ui:fragment rendered="#{empty manageGuestbooksPage.guestbooks}">
                             #{bundle['dataset.manageGuestbooks.noGuestbooks.txt']}
                         </ui:fragment>    
-                        <ui:fragment rendered="#{!empty manageGuestbooksPage.guestbooks}">    
+                        <ui:fragment rendered="#{!empty manageGuestbooksPage.guestbooks}">
 
                             <p:dataTable id="allGuestbooks" var="guestbook" value="#{manageGuestbooksPage.guestbooks}">
-                                <p:column width="35%" sortBy="name" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
-                                    <h:outputText value="#{guestbook.name} " />
+                                <p:column width="30%" sortBy="name" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
+                                    <h:outputText value="#{guestbook.name}" />
                                 </p:column>
-                                <p:column width="15%" sortBy="createDate" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
-                                    <h:outputText value="#{guestbook.createTime} " />
+                                <p:column width="20%" sortBy="createDate" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
+                                    <h:outputText value="#{guestbook.createDate} " />
                                 </p:column>
                                 <p:column width="10%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
                                     <h:outputText value="#{guestbook.usageCount} " />
                                 </p:column>
-                                <p:column width="40%" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
-
-                                    <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" rendered="false"
-                                                  value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{guestbook.dataverse.id}">
-                                        <h:outputText value="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}"/>
-                                    </h:outputLink>
-                                    <p:commandLink styleClass="btn btn-default" 
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}" 
-                                                   action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
-                                                   oncomplete="viewGuestbook.show()"
-                                                   update=":manageGuestbooksForm"
-                                                   style="color:black;margin-right:0.5em;"/>
-                                    <p:commandLink styleClass="btn btn-default" 
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}"                                                 
+                                <p:column width="35%" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
+                                    <div class="btn-group" role="group" style="margin-right:0.5em;">
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                                       action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}" 
+                                                       oncomplete="viewGuestbook.show()" 
+                                                       update=":manageGuestbooksForm" 
+                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
+                                            <span class="glyphicon glyphicon-eye-open"></span>
+                                        </p:commandLink>
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
                                                    action="#{manageGuestbooksPage.cloneGuestbook(guestbook)}"
                                                    update="@form"
-                                                   style="color:black;margin-right:0.5em;"/>
-                                    <p:commandLink styleClass="btn btn-default" 
+                                                   title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
+                                            <span class="glyphicon glyphicon-repeat"></span>
+                                        </p:commandLink>
+                                        <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                                      rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}" 
+                                                      value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA" 
+                                                      title="#{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}">
+                                            <span class="glyphicon glyphicon-pencil"></span>
+                                        </h:outputLink>
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                                       action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}" 
+                                                       rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}" 
+                                                       oncomplete="deleteConfirmation.show()" 
+                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete']}">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                        </p:commandLink>
+                                    </div>
+                                    <p:commandLink styleClass="btn btn-default btn-sm" 
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"  
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
                                                    update="@form,:messagePanel"
+                                                   oncomplete="bind_tooltip_popover();"
                                                    style="color:black;margin-right:0.5em;"/>
-                                    <p:commandLink styleClass="btn btn-default" 
+                                    <p:commandLink styleClass="btn btn-default btn-sm" 
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"  
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
                                                    update="@form,:messagePanel"
+                                                   oncomplete="bind_tooltip_popover();"
                                                    style="color:black;margin-right:0.5em;"/>
-                                    <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" 
-                                                  rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
-                                                  value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA">
-                                        <h:outputText value="#{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}"/>
-                                    </h:outputLink>
-                                    <p:commandLink styleClass="btn btn-default" 
+                                    <p:commandLink styleClass="btn btn-default btn-sm" 
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}" 
                                                    action="#{manageGuestbooksPage.viewSelectedGuestbookResponses(guestbook)}"
-                                                   oncomplete="viewGuestbookResponse.show()"
+                                                   oncomplete="viewGuestbookResponse.show();bind_tooltip_popover();"
                                                    update=":manageGuestbooksForm"
                                                    style="color:black;margin-right:0.5em;"/>
-                                    <p:commandLink styleClass="btn btn-default" 
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete']}" 
-                                                   action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}"
-                                                   rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}"
-                                                   oncomplete="deleteConfirmation.show()"
-                                                   style="color:black;margin-right:0.5em;"/>
                                 </p:column>
-                            </p:dataTable>
+                            </p:dataTable>                            
                         </ui:fragment>
                     </div>
 

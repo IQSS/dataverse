@@ -2,6 +2,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -137,6 +138,10 @@ public class Guestbook implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getCreateDate() {
+        return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
     }
         
     public Guestbook copyGuestbook(Guestbook source) {

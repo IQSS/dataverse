@@ -129,7 +129,8 @@ public class Util {
 
     /**
      * @param date The Date object to convert.
-     * @return A ISO 8601 date with UTC time zone or null.
+     * @return A ISO 8601 date/time with UTC time zone (i.e.
+     * 2015-01-23T19:51:50Z) or null.
      *
      * <p>
      *
@@ -151,7 +152,7 @@ public class Util {
             return null;
         }
         String otherFormatString = JsonPrinter.TIME_FORMAT_STRING;
-        String dateTimeFormatString = "yyyy-MM-dd'T'HH:mm'Z'";
+        String dateTimeFormatString = "yyyy-MM-dd'T'HH:mm:ss'Z'";
         if (!dateTimeFormatString.equals(otherFormatString)) {
             logger.info("Warning. Two different date/time format strings in use: " + dateTimeFormatString + " and " + otherFormatString);
         }
