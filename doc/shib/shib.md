@@ -1,8 +1,12 @@
 # Shib setup
 
+FIXME: merge with what's in the Installation Guide: http://guides.dataverse.org/en/latest/installation 
+
 ## Install Apache and mod shib
 
 ## Set up a valid SSL cert
+
+See also notes on setting up the SSL cert for https://apitest.dataverse.org at https://github.com/IQSS/dataverse/tree/master/scripts/deploy/apitest.dataverse.org
 
 ### Create a private key
 
@@ -54,8 +58,8 @@ Wait for the SSL cert to be approved.
 
 ### When the cert has been approved, download and install it and the certificate chain and set open permissions
 
-    [root@dvn-vm3 ~]# chown 644 /etc/pki/tls/certs/shibtest.dataverse.org.crt
-    [root@dvn-vm3 ~]# chown 644 /etc/pki/tls/certs/shibtest.dataverse.org_server-chain.crt
+    [root@dvn-vm3 ~]# chmod 644 /etc/pki/tls/certs/shibtest.dataverse.org.crt
+    [root@dvn-vm3 ~]# chmod 644 /etc/pki/tls/certs/shibtest.dataverse.org_server-chain.crt
 
 ### Re-configure Apache to use the new cert
 

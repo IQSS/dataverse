@@ -1,4 +1,5 @@
 #!/bin/sh
 ~/.homebrew/bin/psql -c "
 select id,dataset_id,versionstate,license,termsofuse from datasetversion;
+---select * from datasetversion;
 " dataverse_db

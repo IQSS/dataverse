@@ -977,7 +977,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                 // we can make the decision on whether this variable is part
                 // of a compound variable:
 
-                String RawVariableName = new String(Arrays.copyOfRange(recordType2Fixed, 24, (24+LENGTH_VARIABLE_NAME)),defaultCharSet);
+                String RawVariableName = getNullStrippedString(new String(Arrays.copyOfRange(recordType2Fixed, 24, (24+LENGTH_VARIABLE_NAME)),defaultCharSet));
                 //offset +=LENGTH_VARIABLE_NAME;
                 String variableName = null;
                 if (RawVariableName.indexOf(' ') >= 0){
@@ -1183,8 +1183,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                     } else {
                         dbgLog.fine("nbytes_2_5="+nbytes_2_5);
                     }
-                        variableLabel = new String(Arrays.copyOfRange(variable_label,
-                                0, rawVariableLabelLength),defaultCharSet);
+                        variableLabel = getNullStrippedString(new String(Arrays.copyOfRange(variable_label,
+                                0, rawVariableLabelLength),defaultCharSet));
                         dbgLog.fine("RT2: variableLabel="+variableLabel+"<-");
 
                         dbgLog.fine(variableName + " => " + variableLabel);
@@ -1423,11 +1423,18 @@ public class SAVFileReader  extends TabularDataFileReader{
         for (int i = 0; i < variableCounter; i++) {
             DataVariable dv = new DataVariable();
             String varName = variableNameList.get(i);
+            dbgLog.fine("name: "+varName);
             dv.setName(varName);
             String varLabel = variableLabelMap.get(varName);
             if (varLabel != null && varLabel.length() > 255) {
+                // TODO: 
+                // variable labels will be changed into type 'TEXT' in the 
+                // database - this will eliminate the 255 char. limit. 
+                // -- L.A. 4.0 beta11
+                dbgLog.fine("Have to truncate label: "+varLabel);
                 varLabel = varLabel.substring(0, 255);
             }
+            dbgLog.fine("label: "+varLabel);
             dv.setLabel(varLabel);
             
             dv.setInvalidRanges(new ArrayList<VariableRange>());
@@ -1457,26 +1464,8 @@ public class SAVFileReader  extends TabularDataFileReader{
 
         dbgLog.fine("sumstat:long case=" + Arrays.deepToString(variableTypelList.toArray()));
 
-        // 4.0
-        // "printFoprmatList"/SMD VariableFormat - doesn't seem to be used 
-        // anywhere in v. 3.* ! (TODO: double-check! -- 4.0 alpha)
-        ///smd.setVariableFormat(printFormatList);
-        // 4.0
-        // "variableFormatName" is what ends up being in the "formatName" var
-        // attribute in the DDI; 
-        // in the DataVariable object it corresponds to getFormatSchemaName(); 
-        
-        ///smd.setVariableFormatName(printFormatNameTable);
-
-        ///dbgLog.info("<<<<<<");
-        ///dbgLog.info("printFormatList = " + printFormatList);
-        ///dbgLog.info("printFormatNameTable = " + printFormatNameTable);
-        // dbgLog.info("formatCategoryTable = " + formatCategoryTable);
-        ///dbgLog.info(">>>>>>");
-
         dbgLog.fine("RT2: OBSwiseTypelList=" + OBSwiseTypelList);
 
-        // variableType is determined after the valueTable is finalized
         dbgLog.fine("decodeRecordType2(): end");
     }
     

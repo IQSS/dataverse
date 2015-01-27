@@ -431,20 +431,18 @@
                                 </div>
                             </ui:fragment>
                             <!-- Email Dataverse Contact + Link Dataverse Button Group -->
-                            <ui:fragment rendered="true">
-                                <div style="float:right;">
-                                    <div class="btn-group" role="group" style="margin-right:.3em;">
-                                        <button type="button" class="btn btn-default" onclick="contactForm.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact"><span class="glyphicon glyphicon-envelope"/></button>
-                                        <ui:fragment rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}">
-                                            <p:commandLink styleClass="btn btn-default glyphicon glyphicon-link"  rendered="#{dataverseSession.user.authenticated}"                                                          
-                                                           action="#{DataversePage.updateLinkableDataverses()}"                                                          
-                                                           oncomplete="PF('linkDataverseForm').show()"
-                                                           update=":linkDataverseForm"
-                                                           style="color:black;margin-right:0.5em;"/>
-                                        </ui:fragment>
-                                    </div>
-                                </div>
-                            </ui:fragment>
+                            <div class="btn-group pull-right" role="group" style="margin-right:.3em;">
+                                <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contactForm.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
+                                    <span class="glyphicon glyphicon-envelope"/>
+                                </button>
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}"                                                          
+                                               title="Link Dataverse to Your Dataverse"
+                                               action="#{DataversePage.updateLinkableDataverses()}"                                                          
+                                               oncomplete="PF('linkDataverseForm').show()"
+                                               update=":linkDataverseForm">
+                                    <span class="glyphicon glyphicon-link"/>
+                                </p:commandLink>
+                            </div>
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
                             </p:confirmDialog>
                         </div>
@@ -681,7 +679,9 @@
                         </div>
 
                         <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}"/>
-                        <button type="button" class="btn btn-default" onclick="contactForm.hide()" value="#{bundle.cancel}"/>
+                        <button type="button" class="btn btn-default" onclick="contactForm.hide()" value="#{bundle.cancel}">
+                            #{bundle.cancel}
+                        </button>
                     </h:form>
                 </p:dialog>
 
