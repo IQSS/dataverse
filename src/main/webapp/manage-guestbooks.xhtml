@@ -32,7 +32,7 @@
                     </ui:fragment>
 
                     <div style="float:right; margin-bottom:.5em;">
-                        <h:outputLink styleClass="btn btn-default" 
+                        <h:outputLink styleClass="btn btn-default"
                                       value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}">
                             <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> <h:outputText value="#{bundle['dataset.manageGuestbooks.createBtn']}"/>
                         </h:outputLink>
@@ -42,7 +42,7 @@
                     <div>
                         <ui:fragment rendered="#{empty manageGuestbooksPage.guestbooks}">
                             #{bundle['dataset.manageGuestbooks.noGuestbooks.txt']}
-                        </ui:fragment>    
+                        </ui:fragment>
                         <ui:fragment rendered="#{!empty manageGuestbooksPage.guestbooks}">
 
                             <p:dataTable id="allGuestbooks" var="guestbook" value="#{manageGuestbooksPage.guestbooks}">
@@ -57,55 +57,55 @@
                                 </p:column>
                                 <p:column width="35%" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
                                     <div class="btn-group" role="group" style="margin-right:0.5em;">
-                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
-                                                       action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}" 
-                                                       oncomplete="viewGuestbook.show()" 
-                                                       update=":manageGuestbooksForm" 
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                                       action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
+                                                       oncomplete="viewGuestbook.show()"
+                                                       update=":manageGuestbooksForm"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open"></span>
                                         </p:commandLink>
-                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{manageGuestbooksPage.cloneGuestbook(guestbook)}"
                                                    update="@form"
                                                    title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
                                             <span class="glyphicon glyphicon-repeat"></span>
                                         </p:commandLink>
-                                        <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip" 
-                                                      rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}" 
-                                                      value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA" 
+                                        <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                                      rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
+                                                      value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA"
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}">
                                             <span class="glyphicon glyphicon-pencil"></span>
                                         </h:outputLink>
-                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
-                                                       action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}" 
-                                                       rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}" 
-                                                       oncomplete="deleteConfirmation.show()" 
+                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                                       action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}"
+                                                       rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}"
+                                                       oncomplete="deleteConfirmation.show()"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash"></span>
                                         </p:commandLink>
                                     </div>
-                                    <p:commandLink styleClass="btn btn-default btn-sm" 
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"  
+                                    <p:commandLink styleClass="btn btn-default btn-sm"
+                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
                                                    update="@form,:messagePanel"
                                                    oncomplete="bind_tooltip_popover();"
                                                    style="color:black;margin-right:0.5em;"/>
-                                    <p:commandLink styleClass="btn btn-default btn-sm" 
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"  
+                                    <p:commandLink styleClass="btn btn-default btn-sm"
+                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
                                                    update="@form,:messagePanel"
                                                    oncomplete="bind_tooltip_popover();"
                                                    style="color:black;margin-right:0.5em;"/>
-                                    <p:commandLink styleClass="btn btn-default btn-sm" 
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}" 
+                                    <p:commandLink styleClass="btn btn-default btn-sm"
+                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}"
                                                    action="#{manageGuestbooksPage.viewSelectedGuestbookResponses(guestbook)}"
-                                                   oncomplete="viewGuestbookResponse.show();bind_tooltip_popover();"
+                                                   oncomplete="viewGuestbookCollectedData.show();bind_tooltip_popover();"
                                                    update=":manageGuestbooksForm"
                                                    style="color:black;margin-right:0.5em;"/>
                                 </p:column>
-                            </p:dataTable>                            
+                            </p:dataTable>
                         </ui:fragment>
                     </div>
 
@@ -115,61 +115,86 @@
                         <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
                     </p:confirmDialog>
                     <p:dialog id="viewGuestbook" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
+                        <div class="text-right">
+                            <h:outputLink styleClass="btn btn-default"
+                                          value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA">
+                                <span class="glyphicon glyphicon-pencil"></span> #{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}
+                            </h:outputLink>
+                        </div>
                         <div class="form-horizontal">
-
                             <div class="form-group">
                                 <label for="select_DatasetTemplate" class="col-sm-3 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</a>
                                 </label>
-                                <div class="col-sm-7" style="padding-top: 7px;">
-                                    #{manageGuestbooksPage.selectedGuestbook.name}
+                                <div class="col-sm-7">
+                                    <p class="form-control-static">
+                                        #{manageGuestbooksPage.selectedGuestbook.name}
+                                    </p>
                                 </div>
                             </div>
-                        </div>
-                        <div  style="padding-top: 7px;">
-                        <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformationString}" 
-                                      rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredAccountInformationString }"/>
-                        </div>
-                        <div style="padding-top: 7px;">
-                        <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformationString}" 
-                                      rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalAccountInformationString }"/>
-                        </div>
-                       <div style="padding-top: 7px;">
-                        <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.requiredCustomQuestionsString}" 
-                                      rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredCustomQuestionsString }"/>
-                        </div>
-                        <div style="padding-top: 7px;">
-                        <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.optionalCustomQuestionsString}" 
-                                      rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalCustomQuestionsString }"/>
+                            <div class="form-group">
+                                <label for="select_DatasetTemplate" class="col-sm-3 control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}</a>
+                                </label>
+                                <div class="col-sm-7">
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredAccountInformationString}">
+                                        <p class="form-control-static">
+                                            <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformationString}" escape="false"/>
+                                        </p>
+                                    </div>
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalAccountInformationString}">
+                                        <p class="form-control-static">
+                                            <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformationString}" escape="false"/>
+                                        </p>
+                                    </div>
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredCustomQuestionsString}">
+                                        <p class="form-control-static">
+                                            <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.requiredCustomQuestionsString}" escape="false"/>
+                                        </p>
+                                    </div>
+                                    <div jsf:rendered="#{!empty manageGuestbooksPage.selectedGuestbook.optionalCustomQuestionsString}">
+                                        <p class="form-control-static">
+                                            <h:outputText value="#{manageGuestbooksPage.selectedGuestbook.optionalCustomQuestionsString}" escape="false"/>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </p:dialog>
-                    
-                    <p:dialog id="viewGuestbookResponse" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData.dialog.header']}" widgetVar="viewGuestbookResponse" width="600px" height="600px" style="overflow-y: scroll;">
-                        <div class="form-horizontal">
 
+                    <p:dialog id="viewGuestbookCollectedData" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData.dialog.header']}" widgetVar="viewGuestbookCollectedData" width="600px" height="600px" style="overflow-y: scroll;">
+                        <div class="form-horizontal">
                             <div class="form-group">
                                 <label for="select_DatasetTemplate" class="col-sm-3 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</a>
                                 </label>
-                                <div class="col-sm-7" style="padding-top: 7px;">
-                                    #{manageGuestbooksPage.selectedGuestbook.name}
+                                <div class="col-sm-7">
+                                    <p class="form-control-static">
+                                        #{manageGuestbooksPage.selectedGuestbook.name}
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                        <ui:repeat value="#{manageGuestbooksPage.responses}" var="response">
-                        <div style="padding-top: 7px;">
-                            <h:outputText value="#{response.dataset.releasedVersion.title}"/>
+                        <div class="form-group">
+                            <label for="select_DatasetTemplate" class="col-sm-3 control-label">
+                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}</a>
+                            </label>
+                            <div class="col-sm-7">
+                                <ui:repeat value="#{manageGuestbooksPage.responses}" var="response">
+                                    <p class="form-control-static">
+                                        <span class="text-left">
+                                            <h:outputText value="#{response.dataset.releasedVersion.title}"/>
+                                        </span><br/>
+                                        <br/>
+                                        <h:outputText value="#{response.dataFile.displayName}: #{response.name}"/>
+                                    </p>
+                                </ui:repeat>
+                            </div>
                         </div>
-                            <h:outputText value="#{response.dataFile.displayName}"/>
-                            <h:outputText value="#{response.name}"/>
-                        </ui:repeat>
-
-                    </p:dialog>                    
-
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>
 
     </h:body>
 </html>
-

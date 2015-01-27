@@ -188,9 +188,9 @@ public class Guestbook implements Serializable {
         for (CustomQuestion cq : this.getCustomQuestions()){
             if(cq.isRequired()){
             if(retVal.isEmpty()){
-               retVal = "Required Custom Qustion(s): " + cq.getQuestionString(); 
+               retVal = "Required Custom Qustions<br/>&#160; &#8226; " + cq.getQuestionString(); 
             } else { 
-               retVal += "; " + cq.getQuestionString();
+               retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
             }
         }
         }
@@ -202,9 +202,9 @@ public class Guestbook implements Serializable {
         for (CustomQuestion cq : this.getCustomQuestions()){
             if(!cq.isRequired()){
             if(retVal.isEmpty()){
-               retVal = "Optional Custom Qustion(s): " + cq.getQuestionString(); 
+               retVal = "Optional Custom Qustions<br/>&#160; &#8226; " + cq.getQuestionString(); 
             } else { 
-               retVal += "; " + cq.getQuestionString();
+               retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
             }
         }
         }
@@ -214,27 +214,27 @@ public class Guestbook implements Serializable {
     public String getRequiredAccountInformationString(){
         String retVal = "";
         if(nameRequired){
-            retVal = "Required Account Information: Name";
+            retVal = "Required Account Information<br/>&#160; &#8226; Name";
         }
         if(emailRequired){
             if(retVal.isEmpty()){
-               retVal = "Required Account Information: EMail"; 
+               retVal = "Required Account Information<br/>&#160; &#8226; Email"; 
             } else { 
-               retVal += ", EMail";  
+               retVal += "<br/>&#160; &#8226; Email";  
             }
         }
         if(institutionRequired){
             if(retVal.isEmpty()){
-               retVal = "Required Account Information: Institution"; 
+               retVal = "Required Account Information<br/>&#160; &#8226; Institution"; 
             } else { 
-               retVal += ", Institution";  
+               retVal += "<br/>&#160; &#8226; Institution";  
             }
         }
         if(positionRequired){
             if(retVal.isEmpty()){
-               retVal = "Required Account Information: Position"; 
+               retVal = "Required Account Information<br/>&#160; &#8226; Position"; 
             } else { 
-               retVal += ", Position";  
+               retVal += "<br/>&#160; &#8226; Position";  
             }
         }
         return retVal;
@@ -243,27 +243,27 @@ public class Guestbook implements Serializable {
     public String getOptionalAccountInformationString(){
         String retVal = "";
         if(!nameRequired){
-            retVal = "Optional Account Information: Name";
+            retVal = "Optional Account Information<br/>&#160; &#8226; Name";
         }
         if(!emailRequired){
             if(retVal.isEmpty()){
-               retVal = "Optional Account Information: EMail"; 
+               retVal = "Optional Account Information<br/>&#160; &#8226; Email"; 
             } else { 
-               retVal += ", EMail";  
+               retVal += "<br/>&#160; &#8226; Email";  
             }
         }
         if(!institutionRequired){
             if(retVal.isEmpty()){
-               retVal = "Optional Account Information: Institution"; 
+               retVal = "Optional Account Information<br/>&#160; &#8226; Institution"; 
             } else { 
-               retVal += ", Institution";  
+               retVal += "<br/>&#160; &#8226; Institution";  
             }
         }
         if(!positionRequired){
             if(retVal.isEmpty()){
-               retVal = "Optional Account Information: Position"; 
+               retVal = "Optional Account Information<br/>&#160; &#8226; Position"; 
             } else { 
-               retVal += ", Position";  
+               retVal += "<br/>&#160; &#8226; Position";  
             }
         }
         return retVal;
