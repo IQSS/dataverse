@@ -226,13 +226,23 @@
                                         </div>
                                     </div>
                                 </ui:fragment>
-                                <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
-                                                         and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                <ui:fragment  rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                                         and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion                                     
                                                          and !DatasetPage.dataset.latestVersion.inReview
                                                          and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')                                                           
                                                          and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
-
-                                    <button type="button" class="btn btn-default" onclick="inreview.show()">
+                                    
+                                    <button type="button" class="btn btn-default" onclick="inreview.show()" >
+                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.submitBtn']}
+                                    </button>
+                                </ui:fragment>
+                                <ui:fragment  rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                                         and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion                                     
+                                                         and DatasetPage.dataset.latestVersion.inReview
+                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')                                                           
+                                                         and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
+                                    
+                                    <button type="button" class="btn btn-default" onclick="inreview.show()" disabled="true" >
                                         <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.submitBtn']}
                                     </button>
                                 </ui:fragment>
