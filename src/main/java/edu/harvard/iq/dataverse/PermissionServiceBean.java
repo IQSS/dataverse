@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -41,6 +42,9 @@ public class PermissionServiceBean {
 
     @EJB
     BuiltinUserServiceBean userService;
+    
+    @EJB
+    AuthenticationServiceBean authenticationService;
 
     @EJB
     DataverseRoleServiceBean roleService;
@@ -242,5 +246,15 @@ public class PermissionServiceBean {
         }
         return dataversesUserHasPermissionOn;
     }
-
+    
+    public List<AuthenticatedUser> getUsersWithPermissionOn(Class<? extends Command> commandClass, DvObject dvo){
+        List<AuthenticatedUser> allUsers = authenticationService.findAllAuthenticatedUsers();
+        List<AuthenticatedUser> usersHasPermissionOn = new LinkedList<>();
+        for (AuthenticatedUser user : allUsers) {
+            if (isUserAllowedOn(user, commandClass, dvo)) {
+                usersHasPermissionOn.add(user);
+            }
+        }
+        return usersHasPermissionOn;
+    }
 }

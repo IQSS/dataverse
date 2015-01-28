@@ -42,7 +42,17 @@ public class GuestbookResponseServiceBean {
            return em.createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc").getResultList(); 
         } 
         return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId  +  " order by o.responseTime desc").getResultList();
-    }   
+    }  
+    
+    public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
+        
+        if (guestbookId == null){
+        } else { 
+            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc").getResultList();
+        } 
+        return  null;   
+    }  
+    
     public List<Long> findAllIds30Days() {
         return findAllIds30Days(null);
     }

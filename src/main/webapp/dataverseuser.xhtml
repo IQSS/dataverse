@@ -118,6 +118,15 @@
                                         </h:outputLink>
                                         <h:outputText value=" #{bundle.toPublish}" />
                                     </ui:fragment>
+                                    <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <a href="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
+                                        <h:outputText value="#{bundle.wasSubmittedForReview} " />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}"/>
+                                        </h:outputLink>
+                                        <h:outputText value=" #{bundle.toReview}" />
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
                                         <h:outputText value="#{bundle.theDataset} " />

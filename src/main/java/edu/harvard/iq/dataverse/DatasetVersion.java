@@ -235,6 +235,15 @@ public class DatasetVersion implements Serializable {
     
     @Column(columnDefinition="TEXT") 
     private String studyCompletion;
+    
+    private boolean inReview;
+    public void setInReview(boolean inReview){
+        this.inReview = inReview;
+    }
+
+    public boolean isInReview() {
+        return inReview;
+    }
 
     public String getStudyCompletion() {
         return studyCompletion;
@@ -542,10 +551,6 @@ public class DatasetVersion implements Serializable {
 
     public boolean isReleased() {
         return versionState.equals(VersionState.RELEASED);
-    }
-
-    public boolean isInReview() {
-        return versionState.equals(VersionState.IN_REVIEW);
     }
 
     public boolean isDraft() {

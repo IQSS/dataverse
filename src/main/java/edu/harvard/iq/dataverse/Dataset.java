@@ -14,6 +14,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -52,7 +53,7 @@ public class Dataset extends DvObjectContainer {
     private DataFile thumbnailFile;
     
     @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
-    @JoinColumn(name="guestbook_id", unique= true, nullable=true, insertable=true, updatable=true)
+    @JoinColumn(name="guestbook_id", unique=false, nullable=true, insertable=true, updatable=true)
     private Guestbook guestbook;
     
     private boolean fileAccessRequest;

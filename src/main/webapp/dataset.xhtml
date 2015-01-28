@@ -228,8 +228,17 @@
                                 </ui:fragment>
                                 <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                          and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
-                                    <div style="float:right; margin-left:1em;">
+                                                         and !DatasetPage.dataset.latestVersion.inReview
+                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')                                                           
+                                                         and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
+
+                                    <button type="button" class="btn btn-default" onclick="inreview.show()">
+                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.submitBtn']}
+                                    </button>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
+                                                         and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">                                   <div style="float:right; margin-left:1em;">
                                         <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime == null
                                                                  and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                  and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
@@ -241,6 +250,11 @@
                                                              update="@form"
                                                              action="#{DatasetPage.registerDataset()}">
                                             </p:commandButton>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview and !DatasetPage.locked}">
+                                            <button type="button" class="btn btn-default" onclick="sendBackToContributor.show()">
+                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.rejectBtn']}
+                                            </button>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
                                                                  and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -286,6 +300,11 @@
                                         <p:commandButton value="#{bundle.cancel}" onclick="releaseDraft.hide()" type="button" />
                                     </p:confirmDialog>
                                     <p:confirmDialog message="#{bundle['dataset.mayNotBePublished.tip']}" header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
+                                    </p:confirmDialog>
+                                    <p:confirmDialog message="#{bundle['dataset.rejectMessage']}" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
+                                    <p:commandButton value="#{bundle.continue}" onclick="sendBackToContributor.hide()" action="#{DatasetPage.sendBackToContributor}">
+                                        </p:commandButton>
+                                        <p:commandButton value="#{bundle.cancel}" onclick="sendBackToContributor.hide()" type="button" />
                                     </p:confirmDialog>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
@@ -539,12 +558,12 @@
                                     <!-- Button Panels -->
                                     <div jsf:id="zipDownloadPanel" style="text-align:right; margin-top:1em; margin-bottom:.5em;"
                                          jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and 
-                                                         
+
                                                          ((dataverseSession.user.authenticated and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                          and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')) or 
-                                                         
+
                                                          (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                                        
+
                                         <div class="btn-group" style="margin-right:1em;"
                                              jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
                                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -572,15 +591,15 @@
                                                 </ui:fragment>
                                             </ul>
                                         </div>
-                                        
+
                                         <p:commandLink rendered="#{dataverseSession.user.authenticated and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                                    and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}" 
+                                                                   and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}" 
                                                        style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                             <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{bundle['file.uploadOrEdit']}
                                         </p:commandLink>
                                     </div>
-                                    
+
                                     <div jsf:id="restrictDeletePanel" style="text-align:right; margin-top:1em; margin-bottom:.5em;"
                                          jsf:rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                         <div class="btn-group" style="margin-right:1em;">
@@ -604,7 +623,7 @@
                                             <span class="glyphicon glyphicon-remove" style="margin-right:.3em;"/> #{bundle['file.delete']}
                                         </p:commandLink>
                                     </div>
-                                     
+
                                     <!-- Files Table -->
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" style="margin-top:1em;" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
@@ -969,6 +988,12 @@
                                                                     <p><img src="/resources/images/cc0.png" alt="CC0"/></p>
                                                                 </div>
                                                             </ui:fragment>
+                                                            <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'NONE'}">
+                                                                <div class="col-sm-9">
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.license.txt']}</p>
+                                                                </div>
+                                                            </ui:fragment>
+
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty DatasetPage.editMode }">
                                                             <div class="col-sm-9">
@@ -2176,7 +2201,11 @@
                             <p:commandButton value="#{bundle.cancel}" onclick="accessPopup.hide()" type="button" />  
                         </ui:fragment>                                
                     </p:dialog>                    
-
+                    <p:confirmDialog id="inreview" message="#{bundle['dataset.submitMessage']}" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview">
+                        <p:commandButton value="#{bundle.continue}" onclick="inreview.hide()" action="#{DatasetPage.submitDataset}">
+                        </p:commandButton>
+                        <p:commandButton value="#{bundle.cancel}" onclick="inreview.hide()" type="button" />
+                    </p:confirmDialog>
 
                 </h:form>
             </ui:define>
