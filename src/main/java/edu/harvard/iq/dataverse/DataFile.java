@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
@@ -14,12 +15,13 @@ import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.util.Collection;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -498,6 +500,24 @@ public class DataFile extends DvObject {
         }
         return null; 
     }
+    
+
+    @ManyToMany
+    @JoinTable(name = "fileaccessrequests",
+    joinColumns = @JoinColumn(name = "datafile_id"),
+    inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
+    private List<AuthenticatedUser> fileAccessRequesters;
+
+    public List<AuthenticatedUser> getFileAccessRequesters() {
+        return fileAccessRequesters;
+    }
+
+    public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
+        this.fileAccessRequesters = fileAccessRequesters;
+    }
+    
+        
+    
     
     @Override
     public boolean equals(Object object) {
