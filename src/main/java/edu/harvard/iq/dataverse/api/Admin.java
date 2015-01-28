@@ -198,7 +198,18 @@ public class Admin extends AbstractApiBean {
         }
         return errorResponse(Response.Status.BAD_REQUEST, "User "+ identifier+" not found.");
     }
-    
+
+    @DELETE
+    @Path("authenticatedUsers/id/{id}/")
+    public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            authSvc.deleteAuthenticatedUser(user.getId());
+            return okResponse("AuthenticatedUser " + id + " deleted. ");
+        }
+        return errorResponse(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
     @Path("roles")
     @POST
     public Response createNewBuiltinRole(RoleDTO roleDto) {

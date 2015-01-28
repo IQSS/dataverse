@@ -160,16 +160,39 @@ public class AuthenticationServiceBean {
         }
         return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
     }
-            
+
+    /**
+     * Use with care! This method was written primarily for developers
+     * interested in API testing who want to:
+     * 
+     * 1. Create a temporary user and get an API token.
+     * 
+     * 2. Do some work with that API token.
+     * 
+     * 3. Delete all the stuff that was created with the API token.
+     * 
+     * 4. Delete the temporary user.
+     * 
+     * Before calling this method, make sure you've deleted all the stuff tied
+     * to the user, including stuff they've created, role assignments, group
+     * assignments, etc.
+     * 
+     * Longer term, the intention is to have a "disableAuthenticatedUser"
+     * method/command.
+     */
     public void deleteAuthenticatedUser(Object pk) {
         AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
         
         
         if (user!=null) {
             ApiToken apiToken = findApiTokenByUser(user);
-            em.remove(apiToken);
-            BuiltinUser builtin = builtinUserServiceBean.findByUserName(user.getUserIdentifier());
-            em.remove(builtin);
+            if (apiToken != null) {
+                em.remove(apiToken);
+            }
+            if (user.isBuiltInUser()) {
+                BuiltinUser builtin = builtinUserServiceBean.findByUserName(user.getUserIdentifier());
+                em.remove(builtin);
+            }
             em.remove(user.getAuthenticatedUserLookup());         
             em.remove(user);
         }
