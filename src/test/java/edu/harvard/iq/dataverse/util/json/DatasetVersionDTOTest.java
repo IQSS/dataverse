@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +30,7 @@ import org.junit.Test;
  * @author ellenk
  */
 public class DatasetVersionDTOTest {
-    private final DateFormat dateFormat = new SimpleDateFormat( JsonPrinter.TIME_FORMAT_STRING );
+    private final DateFormat dateFormat = Util.getDateTimeFormat();
    
     
     
