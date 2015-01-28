@@ -83,8 +83,12 @@ public class SwordServiceBean {
      * (`<dcterms:rights>`) is already on file.
      *
      * Both `<dcterms:rights>` and `<dcterms:license>` can only be specified
-     * once. Multiples are not allowed. Neither are blank values.
-     * murphy:dataverse pdurbin$ *
+     * once. Multiples are not allowed.
+     *
+     * Blank values are not allowed for `<dcterms:license>` (since it's new) but
+     * for backwards compatibility, blank values are allowed for
+     * `<dcterms:rights>` per
+     * https://github.com/IQSS/dataverse/issues/805#issuecomment-71670396
      *
      * @todo What about the "native" API? Are similar rules enforced? See also
      * https://github.com/IQSS/dataverse/issues/1385
@@ -152,9 +156,16 @@ public class SwordServiceBean {
                 }
                 String termsOfUseProvided = listOfRightsProvided.get(0);
                 if (StringUtils.isBlank(termsOfUseProvided)) {
-                    throw new SwordError("Terms of Use (dcterms:rights) provided was blank.");
+                    /**
+                     * for backwards compatibility, let dcterms:rights be blank
+                     * (don't throw an error) (but don't persist an empty
+                     * string):
+                     * https://github.com/IQSS/dataverse/issues/805#issuecomment-71670396
+                     */
+                    // throw new SwordError("Terms of Use (dcterms:rights) provided was blank.");
+                } else {
+                    datasetVersionToMutate.setTermsOfUse(termsOfUseProvided);
                 }
-                datasetVersionToMutate.setTermsOfUse(termsOfUseProvided);
             }
         }
     }

@@ -4,7 +4,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
     </h:head>
@@ -35,7 +36,7 @@
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The name of the dataset template.">
-                                        Guestbook Name 
+                                        Guestbook Name
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -43,126 +44,158 @@
                                 </div>
                             </div>
                         </div>
-
-                        <h:outputLink styleClass="btn" value="/manage-templates.xhtml?dataverseId=#{GuestbookPage.ownerId}">
-                            <h:outputText value="Return to Manage Templates"/>
-                        </h:outputLink>
-                        <h:outputText value="#{GuestbookPage.guestbook.name}"/>
-
                     </ui:fragment>
 
                     <!-- Tabs -->
                     <ui:fragment rendered="#{!empty GuestbookPage.editMode}">
                         <div class="row form-horizontal">
-                            <div class="col-xs-6 form-group">
+                            <div class="form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Enter a unique name for the template.">
                                         Guestbook Name <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
                                     </a>
                                 </label>
-                                <div class="col-sm-9">
+                                <div class="col-sm-6">
                                     <p:inputText id="guestbookName" styleClass="form-control" value="#{GuestbookPage.guestbook.name}"/>
                                     <p:message for="guestbookName"/>
                                 </div>
                             </div>
-                        </div>
-                        <div >
-                            <h:outputLabel for="nameRequiredCb" value="Name" />
-                            <h:selectBooleanCheckbox id="nameRequiredCb" value="#{GuestbookPage.guestbook.nameRequired}" />
-                        </div>
-                        <div >
-                            <h:outputLabel for="emailRequiredCb" value="Email" />
-                            <h:selectBooleanCheckbox id="emailRequiredCb" value="#{GuestbookPage.guestbook.emailRequired}" />  
-                        </div>
-                        <div >
-                            <h:outputLabel for="institutionRequiredCb" value="Institution" />
-                            <h:selectBooleanCheckbox id="institutionRequiredCb" value="#{GuestbookPage.guestbook.institutionRequired}" /> 
-                        </div>
-                        <div >
-                            <h:outputLabel for="postitionRequiredCb" value="Postition" />
-                            <h:selectBooleanCheckbox id="postitionRequiredCb" value="#{GuestbookPage.guestbook.positionRequired}" />  
-                        </div>
-
-                        <p:panel styleClass="addQuestion" rendered="#{!empty GuestbookPage.editMode}" >
-                            <h:commandButton type="submit" action="#{GuestbookPage.addCustomQuestion}" class="btn btn-default" 
-                                             value="Add Custom Question" />
-                        </p:panel> 
-                        <p:panel styleClass="panelLayoutBlock"  widgetVar="customQuestions">
-                            <div>
-                                <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq" varStatus="valCount" >
-                                    <div class="col-xs-6 form-group">
-                                        <label class="col-sm-3 control-label" style="white-space:nowrap;">
-                                            <h:outputLabel for="questionText" value="Question Text" />
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Enter a unique name for the template.">
+                                        Data Collected
+                                    </a>
+                                </label>
+                                <div class="col-sm-9">
+                                    <div class="checkbox">
+                                        <label jsf:for="nameRequiredCb">
+                                          <input type="checkbox" jsf:id="nameRequiredCb" jsf:value="#{GuestbookPage.guestbook.nameRequired}"/> Name
                                         </label>
-                                        <div class="col-sm-9">
-                                            <p:inputText id="questionText" styleClass="form-control" value="#{cq.questionString}"/>
-                                            <p:message for="questionText" display="text"/>
-                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <div class="col-xs-6 form-group">
-
-                                            <h:outputLabel for="questionOptions" value="Question type" />
-
-                                            <div class="col-sm-9">
-                                                <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}" 
-                                                                 onchange="#{GuestbookPage.toggleQuestionType(cq)}">
-                                                    <f:selectItem itemLabel="Text" itemValue="text" />
-                                                    <f:selectItem itemLabel="Option buttons" itemValue="options" />
-                                                    <p:ajax update="@widgetVar(customQuestions)" />
-                                                </h:selectOneMenu>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-3">
-                                        <h:outputLabel for="cqRequiredCb" value="Required" />
-                                        <h:selectBooleanCheckbox id="cqRequiredCb" value="#{cq.required}" />
-                                        </div>
-                                    <div class="col-xs-3">
-                                        <p:commandButton styleClass="btn btn-default btn-sm" 
-                                                         title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"                                             
-                                                         >
-                                            <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
-                                        </p:commandButton>
+                                    <div class="checkbox">
+                                        <label jsf:for="emailRequiredCb">
+                                          <input type="checkbox" jsf:id="emailRequiredCb" jsf:value="#{GuestbookPage.guestbook.emailRequired}"/> Email
+                                        </label>
                                     </div>
-
-                                        <ui:fragment  rendered="#{cq.questionType eq 'options'}"> 
-                                            <div class="col-sm-9">
-                                                <h:outputLabel  value="Custom Question Responses" />
-                                                <ui:repeat value="#{cq.customQuestionValues}"  varStatus="resCount" var ="value" rendered="#{cq.questionType eq 'options'}">
-                                                    <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}"/>
-                                                    <p:message for="responseText" display="text"/>
-                                                    <div class="col-xs-3">
-                                                    <p:commandButton styleClass="btn btn-default btn-sm" 
-                                                         title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"                                             
-                                                         >
-                                            <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
-                                        </p:commandButton>
-                                                        </div>
-                                                    <div class="col-xs-3">
-                                        <p:commandButton styleClass="btn btn-default btn-sm" 
-                                                         title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"                                             
-                                                         >
-                                            <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
-                                        </p:commandButton>
-                                                        </div>
-                                                </ui:repeat>
-
-                                            </div>
-                                        </ui:fragment> 
+                                    <div class="checkbox">
+                                        <label jsf:for="institutionRequiredCb">
+                                          <input type="checkbox" jsf:id="institutionRequiredCb" jsf:value="#{GuestbookPage.guestbook.institutionRequired}"/> Institution
+                                        </label>
                                     </div>
-
-
-
-                                </ui:repeat>
+                                    <div class="checkbox">
+                                        <label jsf:for="positionRequiredCb">
+                                          <input type="checkbox" jsf:id="positionRequiredCb" jsf:value="#{GuestbookPage.guestbook.positionRequired}"/> Position
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                        </p:panel>
+                            
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Enter a unique name for the template.">
+                                        Custom Questions
+                                    </a>
+                                </label>
+
+                                <!-- Compound fields -->
+                                <div class="col-sm-9">
+                                    <div class="form-group" jsf:widgetVar="customQuestions">
+                                        <!-- Sub Fields -->
+                                        
+                                        <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq" varStatus="valCount">
+                                            <div class="col-sm-9">
+                                                <div class="form-group col-sm-3">
+                                                    <label class="control-label" jsf:for="questionOptions">
+                                                        <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
+                                                            Question Type
+                                                        </a>
+                                                    </label>
+                                                    <div>
+                                                        <div>
+                                                            <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}"
+                                                                             onchange="#{GuestbookPage.toggleQuestionType(cq)}">
+                                                                <f:selectItem itemLabel="Text" itemValue="text" />
+                                                                <f:selectItem itemLabel="Option buttons" itemValue="options" />
+                                                                <p:ajax update="@widgetVar(customQuestions)" />
+                                                            </h:selectOneMenu>
+                                                        </div>
+                                                        <div class="checkbox">
+                                                            <label jsf:for="cqRequiredCb">
+                                                              <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/> Required
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-sm-9">
+                                                    <label class="control-label" jsf:for="questionText">
+                                                        <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
+                                                            Question Text
+                                                        </a>
+                                                    </label>
+                                                    <div>
+                                                        <div>
+                                                            <p:inputText id="questionText" styleClass="form-control" value="#{cq.questionString}"/>
+                                                            <p:message for="questionText" display="text"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
+                                                    <label class="control-label" jsf:for="questionResponseOptions">
+                                                        <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
+                                                            Response Options
+                                                        </a>
+                                                    </label>
+                                                    <div>
+                                                        <div>
+                                                            <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount" var ="value">
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-8">
+                                                                        <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}"/>
+                                                                        <p:message for="responseText" display="text"/>
+                                                                    </div>
+                                                                    <div class="col-sm-4">
+                                                                        <p:commandButton styleClass="btn btn-default btn-sm"
+                                                                                         title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false">
+                                                                            <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
+                                                                        </p:commandButton>
+                                                                        <p:commandButton styleClass="btn btn-default btn-sm"
+                                                                                         title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
+                                                                            <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
+                                                                        </p:commandButton>
+                                                                    </div>
+                                                                </div>
+                                                            </ui:repeat>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <p:commandButton styleClass="btn btn-default btn-sm"
+                                                                 title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
+                                                    <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
+                                                </p:commandButton>
+                                            </div>
+                                        </ui:repeat>
+                                        
+                                    </div>
+                                    <div class="text-left">
+                                        <button type="submit" class="btn btn-default" 
+                                                jsf:action="#{GuestbookPage.addCustomQuestion}" jsf:rendered="#{!empty GuestbookPage.editMode}">
+                                            <span class="glyphicon glyphicon-plus"></span> Add Custom Question
+                                        </button>
+                                    </div>
+                                    
+                                </div>
+
+                            </div>
+                        </div>
                     </ui:fragment>
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty GuestbookPage.editMode}" >
-                        <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default" 
+                        <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default"
                                          value="#{GuestbookPage.editMode == 'CREATE' ? 'Create Dataset Guestbook' : 'Save Changes'}" />
-                        <h:button  class="btn btn-default" 
+                        <h:button  class="btn btn-default"
                                    value="Cancel" outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}" />
                     </p:panel>
 
