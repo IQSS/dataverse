@@ -767,25 +767,30 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getApiTokenKey() {
         ApiToken apiToken;
-        
+
         if (session.getUser() == null) {
             // ?
             return null;
         }
-        
+
         if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
             apiToken = authService.findApiTokenByUser(au);
             if (apiToken != null) {
                 return "key=" + apiToken.getTokenString();
-            } else {
-                return "key=";
             }
-        } else {
-            return "";
+                // Generate if not available?
+            // Or should it just be generated inside the authService
+            // automatically? 
+            apiToken = authService.generateApiTokenForUser(au);
+            if (apiToken != null) {
+                return "key=" + apiToken.getTokenString();
+            }
         }
+        return "";
 
     }
+    
     private void resetVersionUI() {
         datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
         User user = session.getUser();
