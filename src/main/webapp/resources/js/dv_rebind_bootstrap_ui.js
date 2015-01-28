@@ -24,6 +24,13 @@ function bind_bsui_components(){
     
 }
 
+function dataverseuser_page_rebind(){
+    bind_bsui_components();
+    // rebind for dropdown menus on dataverseuser.xhtml
+    $('.dropdown-toggle').dropdown();
+
+}
+
 function bind_tooltip_popover(){
     // rebind tooltips and popover to all necessary elements
     $(".bootstrap-button-tooltip, [data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
