@@ -14,6 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.util.List;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -51,6 +53,12 @@ public class Guestbook implements Serializable {
     private Long usageCount;
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date createTime;
+    
+    /** WE PROBABLY NEED HELP INFO TEXT...
+     * public String guestbook() {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Guestbook", " - Collect user data."));
+        return null;
+    } */
 
     public Long getId() {
         return id;
