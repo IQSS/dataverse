@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationP
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.faces.application.FacesMessage;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -247,6 +249,9 @@ public class AuthenticationServiceBean {
    
     
     public ApiToken findApiTokenByUser(AuthenticatedUser au) {
+        if (au == null) {
+            return null;
+        }
         ApiToken apiToken = null;
         TypedQuery<ApiToken> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiToken AS o WHERE o.authenticatedUser = :user", ApiToken.class);
         typedQuery.setParameter("user", au);
@@ -254,7 +259,32 @@ public class AuthenticationServiceBean {
             apiToken = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             logger.log(Level.INFO, "When looking up API token for {0} caught {1}", new Object[]{au, ex});
+            apiToken = null;
         }
+        
+        return apiToken;
+    }
+    
+    
+    // A method for generating a new API token;
+    // TODO: this is a simple, one-size-fits-all solution; we'll need
+    // to expand this system, to be able to generate tokens with different
+    // lifecycles/valid for specific actions only, etc. 
+    // -- L.A. 4.0 beta12
+    public ApiToken generateApiTokenForUser(AuthenticatedUser au) {
+        if (au == null) {
+            return null;
+        }
+
+        ApiToken apiToken = new ApiToken();
+        apiToken.setTokenString(java.util.UUID.randomUUID().toString());
+        apiToken.setAuthenticatedUser(au);
+        Calendar c = Calendar.getInstance();
+        apiToken.setCreateTime(new Timestamp(c.getTimeInMillis()));
+        c.roll(Calendar.YEAR, 1);
+        apiToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
+        save(apiToken);
+        
         return apiToken;
     }
 
