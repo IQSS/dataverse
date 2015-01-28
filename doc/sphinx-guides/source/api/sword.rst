@@ -51,6 +51,8 @@ New features as of v1.1
 
 - "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: <dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>
 
+- "License" can now be set with dcterms:license and the possible values are "CC0" and "NONE". "License" interacts with "Terms of Use" (dcterms:rights) in that if you include dcterms:rights in the XML, the license will be set to "NONE". If you don't include dcterms:rights, the license will default to "CC0". It is invalid to specify "CC0" as a license and also include dcterms:rights; an error will be returned. For backwards compatibility, dcterms:rights is allowed to be blank (i.e. <dcterms:rights></dcterms:rights>) but blank values will not be persisted to the database and the license will be set to "NONE".
+
 - "Contact E-mail" is automatically populated from dataset owners email.
 
 - "Subject" is automatically populated with "N/A". #769 
@@ -75,6 +77,7 @@ Create a dataset with an Atom entry
 
 Example Atom entry (XML)::
 
+    <?xml version="1.0"?>
     <entry xmlns="http://www.w3.org/2005/Atom"
            xmlns:dcterms="http://purl.org/dc/terms/">
        <!-- some embedded metadata -->
@@ -103,7 +106,8 @@ Example Atom entry (XML)::
        <dcterms:type>aggregate data</dcterms:type>
        <!-- List of sources of the data collection-->
        <dcterms:source>Stumptown, Jane. 2011. Home Roasting. Coffeemill Press.</dcterms:source>
-       <!-- restrictions -->
+       <!-- license and restrictions -->
+       <dcterms:license>NONE</dcterms:license>
        <dcterms:rights>Creative Commons CC-BY 3.0 (unported) http://creativecommons.org/licenses/by/3.0/</dcterms:rights>
        <!-- related materials -->
        <dcterms:relation>Peets, John. 2010. Roasting Coffee at the Coffee Shop. Coffeemill Press</dcterms:relation>
