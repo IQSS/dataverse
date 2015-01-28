@@ -860,6 +860,50 @@ public class DatasetPage implements java.io.Serializable {
             return releaseDataset(true);
         }
     }
+    
+    public String sendBackToContributor() {
+        Command<Dataset> cmd;
+        workingVersion = dataset.getEditVersion();
+        workingVersion.setInReview(false);       
+        try {
+            cmd = new UpdateDatasetCommand(dataset, session.getUser());
+            dataset = commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+            return "";
+        }
+        List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
+        for (AuthenticatedUser au :authUsers ){
+            userNotificationService.sendNotification(au, dataset.getCreateDate(), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
+        }
+        
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+    }
+    
+    public String submitDataset() {
+        Command<Dataset> cmd;
+        workingVersion = dataset.getEditVersion();
+        workingVersion.setInReview(true);       
+        try {
+            cmd = new UpdateDatasetCommand(dataset, session.getUser());
+            dataset = commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+            return "";
+        }
+        List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
+        for (AuthenticatedUser au :authUsers ){
+            userNotificationService.sendNotification(au, dataset.getCreateDate(), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
+        }
+        
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+    }
 
     public String releaseDataset() {
         return releaseDataset(false);

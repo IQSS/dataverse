@@ -131,7 +131,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void viewSelectedGuestbookResponses(Guestbook selectedGuestbook){
         this.selectedGuestbook = selectedGuestbook;
         guestbookPage.setGuestbook(selectedGuestbook);
-        setResponses(guestbookResponseService.findAll());
+        System.out.print(" in update responses " + selectedGuestbook.getName());
+        setResponses(guestbookResponseService.findAllByGuestbookId(selectedGuestbook.getId()));
+        System.out.print(" after setresponses " + responses.size());
     }
 
     private void saveDataverse(String successMessage) {
