@@ -14,6 +14,7 @@
         <f:metadata>
             <f:viewParam name="id" value="#{managePermissionsPage.dvObject.id}"/>
             <f:viewAction action="#{managePermissionsPage.init}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(managePermissionsPage.dvObject, bundle['dataverse.permissions.title'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataverse.permissions.title']} - #{managePermissionsPage.dvObject.displayName}"/>
