@@ -49,8 +49,17 @@ public class AuthenticatedUser implements User, Serializable {
     private String affiliation;
     private boolean superuser;
 
+    /**
+     * @todo Remove? Check for accuracy? For Solr JOINs we used to care about
+     * the modification times of users but now we don't index users at all.
+     */
     private Timestamp modificationTime;
 
+    /**
+     * @deprecated This column can be removed. We used to index users into Solr
+     * but now we JOIN on "permission documents" instead.
+     */
+    @Deprecated
     private Timestamp indexTime;
 
     @Transient
@@ -144,6 +153,7 @@ public class AuthenticatedUser implements User, Serializable {
         this.modificationTime = modificationTime;
     }
 
+    @Deprecated
     public void setIndexTime(Timestamp indexTime) {
         this.indexTime = indexTime;
     }
