@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -11,11 +12,11 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,9 +36,8 @@ import javax.json.JsonValue;
  */
 public class JsonParser {
     
-    private final DateFormat timeFormat = new SimpleDateFormat( JsonPrinter.TIME_FORMAT_STRING );
-    private final DateFormat dateFormat = new SimpleDateFormat( JsonPrinter.DATE_FORMAT_STRING );
-  
+   
+    
     DatasetFieldServiceBean datasetFieldSvc;
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
@@ -105,6 +105,8 @@ public class JsonParser {
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
         return parseDatasetVersion(obj, new DatasetVersion());
     }
+    
+    
     
     public Dataset parseDataset(JsonObject obj) throws JsonParseException {
         Dataset dataset = new Dataset();
@@ -320,10 +322,10 @@ public class JsonParser {
         }
     }
     Date parseDate( String str ) throws ParseException {
-        return str==null ? null : dateFormat.parse(str);
+        return str==null ? null : Util.getDateFormat().parse(str);
     }
     Date parseTime( String str ) throws ParseException {
-        return str==null ? null : timeFormat.parse(str);
+        return str==null ? null : Util.getDateTimeFormat().parse(str);
     }
     
     Long parseLong( String str ) throws NumberFormatException {
