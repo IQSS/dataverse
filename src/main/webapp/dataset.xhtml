@@ -253,7 +253,7 @@
                                         </ui:fragment>
                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview and !DatasetPage.locked}">
                                             <button type="button" class="btn btn-default" onclick="sendBackToContributor.show()">
-                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.sendBackBtn']}
+                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.rejectBtn']}
                                             </button>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
@@ -301,7 +301,7 @@
                                     </p:confirmDialog>
                                     <p:confirmDialog message="#{bundle['dataset.mayNotBePublished.tip']}" header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
                                     </p:confirmDialog>
-                                    <p:confirmDialog message="#{bundle['dataset.rejectMessage.']}" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
+                                    <p:confirmDialog message="#{bundle['dataset.rejectMessage']}" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
                                     <p:commandButton value="#{bundle.continue}" onclick="sendBackToContributor.hide()" action="#{DatasetPage.sendBackToContributor}">
                                         </p:commandButton>
                                         <p:commandButton value="#{bundle.cancel}" onclick="sendBackToContributor.hide()" type="button" />
