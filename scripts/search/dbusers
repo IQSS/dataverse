@@ -1,0 +1,10 @@
+#!/bin/sh
+~/.homebrew/bin/psql -c "
+select * from builtinuser;
+" dataverse_db
+~/.homebrew/bin/psql -c "
+select * from authenticateduser;
+" dataverse_db
+~/.homebrew/bin/psql -c "
+select * from authenticateduserlookup;
+" dataverse_db

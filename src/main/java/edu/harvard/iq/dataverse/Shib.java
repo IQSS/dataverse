@@ -1,14 +1,25 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -18,6 +29,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
 @Named("Shib")
@@ -81,6 +93,10 @@ public class Shib implements java.io.Serializable {
      *
      * unscoped-affiliation: Member;Staff
      */
+    /**
+     * @todo Resolve potential confusing of having attibutes like "eppn" defined
+     * twice in this class.
+     */
     List<String> shibAttrs = Arrays.asList(
             "Shib-Identity-Provider",
             "uid",
@@ -110,18 +126,36 @@ public class Shib implements java.io.Serializable {
     private boolean visibleTermsOfUse;
     private final String homepage = "/dataverse.xhtml";
     private final String identityProviderProblem = "Problem with Identity Provider";
+
+    /**
+     * We only have one field in which to store a unique
+     * useridentifier/persistentuserid so we have to jam the the "entityId" for
+     * a Shibboleth Identity Provider (IdP) and the unique persistent identifier
+     * per user into the same field and a separator between these two would be
+     * nice, in case we ever want to answer questions like "How many users
+     * logged in from Harvard's Identity Provider?".
+     *
+     * A pipe ("|") is used as a separator because it's considered "unwise" to
+     * use in a URL and the "entityId" for a Shibboleth Identity Provider (IdP)
+     * looks like a URL:
+     * http://stackoverflow.com/questions/1547899/which-characters-make-a-url-invalid
+     */
+    private String persistentUserIdSeparator = "|";
+
     private boolean debug = false;
 
     public void init() {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
 
-        boolean dev = false; // set to true in dev to avoid needing Shibboleth set up locally
-        if (dev) {
-            for (String attr : shibAttrs) {
-                // in dev we don't care if a new, random user is created each time
-                request.setAttribute(attr, UUID.randomUUID().toString());
-            }
+        // set one of these to true in dev to avoid needing Shibboleth set up locally
+        boolean devRandom = false;
+        boolean devConstant = false;
+        if (devRandom) {
+            mutateRequestForDevRandom();
+        }
+        if (devConstant) {
+            mutateRequestForDevConstant();
         }
 
         String shibIdp;
@@ -140,13 +174,19 @@ public class Shib implements java.io.Serializable {
         } catch (Exception ex) {
             return;
         }
-        if (shibIdp.equals("https://idp.testshib.org/idp/shibboleth")) {
-            StringBuilder sb = new StringBuilder();
-            String freshNewShibUser = sb.append(userIdentifier).append(UUID.randomUUID()).toString();
-            logger.info("Will create a new, unique user so the account Terms of Use will be displayed.");
-            userIdentifier = freshNewShibUser;
-        }
 
+        /**
+         * @todo Remove, longer term. For now, commenting out special logic for
+         * always showing Terms of Use for TestShib accounts. The Terms of Use
+         * workflow is captured at
+         * http://datascience.iq.harvard.edu/blog/try-out-single-sign-shibboleth-40-beta
+         */
+//        if (shibIdp.equals("https://idp.testshib.org/idp/shibboleth")) {
+//            StringBuilder sb = new StringBuilder();
+//            String freshNewShibUser = sb.append(userIdentifier).append(UUID.randomUUID()).toString();
+//            logger.info("Will create a new, unique user so the account Terms of Use will be displayed.");
+//            userIdentifier = freshNewShibUser;
+//        }
         String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
         /**
          * @todo is it ok if email address is null? What will blow up?
@@ -154,11 +194,13 @@ public class Shib implements java.io.Serializable {
         String emailAddress = getValueFromAttribute(emailAttribute);
         displayInfo = new RoleAssigneeDisplayInfo(displayName, emailAddress);
 
-        userPersistentId = shibIdp + "|" + userIdentifier;
+        userPersistentId = shibIdp + persistentUserIdSeparator + userIdentifier;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
             logger.info("Found user based on " + userPersistentId + ". Logging in.");
+            logger.info("Updating display info for " + au.getName());
+            authSvc.updateAuthenticatedUser(au, displayInfo);
             session.setUser(au);
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(homepage);
@@ -273,6 +315,63 @@ public class Shib implements java.io.Serializable {
 
     public boolean isVisibleTermsOfUse() {
         return visibleTermsOfUse;
+    }
+
+    private void mutateRequestForDevRandom() throws JsonSyntaxException, JsonIOException {
+        // set *something*, at least, even if it's just shortened UUIDs
+        for (String attr : shibAttrs) {
+            // in dev we don't care if a new, random user is created each time
+            request.setAttribute(attr, UUID.randomUUID().toString().substring(0, 8));
+        }
+        // let's pretent TestShib is the IDP
+        request.setAttribute(shibIdpAttribute, "https://idp.testshib.org/idp/shibboleth");
+
+        String sURL = "http://api.randomuser.me";
+        URL url = null;
+        try {
+            url = new URL(sURL);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        HttpURLConnection randomUserRequest = null;
+        try {
+            randomUserRequest = (HttpURLConnection) url.openConnection();
+        } catch (IOException ex) {
+            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            randomUserRequest.connect();
+        } catch (IOException ex) {
+            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        JsonParser jp = new JsonParser(); //from gson
+        JsonElement root = null;
+        try {
+            root = jp.parse(new InputStreamReader((InputStream) randomUserRequest.getContent())); //convert the input stream to a json element
+        } catch (IOException ex) {
+            Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        JsonObject foo = root.getAsJsonObject();
+        logger.info(foo.toString());
+        JsonElement results = foo.get("results");
+        logger.info(results.toString());
+        JsonElement firstResult = results.getAsJsonArray().get(0);
+        logger.info(firstResult.toString());
+        JsonElement user = firstResult.getAsJsonObject().get("user");
+        JsonElement email = user.getAsJsonObject().get("email");
+        JsonElement name = user.getAsJsonObject().get("name");
+        JsonElement firstName = name.getAsJsonObject().get("first");
+        JsonElement lastName = name.getAsJsonObject().get("last");
+        request.setAttribute(displayNameAttribute, StringUtils.capitalise(firstName.getAsString()) + " " + StringUtils.capitalise(lastName.getAsString()));
+        request.setAttribute(emailAttribute, email.getAsString());
+    }
+
+    private void mutateRequestForDevConstant() {
+        request.setAttribute(shibIdpAttribute, "https://idp.testshib.org/idp/shibboleth");
+        request.setAttribute(uniquePersistentIdentifier, "constant");
+        request.setAttribute(displayNameAttribute, "Sam El");
+        request.setAttribute(emailAttribute, "saml@mailinator.com");
     }
 
 }
