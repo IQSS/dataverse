@@ -8,15 +8,20 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Dataverse.DataverseType;
+import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportDDI;
-import edu.harvard.iq.dataverse.api.imports.ImportDDI.ImportType;
+
 import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -25,10 +30,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -36,18 +43,19 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamException;
 
 @Stateless
 @Path("batch")
-public class BatchImport extends AbstractApiBean {
-
+public class BatchImport extends AbstractApiBean  {
+@EJB
+	protected EjbDataverseEngine engineSvc;
     private static final Logger logger = Logger.getLogger(BatchImport.class.getCanonicalName());
     @EJB
     DatasetServiceBean datasetService;
@@ -59,26 +67,27 @@ public class BatchImport extends AbstractApiBean {
     MetadataBlockServiceBean metadataBlockService;
     @EJB
     SettingsServiceBean settingsService;
-   
-    /**
-     * 
-     * @param fileDir - the full path of the a parent directory
-     * @param apiKey
+    
+    /** migrate - only needed for importing studies from old DVN installations into Dataverse 4.0
+     * read ddi files from the filesystem, and import them in "migrate" mode
+     * @param fileDir - the full path of the parent directory where the files are located. 
+     * If there are subdirectories, then ddi's will be imported into the dataverse matching the subdirectory name (alias)
+     * @param parentIdtf - the dataverse that the top-level files should be imported to - if null, then use root dataverse.
+     * @param apiKey - users's apiKey
      * @return 
-     */  
-   // @GET
-  //  @Path("migrate")
-  //  public Response migrate(@QueryParam("path") String fileDir,  @QueryParam("key") String apiKey) {
-        // if path is a file, then process it in root directory,
-        // else read directory 
- //       return processFilePath(fileDir, null, apiKey, ImportType.MIGRATION);
- //   }
-      
+     */
     @GET
     @Path("migrate")
     public Response migrate(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
         return processFilePath(fileDir, parentIdtf, apiKey, ImportType.MIGRATION);
     }
+    
+    @GET
+    @Path("harvest")
+    public Response harvest(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
+        return processFilePath(fileDir, parentIdtf, apiKey, ImportType.HARVEST);
+    }
+    
     /**
      * Import a new Dataset with DDI xml data posted in the request
      * @param body  the xml 
@@ -154,17 +163,60 @@ public class BatchImport extends AbstractApiBean {
 
         } catch (ImportException e) {
             e.printStackTrace();
-            return this.errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+            return this.errorResponse(Response.Status.BAD_REQUEST, "Import Exception!!");
         }
         return this.okResponse(status); 
     }
     
-    private JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType)throws ImportException {
+    private JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType) throws ImportException {
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = findDataverse(dir.getName());
-        if (owner==null) {
-            throw new ImportException( "Can't find dataverse with identifier='" + dir.getName() + "'");
- 
+        if (owner == null) {
+            if (importType.equals(ImportType.MIGRATION)) {
+                System.out.println("creating new dataverse: " + dir.getName());
+                Dataverse d = new Dataverse();
+                Dataverse root = dataverseService.findByAlias("root");
+                d.setOwner(root);
+                d.setAlias(dir.getName());
+                d.setName(dir.getName());
+                d.setAffiliation("affiliation");
+                d.setPermissionRoot(false);
+                d.setDescription("description");
+                d.setDataverseType(DataverseType.RESEARCHERS);
+                DataverseContact dc = new DataverseContact();
+                dc.setContactEmail("pete@mailinator.com");
+                ArrayList<DataverseContact> dcList = new ArrayList<>();
+                dcList.add(dc);
+                d.setDataverseContacts(dcList);
+
+                try {
+                   owner= engineSvc.submit(new CreateDataverseCommand(d, u, null, null));
+                } catch (EJBException ex) {
+                    Throwable cause = ex;
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Error creating dataverse.");
+                    while (cause.getCause() != null) {
+                        cause = cause.getCause();
+                        if (cause instanceof ConstraintViolationException) {
+                            ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                            for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                        .append(violation.getPropertyPath()).append(" at ")
+                                        .append(violation.getLeafBean()).append(" - ")
+                                        .append(violation.getMessage());
+                            }
+                        }
+                    }
+                    logger.log(Level.SEVERE, sb.toString());
+                    System.out.println("Error creating dataverse: " + sb.toString());
+                    throw new ImportException(sb.toString());
+                } catch (Exception e) {
+                    throw new ImportException(e.getMessage());
+                }
+
+            } else {
+                throw new ImportException("Can't find dataverse with identifier='" + dir.getName() + "'");
+            }
         }
         for (File file : dir.listFiles()) {
             if (!file.isHidden()) {
@@ -179,17 +231,17 @@ public class BatchImport extends AbstractApiBean {
         }
         return status;
     }
-    
+
     private JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException {
-       System.out.println("handling file: "+file.getAbsolutePath());
-       String ddiXMLToParse;
-       try {
+        System.out.println("handling file: " + file.getAbsolutePath());
+        String ddiXMLToParse;
+        try {
             // Read XML into DTO object
-             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
-             return doImport(u,owner,ddiXMLToParse,importType);
+            ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
+            return doImport(u, owner, ddiXMLToParse, importType);
         } catch (IOException e) {
             throw new ImportException("Error reading file " + file.getAbsolutePath(), e);
-        } 
+        }
     }
     
      private JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException {
@@ -234,7 +286,7 @@ public class BatchImport extends AbstractApiBean {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has "+ existingDs.getVersions().size() + " versions");
                     }
                     execCommand(new DestroyDatasetCommand(existingDs,u), "Destroying existing Harvested Dataset");
-                    Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u, false, true), "Creating Harvested Dataset");
+                    Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u, false, importType), "Creating Harvested Dataset");
                     status = " updated dataset, id=" + managedDs.getId() + ".";   
                 } else {
                     // If we are adding a new version to an existing dataset,
@@ -250,7 +302,7 @@ public class BatchImport extends AbstractApiBean {
                 }
                
             } else {
-                Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u, false, true), "Creating Dataset");
+                Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u, false, importType), "Creating Dataset");
                 status = " created dataset, id=" + managedDs.getId() + ".";
                 createdId = managedDs.getId();
             }
