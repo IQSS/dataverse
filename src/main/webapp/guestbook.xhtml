@@ -15,7 +15,6 @@
             <ui:param name="pageTitle" value="#{GuestbookPage.editMode == 'CREATE' ? 'Create Dataset Guestbook' : GuestbookPage.guestbook.name} - #{GuestbookPage.guestbook.dataverse.name} Dataverse"/>
             <ui:param name="dataverse" value="#{GuestbookPage.guestbook.dataverse}"/>
             <ui:param name="guestbook" value="#{GuestbookPage.guestbook}"/>
-            <ui:param name="showBreadcrumbs" value="#{true}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <!--<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>-->
@@ -25,9 +24,10 @@
                     <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, 'Dataset Guestbook')}"/>
                 </f:metadata>
 
-                <h:form id="templateForm">
+                <h:form id="guestbookForm">
 
                     <!-- Header / Button Panel -->
                     <ui:fragment rendered="#{empty GuestbookPage.editMode}">
@@ -67,6 +67,7 @@
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
+                                    <p class="help-block">Dataverse account information that will be collected when a user downloads a file.</p>
                                     <div class="checkbox">
                                         <label jsf:for="nameRequiredCb">
                                           <input type="checkbox" jsf:id="nameRequiredCb" jsf:value="#{GuestbookPage.guestbook.nameRequired}"/> Name
@@ -99,85 +100,86 @@
 
                                 <!-- Compound fields -->
                                 <div class="col-sm-9">
-                                    <div class="form-group" jsf:widgetVar="customQuestions">
-                                        <!-- Sub Fields -->
-                                        
+                                    <p class="help-block">Create your own questions to have users provide more than their account information when they download a file. Questions can be required or optional and answers can be text or multiple choice.</p>
+                                    <p:fragment id="customQuestions" rendered="#{showMessagePanel}">
                                         <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq" varStatus="valCount">
-                                            <div class="col-sm-9">
-                                                <div class="col-sm-3">
-                                                    <label class="control-label" jsf:for="questionOptions">
-                                                        <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
-                                                            Question Type
-                                                        </a>
-                                                    </label>
-                                                    <div>
-                                                        <div>
-                                                            <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}"
-                                                                             onchange="#{GuestbookPage.toggleQuestionType(cq)}">
-                                                                <f:selectItem itemLabel="Text" itemValue="text" />
-                                                                <f:selectItem itemLabel="Option buttons" itemValue="options" />
-                                                                <p:ajax update="@widgetVar(customQuestions)" />
-                                                            </h:selectOneMenu>
-                                                        </div>
-                                                        <div class="checkbox">
-                                                            <label jsf:for="cqRequiredCb">
-                                                              <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/> Required
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <div class="form-group">
+                                                <!-- Sub Fields -->
                                                 <div class="col-sm-9">
-                                                    <label class="control-label" jsf:for="questionText">
-                                                        <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
-                                                            Question Text
-                                                        </a>
-                                                    </label>
-                                                    <div>
+                                                    <div class="col-sm-3">
+                                                        <label class="control-label" jsf:for="questionOptions">
+                                                            <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
+                                                                Question Type
+                                                            </a>
+                                                        </label>
                                                         <div>
-                                                            <p:inputText id="questionText" styleClass="form-control" value="#{cq.questionString}"/>
-                                                            <p:message for="questionText" display="text"/>
+                                                            <div>
+                                                                <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}"
+                                                                                 onchange="#{GuestbookPage.toggleQuestionType(cq)}">
+                                                                    <f:selectItem itemLabel="Text" itemValue="text" />
+                                                                    <f:selectItem itemLabel="Option Buttons" itemValue="options" />
+                                                                    <p:ajax update=":guestbookForm:customQuestions" />
+                                                                </h:selectOneMenu>
+                                                            </div>
+                                                            <div class="checkbox">
+                                                                <label jsf:for="cqRequiredCb">
+                                                                  <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/> Required
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-9">
+                                                        <label class="control-label" jsf:for="questionText">
+                                                            <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
+                                                                Question Text
+                                                            </a>
+                                                        </label>
+                                                        <div>
+                                                            <div>
+                                                                <p:inputText id="questionText" styleClass="form-control" value="#{cq.questionString}"/>
+                                                                <p:message for="questionText" display="text"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
+                                                        <label class="control-label" jsf:for="questionResponseOptions">
+                                                            <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
+                                                                Response Options
+                                                            </a>
+                                                        </label>
+                                                        <div>
+                                                            <div>
+                                                                <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount" var ="value">
+                                                                    <div class="form-group">
+                                                                        <div class="col-sm-8">
+                                                                            <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}"/>
+                                                                            <p:message for="responseText" display="text"/>
+                                                                        </div>
+                                                                        <div class="col-sm-4">
+                                                                            <p:commandButton styleClass="btn btn-default btn-sm"
+                                                                                             title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false">
+                                                                                <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
+                                                                            </p:commandButton>
+                                                                            <p:commandButton styleClass="btn btn-default btn-sm"
+                                                                                             title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
+                                                                                <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
+                                                                            </p:commandButton>
+                                                                        </div>
+                                                                    </div>
+                                                                </ui:repeat>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
-                                                    <label class="control-label" jsf:for="questionResponseOptions">
-                                                        <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
-                                                            Response Options
-                                                        </a>
-                                                    </label>
-                                                    <div>
-                                                        <div>
-                                                            <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount" var ="value">
-                                                                <div class="form-group">
-                                                                    <div class="col-sm-8">
-                                                                        <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}"/>
-                                                                        <p:message for="responseText" display="text"/>
-                                                                    </div>
-                                                                    <div class="col-sm-4">
-                                                                        <p:commandButton styleClass="btn btn-default btn-sm"
-                                                                                         title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false">
-                                                                            <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
-                                                                        </p:commandButton>
-                                                                        <p:commandButton styleClass="btn btn-default btn-sm"
-                                                                                         title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
-                                                                            <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
-                                                                        </p:commandButton>
-                                                                    </div>
-                                                                </div>
-                                                            </ui:repeat>
-                                                        </div>
-                                                    </div>
+                                                <div class="col-sm-3">
+                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="margin:1.8em 1em 0 0;"
+                                                                     title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
+                                                        <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
+                                                    </p:commandButton>
                                                 </div>
-                                            </div>
-                                            <div class="col-sm-3">
-                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin:1.8em 1em 0 0;"
-                                                                 title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
-                                                    <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
-                                                </p:commandButton>
                                             </div>
                                         </ui:repeat>
-                                        
-                                    </div>
+                                    </p:fragment>
                                     <div class="text-left">
                                         <button type="submit" class="btn btn-default" 
                                                 jsf:action="#{GuestbookPage.addCustomQuestion}" jsf:rendered="#{!empty GuestbookPage.editMode}">
