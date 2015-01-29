@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

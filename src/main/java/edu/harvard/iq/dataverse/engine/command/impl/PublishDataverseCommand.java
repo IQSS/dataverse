@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -16,12 +17,10 @@ import java.util.Date;
 public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final Dataverse dataverse;
-    private final User dataverseUser;
 
-    public PublishDataverseCommand(User dataverseUser, Dataverse dataverse) {
+    public PublishDataverseCommand(AuthenticatedUser dataverseUser, Dataverse dataverse) {
         super(dataverseUser, dataverse);
         this.dataverse = dataverse;
-        this.dataverseUser = dataverseUser;
     }
 
     @Override
@@ -39,7 +38,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
-        dataverse.setReleaseUserIdentifier(dataverseUser.getIdentifier());
+        dataverse.setReleaseUser((AuthenticatedUser) getUser());
         Dataverse savedDataverse = ctxt.dataverses().save(dataverse);
         /**
          * @todo consider also

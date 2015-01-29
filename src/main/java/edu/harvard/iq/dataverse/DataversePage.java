@@ -599,18 +599,24 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String releaseDataverse() {
-        PublishDataverseCommand cmd = new PublishDataverseCommand(session.getUser(), dataverse);
-        try {
-            commandEngine.submit(cmd);
-            JsfHelper.addFlashMessage( "Your dataverse is now public.");
-             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
-        } catch (CommandException ex) {
-            String msg = "There was a problem publishing your dataverse: " + ex;
-            logger.severe(msg);
-            /**
-             * @todo how do we get this message to show up in the GUI?
-             */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", msg);
+        if ( session.getUser() instanceof AuthenticatedUser ) {
+            PublishDataverseCommand cmd = new PublishDataverseCommand((AuthenticatedUser) session.getUser(), dataverse);
+            try {
+                commandEngine.submit(cmd);
+                JsfHelper.addFlashMessage( "Your dataverse is now public.");
+                return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+            } catch (CommandException ex) {
+                String msg = "There was a problem publishing your dataverse: " + ex;
+                logger.severe(msg);
+                /**
+                 * @todo how do we get this message to show up in the GUI?
+                 */
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", msg);
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+            }
+        } else {
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", "Only authenticated users can release a dataverse.");
             FacesContext.getCurrentInstance().addMessage(null, message);
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }

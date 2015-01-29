@@ -9,13 +9,11 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
@@ -27,15 +25,14 @@ import java.util.Date;
  *
  * @author skraffmiller
  */
-@RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "", value = Permission.PublishDataset)
-})
+
+@RequiredPermissions(Permission.PublishDataset)
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
     boolean minorRelease = false;
     Dataset theDataset;
 
-    public PublishDatasetCommand(Dataset datasetIn, User user, boolean minor) {
+    public PublishDatasetCommand(Dataset datasetIn, AuthenticatedUser user, boolean minor) {
         super(user, datasetIn);
         minorRelease = minor;
         theDataset = datasetIn;
@@ -47,7 +44,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (!theDataset.getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
-        /* make an attempt to register if not registered*/
+        /* make an attempt to register if not registered */
         String nonNullDefaultIfKeyNotFound = "";
         String    protocol = theDataset.getProtocol();
         String    doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
@@ -86,7 +83,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
         if (theDataset.getPublicationDate() == null) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
-            theDataset.setReleaseUserIdentifier(getUser().getIdentifier());
+            theDataset.setReleaseUser((AuthenticatedUser) getUser());
             if (!minorRelease) {
                 theDataset.getEditVersion().setVersionNumber(new Long(1));
                 theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
@@ -96,11 +93,11 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             }
         } else {
             if (!minorRelease) {
-                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber().intValue() + 1));
+                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
                 theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
             } else {
-                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber().intValue()));
-                theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber().intValue() + 1));
+                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
+                theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
             }
         }
         

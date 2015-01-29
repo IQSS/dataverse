@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -299,14 +300,14 @@ public class Datasets extends AbstractApiBean {
                 case "major": isMinor = false; break;
                 default: return errorResponse( Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
             }
-            long dsId=0;
+            long dsId;
             try {
                 dsId = Long.parseLong(id);
             } catch ( NumberFormatException nfe ) {
                 return errorResponse( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
             }
             
-            User u = findUserOrDie(apiKey);
+            AuthenticatedUser u = findUserOrDie(apiKey);
             if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
             
             Dataset ds = datasetService.find(dsId);

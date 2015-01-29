@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.servlet.ServletRequest;
 
 /**
  * Utility class for common JSF tasks.

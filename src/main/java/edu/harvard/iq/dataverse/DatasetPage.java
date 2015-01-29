@@ -24,23 +24,18 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.ByteArrayOutputStream;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -69,16 +64,11 @@ import javax.json.JsonReader;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import javax.faces.model.SelectItem;
-import java.util.Collection;
 import java.util.HashSet;
 import javax.faces.component.UIInput;
 
@@ -975,19 +965,23 @@ public class DatasetPage implements java.io.Serializable {
 
     private String releaseDataset(boolean minor) {
         Command<Dataset> cmd;
-        try {
-            if (editMode == EditMode.CREATE) {
-                cmd = new PublishDatasetCommand(dataset, session.getUser(), minor);
-            } else {
-                cmd = new PublishDatasetCommand(dataset, session.getUser(), minor);
+        if ( session.getUser() instanceof AuthenticatedUser ) {
+            try {
+                if (editMode == EditMode.CREATE) {
+                    cmd = new PublishDatasetCommand(dataset, (AuthenticatedUser) session.getUser(), minor);
+                } else {
+                    cmd = new PublishDatasetCommand(dataset, (AuthenticatedUser) session.getUser(), minor);
+                }
+                dataset = commandEngine.submit(cmd);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
+                FacesContext.getCurrentInstance().addMessage(null, message);
+            } catch (CommandException ex) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+                logger.severe(ex.getMessage());
             }
-            dataset = commandEngine.submit(cmd);
-        } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
-            logger.severe(ex.getMessage());
+        } else {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Only authenticated users can release Datasets.");
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
     

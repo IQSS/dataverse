@@ -54,7 +54,9 @@ public abstract class DvObject implements java.io.Serializable {
 
     private Timestamp publicationDate;
 
-    private String releaseUserIdtf;
+    /** The user that released this dataverse */
+    @ManyToOne
+    private AuthenticatedUser releaseUser;
     
     private Timestamp createDate;
 
@@ -145,12 +147,12 @@ public abstract class DvObject implements java.io.Serializable {
         this.publicationDate = publicationDate;
     }
 
-    public String getReleaseUserIdentifier() {
-        return releaseUserIdtf;
+    public AuthenticatedUser getReleaseUser() {
+        return releaseUser;
     }
-
-    public void setReleaseUserIdentifier(String releaseUserIdtf) {
-        this.releaseUserIdtf = releaseUserIdtf;
+    
+    public void setReleaseUser(AuthenticatedUser releaseUser) {
+        this.releaseUser = releaseUser;
     }
 
     public boolean isReleased() {
