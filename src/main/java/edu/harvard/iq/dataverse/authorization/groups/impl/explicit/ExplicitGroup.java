@@ -17,7 +17,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Transient;
-import javax.servlet.ServletRequest;
 
 //  Cannot extend persisted group, the requirements for the uniqeness of the group alias are too strict.
 @Entity
@@ -38,7 +37,6 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      */
     @ElementCollection
     private List<String> groupIds;
-    
     
     private String title;
     

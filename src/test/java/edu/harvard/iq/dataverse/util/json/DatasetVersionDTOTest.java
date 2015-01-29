@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +30,6 @@ import org.junit.Test;
  */
 public class DatasetVersionDTOTest {
     private final DateFormat dateFormat = Util.getDateTimeFormat();
-   
-    
     
     public DatasetVersionDTOTest() {
     }

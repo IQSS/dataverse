@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -24,7 +25,7 @@ import javax.persistence.PersistenceContext;
 @Stateless
 @Named
 public class RoleAssigneeServiceBean {
-    
+    private static final Logger logger = Logger.getLogger(RoleAssigneeServiceBean.class.getName());
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     

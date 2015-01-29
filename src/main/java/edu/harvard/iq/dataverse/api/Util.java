@@ -170,10 +170,18 @@ public class Util {
         }
     };
     
-     public static SimpleDateFormat getDateTimeFormat() {
+    /**
+     * Note: SimpleDateFormat is not thread-safe! Never retain the format returned by this method in a field.
+     * @return The standard API format for date-and-time.
+     */
+    public static SimpleDateFormat getDateTimeFormat() {
         return threadLocalTimeFormatter.get();
     }
     
+    /**
+     * Note: SimpleDateFormat is not thread-safe! Never retain the format returned by this method in a field.
+     * @return The standard API format for dates.
+     */
     public static SimpleDateFormat getDateFormat() {
         return threadLocalDateFormatter.get();
     }
