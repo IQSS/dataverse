@@ -56,7 +56,7 @@ public class Guestbook implements Serializable {
     
     /** WE PROBABLY NEED HELP INFO TEXT...
      * public String guestbook() {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Guestbook", " - Collect user data."));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Guestbook", " – Edit your dataset guestbook and click Save Changes. Asterisks indicate required fields."));
         return null;
     } */
 
