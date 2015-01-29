@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -265,6 +266,12 @@ public class DatasetVersionDTO {
 
     public void setMetadataBlocks(Map<String, MetadataBlockDTO> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
+    }
+    
+    public List<FieldDTO> getDatasetFields() {
+        List<FieldDTO> fields = new ArrayList<>();
+        //TODO: finish this
+        return null;
     }
 
     @Override

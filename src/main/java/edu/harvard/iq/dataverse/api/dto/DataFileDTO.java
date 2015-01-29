@@ -1,6 +1,7 @@
 
 package edu.harvard.iq.dataverse.api.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +19,15 @@ public class DataFileDTO {
     private String UNF;
     private String md5;
     private String description;
-    private List<DataTableDTO> dataTables;
+    private List<DataTableDTO> dataTables = new ArrayList();
+
+    public List<DataTableDTO> getDataTables() {
+        return dataTables;
+    }
+
+    public void setDataTables(List<DataTableDTO> dataTables) {
+        this.dataTables = dataTables;
+    }
 
     public String getFileName() {
         return fileName;
