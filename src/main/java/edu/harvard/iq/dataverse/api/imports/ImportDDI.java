@@ -28,13 +28,13 @@ import javax.xml.stream.XMLStreamReader;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.xml.stream.XMLInputFactory;
-
+import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 
 /**
  *
  * @author ellenk
  */
-public class ImportDDI {
+public class ImportDDI implements ImportUtil {
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
     
     public static final String NAMING_PROTOCOL_HANDLE = "hdl";
@@ -87,7 +87,6 @@ public class ImportDDI {
     public static final String NOTE_TYPE_REPLICATION_FOR = "DVN:REPLICATION_FOR";
     private XMLInputFactory xmlInputFactory = null;
     private ImportType importType;
-    public enum ImportType{ NEW, MIGRATION, HARVEST};
      
     public ImportDDI(ImportType importType) {
         this.importType=importType;
@@ -113,6 +112,10 @@ public class ImportDDI {
         }
         return datasetDTO;
     }
+    
+    public void importFileMetadata(DatasetVersion dv, String xmlToParse) {
+        
+    } 
     
      public void importDDI(String xmlToParse, DatasetVersion datasetVersion, DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         DatasetDTO datasetDTO = this.initializeDataset();
@@ -1302,12 +1305,11 @@ public class ImportDDI {
     }
     
     
-/* 
-    TODO: add this back in when needed? 
-    private void processFileDscr(XMLStreamReader xmlr, DatasetVersionDTO dvDTO, Map filesMap) throws XMLStreamException {
-        FileMetadataDTO fmd = new FileMetadataDTO();
+
+    private void processFileDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
+        FileMetadataDTO fmdDTO = new FileMetadataDTO();
         
-        studyVersion.getFileMetadatas().add(fmd);
+        datasetDTO.getDatasetVersion().getFileMetadatas().add(fmdDTO);
 
         //StudyFile sf = new OtherFile(studyVersion.getStudy()); // until we connect the sf and dt, we have to assume it's an other file
         // as an experiment, I'm going to do it the other way around:
@@ -1315,14 +1317,15 @@ public class ImportDDI {
         // to otherFiles later if no variables are referencing it -- L.A.
 
 
-        TabularDataFile sf = new TabularDataFile(studyVersion.getStudy()); 
-        DataTable dt = new DataTable();
-        dt.setStudyFile(sf);
-        sf.setDataTable(dt);
-
-        fmd.setStudyFile(sf);
-
-        sf.setFileSystemLocation( xmlr.getAttributeValue(null, "URI"));
+     //   TabularDataFile sf = new TabularDataFile(studyVersion.getStudy()); 
+        DataFileDTO dfDTO = new DataFileDTO();
+        DataTableDTO dtDTO = new DataTableDTO();
+        dfDTO.getDataTables().add(dtDTO);
+        fmdDTO.setDataFile(dfDTO);
+        datasetDTO.getDataFiles().add(dfDTO);
+       
+        // EMK TODO: ask Gustavo about this property
+     //   dfDTO.setFileSystemLocation( xmlr.getAttributeValue(null, "URI"));
         String ddiFileId = xmlr.getAttributeValue(null, "ID");
 
         /// the following Strings are used to determine the category
@@ -1334,15 +1337,15 @@ public class ImportDDI {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("fileTxt")) {
-                    String tempDDIFileId = processFileTxt(xmlr, fmd, dt);
+                    String tempDDIFileId = processFileTxt(xmlr, fmdDTO, dtDTO);
                     ddiFileId = ddiFileId != null ? ddiFileId : tempDDIFileId;
                 }
                 else if (xmlr.getLocalName().equals("notes")) {
                     String noteType = xmlr.getAttributeValue(null, "type");
                     if (NOTE_TYPE_UNF.equalsIgnoreCase(noteType) ) {
                         String unf = parseUNF( parseText(xmlr) );
-                        sf.setUnf(unf);
-                        dt.setUnf(unf);
+                        dfDTO.setUNF(unf);
+                        dtDTO.setUnf(unf);
                     } else if ("vdc:category".equalsIgnoreCase(noteType) ) {
                         catName = parseText(xmlr);
                     } else if ("icpsr:category".equalsIgnoreCase(noteType) ) {
@@ -1357,17 +1360,17 @@ public class ImportDDI {
             } else if (event == XMLStreamConstants.END_ELEMENT) {// </codeBook>
                 if (xmlr.getLocalName().equals("fileDscr")) {
                     // post process
-                    if (fmd.getLabel() == null || fmd.getLabel().trim().equals("") ) {
-                        fmd.setLabel("file");
+                    if (fmdDTO.getLabel() == null || fmdDTO.getLabel().trim().equals("") ) {
+                        fmdDTO.setLabel("file");
                     }
 
-                    fmd.setCategory(determineFileCategory(catName, icpsrDesc, icpsrId));
+                    fmdDTO.setCategory(determineFileCategory(catName, icpsrDesc, icpsrId));
 
 
                     if (ddiFileId != null) {
                         List filesMapEntry = new ArrayList();
-                        filesMapEntry.add(fmd);
-                        filesMapEntry.add(dt);
+                        filesMapEntry.add(fmdDTO);
+                        filesMapEntry.add(dtDTO);
                         filesMap.put( ddiFileId, filesMapEntry);
                     }
 
@@ -1376,6 +1379,90 @@ public class ImportDDI {
             }
         }
     }
+    
+     private String determineFileCategory(String catName, String icpsrDesc, String icpsrId) {
+        if (catName == null) {
+            catName = icpsrDesc;
+
+            if (catName != null) {
+                if (icpsrId != null && !icpsrId.trim().equals("") ) {
+                    catName = icpsrId + ". " + catName;
+                }
+            }
+        }
+
+        return (catName != null ? catName : "");
+    }
+  /**
+     * sets fmdDTO.label, fmdDTO.description, fmdDTO.studyfile.subsettableFileType
+     * @param xmlr
+     * @param fmdDTO
+     * @param dtDTO
+     * @return fmdDTO.label (ddiFileId)
+     * @throws XMLStreamException 
+     */
+    private String processFileTxt(XMLStreamReader xmlr, FileMetadataDTO fmdDTO, DataTableDTO dtDTO) throws XMLStreamException {
+        String ddiFileId = null;
+        DataFileDTO dfDTO = fmdDTO.getDataFile();
+
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("fileName")) {
+                    ddiFileId = xmlr.getAttributeValue(null, "ID");
+                    fmdDTO.setLabel( parseText(xmlr) );
+                    /*sf.setFileType( FileUtil.determineFileType( fmdDTO.getLabel() ) );*/
+
+                } else if (xmlr.getLocalName().equals("fileCont")) {
+                    fmdDTO.setDescription( parseText(xmlr) );
+                }  else if (xmlr.getLocalName().equals("dimensns")) processDimensns(xmlr, dtDTO);
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("fileTxt")) {
+                    // Now is the good time to determine the type of this subsettable
+                    // file (now that the "<dimensns>" section has been parsed, we 
+                    // should know whether it's a tab, or a fixed field:
+                    String subsettableFileType = "application/octet-stream"; // better this than nothing!
+                    if ( dtDTO.getRecordsPerCase() != null )  {
+                        subsettableFileType="text/x-fixed-field";
+                    } else {
+                        subsettableFileType="text/tab-separated-values";
+                    }        
+                    //EMK TODO: ask Gustavo & Leonid what should be used here instead of setFileType
+              //      dfDTO.setFileType( subsettableFileType );
+                    
+                    return ddiFileId;
+                }
+            }
+        }
+        return ddiFileId;
+    }  
+    
+  /**
+    * Set dtDTO. caseQuantity, varQuantity, recordsPerCase
+    * @param xmlr
+    * @param dtDTO
+    * @throws XMLStreamException 
     */
+    private void processDimensns(XMLStreamReader xmlr, DataTableDTO dtDTO) throws XMLStreamException {
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("caseQnty")) {
+                    try {
+                        dtDTO.setCaseQuantity( new Long( parseText(xmlr) ) );
+                    } catch (NumberFormatException ex) {}
+                } else if (xmlr.getLocalName().equals("varQnty")) {
+                    try{
+                        dtDTO.setVarQuantity( new Long( parseText(xmlr) ) );
+                    } catch (NumberFormatException ex) {}
+                } else if (xmlr.getLocalName().equals("recPrCas")) {
+                    try {
+                        dtDTO.setRecordsPerCase( new Long( parseText(xmlr) ) );
+                    } catch (NumberFormatException ex) {}
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {// </codeBook>
+                if (xmlr.getLocalName().equals("dimensns")) return;
+            }
+        }
+    }
+    
 }
 

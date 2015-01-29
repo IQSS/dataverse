@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -37,40 +39,40 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     private final Dataset theDataset;
     private final boolean registrationRequired;
     // TODO: rather than have a boolean, create a sub-command for creating a dataset during import
-    private final boolean importMode;
+    private final ImportUtil.ImportType importType;
 
     public CreateDatasetCommand(Dataset theDataset, User user) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = false;
-        this.importMode=false;
+        this.importType=null;
     }
 
     public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
-        this.importMode=false;
+        this.importType=null;
     }
-      public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, boolean importMode) {
+      public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, ImportUtil.ImportType importType) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
-        this.importMode=importMode;
+        this.importType=importType;
     }
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
         logger.log(Level.INFO, "start "  + formatter.format(new Date().getTime()));
-        // If this is not a migrated dataset, Test for duplicate identifier
-        if (!importMode && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
+       
+        if ( !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
         }
-        // If we are in importMode, then we don't want to create an editable version, 
+        // If we are importing with the API, then we don't want to create an editable version, 
         // just save the version is already in theDataset.
-        DatasetVersion dsv = importMode? theDataset.getLatestVersion() : theDataset.getEditVersion();
+        DatasetVersion dsv = importType!=null? theDataset.getLatestVersion() : theDataset.getEditVersion();
         // validate
         // @todo for now we run through an initFields method that creates empty fields for anything without a value
         // that way they can be checked for required
@@ -121,8 +123,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (theDataset.getIdentifier()==null) {
             theDataset.setIdentifier(ctxt.datasets().generateIdentifierSequence(theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()));
         }
-        if (protocol.equals("doi") 
-              && doiProvider.equals("EZID") && theDataset.getGlobalIdCreateTime() == null) {
+        // Attempt the registration if importing dataset through the API, or the app (but not harvest or migrate)
+        if ((importType==null || importType.equals(ImportType.NEW)) 
+            && protocol.equals("doi") 
+            && doiProvider.equals("EZID") 
+            && theDataset.getGlobalIdCreateTime() == null) {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset); 
             // Check return value to make sure registration succeeded
             if (doiRetString.contains(theDataset.getIdentifier())) {
