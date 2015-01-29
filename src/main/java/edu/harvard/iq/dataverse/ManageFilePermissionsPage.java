@@ -259,7 +259,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private List<RoleAssignee> selectedRoleAssignees;
     private List<DataFile> selectedFiles = new ArrayList();
     private List<RoleAssignee> roleAssigneeList = new ArrayList();
-
+    private AuthenticatedUser fileRequester;
+    
     public List<RoleAssignee> getSelectedRoleAssignees() {
         return selectedRoleAssignees;
     }
@@ -275,21 +276,28 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setSelectedFiles(List<DataFile> selectedFiles) {
         this.selectedFiles = selectedFiles;
     }
+    
+    public AuthenticatedUser getFileRequester() {
+        return fileRequester;
+    }
 
 
     public void initAssignDialog(ActionEvent ae) {
+        fileRequester = null;
         selectedRoleAssignees = null;
         selectedFiles.clear();
         showUserGroupMessages();
     }
     
     public void initAssignDialogByFile(DataFile file) {
+        fileRequester = null;
         selectedRoleAssignees = null;
         selectedFiles.clear();
         selectedFiles.add(file);
         showFileMessages();
     }
-    public void initAssignDialogByUser(AuthenticatedUser au) {
+    public void initAssignDialogForFileRequester(AuthenticatedUser au) {
+        fileRequester = au;
         selectedRoleAssignees = new ArrayList();
         selectedFiles.clear();
         selectedRoleAssignees.add(au);
@@ -334,6 +342,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         initMaps();
     }
     
+    // this method grants access to al files requested by the user
     public void grantAccessToRequests(AuthenticatedUser au) {
         // Find the built in file downloader role (currently by alias) 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
@@ -343,7 +352,19 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             file.getFileAccessRequesters().remove(au);
             datafileService.save(file);
         }
+       
+        initMaps();
+    }
+    
+     // this method rejects access to selected files requested by the user
+    public void rejectAccessToRequests(AuthenticatedUser au) {
+        for (DataFile file : selectedFiles) {               
+            file.getFileAccessRequesters().remove(au);
+            datafileService.save(file);
+        }
 
+        JsfHelper.addSuccessMessage("File Access request by " + au.getDisplayInfo().getTitle() + " was rejected.");
+        
         
         initMaps();
     }    
