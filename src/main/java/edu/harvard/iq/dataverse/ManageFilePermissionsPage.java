@@ -320,7 +320,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     
     public void grantAccess(ActionEvent evt) {
         // Find the built in file downloader role (currently by alias)
-        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias("filedownloader");
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (RoleAssignee roleAssignee : selectedRoleAssignees) {
             for (DataFile file : selectedFiles) {
                 assignRole(roleAssignee, file, fileDownloaderRole);                
@@ -336,7 +336,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     
     public void grantAccessToRequests(AuthenticatedUser au) {
         // Find the built in file downloader role (currently by alias) 
-        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias("filedownloader");
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (DataFile file : fileAccessRequestMap.get(au)) {
             assignRole(au, file, fileDownloaderRole);                
 
