@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
@@ -43,10 +44,13 @@ public class IpGroup extends PersistedGlobalGroup {
     }
     
     @Override
-    public boolean contains(User aUser) {
-        IpAddress userAddress = aUser.getRequestMetadata().getIpAddress();
-        for ( IpAddressRange r : ipv6Ranges ) {
-            if ( r.contains(userAddress).equals(Boolean.TRUE) ) return true;
+    public boolean contains(RoleAssignee ra) {
+        if ( ra instanceof User ) {
+            User aUser = (User) ra;
+            IpAddress userAddress = aUser.getRequestMetadata().getIpAddress();
+            for ( IpAddressRange r : ipv6Ranges ) {
+                if ( r.contains(userAddress).equals(Boolean.TRUE) ) return true;
+            }
         }
         return false;
     }

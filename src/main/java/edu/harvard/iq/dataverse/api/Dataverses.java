@@ -13,6 +13,9 @@ import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -37,6 +40,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -465,5 +469,35 @@ public class Dataverses extends AbstractApiBean {
             throw new WrappedResponse(errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
         }
         return dv;
+    }
+    
+    @EJB
+    ExplicitGroupServiceBean explicitGroupSvc;
+    
+    @GET
+    @Path("{identifier}/groups/") 
+    public Response listGroups( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+        try {
+            
+            
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            AuthenticatedUser u = findUserOrDie(apiKey);
+            
+            ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
+            ExplicitGroup eg1 = new ExplicitGroup( prv );
+            eg1.add( u );
+            eg1.setDescription("Sample group");
+            eg1.setDisplayName("A Sample Explicit Group");
+            eg1.setGroupAliasInOwner("smplGrp");
+            eg1.setOwner(dv);
+            
+            explicitGroupSvc.persist(eg1);
+            
+            
+            return okResponse( "Group Created" );
+            
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 }

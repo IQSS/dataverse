@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.BuiltInGroupsProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
@@ -30,6 +31,9 @@ public class GroupServiceBean {
     private final Map<String, GroupProvider> groupProviders = new HashMap<>();
     
     private IpGroupProvider ipGroupProvider;
+    
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeSvc;
     
     @PostConstruct
     public void setup() {

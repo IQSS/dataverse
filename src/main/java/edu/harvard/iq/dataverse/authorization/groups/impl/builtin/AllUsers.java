@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.builtin;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
@@ -28,8 +29,8 @@ public final class AllUsers implements Group {
     private AllUsers() {}
         
     @Override
-    public boolean contains(User aUser) {
-        return true;
+    public boolean contains(RoleAssignee ra) {
+        return (ra instanceof User);
     }
 
     @Override

@@ -1,24 +1,35 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
 import javax.persistence.Transient;
 
-//  Cannot extend persisted group, the requirements for the uniqeness of the group alias are too strict.
+/**
+ * A group that explicitly lists {@link RoleAssignee}s that belong to it. Implementation-wise,
+ * there are three cases here: {@link AuthenticatedUser}s, other {@link ExplicitGroup}s, and all the rest.
+ * AuthenticatedUsers and ExplicitGroups go in tables of their own. The rest are kept via their identifier.
+ * 
+ * @author michael
+ */
 @Entity
 public class ExplicitGroup implements Group, java.io.Serializable {
     
@@ -30,46 +41,91 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      * Authenticated users directly added to the group.
      */
     @ManyToMany
-    private Set<AuthenticatedUser> users;
+    private Set<AuthenticatedUser> containedAuthenticatedUsers;
     
     /**
-     * Group ids of this group's sub groups.
+     * Explicit groups that belong to {@code this} explicit gorups.
+     */
+    @ManyToMany
+    Set<ExplicitGroup> containedExplicitGroups;
+    
+    /**
+     * All the role assignees that belong to this group
+     * and are not {@link authenticatedUser}s or {@ExplicitGroup}s, are stored
+     * here via their identifiers.
+     * 
+     * @see RoleAssignee#getIdentifier() 
      */
     @ElementCollection
-    private List<String> groupIds;
+    private Set<String> containedRoleAssignees;
     
-    private String title;
+    @Column( length = 1024 )
+    private String description;
     
-    @Transient
-    private ExplicitGroupProvider creator;
+    private String displayName;
     
     /**
-     * {@code true} If the guest is part of this group.
+     * The DvObject under which this group is defined.
      */
-    private boolean containsGuest = false;
+    @ManyToOne
+    DvObject owner;
     
-    public void add( User u ) {
-        if ( u instanceof GuestUser ) {
-            containsGuest = true;
-        } else if ( u instanceof AuthenticatedUser ) {
-            users.add((AuthenticatedUser)u);
-        } else {
-            throw new IllegalArgumentException("Unknown user type " + u.getClass() );
-       }
+    /** Given alias of the group, e.g by the user that created it.  */
+    private String groupAliasInOwner;
+    
+    /** Alias of the group. Calculated from the groups' name and its owner id. Unique in the table. */
+    @Column( unique = true )
+    private String groupAlias;
+    
+    @Transient
+    private ExplicitGroupProvider provider;
+    
+    public ExplicitGroup( ExplicitGroupProvider prv ) {
+        provider = prv;
+        containedAuthenticatedUsers = new HashSet<>();
+        containedExplicitGroups = new HashSet<>();
+        containedRoleAssignees = new TreeSet<>();
     }
     
     /**
-     * Adds the group to {@code this} group. Any assignee in {@code g} will be 
-     * in {@code this}.
-     * 
-     * @param g The group to add
-     * @throws GroupException if {@code g} is an ancestor of {@code this}.
+     * Constructor for JPA.
      */
-    public void add( Group g ) throws GroupException {
-        // validate no cycle is going to get created
+    protected ExplicitGroup() {}
+    
+    public void add( User u ) {
+        if ( u instanceof AuthenticatedUser ) {
+            containedAuthenticatedUsers.add((AuthenticatedUser)u);
+        } else {
+            containedRoleAssignees.add(getIdentifier() );
+        }
+    }
+    
+    /**
+     * Adds the {@link RoleAssignee} to {@code this} group. 
+     * 
+     * @param ra the role assignee to be added to this group.
+     * @throws GroupException if {@code ra} is a group, and is an ancestor of {@code this}.
+     */
+    public void add( RoleAssignee ra ) throws GroupException {
+        if ( ra instanceof User ) {
+            add( (User)ra );
+            
+        } else {
+            // validate no circular deps
+            Group g = (Group) ra;
+            if ( g.contains(this) ) {
+                throw new GroupException(this, "A parent group cannot be added to one of its childs.");
+            }
+            
+            // add
+            if ( g instanceof ExplicitGroup ) {
+                containedExplicitGroups.add( (ExplicitGroup)g );
+            } else {
+                containedRoleAssignees.add( g.getIdentifier() );
+            }
+            
+        }
         
-        
-        // add
     }
     
     public void remove(RoleAssignee roleAssignee) {
@@ -77,30 +133,69 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
-    public String getAlias() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
-    public boolean contains(User aUser) {
-        if ( aUser.equals( new GuestUser() ) ) {
-            return containsGuest;
+    public boolean contains(RoleAssignee ra) {
+        return containsDirectly(ra) || containsIndirectly(ra);
+    }
+    
+    protected boolean containsDirectly( RoleAssignee ra ) {
+        if ( ra instanceof AuthenticatedUser ) {
+            AuthenticatedUser au = (AuthenticatedUser) ra;
+            return containedAuthenticatedUsers.contains(au);
+            
+        } else if ( ra instanceof ExplicitGroup ) {
+            ExplicitGroup eg = (ExplicitGroup) ra;
+            return containedExplicitGroups.contains(eg);
+            
         } else {
-            // FIXEME implement
-            return false;
+           return containedRoleAssignees.contains( ra.getIdentifier() );
         }
     }
 
+    private boolean containsIndirectly(RoleAssignee ra) {
+        for ( ExplicitGroup ceg : containedExplicitGroups ) {
+            if ( ceg.contains(ra) ) {
+                return true;
+            }
+        }
+        
+        for ( String containedRAIdtf : containedRoleAssignees ) {
+            RoleAssignee containedRa = provider.findRoleAssignee(containedRAIdtf);
+            if ( containedRa != null ) {
+                if ( containedRa instanceof Group ) {
+                    if (((Group)containedRa).contains(ra)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void updateAlias() {
+        groupAlias = ((getOwner()!=null) 
+                           ? Long.toString(getOwner().getId()) + "-" 
+                           : "") + getGroupAliasInOwner();
+    }
+    
+    @PrePersist
+    void prepersist() {
+        updateAlias();
+    }
+    
+    @PostLoad
+    void postload() {
+        updateAlias();
+    }
+    
     @Override
     public boolean isEditable() {
         return true;
@@ -108,25 +203,62 @@ public class ExplicitGroup implements Group, java.io.Serializable {
 
     @Override
     public GroupProvider getGroupProvider() {
-        return creator;
+        return provider;
     }
     
-    void setCreator( ExplicitGroupProvider c ) {
-        creator = c;
-    }
-
-    public Set<Group> getSubGroups() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    void setProvider( ExplicitGroupProvider c ) {
+        provider = c;
     }
 
     @Override
     public String getIdentifier() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Group.IDENTIFIER_PREFIX + provider.getGroupProviderAlias()
+                + Group.PATH_SEPARATOR + getAlias();
     }
 
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(title, null);
+        return new RoleAssigneeDisplayInfo(getDisplayName(), null);
     }
 
+    public String getGroupAliasInOwner() {
+        return groupAliasInOwner;
+    }
+
+    public void setGroupAliasInOwner(String groupAliasInOwner) {
+        this.groupAliasInOwner = groupAliasInOwner;
+        updateAlias();
+    }
+    
+    @Override
+    public String getAlias() {
+        return groupAlias;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public DvObject getOwner() {
+        return owner;
+    }
+
+    public void setOwner(DvObject owner) {
+        this.owner = owner;
+        updateAlias();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
 }
