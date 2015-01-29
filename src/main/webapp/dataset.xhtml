@@ -143,6 +143,7 @@
                     <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                     <f:viewParam name="globalId" value="#{DatasetPage.globalId}"/>
                     <f:viewAction action="#{DatasetPage.init}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>  
                 </f:metadata>
 
                 <h:form id="datasetForm">
@@ -942,6 +943,12 @@
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputText id="txtInprogess" value="#{bundle['file.ingestInproGress']}" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest}"
+                                                           actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}" 
+                                                           update="filesTable"
+                                                           disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+                                            </p:commandLink>
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
