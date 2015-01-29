@@ -336,7 +336,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
                 
             } else if (dvObject instanceof DataFile) {
-                roles.add(roleService.findBuiltinRoleByAlias("filedownloader"/*DataverseRole.FILE_DOWNLOADER*/));
+                roles.add(roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER));
             }
             
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);
