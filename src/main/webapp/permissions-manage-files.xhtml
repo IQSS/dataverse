@@ -55,7 +55,7 @@
                                                 </p:column>
                                                 <p:column width="25%"  headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
                                                     <p:commandLink id="viewUserGroups"
-                                                                   actionListener="#{manageFilePermissionsPage.initAssignDialogByUser(access.key)}"
+                                                                   actionListener="#{manageFilePermissionsPage.initAssignDialogForFileRequester(access.key)}"
                                                                    update=":#{p:component('assignDialog')}"
                                                                    oncomplete="assignWidget.show();">
                                                         <h:outputText value="#{access.value.size()} #{access.value.size() eq 1 ?  bundle['dataverse.permissionsFiles.usersOrGroups.file'] : bundle['dataverse.permissionsFiles.usersOrGroups.files']}"/>
@@ -179,7 +179,7 @@
                         <p:fragment id="assignRoleContent">   
                             <div>
                                 <p class="help-block">#{bundle['dataverse.permissionsFiles.assignDialog.description']}</p>
-                                <div class="form-group clearfix">
+                                <div class="form-group clearfix" style="visibility: #{empty manageFilePermissionsPage.fileRequester ? 'visible' : 'hidden'}">
                                     <label for="userGroupAccessInput" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.title']}">
                                             #{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup']}
@@ -205,7 +205,9 @@
                                 </div>
                                 <div>
                                     <o:importFunctions type="java.util.Arrays" />
-                                    <p:dataTable id="restrictedFilesForAccess" var="file" value="#{Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray())}"
+                                    <p:dataTable id="restrictedFilesForAccess" var="file" 
+                                                 value="#{empty manageFilePermissionsPage.fileRequester ? Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray()) :
+                                                          manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester)}"
                                                  selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}">
                                         <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                         <p:column  headerText="#{bundle['dataverse.permissionsFiles.assignDialog.file']}">
@@ -219,7 +221,11 @@
                                            update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
                                            actionListener="#{manageFilePermissionsPage.grantAccess}" oncomplete="if (args &amp;&amp; !args.validationFailed) assignWidget.hide();">
                                 <f:param name="DO_VALIDATION" value="true"/> 
-                            </p:commandLink>            
+                            </p:commandLink>
+                            <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
+                                           value="#{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}" 
+                                           update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
+                                           actionListener="#{manageFilePermissionsPage.rejectAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="assignWidget.hide();"/>                             
                             <button type="button" class="btn btn-default" onclick="assignWidget.hide()" value="Cancel">#{bundle.cancel}</button>
                         </p:fragment>
                     </p:dialog> 
