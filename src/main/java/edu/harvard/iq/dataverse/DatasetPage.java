@@ -1104,9 +1104,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
-    
-    
-
+        
     private boolean showAccessPopup = false;
     
     public boolean isShowAccessPopup() {
@@ -2227,4 +2225,10 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
+    
+    
+    public void requestAccess(DataFile file) {
+        file.getFileAccessRequesters().add((AuthenticatedUser)session.getUser());
+        datafileService.save(file);
+    }     
 }
