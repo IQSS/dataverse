@@ -77,6 +77,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -112,6 +113,7 @@ import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FileUtils;
 
@@ -297,10 +299,53 @@ public class IngestServiceBean {
             int fileNumberLimit = systemConfig.getZipUploadFilesLimit();
             
             try {
-                unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
-                int counter = 0; 
-
-                while ((zipEntry = unZippedIn.getNextEntry()) != null) {
+                Charset charset = null;
+                /*
+                TODO: (?)
+                We may want to investigate somehow letting the user specify 
+                the charset for the filenames in the zip file...
+                - otherwise, ZipInputStream bails out if it encounteres a file 
+                name that's not valid in the current charest (i.e., UTF-8, in 
+                our case). It would be a bit trickier than what we're doing for 
+                SPSS tabular ingests - with the lang. encoding pulldown menu - 
+                because this encoding needs to be specified *before* we upload and
+                attempt to unzip the file. 
+                        -- L.A. 4.0 beta12
+                logger.info("default charset is "+Charset.defaultCharset().name());
+                if (Charset.isSupported("US-ASCII")) {
+                    logger.info("charset US-ASCII is supported.");
+                    charset = Charset.forName("US-ASCII");
+                    if (charset != null) {
+                        logger.info("was able to obtain charset for US-ASCII");
+                    }
+                    
+                }
+                */
+                
+                if (charset != null) {
+                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
+                } else {
+                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
+                } 
+                                                
+                while (true) { 
+                    try {
+                        zipEntry = unZippedIn.getNextEntry();
+                    } catch (IllegalArgumentException iaex) {
+                        // Note: 
+                        // ZipInputStream documentation doesn't even mention that 
+                        // getNextEntry() throws an IllegalArgumentException!
+                        // but that's what happens if the file name of the next
+                        // entry is not valid in the current CharSet. 
+                        //      -- L.A.
+                        warningMessage = "Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.";
+                        logger.warning(warningMessage);
+                        throw new IOException();
+                    } 
+                    
+                    if (zipEntry == null) {
+                        break;
+                    }
                     // Note that some zip entries may be directories - we 
                     // simply skip them:
                     
@@ -351,6 +396,7 @@ public class IngestServiceBean {
                         }
                     }
                     unZippedIn.closeEntry(); 
+                    
                 }
                 
             } catch (IOException ioex) {
@@ -358,6 +404,9 @@ public class IngestServiceBean {
                 // ingest default to creating a single DataFile out
                 // of the unzipped file. 
                 logger.warning("Unzipping failed; rolling back to saving the file as is.");
+                if (warningMessage == null) {
+                    warningMessage = "Failed to unzip the file. Saving the file as is.";
+                }
                 
                 datafiles.clear();
             } finally {
