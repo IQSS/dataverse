@@ -102,6 +102,16 @@ public class XLSXFileReader extends TabularDataFileReader {
             throw new IOException("Could not parse Excel/XLSX spreadsheet. "+ex.getMessage());
         }
 
+        if (dataTable.getCaseQuantity() == null || dataTable.getCaseQuantity().intValue() < 1) {
+            String errorMessage; 
+            if (dataTable.getVarQuantity() == null || dataTable.getVarQuantity().intValue() < 1) {
+                errorMessage = "No rows of data found in the Excel (XLSX) file.";
+            } else {
+                errorMessage = "Only one row of data (column name header?) detected in the Excel (XLSX) file.";
+            }
+            throw new IOException(errorMessage);
+        }
+        
         // 2nd pass:
         
         File tabFileDestination = File.createTempFile("data-", ".tab");
@@ -155,7 +165,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                             Double testDoubleValue = new Double(valueTokens[i]);
                             caseRow[i] = testDoubleValue.toString();
                         } catch (Exception ex) {
-                            throw new IOException ("Failed to parse a value recognized as numeric in the first pass! (?)");
+                            throw new IOException ("Failed to parse a value recognized as numeric in the first pass! column: "+i+", value: "+valueTokens[i]);
                         }
                     }    
                 } else {
@@ -417,8 +427,10 @@ public class XLSXFileReader extends TabularDataFileReader {
                 // Re-type the variables that we've determined are numerics:
         
                 for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
-                    dataTable.getDataVariables().get(i).setTypeNumeric();
-                    dataTable.getDataVariables().get(i).setIntervalContinuous();
+                    if (isNumericVariable[i]) {
+                        dataTable.getDataVariables().get(i).setTypeNumeric();
+                        dataTable.getDataVariables().get(i).setIntervalContinuous();
+                    }
                 }
                 
                 tempOut.close(); 
