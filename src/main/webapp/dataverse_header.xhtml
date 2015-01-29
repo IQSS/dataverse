@@ -233,12 +233,10 @@
     </ui:remove>
 
     <!-- Message Panel -->
-    <p:fragment id="messagePanel">
-        <ui:fragment rendered="#{showMessagePanel}">
-            <div class="container messagePanel">
-                <iqbs:messages id="messages" collapsible="true" />
-            </div>
-        </ui:fragment>
+    <p:fragment id="messagePanel" rendered="#{showMessagePanel}">
+        <div class="container messagePanel">
+            <iqbs:messages id="messages" collapsible="true" />
+        </div>
     </p:fragment>
 
     <!-- Dialog Feedback Form -->
