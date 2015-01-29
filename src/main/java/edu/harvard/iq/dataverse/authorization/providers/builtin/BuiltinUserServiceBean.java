@@ -36,8 +36,17 @@ public class BuiltinUserServiceBean {
     }
        
     public BuiltinUser save(BuiltinUser dataverseUser) {
-        BuiltinUser savedUser = em.merge(dataverseUser);
-        return savedUser;
+        if ( dataverseUser.getId() == null ) {
+            // see that the username is unique
+            if ( em.createNamedQuery("BuiltinUser.findByUserName")
+                    .setParameter("userName", dataverseUser.getUserName()).getResultList().size() > 0 ) {
+                throw new IllegalArgumentException( "BuiltinUser with username '" + dataverseUser.getUserName() + "' already exists.");
+            }
+            em.persist( dataverseUser );
+            return dataverseUser;
+        } else {
+            return em.merge(dataverseUser);
+        }
     }
     
     public User findByIdentifier( String idtf ) {

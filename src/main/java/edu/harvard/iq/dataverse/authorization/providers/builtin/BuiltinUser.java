@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -39,6 +40,7 @@ public class BuiltinUser implements Serializable {
     @NotBlank(message = "Please enter a username.")
     @Size(min=2, max=60, message ="Username must be between 2 and 60 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, and '_'.")
+    @Column( unique = true )
     private String userName;
 
     @NotBlank(message = "Please enter a valid email address.")
