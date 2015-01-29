@@ -104,7 +104,7 @@
                                         
                                         <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq" varStatus="valCount">
                                             <div class="col-sm-9">
-                                                <div class="form-group col-sm-3">
+                                                <div class="col-sm-3">
                                                     <label class="control-label" jsf:for="questionOptions">
                                                         <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
                                                             Question Type
@@ -126,7 +126,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="form-group col-sm-9">
+                                                <div class="col-sm-9">
                                                     <label class="control-label" jsf:for="questionText">
                                                         <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
                                                             Question Text
@@ -139,7 +139,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="form-group col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
+                                                <div class="col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
                                                     <label class="control-label" jsf:for="questionResponseOptions">
                                                         <a class="tooltiplabel right" data-original-title="description" data-placement="auto right" data-toggle="tooltip" href="#">
                                                             Response Options
@@ -170,7 +170,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-sm-3">
-                                                <p:commandButton styleClass="btn btn-default btn-sm"
+                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin:1.8em 1em 0 0;"
                                                                  title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
                                                     <p:ajax update="@widgetVar(customQuestions)"  listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
                                                 </p:commandButton>
