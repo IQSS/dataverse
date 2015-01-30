@@ -230,6 +230,7 @@
                                 <ui:fragment  rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                          and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion                                     
                                                          and !DatasetPage.dataset.latestVersion.inReview
+                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                          and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')                                                           
                                                          and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                     
@@ -240,6 +241,7 @@
                                 <ui:fragment  rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                          and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion                                     
                                                          and DatasetPage.dataset.latestVersion.inReview
+                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                          and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')                                                           
                                                          and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                     
@@ -414,12 +416,12 @@
                                                          or !empty DatasetPage.datasetVersionUI.notes.value)}">
                                     <div id="" class="panel panel-default" style="margin-top:1em;">
                                         <div class="panel-body" style="padding:12px 0;">
-                                            <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value}">
+                                            <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay}">
                                                 <span id="keywords" class="form-group">
                                                     <label class="col-sm-3 control-label">
                                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.title}</a>
                                                     </label>
-                                                    <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.keyword.displayValue}</span>
+                                                    <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.keywordDisplay}</span>
                                                 </span>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">

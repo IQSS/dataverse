@@ -77,7 +77,20 @@ public class DatasetVersionUI implements Serializable {
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText)) {
                 setDescription(dsf);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
-                setKeyword(dsf);
+                //setKeyword(dsf.getCompoundDisplayValue());
+                String keywordString = "";
+                for (DatasetFieldCompoundValue keywordValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : keywordValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue)) {
+                            if (keywordString.isEmpty()){
+                                keywordString = subField.getValue();
+                            } else {
+                                keywordString += ", " +  subField.getValue();
+                            }                               
+                        }
+                    }
+                } 
+                setKeywordDisplay(keywordString);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
                 setSubject(dsf);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText)) {
@@ -148,7 +161,17 @@ public class DatasetVersionUI implements Serializable {
     private DatasetField description;
     private DatasetField keyword;
     private DatasetField subject;
-    private DatasetField notes;    
+    private DatasetField notes; 
+    private String keywordDisplay;
+
+    public String getKeywordDisplay() {
+        return keywordDisplay;
+    }
+
+    public void setKeywordDisplay(String keywordDisplay) {
+        this.keywordDisplay = keywordDisplay;
+    }
+    private String descriptionDisplay;
             
     private List<DatasetAuthor> datasetAuthors = new ArrayList();    
     private List<DatasetRelPublication> datasetRelPublications;    

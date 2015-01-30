@@ -100,6 +100,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
         dataverse.getGuestbooks().add(newOne);
         guestbooks.add(newOne);
+        
         Guestbook created;
         try {
             created = engineService.submit(new CreateGuestbookCommand(newOne, session.getUser(), dataverse));

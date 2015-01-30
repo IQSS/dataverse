@@ -155,6 +155,7 @@ public class Guestbook implements Serializable {
     public Guestbook copyGuestbook(Guestbook source) {
         Guestbook newGuestbook = new Guestbook();
         newGuestbook.setEnabled(true);
+        newGuestbook.setDataverse(source.getDataverse());
         newGuestbook.setEmailRequired(source.isEmailRequired());
         newGuestbook.setNameRequired(source.isNameRequired());
         newGuestbook.setPositionRequired(source.isPositionRequired());

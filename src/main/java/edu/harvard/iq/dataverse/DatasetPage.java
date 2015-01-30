@@ -869,9 +869,13 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
+        List <AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(UpdateDatasetCommand.class, dataset);
         for (AuthenticatedUser au :authUsers ){
-            userNotificationService.sendNotification(au, dataset.getCreateDate(), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
+            editUsers.remove(au);           
         }
+        for (AuthenticatedUser au :editUsers ){
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId());            
+        }  
         
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
         FacesContext.getCurrentInstance().addMessage(null, message);
@@ -892,7 +896,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
         for (AuthenticatedUser au :authUsers ){
-            userNotificationService.sendNotification(au, dataset.getCreateDate(), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
+             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
         }
         
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
@@ -975,6 +979,16 @@ public class DatasetPage implements java.io.Serializable {
                 dataset = commandEngine.submit(cmd);
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
                 FacesContext.getCurrentInstance().addMessage(null, message);
+                if (workingVersion.isInReview()) {
+                    List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
+                    List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(UpdateDatasetCommand.class, dataset);
+                    for (AuthenticatedUser au : authUsers) {
+                        editUsers.remove(au);
+                    }
+                    for (AuthenticatedUser au : editUsers) {
+                        userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PUBLISHEDDS, dataset.getLatestVersion().getId());
+                    }
+                }
             } catch (CommandException ex) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
                 logger.severe(ex.getMessage());

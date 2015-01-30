@@ -85,7 +85,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String seriesInformation="seriesInformation";
     public final static String datasetVersionValue="datasetVersionValue";
     public final static String versionDate="versionDate";
-    public final static String keywordValue="keyword";
+    public final static String keywordValue="keywordValue";
     public final static String keywordVocab="keywordVocab";
     public final static String keywordVocabURI="keywordVocabURI";
     public final static String topicClassValue="topicClassValue";
