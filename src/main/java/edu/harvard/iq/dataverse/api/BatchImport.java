@@ -172,7 +172,8 @@ public class BatchImport extends AbstractApiBean  {
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = findDataverse(dir.getName());
         if (owner == null) {
-            if (importType.equals(ImportType.MIGRATION)) {
+            // For now, we will create dataverses that aren't found - this is only for load testing and migration testing
+            if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.NEW)) {
                 System.out.println("creating new dataverse: " + dir.getName());
                 Dataverse d = new Dataverse();
                 Dataverse root = dataverseService.findByAlias("root");
