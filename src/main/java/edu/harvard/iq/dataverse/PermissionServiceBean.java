@@ -149,6 +149,30 @@ public class PermissionServiceBean {
 
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
 
+        if (d instanceof DataFile) {
+            // unrestricted files that are part of a release dataset 
+            // automatically get download permission for everybody:
+            //      -- L.A. 4.0 beta12
+            
+            DataFile df = (DataFile)d;
+            
+            if (!df.isRestricted()) {
+                //logger.info("restricted? - nope.");
+                if (df.getOwner().getReleasedVersion() != null) {
+                    //logger.info("file belongs to a dataset with a released version.");
+                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
+                        //logger.info("going through the list of filemetadatas that belong to the released version.");
+                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
+                            if (df.equals(fm.getDataFile())) {
+                                //logger.info("yep, found a match!");
+                                retVal.add(Permission.DownloadFile);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
         for (RoleAssignment asmnt : assignmentsFor(ra, d)) {
             retVal.addAll(asmnt.getRole().permissions());
         }
