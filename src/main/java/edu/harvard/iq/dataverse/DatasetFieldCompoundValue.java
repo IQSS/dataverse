@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,6 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -25,39 +28,41 @@ import javax.persistence.OrderBy;
  */
 @Entity
 public class DatasetFieldCompoundValue implements Serializable {
+
     private static final long serialVersionUID = 1L;
-    
+
     public static final Comparator<DatasetFieldCompoundValue> DisplayOrder = new Comparator<DatasetFieldCompoundValue>() {
         @Override
         public int compare(DatasetFieldCompoundValue o1, DatasetFieldCompoundValue o2) {
-            return Integer.compare( o1.getDisplayOrder(),
-                                    o2.getDisplayOrder() );
-    }};
-    
+            return Integer.compare(o1.getDisplayOrder(),
+                    o2.getDisplayOrder());
+        }
+    };
+
     public static DatasetFieldCompoundValue createNewEmptyDatasetFieldCompoundValue(DatasetField dsf) {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
         compoundValue.setParentDatasetField(dsf);
 
         for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
-            compoundValue.getChildDatasetFields().add( DatasetField.createNewEmptyChildDatasetField(dsfType, compoundValue));
+            compoundValue.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsfType, compoundValue));
         }
-        
+
         return compoundValue;
-    }    
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private int displayOrder;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    private DatasetField parentDatasetField;    
+    private DatasetField parentDatasetField;
 
-    @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("datasetFieldType ASC")
-    private List<DatasetField> childDatasetFields = new ArrayList();    
-    
+    private List<DatasetField> childDatasetFields = new ArrayList();
+
     public Long getId() {
         return id;
     }
@@ -73,7 +78,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
-    
+
     public DatasetField getParentDatasetField() {
         return parentDatasetField;
     }
@@ -89,9 +94,6 @@ public class DatasetFieldCompoundValue implements Serializable {
     public void setChildDatasetFields(List<DatasetField> childDatasetFields) {
         this.childDatasetFields = childDatasetFields;
     }
-    
-
-   
 
     @Override
     public int hashCode() {
@@ -113,7 +115,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DatasetFieldCompoundValue[ id=" + id + " ]";
     }
-    
+
     public DatasetFieldCompoundValue copy(DatasetField parent) {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
         compoundValue.setParentDatasetField(parent);
@@ -122,8 +124,35 @@ public class DatasetFieldCompoundValue implements Serializable {
         for (DatasetField subField : childDatasetFields) {
             compoundValue.getChildDatasetFields().add(subField.copyChild(compoundValue));
         }
-                     
+
         return compoundValue;
     }
-}    
 
+    public Map<DatasetField,String> getDisplayValueMap() {
+        // todo - this currently only supports child datasetfields with single values
+        // need to determine how we would want to handle multiple
+        Map fieldMap = new LinkedHashMap();
+
+        for (DatasetField childDatasetField : childDatasetFields) {
+            // skip the value if it is empty or N/A
+            if (!StringUtils.isBlank(childDatasetField.getValue()) && !DatasetField.NA_VALUE.equals(childDatasetField.getValue())) {
+                String format = childDatasetField.getDatasetFieldType().getDisplayFormat();
+                if (StringUtils.isBlank(format)) {
+                    format = "#VALUE";
+                }
+
+                // replace the special values in the format (note: we replace #VALUE last since we don't
+                // want any issues if the value itself has #NAME in it)
+                String displayValue = format
+                        .replaceAll("#NAME", childDatasetField.getDatasetFieldType().getTitle())
+                        //todo: this should be handled in more generic way for any other text that can then be internationalized
+                        .replaceAll("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
+                        .replaceAll("#VALUE", childDatasetField.getValue());
+
+                fieldMap.put(childDatasetField,displayValue);
+            }
+        }
+
+        return fieldMap;
+    }
+}
