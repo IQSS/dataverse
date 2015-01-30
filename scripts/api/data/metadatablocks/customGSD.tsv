@@ -1,458 +1,458 @@
-#metadataBlock	name	displayName												
-	customGSD	Graduate School of Design Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	gsdStudentName	Student Name	Full name of the student: Last Name, First Name (example: Smith, Jane). Use the name that the GSD Administrator has on file.	LastName, FirstName	text	0	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		customGSD
-	gsdStudentProgram	Student's Program of Study	Student's program of study.		text	1	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
-	gsdCourseName	Course Name	Name of the course.		text	2	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
-	gsdFacultyName	Faculty Name	Name of the studio instructor.		text	3	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
-	gsdCoordinator	Core Studio Coordinator	Name of the studio coordinator(s).		text	4	FALSE	TRUE	TRUE	FALSE	FALSE	FALSE		customGSD
-	gsdSemester	Semester / Year	Select the semester / year.		text	5	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
-	gsdRecommendation	Faculty Recommendation	Indicate the recommendation(s) from the faculty for this project.		text	6	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
-	gsdAccreditation	Accreditation	Selection made by faculty.		text	7	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
-	gsdSiteType	Site Type	Describe the type of building or site, based on function / purpose. Example: Military base.		text	8	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		customGSD
-	gsdProgramBrief	Program / Brief	Example: redevelopment, restoration.		textbox	9	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		customGSD
-	gsdTypes	Types of Representation/ Medium/ Format	Choose from the list.		text	10	FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
-	gsdPrizes	Prizes	Choose from the list.		text	11	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
-	gsdTags	GSD Tags	Use tags to describe the project. Write one keyword per field. To add more tags, click on the plus sign on the right.		text	12	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		customGSD
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder										
-	gsdFacultyName	Abalos, Inaki		0										
-	gsdFacultyName	Adjaye, David		1										
-	gsdFacultyName	Altringer, Beth		2										
-	gsdFacultyName	Apfelbaum, Steven		3										
-	gsdFacultyName	Aquino, Gerdo		4										
-	gsdFacultyName	Asensio Villoria, Leire		5										
-	gsdFacultyName	Baines, Bridget		6										
-	gsdFacultyName	Beard, Peter		7										
-	gsdFacultyName	Belanger, Pierre		8										
-	gsdFacultyName	Benedito, Silvia		9										
-	gsdFacultyName	Berrizbeitia, Anita		10										
-	gsdFacultyName	Bewtra, Manisha		11										
-	gsdFacultyName	Blau, Eve		12										
-	gsdFacultyName	Bozdogan, Sibel		13										
-	gsdFacultyName	Brenner, Neil		14										
-	gsdFacultyName	Buckler, Julie		15										
-	gsdFacultyName	Busquets, Joan		16										
-	gsdFacultyName	Callejas Mujica, Luis Rodrigo		17										
-	gsdFacultyName	Calvillo, Nerea		18										
-	gsdFacultyName	Cantrell, Bradley		19										
-	gsdFacultyName	Carras, James		20										
-	gsdFacultyName	Castillo, Jose		21										
-	gsdFacultyName	Cephas, Jana		22										
-	gsdFacultyName	Cheng, Christine		23										
-	gsdFacultyName	Cohen, Preston Scott		24										
-	gsdFacultyName	Cook, Peter		25										
-	gsdFacultyName	Correa, Felipe		26										
-	gsdFacultyName	Craig, Salmaan		27										
-	gsdFacultyName	Davis, Diane		28										
-	gsdFacultyName	de Broche des Combes, Eric		29										
-	gsdFacultyName	de Castro Mazarro, Alejandro		30										
-	gsdFacultyName	de Meuron, Pierre		31										
-	gsdFacultyName	Del Tredici, Peter		32										
-	gsdFacultyName	D'Oca, Daniel		33										
-	gsdFacultyName	Doherty, Gareth		34										
-	gsdFacultyName	Duempelmann, Sonja		35										
-	gsdFacultyName	Eigen, Ed		36										
-	gsdFacultyName	Elkin, Rosetta		37										
-	gsdFacultyName	Ellis, Erle		38										
-	gsdFacultyName	Evans, Teman		39										
-	gsdFacultyName	Flores Dewey, Onesimo		40										
-	gsdFacultyName	Forsyth, Ann		41										
-	gsdFacultyName	Gamble, David		42										
-	gsdFacultyName	Garciavelez Alfaro, Carlos		43										
-	gsdFacultyName	Gelabert-Sanchez, Ana		44										
-	gsdFacultyName	Georgoulias, Andreas		45										
-	gsdFacultyName	Ham, Derek		46										
-	gsdFacultyName	Hansen, Andrea		47										
-	gsdFacultyName	Harabasz, Ewa		48										
-	gsdFacultyName	Hays, K. Michael		49										
-	gsdFacultyName	Herzog, Jacques		50										
-	gsdFacultyName	Hilderbrand, Gary		51										
-	gsdFacultyName	Hoberman, Chuck		52										
-	gsdFacultyName	Hong, Zaneta		53										
-	gsdFacultyName	Hooftman, Eelco		54										
-	gsdFacultyName	Hooper, Michael		55										
-	gsdFacultyName	Howeler, Eric		56										
-	gsdFacultyName	Hoxie, Christopher		57										
-	gsdFacultyName	Hung, Ying-Yu		58										
-	gsdFacultyName	Hunt, John		59										
-	gsdFacultyName	Hutton, Jane		60										
-	gsdFacultyName	Ibanez, Mariana		61										
-	gsdFacultyName	Johnston, Sharon		62										
-	gsdFacultyName	Kayden, Jerold		63										
-	gsdFacultyName	Khamsi, James		64										
-	gsdFacultyName	Kirkwood, Niall		65										
-	gsdFacultyName	Krieger, Alex		66										
-	gsdFacultyName	Kuo, Max		67										
-	gsdFacultyName	La, Grace		68										
-	gsdFacultyName	Leach, Neil		69										
-	gsdFacultyName	Lee, Christopher		70										
-	gsdFacultyName	Lee, Mark		71										
-	gsdFacultyName	Lopez-Pineiro, Sergio		72										
-	gsdFacultyName	Lott, Jonathan		73										
-	gsdFacultyName	Mah, David		74										
-	gsdFacultyName	Malkawi, Ali		75										
-	gsdFacultyName	Manfredi, Michael		76										
-	gsdFacultyName	Marchant, Edward		77										
-	gsdFacultyName	McCafferty, Patrick		78										
-	gsdFacultyName	McIntosh, Alistair		79										
-	gsdFacultyName	Mehrotra, Rahul		80										
-	gsdFacultyName	Menchaca, Alejandra		81										
-	gsdFacultyName	Menges, Achim		82										
-	gsdFacultyName	Michalatos, Panagiotis		83										
-	gsdFacultyName	Moe, Kiel		84										
-	gsdFacultyName	Molinsky, Jennifer		85										
-	gsdFacultyName	Mori, Toshiko		86										
-	gsdFacultyName	Moussavi, Farshid		87										
-	gsdFacultyName	Mulligan, Mark		88										
-	gsdFacultyName	Muro, Carles		89										
-	gsdFacultyName	Naginski, Erika		90										
-	gsdFacultyName	Nakazawa, Paul		91										
-	gsdFacultyName	Nichols, Albert		92										
-	gsdFacultyName	O'Neill-Uzgiris, Kelly Ann		93										
-	gsdFacultyName	Oppenheim, Chad		94										
-	gsdFacultyName	Panzano, Megan		95										
-	gsdFacultyName	Park, Peter		96										
-	gsdFacultyName	Parsons, Katharine		97										
-	gsdFacultyName	Peiser, Richard		98										
-	gsdFacultyName	Petcu, Constantin		99										
-	gsdFacultyName	Petrescu, Doina		100										
-	gsdFacultyName	Pietrusko, Robert		101										
-	gsdFacultyName	Rahm, Philippe		102										
-	gsdFacultyName	Raspall Galli, Carlos Felix		103										
-	gsdFacultyName	Reed, Chris		104										
-	gsdFacultyName	Rein-Cano, Martin		105										
-	gsdFacultyName	Restrepo Ochoa, Camilo		106										
-	gsdFacultyName	Rosenthal, Joyce Klein		107										
-	gsdFacultyName	Rowe, Peter		108										
-	gsdFacultyName	Ryan, Thomas		109										
-	gsdFacultyName	Samuelson, Holly		110										
-	gsdFacultyName	Sennett, Richard		111										
-	gsdFacultyName	Shigematsu, Shohei		112										
-	gsdFacultyName	Silman, Robert		113										
-	gsdFacultyName	Silver, Mitchell		114										
-	gsdFacultyName	Silvetti, Jorge		115										
-	gsdFacultyName	Smith, Christine		116										
-	gsdFacultyName	Snyder, Susan		117										
-	gsdFacultyName	Solano, Laura		118										
-	gsdFacultyName	Spiegelman, Kathy		119										
-	gsdFacultyName	Stilgoe, John		120										
-	gsdFacultyName	Stockard, James		121										
-	gsdFacultyName	Tato, Belinda		122										
-	gsdFacultyName	Thomas, George		123										
-	gsdFacultyName	Thompson, Maryann		124										
-	gsdFacultyName	Torto, Raymond		125										
-	gsdFacultyName	Urbanski, Matthew		126										
-	gsdFacultyName	Valenzuela, Luis		127										
-	gsdFacultyName	Vallejo, Jose Luis		128										
-	gsdFacultyName	Van Valkenburgh, Michael		129										
-	gsdFacultyName	Vecitis, Chad		130										
-	gsdFacultyName	Videcnik, Spela		131										
-	gsdFacultyName	Waldheim, Charles		132										
-	gsdFacultyName	Wang, Bing		133										
-	gsdFacultyName	Weitz, David		134										
-	gsdFacultyName	Wendel, Delia		135										
-	gsdFacultyName	Wickersham, Jay		136										
-	gsdFacultyName	Witt, Andrew		137										
-	gsdFacultyName	Wodiczko, Krzysztof		138										
-	gsdFacultyName	Wood, Robert		139										
-	gsdFacultyName	Wu, Cameron		140										
-	gsdFacultyName	Zickler, Todd		141										
-	gsdCourseName	09691: Doctoral Program Proseminar		1										
-	gsdCoordinator	Belanger, Pierre		0										
-	gsdCoordinator	Correa, Felipe		1										
-	gsdCoordinator	Forsyth, Ann		2										
-	gsdCoordinator	Gelabert-Sanchez, Ana		3										
-	gsdCoordinator	Hilderbrand, Gary		4										
-	gsdCoordinator	Howeler, Eric		5										
-	gsdCoordinator	Hutton, Jane		6										
-	gsdCoordinator	Ibanez, Mariana		7										
-	gsdCoordinator	La, Grace		8										
-	gsdCoordinator	Moe, Kiel		9										
-	gsdCoordinator	Muro, Carles		10										
-	gsdStudentProgram	DDes		0										
-	gsdStudentProgram	MArch I		1										
-	gsdStudentProgram	MArch II		2										
-	gsdStudentProgram	MAUD or MLAUD		3										
-	gsdStudentProgram	MDes		4										
-	gsdStudentProgram	MLA I		5										
-	gsdStudentProgram	MLA I AP		6										
-	gsdStudentProgram	MLA II		7										
-	gsdStudentProgram	MUD		8										
-	gsdStudentProgram	MUP		9										
-	gsdStudentProgram	MUP/MArch		10										
-	gsdStudentProgram	MUP/MAUD or MLAUD		11										
-	gsdStudentProgram	MUP/MDes		12										
-	gsdStudentProgram	MUP/MLA		13										
-	gsdStudentProgram	Other		14										
-	gsdStudentProgram	PhD		15										
-	gsdSemester	Fall 2013		0										
-	gsdSemester	Spring 2014		1										
-	gsdSemester	Fall 2014		2										
-	gsdSemester	Spring 2015		3										
-	gsdSemester	Fall 2015		4										
-	gsdSemester	Spring 2016		5										
-	gsdSemester	Fall 2016		6										
-	gsdRecommendation	Accreditation		0										
-	gsdRecommendation	Open House		1										
-	gsdRecommendation	Platform		2										
-	gsdRecommendation	Website		3										
-	gsdTypes	Animations		0										
-	gsdTypes	Axonometric drawings		1										
-	gsdTypes	Axonometric projections		2										
-	gsdTypes	Diagrams		3										
-	gsdTypes	Drawings		4										
-	gsdTypes	Elevations (drawings)		5										
-	gsdTypes	Floor plans		6										
-	gsdTypes	Isometric drawings		7										
-	gsdTypes	Isometric projections		8										
-	gsdTypes	Maps		9										
-	gsdTypes	Master plans		10										
-	gsdTypes	Models (representations)		11										
-	gsdTypes	Other		12										
-	gsdTypes	Perspective drawings		13										
-	gsdTypes	Photographs		14										
-	gsdTypes	Plans (drawings)		15										
-	gsdTypes	Plans (maps)		16										
-	gsdTypes	Renderings		17										
-	gsdTypes	Sectional elevations		18										
-	gsdTypes	Sectional perspectives		19										
-	gsdTypes	Sections		20										
-	gsdTypes	Sections (orthographic projections)		21										
-	gsdTypes	Site plans		22										
-	gsdTypes	Sketches		23										
-	gsdTypes	Videos		24										
-	gsdPrizes	Araldo Cossutta Annual Prize for Design Excellence		0										
-	gsdPrizes	Award for Academic Excellence in Urban Design		1										
-	gsdPrizes	Award for Academic Excellence in Urban Planning		2										
-	gsdPrizes	Award for Outstanding Leadership in Urban Design		3										
-	gsdPrizes	Award for Outstanding Leadership in Urban Planning		4										
-	gsdPrizes	Charles Eliot Traveling Fellowship in Landscape Architecture		5										
-	gsdPrizes	Clifford Wong Prize in Housing Design		6										
-	gsdPrizes	Digital Design Prize		7										
-	gsdPrizes	Dimitris Pikionis Award		8										
-	gsdPrizes	Druker Traveling Fellowship		9										
-	gsdPrizes	Ferdinand Colloredo-Mansfeld Prize for Superior Achievement in Real Estate Studies		10										
-	gsdPrizes	Frederick Sheldon Traveling Fellowship		11										
-	gsdPrizes	Howard T. Fisher Prize for Excellence in Geographic Information Science		12										
-	gsdPrizes	Jacob Weidenmann Prize		13										
-	gsdPrizes	Julia Amory Appleton Traveling Fellowship in Architecture		14										
-	gsdPrizes	Kevin V. Kieran Prize (Kevin Kieran Memorial Scholarship)		15										
-	gsdPrizes	Norman T. Newton Prize		16										
-	gsdPrizes	Peter Rice Prize for Innovation in Architecture and Structural Design		17										
-	gsdPrizes	Peter Walker & Partners Fellowship for Landscape Architecture		18										
-	gsdPrizes	Sinclair Kennedy Traveling Fellowship		19										
-	gsdPrizes	The Daniel L. Schodek Award for Technology and Sustainability		20										
-	gsdAccreditation	High		0										
-	gsdAccreditation	Medium		1										
-	gsdAccreditation	Low		2										
-	gsdCourseName	01101: First Semester Core: PROJECT		0										
-	gsdCourseName	01102: Second Semester Core: SITUATE		1										
-	gsdCourseName	01111: LA I: First Semester Core Studio		2										
-	gsdCourseName	01112: Landscape Architecture II		3										
-	gsdCourseName	01121: First Semester Core Urban Planning Studio		4										
-	gsdCourseName	01122: Second Semester Core Urban Planning Studio		5										
-	gsdCourseName	01201: Third Semester Core: INTEGRATE		6										
-	gsdCourseName	01202: Fourth Semester Core: RELATE		7										
-	gsdCourseName	01211: LA III: Third Semester Core Studio		8										
-	gsdCourseName	01212: Landscape Architecture IV		9										
-	gsdCourseName	01221: Elements of Urban Design		10										
-	gsdCourseName	01301: Kyoto Studio II: Seasons and Architecture		11										
-	gsdCourseName	01301: The Function of Time		12										
-	gsdCourseName	01302: Architecture Club London		13										
-	gsdCourseName	01302: Unfinished Work III		14										
-	gsdCourseName	01303: Alimentary Design		15										
-	gsdCourseName	01303: Workplan		16										
-	gsdCourseName	01304: Alimentary Design		17										
-	gsdCourseName	01304: Socio-Environmental Responsive Design		18										
-	gsdCourseName	01305: Built Climates		19										
-	gsdCourseName	01305: Parametric Semiology - High Performance Architecture for Apple, Google and Facebook		20										
-	gsdCourseName	01306: 21st Cent. Arch.of Africa and the Diaspora		21										
-	gsdCourseName	01306: Material Performance - Fibrous Tectonics		22										
-	gsdCourseName	01307: La Strada Novissima		23										
-	gsdCourseName	01307: Material Performance		24										
-	gsdCourseName	01308: City of Artificial Extrusions		25										
-	gsdCourseName	01308: Green Card Conversations		26										
-	gsdCourseName	01309: Studio Alaska		27										
-	gsdCourseName	01309: Theatre and the City		28										
-	gsdCourseName	01310: Architecture of Cultural Prosthetics		29										
-	gsdCourseName	01310: Rotterdam Study Abroad Studio Option: Elements of Architecture		30										
-	gsdCourseName	01311: Apres Ski: Eco Village Les Diablerets		31										
-	gsdCourseName	01311: The Forms of Transition		32										
-	gsdCourseName	01312: "You Can't Die in Disney World" A ZOO		33										
-	gsdCourseName	01312: Basel Study Abroad Studio Option		34										
-	gsdCourseName	01313: Indebted Architecture		35										
-	gsdCourseName	01314: IN THE LAND OF NANDUTi: following the lines, threads, and figures of the river		36										
-	gsdCourseName	01315: Real and Imaginary Variables (Final): Global Arenas		37										
-	gsdCourseName	01316: High-rise / High-density		38										
-	gsdCourseName	01317: Another nature		39										
-	gsdCourseName	01318: Borrominations, or the Auratic Dome		40										
-	gsdCourseName	01319: Thermodynamic Materialism Applied to Dense Urban Conglomerates, Two Chinese Case Studies		41										
-	gsdCourseName	01401: A New [Landscape] Infrastructure for Los Angeles		42										
-	gsdCourseName	01401: Liminal Space		43										
-	gsdCourseName	01402: Parallel Motion: Walden Pond, Concord/ Central Park , NY		44										
-	gsdCourseName	01402: The Endless Landscape - River Hudson		45										
-	gsdCourseName	01403: After La Vilette (Paris)		46										
-	gsdCourseName	01403: LIFE-STYLED - CHINA-TOWN		47										
-	gsdCourseName	01404: California Limnolarium		48										
-	gsdCourseName	01404: Post-suburb - Nashua NH		49										
-	gsdCourseName	01405: Airport Park Zurich		50										
-	gsdCourseName	01405: Envisioning Miami: Simulated Natures		51										
-	gsdCourseName	01406: The Ocean State		52										
-	gsdCourseName	01407: From the City to the Object: Terre des Hommes 2017		53										
-	gsdCourseName	01408: Caen Island: Public Space		54										
-	gsdCourseName	01409: Negative Planning in Nanshahe, Haidian District, Beijing		55										
-	gsdCourseName	01501: Haters Make Me Famous: The Newark Riverfront and the Post-Great Migration City		56										
-	gsdCourseName	01501: RURBAN		57										
-	gsdCourseName	01502: Networked Urbanism: Urban Waste - Urban Design		58										
-	gsdCourseName	01502: The Storm, the Strife, and Everyday Life		59										
-	gsdCourseName	01503: Planning and Development on the East Boston Waterfront		60										
-	gsdCourseName	01503: The Countryside as a City		61										
-	gsdCourseName	01504: Retrofitting the (post?) Industrial Metropolis		62										
-	gsdCourseName	01505: Medellin: Urban Porosity as Social Infrastructure		63										
-	gsdCourseName	01506: Obsolescence and Pathways to Redevelopment:		64										
-	gsdCourseName	01507: Design and Politics - Managing Risks and Vulnerabilities		65										
-	gsdCourseName	01601: Macau: Cross-border Cities		66										
-	gsdCourseName	01602: Territorialism II		67										
-	gsdCourseName	01603: Meydan: Designing the Surfaces of Public Space around Beyazit Square, Istanbul		68										
-	gsdCourseName	01606: Los Angeles Study Abroad Studio: The Possibilities of the Wrong Scale		69										
-	gsdCourseName	02121: Visual Studies		70										
-	gsdCourseName	02122: Projective Representation in Architecture		71										
-	gsdCourseName	02129: Spatial Analysis and Representation		72										
-	gsdCourseName	02141: Landscape Representation I		73										
-	gsdCourseName	02142: Landscape Representation I		74										
-	gsdCourseName	02223: Digital Media I		75										
-	gsdCourseName	02224: Digital Media II		76										
-	gsdCourseName	02241: Landscape Representation II		77										
-	gsdCourseName	02241: Landscape Representation III		78										
-	gsdCourseName	02322: Digital Media for Design		79										
-	gsdCourseName	02341: Communication for Designer		80										
-	gsdCourseName	02415: Paper or Plastic		81										
-	gsdCourseName	02444: Landscape Material Design Practice and Digital Media		82										
-	gsdCourseName	02446: Drawing for Designers		83										
-	gsdCourseName	02448: Landscape as Painting		84										
-	gsdCourseName	02449: Immersive Landscape		85										
-	gsdCourseName	02449: Landscape as Video Game		86										
-	gsdCourseName	02450: Landscape as Weather/Atmosphere		87										
-	gsdCourseName	02482: Art, Design and the Public Domain		88										
-	gsdCourseName	02602: Basel Study Abroad Seminar		89										
-	gsdCourseName	03241: Theories of Landscape as Urbanism		90										
-	gsdCourseName	03241: Theories of Landscape as Urbanism, Landscape as Infrastructure		91										
-	gsdCourseName	03242: Theories of Landscape Architecture		92										
-	gsdCourseName	03330: Conservation of Older Buildings		93										
-	gsdCourseName	03333: Culture, Conservation and Design		94										
-	gsdCourseName	03338: carbonurbanism		95										
-	gsdCourseName	03345: Emergence in Landscape Architecture		96										
-	gsdCourseName	03375: Planning for Conservation:		97										
-	gsdCourseName	03453: Light Structure I		98										
-	gsdCourseName	03494: Design for Learning		99										
-	gsdCourseName	03499: The Aperture Analyzed		100										
-	gsdCourseName	03602: Study Abroad Seminar: Islands		101										
-	gsdCourseName	03603: The Hitchhikers Guide to Hyperreality		102										
-	gsdCourseName	04105: Studies of the Built North American Environment		103										
-	gsdCourseName	04105: Studies of the Built North American Environment 1580 - Present		104										
-	gsdCourseName	04115: History and Theory of Urban Interventions		105										
-	gsdCourseName	04121: Buildings, Texts, and Contexts I		106										
-	gsdCourseName	04141: Histories of Landscape Architecture		107										
-	gsdCourseName	04142: Histories of Landscape Architecture II		108										
-	gsdCourseName	04223: Buildings, Texts, and Contexts III		109										
-	gsdCourseName	04303: Modernization in the Visual U.S. Environment		110										
-	gsdCourseName	04304: North American Seacoasts + Landscapes Discovery Period to the Present		111										
-	gsdCourseName	04304: North American Seacoasts and Landscape		112										
-	gsdCourseName	04305: Adventure + Fantasy Simulation 1871-2036		113										
-	gsdCourseName	04329: Urbanization in the East Asian Region		114										
-	gsdCourseName	04358: Authority and Invention: Medieval Art and Architecture		115										
-	gsdCourseName	04362: Structuring Urban Experience		116										
-	gsdCourseName	04363: Walking		117										
-	gsdCourseName	04405: Istanbul		118										
-	gsdCourseName	04408: Situating the Modern		119										
-	gsdCourseName	04439: "In the Manner of a Picture"		120										
-	gsdCourseName	04444: Historical Ground		121										
-	gsdCourseName	04445: Envisioning Landscape: Cultures of Vision in the Air and on the Ground		122										
-	gsdCourseName	04446: A History of Nature Conservation and Cultural Landscape Preservation		123										
-	gsdCourseName	04447: Forest, Grove, Tree		124										
-	gsdCourseName	04477: Slums in Architectural History		125										
-	gsdCourseName	05204: Real Estate Finance and Development		126										
-	gsdCourseName	05206: Land Use and Environmental Law		127										
-	gsdCourseName	05210: Cities by Design I		128										
-	gsdCourseName	05212: Field Studies in Real Estate, Planning, and Urban Design		129										
-	gsdCourseName	05213: Policy Making in Urban Settings		130										
-	gsdCourseName	05222: Markets and Market Failures with Cases		131										
-	gsdCourseName	05304: Transportation Planning and Development		132										
-	gsdCourseName	05326: Housing and Urbanization in the United States		133										
-	gsdCourseName	05330: Healthy Places		134										
-	gsdCourseName	05338: Planning for the 21st Century		135										
-	gsdCourseName	05342: Creating Resilient Cities		136										
-	gsdCourseName	05343: Critical and Social Cartography		137										
-	gsdCourseName	05360: Territorial Intelligence		138										
-	gsdCourseName	05433: Modern Housing and Urban Districts		139										
-	gsdCourseName	05492: Real Estate Finance and Development Fundamentals 		140										
-	gsdCourseName	05495: Market Analysis and Urban Economics		141										
-	gsdCourseName	05502: Urban Governance and the Politics of Planning in the Developing World		142										
-	gsdCourseName	06121 Construction Lab		143										
-	gsdCourseName	06122 Energy in Architecture		144										
-	gsdCourseName	06141: Ecologies, Techniques, Technologies I		145										
-	gsdCourseName	06141: Ecologies, Techniques, Techs. I		146										
-	gsdCourseName	06142: Ecologies, Techniques, Techs. II		147										
-	gsdCourseName	06227: Structural Design 1		148										
-	gsdCourseName	06230: Cases in Contemporary Construction		149										
-	gsdCourseName	06241: Ecologies, Techniques, Technologies III		150										
-	gsdCourseName	06241: Ecologies, Techniques, Techs. III		151										
-	gsdCourseName	06242: Ecologies, Techniques, Techs. IV		152										
-	gsdCourseName	06243: Ecologies, Techniques, Techs. V		153										
-	gsdCourseName	06251: Research Seminar on Urban Ecology		154										
-	gsdCourseName	06271: The Innovative Practice		155										
-	gsdCourseName	06272: Innovation in Science and Engineering		156										
-	gsdCourseName	06273: Water Engineering		157										
-	gsdCourseName	06274: Advanced Introduction to Robotics		158										
-	gsdCourseName	06275: Computer Vision 		159										
-	gsdCourseName	06317: Material Practice as Research		160										
-	gsdCourseName	06318: Urban and Suburban Ecology		161										
-	gsdCourseName	06322: Mapping: Geographic Representation		162										
-	gsdCourseName	06323: Brownfields Practicum		163										
-	gsdCourseName	06333: Aquatic Ecology		164										
-	gsdCourseName	06335: Phytotechnologies		165										
-	gsdCourseName	06337: Changing Natural and Built Coastal Environments		166										
-	gsdCourseName	06337: Changing Natural and Built Coastal Environments		167										
-	gsdCourseName	06338: Introduction to Computational Design		168										
-	gsdCourseName	06436: Expanded Mechanisms / Empirical Materialisms		169										
-	gsdCourseName	06450: High Performance Buildings and Systems Integration		170										
-	gsdCourseName	06451: Research Seminar on Urban Ecology		171										
-	gsdCourseName	06454: Poetics of Construction: Detail Design		172										
-	gsdCourseName	06468: Design By Committee		173										
-	gsdCourseName	06470: Energy Simulation for Design		174										
-	gsdCourseName	06474: Natural Ventilation		175										
-	gsdCourseName	06478: Informal Robotics		176										
-	gsdCourseName	06479: Daylighting		177										
-	gsdCourseName	07241: Practices of LA		178										
-	gsdCourseName	07241: Practices of Landscape Architecture		179										
-	gsdCourseName	07408: Frameworks of Contemporary Practice		180										
-	gsdCourseName	07410: The Architect in History		181										
-	gsdCourseName	09123: The Fourth Typology		182										
-	gsdCourseName	09123: The Fourth Typology: Dominant Type + the Idea of the City		183										
-	gsdCourseName	09127: Real Estate and City Making in China		184										
-	gsdCourseName	09131: Cultivating Scale: Territorial Planting Strategies		185										
-	gsdCourseName	09136: Teaching Creativity		186										
-	gsdCourseName	09137: Mapping Cultural Space		187										
-	gsdCourseName	09201: Independent Study  Masters Degrees		188										
-	gsdCourseName	09204: Preparation for Independent Thesis Proposal for MUP, MAUD, or MLAUD		189										
-	gsdCourseName	09204: Thesis Prep for MUP, MAUD, or MLAUD		190										
-	gsdCourseName	09301: Independent Thesis in Satisfaction of Degree MArch		191										
-	gsdCourseName	09302: Independent Thesis in Satisfaction of the Degree MAUD, MLAUD, or MUP		192										
-	gsdCourseName	09304: Independent Thesis for Mdes		193										
-	gsdCourseName	09304: Independent Thesis for the Degree Master in Design Studies		194										
-	gsdCourseName	09305: Master of Design Studies Final Project		195										
-	gsdCourseName	09341: Preparation of Design Thesis Proposal for MLA		196										
-	gsdCourseName	09341: Thesis Prep for MLA		197										
-	gsdCourseName	09342: Independent Thesis		198										
-	gsdCourseName	09342: Independent Thesis in Satisfaction of the Degree MLA		199										
-	gsdCourseName	09503: Preparation of Doctoral Thesis Proposal		200										
-	gsdCourseName	09504: Thesis in Satisfaction of the Degree Doctor of Design		201										
-	gsdCourseName	09506: Thesis Extension in Satisfaction of Degree Doctor of Design		202										
-	gsdCourseName	09601: MArch II Proseminar		203										
-	gsdCourseName	09630: Urban Design Proseminar		204										
-	gsdCourseName	09641: MLA Proseminar		205										
-	gsdCourseName	09641: Proseminar in Landscape Architecture		206										
-	gsdCourseName	09661: Proseminar in Urbanism, Landscape, Ecology		207										
-	gsdCourseName	09663: Risk and Resilience Proseminar		208										
-	gsdCourseName	09691: Doctoral Program Proseminar		209										
-	gsdCourseName	Other		210										
+#metadataBlock	name	displayName													
+	customGSD	Graduate School of Design Metadata													
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+	gsdStudentName	Student Name	Full name of the student: Last Name, First Name (example: Smith, Jane). Use the name that the GSD Administrator has on file.	LastName, FirstName	text	0		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		customGSD
+	gsdStudentProgram	Student's Program of Study	Student's program of study.		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
+	gsdCourseName	Course Name	Name of the course.		text	2		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
+	gsdFacultyName	Faculty Name	Name of the studio instructor.		text	3		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
+	gsdCoordinator	Core Studio Coordinator	Name of the studio coordinator(s).		text	4		FALSE	TRUE	TRUE	FALSE	FALSE	FALSE		customGSD
+	gsdSemester	Semester / Year	Select the semester / year.		text	5		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
+	gsdRecommendation	Faculty Recommendation	Indicate the recommendation(s) from the faculty for this project.		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
+	gsdAccreditation	Accreditation	Selection made by faculty.		text	7		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
+	gsdSiteType	Site Type	Describe the type of building or site, based on function / purpose. Example: Military base.		text	8		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		customGSD
+	gsdProgramBrief	Program / Brief	Example: redevelopment, restoration.		textbox	9		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		customGSD
+	gsdTypes	Types of Representation/ Medium/ Format	Choose from the list.		text	10		FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
+	gsdPrizes	Prizes	Choose from the list.		text	11		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		customGSD
+	gsdTags	GSD Tags	Use tags to describe the project. Write one keyword per field. To add more tags, click on the plus sign on the right.		text	12		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		customGSD
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
+	gsdFacultyName	Abalos, Inaki		0											
+	gsdFacultyName	Adjaye, David		1											
+	gsdFacultyName	Altringer, Beth		2											
+	gsdFacultyName	Apfelbaum, Steven		3											
+	gsdFacultyName	Aquino, Gerdo		4											
+	gsdFacultyName	Asensio Villoria, Leire		5											
+	gsdFacultyName	Baines, Bridget		6											
+	gsdFacultyName	Beard, Peter		7											
+	gsdFacultyName	Belanger, Pierre		8											
+	gsdFacultyName	Benedito, Silvia		9											
+	gsdFacultyName	Berrizbeitia, Anita		10											
+	gsdFacultyName	Bewtra, Manisha		11											
+	gsdFacultyName	Blau, Eve		12											
+	gsdFacultyName	Bozdogan, Sibel		13											
+	gsdFacultyName	Brenner, Neil		14											
+	gsdFacultyName	Buckler, Julie		15											
+	gsdFacultyName	Busquets, Joan		16											
+	gsdFacultyName	Callejas Mujica, Luis Rodrigo		17											
+	gsdFacultyName	Calvillo, Nerea		18											
+	gsdFacultyName	Cantrell, Bradley		19											
+	gsdFacultyName	Carras, James		20											
+	gsdFacultyName	Castillo, Jose		21											
+	gsdFacultyName	Cephas, Jana		22											
+	gsdFacultyName	Cheng, Christine		23											
+	gsdFacultyName	Cohen, Preston Scott		24											
+	gsdFacultyName	Cook, Peter		25											
+	gsdFacultyName	Correa, Felipe		26											
+	gsdFacultyName	Craig, Salmaan		27											
+	gsdFacultyName	Davis, Diane		28											
+	gsdFacultyName	de Broche des Combes, Eric		29											
+	gsdFacultyName	de Castro Mazarro, Alejandro		30											
+	gsdFacultyName	de Meuron, Pierre		31											
+	gsdFacultyName	Del Tredici, Peter		32											
+	gsdFacultyName	D'Oca, Daniel		33											
+	gsdFacultyName	Doherty, Gareth		34											
+	gsdFacultyName	Duempelmann, Sonja		35											
+	gsdFacultyName	Eigen, Ed		36											
+	gsdFacultyName	Elkin, Rosetta		37											
+	gsdFacultyName	Ellis, Erle		38											
+	gsdFacultyName	Evans, Teman		39											
+	gsdFacultyName	Flores Dewey, Onesimo		40											
+	gsdFacultyName	Forsyth, Ann		41											
+	gsdFacultyName	Gamble, David		42											
+	gsdFacultyName	Garciavelez Alfaro, Carlos		43											
+	gsdFacultyName	Gelabert-Sanchez, Ana		44											
+	gsdFacultyName	Georgoulias, Andreas		45											
+	gsdFacultyName	Ham, Derek		46											
+	gsdFacultyName	Hansen, Andrea		47											
+	gsdFacultyName	Harabasz, Ewa		48											
+	gsdFacultyName	Hays, K. Michael		49											
+	gsdFacultyName	Herzog, Jacques		50											
+	gsdFacultyName	Hilderbrand, Gary		51											
+	gsdFacultyName	Hoberman, Chuck		52											
+	gsdFacultyName	Hong, Zaneta		53											
+	gsdFacultyName	Hooftman, Eelco		54											
+	gsdFacultyName	Hooper, Michael		55											
+	gsdFacultyName	Howeler, Eric		56											
+	gsdFacultyName	Hoxie, Christopher		57											
+	gsdFacultyName	Hung, Ying-Yu		58											
+	gsdFacultyName	Hunt, John		59											
+	gsdFacultyName	Hutton, Jane		60											
+	gsdFacultyName	Ibanez, Mariana		61											
+	gsdFacultyName	Johnston, Sharon		62											
+	gsdFacultyName	Kayden, Jerold		63											
+	gsdFacultyName	Khamsi, James		64											
+	gsdFacultyName	Kirkwood, Niall		65											
+	gsdFacultyName	Krieger, Alex		66											
+	gsdFacultyName	Kuo, Max		67											
+	gsdFacultyName	La, Grace		68											
+	gsdFacultyName	Leach, Neil		69											
+	gsdFacultyName	Lee, Christopher		70											
+	gsdFacultyName	Lee, Mark		71											
+	gsdFacultyName	Lopez-Pineiro, Sergio		72											
+	gsdFacultyName	Lott, Jonathan		73											
+	gsdFacultyName	Mah, David		74											
+	gsdFacultyName	Malkawi, Ali		75											
+	gsdFacultyName	Manfredi, Michael		76											
+	gsdFacultyName	Marchant, Edward		77											
+	gsdFacultyName	McCafferty, Patrick		78											
+	gsdFacultyName	McIntosh, Alistair		79											
+	gsdFacultyName	Mehrotra, Rahul		80											
+	gsdFacultyName	Menchaca, Alejandra		81											
+	gsdFacultyName	Menges, Achim		82											
+	gsdFacultyName	Michalatos, Panagiotis		83											
+	gsdFacultyName	Moe, Kiel		84											
+	gsdFacultyName	Molinsky, Jennifer		85											
+	gsdFacultyName	Mori, Toshiko		86											
+	gsdFacultyName	Moussavi, Farshid		87											
+	gsdFacultyName	Mulligan, Mark		88											
+	gsdFacultyName	Muro, Carles		89											
+	gsdFacultyName	Naginski, Erika		90											
+	gsdFacultyName	Nakazawa, Paul		91											
+	gsdFacultyName	Nichols, Albert		92											
+	gsdFacultyName	O'Neill-Uzgiris, Kelly Ann		93											
+	gsdFacultyName	Oppenheim, Chad		94											
+	gsdFacultyName	Panzano, Megan		95											
+	gsdFacultyName	Park, Peter		96											
+	gsdFacultyName	Parsons, Katharine		97											
+	gsdFacultyName	Peiser, Richard		98											
+	gsdFacultyName	Petcu, Constantin		99											
+	gsdFacultyName	Petrescu, Doina		100											
+	gsdFacultyName	Pietrusko, Robert		101											
+	gsdFacultyName	Rahm, Philippe		102											
+	gsdFacultyName	Raspall Galli, Carlos Felix		103											
+	gsdFacultyName	Reed, Chris		104											
+	gsdFacultyName	Rein-Cano, Martin		105											
+	gsdFacultyName	Restrepo Ochoa, Camilo		106											
+	gsdFacultyName	Rosenthal, Joyce Klein		107											
+	gsdFacultyName	Rowe, Peter		108											
+	gsdFacultyName	Ryan, Thomas		109											
+	gsdFacultyName	Samuelson, Holly		110											
+	gsdFacultyName	Sennett, Richard		111											
+	gsdFacultyName	Shigematsu, Shohei		112											
+	gsdFacultyName	Silman, Robert		113											
+	gsdFacultyName	Silver, Mitchell		114											
+	gsdFacultyName	Silvetti, Jorge		115											
+	gsdFacultyName	Smith, Christine		116											
+	gsdFacultyName	Snyder, Susan		117											
+	gsdFacultyName	Solano, Laura		118											
+	gsdFacultyName	Spiegelman, Kathy		119											
+	gsdFacultyName	Stilgoe, John		120											
+	gsdFacultyName	Stockard, James		121											
+	gsdFacultyName	Tato, Belinda		122											
+	gsdFacultyName	Thomas, George		123											
+	gsdFacultyName	Thompson, Maryann		124											
+	gsdFacultyName	Torto, Raymond		125											
+	gsdFacultyName	Urbanski, Matthew		126											
+	gsdFacultyName	Valenzuela, Luis		127											
+	gsdFacultyName	Vallejo, Jose Luis		128											
+	gsdFacultyName	Van Valkenburgh, Michael		129											
+	gsdFacultyName	Vecitis, Chad		130											
+	gsdFacultyName	Videcnik, Spela		131											
+	gsdFacultyName	Waldheim, Charles		132											
+	gsdFacultyName	Wang, Bing		133											
+	gsdFacultyName	Weitz, David		134											
+	gsdFacultyName	Wendel, Delia		135											
+	gsdFacultyName	Wickersham, Jay		136											
+	gsdFacultyName	Witt, Andrew		137											
+	gsdFacultyName	Wodiczko, Krzysztof		138											
+	gsdFacultyName	Wood, Robert		139											
+	gsdFacultyName	Wu, Cameron		140											
+	gsdFacultyName	Zickler, Todd		141											
+	gsdCourseName	09691: Doctoral Program Proseminar		1											
+	gsdCoordinator	Belanger, Pierre		0											
+	gsdCoordinator	Correa, Felipe		1											
+	gsdCoordinator	Forsyth, Ann		2											
+	gsdCoordinator	Gelabert-Sanchez, Ana		3											
+	gsdCoordinator	Hilderbrand, Gary		4											
+	gsdCoordinator	Howeler, Eric		5											
+	gsdCoordinator	Hutton, Jane		6											
+	gsdCoordinator	Ibanez, Mariana		7											
+	gsdCoordinator	La, Grace		8											
+	gsdCoordinator	Moe, Kiel		9											
+	gsdCoordinator	Muro, Carles		10											
+	gsdStudentProgram	DDes		0											
+	gsdStudentProgram	MArch I		1											
+	gsdStudentProgram	MArch II		2											
+	gsdStudentProgram	MAUD or MLAUD		3											
+	gsdStudentProgram	MDes		4											
+	gsdStudentProgram	MLA I		5											
+	gsdStudentProgram	MLA I AP		6											
+	gsdStudentProgram	MLA II		7											
+	gsdStudentProgram	MUD		8											
+	gsdStudentProgram	MUP		9											
+	gsdStudentProgram	MUP/MArch		10											
+	gsdStudentProgram	MUP/MAUD or MLAUD		11											
+	gsdStudentProgram	MUP/MDes		12											
+	gsdStudentProgram	MUP/MLA		13											
+	gsdStudentProgram	Other		14											
+	gsdStudentProgram	PhD		15											
+	gsdSemester	Fall 2013		0											
+	gsdSemester	Spring 2014		1											
+	gsdSemester	Fall 2014		2											
+	gsdSemester	Spring 2015		3											
+	gsdSemester	Fall 2015		4											
+	gsdSemester	Spring 2016		5											
+	gsdSemester	Fall 2016		6											
+	gsdRecommendation	Accreditation		0											
+	gsdRecommendation	Open House		1											
+	gsdRecommendation	Platform		2											
+	gsdRecommendation	Website		3											
+	gsdTypes	Animations		0											
+	gsdTypes	Axonometric drawings		1											
+	gsdTypes	Axonometric projections		2											
+	gsdTypes	Diagrams		3											
+	gsdTypes	Drawings		4											
+	gsdTypes	Elevations (drawings)		5											
+	gsdTypes	Floor plans		6											
+	gsdTypes	Isometric drawings		7											
+	gsdTypes	Isometric projections		8											
+	gsdTypes	Maps		9											
+	gsdTypes	Master plans		10											
+	gsdTypes	Models (representations)		11											
+	gsdTypes	Other		12											
+	gsdTypes	Perspective drawings		13											
+	gsdTypes	Photographs		14											
+	gsdTypes	Plans (drawings)		15											
+	gsdTypes	Plans (maps)		16											
+	gsdTypes	Renderings		17											
+	gsdTypes	Sectional elevations		18											
+	gsdTypes	Sectional perspectives		19											
+	gsdTypes	Sections		20											
+	gsdTypes	Sections (orthographic projections)		21											
+	gsdTypes	Site plans		22											
+	gsdTypes	Sketches		23											
+	gsdTypes	Videos		24											
+	gsdPrizes	Araldo Cossutta Annual Prize for Design Excellence		0											
+	gsdPrizes	Award for Academic Excellence in Urban Design		1											
+	gsdPrizes	Award for Academic Excellence in Urban Planning		2											
+	gsdPrizes	Award for Outstanding Leadership in Urban Design		3											
+	gsdPrizes	Award for Outstanding Leadership in Urban Planning		4											
+	gsdPrizes	Charles Eliot Traveling Fellowship in Landscape Architecture		5											
+	gsdPrizes	Clifford Wong Prize in Housing Design		6											
+	gsdPrizes	Digital Design Prize		7											
+	gsdPrizes	Dimitris Pikionis Award		8											
+	gsdPrizes	Druker Traveling Fellowship		9											
+	gsdPrizes	Ferdinand Colloredo-Mansfeld Prize for Superior Achievement in Real Estate Studies		10											
+	gsdPrizes	Frederick Sheldon Traveling Fellowship		11											
+	gsdPrizes	Howard T. Fisher Prize for Excellence in Geographic Information Science		12											
+	gsdPrizes	Jacob Weidenmann Prize		13											
+	gsdPrizes	Julia Amory Appleton Traveling Fellowship in Architecture		14											
+	gsdPrizes	Kevin V. Kieran Prize (Kevin Kieran Memorial Scholarship)		15											
+	gsdPrizes	Norman T. Newton Prize		16											
+	gsdPrizes	Peter Rice Prize for Innovation in Architecture and Structural Design		17											
+	gsdPrizes	Peter Walker & Partners Fellowship for Landscape Architecture		18											
+	gsdPrizes	Sinclair Kennedy Traveling Fellowship		19											
+	gsdPrizes	The Daniel L. Schodek Award for Technology and Sustainability		20											
+	gsdAccreditation	High		0											
+	gsdAccreditation	Medium		1											
+	gsdAccreditation	Low		2											
+	gsdCourseName	01101: First Semester Core: PROJECT		0											
+	gsdCourseName	01102: Second Semester Core: SITUATE		1											
+	gsdCourseName	01111: LA I: First Semester Core Studio		2											
+	gsdCourseName	01112: Landscape Architecture II		3											
+	gsdCourseName	01121: First Semester Core Urban Planning Studio		4											
+	gsdCourseName	01122: Second Semester Core Urban Planning Studio		5											
+	gsdCourseName	01201: Third Semester Core: INTEGRATE		6											
+	gsdCourseName	01202: Fourth Semester Core: RELATE		7											
+	gsdCourseName	01211: LA III: Third Semester Core Studio		8											
+	gsdCourseName	01212: Landscape Architecture IV		9											
+	gsdCourseName	01221: Elements of Urban Design		10											
+	gsdCourseName	01301: Kyoto Studio II: Seasons and Architecture		11											
+	gsdCourseName	01301: The Function of Time		12											
+	gsdCourseName	01302: Architecture Club London		13											
+	gsdCourseName	01302: Unfinished Work III		14											
+	gsdCourseName	01303: Alimentary Design		15											
+	gsdCourseName	01303: Workplan		16											
+	gsdCourseName	01304: Alimentary Design		17											
+	gsdCourseName	01304: Socio-Environmental Responsive Design		18											
+	gsdCourseName	01305: Built Climates		19											
+	gsdCourseName	01305: Parametric Semiology - High Performance Architecture for Apple, Google and Facebook		20											
+	gsdCourseName	01306: 21st Cent. Arch.of Africa and the Diaspora		21											
+	gsdCourseName	01306: Material Performance - Fibrous Tectonics		22											
+	gsdCourseName	01307: La Strada Novissima		23											
+	gsdCourseName	01307: Material Performance		24											
+	gsdCourseName	01308: City of Artificial Extrusions		25											
+	gsdCourseName	01308: Green Card Conversations		26											
+	gsdCourseName	01309: Studio Alaska		27											
+	gsdCourseName	01309: Theatre and the City		28											
+	gsdCourseName	01310: Architecture of Cultural Prosthetics		29											
+	gsdCourseName	01310: Rotterdam Study Abroad Studio Option: Elements of Architecture		30											
+	gsdCourseName	01311: Apres Ski: Eco Village Les Diablerets		31											
+	gsdCourseName	01311: The Forms of Transition		32											
+	gsdCourseName	01312: "You Can't Die in Disney World" A ZOO		33											
+	gsdCourseName	01312: Basel Study Abroad Studio Option		34											
+	gsdCourseName	01313: Indebted Architecture		35											
+	gsdCourseName	01314: IN THE LAND OF NANDUTi: following the lines, threads, and figures of the river		36											
+	gsdCourseName	01315: Real and Imaginary Variables (Final): Global Arenas		37											
+	gsdCourseName	01316: High-rise / High-density		38											
+	gsdCourseName	01317: Another nature		39											
+	gsdCourseName	01318: Borrominations, or the Auratic Dome		40											
+	gsdCourseName	01319: Thermodynamic Materialism Applied to Dense Urban Conglomerates, Two Chinese Case Studies		41											
+	gsdCourseName	01401: A New [Landscape] Infrastructure for Los Angeles		42											
+	gsdCourseName	01401: Liminal Space		43											
+	gsdCourseName	01402: Parallel Motion: Walden Pond, Concord/ Central Park , NY		44											
+	gsdCourseName	01402: The Endless Landscape - River Hudson		45											
+	gsdCourseName	01403: After La Vilette (Paris)		46											
+	gsdCourseName	01403: LIFE-STYLED - CHINA-TOWN		47											
+	gsdCourseName	01404: California Limnolarium		48											
+	gsdCourseName	01404: Post-suburb - Nashua NH		49											
+	gsdCourseName	01405: Airport Park Zurich		50											
+	gsdCourseName	01405: Envisioning Miami: Simulated Natures		51											
+	gsdCourseName	01406: The Ocean State		52											
+	gsdCourseName	01407: From the City to the Object: Terre des Hommes 2017		53											
+	gsdCourseName	01408: Caen Island: Public Space		54											
+	gsdCourseName	01409: Negative Planning in Nanshahe, Haidian District, Beijing		55											
+	gsdCourseName	01501: Haters Make Me Famous: The Newark Riverfront and the Post-Great Migration City		56											
+	gsdCourseName	01501: RURBAN		57											
+	gsdCourseName	01502: Networked Urbanism: Urban Waste - Urban Design		58											
+	gsdCourseName	01502: The Storm, the Strife, and Everyday Life		59											
+	gsdCourseName	01503: Planning and Development on the East Boston Waterfront		60											
+	gsdCourseName	01503: The Countryside as a City		61											
+	gsdCourseName	01504: Retrofitting the (post?) Industrial Metropolis		62											
+	gsdCourseName	01505: Medellin: Urban Porosity as Social Infrastructure		63											
+	gsdCourseName	01506: Obsolescence and Pathways to Redevelopment:		64											
+	gsdCourseName	01507: Design and Politics - Managing Risks and Vulnerabilities		65											
+	gsdCourseName	01601: Macau: Cross-border Cities		66											
+	gsdCourseName	01602: Territorialism II		67											
+	gsdCourseName	01603: Meydan: Designing the Surfaces of Public Space around Beyazit Square, Istanbul		68											
+	gsdCourseName	01606: Los Angeles Study Abroad Studio: The Possibilities of the Wrong Scale		69											
+	gsdCourseName	02121: Visual Studies		70											
+	gsdCourseName	02122: Projective Representation in Architecture		71											
+	gsdCourseName	02129: Spatial Analysis and Representation		72											
+	gsdCourseName	02141: Landscape Representation I		73											
+	gsdCourseName	02142: Landscape Representation I		74											
+	gsdCourseName	02223: Digital Media I		75											
+	gsdCourseName	02224: Digital Media II		76											
+	gsdCourseName	02241: Landscape Representation II		77											
+	gsdCourseName	02241: Landscape Representation III		78											
+	gsdCourseName	02322: Digital Media for Design		79											
+	gsdCourseName	02341: Communication for Designer		80											
+	gsdCourseName	02415: Paper or Plastic		81											
+	gsdCourseName	02444: Landscape Material Design Practice and Digital Media		82											
+	gsdCourseName	02446: Drawing for Designers		83											
+	gsdCourseName	02448: Landscape as Painting		84											
+	gsdCourseName	02449: Immersive Landscape		85											
+	gsdCourseName	02449: Landscape as Video Game		86											
+	gsdCourseName	02450: Landscape as Weather/Atmosphere		87											
+	gsdCourseName	02482: Art, Design and the Public Domain		88											
+	gsdCourseName	02602: Basel Study Abroad Seminar		89											
+	gsdCourseName	03241: Theories of Landscape as Urbanism		90											
+	gsdCourseName	03241: Theories of Landscape as Urbanism, Landscape as Infrastructure		91											
+	gsdCourseName	03242: Theories of Landscape Architecture		92											
+	gsdCourseName	03330: Conservation of Older Buildings		93											
+	gsdCourseName	03333: Culture, Conservation and Design		94											
+	gsdCourseName	03338: carbonurbanism		95											
+	gsdCourseName	03345: Emergence in Landscape Architecture		96											
+	gsdCourseName	03375: Planning for Conservation:		97											
+	gsdCourseName	03453: Light Structure I		98											
+	gsdCourseName	03494: Design for Learning		99											
+	gsdCourseName	03499: The Aperture Analyzed		100											
+	gsdCourseName	03602: Study Abroad Seminar: Islands		101											
+	gsdCourseName	03603: The Hitchhikers Guide to Hyperreality		102											
+	gsdCourseName	04105: Studies of the Built North American Environment		103											
+	gsdCourseName	04105: Studies of the Built North American Environment 1580 - Present		104											
+	gsdCourseName	04115: History and Theory of Urban Interventions		105											
+	gsdCourseName	04121: Buildings, Texts, and Contexts I		106											
+	gsdCourseName	04141: Histories of Landscape Architecture		107											
+	gsdCourseName	04142: Histories of Landscape Architecture II		108											
+	gsdCourseName	04223: Buildings, Texts, and Contexts III		109											
+	gsdCourseName	04303: Modernization in the Visual U.S. Environment		110											
+	gsdCourseName	04304: North American Seacoasts + Landscapes Discovery Period to the Present		111											
+	gsdCourseName	04304: North American Seacoasts and Landscape		112											
+	gsdCourseName	04305: Adventure + Fantasy Simulation 1871-2036		113											
+	gsdCourseName	04329: Urbanization in the East Asian Region		114											
+	gsdCourseName	04358: Authority and Invention: Medieval Art and Architecture		115											
+	gsdCourseName	04362: Structuring Urban Experience		116											
+	gsdCourseName	04363: Walking		117											
+	gsdCourseName	04405: Istanbul		118											
+	gsdCourseName	04408: Situating the Modern		119											
+	gsdCourseName	04439: "In the Manner of a Picture"		120											
+	gsdCourseName	04444: Historical Ground		121											
+	gsdCourseName	04445: Envisioning Landscape: Cultures of Vision in the Air and on the Ground		122											
+	gsdCourseName	04446: A History of Nature Conservation and Cultural Landscape Preservation		123											
+	gsdCourseName	04447: Forest, Grove, Tree		124											
+	gsdCourseName	04477: Slums in Architectural History		125											
+	gsdCourseName	05204: Real Estate Finance and Development		126											
+	gsdCourseName	05206: Land Use and Environmental Law		127											
+	gsdCourseName	05210: Cities by Design I		128											
+	gsdCourseName	05212: Field Studies in Real Estate, Planning, and Urban Design		129											
+	gsdCourseName	05213: Policy Making in Urban Settings		130											
+	gsdCourseName	05222: Markets and Market Failures with Cases		131											
+	gsdCourseName	05304: Transportation Planning and Development		132											
+	gsdCourseName	05326: Housing and Urbanization in the United States		133											
+	gsdCourseName	05330: Healthy Places		134											
+	gsdCourseName	05338: Planning for the 21st Century		135											
+	gsdCourseName	05342: Creating Resilient Cities		136											
+	gsdCourseName	05343: Critical and Social Cartography		137											
+	gsdCourseName	05360: Territorial Intelligence		138											
+	gsdCourseName	05433: Modern Housing and Urban Districts		139											
+	gsdCourseName	05492: Real Estate Finance and Development Fundamentals 		140											
+	gsdCourseName	05495: Market Analysis and Urban Economics		141											
+	gsdCourseName	05502: Urban Governance and the Politics of Planning in the Developing World		142											
+	gsdCourseName	06121 Construction Lab		143											
+	gsdCourseName	06122 Energy in Architecture		144											
+	gsdCourseName	06141: Ecologies, Techniques, Technologies I		145											
+	gsdCourseName	06141: Ecologies, Techniques, Techs. I		146											
+	gsdCourseName	06142: Ecologies, Techniques, Techs. II		147											
+	gsdCourseName	06227: Structural Design 1		148											
+	gsdCourseName	06230: Cases in Contemporary Construction		149											
+	gsdCourseName	06241: Ecologies, Techniques, Technologies III		150											
+	gsdCourseName	06241: Ecologies, Techniques, Techs. III		151											
+	gsdCourseName	06242: Ecologies, Techniques, Techs. IV		152											
+	gsdCourseName	06243: Ecologies, Techniques, Techs. V		153											
+	gsdCourseName	06251: Research Seminar on Urban Ecology		154											
+	gsdCourseName	06271: The Innovative Practice		155											
+	gsdCourseName	06272: Innovation in Science and Engineering		156											
+	gsdCourseName	06273: Water Engineering		157											
+	gsdCourseName	06274: Advanced Introduction to Robotics		158											
+	gsdCourseName	06275: Computer Vision 		159											
+	gsdCourseName	06317: Material Practice as Research		160											
+	gsdCourseName	06318: Urban and Suburban Ecology		161											
+	gsdCourseName	06322: Mapping: Geographic Representation		162											
+	gsdCourseName	06323: Brownfields Practicum		163											
+	gsdCourseName	06333: Aquatic Ecology		164											
+	gsdCourseName	06335: Phytotechnologies		165											
+	gsdCourseName	06337: Changing Natural and Built Coastal Environments		166											
+	gsdCourseName	06337: Changing Natural and Built Coastal Environments		167											
+	gsdCourseName	06338: Introduction to Computational Design		168											
+	gsdCourseName	06436: Expanded Mechanisms / Empirical Materialisms		169											
+	gsdCourseName	06450: High Performance Buildings and Systems Integration		170											
+	gsdCourseName	06451: Research Seminar on Urban Ecology		171											
+	gsdCourseName	06454: Poetics of Construction: Detail Design		172											
+	gsdCourseName	06468: Design By Committee		173											
+	gsdCourseName	06470: Energy Simulation for Design		174											
+	gsdCourseName	06474: Natural Ventilation		175											
+	gsdCourseName	06478: Informal Robotics		176											
+	gsdCourseName	06479: Daylighting		177											
+	gsdCourseName	07241: Practices of LA		178											
+	gsdCourseName	07241: Practices of Landscape Architecture		179											
+	gsdCourseName	07408: Frameworks of Contemporary Practice		180											
+	gsdCourseName	07410: The Architect in History		181											
+	gsdCourseName	09123: The Fourth Typology		182											
+	gsdCourseName	09123: The Fourth Typology: Dominant Type + the Idea of the City		183											
+	gsdCourseName	09127: Real Estate and City Making in China		184											
+	gsdCourseName	09131: Cultivating Scale: Territorial Planting Strategies		185											
+	gsdCourseName	09136: Teaching Creativity		186											
+	gsdCourseName	09137: Mapping Cultural Space		187											
+	gsdCourseName	09201: Independent Study  Masters Degrees		188											
+	gsdCourseName	09204: Preparation for Independent Thesis Proposal for MUP, MAUD, or MLAUD		189											
+	gsdCourseName	09204: Thesis Prep for MUP, MAUD, or MLAUD		190											
+	gsdCourseName	09301: Independent Thesis in Satisfaction of Degree MArch		191											
+	gsdCourseName	09302: Independent Thesis in Satisfaction of the Degree MAUD, MLAUD, or MUP		192											
+	gsdCourseName	09304: Independent Thesis for Mdes		193											
+	gsdCourseName	09304: Independent Thesis for the Degree Master in Design Studies		194											
+	gsdCourseName	09305: Master of Design Studies Final Project		195											
+	gsdCourseName	09341: Preparation of Design Thesis Proposal for MLA		196											
+	gsdCourseName	09341: Thesis Prep for MLA		197											
+	gsdCourseName	09342: Independent Thesis		198											
+	gsdCourseName	09342: Independent Thesis in Satisfaction of the Degree MLA		199											
+	gsdCourseName	09503: Preparation of Doctoral Thesis Proposal		200											
+	gsdCourseName	09504: Thesis in Satisfaction of the Degree Doctor of Design		201											
+	gsdCourseName	09506: Thesis Extension in Satisfaction of Degree Doctor of Design		202											
+	gsdCourseName	09601: MArch II Proseminar		203											
+	gsdCourseName	09630: Urban Design Proseminar		204											
+	gsdCourseName	09641: MLA Proseminar		205											
+	gsdCourseName	09641: Proseminar in Landscape Architecture		206											
+	gsdCourseName	09661: Proseminar in Urbanism, Landscape, Ecology		207											
+	gsdCourseName	09663: Risk and Resilience Proseminar		208											
+	gsdCourseName	09691: Doctoral Program Proseminar		209											
+	gsdCourseName	Other		210											
