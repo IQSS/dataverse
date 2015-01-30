@@ -408,8 +408,8 @@
                                     </div>
                                 </ui:fragment>
 
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value and !DatasetPage.workingVersion.deaccessioned}">
-                                    <span id="description">#{DatasetPage.datasetVersionUI.description.value}</span>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.descriptionDisplay and !DatasetPage.workingVersion.deaccessioned}">
+                                    <span id="description">#{DatasetPage.datasetVersionUI.descriptionDisplay}</span>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{!DatasetPage.workingVersion.deaccessioned and (!empty DatasetPage.datasetVersionUI.keyword.value
                                                          or !empty DatasetPage.datasetVersionUI.subject.value or !empty DatasetPage.datasetVersionUI.relPublicationCitation
