@@ -1204,6 +1204,14 @@ public class DatasetPage implements java.io.Serializable {
                         if (fmd.getId().equals(dfn.getId())) {
                             try {
                                 Long idToRemove = dfn.getId();
+                                logger.info("deleting file, id "+fmd.getDataFile().getId());
+                                
+                                // finally, check if this file is being used as the default thumbnail
+                                // for its dataset: 
+                                if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
+                                    logger.info("deleting the dataset thumbnail designation");
+                                    dataset.setThumbnailFile(null);
+                                }
                                 cmd = new DeleteDataFileCommand(fmd.getDataFile(), session.getUser());
                                 commandEngine.submit(cmd);
                                 fmIt.remove();
