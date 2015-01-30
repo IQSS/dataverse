@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.api.imports.ImportDDI;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -228,7 +229,7 @@ public class BatchImport extends AbstractApiBean  {
                     status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
 
                 }
-            }
+            }  
         }
         return status;
     }
@@ -239,9 +240,14 @@ public class BatchImport extends AbstractApiBean  {
         try {
             // Read XML into DTO object
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
-            return doImport(u, owner, ddiXMLToParse, importType);
+            JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse, importType);
+            logger.info("completed doImport "+file.getParentFile().getName()+"/"+file.getName());
+            return status;
         } catch (IOException e) {
             throw new ImportException("Error reading file " + file.getAbsolutePath(), e);
+        } catch (ImportException ex) {
+            logger.info("Import Exception processing file "+ file.getParentFile().getName()+"/"+file.getName()+", msg:" + ex.getMessage());
+            return Json.createObjectBuilder().add("message", "Import Exception processing file "+ file.getParentFile().getName()+"/"+file.getName()+", msg:" + ex.getMessage());
         }
     }
     
@@ -286,8 +292,8 @@ public class BatchImport extends AbstractApiBean  {
                     if (existingDs.getVersions().size()!=1) {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has "+ existingDs.getVersions().size() + " versions");
                     }
-                    execCommand(new DestroyDatasetCommand(existingDs,u), "Destroying existing Harvested Dataset");
-                    Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u, false, importType), "Creating Harvested Dataset");
+                    engineSvc.submit(new DestroyDatasetCommand(existingDs,u));
+                    Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, u, false, importType));
                     status = " updated dataset, id=" + managedDs.getId() + ".";   
                 } else {
                     // If we are adding a new version to an existing dataset,
@@ -297,22 +303,24 @@ public class BatchImport extends AbstractApiBean  {
                             throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId());
                         }
                     }
-                DatasetVersion dsv = execCommand(new CreateDatasetVersionCommand(u, existingDs, ds.getVersions().get(0)), "Creating DatasetVersion");
+                DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(u, existingDs, ds.getVersions().get(0)));
                 status = " created datasetVersion, id=" + dsv.getId() + ".";       
                 createdId = dsv.getId();
                 }
                
             } else {
-                Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u, false, importType), "Creating Dataset");
+                Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, u, false, importType));
                 status = " created dataset, id=" + managedDs.getId() + ".";
                 createdId = managedDs.getId();
             }
 
         } catch (JsonParseException ex) {
-            logger.log(Level.INFO, "Error parsing dataset version from Json", ex);
+            
+            logger.info("Error parsing datasetVersion: " + ex.getMessage());
             throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
-        } catch (WrappedResponse e) {
-            throw new ImportException("Error executing command" + e.getMessage(), e.getCause());
+        } catch(CommandException ex) {  
+            logger.info("Error excuting dataverse command: " + ex.getMessage());
+            throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
         return Json.createObjectBuilder().add("message", status).add("id", createdId);
      }
