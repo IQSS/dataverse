@@ -73,6 +73,16 @@ public class DatasetFieldValue implements Serializable {
         this.value = value;
     }
 
+    // these methods wrap around value but do not display the N/A value
+    // (forcing validation)
+    public String getValueForEdit() {
+        return DatasetField.NA_VALUE.equals(value) ? "" : value;
+    }
+
+    public void setValueForEdit(String value) {
+        this.value = value;
+    }
+
     public int getDisplayOrder() {
         return displayOrder;
     }
