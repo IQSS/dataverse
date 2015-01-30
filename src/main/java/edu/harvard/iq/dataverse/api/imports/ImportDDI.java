@@ -28,7 +28,6 @@ import javax.xml.stream.XMLStreamReader;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.xml.stream.XMLInputFactory;
-import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 
 /**
  *
@@ -96,7 +95,7 @@ public class ImportDDI implements ImportUtil {
     }
     
       
-    public DatasetDTO doImport(String xmlToParse) throws XMLStreamException {
+    public DatasetDTO doImport(String xmlToParse) throws XMLStreamException, ImportException {
         DatasetDTO datasetDTO = this.initializeDataset();
 
         // Read docDescr and studyDesc into DTO objects.
@@ -145,7 +144,7 @@ public class ImportDDI implements ImportUtil {
         // Save Dataset and DatasetVersion in database
     }
 
-    public Map mapDDI(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException {
+    public Map mapDDI(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
 
         Map filesMap = new HashMap();
         StringReader reader = new StringReader(xmlToParse);
@@ -158,7 +157,7 @@ public class ImportDDI implements ImportUtil {
     }
    
  
-    public Map mapDDI(File ddiFile,  DatasetDTO datasetDTO ) {
+    public Map mapDDI(File ddiFile,  DatasetDTO datasetDTO ) throws ImportException {
         FileInputStream in = null;
         XMLStreamReader xmlr = null;
         Map filesMap = new HashMap();
@@ -185,7 +184,7 @@ public class ImportDDI implements ImportUtil {
 
         return filesMap;
     }
-    private void processDDI( XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
+    private void processDDI( XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException, ImportException {
        
         // make sure we have a codeBook
         //while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
@@ -243,7 +242,7 @@ public class ImportDDI implements ImportUtil {
         
     }
        // Read the XMLStream, and populate datasetDTO and filesMap
-       private void processCodeBook( XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException {
+       private void processCodeBook( XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException, ImportException {
          for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("docDscr")) {
@@ -340,7 +339,7 @@ public class ImportDDI implements ImportUtil {
         return content.toString();
     }
     
-    private void processStdyDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException {
+    private void processStdyDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
         
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
@@ -358,7 +357,7 @@ public class ImportDDI implements ImportUtil {
             }
         }
     }
-     private void processCitation(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException {
+     private void processCitation(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
         DatasetVersionDTO dvDTO = datasetDTO.getDatasetVersion();
         MetadataBlockDTO citation=datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
       // EMK TODO:  remove this when we decided where to read subject
@@ -973,7 +972,7 @@ public class ImportDDI implements ImportUtil {
         }
     }
     
-   private void processTitlStmt(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException {
+   private void processTitlStmt(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
        MetadataBlockDTO citation = datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
        List<HashSet<FieldDTO>> otherIds = new ArrayList<>();
        
@@ -1232,7 +1231,7 @@ public class ImportDDI implements ImportUtil {
         return returnValues;
     }    
      
-   private void parseStudyIdHandle(String _id, DatasetDTO datasetDTO) {
+   private void parseStudyIdHandle(String _id, DatasetDTO datasetDTO)  {
 
         int index1 = _id.indexOf(':');
         int index2 = _id.indexOf('/');
@@ -1252,7 +1251,7 @@ public class ImportDDI implements ImportUtil {
         datasetDTO.setIdentifier(_id.substring(index2+1));
     }
 
-    private void parseStudyIdDOI(String _id, DatasetDTO datasetDTO) {
+    private void parseStudyIdDOI(String _id, DatasetDTO datasetDTO) throws ImportException{
 
         // TODO: 
         // This method needs to be modified to reflect the specifics of DOI
@@ -1269,12 +1268,12 @@ public class ImportDDI implements ImportUtil {
         // TODO: still needs to be confirmed; -- L.A., v3.6 (still in dev.)
         int index2 = _id.lastIndexOf('/');
         if (index1==-1) {
-            throw new EJBException("Error parsing (DOI) IdNo: "+_id+". ':' not found in string");
+            throw new ImportException("Error parsing (DOI) IdNo: "+_id+". ':' not found in string");
         } else {
             datasetDTO.setProtocol(_id.substring(0,index1));
         }
         if (index2 == -1) {
-            throw new EJBException("Error parsing (DOI) IdNo: "+_id+". '/' not found in string");
+            throw new ImportException("Error parsing (DOI) IdNo: "+_id+". '/' not found in string");
 
         } else {
             datasetDTO.setAuthority(_id.substring(index1+1, index2));
