@@ -9,6 +9,7 @@ package edu.harvard.iq.dataverse;
  *
  * @author skraffmiller
  */
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -277,18 +278,27 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
-
+    
     public boolean isEmpty() {
+        return isEmpty(false);
+    }
+    
+    public boolean isEmptyForDisplay() {
+        return isEmpty(true);
+    }
+
+
+    private boolean isEmpty(boolean forDisplay) {
         if (datasetFieldType.isPrimitive()) { // primitive
             for (String value : getValues()) {
-                if (value != null && !value.trim().isEmpty()) {
+                if (!StringUtils.isBlank(value) && !(forDisplay && DatasetField.NA_VALUE.equals(value))) {
                     return false;
                 }
             }
         } else { // compound
             for (DatasetFieldCompoundValue cv : datasetFieldCompoundValues) {
                 for (DatasetField subField : cv.getChildDatasetFields()) {
-                    if (!subField.isEmpty()) {
+                    if (!subField.isEmpty(forDisplay)) {
                         return false;
                     }
                 }
