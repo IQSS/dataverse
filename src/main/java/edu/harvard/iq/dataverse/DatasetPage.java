@@ -1674,23 +1674,10 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    private boolean canIssueUpdateCommand() {
-        try {
-            if (permissionService.on(dataset).canIssueCommand("UpdateDatasetCommand")) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (ClassNotFoundException ex) {
-
-        }
-        return false;
-    }
-
     private List<DatasetVersion> resetVersionTabList() {
         List<DatasetVersion> retList = new ArrayList();
 
-        if (canIssueUpdateCommand()) {
+        if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
             for (DatasetVersion version : dataset.getVersions()) {
                 version.setContributorNames(getContributorsNames(version));
                 retList.add(version);

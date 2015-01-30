@@ -321,7 +321,7 @@
                                     </p:confirmDialog>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
-                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
+                                                         and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset')}">
                                     <div style="float:right; margin-left:1em;">
                                         <a class="btn btn-warning" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
                                             <h:outputText value="#{bundle['dataset.viewVersion.unpublished']}"/>
