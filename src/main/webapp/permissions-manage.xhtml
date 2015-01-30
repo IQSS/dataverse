@@ -139,7 +139,8 @@
                                             <iqbs:messages  collapsible="true" rendered="#{managePermissionsPage.renderRoleMessages}"/>
                                         </div>
                                     </p:fragment>
-                                    <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                    <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)
+                                                             and dataverseSession.user.superuser}">
                                         <p:commandLink id="rolesAdd"
                                                        styleClass="btn btn-default pull-right"
                                                        actionListener="#{managePermissionsPage.createNewRole}"
@@ -155,13 +156,15 @@
                                             <div class="#{!empty role.owner ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
                                                 <span style="font-weight:bold">#{role.name}</span>
                                                 <h:outputText value=" - #{role.description}" rendered="#{!empty role.description}"/>
-                                                <ui:fragment rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(role.owner)}">
+                                                <ui:fragment rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(role.owner)
+                                                                         and dataverseSession.user.superuser}">
                                                     <p:commandLink title="#{bundle['dataverse.permissions.roles.edit']}" style="margin-left:1em;"
                                                                    actionListener="#{managePermissionsPage.editRole(role.id)}"
                                                                    oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
                                                                    update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-pencil"></span></p:commandLink>
                                                 </ui:fragment>
-                                                <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)}">
+                                                <ui:fragment rendered="#{managePermissionsPage.dvObject.instanceofDataverse and permissionsWrapper.canManagePermissions(managePermissionsPage.dvObject)
+                                                                         and dataverseSession.user.superuser}">
                                                     <p:commandLink title="#{bundle['dataverse.permissions.roles.copy']}" style="margin-left:1em;"
                                                                    actionListener="#{managePermissionsPage.cloneRole(role.id)}"
                                                                    oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
