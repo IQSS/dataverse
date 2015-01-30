@@ -444,7 +444,7 @@ public class DatasetVersionUI implements Serializable {
                         dsf.getDatasetFieldType().setRequiredDV(true);  
                         mdb.setHasRequired(true);                       
                     }                    
-                    if (!dsf.isEmpty()) {  
+                    if (!dsf.isEmptyForDisplay()) {  
                         mdb.setEmpty(false);
                         datasetFieldsForView.add(dsf);
                     }
