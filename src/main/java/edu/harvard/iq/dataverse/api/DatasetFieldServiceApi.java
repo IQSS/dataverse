@@ -237,16 +237,17 @@ public class DatasetFieldServiceApi {
         dsf.setWatermark(values[4]);
         dsf.setFieldType(values[5]);
         dsf.setDisplayOrder( Integer.parseInt(values[6]) );
-        dsf.setAdvancedSearchFieldType(Boolean.parseBoolean(values[7]));
-        dsf.setAllowControlledVocabulary(Boolean.parseBoolean(values[8]));
-        dsf.setAllowMultiples(Boolean.parseBoolean(values[9]));
-        dsf.setFacetable(Boolean.parseBoolean(values[10]));
-        dsf.setDisplayOnCreate(Boolean.parseBoolean(values[11]));
-        dsf.setRequired(Boolean.parseBoolean(values[12]));
-        if (!StringUtils.isEmpty(values[13])) {
-            dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[13]));
+        dsf.setDisplayFormat( values[7] );
+        dsf.setAdvancedSearchFieldType(Boolean.parseBoolean(values[8]));
+        dsf.setAllowControlledVocabulary(Boolean.parseBoolean(values[9]));
+        dsf.setAllowMultiples(Boolean.parseBoolean(values[10]));
+        dsf.setFacetable(Boolean.parseBoolean(values[11]));
+        dsf.setDisplayOnCreate(Boolean.parseBoolean(values[12]));
+        dsf.setRequired(Boolean.parseBoolean(values[13]));
+        if (!StringUtils.isEmpty(values[14])) {
+            dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[14]));
         }
-        dsf.setMetadataBlock(dataverseService.findMDBByName(values[14]));
+        dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
 
         datasetFieldService.save(dsf);
         return dsf.getName();
