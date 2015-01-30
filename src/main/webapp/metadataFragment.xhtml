@@ -13,7 +13,7 @@
             <ui:repeat value="#{(!empty DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()) 
                                 ? DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray() 
                                 : TemplatePage.template.metadataBlocksForView.entrySet().toArray() }" 
-                                var="metadataBlockVal" varStatus="block">
+                       var="metadataBlockVal" varStatus="block">
                 <div class="panel panel-default">
                     <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading text-info">
                         #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}" style="margin-left:.3em;top:3px;"/>
@@ -22,44 +22,29 @@
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                                 <div class="form-group">
-                                    <ui:fragment rendered="#{!(dsf.datasetFieldType.fieldType == 'email') }">
-                                        <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}" title="">
-                                                #{dsf.datasetFieldType.title}
-                                            </a>
-                                        </label>
-                                        <!-- Primitive datasetFields -->
-                                        <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
-                                            <div class="col-sm-9">
-                                                <h:outputText value="#{dsf.value}" rendered="#{!dsf.datasetFieldType.allowMultiples}"/>
-                                                <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                                    <h:outputText value="#{loop.first?'':'; '}#{value}"/>
-                                                </ui:repeat>
-                                            </div>
-                                        </ui:fragment>
+                                    <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}" title="">
+                                            #{dsf.datasetFieldType.title}
+                                        </a>
+                                    </label>
+                                    <!-- Primitive datasetFields -->
+                                    <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
+                                        <div class="col-sm-9">
+                                            <h:outputText value="#{dsf.value}" rendered="#{!dsf.datasetFieldType.allowMultiples}"/>
+                                            <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                <h:outputText value="#{loop.first?'':'; '}#{value}"/>
+                                            </ui:repeat>
+                                        </div>
                                     </ui:fragment>
                                     <!-- Compound datasetFields -->
                                     <ui:fragment rendered="#{dsf.datasetFieldType.compound}">
-                                        <div class="form-col-container col-sm-9">
-                                            <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValues">
-                                                <div class="form-group">
-                                                    <!-- Sub fields -->
-                                                    <ui:repeat value="#{compoundValues.childDatasetFields}" var="subdsf">
-                                                        <ui:fragment rendered="#{!(subdsf.datasetFieldType.fieldType == 'email') }">
-                                                            <div class="form-col-container col-sm-6">
-                                                                <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
-                                                                    <a class="tooltiplabel right" data-original-title="#{subdsf.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetFieldType.title}</a>
-                                                                </label>
-                                                                <div>
-                                                                    <h:outputText value="#{subdsf.value}" rendered="#{!subdsf.datasetFieldType.allowMultiples}"/>
-                                                                    <ui:repeat value="#{subdsf.values}" var="value" varStatus="loop" rendered="#{subdsf.datasetFieldType.allowMultiples}">
-                                                                        <h:outputText value="#{loop.first?'':'; '}#{value}"/>
-                                                                    </ui:repeat>
-                                                                </div>
-                                                            </div>
-                                                        </ui:fragment>
-                                                    </ui:repeat>
-                                                </div>
+                                        <div class="col-sm-9">
+                                            <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
+                                                <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
+                                                    <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
+                                                    <h:outputText value="#{cvPart.value}"  escape="#{cvPart.key.datasetFieldType.fieldType ne 'url'}"/>
+                                                </ui:repeat>
+                                                <br/>                                                    
                                             </ui:repeat>
                                         </div>
                                     </ui:fragment>
@@ -189,10 +174,10 @@
                                                                                 <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
                                                                             </p:selectOneMenu>
                                                                             <ui:fragment rendered="#{!empty subdsf.validationMessage}">
-                                                                                    <div class="alert-danger">
-                                                                                        <strong>#{subdsf.validationMessage}</strong>
-                                                                                    </div>
-                                                                                </ui:fragment>
+                                                                                <div class="alert-danger">
+                                                                                    <strong>#{subdsf.validationMessage}</strong>
+                                                                                </div>
+                                                                            </ui:fragment>
                                                                             <ui:fragment rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                                 <div class="ui-inputfield form-control select-scroll-block">
                                                                                     <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
