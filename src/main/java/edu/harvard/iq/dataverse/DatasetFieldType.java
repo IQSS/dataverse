@@ -116,6 +116,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     private int displayOrder;
+    private String displayFormat;
 
     public int getDisplayOrder() {
         return this.displayOrder;
@@ -124,6 +125,16 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
+
+    public String getDisplayFormat() {
+        return displayFormat;
+    }
+
+    public void setDisplayFormat(String displayFormat) {
+        this.displayFormat = displayFormat;
+    }
+    
+    
 
     public String getName() {
         return name;
