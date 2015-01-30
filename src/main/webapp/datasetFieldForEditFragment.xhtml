@@ -6,7 +6,7 @@
     xmlns:p="http://primefaces.org/ui">
 
     <!-- input text start --><span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"></span>
-    <p:inputText value="#{dsfv.value}" id="inputText" 
+    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" 
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary        
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'text'
@@ -19,7 +19,7 @@
 
     <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
-    <p:inputTextarea value="#{dsfv.value}" rows="5" cols="60" id="description" styleClass="form-control" 
+    <p:inputTextarea value="#{dsfv.valueForEdit}" rows="5" cols="60" id="description" styleClass="form-control" 
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'textbox'}" />
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
