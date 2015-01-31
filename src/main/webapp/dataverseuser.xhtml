@@ -133,8 +133,7 @@
                                         <h:outputText value="#{bundle.wasReturnedByReviewer} " />
                                         <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}"/>
-                                        </h:outputLink>
-                                        
+                                        </h:outputLink>                                        
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
@@ -143,8 +142,29 @@
                                         <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}"/>
                                         </h:outputLink>
-                                       
                                     </ui:fragment>
+                                    
+                                    <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
+                                        </h:outputFormat>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
+                                        </h:outputFormat>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
+                                        </h:outputFormat>
+                                    </ui:fragment>                                    
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
                                         <h:outputText value="#{bundle.theDataset} " />
