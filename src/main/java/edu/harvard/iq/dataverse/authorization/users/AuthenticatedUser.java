@@ -64,7 +64,14 @@ public class AuthenticatedUser implements User, Serializable {
 
     @Transient
     private UserRequestMetadata requestMetadata;
-    
+
+    /**
+     * @todo Consider storing a hash of *all* potentially interesting Shibboleth
+     * attribute key/value pairs, not just the Identity Provider (IdP).
+     */
+    @Transient
+    private String shibIdentityProvider;
+
     @Override
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
@@ -206,6 +213,14 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setRequestMetadata(UserRequestMetadata requestMetadata) {
         this.requestMetadata = requestMetadata;
+    }
+
+    public String getShibIdentityProvider() {
+        return shibIdentityProvider;
+    }
+
+    public void setShibIdentityProvider(String shibIdentityProvider) {
+        this.shibIdentityProvider = shibIdentityProvider;
     }
     
 }

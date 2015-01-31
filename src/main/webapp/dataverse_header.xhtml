@@ -132,6 +132,11 @@
             </div>
         </div>
     </nav>
+    <ui:fragment rendered="#{dataverseHeaderFragment.debugShibboleth}">
+      <h:outputText value="groups: #{dataverseHeaderFragment.getGroups(dataverseSession.user)}"/>
+      <br/>
+      <h:outputText value="permissions #{dataverseHeaderFragment.getPermissions(dataverseSession.user, dataverse)}"/>
+    </ui:fragment>
     <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
 
     <!-- Header Panel -->

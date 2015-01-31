@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -93,6 +94,14 @@ public class JsonPrinter {
                 .add("name", grp.getDisplayName() )
                 .add("description", grp.getDescription() )
                 .add("ranges", rangeBld);
+    }
+
+        public static JsonObjectBuilder json(ShibGroup grp) {
+        return jsonObjectBuilder()
+                .add("name", grp.getName())
+                .add("attribute", grp.getAttribute())
+                .add("pattern", grp.getPattern())
+                .add("id", grp.getId());
     }
     
 	public static JsonArrayBuilder rolesToJson( List<DataverseRole> role ) {

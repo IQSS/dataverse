@@ -1,0 +1,5 @@
+#!/bin/bash -x
+psql -c "select * from shibgroup;" dataverse_db
+psql -c "select * from authenticateduser;" dataverse_db
+psql -c "select * from persistedglobalgroup;" dataverse_db
+psql -c "select * from roleassignment;" dataverse_db

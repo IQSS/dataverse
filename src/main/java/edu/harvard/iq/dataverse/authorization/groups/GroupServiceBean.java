@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.BuiltInGroupsProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,10 +29,13 @@ public class GroupServiceBean {
     
     @EJB
     IpGroupsServiceBean ipGroupsService;
+    @EJB
+    ShibGroupServiceBean shibGroupService;
     
     private final Map<String, GroupProvider> groupProviders = new HashMap<>();
     
     private IpGroupProvider ipGroupProvider;
+    private ShibGroupProvider shibGroupProvider;
     
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
@@ -38,9 +43,10 @@ public class GroupServiceBean {
     @PostConstruct
     public void setup() {
         addGroupProvider( BuiltInGroupsProvider.get() );
-        addGroupProvider( ipGroupProvider = new IpGroupProvider(ipGroupsService) );
+            addGroupProvider( ipGroupProvider = new IpGroupProvider(ipGroupsService) );
+        addGroupProvider(shibGroupProvider = new ShibGroupProvider(shibGroupService));
     }
-    
+
     public Group getGroup( String groupAlias ) {
         String[] comps = groupAlias.split( Group.PATH_SEPARATOR, 2 );
         GroupProvider gp = groupProviders.get( comps[0] );
@@ -54,7 +60,11 @@ public class GroupServiceBean {
     public IpGroupProvider getIpGroupProvider() {
         return ipGroupProvider;
     }
-    
+
+    public ShibGroupProvider getShibGroupProvider() {
+        return shibGroupProvider;
+    }
+
     public Set<Group> groupsFor( User u ) {
         Set<Group> groups = new HashSet<>();
         for ( GroupProvider gv : groupProviders.values() ) {

@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
@@ -14,9 +17,12 @@ import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 /**
  *
  * @author michael
@@ -27,10 +33,12 @@ public class Groups extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Groups.class.getName());
     
     private IpGroupProvider ipGroupPrv;
+    private ShibGroupProvider shibGroupPrv;
     
     @PostConstruct
     void postConstruct() {
         ipGroupPrv = groupSvc.getIpGroupProvider();
+        shibGroupPrv = groupSvc.getShibGroupProvider();
     }
     
     @POST
@@ -99,6 +107,80 @@ public class Groups extends AbstractApiBean {
         }
     }
     
-    
+    @GET
+    @Path("shib")
+    public Response listShibGroups() {
+        JsonArrayBuilder arrBld = Json.createArrayBuilder();
+        for (ShibGroup g : shibGroupPrv.findAll()) {
+            arrBld.add(json(g));
+        }
+        return okResponse(arrBld);
+    }
+
+    @POST
+    @Path("shib")
+    public Response createShibGroup(JsonObject shibGroupInput, @QueryParam("key") String apiKey) {
+        try {
+            findSuperUserKeyorDie(apiKey);
+        } catch (Exception ex) {
+            return errorResponse(Response.Status.BAD_REQUEST, "Problem with API token: " + ex.getMessage());
+        }
+        String expectedNameKey = "name";
+        JsonString name = shibGroupInput.getJsonString(expectedNameKey);
+        if (name == null) {
+            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedNameKey);
+        }
+        String expectedAttributeKey = "attribute";
+        JsonString attribute = shibGroupInput.getJsonString(expectedAttributeKey);
+        if (attribute == null) {
+            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedAttributeKey);
+        }
+        String expectedPatternKey = "pattern";
+        JsonString pattern = shibGroupInput.getJsonString(expectedPatternKey);
+        if (pattern == null) {
+            return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
+        }
+        ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString());
+        ShibGroup persitedShibGroup = shibGroupPrv.persist(shibGroupToPersist);
+        if (persitedShibGroup != null) {
+            return okResponse("Shibboleth group persisted: " + persitedShibGroup);
+        } else {
+            return errorResponse(Response.Status.BAD_REQUEST, "Could not persist Shibboleth group");
+        }
+    }
+
+    @DELETE
+    @Path("shib/{primaryKey}")
+    public Response deleteShibGroup(@PathParam("primaryKey") String id, @QueryParam("key") String apiKey) {
+        try {
+            findSuperUserKeyorDie(apiKey);
+        } catch (Exception ex) {
+            return errorResponse(Response.Status.BAD_REQUEST, "Problem with API token: " + ex.getMessage());
+        }
+        ShibGroup doomed = shibGroupPrv.get(id);
+        if (doomed != null) {
+            boolean deleted = shibGroupPrv.delete(doomed);
+            if (deleted) {
+                return okResponse("Shibboleth group " + id + " deleted");
+            } else {
+                return errorResponse(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with a id of " + id);
+            }
+        } else {
+            return errorResponse(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with a id of " + id);
+        }
+    }
+
+    private void findSuperUserKeyorDie(String apiKey) throws Exception {
+        AuthenticatedUser authenticatedUser = findUserByApiToken(apiKey);
+        if (authenticatedUser != null) {
+            if (authenticatedUser.isSuperuser()) {
+                return;
+            } else {
+                throw new Exception("User " + authenticatedUser.getIdentifier() + " has insufficient permission.");
+            }
+        } else {
+            throw new Exception("Could not find user from API token.");
+        }
+    }
     
 }

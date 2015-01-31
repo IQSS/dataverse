@@ -1,0 +1,5 @@
+#!/bin/sh
+. scripts/search/export-keys
+OUTPUT=`curl -s -X POST -H "Content-type:application/json" -d "{\"assignee\": \"&ip/ipGroup3\",\"role\": \"dvContributor\"}" "http://localhost:8080/api/dvs/root/assignments?key=$ADMINKEY"`
+echo $OUTPUT
+echo $OUTPUT | jq ' .data | {assignee,_roleAlias}'

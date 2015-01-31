@@ -50,5 +50,9 @@ echo "Set the metadata block for Root"
 curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/dvs/:root/metadatablocks/?key=$adminKey
 echo
 
+echo "Setting up a sample Shibboleth institutional group"
+curl -s -X POST -H 'Content-type:application/json' --upload-file data/shibGroupTestShib.json "$SERVER/groups/shib?key=$adminKey" 
+echo
+
 # OPTIONAL USERS AND DATAVERSES
 #./setup-optional.sh

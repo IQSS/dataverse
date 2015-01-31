@@ -1,0 +1,5 @@
+{
+  "name": "All testshib.org Shibboleth Users",
+  "attribute": "Shib-Identity-Provider",
+  "pattern": "https://idp.testshib.org/idp/shibboleth"
+}

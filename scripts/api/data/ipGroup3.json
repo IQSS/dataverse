@@ -1,0 +1,6 @@
+{
+  "alias":"ipGroup3",
+  "name":"IP group to match all IPv4 and IPv6 addresses",
+  "ranges" : [["0.0.0.0", "255.255.255.255"],
+              ["::", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"]]
+}

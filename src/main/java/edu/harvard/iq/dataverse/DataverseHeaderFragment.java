@@ -5,6 +5,10 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -15,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -42,6 +47,12 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
+
+    @EJB
+    GroupServiceBean groupService;
+
+    @EJB
+    PermissionServiceBean permissionService;
 
     @Inject
     DataverseSession dataverseSession;
@@ -213,5 +224,28 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             return dvObject;
         }
 
+    }
+
+    public boolean isDebugShibboleth() {
+        // curl -X PUT -d yes http://localhost:8080/api/s/settings/:ShibEnabled
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
+    }
+
+    public List<String> getGroups(User user) {
+        List<String> groups = new ArrayList<>();
+        Set<Group> groupsForUser = groupService.groupsFor(user);
+        for (Group group : groupsForUser) {
+            groups.add(group.getDisplayName() + " (" + group.getIdentifier() + ")");
+        }
+        return groups;
+    }
+
+    public List<String> getPermissions(User user, Dataverse dataverse) {
+        List<String> permissions = new ArrayList<>();
+        for (Permission permission : permissionService.permissionsForUser(user, dataverse)) {
+            permissions.add(permission.name());
+        }
+        return permissions;
     }
 }

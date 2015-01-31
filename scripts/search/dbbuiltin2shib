@@ -1,0 +1,7 @@
+#!/bin/bash -x
+psql -c "select id,name,useridentifier from authenticateduser;" dataverse_db
+psql -c "select * from authenticateduserlookup;" dataverse_db
+psql -c "select id,encryptedpassword,firstname,lastname,username from builtinuser;" dataverse_db
+psql -c "select * from roleassignment;" dataverse_db
+psql -c "select datasetversionid,useridentifier from datasetversion_dataverseuser;" dataverse_db
+psql -c "select * from explicitgroup;" dataverse_db
