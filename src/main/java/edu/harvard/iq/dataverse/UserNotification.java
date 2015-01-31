@@ -24,7 +24,7 @@ import javax.persistence.Transient;
 @Entity
 public class UserNotification implements Serializable {
     public enum Type {
-        CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS
+        CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS
     };
     
     private static final long serialVersionUID = 1L;
