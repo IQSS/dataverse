@@ -1,10 +1,14 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -21,6 +25,9 @@ public class ShibGroupServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeSvc;
 
     /**
      * @return A ShibGroup or null.
@@ -72,13 +79,22 @@ public class ShibGroupServiceBean {
         return groupsForUser;
     }
 
-    /**
-     * @todo Delete role assignments that match this Shib group. Otherwise,
-     * there will be orphaned records in the roleassignment table.
-     */
-    public boolean delete(ShibGroup doomed) {
-        em.remove(doomed);
-        // what could possibly go wrong?
-        return true;
+    public boolean delete(ShibGroup doomed) throws Exception {
+        List<RoleAssignment> assignments = roleAssigneeSvc.getAssignmentsFor(doomed.getIdentifier());
+        if (assignments.isEmpty()) {
+            em.remove(doomed);
+            return true;
+        } else {
+            /**
+             * @todo Delete role assignments that match this Shib group.
+             */
+            List<String> assignmentIds = new ArrayList<>();
+            for (RoleAssignment assignment : assignments) {
+                assignmentIds.add(assignment.getId().toString());
+            }
+            String message = "Could not delete Shibboleth group id " + doomed.getId() + " due to existing role assignments: " + assignmentIds;
+            logger.info(message);
+            throw new Exception(message);
+        }
     }
 }

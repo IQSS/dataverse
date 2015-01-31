@@ -159,14 +159,19 @@ public class Groups extends AbstractApiBean {
         }
         ShibGroup doomed = shibGroupPrv.get(id);
         if (doomed != null) {
-            boolean deleted = shibGroupPrv.delete(doomed);
+            boolean deleted;
+            try {
+                deleted = shibGroupPrv.delete(doomed);
+            } catch (Exception ex) {
+                return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+            }
             if (deleted) {
                 return okResponse("Shibboleth group " + id + " deleted");
             } else {
-                return errorResponse(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with a id of " + id);
+                return errorResponse(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with an id of " + id);
             }
         } else {
-            return errorResponse(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with a id of " + id);
+            return errorResponse(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
         }
     }
 

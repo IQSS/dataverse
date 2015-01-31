@@ -69,7 +69,7 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
         return persistedShibGroupOrNull;
     }
 
-    public boolean delete(ShibGroup doomed) {
+    public boolean delete(ShibGroup doomed) throws Exception {
         boolean response = shibGroupService.delete(doomed);
         return response;
     }
