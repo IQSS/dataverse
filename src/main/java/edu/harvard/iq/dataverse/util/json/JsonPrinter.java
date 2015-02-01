@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
@@ -405,5 +407,28 @@ public class JsonPrinter {
                         .add("factoryData", aRow.getFactoryData())
                         .add("enabled", aRow.isEnabled())
                 ;
+    }
+    
+    public static JsonObjectBuilder json(ExplicitGroup eg ) {
+        JsonArrayBuilder ras = Json.createArrayBuilder();
+        for ( String u : eg.listContainedRoleAssginees() ) {
+            ras.add(u);
+        }
+        return jsonObjectBuilder()
+                .add("identifier", eg.getIdentifier() )
+                .add("groupAliasInOwner", eg.getGroupAliasInOwner() )
+                .add("owner",eg.getOwner().getId())
+                .add("description", eg.getDescription())
+                .add("displayName", eg.getDisplayName())
+                .add("containedRoleAssignees", ras);
+                
+    }
+    
+    public static JsonArrayBuilder json( Collection<ExplicitGroup> egc ) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        for ( ExplicitGroup eg : egc ) {
+            bld.add( json(eg) );
+        }
+        return bld;
     }
 }

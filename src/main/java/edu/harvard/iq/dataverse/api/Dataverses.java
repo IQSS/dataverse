@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -21,10 +22,13 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
@@ -474,27 +478,56 @@ public class Dataverses extends AbstractApiBean {
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
     
-    @GET
+    @POST
     @Path("{identifier}/groups/") 
-    public Response listGroups( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+    public Response createExplicitGroup( ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
         try {
-            
             
             Dataverse dv = findDataverseOrDie(dvIdtf);
             AuthenticatedUser u = findUserOrDie(apiKey);
             
             ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
-            ExplicitGroup eg1 = new ExplicitGroup( prv );
-            eg1.add( u );
-            eg1.setDescription("Sample group");
-            eg1.setDisplayName("A Sample Explicit Group");
-            eg1.setGroupAliasInOwner("smplGrp");
-            eg1.setOwner(dv);
+            ExplicitGroup newGroup = dto.apply(prv.makeGroup());
             
-            explicitGroupSvc.persist(eg1);
+            newGroup = execCommand( new CreateExplicitGroupCommand(u, dv, newGroup), "Create new group");
             
+            String groupUri = String.format("%s/groups/%s", dvIdtf, newGroup.getGroupAliasInOwner());
+            return createdResponse( groupUri, json(newGroup) );
             
-            return okResponse( "Group Created" );
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @GET
+    @Path("{identifier}/groups/") 
+    public Response listGroups( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+        try {
+            
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            AuthenticatedUser u = findUserOrDie(apiKey);
+            
+            return okResponse( json(execCommand(new ListExplicitGroupsCommand(u, dv), "Listing groups for dataverse " + dvIdtf )));
+            
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @GET
+    @Path("{identifier}/groups/{aliasInOwner}") 
+    public Response getGroupByOwnerAndAliasInOwner( @PathParam("identifier") String dvIdtf,
+                                                    @PathParam("aliasInOwner") String grpAliasInOwner, 
+                                                    @QueryParam("key") String apiKey )
+    {
+        try {
+            
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            AuthenticatedUser u = findUserOrDie(apiKey);
+            
+            ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(u, dv, grpAliasInOwner),
+                                                "Listing groups for dataverse " + dvIdtf );
+            return (eg!=null) ? okResponse( json(eg) ) : notFound("Can't find " + grpAliasInOwner + " in dataverse " + dvIdtf);
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();

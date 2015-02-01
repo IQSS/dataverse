@@ -160,6 +160,31 @@ Deletes the role with ``id``::
   DELETE http://$SERVER/api/roles/$id
 
 
+Explicit Groups
+~~~~~~~~~~~~~~~
+Explicit groups list their members explicitly. These groups are defined in dataverses, which is why their API endpoint is under ``api/dvn/$id/``, where ``$id`` is the id of the dataverse.
+
+  
+Create a new explicit group under dataverse ``$id``::
+  
+  POST http://$server/api/dvs/$id/groups
+
+Data being POSTed is json-formatted description of the group::
+
+  {
+   "description":"Describe the group here",
+   "displayName":"Close Collaborators",
+   "aliasInOwner":"ccs"
+  }
+
+List explicit groups under dataverse ``$id``::
+
+  GET http://$server/api/dvs/$id/groups
+
+Show group ``$groupAlias`` under dataverse ``$dv``::
+
+  GET http://$server/api/dvs/$dv/groups/$groupAlias
+
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 

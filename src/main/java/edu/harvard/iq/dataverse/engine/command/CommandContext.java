@@ -18,10 +18,10 @@ import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import javax.ejb.EJB;
 import javax.persistence.EntityManager;
 
 /**
@@ -48,7 +48,7 @@ public interface CommandContext {
 	
 	public IndexServiceBean index();
 
-        public SolrIndexServiceBean solrIndex();
+    public SolrIndexServiceBean solrIndex();
 	
 	public SearchServiceBean search();
 	
@@ -56,24 +56,25 @@ public interface CommandContext {
 	
 	public DataverseFacetServiceBean facets(); 
         
-        public FeaturedDataverseServiceBean featuredDataverses();       
-        
-        public DataFileServiceBean files(); 
-        
-        public TemplateServiceBean templates();
-        
-        public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
-                   
-        public DOIEZIdServiceBean doiEZId();
-        
-        public GuestbookServiceBean guestbooks();
-        
-        public GuestbookResponseServiceBean responses();
-        
-        public DataverseLinkingServiceBean dvLinking();
-        
-        public DatasetLinkingServiceBean dsLinking();
-        
-        public SettingsServiceBean settings();       
-	
+    public FeaturedDataverseServiceBean featuredDataverses();       
+    
+    public DataFileServiceBean files(); 
+    
+    public TemplateServiceBean templates();
+    
+    public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
+               
+    public DOIEZIdServiceBean doiEZId();
+    
+    public GuestbookServiceBean guestbooks();
+    
+    public GuestbookResponseServiceBean responses();
+    
+    public DataverseLinkingServiceBean dvLinking();
+    
+    public DatasetLinkingServiceBean dsLinking();
+    
+    public SettingsServiceBean settings();       
+    
+    public ExplicitGroupServiceBean explicitGroups();
 }

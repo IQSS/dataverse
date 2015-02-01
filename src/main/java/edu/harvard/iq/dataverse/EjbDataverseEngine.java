@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -86,12 +87,15 @@ public class EjbDataverseEngine {
     @EJB
     GuestbookResponseServiceBean responses;
     
-        @EJB
+    @EJB
     DataverseLinkingServiceBean dvLinking;
     
     @EJB
     DatasetLinkingServiceBean dsLinking;
 
+    @EJB
+    ExplicitGroupServiceBean explicitGroups;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -138,6 +142,7 @@ public class EjbDataverseEngine {
     public CommandContext getContext() {
         if (ctxt == null) {
             ctxt = new CommandContext() {
+                
                 @Override
                 public DatasetServiceBean datasets() {
                     return datasetService;
@@ -250,6 +255,11 @@ public class EjbDataverseEngine {
                             return EjbDataverseEngine.this.submit(aCommand);
                         }
                     };
+                }
+
+                @Override
+                public ExplicitGroupServiceBean explicitGroups() {
+                    return explicitGroups;
                 }
             };
         }

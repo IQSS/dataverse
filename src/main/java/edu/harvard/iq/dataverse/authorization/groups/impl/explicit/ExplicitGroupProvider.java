@@ -40,13 +40,17 @@ public class ExplicitGroupProvider implements GroupProvider {
     }
 
     @Override
-    public Group get(String groupAlias) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ExplicitGroup get(String groupAlias) {
+        return explicitGroupSvc.findByAlias( groupAlias );
     }
 
     @Override
     public Set findAll() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    public ExplicitGroup makeGroup() {
+        return new ExplicitGroup(this);
     }
     
     /**

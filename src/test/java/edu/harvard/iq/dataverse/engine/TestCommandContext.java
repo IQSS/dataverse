@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -121,6 +122,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DataFileServiceBean files() {
+        return null;
+    }
+
+    @Override
+    public ExplicitGroupServiceBean explicitGroups() {
         return null;
     }
 	

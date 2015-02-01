@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +18,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.Transient;
@@ -30,6 +31,14 @@ import javax.persistence.Transient;
  * 
  * @author michael
  */
+@NamedQueries({
+    @NamedQuery( name="ExplicitGroup.findByOwnerIdAndAlias",
+                 query="SELECT eg FROM ExplicitGroup eg WHERE eg.owner.id=:ownerId AND eg.groupAliasInOwner=:alias"),
+    @NamedQuery( name="ExplicitGroup.findByAlias",
+                 query="SELECT eg FROM ExplicitGroup eg WHERE eg.groupAlias=:alias"),
+    @NamedQuery( name="ExplicitGroup.findByOwnerId",
+                 query="SELECT eg FROM ExplicitGroup eg WHERE eg.owner.id=:ownerId")
+})
 @Entity
 public class ExplicitGroup implements Group, java.io.Serializable {
     
@@ -131,7 +140,20 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public void remove(RoleAssignee roleAssignee) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
+    
+    public Set<String> listContainedRoleAssginees() {
+        Set<String> retVal = new TreeSet<>();
+        retVal.addAll( containedRoleAssignees );
+        for ( ExplicitGroup subg : containedExplicitGroups ) {
+            retVal.add( subg.getIdentifier() );
+        }
+        for ( AuthenticatedUser au : containedAuthenticatedUsers ) {
+            retVal.add( au.getIdentifier() );
+        }
+        
+        return retVal;
+    }
+    
     @Override
     public String getDescription() {
         return description;
@@ -180,7 +202,11 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         return false;
     }
 
-    private void updateAlias() {
+    /**
+     * Updates the alias of the group. Call this after setting the owner or the 
+     * groupAliasInOwner fields. JPA-related activities call this automatically.
+     */
+    public void updateAlias() {
         groupAlias = ((getOwner()!=null) 
                            ? Long.toString(getOwner().getId()) + "-" 
                            : "") + getGroupAliasInOwner();
@@ -202,7 +228,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
-    public GroupProvider getGroupProvider() {
+    public ExplicitGroupProvider getGroupProvider() {
         return provider;
     }
     
@@ -227,7 +253,6 @@ public class ExplicitGroup implements Group, java.io.Serializable {
 
     public void setGroupAliasInOwner(String groupAliasInOwner) {
         this.groupAliasInOwner = groupAliasInOwner;
-        updateAlias();
     }
     
     @Override
@@ -250,7 +275,6 @@ public class ExplicitGroup implements Group, java.io.Serializable {
 
     public void setOwner(DvObject owner) {
         this.owner = owner;
-        updateAlias();
     }
 
     public Long getId() {
