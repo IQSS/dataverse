@@ -19,12 +19,14 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
@@ -33,15 +35,19 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -57,6 +63,7 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -522,15 +529,110 @@ public class Dataverses extends AbstractApiBean {
     {
         try {
             
-            Dataverse dv = findDataverseOrDie(dvIdtf);
-            AuthenticatedUser u = findUserOrDie(apiKey);
+            ExplicitGroup eg = findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+                                                      findUserOrDie(apiKey),
+                                                      grpAliasInOwner);
             
-            ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(u, dv, grpAliasInOwner),
-                                                "Listing groups for dataverse " + dvIdtf );
             return (eg!=null) ? okResponse( json(eg) ) : notFound("Can't find " + grpAliasInOwner + " in dataverse " + dvIdtf);
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+    
+    @PUT
+    @Path("{identifier}/groups/{aliasInOwner}") 
+    public Response updateGroup(ExplicitGroupDTO groupDto, 
+                                @PathParam("identifier") String dvIdtf,
+                                @PathParam("aliasInOwner") String grpAliasInOwner, 
+                                @QueryParam("key") String apiKey )
+    {
+        try {
+            final AuthenticatedUser user = findUserOrDie(apiKey);
+            return okResponse( 
+                    json(
+                      execCommand( 
+                             new UpdateExplicitGroupCommand(user,
+                                     groupDto.apply( findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner))),
+                                                   "Updating group " + dvIdtf + "/" + grpAliasInOwner)));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @DELETE
+    @Path("{identifier}/groups/{aliasInOwner}") 
+    public Response deleteGroup(@PathParam("identifier") String dvIdtf,
+                                @PathParam("aliasInOwner") String grpAliasInOwner, 
+                                @QueryParam("key") String apiKey )
+    {
+        try {
+            final AuthenticatedUser user = findUserOrDie(apiKey);
+            execCommand( new DeleteExplicitGroupCommand(user,
+                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner)),
+                        "Deleting group " + dvIdtf + "/" + grpAliasInOwner );
+            
+            return okResponse( "Group " + dvIdtf + "/" + grpAliasInOwner + " deleted" );
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees") 
+    public Response addRoleAssingees(List<String> roleAssingeeIdentifiers, 
+                                @PathParam("identifier") String dvIdtf,
+                                @PathParam("aliasInOwner") String grpAliasInOwner, 
+                                @QueryParam("key") String apiKey )
+    {
+        try {
+            final AuthenticatedUser user = findUserOrDie(apiKey);
+            return okResponse( 
+                    json(
+                      execCommand( 
+                              new AddRoleAssigneesToExplicitGroupCommand(user, 
+                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner),
+                                      new TreeSet<>(roleAssingeeIdentifiers)),
+                              "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner )));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @PUT
+    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}") 
+    public Response addRoleAssingee( @PathParam("identifier") String dvIdtf,
+                                     @PathParam("aliasInOwner") String grpAliasInOwner, 
+                                     @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier, 
+                                     @QueryParam("key") String apiKey ) {
+        return addRoleAssingees(Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner, apiKey);
+    }
+    
+    @DELETE
+    @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}") 
+    public Response deleteRoleAssingee( @PathParam("identifier") String dvIdtf,
+                                        @PathParam("aliasInOwner") String grpAliasInOwner, 
+                                        @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier, 
+                                        @QueryParam("key") String apiKey ) {
+        
+        try {
+            final AuthenticatedUser user = findUserOrDie(apiKey);
+            return okResponse( 
+                    json(
+                      execCommand( 
+                              new RemoveRoleAssigneesFromExplicitGroupCommand(user, 
+                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner),
+                                      Collections.singleton(roleAssigneeIdentifier)),
+                              "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner )));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    private ExplicitGroup findExplicitGroupOrDie( DvObject dv, User u, String groupIdtf ) throws WrappedResponse {
+        ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(u, dv, groupIdtf ),
+                                            "Listing groups for dataverse " + dv.getId() );
+        if ( eg == null ) throw new WrappedResponse( notFound("Can't find " + groupIdtf + " in dataverse " + dv.getId()));
+        return eg;
     }
 }

@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -31,7 +32,7 @@ import javax.persistence.EntityManager;
  * @author michael
  */
 public interface CommandContext {
-	
+    
 	public EntityManager em();
 	
 	public DataverseEngine engine();
@@ -44,7 +45,7 @@ public interface CommandContext {
 	
 	public DataverseRoleServiceBean roles();
 	
-	public BuiltinUserServiceBean users();
+	public BuiltinUserServiceBean builtinUsers();
 	
 	public IndexServiceBean index();
 
@@ -53,6 +54,8 @@ public interface CommandContext {
 	public SearchServiceBean search();
 	
 	public PermissionServiceBean permissions();
+    
+    public RoleAssigneeServiceBean roleAssignees();
 	
 	public DataverseFacetServiceBean facets(); 
         

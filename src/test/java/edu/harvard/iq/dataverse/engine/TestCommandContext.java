@@ -32,7 +32,7 @@ public class TestCommandContext implements CommandContext {
 	}
 
 	@Override
-	public BuiltinUserServiceBean users() {
+	public BuiltinUserServiceBean builtinUsers() {
 		return null;
 	}
 
@@ -127,6 +127,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public ExplicitGroupServiceBean explicitGroups() {
+        return null;
+    }
+    
+    @Override
+    public RoleAssigneeServiceBean roleAssignees() {
         return null;
     }
 	

@@ -73,4 +73,8 @@ public class ExplicitGroupServiceBean {
         }
     }
 
+    public void removeGroup(ExplicitGroup explicitGroup) {
+        em.remove( explicitGroup );
+    }
+
 }

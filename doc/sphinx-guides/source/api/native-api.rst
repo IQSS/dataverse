@@ -185,6 +185,28 @@ Show group ``$groupAlias`` under dataverse ``$dv``::
 
   GET http://$server/api/dvs/$dv/groups/$groupAlias
 
+Update group ``$groupAlias`` under dataverse ``$dv``. The request body is the same as the create group one, except that the group alias cannot be changed. Thus, the field ``aliasInOwner`` is ignored. ::
+
+  PUT http://$server/api/dvs/$dv/groups/$groupAlias
+
+Delete group ``$groupAlias`` under dataverse ``$dv``::
+
+  DELETE http://$server/api/dvs/$dv/groups/$groupAlias
+
+Bulk add role assignees to an explicit group. The request body is a JSON array of role assignee identifiers, such as ``@admin``, ``&ip/localhosts`` or ``:authenticated-users``::
+
+  POST http://$server/api/dvs/$dv/groups/$groupAlias/roleAssignees
+
+Add a single role assignee to a group. Request body is ignored::
+
+  PUT http://$server/api/dvs/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
+
+Remove a single role assignee from an explicit group::
+  
+  DELETE http://$server/api/dvs/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
+
+
+
 Metadata Blocks
 ~~~~~~~~~~~~~~~
 

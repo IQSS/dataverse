@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.persistence.Column;
@@ -16,6 +17,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -56,6 +59,9 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      * Explicit groups that belong to {@code this} explicit gorups.
      */
     @ManyToMany
+    @JoinTable(name = "explicitgroup_explicitgroup", 
+            joinColumns = @JoinColumn(name="explicitgroup_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name="containedexplicitgroups_id", referencedColumnName = "id") )
     Set<ExplicitGroup> containedExplicitGroups;
     
     /**
@@ -82,7 +88,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     /** Given alias of the group, e.g by the user that created it.  */
     private String groupAliasInOwner;
     
-    /** Alias of the group. Calculated from the groups' name and its owner id. Unique in the table. */
+    /** Alias of the group. Calculated from the group's name and its owner id. Unique in the table. */
     @Column( unique = true )
     private String groupAlias;
     
@@ -105,7 +111,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         if ( u instanceof AuthenticatedUser ) {
             containedAuthenticatedUsers.add((AuthenticatedUser)u);
         } else {
-            containedRoleAssignees.add(getIdentifier() );
+            containedRoleAssignees.add( u.getIdentifier() );
         }
     }
     
@@ -116,6 +122,11 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      * @throws GroupException if {@code ra} is a group, and is an ancestor of {@code this}.
      */
     public void add( RoleAssignee ra ) throws GroupException {
+        
+        if ( ra.equals(this) ) {
+            throw new GroupException(this, "A group cannot be added to itself.");
+        }
+        
         if ( ra instanceof User ) {
             add( (User)ra );
             
@@ -123,7 +134,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             // validate no circular deps
             Group g = (Group) ra;
             if ( g.contains(this) ) {
-                throw new GroupException(this, "A parent group cannot be added to one of its childs.");
+                throw new GroupException(this, "A group cannot be added to one of its childs.");
             }
             
             // add
@@ -152,6 +163,25 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         }
         
         return retVal;
+    }
+    
+    public void removeByRoleAssgineeIdentifier( String idtf ) {
+        if ( containedRoleAssignees.contains(idtf) ) {
+            containedRoleAssignees.remove(idtf);
+        } else {
+            for ( AuthenticatedUser au : containedAuthenticatedUsers ) {
+                if ( au.getIdentifier().equals(idtf) ) {
+                    containedAuthenticatedUsers.remove(au);
+                    return;
+                }
+            }
+            for ( ExplicitGroup eg : containedExplicitGroups ) {
+                if ( eg.getIdentifier().equals(idtf) ) {
+                    containedExplicitGroups.remove(eg);
+                    return;
+                }
+            }
+        }
     }
     
     @Override
@@ -284,5 +314,32 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.id);
+        hash = 53 * hash + Objects.hashCode(this.groupAliasInOwner);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if ( ! (obj instanceof ExplicitGroup)) {
+            return false;
+        }
+        final ExplicitGroup other = (ExplicitGroup) obj;
+        if ( id!=null && other.getId()!=null) {
+            return Objects.equals(id, other.getId());
+        } else {
+            return Objects.equals(this.groupAliasInOwner, other.groupAliasInOwner)
+                    && Objects.equals(this.owner, other.owner);
+        }
+    }
+    
+    
     
 }

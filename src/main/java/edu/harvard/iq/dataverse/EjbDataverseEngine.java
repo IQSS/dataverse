@@ -96,6 +96,9 @@ public class EjbDataverseEngine {
     @EJB
     ExplicitGroupServiceBean explicitGroups;
     
+    @EJB
+    RoleAssigneeServiceBean roleAssignees;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -159,7 +162,7 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public BuiltinUserServiceBean users() {
+                public BuiltinUserServiceBean builtinUsers() {
                     return usersService;
                 }
 
@@ -260,6 +263,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ExplicitGroupServiceBean explicitGroups() {
                     return explicitGroups;
+                }
+
+                @Override
+                public RoleAssigneeServiceBean roleAssignees() {
+                    return roleAssignees;
                 }
             };
         }

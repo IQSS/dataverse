@@ -20,7 +20,7 @@ public class GuestUser implements User {
     
     @Override
     public String getIdentifier() {
-        return ":Guest";
+        return ":guest";
     }
 
     @Override
