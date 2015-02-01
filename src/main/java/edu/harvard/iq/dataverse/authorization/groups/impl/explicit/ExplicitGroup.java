@@ -35,6 +35,8 @@ import javax.persistence.Transient;
  * @author michael
  */
 @NamedQueries({
+    @NamedQuery( name="ExplicitGroup.findAll",
+                 query="SELECT eg FROM ExplicitGroup eg"),
     @NamedQuery( name="ExplicitGroup.findByOwnerIdAndAlias",
                  query="SELECT eg FROM ExplicitGroup eg WHERE eg.owner.id=:ownerId AND eg.groupAliasInOwner=:alias"),
     @NamedQuery( name="ExplicitGroup.findByAlias",

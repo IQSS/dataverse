@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -76,5 +78,8 @@ public class ExplicitGroupServiceBean {
     public void removeGroup(ExplicitGroup explicitGroup) {
         em.remove( explicitGroup );
     }
-
+    
+    public Set<ExplicitGroup> findAll() {
+        return new HashSet<>(em.createNamedQuery("ExplicitGroup.findAll", ExplicitGroup.class).getResultList() );
+    }
 }

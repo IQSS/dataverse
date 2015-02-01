@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.BuiltInGroupsProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
@@ -31,6 +32,8 @@ public class GroupServiceBean {
     IpGroupsServiceBean ipGroupsService;
     @EJB
     ShibGroupServiceBean shibGroupService;
+    @EJB
+    ExplicitGroupServiceBean explicitGroupService;
     
     private final Map<String, GroupProvider> groupProviders = new HashMap<>();
     
@@ -43,8 +46,9 @@ public class GroupServiceBean {
     @PostConstruct
     public void setup() {
         addGroupProvider( BuiltInGroupsProvider.get() );
-            addGroupProvider( ipGroupProvider = new IpGroupProvider(ipGroupsService) );
-        addGroupProvider(shibGroupProvider = new ShibGroupProvider(shibGroupService));
+        addGroupProvider( ipGroupProvider = new IpGroupProvider(ipGroupsService) );
+        addGroupProvider( shibGroupProvider = new ShibGroupProvider(shibGroupService) );
+        addGroupProvider( explicitGroupService.getProvider() );
     }
 
     public Group getGroup( String groupAlias ) {
