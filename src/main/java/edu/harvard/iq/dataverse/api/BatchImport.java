@@ -175,41 +175,7 @@ public class BatchImport extends AbstractApiBean  {
         if (owner == null) {
             if (importType.equals(ImportUtil.ImportType.MIGRATION) || importType.equals(ImportUtil.ImportType.NEW)) {
                 System.out.println("creating new dataverse: " + dir.getName());
-                Dataverse d = new Dataverse();
-                Dataverse root = dataverseService.findByAlias("root");
-                d.setOwner(root);
-                d.setAlias(dir.getName());
-                d.setName(dir.getName());
-                d.setAffiliation("affiliation");
-                d.setPermissionRoot(false);
-                d.setDescription("description");
-                d.setDataverseType(Dataverse.DataverseType.RESEARCHERS);
-                DataverseContact dc = new DataverseContact();
-                dc.setContactEmail("pete@mailinator.com");
-                ArrayList<DataverseContact> dcList = new ArrayList<>();
-                dcList.add(dc);
-                d.setDataverseContacts(dcList);
-                try {
-                    owner = engineSvc.submit(new CreateDataverseCommand(d, u, null, null));
-                } catch (EJBException ex) {
-                    Throwable cause = ex;
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Error creating dataverse.");
-                    while (cause.getCause() != null) {
-                        cause = cause.getCause();
-                        if (cause instanceof ConstraintViolationException) {
-                            ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                            for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
-                            }
-                        }
-                    }
-                    logger.log(Level.SEVERE, sb.toString());
-                    System.out.println("Error creating dataverse: " + sb.toString());
-                    throw new ImportException(sb.toString());
-                } catch (Exception e) {
-                    throw new ImportException(e.getMessage());
-                }
+                owner=batchImportService.createDataverse(dir, u);
             } else {
                 throw new ImportException("Can't find dataverse with identifier='" + dir.getName() + "'");
             }
