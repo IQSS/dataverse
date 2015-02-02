@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -49,6 +50,9 @@ public class PermissionServiceBean {
     @EJB
     DataverseRoleServiceBean roleService;
 
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;    
+    
     @EJB
     DataverseServiceBean dataverseService;
 
@@ -279,4 +283,18 @@ public class PermissionServiceBean {
         }
         return usersHasPermissionOn;
     }
+    
+    public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
+        List<AuthenticatedUser> usersHasPermissionOn = new LinkedList<>();
+        Set<RoleAssignment> ras = roleService.rolesAssignments(dvo);
+        for (RoleAssignment ra : ras) {
+            if (ra.getRole().permissions().contains(permission)) {
+                RoleAssignee raee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
+                usersHasPermissionOn.addAll(roleAssigneeService.getExplicitUsers(raee));      
+            }
+        }
+        
+        return usersHasPermissionOn;
+    }     
+    
 }
