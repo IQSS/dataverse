@@ -63,7 +63,10 @@
                                                 </p:column>
                                                 <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.action']}">
                                                     <p:commandLink styleClass="btn btn-default" value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"
-                                                                   actionListener="#{manageFilePermissionsPage.grantAccessToRequests(access.key)}"
+                                                                   actionListener="#{manageFilePermissionsPage.grantAccessToAllRequests(access.key)}"
+                                                                   update=":#{p:component('userGroups')} :#{p:component('restrictedFiles')} @([id$=Messages])"/>
+                                                    <p:commandLink styleClass="btn btn-default" value="#{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}"
+                                                                   actionListener="#{manageFilePermissionsPage.rejectAccessToAllRequests(access.key)}"
                                                                    update=":#{p:component('userGroups')} :#{p:component('restrictedFiles')} @([id$=Messages])"/>
                                                 </p:column>
                                             </p:dataTable>                                                                          
@@ -217,11 +220,16 @@
                                 </div>
                             </div>
 
-                            <p:commandLink styleClass="btn btn-default" value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}" 
+                            <p:commandLink styleClass="btn btn-default" rendered="#{empty manageFilePermissionsPage.fileRequester}"
+                                           value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}" 
                                            update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
                                            actionListener="#{manageFilePermissionsPage.grantAccess}" oncomplete="if (args &amp;&amp; !args.validationFailed) assignWidget.hide();">
                                 <f:param name="DO_VALIDATION" value="true"/> 
                             </p:commandLink>
+                            <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
+                                           value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}" 
+                                           update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
+                                           actionListener="#{manageFilePermissionsPage.grantAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="assignWidget.hide();"/>                                                         
                             <p:commandLink styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
                                            value="#{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}" 
                                            update="assignRoleContent userGroups restrictedFiles @([id$=Messages])"
