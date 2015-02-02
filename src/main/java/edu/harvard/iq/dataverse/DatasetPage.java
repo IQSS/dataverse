@@ -1596,7 +1596,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void initGuestbookResponse(FileMetadata fileMetadata) {
-        
+       
         if(this.guestbookResponse == null){
             this.guestbookResponse= new GuestbookResponse();
         }
@@ -1619,8 +1619,9 @@ public class DatasetPage implements java.io.Serializable {
                 BuiltinUser bUser = (BuiltinUser) user;
                 this.guestbookResponse.setPosition(bUser.getPosition());
             }*/
+            this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
         } else {
-            this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, null, user);
+            this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), user);
         }
         if (this.dataset.getGuestbook() != null && !this.dataset.getGuestbook().getCustomQuestions().isEmpty()){
             this.guestbookResponse.setCustomQuestionResponses(new ArrayList());
@@ -1637,9 +1638,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             
         }
-        if (fileMetadata != null) {
-            this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
-        }
+        
         this.guestbookResponse.setDataset(dataset);
     }
     

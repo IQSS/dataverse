@@ -26,37 +26,38 @@ import javax.persistence.Query;
  */
 @Stateless
 public class GuestbookResponseServiceBean {
-    @PersistenceContext(unitName="VDCNet-ejbPU")
-    private EntityManager em; 
-    
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
+
     public List<GuestbookResponse> findAll() {
         return em.createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc").getResultList();
     }
-    
+
     public List<Long> findAllIds() {
         return findAllIds(null);
     }
 
     public List<Long> findAllIds(Long dataverseId) {
-        if (dataverseId == null){
-           return em.createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc").getResultList(); 
-        } 
-        return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId  +  " order by o.responseTime desc").getResultList();
-    }  
-    
+        if (dataverseId == null) {
+            return em.createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc").getResultList();
+        }
+        return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc").getResultList();
+    }
+
     public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
-        
-        if (guestbookId == null){
-        } else { 
+
+        if (guestbookId == null) {
+        } else {
             return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc").getResultList();
-        } 
-        return  null;   
-    }  
-    
+        }
+        return null;
+    }
+
     public List<Long> findAllIds30Days() {
         return findAllIds30Days(null);
     }
-    
+
     public List<Long> findAllIds30Days(Long dataverseId) {
         String beginTime;
         String endTime;
@@ -66,8 +67,8 @@ public class GuestbookResponseServiceBean {
         cal.add(Calendar.DAY_OF_YEAR, 31);
         endTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
         String queryString = "select o.id from GuestbookResponse as o  ";
-        if (dataverseId != null){
-             queryString += ", Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " and "  ;
+        if (dataverseId != null) {
+            queryString += ", Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " and ";
         } else {
             queryString += " where ";
         }
@@ -78,11 +79,11 @@ public class GuestbookResponseServiceBean {
 
         return query.getResultList();
     }
-    
-    public Long findCount30Days(){
+
+    public Long findCount30Days() {
         return findCount30Days(null);
     }
-    
+
     public Long findCount30Days(Long dataverseId) {
         String beginTime;
         String endTime;
@@ -92,37 +93,37 @@ public class GuestbookResponseServiceBean {
         cal.add(Calendar.DAY_OF_YEAR, 31);
         endTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
         String queryString = "select count(o.id) from GuestbookResponse as o  ";
-        if (dataverseId != null){
-             queryString += ", DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " and "  ;
+        if (dataverseId != null) {
+            queryString += ", DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " and ";
         } else {
             queryString += " where ";
         }
         queryString += " o.responseTime >='" + beginTime + "'";
         queryString += " and o.responseTime<='" + endTime + "'";
         Query query = em.createNativeQuery(queryString);
-        return (Long) query.getSingleResult();   
+        return (Long) query.getSingleResult();
     }
-    
-    public Long findCountAll(){
+
+    public Long findCountAll() {
         return findCountAll(null);
     }
-    
+
     public Long findCountAll(Long dataverseId) {
         String queryString = "";
-        if (dataverseId !=null){
-            queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v, where o.dataset_id = v.id and v.owner_id = " + dataverseId  +  " "; 
+        if (dataverseId != null) {
+            queryString = "select count(o.id) from GuestbookResponse  o,  DvObject v, where o.dataset_id = v.id and v.owner_id = " + dataverseId + " ";
         } else {
             queryString = "select count(o.id) from GuestbookResponse  o ";
         }
 
         Query query = em.createNativeQuery(queryString);
-        return (Long) query.getSingleResult();    
+        return (Long) query.getSingleResult();
     }
 
     public List<GuestbookResponse> findAllByDataverse(Long dataverseId) {
-        return em.createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId  +  " order by o.responseTime desc").getResultList();
+        return em.createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc").getResultList();
     }
-    
+
     public List<GuestbookResponse> findAllWithin30Days() {
         return findAllWithin30Days(null);
     }
@@ -136,8 +137,8 @@ public class GuestbookResponseServiceBean {
         cal.add(Calendar.DAY_OF_YEAR, 31);
         endTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
         String queryString = "select object(o) from GuestbookResponse as o  ";
-        if (dataverseId != null){
-             queryString += ", Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " and "  ;
+        if (dataverseId != null) {
+            queryString += ", Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " and ";
         } else {
             queryString += " where ";
         }
@@ -148,16 +149,14 @@ public class GuestbookResponseServiceBean {
 
         return query.getResultList();
     }
-    
+
     private List<Object[]> convertIntegerToLong(List<Object[]> list, int index) {
         for (Object[] item : list) {
-            item[index] = new Long( (Integer) item[index]);
+            item[index] = new Long((Integer) item[index]);
         }
-           
-        return list;
-    } 
-    
 
+        return list;
+    }
 
     private String generateTempTableString(List<Long> datasetIds) {
         // first step: create the temp table with the ids
@@ -167,7 +166,7 @@ public class GuestbookResponseServiceBean {
         em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; INSERT INTO tempid VALUES " + generateIDsforTempInsert(datasetIds) + "; END;").executeUpdate();
         return "select tempid from tempid";
     }
-    
+
     private String generateIDsforTempInsert(List idList) {
         int count = 0;
         StringBuffer sb = new StringBuffer();
@@ -182,35 +181,35 @@ public class GuestbookResponseServiceBean {
 
         return sb.toString();
     }
-    
-    public List<Object[]> findDownloadInfoAll(List<Long> gbrIds) {  
+
+    public List<Object[]> findDownloadInfoAll(List<Long> gbrIds) {
         //this query will return multiple rows per response where the study name has changed over version
         //these multiples are filtered out by the method that actually writes the download csv,
-            String varString = "(" + generateTempTableString(gbrIds) + ") ";
-            String gbrDownloadQueryString = "select u.username, gbr.sessionid, "
-            + " gbr.firstname, gbr.lastname, gbr.email, gbr.institution, "
-            + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, gbr.downloadType "
-            + " from guestbookresponse gbr LEFT OUTER JOIN vdcuser u ON  " 
-            + "(gbr.vdcuser_id =u.id),  " 
-            + " vdc, study s, studyversion sv, metadata m, filemetadata  fmd  " 
-            + "where gbr.study_id = s.id  " 
-            + "and s.owner_id = vdc.id  " 
-            + "and s.id = sv.study_id  " 
-            + "and sv.metadata_id = m.id " 
-            + "and gbr.studyfile_id = fmd.studyfile_id " 
-            + "and sv.id = fmd.studyversion_id " 
-            + "and sv.id = gbr.studyversion_id " 
-            + " and gbr.id in " + varString
-            + " group by u.username, gbr.sessionid, "
-            + " gbr.firstname, gbr.lastname, gbr.email, gbr.institution, "
-            + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, s.id, gbr.downloadType  "    +    
-            "order by s.id, gbr.id";
-            System.out.print(gbrDownloadQueryString);
+        String varString = "(" + generateTempTableString(gbrIds) + ") ";
+        String gbrDownloadQueryString = "select u.username, gbr.sessionid, "
+                + " gbr.firstname, gbr.lastname, gbr.email, gbr.institution, "
+                + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, gbr.downloadType "
+                + " from guestbookresponse gbr LEFT OUTER JOIN vdcuser u ON  "
+                + "(gbr.vdcuser_id =u.id),  "
+                + " vdc, study s, studyversion sv, metadata m, filemetadata  fmd  "
+                + "where gbr.study_id = s.id  "
+                + "and s.owner_id = vdc.id  "
+                + "and s.id = sv.study_id  "
+                + "and sv.metadata_id = m.id "
+                + "and gbr.studyfile_id = fmd.studyfile_id "
+                + "and sv.id = fmd.studyversion_id "
+                + "and sv.id = gbr.studyversion_id "
+                + " and gbr.id in " + varString
+                + " group by u.username, gbr.sessionid, "
+                + " gbr.firstname, gbr.lastname, gbr.email, gbr.institution, "
+                + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, s.id, gbr.downloadType  "
+                + "order by s.id, gbr.id";
+        System.out.print(gbrDownloadQueryString);
         Query query = em.createNativeQuery(gbrDownloadQueryString);
-        
-        return  convertIntegerToLong(query.getResultList(),14);
-    } 
-    
+
+        return convertIntegerToLong(query.getResultList(), 14);
+    }
+
     public List<Object[]> findCustomResponsePerGuestbookResponse(Long gbrId) {
 
         String gbrCustomQuestionQueryString = "select response, cq.id "
@@ -221,76 +220,93 @@ public class GuestbookResponseServiceBean {
                 + " and cqr.guestbookresponse_id =  " + gbrId;
         Query query = em.createNativeQuery(gbrCustomQuestionQueryString);
 
-        return convertIntegerToLong(query.getResultList(),1);
-    } 
+        return convertIntegerToLong(query.getResultList(), 1);
+    }
 
-        
-    private Guestbook findDefaultGuestbook(){
+    private Guestbook findDefaultGuestbook() {
         Guestbook guestbook = new Guestbook();
-        String queryStr = "SELECT gbq FROM Guestbook gbq WHERE gbq.dataverse is null; ";
+        String queryStr = "SELECT object(o) FROM Guestbook as o WHERE o.dataverse.id = null";
         Query query = em.createQuery(queryStr);
         List resultList = query.getResultList();
 
         if (resultList.size() >= 1) {
-           guestbook = (Guestbook) resultList.get(0);
+            guestbook = (Guestbook) resultList.get(0);
         }
         return guestbook;
-        
+
     }
-    
+
     public String getUserName(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getName();
         }
-        if (user.isBuiltInUser()){
-            BuiltinUser builtinUser = (BuiltinUser) user;
-            return builtinUser.getDisplayName();
+
+        try {
+            if (user.isBuiltInUser()) {
+                BuiltinUser builtinUser = (BuiltinUser) user;
+                return builtinUser.getDisplayName();
+            }
+        } catch (Exception e) {
+            return "";
         }
         return "Guest";
     }
-    
+
     public String getUserEMail(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getEmail();
         }
-        if (user.isBuiltInUser()){
-            BuiltinUser builtinUser = (BuiltinUser) user;
-            return builtinUser.getEmail();
+        try {
+            if (user.isBuiltInUser()) {
+                BuiltinUser builtinUser = (BuiltinUser) user;
+                return builtinUser.getEmail();
+            }
+        } catch (Exception e) {
+            return "";
         }
         return "";
     }
-    
+
     public String getUserInstitution(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getAffiliation();
         }
-        if (user.isBuiltInUser()){
-            BuiltinUser builtinUser = (BuiltinUser) user;
-            return builtinUser.getAffiliation();
-        }
-        return "";
-    }
-    
-    public String getUserPosition(User user) {
 
-        if (user.isBuiltInUser()){
-            BuiltinUser builtinUser = (BuiltinUser) user;
-            return builtinUser.getPosition();
+        try {
+            if (user.isBuiltInUser()) {
+                BuiltinUser builtinUser = (BuiltinUser) user;
+                return builtinUser.getAffiliation();
+            }
+        } catch (Exception e) {
+            return "";
         }
         return "";
     }
-    
-   public AuthenticatedUser getAuthenticatedUser(User user) {
+
+    public String getUserPosition(User user) {
+        try {
+            if (user.isBuiltInUser()) {
+                BuiltinUser builtinUser = (BuiltinUser) user;
+                return builtinUser.getPosition();
+            }
+        } catch (Exception e) {
+            return "";
+        }
+
+        return "";
+    }
+
+    public AuthenticatedUser getAuthenticatedUser(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser;
         }
         return null;
     }
-    
+
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, User user) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         guestbookResponse.setGuestbook(findDefaultGuestbook());
@@ -313,16 +329,14 @@ public class GuestbookResponseServiceBean {
         }
         return guestbookResponse;
     }
-    
-    
+
     public GuestbookResponse findById(Long id) {
-       return em.find(GuestbookResponse.class,id);
-    }   
-    
+        return em.find(GuestbookResponse.class, id);
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void save(GuestbookResponse guestbookResponse) {
         em.persist(guestbookResponse);
     }
-    
-    
+
 }
