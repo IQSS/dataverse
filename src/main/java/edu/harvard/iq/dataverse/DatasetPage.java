@@ -2232,5 +2232,10 @@ public class DatasetPage implements java.io.Serializable {
     public void requestAccess(DataFile file) {
         file.getFileAccessRequesters().add((AuthenticatedUser)session.getUser());
         datafileService.save(file);
+        
+        // create notifications
+        for (AuthenticatedUser au : permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset)){
+             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, dataset.getId());
+        }        
     }     
 }
