@@ -52,6 +52,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamException;
+import org.apache.log4j.lf5.LogLevel;
 
 @Stateless
 @Path("batch")
@@ -100,7 +101,6 @@ public class BatchImport extends AbstractApiBean  {
     @POST 
     @Path("import")
     public Response postImport(String body, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
-           
         User u = findUserByApiToken(apiKey);
         if (u == null) {
             return badApiKey(apiKey);
@@ -129,7 +129,10 @@ public class BatchImport extends AbstractApiBean  {
     @GET 
     @Path("import")
     public Response getImport(@QueryParam("path") String fileDir, @QueryParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-        return processFilePath(fileDir, parentIdtf, apiKey, ImportType.NEW);
+        logger.info("BEGIN IMPORT");
+        Response r= processFilePath(fileDir, parentIdtf, apiKey, ImportType.NEW);
+        logger.info("END IMPORT");
+        return r;
     }
     
     

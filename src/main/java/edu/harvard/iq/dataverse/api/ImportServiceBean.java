@@ -127,6 +127,12 @@ public class ImportServiceBean {
         } catch (ImportException ex) {
             logger.info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+        } catch (Exception e) {
+            String msg = "Unexpected Error in handleFile(), file:" +file.getParentFile().getName() + "/" + file.getName();
+            e.printStackTrace();
+            logger.severe(msg);
+            throw new ImportException("Unexpected Error in handleFile(), file:" +file.getParentFile().getName() + "/" + file.getName(),e);
+            
         }
     }
      public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException {
