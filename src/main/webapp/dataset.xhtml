@@ -2168,9 +2168,12 @@
                     </p:dialog>
                     <p:dialog id="linkDatasetForm" header="#{bundle['dataverse.link']}" widgetVar="linkDatasetForm" style="min-width:500px;">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                            <p:selectOneMenu value="#{DatasetPage.linkingDataverseId}">
-                                <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
-                            </p:selectOneMenu>
+                            <div>
+                                <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
+                                <p:selectOneMenu value="#{DatasetPage.linkingDataverseId}">
+                                    <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
+                                </p:selectOneMenu>
+                            </div>
                             <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()"
                                     jsf:action="#{DatasetPage.saveLinkedDataset()}">
                                 #{bundle['dataset.link.save']}
