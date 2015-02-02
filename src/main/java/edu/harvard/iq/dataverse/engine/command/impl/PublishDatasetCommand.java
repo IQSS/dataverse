@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -20,6 +22,7 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -109,8 +112,20 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getPublicationDate() == null) {
+                // this is a new, previously unpublished file, so publish by setting date
                 dataFile.setPublicationDate(updateTime);
+                
+                // check if any prexisting roleassignments have file download and send notifications
+                List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(dataFile);
+                for (RoleAssignment ra : ras) {
+                    if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
+                        for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
+                            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, theDataset.getId());                                       
+                        }
+                    }
+                }                                
             }
+            
             // set the files restriction flag to the same as the latest version's
             if (dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
