@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -122,6 +123,8 @@ public class Shib implements java.io.Serializable {
     private final String shibIdpAttribute = "Shib-Identity-Provider";
     private final String uniquePersistentIdentifier = "eppn";
     private String userPersistentId;
+    private String internalUserIdentifer;
+    private final String usernameAttribute = "uid";
     private final String displayNameAttribute = "cn";
     private final String firstNameAttribute = "givenName";
     private final String lastNameAttribute = "sn";
@@ -181,9 +184,14 @@ public class Shib implements java.io.Serializable {
              */
             return;
         }
-        String userIdentifier;
+        String shibUserIdentifier;
         try {
-            userIdentifier = getRequiredValueFromAttribute(uniquePersistentIdentifier);
+            shibUserIdentifier = getRequiredValueFromAttribute(uniquePersistentIdentifier);
+        } catch (Exception ex) {
+            return;
+        }
+        try {
+            internalUserIdentifer = getRequiredValueFromAttribute(usernameAttribute);
         } catch (Exception ex) {
             return;
         }
@@ -207,7 +215,7 @@ public class Shib implements java.io.Serializable {
         String emailAddress = getValueFromAttribute(emailAttribute);
         displayInfo = new RoleAssigneeDisplayInfo(displayName, emailAddress);
 
-        userPersistentId = shibIdp + persistentUserIdSeparator + userIdentifier;
+        userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
@@ -231,7 +239,9 @@ public class Shib implements java.io.Serializable {
 
     public String confirm() {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
-        AuthenticatedUser au = authSvc.createAuthenticatedUser(shibAuthProvider.getId(), userPersistentId, displayInfo);
+        String lookupStringPerAuthProvider = userPersistentId;
+        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
+        AuthenticatedUser au = authSvc.createAuthenticatedUserWithDecoupledIdentifiers(shibAuthProvider.getId(), userIdentifier, displayInfo);
         if (au != null) {
             logger.info("created user " + au.getIdentifier());
         } else {
@@ -379,6 +389,7 @@ public class Shib implements java.io.Serializable {
         JsonElement firstResult = results.getAsJsonArray().get(0);
         logger.fine(firstResult.toString());
         JsonElement user = firstResult.getAsJsonObject().get("user");
+        JsonElement username = user.getAsJsonObject().get("username");
         JsonElement email = user.getAsJsonObject().get("email");
         JsonElement password = user.getAsJsonObject().get("password");
         JsonElement name = user.getAsJsonObject().get("name");
@@ -388,6 +399,7 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(emailAttribute, email.getAsString());
         // random IDP
         request.setAttribute(shibIdpAttribute, "https://idp." + password.getAsString() + ".com/idp/shibboleth");
+        request.setAttribute(usernameAttribute, username.getAsString());
     }
 
     private void mutateRequestForDevConstantTestShib() {
@@ -395,6 +407,7 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(uniquePersistentIdentifier, "constantTestShib");
         request.setAttribute(displayNameAttribute, "Sam El");
         request.setAttribute(emailAttribute, "saml@mailinator.com");
+        request.setAttribute(usernameAttribute, "saml");
     }
 
     private void mutateRequestForDevConstantHarvard() {
@@ -402,6 +415,7 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(uniquePersistentIdentifier, "constantHarvard");
         request.setAttribute(displayNameAttribute, "John Harvard");
         request.setAttribute(emailAttribute, "jharvard@mailinator.com");
+        request.setAttribute(usernameAttribute, "jharvard");
     }
 
 }
