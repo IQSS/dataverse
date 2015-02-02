@@ -120,7 +120,7 @@ public class PermissionServiceBean {
      * This method takes into consideration group memberships as well.
      * @param u The user
      * @param d The {@link DvObject} on which the user wants to operate
-     * @return the set of premissions {@code u} has over {@code d}.
+     * @return the set of permissions {@code u} has over {@code d}.
      */
     public Set<Permission> permissionsForUser(User u, DvObject d) {
 
@@ -129,12 +129,10 @@ public class PermissionServiceBean {
         // Add permissions specifically given to the user
         permissions.addAll( permissionsFor(u,d) );
         
-        // Add permissions gained form intallation-wide groups
-        for ( Group g : groupService.groupsFor(u) ) {
+        // Add permissions gained from groups
+        for ( Group g : groupService.groupsFor(u,d) ) {
             permissions.addAll( permissionsFor(g,d) );
         }
-        
-        // TODO: query for groups defined over d
         
         return permissions;
     }

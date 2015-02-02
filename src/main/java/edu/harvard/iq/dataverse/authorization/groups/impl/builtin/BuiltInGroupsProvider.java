@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.builtin;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -36,7 +37,7 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     }
 
     @Override
-    public Set<Group> groupsFor(User u) {
+    public Set<Group> groupsFor(User u, DvObject o) {
         return (Set<Group>) ((u instanceof AuthenticatedUser)
                 ? CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get())
                 : Collections.singleton(AllUsers.get()));

@@ -411,7 +411,7 @@ public class JsonPrinter {
     
     public static JsonObjectBuilder json(ExplicitGroup eg ) {
         JsonArrayBuilder ras = Json.createArrayBuilder();
-        for ( String u : eg.listContainedRoleAssginees() ) {
+        for ( String u : eg.getContainedRoleAssgineeIdentifiers() ) {
             ras.add(u);
         }
         return jsonObjectBuilder()

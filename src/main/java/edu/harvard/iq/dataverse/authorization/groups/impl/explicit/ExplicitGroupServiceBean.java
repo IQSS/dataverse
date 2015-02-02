@@ -1,9 +1,15 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -27,8 +33,15 @@ public class ExplicitGroupServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
 	
+    ExplicitGroupProvider provider;
+    
+    @PostConstruct
+    void setup() {
+        provider = new ExplicitGroupProvider(this, roleAssigneeSvc);
+    }
+    
     public ExplicitGroupProvider getProvider() {
-        return new ExplicitGroupProvider(this, roleAssigneeSvc);
+        return provider;
     }
     
     public ExplicitGroup persist( ExplicitGroup g ) {
@@ -36,27 +49,34 @@ public class ExplicitGroupServiceBean {
             em.persist( g );
             return g;
         } else {
+            // clean stale data once in a while
+            if ( Math.random() >= 0.5 ) {
+                Set<String> stale = new TreeSet<>();
+                for ( String idtf : g.getContainedRoleAssignees()) {
+                    if ( roleAssigneeSvc.getRoleAssignee(idtf) == null ) {
+                        stale.add(idtf);
+                    }
+                }
+                if ( ! stale.isEmpty() ) {
+                    g.getContainedRoleAssignees().removeAll(stale);
+                }
+            }
+            
             return em.merge( g );
         }    
     }
     
     public List<ExplicitGroup> findByOwner( Long dvObjectId ) {
-        List<ExplicitGroup> groups =  em.createNamedQuery( "ExplicitGroup.findByOwnerId" )
+        return provider.updateProvider(em.createNamedQuery( "ExplicitGroup.findByOwnerId" )
                  .setParameter("ownerId", dvObjectId )
-                 .getResultList();
-        for ( ExplicitGroup eg : groups ) {
-            eg.setProvider( getProvider() );
-        }
-        return groups;
+                 .getResultList());
     }
     
     ExplicitGroup findByAlias(String groupAlias) {
         try  {
-            ExplicitGroup eg = em.createNamedQuery("ExplicitGroup.findByAlias", ExplicitGroup.class)
+            return provider.updateProvider( em.createNamedQuery("ExplicitGroup.findByAlias", ExplicitGroup.class)
                     .setParameter("alias", groupAlias)
-                    .getSingleResult();
-            eg.setProvider( getProvider() );
-            return eg;
+                    .getSingleResult());
         } catch ( NoResultException nre ) {
             return null;
         }
@@ -64,12 +84,11 @@ public class ExplicitGroupServiceBean {
 
     public ExplicitGroup findInOwner(Long id, String groupAliasInOwner) {
         try  {
-            ExplicitGroup eg = em.createNamedQuery("ExplicitGroup.findByOwnerIdAndAlias", ExplicitGroup.class)
-                    .setParameter("alias", groupAliasInOwner)
-                    .setParameter("ownerId", id)
-                    .getSingleResult();
-            eg.setProvider( getProvider() );
-            return eg;
+            return provider.updateProvider( 
+                    em.createNamedQuery("ExplicitGroup.findByOwnerIdAndAlias", ExplicitGroup.class)
+                        .setParameter("alias", groupAliasInOwner)
+                        .setParameter("ownerId", id)
+                        .getSingleResult());
         } catch ( NoResultException nre ) {
             return null;
         }
@@ -80,6 +99,49 @@ public class ExplicitGroupServiceBean {
     }
     
     public Set<ExplicitGroup> findAll() {
-        return new HashSet<>(em.createNamedQuery("ExplicitGroup.findAll", ExplicitGroup.class).getResultList() );
+        return provider.updateProvider( 
+                new HashSet<>(
+                        em.createNamedQuery("ExplicitGroup.findAll", ExplicitGroup.class).getResultList()));
     }
+    
+    /**
+     * Finds all the groups {@code ra} belongs to in the context of {@code o}. In effect,
+     * collects all the groups {@code ra} belongs to and that are defined at {@code o}
+     * or one of its ancestors.
+     * 
+     * @param ra The role assignee that belongs to the groups
+     * @param o the DvObject that defines the context of the search.
+     * @return All the groups ra belongs to in the context of o.
+     */
+    public Set<ExplicitGroup> findGroups( RoleAssignee ra, DvObject o ) {
+        List<ExplicitGroup> groupList = new LinkedList<>();
+        
+        if ( ra instanceof ExplicitGroup ) {
+            for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
+                groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndSubExGroupId", ExplicitGroup.class)
+                  .setParameter("ownerId", o.getId())
+                  .setParameter("subExGroupId", ((ExplicitGroup)ra).getId())
+                  .getResultList() );
+            }
+            
+        } else if ( ra instanceof AuthenticatedUser ) {
+            for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
+                groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndAuthUserId", ExplicitGroup.class)
+                  .setParameter("ownerId", o.getId())
+                  .setParameter("authUserId", ((AuthenticatedUser)ra).getId())
+                  .getResultList() );
+            }
+            
+        } else {
+            for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
+                groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndRAIdtf", ExplicitGroup.class)
+                  .setParameter("ownerId", o.getId())
+                  .setParameter("raIdtf", ra.getIdentifier())
+                  .getResultList() );
+            }
+        }
+        
+        return provider.updateProvider( new HashSet<>(groupList) );
+    }
+    
 }

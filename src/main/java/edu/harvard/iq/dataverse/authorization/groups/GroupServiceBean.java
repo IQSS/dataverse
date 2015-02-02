@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.BuiltInGroupsProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
@@ -39,6 +42,7 @@ public class GroupServiceBean {
     
     private IpGroupProvider ipGroupProvider;
     private ShibGroupProvider shibGroupProvider;
+    private ExplicitGroupProvider explicitGroupProvider;
     
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
@@ -48,7 +52,7 @@ public class GroupServiceBean {
         addGroupProvider( BuiltInGroupsProvider.get() );
         addGroupProvider( ipGroupProvider = new IpGroupProvider(ipGroupsService) );
         addGroupProvider( shibGroupProvider = new ShibGroupProvider(shibGroupService) );
-        addGroupProvider( explicitGroupService.getProvider() );
+        addGroupProvider( explicitGroupProvider = explicitGroupService.getProvider() );
     }
 
     public Group getGroup( String groupAlias ) {
@@ -68,12 +72,39 @@ public class GroupServiceBean {
     public ShibGroupProvider getShibGroupProvider() {
         return shibGroupProvider;
     }
-
-    public Set<Group> groupsFor( User u ) {
+    
+    public Set<Group> groupsFor( User u, DvObject dvo ) {
         Set<Group> groups = new HashSet<>();
+        
+        // first, get all groups the user directly belongs to
         for ( GroupProvider gv : groupProviders.values() ) {
-            groups.addAll( gv.groupsFor(u) );
+            groups.addAll( gv.groupsFor(u, dvo) );
         }
+        
+        // now, get the explicit group transitive closure.
+        Set<ExplicitGroup> perimeter = new HashSet<>();
+        Set<ExplicitGroup> visited = new HashSet<>();
+        
+        for ( Group g : groups ) {
+            if ( g instanceof ExplicitGroup ) {
+                perimeter.add((ExplicitGroup) g);
+            }
+        }
+        visited.addAll(perimeter);
+        
+        while ( ! perimeter.isEmpty() ) {
+            ExplicitGroup g = perimeter.iterator().next();
+            perimeter.remove(g);
+            
+            Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
+            discovered.removeAll(visited); // Ideally this is aloways empty, as we don't allow cycles.
+                                           // Still, coding defensively here, in case someone gets too
+                                           // smart on the SQL console.
+            
+            perimeter.addAll(discovered);
+            visited.addAll(discovered);
+        }
+        
         return groups;
     }
     

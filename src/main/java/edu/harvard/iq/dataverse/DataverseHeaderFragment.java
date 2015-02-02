@@ -234,7 +234,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     public List<String> getGroups(User user) {
         List<String> groups = new ArrayList<>();
-        Set<Group> groupsForUser = groupService.groupsFor(user);
+        Set<Group> groupsForUser = groupService.groupsFor(user, null);
         for (Group group : groupsForUser) {
             groups.add(group.getDisplayName() + " (" + group.getIdentifier() + ")");
         }

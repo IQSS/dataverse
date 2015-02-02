@@ -42,7 +42,16 @@ import javax.persistence.Transient;
     @NamedQuery( name="ExplicitGroup.findByAlias",
                  query="SELECT eg FROM ExplicitGroup eg WHERE eg.groupAlias=:alias"),
     @NamedQuery( name="ExplicitGroup.findByOwnerId",
-                 query="SELECT eg FROM ExplicitGroup eg WHERE eg.owner.id=:ownerId")
+                 query="SELECT eg FROM ExplicitGroup eg WHERE eg.owner.id=:ownerId"),
+    @NamedQuery( name="ExplicitGroup.findByOwnerAndAuthUserId",
+                 query="SELECT eg FROM ExplicitGroup eg join eg.containedAuthenticatedUsers au "
+                      +"WHERE eg.owner.id=:ownerId AND au.id=:authUserId"),
+    @NamedQuery( name="ExplicitGroup.findByOwnerAndSubExGroupId",
+                 query="SELECT eg FROM ExplicitGroup eg join eg.containedExplicitGroups ceg "
+                      +"WHERE eg.owner.id=:ownerId AND ceg.id=:subExGroupId"),
+    @NamedQuery( name="ExplicitGroup.findByOwnerAndRAIdtf",
+                 query="SELECT eg FROM ExplicitGroup eg join eg.containedRoleAssignees ra "
+                      +"WHERE eg.owner.id=:ownerId AND ra=:raIdtf")
 })
 @Entity
 public class ExplicitGroup implements Group, java.io.Serializable {
@@ -151,10 +160,17 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
     
     public void remove(RoleAssignee roleAssignee) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        removeByRoleAssgineeIdentifier( roleAssignee.getIdentifier() );
     }
     
-    public Set<String> listContainedRoleAssginees() {
+    /**
+     * Returns all the role assignee identifiers in this group. <br>
+     * <b>Note</b> some of the identifiers may be stale (i.e. group deleted but 
+     * identifiers lingered for a while).
+     * 
+     * @return A list of the role assignee identifiers.
+     */
+    public Set<String> getContainedRoleAssgineeIdentifiers() {
         Set<String> retVal = new TreeSet<>();
         retVal.addAll( containedRoleAssignees );
         for ( ExplicitGroup subg : containedExplicitGroups ) {
@@ -342,6 +358,14 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         }
     }
     
-    
+    /**
+     * Low-level call to return the role assignee identifier strings. Note that
+     * the role assignees themselves might be stale, which is why this call is here - 
+     * to allow the {@link ExplicitGroupServiceBean} to clean up this collection.
+     * @return the strings of the role assignees in this group.
+     */
+    Set<String> getContainedRoleAssignees() {
+        return containedRoleAssignees;
+    }
     
 }

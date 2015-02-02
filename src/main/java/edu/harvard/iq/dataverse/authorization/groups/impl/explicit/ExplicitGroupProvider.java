@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -35,18 +36,22 @@ public class ExplicitGroupProvider implements GroupProvider {
     }
     
     /**
-     * The explicit group provider cannot return any groups for user, as explicit groups
-     * are assigned in a context of a DvObject. Thus, this method always returns 
-     * the empty set.
+     * Returns all the groups the user belongs to in the context of 
+     * {@code o}. This includes groups defined on {@code o}'s parents as well.
      * 
      * @param u The user
-     * @return empty set
+     * @param o The DvObject over which the groups are defined.
+     * @return The groups the user belongs to in the context of {@code o}.
      */
     @Override
-    public Set groupsFor(User u) {
-        return Collections.emptySet();
+    public Set<ExplicitGroup> groupsFor(User u, DvObject o) {
+        return explicitGroupSvc.findGroups(u, o);
     }
 
+    public Set<ExplicitGroup> groupsFor( ExplicitGroup eg, DvObject o ) {
+        return explicitGroupSvc.findGroups(eg, o);
+    }
+    
     @Override
     public ExplicitGroup get(String groupAlias) {
         return explicitGroupSvc.findByAlias( groupAlias );
@@ -65,13 +70,25 @@ public class ExplicitGroupProvider implements GroupProvider {
      * Finds the role asgineed whose identifier is given. While this is basically
      * a delegation to {@link RoleAssigneeServiceBean}, we need it as a way of
      * dependency injection for {@link ExplicitGroup}s, which need to access the 
-     * server context but are POJOs rahter than enterprise beans.
+     * server context but are POJOs rather than enterprise beans.
      * 
      * @param roleAssigneeIdtf The identifier of the role assignee.
      * @return The role assignee whose ID is passed.
      */
     RoleAssignee findRoleAssignee( String roleAssigneeIdtf ) {
         return roleAssigneeSvc.getRoleAssignee(roleAssigneeIdtf);
+    }
+    
+    ExplicitGroup updateProvider( ExplicitGroup eg ) {
+        eg.setProvider(this);
+        return eg;
+    }
+    
+    <T extends Collection<ExplicitGroup>> T updateProvider( T egs ) {
+        for ( ExplicitGroup eg : egs ) {
+            updateProvider(eg);
+        }
+        return egs;
     }
 }
 

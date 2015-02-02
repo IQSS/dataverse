@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import java.util.Set;
@@ -25,8 +26,13 @@ public interface GroupProvider<T extends Group> {
      */
     public String getGroupProviderInfo();
     
-    
-    public Set<T> groupsFor( User u );
+    /**
+     * Looks up the groups this provider has for the user, in the dvo.
+     * @param u The user
+     * @param dvo the DvObject which is the context for the groups. May be {@code null}
+     * @return The set of groups the user is member of.
+     */
+    public Set<T> groupsFor( User u, DvObject dvo );
     
     public T get( String groupAlias );
 

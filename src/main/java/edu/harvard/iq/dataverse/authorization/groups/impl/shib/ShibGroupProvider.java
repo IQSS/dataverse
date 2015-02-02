@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -32,7 +33,7 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
     }
 
     @Override
-    public Set<ShibGroup> groupsFor(User user) {
+    public Set<ShibGroup> groupsFor(User user, DvObject o) {
         Set<ShibGroup> shibGroups = new HashSet<>();
         if (user.isAuthenticated()) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;

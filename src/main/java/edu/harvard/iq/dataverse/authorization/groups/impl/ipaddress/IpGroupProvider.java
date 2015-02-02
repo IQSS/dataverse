@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
@@ -33,7 +34,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
 
     @Override
-    public Set<IpGroup> groupsFor(User u) {
+    public Set<IpGroup> groupsFor(User u, DvObject o) {
 //        Un-comment below lines if request metadata is null to get a workaround. Then open a bug and assign to @michbarsinai
         /**
          * @todo Per above, uncommenting the lines below and assigning a new

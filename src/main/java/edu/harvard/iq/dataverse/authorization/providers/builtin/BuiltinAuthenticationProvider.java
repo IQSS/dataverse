@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
@@ -73,7 +74,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     }
 
     @Override
-    public Set groupsFor(User u) {
+    public Set groupsFor(User u, DvObject o) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
