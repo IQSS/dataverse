@@ -325,34 +325,56 @@ public class AuthenticationServiceBean {
     }
 
     /**
-     * Creates an authenticated user based on the passed {@code userDisplayInfo}, and 
-     * creates a lookup entry for them based on the authP and persistent id.
+     * Creates an authenticated user based on the passed
+     * {@code userDisplayInfo}, and creates a lookup entry (within the passed
+     * authenticationProviderId) and an internal user identifier for them both
+     * based on the passed authPrvUserPersistentId.
+     *
      * @param authenticationProviderId
      * @param authPrvUserPersistentId
      * @param userDisplayInfo 
      * @return the newly created user.
      */
     public AuthenticatedUser createAuthenticatedUser(String authenticationProviderId, String authPrvUserPersistentId, RoleAssigneeDisplayInfo userDisplayInfo) {
+        UserIdentifier userIdentifier = new UserIdentifier(authPrvUserPersistentId, authPrvUserPersistentId);
+        return createAuthenticatedUserWithDecoupledIdentifiers(authenticationProviderId, userIdentifier, userDisplayInfo);
+    }
+
+    /**
+     * Creates an authenticated user based on the passed
+     * {@code userDisplayInfo}, a lookup entry for them based
+     * UserIdentifier.getLookupStringPerAuthProvider (within the supplied
+     * authentication provider), and internal user identifier (used for role
+     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifer.
+     *
+     * @param authenticationProviderId
+     * @param userIdentifier
+     * @param userDisplayInfo
+     * @return the newly created user.
+     */
+    public AuthenticatedUser createAuthenticatedUserWithDecoupledIdentifiers(String authenticationProviderId, UserIdentifier userIdentifier, RoleAssigneeDisplayInfo userDisplayInfo) {
         AuthenticatedUser auus = new AuthenticatedUser();
         auus.applyDisplayInfo(userDisplayInfo);
+        String internalUserIdentifer = userIdentifier.getInternalUserIdentifer();
         
         // we now select a username
         // TODO make a better username selection
             // Better - throw excpetion to the provider, which has a better chance of getting this right.
         // TODO should lock table authenticated users for write here
-        if ( identifierExists(authPrvUserPersistentId) ) {
+        if ( identifierExists(internalUserIdentifer) ) {
             int i=1;
-            String identifier = authPrvUserPersistentId + i;
+            String identifier = internalUserIdentifer + i;
             while ( identifierExists(identifier) ) {
                 i += 1;
             }
             auus.setUserIdentifier(identifier);
         } else {
-            auus.setUserIdentifier(authPrvUserPersistentId);
+            auus.setUserIdentifier(internalUserIdentifer);
         }
         auus = save( auus );
         // TODO should unlock table authenticated users for write here
-        AuthenticatedUserLookup auusLookup = new AuthenticatedUserLookup(authPrvUserPersistentId, authenticationProviderId, auus);
+        String lookupStringPerAuthProvider = userIdentifier.getLookupStringPerAuthProvider();
+        AuthenticatedUserLookup auusLookup = new AuthenticatedUserLookup(lookupStringPerAuthProvider, authenticationProviderId, auus);
         em.persist( auusLookup );
         auus.setAuthenticatedUserLookup(auusLookup);
         return auus;
