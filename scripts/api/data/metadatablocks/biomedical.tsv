@@ -4,7 +4,7 @@
 	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyFactorType	Factor Type	Factors used in the Dataset. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayOrganism	Organism	The taxonomic name of the organism used in the Dataset or from which the  starting biological material derives.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayOtherOrganism	Other Organisms	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayOtherOrganism	Other Organism	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayOtherMeasurmentType	Other Measurement Type	If Other was selected in Measurement Type, list any other measurement types that were used. Terms from NCBO Bioportal are recommended.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayTechnologyType	Technology Type	A term to identify the technology used to perform the measurement (e.g. DNA microarray; mass spectrometry).		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
