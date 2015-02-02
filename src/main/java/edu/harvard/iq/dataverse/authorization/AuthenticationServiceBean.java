@@ -358,7 +358,7 @@ public class AuthenticationServiceBean {
         return auus;
     }
     
-    private boolean identifierExists( String idtf ) {
+    public boolean identifierExists( String idtf ) {
         return em.createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
                 .setParameter("identifier", idtf)
                 .getSingleResult().intValue() > 0;
