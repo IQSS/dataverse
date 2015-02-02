@@ -1259,24 +1259,14 @@ public class ImportDDI implements ImportUtil {
         // (in particular, there may be an extra character sequence embedded 
         // between the authority and the id - ?? ("fk2" - ?)
         // -- L.A. - v3.6. 
-        
-        int index1 = _id.indexOf(':');
-        // Note the "lastIndexOf()" below - which is different to what we are 
-        // doing for handles (above); the idea is that DOIs may have "shoulders" - 
-        // sub-namespaces - but we are going to be treating all these combined
-        // levels of namespaces as the single "Authority". 
-        // TODO: still needs to be confirmed; -- L.A., v3.6 (still in dev.)
+       
         int index2 = _id.lastIndexOf('/');
-        if (index1==-1) {
-            throw new ImportException("Error parsing (DOI) IdNo: "+_id+". ':' not found in string");
-        } else {
-            datasetDTO.setProtocol(_id.substring(0,index1));
-        }
+       
         if (index2 == -1) {
             throw new ImportException("Error parsing (DOI) IdNo: "+_id+". '/' not found in string");
 
         } else {
-            datasetDTO.setAuthority(_id.substring(index1+1, index2));
+            datasetDTO.setAuthority(_id.substring(0, index2));
         }
         datasetDTO.setProtocol("doi");
         datasetDTO.setDoiSeparator("/");
