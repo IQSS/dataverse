@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -80,4 +81,6 @@ public interface CommandContext {
     public SettingsServiceBean settings();       
     
     public ExplicitGroupServiceBean explicitGroups();
+    
+    public UserNotificationServiceBean notifications();
 }
