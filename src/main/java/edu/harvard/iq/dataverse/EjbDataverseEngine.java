@@ -99,6 +99,9 @@ public class EjbDataverseEngine {
     @EJB
     RoleAssigneeServiceBean roleAssignees;
     
+    @EJB
+    UserNotificationServiceBean userNotificationService;    
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -269,6 +272,11 @@ public class EjbDataverseEngine {
                 public RoleAssigneeServiceBean roleAssignees() {
                     return roleAssignees;
                 }
+                
+                @Override
+                public UserNotificationServiceBean notifications() {
+                    return userNotificationService;
+                }                
             };
         }
 
