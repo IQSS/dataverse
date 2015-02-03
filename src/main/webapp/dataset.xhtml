@@ -868,7 +868,7 @@
                                                                styleClass="btn btn-default"
                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                                update="@form,:messagePanel"
-                                                               oncomplete="downloadPopup.show();">
+                                                               oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download}
                                                 </p:commandLink>
                                             </ui:fragment>
@@ -895,7 +895,7 @@
                                                                 <p:commandLink id="downloadPopupButtonTab"
                                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                                                update="@form,:messagePanel"
-                                                                               oncomplete="downloadPopup.show();">
+                                                                               oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                                     #{bundle['file.downloadBtn.format.tab']}
                                                                 </p:commandLink>
                                                             </ui:fragment>
@@ -2068,53 +2068,100 @@
                         <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                     </p:dialog>
 
-                    <p:dialog  header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
-                        #{bundle['file.downloadDialog.tip']}
-                        <ui:fragment rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
-                            <div  style="padding-top: 7px;">
-                                <h:outputText value="#{DatasetPage.workingVersion.termsOfUse}" />
+                    <p:dialog id="downloadFileDialog" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
+                        <p class="help-block">
+                            #{bundle['file.downloadDialog.tip']}
+                        </p>
+                        <div class="form-horizontal">
+                            <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
+                                <label class="col-sm-3 control-label" for="guestbook_tou">
+                                    Terms of Use
+                                </label>
+                                <div class="col-sm-9">
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            #{DatasetPage.workingVersion.termsOfUse}
+                                        </div>
+                                    </div>
+                                    <div  style="padding-top: 7px;">
+                                        <p:selectBooleanCheckbox  id="acceptTOU" itemLabel="#{bundle['file.downloadDialog.termsTip']}" value="#{DatasetPage.acceptedTerms}"/>
+                                    </div>
+                                </div>
                             </div>
-                            <div  style="padding-top: 7px;">
-                                <p:selectBooleanCheckbox  id="acceptTOU" itemLabel="#{bundle['file.downloadDialog.termsTip']}" value="#{DatasetPage.acceptedTerms}"/>
+                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
+                                <label class="col-sm-3 control-label" for="guestbook_toa">
+                                    Terms of Access
+                                </label>
+                                <div class="col-sm-9">
+                                    <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; max-width:400px; max-height: 200px; overflow-y:scroll;">
+                                        <div>
+                                            #{DatasetPage.workingVersion.termsOfAccess}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
-                            <div  style="padding-top: 7px;">
-                                <h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}" />
-                            </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
-                            <div  style="padding-top: 7px;">
-                                #{bundle['file.downloadDialog.name']} <h:inputText value="#{DatasetPage.guestbookResponse.name}"/>
-                            </div>
-                            <div  style="padding-top: 7px;">
-                                #{bundle.name} <h:inputText value="#{DatasetPage.guestbookResponse.email}"/>
-                            </div>
-                            <div  style="padding-top: 7px;">
-                                #{bundle.institution} <h:inputText value="#{DatasetPage.guestbookResponse.institution}"/>
-                            </div>
-                            <div  style="padding-top: 7px;">
-                                #{bundle.position} <h:inputText value="#{DatasetPage.guestbookResponse.position}"/>
-                            </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{(DatasetPage.dataset.guestbook != null) and (!empty DatasetPage.dataset.guestbook.customQuestions)}">
-                            <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
-                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='text'}">
-                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
-                                    <h:inputText value="#{customQuestionResponse.response}"/>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
-                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
-                                    <p:selectOneMenu value="#{customQuestionResponse.response}" >
-                                        <f:selectItem itemLabel="Select" itemValue="" />
-                                        <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
-                                    </p:selectOneMenu>
-                                </ui:fragment>
-                            </ui:repeat>
-                        </ui:fragment>
-                        <p:commandButton value="#{bundle.acceptTerms}" onclick="downloadPopup.hide()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse()}" >
-                        </p:commandButton>
-                        <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
+                            <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_name">
+                                        #{bundle.name}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_email">
+                                        #{bundle.email}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_institution">
+                                        #{bundle.institution}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_position">
+                                        #{bundle.position}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
+                                        Additional Questions
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
+                                            <div>
+                                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='text'}">
+                                                    <p><h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/></p>
+                                                    <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"/>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
+                                                    <p><h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/></p>
+                                                    <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}" >
+                                                        <f:selectItem itemLabel="Select" itemValue="" />
+                                                        <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
+                                                    </p:selectOneMenu>
+                                                </ui:fragment>
+                                            </div>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                        </div>
+                        <div>
+                            <p:commandButton value="#{bundle.acceptTerms}" onclick="downloadPopup.hide()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse()}" >
+                            </p:commandButton>
+                            <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
+                        </div>
                     </p:dialog>
 
                     <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
