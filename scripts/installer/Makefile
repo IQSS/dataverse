@@ -49,7 +49,7 @@ ${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/setup-builtin-roles.sh ../api/data ../api/data
 	echo copying api scripts
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp -R ../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api-setup-builtin-roles.sh ../api/data ${INSTALLER_ZIP_DIR}
+	/bin/cp -R ../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/setup-builtin-roles.sh ../api/data ${INSTALLER_ZIP_DIR}
 
 ${DB_SCRIPT}:	../database/reference_data.sql
 	echo copying reference data sql script
