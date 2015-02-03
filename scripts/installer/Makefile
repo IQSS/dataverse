@@ -61,7 +61,7 @@ ${JHOVE_CONFIG}:	../../conf/jhove/jhove.conf
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhove.conf ${INSTALLER_ZIP_DIR}
 
-${JHOVE_CONFIG}:	../../conf/solr/4.6.0/schema.xml
+${SOLR_SCHEMA}:	../../conf/solr/4.6.0/schema.xml
 	echo copying Solr schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/solr/4.6.0/schema.xml ${INSTALLER_ZIP_DIR}
