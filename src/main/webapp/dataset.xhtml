@@ -2072,39 +2072,31 @@
                         <p class="help-block">
                             #{bundle['file.downloadDialog.tip']}
                         </p>
-                        <div class="form-horizontal">
+                        <div class="form">
                             <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
                                 <label class="col-sm-3 control-label" for="guestbook_tou">
-                                    Terms of Use
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                 </label>
                                 <div class="col-sm-9">
-                                    <div class="panel panel-default">
-                                        <div class="panel-body">
-                                            #{DatasetPage.workingVersion.termsOfUse}
-                                        </div>
-                                    </div>
-                                    <div  style="padding-top: 7px;">
-                                        <p:selectBooleanCheckbox  id="acceptTOU" itemLabel="#{bundle['file.downloadDialog.termsTip']}" value="#{DatasetPage.acceptedTerms}"/>
+                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
+                                    <div style="padding-top: 7px;">
+                                        <p:selectBooleanCheckbox id="acceptTOU" itemLabel="#{bundle['file.downloadDialog.termsTip']}" value="#{DatasetPage.acceptedTerms}"/>
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
                                 <label class="col-sm-3 control-label" for="guestbook_toa">
-                                    Terms of Access
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                 </label>
                                 <div class="col-sm-9">
-                                    <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; max-width:400px; max-height: 200px; overflow-y:scroll;">
-                                        <div>
-                                            #{DatasetPage.workingVersion.termsOfAccess}
-                                        </div>
-                                    </div>
+                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
                                 </div>
                             </div>
                             <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_name">
                                         #{bundle.name}
-                                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
                                     </label>
                                     <div class="col-sm-9">
                                         <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"/>
@@ -2113,7 +2105,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_email">
                                         #{bundle.email}
-                                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />                                    
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />                                    
                                     </label>
                                     <div class="col-sm-9">
                                         <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"/>
@@ -2122,7 +2114,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_institution">
                                         #{bundle.institution}
-                                       <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />                                                                             
+                                       <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />                                                                             
                                     </label>
                                     <div class="col-sm-9">
                                         <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"/>
@@ -2131,7 +2123,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_position">
                                         #{bundle.position}
-                                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />                                         
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />                                         
                                     </label>
                                     <div class="col-sm-9">
                                         <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"/>
@@ -2143,19 +2135,17 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
-                                            <div>
-                                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='text'}">
-                                                    <p><h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/> 
-                                                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{customQuestionResponse.customQuestion.required}" />  </p>
-                                                    <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"/>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
-                                                    <p><h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/></p>
-                                                    <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}" >
-                                                        <f:selectItem itemLabel="Select" itemValue="" />
-                                                        <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
-                                                    </p:selectOneMenu>
-                                                </ui:fragment>
+                                            <div class="form-group">
+                                                <label>
+                                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
+                                                </label>
+                                                <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
+                                                <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                                  rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
+                                                    <f:selectItem itemLabel="Select" itemValue="" />
+                                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
+                                                </p:selectOneMenu>
                                             </div>
                                         </ui:repeat>
                                     </div>
