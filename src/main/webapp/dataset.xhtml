@@ -2138,6 +2138,7 @@
                                             <div class="form-group">
                                                 <label>
                                                     <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
+                                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
                                                 </label>
                                                 <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"
                                                               rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
