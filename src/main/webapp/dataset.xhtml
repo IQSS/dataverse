@@ -374,11 +374,11 @@
                                             <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"></span>
                                             </ui:fragment>
-                                            <span id="whycitelink" class="bg-warning small"><a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></span>
+                                            <div id="whycite" class="text-muted small">#{bundle['dataset.cite.whyCite.tip']} <a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></div>
                                         </div>
                                         <div id="citation-download" class="col-md-3 text-right">
                                             <div class="dropdown">
-                                                <button type="button" id="downloadCitation" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
