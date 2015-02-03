@@ -720,7 +720,7 @@ public class DatasetPage implements java.io.Serializable {
 
         if (!valid) {
             logger.info("Guestbook response isn't valid.");
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Please complete required fields for download and re-try."));
             return "";
         }
         
@@ -868,8 +868,8 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
             return "";
         }
-        List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
-        List <AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(UpdateDatasetCommand.class, dataset);
+        List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
+        List <AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
         for (AuthenticatedUser au :authUsers ){
             editUsers.remove(au);           
         }
@@ -894,7 +894,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
             return "";
         }
-        List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
+        List <AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
         for (AuthenticatedUser au :authUsers ){
              userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, dataset.getLatestVersion().getId());
         }
@@ -980,8 +980,8 @@ public class DatasetPage implements java.io.Serializable {
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 if (workingVersion.isInReview()) {
-                    List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(PublishDatasetCommand.class, dataset);
-                    List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(UpdateDatasetCommand.class, dataset);
+                    List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
+                    List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
                     for (AuthenticatedUser au : authUsers) {
                         editUsers.remove(au);
                     }
