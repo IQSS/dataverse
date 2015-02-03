@@ -209,7 +209,7 @@ public class JsonParser {
         }   
         ret.setDatasetFieldType(type);
         
-        try {
+        
             if ( type.isCompound() ) {
                 List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
                 for ( DatasetFieldCompoundValue dsfcv : vals ) {
@@ -232,9 +232,7 @@ public class JsonParser {
                 }
                 ret.setDatasetFieldValues(values);
             }
-        } catch ( Exception e ) {
-            throw new JsonParseException("Exception while parsing field of type: " + ret.getDatasetFieldType().getName(), e );
-        }
+       
         return ret;
     }
     
