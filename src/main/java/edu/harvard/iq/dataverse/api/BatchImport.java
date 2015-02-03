@@ -129,15 +129,14 @@ public class BatchImport extends AbstractApiBean  {
     @GET 
     @Path("import")
     public Response getImport(@QueryParam("path") String fileDir, @QueryParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-        logger.info("BEGIN IMPORT");
-        Response r= processFilePath(fileDir, parentIdtf, apiKey, ImportType.NEW);
-        logger.info("END IMPORT");
+         Response r= processFilePath(fileDir, parentIdtf, apiKey, ImportType.NEW);
         return r;
     }
     
     
     private Response processFilePath(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
-        JsonArrayBuilder status = Json.createArrayBuilder();
+   logger.info("BEGIN IMPORT");
+            JsonArrayBuilder status = Json.createArrayBuilder();
         
         User u = findUserByApiToken(apiKey);
         if (u == null) {
@@ -170,6 +169,9 @@ public class BatchImport extends AbstractApiBean  {
             e.printStackTrace();
             return this.errorResponse(Response.Status.BAD_REQUEST, "Import Exception!!");
         }
+        System.out.println("Batch Import results: "+ status);
+        logger.info("Batch Import results :" +status.build());
+        logger.info("END IMPORT");
         return this.okResponse(status); 
     }
    public JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType) throws ImportException {
