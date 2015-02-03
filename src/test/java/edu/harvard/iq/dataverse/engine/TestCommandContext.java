@@ -134,5 +134,10 @@ public class TestCommandContext implements CommandContext {
     public RoleAssigneeServiceBean roleAssignees() {
         return null;
     }
+    
+    @Override
+    public UserNotificationServiceBean notifications() {
+        return null;
+    }     
 	
 }
