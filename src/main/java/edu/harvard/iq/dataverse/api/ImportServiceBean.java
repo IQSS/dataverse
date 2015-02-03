@@ -124,6 +124,7 @@ public class ImportServiceBean {
            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
         } catch (IOException e) {
+             logger.info("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage());
             throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
         } catch (ImportException ex) {
             logger.info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
