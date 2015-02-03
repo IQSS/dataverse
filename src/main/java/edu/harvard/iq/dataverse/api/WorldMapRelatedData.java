@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
@@ -108,6 +109,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @EJB
     PermissionServiceBean permissionService;
     
+    @EJB
+    SystemConfig systemConfig;
+     
     @Inject
     DataverseSession session;
     
@@ -321,9 +325,17 @@ public class WorldMapRelatedData extends AbstractApiBean {
     }
     
     
+    /**
+     * Retrieve FileMetadata for Use by WorldMap.
+     *  This includes information about the DataFile, Dataset, DatasetVersion, and Dataverse
+     * 
+     * @param jsonTokenData
+     * @param request
+     * @return 
+     */
     @POST
     @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT)// + "{worldmap_token}")
-    public Response getWorldMapDatafileInfo(String jsonTokenData, @Context HttpServletRequest request){//, @PathParam("worldmap_token") String worldmapTokenParam) {
+    public Response getWorldMapDatafileInfo(String jsonTokenData, @Context HttpServletRequest request){//, @PathParam("worldmap_token") String worldmapTokenParam) {   
         if (true){
            //return okResponse("Currently deactivated");
 
@@ -431,7 +443,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //------------------------------------
         // Dataverse
         //------------------------------------
-        jsonData.add("dataverse_installation_name", "Harvard Dataverse"); // todo / fix
+        //jsonData.add("dataverse_installation_name", "Harvard Dataverse"); // todo / fix
+        jsonData.add("dataverse_installation_name",  systemConfig.getDataverseSiteUrl()); // is this enough to distinguish a dataverse installation?
+
         jsonData.add("dataverse_id", dverse.getId());      
         jsonData.add("dataverse_name", dverse.getName());
         jsonData.add("dataverse_description", dverse.getDescription());
@@ -592,10 +606,11 @@ public class WorldMapRelatedData extends AbstractApiBean {
         userNotificationService.sendNotification(dvUser, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
 
         try {
-            // attempt to retrieve icon image
+            // 1st attempt to retrieve icon image
             this.mapLayerMetadataService.retrieveMapImageForIcon(savedMapLayerMetadata);
         } catch (IOException ex) {
             Logger.getLogger(WorldMapRelatedData.class.getName()).log(Level.SEVERE, null, ex);
+
         }
         
         return okResponse("map layer object saved!");
