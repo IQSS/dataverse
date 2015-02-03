@@ -135,6 +135,14 @@
                         };
                         Dropbox.choose(options);
                     }
+                    function clickRefreshButton() {
+                        $('button[id$="refreshButton"]').trigger('click');
+                    }
+                    
+                    function refreshFilesTable() {
+                        // setTimeout(function(){clickRefreshButton()}, 3000);
+                        $('button[id$="refreshButton"]').trigger('click');
+                    }
                 </script>
 
                 <f:metadata>
@@ -512,7 +520,6 @@
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
                         <div id="contentTabs">
                             <ui:fragment> <!-- rendered="#{empty DatasetPage.editMode}" -->
-                                <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/>
                                 <script type="text/javascript">
                                     function updateFilesTable(facesmessage) {
                                         $('button[id$="refreshButton"]').trigger('click');
@@ -855,13 +862,13 @@
                                             </ui:fragment>
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(empty fileMetadata.dataFile.id) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                                 </a>
                                             </ui:fragment>
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(empty fileMetadata.dataFile.id) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <p:commandLink id="downloadPopupButton"
                                                                styleClass="btn btn-default"
                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
@@ -944,7 +951,7 @@
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputText id="txtInprogess" value="#{bundle['file.ingestInproGress']}" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and !(empty fileMetadata.dataFile.id) and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
                                                            actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}" 
                                                            update="filesTable"
                                                            disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
@@ -1809,7 +1816,9 @@
                     </ui:fragment>
 
                     <!-- Create/Save Dataset Button Panel -->
+                    <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh()}" update="@all" style="display:none"/>
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
+                        
                         <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();" >
                         </p:commandButton>
                         <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
@@ -1820,7 +1829,7 @@
                     <p:commandButton value="Direct" id="datasetSave"
                                      style="display:none"
                                      update=":datasetForm"
-                                     oncomplete="javascript:bind_bsui_components();"
+                                     oncomplete="javascript:bind_bsui_components();refreshFilesTable();"
                                      action="#{DatasetPage.save}">
                     </p:commandButton>
 
