@@ -526,7 +526,7 @@
                                                         <h:outputText value="#{dataset.releasedVersion.fileMetadatas.size()} #{dataset.releasedVersion.fileMetadatas.size() == 0 or dataset.releasedVersion.fileMetadatas.size() > 1 ? 'Files' : 'File'}" />
                                                     </p:column>
                                                     <f:facet name="footer">  
-                                                        <h:outputLink value="#{dataversePage}?id=#{result.entityId}" target="#{showFacets == true ? '_self' : '_blank'}" style="font-weight:normal; font-size: smaller;">
+                                                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" style="font-weight:normal; font-size: smaller;">
                                                             <h:outputText value="View All Datasets and Dataverses &gt;"/>
                                                         </h:outputLink>
                                                     </f:facet>
@@ -557,7 +557,7 @@
                                     <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
 
                                     <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
-                                    <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                    <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                         <h:outputText value="#{result.parent.get('name')} Dataverse"/>
                                     </h:outputLink>
 
