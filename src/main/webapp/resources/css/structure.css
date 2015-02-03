@@ -42,7 +42,8 @@ body .ui-widget {font-size: inherit;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
-button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
+.btn span.glyphicon {margin-right:.3em;}
+.btn span.glyphicon.no-text {margin-right:0;}
 
 .messagePanel {padding-top:1em;}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
