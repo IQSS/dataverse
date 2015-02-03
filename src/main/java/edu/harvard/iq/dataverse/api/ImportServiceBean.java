@@ -120,14 +120,16 @@ public class ImportServiceBean {
         try {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
             JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse, importType);
+            status.add("file", file.getName());
            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
         } catch (IOException e) {
-            throw new ImportException("Error reading file " + file.getAbsolutePath(), e);
+            throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
         } catch (ImportException ex) {
             logger.info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
+            logger.info("Unexpected Error processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
             String msg = "Unexpected Error in handleFile(), file:" +file.getParentFile().getName() + "/" + file.getName();
             e.printStackTrace();
             logger.severe(msg);
