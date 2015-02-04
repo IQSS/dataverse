@@ -40,10 +40,10 @@ import org.hibernate.validator.constraints.NotBlank;
 public class DataFile extends DvObject {
     private static final long serialVersionUID = 1L;
     
-    private static final char INGEST_STATUS_NONE = 65;
-    private static final char INGEST_STATUS_SCHEDULED = 66;
-    private static final char INGEST_STATUS_INPROGRESS = 67;
-    private static final char INGEST_STATUS_ERROR = 68; 
+    public static final char INGEST_STATUS_NONE = 65;
+    public static final char INGEST_STATUS_SCHEDULED = 66;
+    public static final char INGEST_STATUS_INPROGRESS = 67;
+    public static final char INGEST_STATUS_ERROR = 68; 
     
     private String name;
     

@@ -94,6 +94,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -169,7 +171,7 @@ public class IngestServiceBean {
     private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
-      
+    
     @Deprecated
     // All the parts of the app should use the createDataFiles() method instead, 
     // that returns a list of DataFiles. 
@@ -948,17 +950,18 @@ public class IngestServiceBean {
     // -- L.A. 4.0 post-beta. 
     public void startIngestJobs(Dataset dataset, AuthenticatedUser user) {
         int count = 0;
+        List<DataFile> scheduledFiles = new ArrayList<>();
+        
         IngestMessage ingestMessage = null;
+        
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
                 dataFile = fileService.save(dataFile);
 
-                if (ingestMessage == null) {
-                    ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
-                }
-                ingestMessage.addFileId(dataFile.getId());
-                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
+                scheduledFiles.add(dataFile);
+                
+                logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
                 //asyncIngestAsTabular(dataFile);
                 count++;
             }
@@ -966,12 +969,33 @@ public class IngestServiceBean {
 
         if (count > 0) {
             String info = "Attempting to ingest " + count + " tabular data file(s).";
+            logger.info(info);
             if (user != null) {
                 datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
             } else {
                 datasetService.addDatasetLock(dataset.getId(), null, info);
             }
 
+            DataFile[] scheduledFilesArray = (DataFile[])scheduledFiles.toArray(new DataFile[count]);
+            scheduledFiles = null; 
+            
+            // Sort ingest jobs by file size: 
+            Arrays.sort(scheduledFilesArray, new Comparator<DataFile>() {
+                @Override
+                public int compare(DataFile d1, DataFile d2) {
+                    long a = d1.getFilesize();
+                    long b = d2.getFilesize();
+                    return Long.valueOf(a).compareTo(b);
+                }
+            });
+            
+            ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
+            
+            for (int i = 0; i < count; i++) {
+                ingestMessage.addFileId(scheduledFilesArray[i].getId());
+                logger.fine("Sorted order: "+i+" (size="+scheduledFilesArray[i].getFilesize()+")");
+            }
+            
             QueueConnection conn = null;
             QueueSession session = null;
             QueueSender sender = null;

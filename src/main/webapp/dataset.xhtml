@@ -135,6 +135,14 @@
                         };
                         Dropbox.choose(options);
                     }
+                    function clickRefreshButton() {
+                        $('button[id$="refreshButton"]').trigger('click');
+                    }
+                    
+                    function refreshFilesTable() {
+                        // setTimeout(function(){clickRefreshButton()}, 3000);
+                        $('button[id$="refreshButton"]').trigger('click');
+                    }
                 </script>
 
                 <f:metadata>
@@ -160,7 +168,7 @@
 
                                     <div class="btn-group pull-right">
                                         <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                             <li>
@@ -235,7 +243,7 @@
                                                          and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
 
                                     <button type="button" class="btn btn-default pull-right" onclick="inreview.show()">
-                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.submitBtn']}
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.submitBtn']}
                                     </button>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
@@ -246,7 +254,7 @@
                                                          and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
 
                                     <button type="button" class="btn btn-default pull-right" onclick="inreview.show()" disabled="true" >
-                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.disabledubmittedBtn']}
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.disabledubmittedBtn']}
                                     </button>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
@@ -257,7 +265,7 @@
                                                              and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                              and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                         <button type="button" class="btn btn-default pull-right" onclick="registerDataset()">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.registerBtn']}
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.registerBtn']}
                                         </button>
                                         <p:commandButton value="Direct" id="registerDataset"
                                                          style="display:none"
@@ -267,24 +275,24 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview and !DatasetPage.locked}">
                                         <button type="button" class="btn btn-default pull-right" onclick="sendBackToContributor.show()">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.rejectBtn']}
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.rejectBtn']}
                                         </button>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
                                                              and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                              and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                         <button type="button" class="btn btn-default pull-right" onclick="confirmation.show()">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.publishBtn']}
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
                                         </button>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                         <button type="button" class="btn btn-default  pull-right" onclick="releaseDraft.show()">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.publishBtn']}
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
                                         </button>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                         <button type="button" class="btn btn-default pull-right" onclick="mayNotRelease.show()">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{bundle['dataset.publishBtn']}
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
                                         </button>
                                     </ui:fragment>
 
@@ -339,14 +347,14 @@
                                 </ui:fragment>
                                 <div class="btn-group pull-right" jsf:id="datasetButtonBar" jsf:rendered="#{empty DatasetPage.editMode}" role="group" style="margin-right:.3em;">
                                     <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
-                                        <span class="glyphicon glyphicon-envelope"/>
+                                        <span class="glyphicon glyphicon-envelope no-text"/>
                                     </button>
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated}" 
                                                    title="Link Dataset to Your Dataverse"
                                                    action="#{DatasetPage.updateLinkableDataverses()}"                                                          
                                                    oncomplete="PF('linkDatasetForm').show()"
                                                    update="linkDatasetForm">
-                                        <span class="glyphicon glyphicon-link"/>
+                                        <span class="glyphicon glyphicon-link no-text"/>
                                     </p:commandLink>
                                 </div>
                                 <p:confirmDialog message="#{bundle['dataset.email.tip']}" header="#{bundle['dataset.email.datasetContactBtn']}" widgetVar="contact_confirmation">
@@ -366,33 +374,31 @@
                                         <div id="citation" class="col-md-9">
                                             <span>#{DatasetPage.displayCitation}</span>
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"></span>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"></span>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"></span>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                                             </ui:fragment>
-                                            <span id="whycitelink" class="bg-warning small"><a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></span>
+                                            <div id="whycite" class="text-muted small">#{bundle['dataset.cite.whyCite.tip']} <a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></div>
                                         </div>
                                         <div id="citation-download" class="col-md-3 text-right">
                                             <div class="dropdown">
-                                                <button type="button" id="downloadCitation" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
+                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                                                 </button>
-                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                <ul class="dropdown-menu pull-right text-left" role="menu">
                                                     <li>
-                                                        <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadDatasetCitationXML()}" >
-
-                                                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
-                                                        </h:commandLink>
+                                                        <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.downloadDatasetCitationXML()}" >
+                                                            #{bundle['dataset.cite.downloadBtn.xml']}
+                                                        </a>
                                                     </li>
                                                     <li>
-                                                        <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
-
-                                                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
-                                                        </h:commandLink>
+                                                        <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
+                                                            #{bundle['dataset.cite.downloadBtn.ris']}
+                                                        </a>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -514,7 +520,6 @@
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
                         <div id="contentTabs">
                             <ui:fragment> <!-- rendered="#{empty DatasetPage.editMode}" -->
-                                <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/>
                                 <script type="text/javascript">
                                     function updateFilesTable(facesmessage) {
                                         $('button[id$="refreshButton"]').trigger('click');
@@ -581,7 +586,7 @@
                                         <div class="btn-group" style="margin-right:1em;"
                                              jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
                                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
+                                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                                             </button>
                                             <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                 <li  class="disabled">
@@ -610,7 +615,7 @@
                                                                    and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}" 
                                                        style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                            <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{bundle['file.uploadOrEdit']}
+                                            <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
                                         </p:commandLink>
                                     </div>
 
@@ -618,7 +623,7 @@
                                          jsf:rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                         <div class="btn-group" style="margin-right:1em;">
                                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-lock" style="margin-right:.3em;"/> #{bundle['file.restrict']} <span class="caret"></span>
+                                                <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
                                             </button>
                                             <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                 <li>
@@ -634,7 +639,7 @@
                                             </ul>
                                         </div>
                                         <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
-                                            <span class="glyphicon glyphicon-remove" style="margin-right:.3em;"/> #{bundle['file.delete']}
+                                            <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
                                         </p:commandLink>
                                     </div>
 
@@ -648,7 +653,7 @@
                                                   style="width:2%;text-align:center"/>
                                         <p:column style="width:2%;text-align:center"> 
                                             <ui:fragment rendered="#{fileMetadata.restricted}">
-                                                <span class="glyphicon glyphicon-lock"></span>
+                                                <span class="glyphicon glyphicon-lock"/>
                                             </ui:fragment>
                                             <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}" rendered="#{rowNum eq 0}"/>                                            
                                             <p:selectBooleanCheckbox styleClass="metadata-blocks-default"  rendered="#{empty DatasetPage.editMode}" 
@@ -790,7 +795,7 @@
                                                                actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
                                                                update=":datasetForm:fileAdvancedOptions"
                                                                oncomplete="fileAdvancedOptions.show()">
-                                                    <span class="glyphicon glyphicon-cog" style="margin-right:.3em;"/> #{bundle['file.advancedOptions']}
+                                                    <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedOptions']}
                                                 </p:commandLink>
                                             </ui:fragment>
                                         </p:column>
@@ -799,14 +804,14 @@
                                             <!-- TwoRavens explore option -->
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}" target="_blank">
-                                                    <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle.explore}</span>
+                                                    <span class="glyphicon glyphicon-stats"/> <span class="ladda-label">#{bundle.explore}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
 
                                             <!-- WorldMap explore option -->
                                             <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
                                                 <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
-                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
+                                                    <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
 
@@ -817,7 +822,7 @@
                                                     <div class="dropdown">
                                                         <!-- explore button that toggles dropdown -->
                                                         <button type="button" id="exploreDropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                            <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/>#{bundle.explore}<span class="caret"></span>
+                                                            <span class="glyphicon glyphicon-stats"/> #{bundle.explore}<span class="caret"></span>
                                                         </button>
                                                         <!-- dropdown options -->
                                                         <ul class="dropdown-menu pull-left" role="menu" style="text-align:left;">
@@ -841,7 +846,7 @@
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
                                                 <a href="#" class="imageThumbPreview h2" style="margin:0 .5em 0 0;vertical-align:middle;" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
-                                                    <span class="glyphicon glyphicon-warning-sign text-danger" style="top:5px;"></span></a>
+                                                    <span class="glyphicon glyphicon-warning-sign text-danger" style="top:5px;"/></a>
                                             </ui:fragment>
 
                                             <!--<ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
@@ -850,32 +855,32 @@
 
                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->
                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/>
+                                                    <span class="glyphicon glyphicon-map-marker"/>
                                                     <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="#{bundle['file.reMapData']}" />
                                                     <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="#{bundle['file.mapData']}" />
                                                 </a>
                                             </ui:fragment>
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(empty fileMetadata.dataFile.id) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
-                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download}
+                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                                 </a>
                                             </ui:fragment>
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(empty fileMetadata.dataFile.id) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <p:commandLink id="downloadPopupButton"
                                                                styleClass="btn btn-default"
                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                                update="@form,:messagePanel"
                                                                oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download}
+                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                                 </p:commandLink>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                        <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{bundle.download} <span class="caret"></span>
+                                                        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                                                     </button>
                                                     <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                         <li>
@@ -946,11 +951,11 @@
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputText id="txtInprogess" value="#{bundle['file.ingestInproGress']}" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and !(empty fileMetadata.dataFile.id) and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
                                                            actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}" 
                                                            update="filesTable"
                                                            disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+                                                <span class="glyphicon glyphicon-globe"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
                                             </p:commandLink>
                                         </p:column>
                                     </p:dataTable>
@@ -965,7 +970,7 @@
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
+                                                <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
@@ -982,7 +987,7 @@
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon glyphicon-briefcase" style="margin-right:.3em;"/> #{bundle['file.dataFilesTab.terms.editLicenseBtn']}
+                                                <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editLicenseBtn']}
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
@@ -1664,10 +1669,10 @@
                         <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> #{bundle['file.deaccessionDialog.tip']}</p>
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
-                                <label for="deaccessionOptions">Which version(s) do you want to deaccession? <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span></label>
+                                <label for="deaccessionOptions">Which version(s) do you want to deaccession? <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                                 <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                              rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
                                     <p:column selectionMode="multiple" style="width:2%;text-align:center;"/>
@@ -1678,7 +1683,7 @@
                             </div>
                         </ui:fragment>
                         <div class="form-group">
-                            <label for="deaccessionOptions"> #{bundle['file.deaccessionDialog.reason.questions']}<span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span></label>
+                            <label for="deaccessionOptions"> #{bundle['file.deaccessionDialog.reason.questions']}<span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                             <h:selectOneMenu id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}">
                                 <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.header']}" itemValue="0" />
                                 <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.identifiable']}" itemValue="1" />
@@ -1811,7 +1816,9 @@
                     </ui:fragment>
 
                     <!-- Create/Save Dataset Button Panel -->
+                    <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh()}" update="@all" style="display:none"/>
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
+                        
                         <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();" >
                         </p:commandButton>
                         <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
@@ -1822,7 +1829,7 @@
                     <p:commandButton value="Direct" id="datasetSave"
                                      style="display:none"
                                      update=":datasetForm"
-                                     oncomplete="javascript:bind_bsui_components();"
+                                     oncomplete="javascript:bind_bsui_components();refreshFilesTable();"
                                      action="#{DatasetPage.save}">
                     </p:commandButton>
 
@@ -1839,7 +1846,7 @@
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
-                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Select one or more tags to describe the type of data file this file is.</p>
+                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"/> Select one or more tags to describe the type of data file this file is.</p>
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:selectCheckboxMenu id="tabularDataTags" value="#{DatasetPage.selectedTags}" label="#{bundle['file.addTags']}"
                                                                   filter="false" panelStyle="width:300px">
@@ -2032,7 +2039,7 @@
                                         </a>
                                     </label>
                                     <div class="col-sm-8">
-                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Select if you would like this image to be used as the image that is displayed in the search results card for this dataset.</p>
+                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"/> Select if you would like this image to be used as the image that is displayed in the search results card for this dataset.</p>
                                         <p:panelGrid columns="2" styleClass="noBorders">
                                             <p:column>
                                                 <p:selectBooleanCheckbox  id="datasetThumbnailImage" itemLabel="#{bundle['file.useThisIamge']}" value="#{DatasetPage.useAsDatasetThumbnail}"/>
@@ -2138,6 +2145,7 @@
                                             <div class="form-group">
                                                 <label>
                                                     <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
+                                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
                                                 </label>
                                                 <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"
                                                               rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
@@ -2169,7 +2177,7 @@
                     </p:dialog>
 
                     <p:dialog id="fileCategoriesPopup" style="max-width:80%;" header="#{bundle['file.editCategoriesDialog.header']}" widgetVar="fileCategoriesPopup" modal="true">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"></span> #{bundle['file.editCategoriesDialog.tip']}</p>
+                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editCategoriesDialog.tip']}</p>
                         <style type="text/css">
                             .form-group table.noBorders {width:100%;}
                             .form-group table.noBorders td {width:50%;}

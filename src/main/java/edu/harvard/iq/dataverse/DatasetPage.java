@@ -1039,7 +1039,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         displayCitation = dataset.getCitation(false, workingVersion);
     }
-
+    
     public String deleteDataset() {
 
         Command cmd;

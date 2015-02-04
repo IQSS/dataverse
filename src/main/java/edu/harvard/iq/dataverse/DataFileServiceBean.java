@@ -64,6 +64,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         return query.getResultList();
     }  
 
+    public List<DataFile> findIngestsInProgress() {
+        Query query = em.createQuery("select object(o) from DataFile as o where o.dataset.ingestStatus =:ingestStatus order by o.id");
+        query.setParameter("ingestStatus", DataFile.INGEST_STATUS_INPROGRESS);
+        return query.getResultList();
+    }
+    
     public DataTable findDataTableByFileId(Long fileId) {
         Query query = em.createQuery("select object(o) from DataTable as o where o.dataFile.id =:fileId order by o.id");
         query.setParameter("fileId", fileId);
