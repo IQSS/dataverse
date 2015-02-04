@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
@@ -90,7 +91,7 @@ public class DatasetFieldServiceApi {
             DatasetFieldType dsf = datasetFieldService.findByName(name);
             Long id = dsf.getId();
             String title = dsf.getTitle();
-            String fieldType = dsf.getFieldType();
+            FieldType fieldType = dsf.getFieldType();
             String solrFieldSearchable = dsf.getSolrField().getNameSearchable();
             String solrFieldFacetable = dsf.getSolrField().getNameFacetable();
             String metadataBlock = dsf.getMetadataBlock().getName();
@@ -235,7 +236,7 @@ public class DatasetFieldServiceApi {
         dsf.setTitle(values[2]);
         dsf.setDescription(values[3]);
         dsf.setWatermark(values[4]);
-        dsf.setFieldType(values[5]);
+        dsf.setFieldType(FieldType.valueOf(values[5].toUpperCase()));
         dsf.setDisplayOrder( Integer.parseInt(values[6]) );
         dsf.setDisplayFormat( values[7] );
         dsf.setAdvancedSearchFieldType(Boolean.parseBoolean(values[8]));
