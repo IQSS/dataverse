@@ -147,6 +147,23 @@
                                     <p:message for="description" display="text"/>
                                 </div>
                             </div>
+                            <div class="col-xs-6 form-group">
+                                <label class="col-sm-3 control-label" for="subject">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.subjecgt.title']}">
+                                        #{bundle.subject} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </a>
+                                </label>
+                                <div class="col-sm-9">
+                                    <p:selectManyCheckbox id="subject" value="#{DataversePage.dataverse.dataverseSubjects}" converter="controlledVocabularyValueConverter"
+                                                          layout="pageDirection">
+                                        <f:selectItems value="#{DataversePage.dataverseSubjectControlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
+                                    </p:selectManyCheckbox>
+
+                                </div>
+                                <div class="col-sm-2 control-label">
+                                    <p:message for="subject" display="text"/>
+                                </div>
+                            </div>
                         </div>
                     </p:panel>
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">

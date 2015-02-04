@@ -73,6 +73,8 @@ public class DataversePage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    ControlledVocabularyValueServiceBean controlledVocabularyValueServiceBean;
     
     @EJB
     DataverseLinkingServiceBean linkingService;
@@ -86,6 +88,15 @@ public class DataversePage implements java.io.Serializable {
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
+    private List<ControlledVocabularyValue> selectedSubjects;
+
+    public List<ControlledVocabularyValue> getSelectedSubjects() {
+        return selectedSubjects;
+    }
+
+    public void setSelectedSubjects(List<ControlledVocabularyValue> selectedSubjects) {
+        this.selectedSubjects = selectedSubjects;
+    }
 
     public Dataverse getLinkingDataverse() {
         return linkingDataverse;
@@ -119,6 +130,26 @@ public class DataversePage implements java.io.Serializable {
         
         this.dataversesForLinking = dataversesForLinking;
     }
+    
+    private List <ControlledVocabularyValue> dataverseSubjectControlledVocabularyValues;
+
+    public List<ControlledVocabularyValue> getDataverseSubjectControlledVocabularyValues() {
+        return dataverseSubjectControlledVocabularyValues;
+    }
+
+    public void setDataverseSubjectControlledVocabularyValues(List<ControlledVocabularyValue> dataverseSubjectControlledVocabularyValues) {
+        this.dataverseSubjectControlledVocabularyValues = dataverseSubjectControlledVocabularyValues;
+    }
+    
+
+
+
+    
+    private void updateDataverseSubjectSelectItems(){
+        DatasetFieldType subjectDatasetField = datasetFieldService.findByName(DatasetFieldConstant.subject);
+        setDataverseSubjectControlledVocabularyValues(controlledVocabularyValueServiceBean.findByDatasetFieldTypeId(subjectDatasetField.getId())); 
+        
+    }
 
     public void updateLinkableDataverses(){
         dataversesForLinking = new ArrayList();
@@ -134,7 +165,6 @@ public class DataversePage implements java.io.Serializable {
             } 
         }
         for (Dataverse removeLinked: linkingService.findLinkingDataverses(dataverse.getId())){
-            System.out.print("remove from list " + removeLinked.getDisplayName());
             dataversesForLinking.remove(removeLinked);
         }
         
@@ -145,7 +175,6 @@ public class DataversePage implements java.io.Serializable {
         if (!dataversesForLinking.isEmpty() && dataversesForLinking.size() == 1  && dataversesForLinking.get(0) != null){
             linkingDataverse = dataversesForLinking.get(0);
             linkingDataverseId = linkingDataverse.getId();
-            System.out.print("Only one " + linkingDataverse.getDisplayName());
         }
     }
     
@@ -223,6 +252,8 @@ public class DataversePage implements java.io.Serializable {
             
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         }
+        
+        updateDataverseSubjectSelectItems();
 
         initFacets();
 
@@ -240,7 +271,7 @@ public class DataversePage implements java.io.Serializable {
         
         return null;
     }
-    
+        
     public void initFacets() {        
         List<DatasetFieldType> facetsSource = new ArrayList<>();
         List<DatasetFieldType> facetsTarget = new ArrayList<>();
@@ -441,7 +472,7 @@ public class DataversePage implements java.io.Serializable {
         if (dataverse.isMetadataBlockRoot()) {
             dataverse.getMetadataBlocks().clear();
         }
-
+        
         for (MetadataBlock mdb : this.allMetadataBlocks) {
             if (dataverse.isMetadataBlockRoot() && (mdb.isSelected() || mdb.isRequired())) {
                 
@@ -542,7 +573,9 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public void editMetadataBlocks() {
-        refreshAllMetadataBlocks();
+        if (!dataverse.isMetadataBlockRoot()) {
+            refreshAllMetadataBlocks();
+        }        
     }
 
     public boolean isInheritFacetFromParent() {
@@ -573,7 +606,6 @@ public class DataversePage implements java.io.Serializable {
     public String saveLinkedDataverse(){
         
         if (linkingDataverseId == null){
-           System.out.print("linkingDataverse == null");
            JsfHelper.addFlashMessage( "You must select a linking dataverse."); 
            return "";
         }  
@@ -586,7 +618,6 @@ public class DataversePage implements java.io.Serializable {
              return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataverse to yours: " + ex;
-            System.out.print("in catch exception... " + ex);
             logger.severe(msg);
             /**
              * @todo how do we get this message to show up in the GUI?

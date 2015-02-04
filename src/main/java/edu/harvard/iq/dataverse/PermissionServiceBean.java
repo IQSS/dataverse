@@ -273,17 +273,6 @@ public class PermissionServiceBean {
         return dataversesUserHasPermissionOn;
     }
     
-    public List<AuthenticatedUser> getUsersWithPermissionOn(Class<? extends Command> commandClass, DvObject dvo){
-        List<AuthenticatedUser> allUsers = authenticationService.findAllAuthenticatedUsers();
-        List<AuthenticatedUser> usersHasPermissionOn = new LinkedList<>();
-        for (AuthenticatedUser user : allUsers) {
-            if (isUserAllowedOn(user, commandClass, dvo)) {
-                usersHasPermissionOn.add(user);
-            }
-        }
-        return usersHasPermissionOn;
-    }
-    
     public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
         List<AuthenticatedUser> usersHasPermissionOn = new LinkedList<>();
         Set<RoleAssignment> ras = roleService.rolesAssignments(dvo);
