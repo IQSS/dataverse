@@ -776,13 +776,13 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{((!(empty fileMetadata.id)) and fileMetadata.dataFile.image)
+                                            <ui:fragment rendered="#{((!(empty fileMetadata.dataFile.id)) and fileMetadata.dataFile.image)
                                                                      or
                                                                      fileMetadata.dataFile.tabularData
                                                                      or
-                                                                     ((empty fileMetadata.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
+                                                                     ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
                                                                      or
-                                                                     ((empty fileMetadata.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}">
+                                                                     ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}">
                                                 <p:commandLink id="advancedIngestOptionsButton"
                                                                styleClass="btn btn-default"
                                                                actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
@@ -2030,7 +2030,7 @@
                             </ui:fragment>
 
                             <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
-                            <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected.id) and DatasetPage.fileMetadataSelected.dataFile.image}">
+                            <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected.dataFile.id) and DatasetPage.fileMetadataSelected.dataFile.image}">
                                 <div class="form-group col-sm-12">
                                     <label for="datasetThumbnailImage" class="col-sm-4 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle.description}">
