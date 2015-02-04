@@ -117,6 +117,9 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -126,8 +129,9 @@ import org.apache.commons.io.FileUtils;
  * New service for handling ingest tasks
  * 
  */
-@ManagedBean
-@Stateless
+//@Stateless
+@Startup
+@Singleton
 @Named
 public class IngestServiceBean {
     private static final Logger logger = Logger.getLogger(IngestServiceBean.class.getCanonicalName());
@@ -171,6 +175,34 @@ public class IngestServiceBean {
     private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
+    
+    
+    @PostConstruct
+    public void init() {
+        logger.info("Initializing the Ingest Service.");
+        List<DataFile> ingestsInProgress = fileService.findIngestsInProgress();
+        if (ingestsInProgress != null && ingestsInProgress.size() > 0) {
+            logger.info("Ingest Service: " + ingestsInProgress.size()+" files are in the queue.");
+            // go through the queue, remove the "ingest in progress" flags and the 
+            // any dataset locks found:
+            Iterator dfit = ingestsInProgress.iterator();
+            while (dfit.hasNext()) {
+                DataFile datafile = (DataFile)dfit.next();
+                logger.info("Ingest Service: removing ingest-in-progress status on datafile "+datafile.getId());
+                datafile.setIngestDone();
+                datafile = fileService.save(datafile);
+                
+                if (datafile.getOwner() != null && datafile.getOwner().isLocked()) {
+                    if (datafile.getOwner().getId() != null) {
+                        logger.fine("Ingest Servioce: removing lock on dataset "+datafile.getOwner().getId());
+                        datasetService.removeDatasetLock(datafile.getOwner().getId());
+                    }
+                }
+            }
+        } else {
+            logger.info("Ingest Service: zero files in the ingest queue.");
+        }
+    }
     
     @Deprecated
     // All the parts of the app should use the createDataFiles() method instead, 
