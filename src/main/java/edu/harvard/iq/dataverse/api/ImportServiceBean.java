@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,6 +88,9 @@ public class ImportServiceBean {
                 d.setPermissionRoot(false);
                 d.setDescription("description");
                 d.setDataverseType(Dataverse.DataverseType.RESEARCHERS);
+                List<ControlledVocabularyValue> cvList = new ArrayList<>();
+                cvList.add(datasetfieldService.findNAControlledVocabularyValue());
+                d.setDataverseSubjects(cvList);
                 DataverseContact dc = new DataverseContact();
                 dc.setContactEmail("pete@mailinator.com");
                 ArrayList<DataverseContact> dcList = new ArrayList<>();
