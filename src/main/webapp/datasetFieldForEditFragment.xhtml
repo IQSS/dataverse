@@ -9,18 +9,19 @@
     <p:inputText value="#{dsfv.valueForEdit}" id="inputText" 
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary        
-                             and (dsfv.datasetField.datasetFieldType.fieldType == 'text'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'int'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'float'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'url'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'date'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'email'
-                             or dsfv.datasetField.datasetFieldType.fieldType == '')}"/>
+                             and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL'
+                             )}"/>
 
     <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
     <p:inputTextarea value="#{dsfv.valueForEdit}" rows="5" cols="60" id="description" styleClass="form-control" 
-                     rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'textbox'}" />
+                     rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}" />
+
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
     <ui:fragment rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
