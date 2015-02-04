@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.StringReader;
@@ -59,10 +60,10 @@ public class JsonParserTest {
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
-        keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", "primitive", true));
-        descriptionType = datasetFieldTypeSvc.add( new DatasetFieldType("description", "primitive", false) );
+        keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", FieldType.TEXT, true));
+        descriptionType = datasetFieldTypeSvc.add( new DatasetFieldType("description", FieldType.TEXTBOX, false) );
         
-        subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", "controlledVocabulary", true));
+        subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", FieldType.TEXT, true));
         subjectType.setAllowControlledVocabulary(true);
         subjectType.setControlledVocabularyValues( Arrays.asList( 
                 new ControlledVocabularyValue(1l, "mgmt", subjectType),
@@ -70,7 +71,7 @@ public class JsonParserTest {
                 new ControlledVocabularyValue(3l, "cs", subjectType)
         ));
         
-        pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", "controlledVocabulary", false));
+        pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", FieldType.TEXT, false));
         pubIdType.setAllowControlledVocabulary(true);
         pubIdType.setControlledVocabularyValues( Arrays.asList( 
                 new ControlledVocabularyValue(1l, "ark", pubIdType),
@@ -78,10 +79,10 @@ public class JsonParserTest {
                 new ControlledVocabularyValue(3l, "url", pubIdType)
         ));
         
-        compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", "compound", true));
+        compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", FieldType.TEXT, true));
         Set<DatasetFieldType> childTypes = new HashSet<>();
-        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lat", "primitive", false)) );
-        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lon", "primitive", false)) );
+        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lat", FieldType.TEXT, false)) );
+        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lon", FieldType.TEXT, false)) );
         
         for ( DatasetFieldType t : childTypes ) {
             t.setParentDatasetFieldType(compoundSingleType);
