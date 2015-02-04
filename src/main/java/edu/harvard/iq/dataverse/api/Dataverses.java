@@ -96,7 +96,7 @@ public class Dataverses extends AbstractApiBean {
         JsonObject dvJson;
         try ( StringReader rdr = new StringReader(body) ) {
             dvJson = Json.createReader(rdr).readObject();
-            d = JsonParser.parseDataverse(dvJson);
+            d = jsonParser().parseDataverse(dvJson);
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: {0}", body);
             return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );

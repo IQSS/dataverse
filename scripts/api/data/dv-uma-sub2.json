@@ -8,5 +8,10 @@
     {
       "contactEmail": "Uma@mailinator.com"
     }
+  ],
+    "dataverseSubjects": [
+    {
+      "controlledVocabularyValue": "Engineering"
+}
   ]
 }
