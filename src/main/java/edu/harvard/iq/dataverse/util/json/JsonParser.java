@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -48,7 +49,7 @@ public class JsonParser {
         this.settingsService = settingsService;
     }
     
-    public static Dataverse parseDataverse( JsonObject jobj ) throws JsonParseException {
+    public   Dataverse parseDataverse( JsonObject jobj ) throws JsonParseException {
         Dataverse dv = new Dataverse();
 
         dv.setAlias( getMandatoryString(jobj, "alias") );
@@ -68,6 +69,23 @@ public class JsonParser {
             }
             dv.setDataverseContacts(dvContactList);
         }
+        if ( jobj.containsKey("dataverseSubjects") ) {
+            JsonArray dvSubjects= jobj.getJsonArray("dataverseSubjects");
+            List<ControlledVocabularyValue> dvSubjectList = new LinkedList<>();
+            for ( JsonValue jsv : dvSubjects ) {
+                DatasetFieldType dsft = datasetFieldSvc.findByName(DatasetFieldConstant.subject);
+                JsonObject jobjv = (JsonObject)jsv;
+                String cvString = jobjv.getString("controlledVocabularyValue");
+                ControlledVocabularyValue cvv;
+                if (cvString.equals("N/A")){
+                   cvv = datasetFieldSvc.findNAControlledVocabularyValue();
+                } else{
+                   cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsft, cvString);
+                }
+                dvSubjectList.add( cvv );
+            }
+            dv.setDataverseSubjects(dvSubjectList);
+        }
         
         return dv;
     }
@@ -78,7 +96,7 @@ public class JsonParser {
         }
         throw new JsonParseException("Field " + name + " is mandatory");
     }
-    
+       
     public IpGroup parseIpGroup( JsonObject obj ) {
         IpGroup retVal = new IpGroup();
         

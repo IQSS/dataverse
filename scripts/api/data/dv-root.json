@@ -8,5 +8,10 @@
     {
       "contactEmail": "root@mailinator.com"
 }
+  ],
+    "dataverseSubjects": [
+    {
+      "controlledVocabularyValue": "N/A"
+}
   ]
 }
