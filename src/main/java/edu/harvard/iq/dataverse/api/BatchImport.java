@@ -40,7 +40,9 @@ public class BatchImport extends AbstractApiBean  {
     @EJB
     SettingsServiceBean settingsService;
     @EJB
-    ImportServiceBean batchImportService;
+    ImportServiceBean importService;
+    @EJB
+    BatchServiceBean batchService;
     
     /** migrate - only needed for importing studies from old DVN installations into Dataverse 4.0
      * read ddi files from the filesystem, and import them in "migrate" mode
@@ -53,13 +55,14 @@ public class BatchImport extends AbstractApiBean  {
     @GET
     @Path("migrate")
     public Response migrate(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
-        return processFilePath(fileDir, parentIdtf, apiKey, ImportType.MIGRATION);
+          return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.MIGRATION);
     }
     
     @GET
     @Path("harvest")
     public Response harvest(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
-        return processFilePath(fileDir, parentIdtf, apiKey, ImportType.HARVEST);
+          return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.HARVEST);
+  
     }
     
     /**
@@ -84,7 +87,7 @@ public class BatchImport extends AbstractApiBean  {
             return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
         }
         try { 
-            JsonObjectBuilder status = batchImportService.doImport(u,owner,body, ImportType.NEW);
+            JsonObjectBuilder status = importService.doImport(u,owner,body, ImportType.NEW);
             return this.okResponse(status);
         } catch(ImportException e) {
             return this.errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
@@ -100,14 +103,12 @@ public class BatchImport extends AbstractApiBean  {
     @GET 
     @Path("import")
     public Response getImport(@QueryParam("path") String fileDir, @QueryParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-         Response r= processFilePath(fileDir, parentIdtf, apiKey, ImportType.NEW);
-        return r;
+      return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.NEW);
     }
     
     
-   private Response processFilePath(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
-        logger.info("BEGIN IMPORT");
-     
+    private Response startBatchJob( String fileDir, String parentIdtf, String apiKey, ImportType importType) {
+        
         User u = findUserByApiToken(apiKey);
         if (u == null) {
             return badApiKey(apiKey);
@@ -120,19 +121,16 @@ public class BatchImport extends AbstractApiBean  {
             return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
         }
         try {
-            batchImportService.processFilePath(fileDir, parentIdtf, u, owner, importType );
-
-        } catch (ImportException e) {
+             batchService.processFilePath(fileDir, parentIdtf, u,owner, ImportType.NEW);
+          } catch (ImportException e) {
             e.printStackTrace();
             return this.errorResponse(Response.Status.BAD_REQUEST, "Import Exception!!");
         } catch(IOException e) {
             e.printStackTrace();
               return this.errorResponse(Response.Status.BAD_REQUEST, "IOException!!");
         }
-        
-      
-        return this.okResponse("Batch Job accepted"); 
-    } 
+        return this.accepted();
+    }
     
     
    
