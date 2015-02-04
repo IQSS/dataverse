@@ -1150,7 +1150,24 @@ public class DatasetPage implements java.io.Serializable {
     public void deleteFiles() {
         filesToBeDeleted.addAll(selectedFiles);
         // remove from the files list
-        dataset.getLatestVersion().getFileMetadatas().removeAll(selectedFiles);
+        //dataset.getLatestVersion().getFileMetadatas().removeAll(selectedFiles);
+        Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+        while (fmit.hasNext()) {
+            FileMetadata fmd = (FileMetadata)fmit.next();
+            
+            fmd.getDataFile().setModificationTime(new Timestamp(new Date().getTime()));
+            for (FileMetadata markedForDelete : selectedFiles) {
+                
+                if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(fmd.getDataFile().getFileSystemName())) {
+                    fmit.remove();
+                    break;
+                } 
+                if (markedForDelete.getId() != null && markedForDelete.getId().equals(fmd.getId())) {
+                    fmit.remove();
+                    break;
+                }
+            }
+        }
     }
         
     public String save() {
