@@ -27,6 +27,10 @@ import javax.persistence.*;
 @Entity
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
 
+    public enum FieldType {
+        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
+    };    
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,7 +54,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     @Column(name = "description", columnDefinition = "TEXT")
     private String description; // A user-friendly Description; will be used for 
     // mouse-overs, etc. 
-    private String fieldType;
+    @Enumerated(EnumType.STRING)
+    private FieldType fieldType;
     private boolean allowControlledVocabulary;
     private String watermark;
 
@@ -108,7 +113,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public DatasetFieldType() {}
 
-    public DatasetFieldType(String name, String fieldType, boolean allowMultiples) {
+    public DatasetFieldType(String name, FieldType fieldType, boolean allowMultiples) {
         this.name = name;
         this.fieldType = fieldType;
         this.allowMultiples = allowMultiples;
@@ -178,11 +183,11 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.allowMultiples = allowMultiples;
     }
 
-    public String getFieldType() {
+    public FieldType getFieldType() {
         return fieldType;
     }
 
-    public void setFieldType(String fieldType) {
+    public void setFieldType(FieldType fieldType) {
         this.fieldType = fieldType;
     }
     
@@ -426,9 +431,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
              * @todo made more decisions based on fieldType: index as dates,
              * integers, and floats so we can do range queries etc.
              */
-            if (fieldType.equals("date")) {
+            if (fieldType.equals(FieldType.DATE)) {
                 solrType = SolrField.SolrType.DATE;
-            } else if (fieldType.equals("email")) {
+            } else if (fieldType.equals(FieldType.EMAIL)) {
                 solrType = SolrField.SolrType.EMAIL;
             }
 
