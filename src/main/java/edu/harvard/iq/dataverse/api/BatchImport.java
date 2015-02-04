@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -105,7 +106,8 @@ public class BatchImport extends AbstractApiBean  {
     
     
     private Response processFilePath(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
-   logger.info("BEGIN IMPORT");
+        logger.info("BEGIN IMPORT");
+        int count=0;
             JsonArrayBuilder status = Json.createArrayBuilder();
         
         User u = findUserByApiToken(apiKey);
@@ -128,22 +130,27 @@ public class BatchImport extends AbstractApiBean  {
                             status.add(handleDirectory(u, file, importType));
                         } else {
                             status.add(batchImportService.handleFile(u, owner, file, importType));
+                            count++;
                         }
                     }
                 }
             } else {
                 status.add(batchImportService.handleFile(u, owner, dir, importType));
+                count++;
             }
 
         } catch (ImportException e) {
             e.printStackTrace();
             return this.errorResponse(Response.Status.BAD_REQUEST, "Import Exception!!");
+        } catch(IOException e) {
+            e.printStackTrace();
+              return this.errorResponse(Response.Status.BAD_REQUEST, "IOException!!");
         }
         
-        logger.info("END IMPORT");
+        logger.info("END IMPORT, processed "+count+"files.");
         return this.okResponse(status); 
     }
-   public JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType) throws ImportException {
+   public JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType) throws ImportException, IOException {
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = dataverseService.findByAlias(dir.getName());
         if (owner == null) {

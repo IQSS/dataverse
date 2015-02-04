@@ -114,7 +114,7 @@ public class ImportServiceBean {
    }
     
    @TransactionAttribute(REQUIRES_NEW)
-    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException {
+    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException, IOException {
         System.out.println("handling file: " + file.getAbsolutePath());
         String ddiXMLToParse;
         try {
@@ -123,10 +123,10 @@ public class ImportServiceBean {
             status.add("file", file.getName());
            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
-        } catch (IOException e) {
-            e.printStackTrace();
-             logger.info("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage());
-            throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
+      //  } catch (IOException e) {
+      //      e.printStackTrace();
+      //       logger.info("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage());
+     //       throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
         } catch (ImportException ex) {
             logger.info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
