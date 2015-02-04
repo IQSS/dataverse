@@ -8,7 +8,7 @@
 	collectorTraining	Collector Training	Type of training provided to the data collector		text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	frequencyOfDataCollection	Frequency	If the data collected includes more than one point in time, indicate the frequency with which the data was collected; that is, monthly, quarterly, or other.		text	5		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	samplingProcedure	Sampling Procedure	Type of sample and sample design used to select the survey respondents to represent the population. May include reference to the target sample size and the sampling fraction.		textbox	6		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
-	targetSampleSize	Target Sample Size	Specific information regarding the target sample size, actual  sample size, and the formula used to determine this.		text	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
+	targetSampleSize	Target Sample Size	Specific information regarding the target sample size, actual  sample size, and the formula used to determine this.		none	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	targetSampleActualSize	Actual	Actual sample size.	Enter an integer...	int	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	targetSampleSize	socialscience
 	targetSampleSizeFormula	Formula	Formula used to determine target sample size.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	targetSampleSize	socialscience
 	deviationsFromSampleDesign	Major Deviations for Sample Design	Show correspondence as well as discrepancies between the sampled units (obtained) and available statistics for the population (age, sex-ratio, marital status, etc.) as a whole.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
@@ -23,7 +23,7 @@
 	responseRate	Response Rate	Percentage of sample members who provided information.		text	19		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		socialscience
 	samplingErrorEstimates	Estimates of Sampling Error	Measure of how precisely one can estimate a population value from a given sample.		text	20		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	otherDataAppraisal	Other Forms of Data Appraisal	Other issues pertaining to the data appraisal. Describe issues such as response variance, nonresponse rate  and testing for bias, interviewer and response bias, confidence levels, question bias, or similar.		text	21		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
-	socialScienceNotes	Notes	General notes about this Dataset.		text	22		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
+	socialScienceNotes	Notes	General notes about this Dataset.		none	22		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	socialScienceNotesType	Type	Type of note.		text	23		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	socialscience
 	socialScienceNotesSubject	Subject	Note subject.		text	24		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	socialscience
 	socialScienceNotesText	Text	Text for this note.		textbox	25		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	socialscience

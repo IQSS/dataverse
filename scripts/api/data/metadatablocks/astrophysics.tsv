@@ -10,10 +10,10 @@
 	resolution.Temporal	Time Resolution	The temporal resolution that is typical of the observations, given in seconds.		text	6		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Spectral.Bandpass	Bandpass	Conventional bandpass name		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
 	coverage.Spectral.CentralWavelength	Central Wavelength (m)	The central wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	8		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		astrophysics
-	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.	Enter a floating-point number.	float	9		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.	Enter a floating-point number.	none	9		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Spectral.MinimumWavelength	Minimum (m)	The minimum wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	10		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
 	coverage.Spectral.MaximumWavelength	Maximum (m)	The maximum wavelength of the spectral bandpass, in meters.	Enter a floating-point number.	float	11		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
-	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		text	12		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		none	12		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Temporal.StartTime	Start	Dataset Start Date	YYYY-MM-DD	date	13		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
 	coverage.Temporal.StopTime	End	Dataset End Date	YYYY-MM-DD	date	14		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
 	coverage.Spatial	Sky Coverage	The sky coverage of the data object.		text	15		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
