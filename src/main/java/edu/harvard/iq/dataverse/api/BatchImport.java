@@ -105,11 +105,9 @@ public class BatchImport extends AbstractApiBean  {
     }
     
     
-    private Response processFilePath(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
+   private Response processFilePath(String fileDir, String parentIdtf, String apiKey, ImportType importType ) {
         logger.info("BEGIN IMPORT");
-        int count=0;
-            JsonArrayBuilder status = Json.createArrayBuilder();
-        
+     
         User u = findUserByApiToken(apiKey);
         if (u == null) {
             return badApiKey(apiKey);
@@ -122,22 +120,7 @@ public class BatchImport extends AbstractApiBean  {
             return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
         }
         try {
-            File dir = new File(fileDir);
-            if (dir.isDirectory()) { 
-                for (File file : dir.listFiles()) {
-                    if (!file.isHidden()) {
-                        if (file.isDirectory()) {
-                            status.add(handleDirectory(u, file, importType));
-                        } else {
-                            status.add(batchImportService.handleFile(u, owner, file, importType));
-                            count++;
-                        }
-                    }
-                }
-            } else {
-                status.add(batchImportService.handleFile(u, owner, dir, importType));
-                count++;
-            }
+            batchImportService.processFilePath(fileDir, parentIdtf, u, owner, importType );
 
         } catch (ImportException e) {
             e.printStackTrace();
@@ -147,33 +130,9 @@ public class BatchImport extends AbstractApiBean  {
               return this.errorResponse(Response.Status.BAD_REQUEST, "IOException!!");
         }
         
-        logger.info("END IMPORT, processed "+count+"files.");
-        return this.okResponse(status); 
-    }
-   public JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType) throws ImportException, IOException {
-        JsonArrayBuilder status = Json.createArrayBuilder();
-        Dataverse owner = dataverseService.findByAlias(dir.getName());
-        if (owner == null) {
-            if (importType.equals(ImportUtil.ImportType.MIGRATION) || importType.equals(ImportUtil.ImportType.NEW)) {
-                System.out.println("creating new dataverse: " + dir.getName());
-                owner=batchImportService.createDataverse(dir, u);
-            } else {
-                throw new ImportException("Can't find dataverse with identifier='" + dir.getName() + "'");
-            }
-        }
-        for (File file : dir.listFiles()) {
-            if (!file.isHidden()) {
-                try {
-                    JsonObjectBuilder fileStatus = batchImportService.handleFile(u, owner, file, importType);
-                    status.add(fileStatus);
-                } catch (ImportException e) {
-                    status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
-                }
-            }
-        }
-        return status;
-    }
-
+      
+        return this.okResponse("Batch Job accepted"); 
+    } 
     
     
    

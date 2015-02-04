@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportDDI;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -38,12 +39,14 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -112,8 +115,58 @@ public class ImportServiceBean {
                 return d;
 
    }
-    
-   @TransactionAttribute(REQUIRES_NEW)
+   
+  @Asynchronous 
+  public void  processFilePath(String fileDir, String parentIdtf, User u, Dataverse owner, ImportType importType ) throws ImportException, IOException {
+             JsonArrayBuilder status = Json.createArrayBuilder();
+       int count =0;
+       
+            File dir = new File(fileDir);
+            if (dir.isDirectory()) { 
+                for (File file : dir.listFiles()) {
+                    if (!file.isHidden()) {
+                        if (file.isDirectory()) {
+                            status.add(handleDirectory(u, file, importType));
+                        } else {
+                            status.add(handleFile(u, owner, file, importType));
+                            count++;
+                        }
+                    }
+                }
+            } else {
+                status.add(handleFile(u, owner, dir, importType));
+                count++;
+            }       
+        logger.info("END IMPORT, processed "+count+"files.");
+       
+   }
+  
+   public JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType) throws ImportException, IOException {
+        JsonArrayBuilder status = Json.createArrayBuilder();
+        Dataverse owner = dataverseService.findByAlias(dir.getName());
+        if (owner == null) {
+            if (importType.equals(ImportUtil.ImportType.MIGRATION) || importType.equals(ImportUtil.ImportType.NEW)) {
+                System.out.println("creating new dataverse: " + dir.getName());
+                owner=createDataverse(dir, u);
+            } else {
+                throw new ImportException("Can't find dataverse with identifier='" + dir.getName() + "'");
+            }
+        }
+        for (File file : dir.listFiles()) {
+            if (!file.isHidden()) {
+                try {
+                    JsonObjectBuilder fileStatus = handleFile(u, owner, file, importType);
+                    status.add(fileStatus);
+                } catch (ImportException e) {
+                    status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
+                }
+            }
+        }
+        return status;
+    }
+ 
+  
+    @TransactionAttribute(REQUIRES_NEW)
     public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException, IOException {
         System.out.println("handling file: " + file.getAbsolutePath());
         String ddiXMLToParse;
@@ -121,22 +174,22 @@ public class ImportServiceBean {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
             JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse, importType);
             status.add("file", file.getName());
-           logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
+            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
       //  } catch (IOException e) {
-      //      e.printStackTrace();
-      //       logger.info("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage());
-     //       throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
+            //      e.printStackTrace();
+            //       logger.info("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage());
+            //       throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
         } catch (ImportException ex) {
             logger.info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
             logger.info("Unexpected Error processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
-            String msg = "Unexpected Error in handleFile(), file:" +file.getParentFile().getName() + "/" + file.getName();
+            String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
             e.printStackTrace();
             logger.severe(msg);
-            throw new ImportException("Unexpected Error in handleFile(), file:" +file.getParentFile().getName() + "/" + file.getName(),e);
-            
+            throw new ImportException("Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName(), e);
+
         }
     }
      public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException {
