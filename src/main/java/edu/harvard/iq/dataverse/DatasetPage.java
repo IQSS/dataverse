@@ -1172,9 +1172,11 @@ public class DatasetPage implements java.io.Serializable {
          * the IngestServiceBean! -- L.A.
          */
         // File deletes (selected by the checkboxes on the page)
-        //
-        // First Remove Any that have never been ingested;
+        
         if (this.filesToBeDeleted != null) {
+            
+            // First Remove Any that have never been ingested:
+            
             Iterator<DataFile> dfIt = newFiles.iterator();
             while (dfIt.hasNext()) {
                 DataFile dfn = dfIt.next();
@@ -1195,6 +1197,10 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
 
+            // this next iterator is likely unnecessary (because the metadata object
+            // was already deleted from the filemetadatas list associated with this
+            // version, when it was added to the "filestobedeleted" list. 
+            
             Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
 
             while (fmIt.hasNext()) {
@@ -1210,15 +1216,27 @@ public class DatasetPage implements java.io.Serializable {
 //delete for files that have been injested....
 
             for (FileMetadata fmd : filesToBeDeleted) {
+                
                 if (fmd.getId() != null && fmd.getId().intValue() > 0) {
                     Command cmd;
+                    /* TODO: 
+                     * I commented-out the code that was going through the filemetadatas
+                     * associated with the version... Because the new delete button 
+                     * functionality has already deleted the selected filemetadatas
+                     * from the list. 
+                     * I'm leaving that dead code commented-out, so that we can
+                     * review it before it's removed for good. 
+                     * -- L.A. 4.0 beta12
+                     */
+                    /*
                     fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmIt.hasNext()) {
                         FileMetadata dfn = fmIt.next();
                         if (fmd.getId().equals(dfn.getId())) {
+                    */
                             try {
-                                Long idToRemove = dfn.getId();
-                                logger.info("deleting file, id "+fmd.getDataFile().getId());
+                                Long idToRemove = fmd.getId(); ///dfn.getId();
+                                logger.info("deleting file, filemetadata id "+idToRemove);
                                 
                                 // finally, check if this file is being used as the default thumbnail
                                 // for its dataset: 
@@ -1228,8 +1246,9 @@ public class DatasetPage implements java.io.Serializable {
                                 }
                                 cmd = new DeleteDataFileCommand(fmd.getDataFile(), session.getUser());
                                 commandEngine.submit(cmd);
-                                fmIt.remove();
-                                Long fileIdToRemove = dfn.getDataFile().getId();
+                                
+                                ///fmIt.remove();
+                                Long fileIdToRemove = fmd.getDataFile().getId();
                                 int i = dataset.getFiles().size();
                                 for (int j = 0; j < i; j++) {
                                     Iterator<FileMetadata> tdIt = dataset.getFiles().get(j).getFileMetadatas().iterator();
@@ -1240,6 +1259,7 @@ public class DatasetPage implements java.io.Serializable {
                                         }
                                     }
                                 }
+                                
                                 if (!(dataset.isReleased())) {
                                     Iterator<DataFile> dfrIt = dataset.getFiles().iterator();
                                     while (dfrIt.hasNext()) {
@@ -1254,8 +1274,9 @@ public class DatasetPage implements java.io.Serializable {
                                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Data file Delete Failed", " - " + ex.toString()));
                                 logger.severe(ex.getMessage());
                             }
-                        }
-                    }
+                            
+                        /*}
+                    }*/
                 }
             }
         }

@@ -776,9 +776,9 @@
                                         </p:column>
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData
+                                            <ui:fragment rendered="#{((!(empty fileMetadata.id)) and fileMetadata.dataFile.image)
                                                                      or
-                                                                     (!(empty fileMetadata.id) and fileMetadata.dataFile.image)
+                                                                     fileMetadata.dataFile.tabularData
                                                                      or
                                                                      ((empty fileMetadata.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
                                                                      or
