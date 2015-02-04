@@ -171,7 +171,7 @@ public class IngestServiceBean {
     private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
-      
+    
     @Deprecated
     // All the parts of the app should use the createDataFiles() method instead, 
     // that returns a list of DataFiles. 
@@ -961,7 +961,7 @@ public class IngestServiceBean {
 
                 scheduledFiles.add(dataFile);
                 
-                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
+                logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
                 //asyncIngestAsTabular(dataFile);
                 count++;
             }
@@ -969,16 +969,17 @@ public class IngestServiceBean {
 
         if (count > 0) {
             String info = "Attempting to ingest " + count + " tabular data file(s).";
+            logger.info(info);
             if (user != null) {
                 datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
             } else {
                 datasetService.addDatasetLock(dataset.getId(), null, info);
             }
 
-            DataFile[] scheduledFilesArray = (DataFile[])scheduledFiles.toArray();
+            DataFile[] scheduledFilesArray = (DataFile[])scheduledFiles.toArray(new DataFile[count]);
             scheduledFiles = null; 
             
-            // Sort by file size: 
+            // Sort ingest jobs by file size: 
             Arrays.sort(scheduledFilesArray, new Comparator<DataFile>() {
                 @Override
                 public int compare(DataFile d1, DataFile d2) {
@@ -992,7 +993,7 @@ public class IngestServiceBean {
             
             for (int i = 0; i < count; i++) {
                 ingestMessage.addFileId(scheduledFilesArray[i].getId());
-                logger.info("Sorted order: "+i+" (size="+scheduledFilesArray[i].getFilesize()+")");
+                logger.fine("Sorted order: "+i+" (size="+scheduledFilesArray[i].getFilesize()+")");
             }
             
             QueueConnection conn = null;
