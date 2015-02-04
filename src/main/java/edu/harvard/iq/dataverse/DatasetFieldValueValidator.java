@@ -5,9 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -39,7 +39,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         boolean lengthOnly = false;
         
         DatasetFieldType dsfType = value.getDatasetField().getDatasetFieldType();
-        String fieldType = dsfType.getFieldType();
+        FieldType fieldType = dsfType.getFieldType();
         
         if (value.getDatasetField().getTemplate() != null){
             lengthOnly = true;
@@ -55,7 +55,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
         
         
-        if (fieldType.equals("date") && !lengthOnly) {
+        if (fieldType.equals(FieldType.DATE) && !lengthOnly) {
             boolean valid = false;
             if (!valid) {  
                 valid = isValidDate(value.getValue(), "yyyy-MM-dd");
@@ -86,7 +86,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         } 
         
-        if (fieldType.equals("float") && !lengthOnly) {
+        if (fieldType.equals(FieldType.FLOAT) && !lengthOnly) {
             try {
                 Double.parseDouble(value.getValue());
             } catch (Exception e) {
@@ -96,7 +96,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
         
-        if (fieldType.equals("int") && !lengthOnly) {
+        if (fieldType.equals(FieldType.INT) && !lengthOnly) {
             try {
                 Integer.parseInt(value.getValue());
             } catch (Exception e) {
@@ -105,12 +105,12 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
         
-        if (fieldType.equals("text")  && value.getValue().length() > 255) {
+        if (fieldType.equals(FieldType.TEXT)  && value.getValue().length() > 255) {
                  context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " may not be more than 255 characters.").addConstraintViolation(); 
                  return false;
         }
         
-        if (fieldType.equals("url") && !lengthOnly) {
+        if (fieldType.equals(FieldType.URL) && !lengthOnly) {
             try {
                 URL url = new URL(value.getValue());
             } catch (MalformedURLException e) {
@@ -119,7 +119,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
-        if (fieldType.equals("email") && !lengthOnly) {
+        if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
             //Pattern p =  Pattern.compile("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
             //updated to allow dashes
             Pattern p =  Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
