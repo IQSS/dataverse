@@ -1526,21 +1526,29 @@
                                     <p:dialog id="viewGuestbook" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
                                         <div class="form-horizontal">
                                             <div class="form-group">
-                                                <label for="select_DatasetTemplate" class="col-sm-4 control-label">
-                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</a>
+                                                <label class="col-sm-4 control-label">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
+                                                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
+                                                    </a>
                                                 </label>
                                                 <div class="col-sm-8" style="padding-top: 7px;">
                                                     <p>
                                                         #{DatasetPage.selectedGuestbook.name}
                                                     </p>
                                                     <p>
-                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}"
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}" escape="false" 
                                                                       rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString }"/>
-                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}"
+                                                    </p>
+                                                    <p>
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}" escape="false" 
                                                                       rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString }"/>
-                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}"
+                                                    </p>
+                                                    <p>
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}" escape="false" 
                                                                       rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString }"/>
-                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}"
+                                                    </p>
+                                                    <p>
+                                                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}" escape="false" 
                                                                       rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString }"/>
                                                     </p>
                                                 </div>
