@@ -6,7 +6,7 @@ Additional documentation complementary to the User Guide.
 Metadata References
 ======================
 
-Dataverse is commited to using standard-compliant metadata to ensure that Dataverse
+Dataverse is committed to using standard-compliant metadata to ensure that Dataverse
 metadata can be mapped easily to standard metadata schemas and be exported into XML/JSON
 format for preservation and interoperability. 
 
