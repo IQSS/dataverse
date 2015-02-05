@@ -142,8 +142,6 @@
                                                      rows="6" cols="50"
                                                      autoResize="false">
                                     </p:inputTextarea>
-                                </div>
-                                <div class="col-sm-2 control-label">
                                     <p:message for="description" display="text"/>
                                 </div>
                             </div>
@@ -154,13 +152,12 @@
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:selectManyCheckbox id="subject" value="#{DataversePage.dataverse.dataverseSubjects}" converter="controlledVocabularyValueConverter"
-                                                          layout="pageDirection">
-                                        <f:selectItems value="#{DataversePage.dataverseSubjectControlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
-                                    </p:selectManyCheckbox>
-
-                                </div>
-                                <div class="col-sm-2 control-label">
+                                    <div class="ui-inputfield form-control select-scroll-block">
+                                        <p:selectManyCheckbox id="subject" value="#{DataversePage.dataverse.dataverseSubjects}" converter="controlledVocabularyValueConverter"
+                                                              layout="pageDirection">
+                                            <f:selectItems value="#{DataversePage.dataverseSubjectControlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
+                                        </p:selectManyCheckbox>
+                                    </div>
                                     <p:message for="subject" display="text"/>
                                 </div>
                             </div>

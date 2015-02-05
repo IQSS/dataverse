@@ -322,8 +322,6 @@ div.ui-tabs-panels .ui-tabs .ui-tabs-nav.ui-widget-header li {border:0;}
 div.ui-tabs-panels .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-bottom:0;}
 
 /* -------- ADVANCED -------- */
-#advancedSearchForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
-#advancedSearchForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
 
 /* -------- PERMISSIONS -------- */
 div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:inline-block; margin-bottom:4px;}
@@ -370,8 +368,9 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 /* Primefaces vs Bootstrap checkbox fix */
 .form-group .ui-chkbox .ui-chkbox-box {margin: 4px 0 0 0;}
 
-#datasetForm .select-scroll-block, #templateForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
-#datasetForm .select-scroll-block table.ui-selectmanycheckbox label, #templateForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
+.select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
+.col-sm-9 > .select-scroll-block {margin: 4px 10px;}
+.select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 
