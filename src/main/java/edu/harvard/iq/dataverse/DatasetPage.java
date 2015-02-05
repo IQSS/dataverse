@@ -676,18 +676,34 @@ public class DatasetPage implements java.io.Serializable {
         
         boolean valid = true;
         
-        if(dataset.getGuestbook() != null){
-            if (dataset.getGuestbook().isNameRequired()){
-                valid &= !guestbookResponse.getName().isEmpty();
+        if (dataset.getGuestbook() != null) {
+            if (dataset.getGuestbook().isNameRequired()) {
+                if (guestbookResponse.getName() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getName().isEmpty();
+                }
             }
-            if (dataset.getGuestbook().isEmailRequired()){
-                valid &= !guestbookResponse.getEmail().isEmpty();
+            if (dataset.getGuestbook().isEmailRequired()) {
+                if (guestbookResponse.getEmail() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getEmail().isEmpty();
+                }
             }
-            if (dataset.getGuestbook().isInstitutionRequired()){
-                valid &= !guestbookResponse.getInstitution().isEmpty();
+            if (dataset.getGuestbook().isInstitutionRequired()) {
+                if (guestbookResponse.getInstitution() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getInstitution().isEmpty();
+                }
             }
-            if (dataset.getGuestbook().isPositionRequired()){
-                valid &= !guestbookResponse.getPosition().isEmpty();
+            if (dataset.getGuestbook().isPositionRequired()) {
+                if (guestbookResponse.getPosition() == null) {
+                    valid = false;
+                } else {
+                    valid &= !guestbookResponse.getPosition().isEmpty();
+                }
             }
         }
         
@@ -1637,6 +1653,7 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse.setAuthenticatedUser(aUser);
                 this.guestbookResponse.setEmail(aUser.getEmail());
                 this.guestbookResponse.setInstitution(aUser.getAffiliation());
+                this.guestbookResponse.setPosition("");
             }
             /*
             if (user.isBuiltInUser()) {

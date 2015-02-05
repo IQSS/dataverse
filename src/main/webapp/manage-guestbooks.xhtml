@@ -34,7 +34,7 @@
 
                     <div style="float:right; margin-bottom:.5em;">
                         <h:outputLink styleClass="btn btn-default"
-                                      value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}">
+                                      value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CREATE">
                             <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> <h:outputText value="#{bundle['dataset.manageGuestbooks.createBtn']}"/>
                         </h:outputLink>
                     </div>
@@ -65,12 +65,12 @@
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open"></span>
                                         </p:commandLink>
-                                        <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
-                                                   action="#{manageGuestbooksPage.cloneGuestbook(guestbook)}"
-                                                   update="@form"
-                                                   title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
+                                        <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                                      rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
+                                                      value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CLONE&#38;sourceId=#{guestbook.id}"
+                                                      title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
                                             <span class="glyphicon glyphicon-repeat"></span>
-                                        </p:commandLink>
+                                        </h:outputLink>
                                         <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                       rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
                                                       value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA"

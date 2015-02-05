@@ -47,7 +47,7 @@ public class GuestbookPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, METADATA
+        CREATE, METADATA, CLONE
     };
 
     private Guestbook guestbook;
@@ -55,6 +55,25 @@ public class GuestbookPage implements java.io.Serializable {
     private EditMode editMode;
     private Long ownerId;
     private Long guestbookId;
+    private Long sourceId;
+    
+    private Guestbook sourceGB;
+    
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public Guestbook getSourceGB() {
+        return sourceGB;
+    }
+
+    public void setSourceGB(Guestbook sourceGB) {
+        this.sourceGB = sourceGB;
+    }
 
     public Long getGuestbookId() {
         return guestbookId;
@@ -97,7 +116,7 @@ public class GuestbookPage implements java.io.Serializable {
     }
 
     public void init() {
-        if (guestbookId != null) { // edit or view existing for a template  
+        if (guestbookId != null && editMode.equals(GuestbookPage.EditMode.METADATA)) { // edit or view existing for a template  
             dataverse = dataverseService.find(ownerId);
             for (Guestbook dvGb : dataverse.getGuestbooks()) {
                 if (dvGb.getId().longValue() == guestbookId) {
@@ -105,15 +124,28 @@ public class GuestbookPage implements java.io.Serializable {
                 }
             }
             guestbook.setDataverse(dataverse);
-        } else if (ownerId != null) {
+        } else if (ownerId != null  && editMode.equals(GuestbookPage.EditMode.CREATE) ) {
             // create mode for a new template
             dataverse = dataverseService.find(ownerId);
-            editMode = GuestbookPage.EditMode.CREATE;
             guestbook = new Guestbook();
             guestbook.setDataverse(dataverse);
             guestbook.setCustomQuestions(new ArrayList());
+        } else if (ownerId != null && sourceId != null && editMode.equals(GuestbookPage.EditMode.CLONE)) {
+            // create mode for a new template
+            dataverse = dataverseService.find(ownerId);
+            for (Guestbook dvGb : dataverse.getGuestbooks()) {
+                if (dvGb.getId().longValue() == sourceId) {
+                    sourceGB = dvGb;
+                }
+            }
+            guestbook = sourceGB.copyGuestbook(sourceGB);
+            String name = "Copy of " + sourceGB.getName();
+            guestbook.setName(name);
+            guestbook.setUsageCount(new Long(0));
+            guestbook.setCreateTime(new Timestamp(new Date().getTime()));
+
         } else {
-            throw new RuntimeException("On Guestbook page without id or ownerid."); // improve error handling
+            throw new RuntimeException("On Guestook page without id or ownerid."); // improve error handling
         }
     }
 
@@ -179,7 +211,7 @@ public class GuestbookPage implements java.io.Serializable {
       
         Command<Dataverse> cmd;
         try {
-            if (editMode == EditMode.CREATE) {
+            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE ) {
                 guestbook.setCreateTime(new Timestamp(new Date().getTime()));
                 guestbook.setUsageCount(new Long(0));
                 dataverse.getGuestbooks().add(guestbook);

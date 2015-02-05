@@ -154,7 +154,6 @@ public class Guestbook implements Serializable {
         
     public Guestbook copyGuestbook(Guestbook source) {
         Guestbook newGuestbook = new Guestbook();
-        newGuestbook.setEnabled(true);
         newGuestbook.setDataverse(source.getDataverse());
         newGuestbook.setEmailRequired(source.isEmailRequired());
         newGuestbook.setNameRequired(source.isNameRequired());
@@ -168,16 +167,18 @@ public class Guestbook implements Serializable {
                 target.setGuestbook(newGuestbook);
                 target.setHidden(sq.isHidden());
                 target.setRequired(sq.isRequired());
+                target.setQuestionString(sq.getQuestionString());
                 if(!sq.getCustomQuestionValues().isEmpty()){
                     for (CustomQuestionValue scqv: sq.getCustomQuestionValues()){
                         CustomQuestionValue newVal = new CustomQuestionValue();
-                        newVal.setCustomQuestion(target);
+
                         newVal.setValueString(scqv.getValueString());
+                        newVal.setCustomQuestion(target);
                     }
                 }
+                newGuestbook.getCustomQuestions().add(target);
             }          
         }
-
         return newGuestbook;
     }
     

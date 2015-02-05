@@ -22,6 +22,7 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{GuestbookPage.guestbookId}"/>
                     <f:viewParam name="ownerId" value="#{GuestbookPage.ownerId}"/>
+                    <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
                     <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, 'Dataset Guestbook')}"/>
