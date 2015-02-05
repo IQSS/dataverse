@@ -9,9 +9,5 @@
       "contactEmail": "pete@mailinator.com"
     }
   ],
-    "dataverseSubjects": [
-    {
-      "controlledVocabularyValue": "Arts and Humanities"
-}
-  ]
+    "dataverseSubjects": ["Arts and Humanities"] 
 }

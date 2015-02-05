@@ -9,9 +9,5 @@
       "contactEmail": "pete@mailinator.com"
     }
   ],
-    "dataverseSubjects": [
-    {
-      "controlledVocabularyValue": "Chemistry"
-}
-  ]
+    "dataverseSubjects": ["Chemistry"]
 }

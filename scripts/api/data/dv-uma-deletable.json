@@ -9,9 +9,5 @@
       "contactEmail": "Uma@mailinator.com"
     }
   ],
-    "dataverseSubjects": [
-    {
-      "controlledVocabularyValue": "Business and Management"
-}
-  ]
+    "dataverseSubjects": ["Business and Management"]
 }

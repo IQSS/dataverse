@@ -9,9 +9,5 @@
       "contactEmail": "Uma@mailinator.com"
     }
   ],
-    "dataverseSubjects": [
-    {
-      "controlledVocabularyValue": "Medicine, Health & Life Sciences"
-}
-  ]
+    "dataverseSubjects": ["Medicine, Health & Life Sciences"]
 }

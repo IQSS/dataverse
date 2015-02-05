@@ -1,17 +1,13 @@
 {
-  "alias": "root",
-  "name": "Root",
-  "permissionRoot": false,
-  "facetRoot": true,
-  "description": "The root dataverse.",
-  "dataverseContacts": [
-    {
-      "contactEmail": "root@mailinator.com"
-}
-  ],
-    "dataverseSubjects": [
-    {
-      "controlledVocabularyValue": "N/A"
-}
-  ]
+    "alias": "root",
+    "name": "Root",
+    "permissionRoot": false,
+    "facetRoot": true,
+    "description": "The root dataverse.",
+    "dataverseContacts": [
+        {
+            "contactEmail": "root@mailinator.com"
+        }
+    ],
+    "dataverseSubjects": ["ALL"]
 }
