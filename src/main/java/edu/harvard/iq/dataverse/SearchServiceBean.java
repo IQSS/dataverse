@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -17,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -53,6 +56,8 @@ public class SearchServiceBean {
      */
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+    @EJB
+    GroupServiceBean groupService;
     @EJB
     SystemConfig systemConfig;
 
@@ -106,6 +111,13 @@ public class SearchServiceBean {
             solrQuery.addFilterQuery(filterQuery);
         }
 
+        /**
+         * @todo For people who are not logged in, should we show stuff indexed
+         * with "AllUsers" group or not? If so, uncomment the allUsersString
+         * stuff below.
+         */
+//        String allUsersString = IndexServiceBean.getGroupPrefix() + AllUsers.get().getAlias();
+//        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + allUsersString + ")";
         String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
 //        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
         // initialize to public only to be safe
@@ -137,22 +149,67 @@ public class SearchServiceBean {
 //             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
 //             * before enabling it.
 //             */
+            String groupsFromProviders = "";
+            /**
+             * @todo What should the value be? Is null ok? From a search
+             * perspective, we don't care about if the group was created within
+             * one dataverse or another. We just want a list of all the groups
+             * the user is part of. A JOIN on "permission documents" will
+             * determine if the user can find a given "content document"
+             * (dataset version, etc) in Solr.
+             */
+//            DvObject groupsForDvObjectParamNull = null;
+//            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamNull);
+            /**
+             * @todo What is the expected behavior when you pass in a dataverse?
+             * It seems like no matter what you pass in you always get the
+             * following types of groups:
+             *
+             * - BuiltIn Groups
+             *
+             * - IP Groups
+             *
+             * - Shibboleth Groups
+             *
+             * If you pass in the root dataverse it seems like you get all
+             * groups that you're part of.
+             *
+             * If you pass in a non-root dataverse, it seems like you get groups
+             * that you're part of for that dataverse. It's unclear if there is
+             * any inheritance of groups.
+             */
+            DvObject groupsForDvObjectParamCurrentDataverse = dataverse;
+            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamCurrentDataverse);
+            StringBuilder sb = new StringBuilder();
+            for (Group group : groups) {
+                logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
+                String groupAlias = group.getAlias();
+                if (groupAlias != null && !groupAlias.isEmpty()) {
+                    sb.append(" OR ");
+                    // i.e. group_shib/2
+                    sb.append(IndexServiceBean.getGroupPrefix() + groupAlias);
+                }
+                groupsFromProviders = sb.toString();
+            }
+
+            logger.fine(groupsFromProviders);
             if (true) {
                 /**
                  * @todo get rid of "experimental" in name
                  */
-                String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+                String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
                 if (onlyDatatRelatedToMe) {
                     /**
                      * @todo make this a variable called "String
                      * dataRelatedToMeFilterQuery" or something
                      */
-                    experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+                    experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
                 }
                 publicPlusUserPrivateGroup = experimentalJoin;
             }
 
             permissionFilterQuery = publicPlusUserPrivateGroup;
+            logger.fine(permissionFilterQuery);
 
             if (au.isSuperuser()) {
                 // dangerous because this user will be able to see

@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 /**
  * Persistence for Shibboleth groups.
@@ -20,6 +21,10 @@ public class ShibGroup implements Group, Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    public void setShibGroupProvider(ShibGroupProvider shibGroupProvider) {
+        this.shibGroupProvider = shibGroupProvider;
+    }
 
     /**
      * The name of the group that will be displayed to the end user.
@@ -40,6 +45,9 @@ public class ShibGroup implements Group, Serializable {
     @Column(nullable = false)
     private String pattern;
 
+    @Transient
+    private ShibGroupProvider shibGroupProvider;
+
     /**
      * This is only here because it has to be: "The class should have a no-arg,
      * public or protected constructor." Please use the constructor that takes
@@ -49,10 +57,11 @@ public class ShibGroup implements Group, Serializable {
     public ShibGroup() {
     }
 
-    public ShibGroup(String name, String attribute, String pattern) {
+    public ShibGroup(String name, String attribute, String pattern, ShibGroupProvider shibGroupProvider) {
         this.name = name;
         this.attribute = attribute;
         this.pattern = pattern;
+        this.shibGroupProvider = shibGroupProvider;
     }
 
     @Override
@@ -98,7 +107,7 @@ public class ShibGroup implements Group, Serializable {
 
     @Override
     public GroupProvider getGroupProvider() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return shibGroupProvider;
     }
 
     /**

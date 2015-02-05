@@ -121,6 +121,10 @@ public class Shib implements java.io.Serializable {
      * @todo make this configurable?
      */
     private final String shibIdpAttribute = "Shib-Identity-Provider";
+    /**
+     * @todo Make attribute used (i.e. "eppn") configurable:
+     * https://github.com/IQSS/dataverse/issues/1422
+     */
     private final String uniquePersistentIdentifier = "eppn";
     private String userPersistentId;
     private String internalUserIdentifer;
@@ -164,15 +168,19 @@ public class Shib implements java.io.Serializable {
         // set one of these to true in dev to avoid needing Shibboleth set up locally
         boolean devRandom = false;
         boolean devConstantTestShib = false;
-        boolean devConstantHarvard = false;
+        boolean devConstantHarvard1 = false;
+        boolean devConstantHarvard2 = false;
         if (devRandom) {
             mutateRequestForDevRandom();
         }
         if (devConstantTestShib) {
             mutateRequestForDevConstantTestShib();
         }
-        if (devConstantHarvard) {
-            mutateRequestForDevConstantHarvard();
+        if (devConstantHarvard1) {
+            mutateRequestForDevConstantHarvard1();
+        }
+        if (devConstantHarvard2) {
+            mutateRequestForDevConstantHarvard2();
         }
 
         try {
@@ -410,12 +418,20 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(usernameAttribute, "saml");
     }
 
-    private void mutateRequestForDevConstantHarvard() {
+    private void mutateRequestForDevConstantHarvard1() {
         request.setAttribute(shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
         request.setAttribute(uniquePersistentIdentifier, "constantHarvard");
         request.setAttribute(displayNameAttribute, "John Harvard");
         request.setAttribute(emailAttribute, "jharvard@mailinator.com");
         request.setAttribute(usernameAttribute, "jharvard");
+    }
+
+    private void mutateRequestForDevConstantHarvard2() {
+        request.setAttribute(shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
+        request.setAttribute(uniquePersistentIdentifier, "constantHarvard2");
+        request.setAttribute(displayNameAttribute, "Grace Hopper");
+        request.setAttribute(emailAttribute, "ghopper@mailinator.com");
+        request.setAttribute(usernameAttribute, "ghopper");
     }
 
 }

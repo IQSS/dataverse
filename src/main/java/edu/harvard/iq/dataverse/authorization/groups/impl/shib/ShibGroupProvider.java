@@ -38,6 +38,9 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
         if (user.isAuthenticated()) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
             Set<ShibGroup> groupsFor = shibGroupService.findFor(authenticatedUser);
+            for (ShibGroup shibGroup : groupsFor) {
+                shibGroup.setShibGroupProvider(this);
+            }
             return groupsFor;
         }
         return shibGroups;

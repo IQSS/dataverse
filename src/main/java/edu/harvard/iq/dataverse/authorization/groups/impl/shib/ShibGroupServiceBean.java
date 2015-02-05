@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,6 +29,8 @@ public class ShibGroupServiceBean {
 
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
+    @EJB
+    GroupServiceBean groupService;
 
     /**
      * @return A ShibGroup or null.
@@ -49,7 +52,7 @@ public class ShibGroupServiceBean {
     }
 
     public ShibGroup save(String name, String shibIdpAttribute, String shibIdp) {
-        ShibGroup institutionalGroup = new ShibGroup(name, shibIdpAttribute, shibIdp);
+        ShibGroup institutionalGroup = new ShibGroup(name, shibIdpAttribute, shibIdp, groupService.getShibGroupProvider());
         em.persist(institutionalGroup);
         em.flush();
         ShibGroup merged = em.merge(institutionalGroup);

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,6 +35,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    SettingsServiceBean settingsService;
     @Inject
     DataverseSession session;
 
@@ -830,9 +833,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isDebug() {
-        return debug;
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
     }
 
+    /**
+     * @todo Remove this. Stop letting end users expose debug information with
+     * the debug=true query parameter.
+     */
+    @Deprecated
     public void setDebug(boolean debug) {
         this.debug = debug;
     }

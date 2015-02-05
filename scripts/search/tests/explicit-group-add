@@ -1,0 +1,2 @@
+#!/bin/sh
+curl -X POST http://localhost:8080/api/dvs/root/groups?key=$ADMINKEY -H "Content-type: application/json" --upload-file scripts/search/data/group-explicit-trees.json

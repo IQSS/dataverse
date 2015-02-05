@@ -140,7 +140,7 @@ public class Groups extends AbstractApiBean {
         if (pattern == null) {
             return errorResponse(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
         }
-        ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString());
+        ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString(), shibGroupPrv);
         ShibGroup persitedShibGroup = shibGroupPrv.persist(shibGroupToPersist);
         if (persitedShibGroup != null) {
             return okResponse("Shibboleth group persisted: " + persitedShibGroup);
