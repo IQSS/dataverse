@@ -121,7 +121,7 @@ public class BatchImport extends AbstractApiBean  {
             return errorResponse(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
         }
         try {
-             batchService.processFilePath(fileDir, parentIdtf, u,owner, ImportType.NEW);
+             batchService.processFilePath(fileDir, parentIdtf, u,owner, importType);
           } catch (ImportException e) {
             e.printStackTrace();
             return this.errorResponse(Response.Status.BAD_REQUEST, "Import Exception!!");
