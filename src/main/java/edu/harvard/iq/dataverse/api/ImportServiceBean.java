@@ -121,55 +121,9 @@ public class ImportServiceBean {
 
    }
    
-  @Asynchronous 
-  public void  processFilePath(String fileDir, String parentIdtf, User u, Dataverse owner, ImportType importType ) throws ImportException, IOException {
-             JsonArrayBuilder status = Json.createArrayBuilder();
-       int count =0;
-       
-            File dir = new File(fileDir);
-            if (dir.isDirectory()) { 
-                for (File file : dir.listFiles()) {
-                    if (!file.isHidden()) {
-                        if (file.isDirectory()) {
-                            status.add(handleDirectory(u, file, importType));
-                        } else {
-                            status.add(handleFile(u, owner, file, importType));
-                            count++;
-                        }
-                    }
-                }
-            } else {
-                status.add(handleFile(u, owner, dir, importType));
-                count++;
-            }       
-        logger.info("END IMPORT, processed "+count+"files.");
-       
-   }
   
-   public JsonArrayBuilder handleDirectory(User u, File dir, ImportType importType) throws ImportException, IOException {
-        JsonArrayBuilder status = Json.createArrayBuilder();
-        Dataverse owner = dataverseService.findByAlias(dir.getName());
-        if (owner == null) {
-            if (importType.equals(ImportUtil.ImportType.MIGRATION) || importType.equals(ImportUtil.ImportType.NEW)) {
-                System.out.println("creating new dataverse: " + dir.getName());
-                owner=createDataverse(dir, u);
-            } else {
-                throw new ImportException("Can't find dataverse with identifier='" + dir.getName() + "'");
-            }
-        }
-        for (File file : dir.listFiles()) {
-            if (!file.isHidden()) {
-                try {
-                    JsonObjectBuilder fileStatus = handleFile(u, owner, file, importType);
-                    status.add(fileStatus);
-                } catch (ImportException e) {
-                    status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
-                }
-            }
-        }
-        return status;
-    }
- 
+  
+  
   
     @TransactionAttribute(REQUIRES_NEW)
     public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException, IOException {
