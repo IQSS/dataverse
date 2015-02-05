@@ -25,5 +25,12 @@ for row in rows:
         contactArray.append(contactHash)
         row["dataverseContacts"] = contactArray
         del row["contactEmail"]
+    if "subject" in row:
+        subjectsArray = []
+        subjectHash = {}
+        subjectHash["controlledVocabularyValue"] = row["subject"]
+        subjectsArray.append(subjectHash)
+        row["dataverseSubjects"] = subjectsArray
+        del row["subject"]
     print json.dumps(row)
 csv_file.close()
