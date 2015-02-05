@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String dvFieldName;
     private String dvFieldDescription;
     private String dvFieldAffiliation;
+    private List<String> dvFieldSubject;
     private String dsPublicationDate;
     private String fileFieldName;
     private String fileFieldDescription;
@@ -115,8 +117,16 @@ public class AdvancedSearchPage implements java.io.Serializable {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_DESCRIPTION, dvFieldDescription));
         }
 
-        return constructQuery(queryStrings, true);
-    }
+        if (dvFieldSubject != null && !dvFieldSubject.isEmpty()) {
+            List<String> listQueryStrings = new ArrayList();
+            for (String value : dvFieldSubject) {
+                listQueryStrings.add(SearchFields.DATAVERSE_SUBJECT + ":" + "\"" + value + "\"");
+            }
+            queryStrings.add(constructQuery(listQueryStrings, false));
+        }
+
+            return constructQuery(queryStrings, true);
+        }
 
     private String constructFileQuery() {
         List queryStrings = new ArrayList();
@@ -263,6 +273,19 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setDvFieldAffiliation(String dvFieldAffiliation) {
         this.dvFieldAffiliation = dvFieldAffiliation;
+    }
+
+    public List<String> getDvFieldSubject() {
+        return dvFieldSubject;
+    }
+
+    public void setDvFieldSubject(List<String> dvFieldSubject) {
+        this.dvFieldSubject = dvFieldSubject;
+    }
+
+    public Collection<ControlledVocabularyValue> getDvFieldSubjectValues() {
+        DatasetFieldType subjectType = datasetFieldService.findByName(DatasetFieldConstant.subject);
+        return subjectType.getControlledVocabularyValues();
     }
 
     public String getDsPublicationDate() {
