@@ -629,36 +629,47 @@
                 </ui:fragment>
                 <!-- Dialog Link Dataverse Form -->
                 <p:dialog id="linkDataverseForm" header="#{bundle['dataverse.link']}" widgetVar="linkDataverseForm" style="min-width:500px;">
-                    <h:form rendered="#{DataversePage.dataversesForLinking.size() > 1}">
-                        <div>
-                            <p class="help-block">#{bundle['dataverse.link.dataverse.choose']}</p>
-                            <h:selectOneMenu value="#{DataversePage.linkingDataverseId}">
-
-                                <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
-                            </h:selectOneMenu>
+                    <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
+                        <p class="help-block">#{bundle['dataverse.link.dataverse.choose']}</p>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">
+                                Your Dataverses
+                            </label>
+                            <div class="col-sm-7">
+                                <h:selectOneMenu styleClass="form-control" value="#{DataversePage.linkingDataverseId}">
+                                    <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
+                                </h:selectOneMenu>
+                            </div>
                         </div>
-                        <ui:remove><h:commandButton value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" /></ui:remove>
-                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()"
-                                jsf:action="#{DataversePage.saveLinkedDataverse}">
-                            #{bundle['dataverse.link.save']}
+                        <h:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
+                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
+                            #{bundle['cancel']}
                         </button>
                     </h:form>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
-                        <p>#{bundle['dataverse.link.no.choice']}</p>
-                        <p>#{DataversePage.linkingDataverse.displayName}</p>
-                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()"
-                                jsf:id="linkDataverseSaveButton" jsf:actionListener="#{DataversePage.saveLinkedDataverse}">
-                            #{bundle['dataverse.link.save']}
+                        <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">
+                                    Your Dataverse
+                                </label>
+                                <div class="col-sm-7">
+                                    <p class="form-control-static">#{DataversePage.linkingDataverse.displayName}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p:commandLink styleClass="btn btn-default" onclick="linkDataverseForm.hide()" 
+                                         value="#{bundle['dataverse.link.save']}" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
+                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
+                            #{bundle['cancel']}
                         </button>
-                        <ui:remove><p:commandButton id="hiddenLink" onclick="linkDataverseForm.hide()" 
-                                         value="#{bundle['dataverse.link.save']}" actionListener="#{DataversePage.saveLinkedDataverse()}"/></ui:remove>
                     </ui:fragment>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
                         <p>#{bundle['dataverse.link.no.linkable']}</p>
+                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
+                            #{bundle['done']}
+                        </button>
                     </ui:fragment>
-                    <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
-                        #{bundle['cancel']}
-                    </button>
                 </p:dialog>
 
                 <!-- Dialog Contact Form -->
