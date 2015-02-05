@@ -2212,36 +2212,44 @@
                         <p:commandButton id="fileCategoriesPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileCategoriesPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.addFileCategory()}"/>
                         <p:commandButton id="fileCategoriesPopupCancelButton" value="#{bundle.cancel}" onclick="fileCategoriesPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                     </p:dialog>
-                    <p:dialog id="linkDatasetForm" header="#{bundle['dataverse.link']}" widgetVar="linkDatasetForm" style="min-width:500px;">
+                    <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" style="min-width:500px;">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
-                            <div>
-                                <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
-                                <p:selectOneMenu value="#{DatasetPage.linkingDataverseId}">
-                                    <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
-                                </p:selectOneMenu>
+                            <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">
+                                        Your Dataverses
+                                    </label>
+                                    <div class="col-sm-7">
+                                        <p:selectOneMenu styleClass="form-control" value="#{DatasetPage.linkingDataverseId}">
+                                            <f:selectItems value="#{DatasetPage.linkingDVSelectItems}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()"
-                                    jsf:action="#{DatasetPage.saveLinkedDataset()}">
-                                #{bundle['dataset.link.save']}
-                            </button>
-                            <ui:remove><p:commandButton value="#{bundle['dataset.link.save']}" action="#{DatasetPage.saveLinkedDataset}" /></ui:remove>
+                            <p:commandLink styleClass="btn btn-default" value="#{bundle['dataset.link.save']}" 
+                                            action="#{DatasetPage.saveLinkedDataset}" />
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
-                            <p>#{bundle['dataverse.link.no.choice']}</p>
-                            <p>#{DatasetPage.linkingDataverse.displayName}</p>
-                            <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()"
-                                    jsf:id="linkDatasetSaveButton" jsf:actionListener="#{DatasetPage.saveLinkedDataset()}">
-                                #{bundle['dataset.link.save']}
-                            </button>
-                            <ui:remove><p:commandButton id="hiddenLink" onclick="linkDatasetForm.hide()" 
-                                                        value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"/></ui:remove>
-
+                            <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">
+                                        Your Dataverse
+                                    </label>
+                                    <div class="col-sm-7">
+                                        <p class="form-control-static">#{DatasetPage.linkingDataverse.displayName}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p:commandLink styleClass="btn btn-default" onclick="linkDatasetForm.hide()" 
+                                             value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"/>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
                             <p>#{bundle['dataverse.link.no.linkable']}</p>
                         </ui:fragment>
                         <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()">
-                            #{bundle['cancel']}
+                            #{bundle['done']}
                         </button>
                     </p:dialog>
 
