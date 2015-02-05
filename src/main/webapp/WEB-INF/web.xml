@@ -9,7 +9,7 @@
     <!-- Error page -->
     <error-page>
         <error-code>404</error-code>
-        <location>/faces/404.xhtml</location>
+        <location>/404.xhtml</location>
     </error-page>
 
     <!-- Welcome page -->
