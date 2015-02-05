@@ -80,7 +80,7 @@
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
                                                     #{dsf.datasetFieldType.title}
                                                 </a>
-                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required or dsf.datasetFieldType.requiredDV }" />
+                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required or dsf.datasetFieldType.requiredDV or dsf.datasetFieldType.hasRequiredChildren }" />
                                             </label>
 
 
