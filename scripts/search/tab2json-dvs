@@ -27,9 +27,7 @@ for row in rows:
         del row["contactEmail"]
     if "subject" in row:
         subjectsArray = []
-        subjectHash = {}
-        subjectHash["controlledVocabularyValue"] = row["subject"]
-        subjectsArray.append(subjectHash)
+        subjectsArray.append(row["subject"])
         row["dataverseSubjects"] = subjectsArray
         del row["subject"]
     print json.dumps(row)

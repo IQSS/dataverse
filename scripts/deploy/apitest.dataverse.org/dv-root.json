@@ -5,9 +5,7 @@
   "facetRoot": true,
   "description": "Welcome! This is a playground for Dataverse API users. (Data will be deleted periodically.) Please see http://guides.dataverse.org/en/latest/api to get started and http://community.dataverse.org/community-groups/api.html to join the community!",
   "dataverseSubjects": [
-    {
-      "controlledVocabularyValue": "N/A"
-    }
+      "Other"
   ],
   "dataverseContacts": [
     {
