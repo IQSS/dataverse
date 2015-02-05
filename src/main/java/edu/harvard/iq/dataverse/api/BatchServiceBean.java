@@ -35,8 +35,7 @@ public class BatchServiceBean {
     @Asynchronous
     public void processFilePath(String fileDir, String parentIdtf, User u, Dataverse owner, ImportUtil.ImportType importType) throws ImportException, IOException {
         JsonArrayBuilder status = Json.createArrayBuilder();
-        int count = 0;
-
+    
         File dir = new File(fileDir);
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
@@ -45,15 +44,15 @@ public class BatchServiceBean {
                         status.add(handleDirectory(u, file, importType));
                     } else {
                         status.add(importService.handleFile(u, owner, file, importType));
-                        count++;
+                       
                     }
                 }
             }
         } else {
             status.add(importService.handleFile(u, owner, dir, importType));
-            count++;
+          
         }
-        logger.info("END IMPORT, processed " + count + "files.");
+        logger.info("END IMPORT");
 
     }
     
