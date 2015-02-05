@@ -317,6 +317,45 @@ public class FileMetadata implements Serializable {
         return true;
     }
 
+    /* 
+     * An experimental method for comparing 2 file metadatas *by content*; i.e., 
+     * this would be for checking 2 metadatas from 2 different versions, to 
+     * determine if any of the actual metadata fields have changed between 
+     * versions. 
+    */
+    public boolean contentEquals(FileMetadata other) {
+        if (other == null) {
+            return false; 
+        }
+        
+        if (this.getLabel() != null) {
+            if (!this.getLabel().equals(other.getLabel())) {
+                return false;
+            }
+        } else if (other.getLabel() != null) {
+            return false;
+        }
+        
+        if (this.getDescription() != null) {
+            if (!this.getDescription().equals(other.getDescription())) {
+                return false;
+            }
+        } else if (other.getDescription() != null) {
+            return false;
+        }
+        
+        /* 
+         * we could also compare the sets of file categories; but since this 
+         * functionality is for deciding whether to index an extra filemetadata, 
+         * we're not doing it, as of now; because the categories are not indexed
+         * and not displayed on the search cards. 
+         * -- L.A. 4.0 beta12
+        */
+        
+        return true;
+    }
+    
+    
     @Override
     public String toString() {
         return "edu.harvard.iq.dvn.core.study.FileMetadata[id=" + id + "]";
