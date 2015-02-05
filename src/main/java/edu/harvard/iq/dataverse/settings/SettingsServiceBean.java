@@ -25,6 +25,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /** Expose debug information in the UI that users shouldn't normally see. */
+        Debug,
         /**
          * A boolean defining if indexing and search should respect the concept
          * of "permission root".

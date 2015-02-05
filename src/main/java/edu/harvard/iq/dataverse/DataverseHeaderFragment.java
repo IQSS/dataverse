@@ -227,9 +227,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
 
     public boolean isDebugShibboleth() {
-        // curl -X PUT -d yes http://localhost:8080/api/s/settings/:ShibEnabled
+        // curl -X PUT -d yes http://localhost:8080/api/s/settings/:Debug
         boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
     }
 
     public List<String> getGroups(User user) {
