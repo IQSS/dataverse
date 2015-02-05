@@ -164,7 +164,6 @@ public class DatasetPage implements java.io.Serializable {
     private String protocol = "";
     private String authority = "";
     private String separator = "";
-    private boolean acceptedTerms = false;
     
     private List<Dataverse> dataversesForLinking;
     private Long linkingDataverseId;
@@ -240,15 +239,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
-    }
-
-
-    public boolean isAcceptedTerms() {
-        return acceptedTerms;
-    }
-
-    public void setAcceptedTerms(boolean acceptedTerms) {
-        this.acceptedTerms = acceptedTerms;
     }
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
@@ -685,10 +675,6 @@ public class DatasetPage implements java.io.Serializable {
     public String saveGuestbookResponse() {
         
         boolean valid = true;
-        
-        if (workingVersion.getLicense() != null && !workingVersion.getLicense().equals(DatasetVersion.License.CC0)){
-            valid &= this.acceptedTerms;
-        }
         
         if(dataset.getGuestbook() != null){
             if (dataset.getGuestbook().isNameRequired()){

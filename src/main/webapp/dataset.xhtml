@@ -2085,9 +2085,6 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
-                                    <div style="padding-top: 7px;">
-                                        <p:selectBooleanCheckbox id="acceptTOU" itemLabel="#{bundle['file.downloadDialog.termsTip']}" value="#{DatasetPage.acceptedTerms}"/>
-                                    </div>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
