@@ -44,6 +44,8 @@ public class SearchFields {
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation_en";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription_en";
     public static final String DATAVERSE_CATEGORY = "dvCategory_s";
+    public static final String DATAVERSE_SUBJECT = "dvSubject_en";
+    public static final String SUBJECT = "subject_ss";    
     /**
      * @todo: standard Solr "title" field is multivalued. Do we want ours to be?
      */
