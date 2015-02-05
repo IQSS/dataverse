@@ -1,6 +1,6 @@
 name	alias	permissionRoot	subject	contactEmail	description	affiliation
-Birds	birds	true	Other	birds@birds.com	A bird dataverse with some trees	Birds Inc.
-Finches	finches	false	Other	finches@birds.com	A dataverse with finches	Birds Inc.
-Sparrows	sparrows	false	Other	sparrows@birds.com	A dataverse featuring sparrows	Birds Inc.
-Wrens	wrens	false	Other	wrens@birds.com	A dataverse full of wrens	Birds Inc.
+Birds	birds	true	Arts and Humanities	birds@birds.com	A bird dataverse with some trees	Birds Inc.
+Finches	finches	false	Chemistry	finches@birds.com	A dataverse with finches	Birds Inc.
+Sparrows	sparrows	false	Law	sparrows@birds.com	A dataverse featuring sparrows	Birds Inc.
+Wrens	wrens	false	Medicine, Health & Life Sciences	wrens@birds.com	A dataverse full of wrens	Birds Inc.
 Chestnut Sparrows	chestnutsparrows	false	Other	chestnutsparrows@birds.com	A dataverse with chestnut sparrows	Birds Inc.

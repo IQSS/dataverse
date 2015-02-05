@@ -166,6 +166,12 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
             solrInputDocument.addField(SearchFields.DATAVERSE_AFFILIATION, dataverse.getAffiliation());
         }
+        for (ControlledVocabularyValue dataverseSubject : dataverse.getDataverseSubjects()) {
+            String subject = dataverseSubject.getStrValue();
+            solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, subject);
+            // collapse into shared "subject" field used as a facet
+            solrInputDocument.addField(SearchFields.SUBJECT, subject);
+        }
         // checking for NPE is important so we can create the root dataverse
         if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
             // important when creating root dataverse
