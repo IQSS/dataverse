@@ -795,7 +795,7 @@
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <!-- TwoRavens explore option -->
-                                            <ui:fragment rendered="#{(fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}" target="_blank">
                                                     <span class="glyphicon glyphicon-stats"/> <span class="ladda-label">#{bundle.explore}</span>
                                                 </h:outputLink>
@@ -855,7 +855,7 @@
                                             </ui:fragment>
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                                 </a>
