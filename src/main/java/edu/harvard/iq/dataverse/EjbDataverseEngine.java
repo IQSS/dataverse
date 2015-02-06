@@ -128,7 +128,7 @@ public class EjbDataverseEngine {
             }
             DvObject dvo = affectedDvObjects.get(dvName);
             
-            Set<Permission> granted = (dvo != null) ? permissionService.permissionsForUser(user, dvo)
+            Set<Permission> granted = (dvo != null) ? permissionService.permissionsFor(user, dvo)
                     : EnumSet.allOf(Permission.class);
             Set<Permission> required = requiredMap.get(dvName);
             if (!granted.containsAll(required)) {

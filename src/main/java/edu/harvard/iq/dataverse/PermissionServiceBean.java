@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
-import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -122,26 +121,26 @@ public class PermissionServiceBean {
     /**
      * Returns the set of permission a user has over a dataverse object. 
      * This method takes into consideration group memberships as well.
-     * @param u The user
+     * @param ra The role assignee.
      * @param d The {@link DvObject} on which the user wants to operate
      * @return the set of permissions {@code u} has over {@code d}.
      */
-    public Set<Permission> permissionsForUser(User u, DvObject d) {
+    public Set<Permission> permissionsFor(RoleAssignee ra, DvObject d) {
 
         Set<Permission> permissions = EnumSet.noneOf(Permission.class);
         
         // Add permissions specifically given to the user
-        permissions.addAll( permissionsFor(u,d) );
+        permissions.addAll( permissionsForSingleRoleAssignee(ra,d) );
         
         // Add permissions gained from groups
-        for ( Group g : groupService.groupsFor(u,d) ) {
-            permissions.addAll( permissionsFor(g,d) );
+        for ( Group g : groupService.groupsFor(ra,d) ) {
+            permissions.addAll( permissionsForSingleRoleAssignee(g,d) );
         }
         
         return permissions;
     }
-    
-    public Set<Permission> permissionsFor(RoleAssignee ra, DvObject d) {
+
+    public Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d) {
         // super user check
         // @todo for 4.0, we are allowing superusers all permissions
         // for secure data, we may need to restrict some of the permissions
@@ -182,6 +181,13 @@ public class PermissionServiceBean {
         return retVal;
     }
 
+    /**
+     * Returns all the role assignments that are effective for {@code ra} over
+     * {@code d}. Traverses the containment hierarchy of the {@code d}.
+     * @param ra The role assignee whose role assignemnts we look for.
+     * @param d The dataverse object over which the roles are assigned
+     * @return A set of all the role assignments for {@code ra} over {@code d}.
+     */
     public Set<RoleAssignment> assignmentsFor(RoleAssignee ra, DvObject d) {
         Set<RoleAssignment> assignments = new HashSet<>();
         while (d != null) {
@@ -210,6 +216,8 @@ public class PermissionServiceBean {
      * @param commandClass
      * @param dvo
      * @return
+     * @deprecated As commands have dynamic permissions now, it is not enough to look at the static permissions anymore.
+     * @see #isUserAllowedOn(edu.harvard.iq.dataverse.authorization.RoleAssignee, edu.harvard.iq.dataverse.engine.command.Command, edu.harvard.iq.dataverse.DvObject) 
      */
     public boolean isUserAllowedOn(RoleAssignee u, Class<? extends Command> commandClass, DvObject dvo) {
         Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
@@ -254,13 +262,9 @@ public class PermissionServiceBean {
      * Go from (User, Permission) to a list of Dataverse objects that the user
      * has the permission on.
      *
-     * @todo Check isPermissionRoot (or [sic] isEffectivlyPermissionRoot?)
-     *
-     * @todo Refactor this into something more performant:
-     * https://github.com/IQSS/dataverse/issues/784
-     *
-     * In DVN 3.x we had this: List<VDC> vdcList =
-     * vdcService.getUserVDCs(vdcUser.getId());
+     * @param user
+     * @param permission
+     * @return The list of dataverses {@code user} has permission {@code permission} on.
      */
     public List<Dataverse> getDataversesUserHasPermissionOn(User user, Permission permission) {
         List<Dataverse> allDataverses = dataverseService.findAll();

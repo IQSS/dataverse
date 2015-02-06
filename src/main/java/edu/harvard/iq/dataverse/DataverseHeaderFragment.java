@@ -243,7 +243,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     public List<String> getPermissions(User user, Dataverse dataverse) {
         List<String> permissions = new ArrayList<>();
-        for (Permission permission : permissionService.permissionsForUser(user, dataverse)) {
+        for (Permission permission : permissionService.permissionsFor(user, dataverse)) {
             permissions.add(permission.name());
         }
         return permissions;

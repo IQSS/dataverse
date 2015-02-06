@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -114,6 +115,7 @@ public class ExplicitGroupServiceBean {
      * @return All the groups ra belongs to in the context of o.
      */
     public Set<ExplicitGroup> findGroups( RoleAssignee ra, DvObject o ) {
+        if ( o == null ) return Collections.emptySet();
         List<ExplicitGroup> groupList = new LinkedList<>();
         
         if ( ra instanceof ExplicitGroup ) {

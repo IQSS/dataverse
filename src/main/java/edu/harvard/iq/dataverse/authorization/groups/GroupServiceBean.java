@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.BuiltInGroupsProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
@@ -10,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvi
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -73,12 +73,12 @@ public class GroupServiceBean {
         return shibGroupProvider;
     }
     
-    public Set<Group> groupsFor( User u, DvObject dvo ) {
+    public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
         Set<Group> groups = new HashSet<>();
         
         // first, get all groups the user directly belongs to
         for ( GroupProvider gv : groupProviders.values() ) {
-            groups.addAll( gv.groupsFor(u, dvo) );
+            groups.addAll( gv.groupsFor(ra, dvo) );
         }
         
         // now, get the explicit group transitive closure.
@@ -97,7 +97,7 @@ public class GroupServiceBean {
             perimeter.remove(g);
             
             Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
-            discovered.removeAll(visited); // Ideally this is aloways empty, as we don't allow cycles.
+            discovered.removeAll(visited); // Ideally this is always empty, as we don't allow cycles.
                                            // Still, coding defensively here, in case someone gets too
                                            // smart on the SQL console.
             

@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -33,17 +35,22 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
     }
 
     @Override
-    public Set<ShibGroup> groupsFor(User user, DvObject o) {
-        Set<ShibGroup> shibGroups = new HashSet<>();
-        if (user.isAuthenticated()) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            Set<ShibGroup> groupsFor = shibGroupService.findFor(authenticatedUser);
-            for (ShibGroup shibGroup : groupsFor) {
-                shibGroup.setShibGroupProvider(this);
+    public Set<ShibGroup> groupsFor(RoleAssignee ra, DvObject o) {
+        if ( ra instanceof User ) {
+            User user = (User) ra;
+            Set<ShibGroup> shibGroups = new HashSet<>();
+            if (user.isAuthenticated()) {
+                AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+                Set<ShibGroup> groupsFor = shibGroupService.findFor(authenticatedUser);
+                for (ShibGroup shibGroup : groupsFor) {
+                    shibGroup.setShibGroupProvider(this);
+                }
+                return groupsFor;
             }
-            return groupsFor;
+            return shibGroups;
+        } else {
+            return Collections.emptySet();
         }
-        return shibGroups;
     }
 
     @Override

@@ -29,7 +29,7 @@ public class TestApi extends AbstractApiBean {
         }
         try {
             AuthenticatedUser au = findUserOrDie(key);
-            return okResponse( json(permissionSvc.permissionsForUser(au, dvObj)) );
+            return okResponse( json(permissionSvc.permissionsFor(au, dvObj)) );
             
         } catch ( WrappedResponse wr ) {
             return wr.getResponse();

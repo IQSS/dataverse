@@ -36,22 +36,18 @@ public class ExplicitGroupProvider implements GroupProvider {
     }
     
     /**
-     * Returns all the groups the user belongs to in the context of 
+     * Returns all the groups the role assignee belongs to in the context of 
      * {@code o}. This includes groups defined on {@code o}'s parents as well.
      * 
-     * @param u The user
+     * @param ra The user
      * @param o The DvObject over which the groups are defined.
      * @return The groups the user belongs to in the context of {@code o}.
      */
     @Override
-    public Set<ExplicitGroup> groupsFor(User u, DvObject o) {
-        return explicitGroupSvc.findGroups(u, o);
+    public Set<ExplicitGroup> groupsFor(RoleAssignee ra, DvObject o) {
+        return explicitGroupSvc.findGroups(ra, o);
     }
 
-    public Set<ExplicitGroup> groupsFor( ExplicitGroup eg, DvObject o ) {
-        return explicitGroupSvc.findGroups(eg, o);
-    }
-    
     @Override
     public ExplicitGroup get(String groupAlias) {
         return explicitGroupSvc.findByAlias( groupAlias );
