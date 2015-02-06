@@ -124,12 +124,17 @@ public class GuestbookPage implements java.io.Serializable {
                 }
             }
             guestbook.setDataverse(dataverse);
-        } else if (ownerId != null  && editMode.equals(GuestbookPage.EditMode.CREATE) ) {
+            if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
+                guestbook.setCustomQuestions(new ArrayList());
+                initCustomQuestion();
+            }
+        } else if (ownerId != null && editMode.equals(GuestbookPage.EditMode.CREATE)) {
             // create mode for a new template
             dataverse = dataverseService.find(ownerId);
             guestbook = new Guestbook();
             guestbook.setDataverse(dataverse);
             guestbook.setCustomQuestions(new ArrayList());
+            initCustomQuestion();
         } else if (ownerId != null && sourceId != null && editMode.equals(GuestbookPage.EditMode.CLONE)) {
             // create mode for a new template
             dataverse = dataverseService.find(ownerId);
@@ -143,6 +148,10 @@ public class GuestbookPage implements java.io.Serializable {
             guestbook.setName(name);
             guestbook.setUsageCount(new Long(0));
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
+            if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
+                guestbook.setCustomQuestions(new ArrayList());
+                initCustomQuestion();
+            }
 
         } else {
             throw new RuntimeException("On Guestook page without id or ownerid."); // improve error handling
@@ -158,15 +167,22 @@ public class GuestbookPage implements java.io.Serializable {
         return null;
     }
     
-    
-    public String addCustomQuestion(){
+    private void initCustomQuestion(){
+        CustomQuestion toAdd = new CustomQuestion();
+        toAdd.setQuestionType("text");
+        toAdd.setCustomQuestionValues(new ArrayList());
+        toAdd.setGuestbook(guestbook);       
+        int index = guestbook.getCustomQuestions().size();
+        guestbook.addCustomQuestion(index, toAdd);       
+    }
+        
+    public String addCustomQuestion(Integer indexIn){
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList());
         toAdd.setGuestbook(guestbook);
         
-        int index = guestbook.getCustomQuestions().size();
-        guestbook.addCustomQuestion(index, toAdd);
+        guestbook.addCustomQuestion(indexIn, toAdd);
         return "";
     }
     

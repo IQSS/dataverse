@@ -118,7 +118,7 @@
                     <p:dialog id="viewGuestbook" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
                         <div class="text-right">
                             <h:outputLink styleClass="btn btn-default"
-                                          value="/guestbook.xhtml?id=#{guestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA">
+                                          value="/guestbook.xhtml?id=#{manageGuestbooksPage.selectedGuestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA">
                                 <span class="glyphicon glyphicon-pencil"></span> #{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}
                             </h:outputLink>
                         </div>

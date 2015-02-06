@@ -67,6 +67,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p class="help-block">Dataverse account information that will be collected when a user downloads a file.</p>
+                                    <p class="help-block">Check the data points to make them required.</p>
                                     <div class="checkbox">
                                         <label jsf:for="nameRequiredCb">
                                           <input type="checkbox" jsf:id="nameRequiredCb" jsf:value="#{GuestbookPage.guestbook.nameRequired}"/> Name
@@ -147,11 +148,13 @@
                                                                             <p:message for="responseText" display="text"/>
                                                                         </div>
                                                                         <div class="col-sm-4">
-                                                                            <p:commandButton styleClass="btn btn-default btn-sm"
+
+                                                                            <p:commandButton styleClass="btn btn-default btn-sm" rendered="true"
                                                                                              title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false">
                                                                                 <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
                                                                             </p:commandButton>
-                                                                            <p:commandButton styleClass="btn btn-default btn-sm"
+
+                                                                            <p:commandButton styleClass="btn btn-default btn-sm" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
                                                                                 <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
                                                                             </p:commandButton>
@@ -164,6 +167,10 @@
                                                 </div>
                                                 <div class="col-sm-3">
                                                     <p:commandButton styleClass="btn btn-default btn-sm" style="margin:1.8em 1em 0 0;"
+                                                                     title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false">
+                                                        <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}" />
+                                                    </p:commandButton>
+                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="margin:1.8em 1em 0 0;" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                                      title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
                                                         <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
                                                     </p:commandButton>
