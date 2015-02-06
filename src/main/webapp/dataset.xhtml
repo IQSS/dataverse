@@ -861,7 +861,7 @@
                                                 </a>
                                             </ui:fragment>
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                            <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <p:commandLink id="downloadPopupButton"
                                                                styleClass="btn btn-default"
                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
@@ -870,7 +870,7 @@
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                                 </p:commandLink>
                                             </ui:fragment>
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <ui:fragment rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
