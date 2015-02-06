@@ -41,7 +41,7 @@ ShibEnabled
 
 Set ``ShibEnabled`` to ``true`` to enable Shibboleth login.
 
-``curl -X PUT http://localhost:8080/api/s/settings/:ShibEnabled/true``
+``curl -X PUT -d true http://localhost:8080/api/s/settings/:ShibEnabled``
 
 DataDepositApiMaxUploadInBytes
 ------------------------------
