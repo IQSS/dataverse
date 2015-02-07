@@ -272,6 +272,9 @@
    <!-- Added for Dataverse 4.0 Beta: make variable names and labels searchable in basic search https://redmine.hmdc.harvard.edu/issues/3945 -->
    <copyField source="variable_name_en" dest="text" maxChars="3000"/>
    <copyField source="variable_label_en" dest="text" maxChars="3000"/>
+   <!-- Make dataverse subject and affiliation searchable from basic search: https://github.com/IQSS/dataverse/issues/1431 -->
+   <copyField source="dvSubject_en" dest="text" maxChars="3000"/>
+   <copyField source="dvAffiliation_en" dest="text" maxChars="3000"/>
 
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="ARCS1" type="text_en" multiValued="false" stored="true" indexed="true"/>

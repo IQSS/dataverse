@@ -86,6 +86,14 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Date");
         /**
+         * @todo Dataverse subject and affiliation should be highlighted but
+         * this is commented out right now because the "friendly" names are not
+         * being shown on the dataverse cards. See also
+         * https://github.com/IQSS/dataverse/issues/1431
+         */
+//        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_SUBJECT, "Subject");
+//        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_AFFILIATION, "Affiliation");
+        /**
          * @todo: show highlight on file card?
          * https://redmine.hmdc.harvard.edu/issues/3848
          */
