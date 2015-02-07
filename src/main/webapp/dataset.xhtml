@@ -620,12 +620,12 @@
                                             </button>
                                             <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                 <li>
-                                                    <p:commandLink  update="filesTable" actionListener="#{DatasetPage.restrictFiles(true)}">
+                                                    <p:commandLink update="filesTable" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
                                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                                     </p:commandLink>
                                                 </li>
                                                 <li>
-                                                    <p:commandLink update="filesTable" actionListener="#{DatasetPage.restrictFiles(false)}">
+                                                    <p:commandLink update="filesTable" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
                                                         <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                     </p:commandLink>
                                                 </li>
@@ -948,7 +948,7 @@
                                                            actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}" 
                                                            update="filesTable"
                                                            disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-                                                <span class="glyphicon glyphicon-globe"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+                                                <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
                                             </p:commandLink>
                                         </p:column>
                                     </p:dataTable>
@@ -2256,8 +2256,7 @@
                     <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup"
                               rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}" modal="true">
                         <ui:fragment>
-                            <div class="form-inline clearfix" style="width:600px;">
-
+                            <div class="form-horizontal">
                                 <div class="form-group">
                                     <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}">
@@ -2279,7 +2278,6 @@
                                     </div>
                                 </div>                                
                             </div>
-
                             <p:commandButton value="#{bundle.continue}" onclick="accessPopup.hide()" action="#{DatasetPage.save()}">
                             </p:commandButton>
                             <p:commandButton value="#{bundle.cancel}" onclick="accessPopup.hide()" type="button" />  

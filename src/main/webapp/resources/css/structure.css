@@ -32,7 +32,7 @@ body .ui-widget {font-size: inherit;}
 .panelgridFormTable.ui-panelgrid td table.ui-picklist td {border: 0; padding:0;}
 .panelgridFormTable.ui-panelgrid td table.ui-picklist td ul.ui-widget-content.ui-corner-all {border:1px solid #DDDDDD; border-radius: 4px;}
 
-.panelLayoutButtonBlock button {margin-right:2em;}
+.panelLayoutButtonBlock button {/*margin-right:2em;*/}
 
 .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
 .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
@@ -45,7 +45,7 @@ body .ui-widget {font-size: inherit;}
 .btn span.glyphicon {margin-right:.3em;}
 .btn span.glyphicon.no-text {margin-right:0;}
 
-.messagePanel {padding-top:1em;}
+.messagePanel {/*padding-top:1em;*/}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
 .highlightBold {font-weight:bold;}
@@ -315,6 +315,8 @@ div.ui-dialog div.highlight {
 }
 .ui-dialog.dialog-submenu, .ui-dialog.dialog-submenu .ui-dialog-content, .ui-dialog.dialog-submenu .form-inline, .ui-dialog.dialog-submenu .form-group {overflow:visible !important;}
 .ui-dialog.dialog-submenu .ui-menu-list.ui-menu-child {z-index: 9999 !important; width: auto;}
+
+.ui-dialog-content {min-width:600px;}
 
 /* -------- SUBTABS -------- */
 div.popupSubTabParent > div.ui-tabs-panels > div.ui-tabs-panel.ui-widget-content {padding-left:0; padding-right:0;}

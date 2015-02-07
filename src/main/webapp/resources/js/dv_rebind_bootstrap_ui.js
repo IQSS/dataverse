@@ -37,6 +37,10 @@ function bind_tooltip_popover(){
     $("a[data-toggle='popover']").popover();
 }
 
+function toggle_dropdown(){
+    $('.btn-group.open').removeClass('open');;
+}
+
 /*
  * show breadcrumb navigation
  */
