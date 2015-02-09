@@ -34,6 +34,7 @@ public class BatchServiceBean {
 
     @Asynchronous
     public void processFilePath(String fileDir, String parentIdtf, User u, Dataverse owner, ImportUtil.ImportType importType) throws ImportException, IOException {
+        logger.info("BEGIN IMPORT");
         JsonArrayBuilder status = Json.createArrayBuilder();
     
         File dir = new File(fileDir);
