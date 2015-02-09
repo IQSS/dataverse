@@ -47,7 +47,7 @@
                                             </p:commandLink>
                                             <p class="help-block clearfix">Here is the current access configuration to your dataverse.</p>
                                             <div>
-                                                <div class="form-group clearfix">
+                                                <div class="form-group">
                                                     <label for="accessRadios" class="col-sm-3 control-label">
                                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.Q1']}">
                                                             #{bundle['dataverse.permissions.Q1']}
@@ -60,7 +60,7 @@
                                                         <h:outputText value="#{bundle['dataverse.permissions.Q1.answer4']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'fullContributor'}" />
                                                     </div>
                                                 </div>
-                                                <div class="form-group clearfix">
+                                                <div class="form-group">
                                                     <label for="contributorRadios" class="col-sm-3 control-label">
                                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.Q2.title']}">
                                                             #{bundle['dataverse.permissions.Q2']}
@@ -82,12 +82,12 @@
                         <!-- Role Assignments Panel -->
                         <div class="panel panel-default" style="margin-bottom:1em;">
                             <div data-toggle="collapse" data-target="#collapseUsersGroups" class="panel-heading text-info">
-                                #{bundle['dataverse.permissions.usersOrGroups']} <span class="glyphicon glyphicon-chevron-down" style="margin-left:.3em;top:3px;"/>
+                                #{bundle['dataverse.permissions.usersOrGroups']} <span class="glyphicon #{!managePermissionsPage.dvObject.instanceofDataverse ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}" style="margin-left:.3em;top:3px;"/>
                             </div>
-                            <div id="collapseUsersGroups" class="collapse">
+                            <div id="collapseUsersGroups" class="collapse #{!managePermissionsPage.dvObject.instanceofDataverse ? 'in' : ''}">
                                 <p:fragment id="assignmentMessages">
                                     <div class="messagePanel" style="width:100%; margin-left: auto; margin-right: auto; padding-left: 15px; padding-right: 15px;">
-                                        <iqbs:messages  collapsible="true" rendered="#{managePermissionsPage.renderAssignmentMessages}"/>
+                                        <iqbs:messages collapsible="true" rendered="#{managePermissionsPage.renderAssignmentMessages}"/>
                                     </div>
                                 </p:fragment>
                                 <div class="panel-body">
@@ -101,10 +101,10 @@
                                     <p class="help-block clearfix">#{bundle['dataverse.permissions.usersOrGroups.description']}</p>
                                     <div>
                                         <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
-                                            <p:column width="35%"  headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
+                                            <p:column width="35%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
                                                 <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
                                             </p:column>
-                                            <p:column width="25%"  headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
+                                            <p:column width="25%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
                                                 <h:outputText value="#{roleAssignment.roleName}"/>
                                             </p:column>
                                             <p:column width="40%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.action']}">
