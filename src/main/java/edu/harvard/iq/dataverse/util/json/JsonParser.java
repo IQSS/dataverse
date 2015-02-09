@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -18,9 +17,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -203,7 +201,7 @@ public class JsonParser {
                 fields.add(parseField(fieldJson));
             }
         }
-
+        convertKeywordsToSubjects(fields);
         return fields;
     }
 
@@ -214,6 +212,7 @@ public class JsonParser {
 
         DatasetField ret = new DatasetField();
         DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));
+    
 
         if (type == null) {
             throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
@@ -230,8 +229,9 @@ public class JsonParser {
         if (type.isControlledVocabulary() && !json.getString("typeClass").equals("controlledVocabulary")) {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be controlledVocabulary");
         }
+       
         ret.setDatasetFieldType(type);
-
+               
         if (type.isCompound()) {
             List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
             for (DatasetFieldCompoundValue dsfcv : vals) {
@@ -254,10 +254,75 @@ public class JsonParser {
             }
             ret.setDatasetFieldValues(values);
         }
-
+        
         return ret;
     }
 
+    /**
+     * Special processing of keywords and subjects.  All keywords and subjects will be input 
+     * from foreign formats (DDI, dcterms, etc) as keywords.  
+     * As part of the parsing, we will move keywords that match subject controlled vocabulary values
+     * into the subjects datasetField.
+     * @param fields - the parsed datasetFields
+     */
+    public void convertKeywordsToSubjects(List<DatasetField> fields) {
+
+        DatasetField keywordField = null;
+        for (DatasetField field : fields) {
+            if (field.getDatasetFieldType().getName().equals("keyword")) {
+                keywordField = field;
+                break;
+            }
+        }
+        if (keywordField == null) {
+            // if we don't have a keyword in the current list of datasetFields,
+            // nothing to do.
+            return;
+        }
+        DatasetFieldType type = datasetFieldSvc.findByNameOpt(DatasetFieldConstant.subject);
+        // new list to hold subjects that we find
+        List<ControlledVocabularyValue> subjects = new ArrayList<>();
+        // Make new list to hold the non-subject keywords
+        List<DatasetFieldCompoundValue> filteredValues = new ArrayList<>();
+        for (DatasetFieldCompoundValue compoundVal : keywordField.getDatasetFieldCompoundValues()) {
+            // Loop through the child fields to find the "keywordValue" field
+            for (DatasetField childField : compoundVal.getChildDatasetFields()) {
+                if (childField.getDatasetFieldType().getName().equals("keywordValue")) {
+                    // check if this value is a subject
+                    ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(type, childField.getValue());
+                    if (cvv == null) {
+                        // the keyword was not found in the subject list, so retain it in filtered list
+                        filteredValues.add(compoundVal);
+                    } else {
+                        // save the value for our subject field
+                        subjects.add(cvv);
+                    }
+                }
+
+            }
+
+        }
+        // if we have found any subjects in the keyword list, then update the keyword and subject fields appropriately.
+        if (subjects.size() > 0) {
+            keywordField.setDatasetFieldCompoundValues(filteredValues);
+
+               DatasetField subjectField = new DatasetField();
+            subjectField.setDatasetFieldType(type);
+            for (ControlledVocabularyValue val : subjects) {
+                int order = 0;
+              
+                val.setDisplayOrder(order);
+                val.setDatasetFieldType(type);
+                order++;
+                
+            }
+
+            subjectField.setControlledVocabularyValues(subjects);
+            fields.add(subjectField);
+        }
+
+    }
+    
     public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
 
         if (json.getBoolean("multiple")) {
