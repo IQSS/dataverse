@@ -304,6 +304,7 @@ div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {disp
 div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
 
 /* -------- POPUP -------- */
+div.ui-dialog.smallPopUp {max-width:600px;}
 div.ui-dialog.largePopUp {min-width:60%;}
 
 div.ui-dialog div.highlight {
