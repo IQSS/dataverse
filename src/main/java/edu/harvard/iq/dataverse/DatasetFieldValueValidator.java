@@ -114,7 +114,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             try {
                 URL url = new URL(value.getValue());
             } catch (MalformedURLException e) {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid URL.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue()+"  is not a valid URL.").addConstraintViolation();
                 return false;
             }
         }
@@ -127,7 +127,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             Matcher m = p.matcher(value.getValue());
             boolean matchFound = m.matches();
             if (!matchFound) {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid email address.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue()+" is not a valid email address.").addConstraintViolation();
                 return false;
             }
         }
