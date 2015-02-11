@@ -219,7 +219,7 @@ public class ImportServiceBean {
             logger.info("Error parsing datasetVersion: " + ex.getMessage());
             throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
         } catch(CommandException ex) {  
-            logger.info("Error excuting dataverse command: " + ex.getMessage());
+            logger.info("Error excuting Create dataset command: " + ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
         return Json.createObjectBuilder().add("message", status).add("id", createdId);
