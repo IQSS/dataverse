@@ -166,7 +166,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
 
     public boolean isBuiltInUser() {
-        String authProviderString = authenticatedUserLookup.getId().getAuthenticationProviderId();
+        String authProviderString = authenticatedUserLookup.getAuthenticationProviderId();
         if (authProviderString != null) {
             if (authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
                 return true;

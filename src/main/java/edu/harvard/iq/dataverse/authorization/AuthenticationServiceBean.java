@@ -228,12 +228,17 @@ public class AuthenticationServiceBean {
             throw new AuthenticationFailedException(resp, "Authentication Failed: " + resp.getMessage());
         }
     }
-    
-    public AuthenticatedUser lookupUser( String authPrvId, String userPersistentId ) {
-        AuthenticatedUserLookup lookup = em.find(AuthenticatedUserLookup.class,
-                new AuthenticatedUserLookupId(authPrvId, userPersistentId));
-        
-        return ( lookup != null ) ? lookup.getAuthenticatedUser() : null;
+
+    public AuthenticatedUser lookupUser(String authPrvId, String userPersistentId) {
+        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createNamedQuery("AuthenticatedUserLookup.findByAuthPrvID_PersUserId", AuthenticatedUserLookup.class);
+        typedQuery.setParameter("authPrvId", authPrvId);
+        typedQuery.setParameter("persUserId", userPersistentId);
+        try {
+            AuthenticatedUserLookup au = typedQuery.getSingleResult();
+            return au.getAuthenticatedUser();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
     }
     
     public ApiToken findApiToken(String token) {

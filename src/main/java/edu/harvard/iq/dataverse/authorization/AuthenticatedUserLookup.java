@@ -3,13 +3,16 @@ package edu.harvard.iq.dataverse.authorization;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
 import javax.persistence.CascadeType;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /**
  * A somewhat glorified key-value pair, persisted in the database.
@@ -21,17 +24,25 @@ import javax.persistence.OneToOne;
  * @author pdurbin
  * @author michael
  */
+@Table(
+    uniqueConstraints=
+        @UniqueConstraint(columnNames={"persistentuserid", "authenticationproviderid"})
+)
 @NamedQueries( {
     @NamedQuery( name="AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
                  query="SELECT au FROM AuthenticatedUserLookup au "
-                         + "WHERE au.id.authenticationProviderId=:authPrvId "
-                         + "  AND au.id.persistentUserId=:persUserId ")
+                         + "WHERE au.authenticationProviderId=:authPrvId "
+                         + "  AND au.persistentUserId=:persUserId ")
 })
 @Entity
 public class AuthenticatedUserLookup implements Serializable {
-    
-    @EmbeddedId
-    AuthenticatedUserLookupId id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    private String authenticationProviderId;
+    private String persistentUserId;
 
     @OneToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
     @JoinColumn(unique=true, nullable=false)
@@ -42,9 +53,8 @@ public class AuthenticatedUserLookup implements Serializable {
     }
 
     public AuthenticatedUserLookup(String persistentUserIdFromIdp, String authPrvId, AuthenticatedUser authenticatedUser) {
-        id = new AuthenticatedUserLookupId();
-        id.setAuthenticationProviderId(authPrvId);
-        id.setPersistentUserId(persistentUserIdFromIdp);
+        this.persistentUserId = persistentUserIdFromIdp;
+        this.authenticationProviderId = authPrvId;
         this.authenticatedUser = authenticatedUser;
     }
 
@@ -61,12 +71,8 @@ public class AuthenticatedUserLookup implements Serializable {
         this.authenticatedUser = authenticatedUser;
     }
 
-    public AuthenticatedUserLookupId getId() {
-        return id;
+    public String getAuthenticationProviderId() {
+        return authenticationProviderId;
     }
 
-    public void setId(AuthenticatedUserLookupId id) {
-        this.id = id;
-    }
-    
 }
