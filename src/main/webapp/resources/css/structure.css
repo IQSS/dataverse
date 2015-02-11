@@ -1,9 +1,8 @@
 /*--------- BODY --------- */
 body {/*margin-top:50px;*/}
 body .ui-widget {font-size: inherit;}
-a {color: #428BCA;}
-a:hover, .ui-widget-content a:focus {color: #2A6496;}
-.control-label a.tooltiplabel {color: #428BCA;}
+.ui-widget-content a {color: #428BCA;}
+.ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
 
 /* -------- TEMPLATE -------- */
 .panelgridHeaderTable {width:100%;}
@@ -375,10 +374,9 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 
 .ui-selectcheckboxmenu.form-control {height:auto;padding:0;}
 .ui-selectcheckboxmenu .ui-selectcheckboxmenu-trigger {width:30px; padding:6px; border-radius:0 4px 4px 0;}
-.ui-selectcheckboxmenu-item a.ui-selectcheckboxmenu-label-container {color:black;text-decoration:none;}
+.ui-selectcheckboxmenu a.ui-selectcheckboxmenu-label-container {color:black; text-decoration:none !important;}
 .ui-selectcheckboxmenu label.ui-selectcheckboxmenu-label, .ui-selectcheckboxmenu label.ui-selectcheckboxmenu-label.ui-state-hover {font-weight:normal; margin-bottom:0; padding:6px 40px 6px 12px;}
 .ui-selectcheckboxmenu label, .ui-selectcheckboxmenu-item label {font-weight:normal; margin-bottom:0;}
-.ui-selectcheckboxmenu a.ui-selectcheckboxmenu-label-container:hover {text-decoration:none !important;}
 
 .ui-tieredmenu.form-control {width:auto;height:auto;}
 
