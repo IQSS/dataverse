@@ -38,11 +38,17 @@ Suspendisse sapien ex, feugiat et sapien nec, hendrerit molestie sem. Sed non po
                                 <h:outputText value="I have read and accept the Dataverse Terms of Use as outlined above."/>
                             </div>
                             <p>
-                                <h:commandButton styleClass="btn btn-success" value="Accept Terms" action="#{Shib.confirm()}"/>
+                                <h:commandButton styleClass="btn btn-success" value="Accept Terms and Create New Account" action="#{Shib.confirmAndCreateAccount()}"/>
+                                <p:inputText value="#{Shib.builtinUsername}"/>
+                                <p:password id="builtinPassword" value="#{Shib.builtinPassword}"/>
+                                <h:commandButton styleClass="btn btn-success" value="Accept Terms and Convert Existing Local Account" action="#{Shib.confirmAndConvertAccount()}"/>
                                 <button type="button" class="btn btn-default">Cancel</button>
                             </p>
                         </h:form>
                     </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{true}">
+                    <h:outputText value="#{Shib.conversionResult}"/>
                 </ui:fragment>
                 <div class="row" style="margin-top:3em;">
                     <ui:repeat value="#{Shib.shibValues}" var="value">

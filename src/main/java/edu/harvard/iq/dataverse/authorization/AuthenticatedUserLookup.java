@@ -75,4 +75,16 @@ public class AuthenticatedUserLookup implements Serializable {
         return authenticationProviderId;
     }
 
+    public void setAuthenticationProviderId(String authenticationProviderId) {
+        this.authenticationProviderId = authenticationProviderId;
+    }
+
+    public String getPersistentUserId() {
+        return persistentUserId;
+    }
+
+    public void setPersistentUserId(String persistentUserId) {
+        this.persistentUserId = persistentUserId;
+    }
+
 }

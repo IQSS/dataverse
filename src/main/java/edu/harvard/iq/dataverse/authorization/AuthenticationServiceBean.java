@@ -413,4 +413,48 @@ public class AuthenticationServiceBean {
         return new Timestamp(new Date().getTime());
     }
 
+    public AuthenticatedUser convertBuiltInToShib(AuthenticatedUser builtInUserToConvert, String shibProviderId, UserIdentifier userIdentifier, RoleAssigneeDisplayInfo displayInfo) {
+        logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to shib");
+        String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
+        logger.info("builtin user identifier: " + builtInUserIdentifier);
+        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup AS o WHERE o.authenticatedUser = :auid", AuthenticatedUserLookup.class);
+        typedQuery.setParameter("auid", builtInUserToConvert);
+        AuthenticatedUserLookup authuserLookup;
+        try {
+            authuserLookup = typedQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            logger.info("exception caught: " + ex);
+            return null;
+        }
+        if (authuserLookup == null) {
+            return null;
+        }
+
+        String oldProviderId = authuserLookup.getAuthenticationProviderId();
+        logger.info("we expect this to be 'builtin': " + oldProviderId);
+        authuserLookup.setAuthenticationProviderId(shibProviderId);
+        String oldUserLookupIdentifier = authuserLookup.getPersistentUserId();
+        logger.info("this should be 'pete' or whatever the old builtin username was: " + oldUserLookupIdentifier);
+        String perUserShibIdentifier = userIdentifier.getLookupStringPerAuthProvider();
+        authuserLookup.setPersistentUserId(perUserShibIdentifier);
+        /**
+         * @todo this should be a transaction of some kind. We want to update
+         * the authenticateduserlookup and also delete the row from the
+         * builtinuser table in a single transaction.
+         */
+        em.persist(authuserLookup);
+        String builtinUsername = builtInUserIdentifier.replaceFirst(AuthenticatedUser.IDENTIFIER_PREFIX, "");
+        BuiltinUser builtin = builtinUserServiceBean.findByUserName(builtinUsername);
+        if (builtin != null) {
+            em.remove(builtin);
+        } else {
+            logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
+        }
+        AuthenticatedUser shibUser = lookupUser(shibProviderId, perUserShibIdentifier);
+        if (shibUser != null) {
+            return shibUser;
+        }
+        return null;
+    }
+
 }

@@ -5,10 +5,13 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.IOException;
@@ -158,7 +161,9 @@ public class Shib implements java.io.Serializable {
      * always looks like a URL.
      */
     String shibIdp;
-
+    private String builtinUsername;
+    private String builtinPassword;
+    private String conversionResult;
     private boolean debug = false;
 
     public void init() {
@@ -245,7 +250,7 @@ public class Shib implements java.io.Serializable {
         }
     }
 
-    public String confirm() {
+    public String confirmAndCreateAccount() {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
         UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
@@ -257,6 +262,46 @@ public class Shib implements java.io.Serializable {
         }
         logInUserAndSetShibAttributes(au);
         return homepage + "?faces-redirect=true";
+    }
+
+    public String confirmAndConvertAccount() {
+        visibleTermsOfUse = false;
+        ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
+        String lookupStringPerAuthProvider = userPersistentId;
+        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
+        logger.info("builtin username: " + builtinUsername);
+        AuthenticatedUser builtInUserToConvert = canLogInAsBuiltinUser(builtinUsername, builtinPassword);
+        if (builtInUserToConvert != null) {
+            AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier, displayInfo);
+            if (au != null) {
+                authSvc.updateAuthenticatedUser(au, displayInfo);
+                logInUserAndSetShibAttributes(au);
+                conversionResult = "Local account validated and successfully converted to a Shibboleth account.";
+            } else {
+                conversionResult = "Local account validated but unable to convert to Shibboleth account.";
+            }
+        } else {
+            conversionResult = "Username/password combination for local account was invalid";
+        }
+        return null;
+    }
+
+    public AuthenticatedUser canLogInAsBuiltinUser(String username, String password) {
+
+        AuthenticationRequest authReq = new AuthenticationRequest();
+        authReq.putCredential("Username", username);
+        authReq.putCredential("Password", password);
+        authReq.setIpAddress(session.getUser().getRequestMetadata().getIpAddress());
+
+        String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
+        try {
+            AuthenticatedUser au = authSvc.authenticate(credentialsAuthProviderId, authReq);
+            logger.log(Level.INFO, "User authenticated: {0}", au.getEmail());
+            return au;
+        } catch (AuthenticationFailedException ex) {
+            logger.info("The username and/or password you entered is invalid. Contact support@dataverse.org if you need assistance accessing your account." + ex.getResponse().getMessage());
+            return null;
+        }
     }
 
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
@@ -355,6 +400,30 @@ public class Shib implements java.io.Serializable {
 
     public boolean isVisibleTermsOfUse() {
         return visibleTermsOfUse;
+    }
+
+    public String getBuiltinUsername() {
+        return builtinUsername;
+    }
+
+    public void setBuiltinUsername(String builtinUsername) {
+        this.builtinUsername = builtinUsername;
+    }
+
+    public String getBuiltinPassword() {
+        return builtinPassword;
+    }
+
+    public void setBuiltinPassword(String builtinPassword) {
+        this.builtinPassword = builtinPassword;
+    }
+
+    public String getConversionResult() {
+        return conversionResult;
+    }
+
+    public void setConversionResult(String conversionResult) {
+        this.conversionResult = conversionResult;
     }
 
     private void mutateRequestForDevRandom() throws JsonSyntaxException, JsonIOException {
