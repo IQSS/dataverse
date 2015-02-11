@@ -294,8 +294,17 @@ public class JsonParserTest {
         }
         
         @Override
-        public DatasetFieldType findByNameOpt( String name ) {
-            return findByName( name );
+        public DatasetFieldType findByNameOpt(String name) {
+           return findByName(name);
         }
+        
+        @Override
+        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue) {
+            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
+            cvv.setDatasetFieldType(dsft);
+            cvv.setStrValue(strValue);
+            return cvv;
+        }
+ 
     }
 }
