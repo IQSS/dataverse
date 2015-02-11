@@ -234,6 +234,7 @@ public class XLSXFileReader extends TabularDataFileReader {
     }
 
     public void processSheet(InputStream inputStream, DataTable dataTable, PrintWriter tempOut) throws Exception {
+        dbglog.info("entering processSheet");
         OPCPackage pkg = OPCPackage.open(inputStream);
         XSSFReader r = new XSSFReader(pkg);
         SharedStringsTable sst = r.getSharedStringsTable();
@@ -263,6 +264,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         // -- L.A. 4.0 alpha 1
  
         XMLReader xReader = XMLReaderFactory.createXMLReader();
+        dbglog.fine("creating new SheetHandler;");
         ContentHandler handler = new SheetHandler(sst, dataTable, tempOut);
         xReader.setContentHandler(handler);
         return xReader;
@@ -275,9 +277,10 @@ public class XLSXFileReader extends TabularDataFileReader {
         private String cellContents;
         private boolean nextIsString;
         private boolean variableHeader;
-        private List<String> variableNames;
+        //private List<String> variableNames;
+        private String[] variableNames;
         private int caseCount;
-        private int columnCount;
+        private int columnCount; 
         boolean[] isNumericVariable;
         String[] dataRow; 
         PrintWriter tempOut; 
@@ -291,15 +294,68 @@ public class XLSXFileReader extends TabularDataFileReader {
             this.dataTable = dataTable;
             this.tempOut = tempOut; 
             variableHeader = true;
-            variableNames = new ArrayList<String>(); 
+            //variableNames = new ArrayList<String>(); 
             caseCount = 0; 
             columnCount = 0; 
         }
         
         public void startElement(String uri, String localName, String name,
                 Attributes attributes) throws SAXException {
+            dbglog.fine("entering startElement ("+name+")");
+
+            // first raw encountered: 
+            if (variableHeader && name.equals("row")) {
+                Long varCount = null; 
+                String rAttribute = attributes.getValue("t");
+                if (rAttribute == null) {
+                    dbglog.warning("Null r attribute in the first row element!");
+                } else if (!rAttribute.equals("1")) {
+                    dbglog.warning("Attribute r of the first row element is not \"1\"!");
+                }
+                
+                String spansAttribute = attributes.getValue("spans");
+                if (spansAttribute == null) {
+                    dbglog.warning("Null spans attribute in the first row element!");
+                } 
+                int colIndex = spansAttribute.indexOf(':');
+                if (colIndex < 1 || (colIndex == spansAttribute.length() - 1)) {
+                    dbglog.warning("Invalid spans attribute in the first row element: "+spansAttribute+"!");
+                }
+                try {
+                    varCount = new Long(spansAttribute.substring(colIndex + 1, spansAttribute.length()));
+                } catch (Exception ex) {
+                    varCount = null; 
+                }
+                
+                if (varCount == null || varCount.intValue() < 1) {
+                    throw new SAXException("Could not establish column count, or invalid column count encountered.");
+                }
+                
+                dbglog.info("Established variable (column) count: "+varCount);
+                
+                dataTable.setVarQuantity(varCount);
+                variableNames = new String[varCount.intValue()];
+            }
+            
             // c => cell
             if (name.equals("c")) {
+                // try and establish the location index (column number) of this
+                // cell, from the "r" attribute: 
+                
+                String indexAttribute = attributes.getValue("r");
+                
+                if (indexAttribute == null) {
+                    dbglog.warning("Null r attribute in a cell element!");
+                } 
+                if (!indexAttribute.matches(".*[0-9]")) {
+                    dbglog.warning("Invalid index (r) attribute in a cell element: "+indexAttribute+"!"); 
+                }
+                columnCount = getColumnCount(indexAttribute.replaceFirst("[0-9].*$", ""));
+                
+                if (columnCount < 0) {
+                    throw new SAXException("Could not establish position index of a cell element unambiguously!");
+                }
+                
                 String cellType = attributes.getValue("t");
                 if (cellType != null && cellType.equals("s")) {
                     nextIsString = true;
@@ -311,8 +367,31 @@ public class XLSXFileReader extends TabularDataFileReader {
             cellContents = "";
         }
 
+        private int getColumnCount(String columnTag) {
+            int count = -1;
+            if (columnTag.length() == 1 && columnTag.matches("[A-Z]")) {
+                count = columnTag.charAt(0) - 'A';
+            } else {
+                dbglog.warning("Unsupported column index tag: "+columnTag);
+            }
+            
+            return count;
+        }
+        
+        private String getColumnLetterTag(int columnCount) {
+            if (columnCount < 0 || columnCount > 25) {
+                dbglog.warning("Multi-letter column codes not yet supported.");
+                return null; 
+            }
+            int letterCode = 'A' + columnCount;
+            char[] letterTag = new char[1]; 
+            letterTag[0] = (char)letterCode;
+            return new String(letterTag);
+        }
+        
         public void endElement(String uri, String localName, String name)
                 throws SAXException {
+            dbglog.fine("entering endElement ("+name+")");
             // Process the content cache as required.
             // Do it now, as characters() may be called more than once
             if (nextIsString) {
@@ -325,26 +404,40 @@ public class XLSXFileReader extends TabularDataFileReader {
             // Output after we've seen the string contents
             if (name.equals("v")) {
                 if (variableHeader) {
-                    variableNames.add(cellContents);
+                    dbglog.fine("variable header mode; cell "+columnCount+", cell contents: "+cellContents);
+                    
+                    //variableNames.add(cellContents);
+                    variableNames[columnCount] = cellContents;
                 } else {
-                    dataRow[columnCount++] = cellContents;
+                    dataRow[columnCount] = cellContents;
+                    dbglog.fine("data row mode; cell "+columnCount+", cell contents: "+cellContents);
                 }
             }
             
             if (name.equals("row")) {
                 if (variableHeader) {
                     // Initialize variables:
+                    dbglog.fine("variableHeader mode; ");
                     List<DataVariable> variableList = new ArrayList<DataVariable>();
-                    columnCount = variableNames.size();
+                    //columnCount = variableNames.size();
+                    columnCount = dataTable.getVarQuantity().intValue();
+                    
                     for (int i = 0; i < columnCount; i++) {
-                        String varName = variableNames.get(i);
+                        String varName = variableNames[i];
+                        
 
                         if (varName == null || varName.equals("")) {
+                            varName = getColumnLetterTag(i);
                             // TODO: 
                             // Add a sensible variable name validation algorithm.
                             // -- L.A. 4.0 alpha 1
                             //throw new IOException ("Invalid variable names in the first line!");
                         }
+                        
+                        if (varName == null) {
+                            throw new SAXException("Could not establish variable name for column "+i);
+                        }
+                        
                         varName = varName.replaceAll("[ _\t\n\r]", "");
                         
                         DataVariable dv = new DataVariable();
@@ -363,7 +456,6 @@ public class XLSXFileReader extends TabularDataFileReader {
                         dv.setDataTable(dataTable);
                     }
         
-                    dataTable.setVarQuantity(new Long(columnCount));
                     dataTable.setDataVariables(variableList);
                     isNumericVariable = new boolean[columnCount];
                     
@@ -374,9 +466,9 @@ public class XLSXFileReader extends TabularDataFileReader {
                         // assume that it is in fact a String. 
                         isNumericVariable[i] = true; 
                     }
-                    columnCount = 0;
                     variableHeader = false; 
                 } else {
+                    dbglog.fine("row mode;");
                     // go through the values and make an educated guess about the 
                     // data types:
                     
@@ -415,9 +507,9 @@ public class XLSXFileReader extends TabularDataFileReader {
                     
                     // print out the data row:
                     tempOut.println(StringUtils.join(dataRow, "\t"));
-                    columnCount = 0; 
                     caseCount++;
                 }
+                columnCount = 0;
                 dataRow = new String[dataTable.getVarQuantity().intValue()];
             }
             
