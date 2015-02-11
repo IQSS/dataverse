@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
@@ -117,33 +118,7 @@ public class ImportDDI {
         
     } 
     
-     public void importDDI(String xmlToParse, DatasetVersion datasetVersion, DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
-        DatasetDTO datasetDTO = this.initializeDataset();
-        try {
-            // Read docDescr and studyDesc into DTO objects.
-            Map fileMap = mapDDI(xmlToParse, datasetDTO);
-            // 
-            // convert DTO to Json, 
-            Gson gson = new Gson();
-            String json = gson.toJson(datasetDTO.getDatasetVersion());
-            JsonReader jsonReader = Json.createReader(new StringReader(json));
-            JsonObject obj = jsonReader.readObject();
-            //and call parse Json to read it into a datasetVersion
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
-        } catch (Exception e) {
-            // EMK TODO: exception handling
-            e.printStackTrace();
-        }
-        
-        //EMK TODO:  Call methods for reading FileMetadata and related objects from xml, return list of FileMetadata objects.
-        /*try {
-            
-         Map<String, DataTable> dataTableMap = new DataTableImportDDI().processDataDscr(xmlr);
-         } catch(Exception e) {
-            
-         }*/
-        // Save Dataset and DatasetVersion in database
-    }
+    
 
     public Map mapDDI(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
 
@@ -253,7 +228,7 @@ public class ImportDDI {
                     processStdyDscr(xmlr, datasetDTO);
                 }
                 else if (xmlr.getLocalName().equals("fileDscr") && !importType.equals(ImportType.MIGRATION)) {
-                    // EMK TODO: add this back in
+                    // EMK TODO: add this back in for ImportType.NEW
                     // processFileDscr(xmlr, datasetDTO, filesMap);
                     
                 }
@@ -277,9 +252,7 @@ public class ImportDDI {
                     // id in the StudyDscr section, if one exists
                     if ( AGENCY_HANDLE.equals( xmlr.getAttributeValue(null, "agency") ) ) {
                         parseStudyIdHandle( parseText(xmlr), datasetDTO );
-                    } /* else if ( AGENCY_HANDLE.equals( xmlr.getAttributeValue(null, "agency") ) ) {
-                        parseStudyIdDOI( parseText(xmlr), metadata.getStudyVersion().getStudy() );
-                    } */ 
+                    } 
                 // EMK TODO: we need to save this somewhere when we add harvesting infrastructure 
                 } /*else if ( xmlr.getLocalName().equals("holdings") && StringUtil.isEmpty(datasetDTO..getHarvestHoldings()) ) {
                     metadata.setHarvestHoldings( xmlr.getAttributeValue(null, "URI") );
@@ -348,13 +321,89 @@ public class ImportDDI {
                 else if (xmlr.getLocalName().equals("stdyInfo")) processStdyInfo(xmlr, datasetDTO.getDatasetVersion());
                 else if (xmlr.getLocalName().equals("method")) processMethod(xmlr, datasetDTO.getDatasetVersion());
                 
-                else if (xmlr.getLocalName().equals("dataAccs")) processDataAccs(xmlr, datasetDTO.getDatasetVersion()); /*
-                   // EMK TODO: add back in these sections
-             else if (xmlr.getLocalName().equals("othrStdyMat")) processOthrStdyMat(xmlr, metadata);*/
+                else if (xmlr.getLocalName().equals("dataAccs")) processDataAccs(xmlr, datasetDTO.getDatasetVersion()); 
+                  
+             else if (xmlr.getLocalName().equals("othrStdyMat")) processOthrStdyMat(xmlr, datasetDTO.getDatasetVersion());
                 else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr, datasetDTO.getDatasetVersion());
                 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("stdyDscr")) return;
+            }
+        }
+    }
+    private void processOthrStdyMat(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        List<HashSet<FieldDTO>> publications = new ArrayList<>();
+        boolean replicationForFound = false;
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("relMat")) {
+                    // this code is still here to handle imports from old DVN created ddis
+                    if (!replicationForFound && REPLICATION_FOR_TYPE.equals(xmlr.getAttributeValue(null, "type"))) {
+                        if (!SOURCE_DVN_3_0.equals(xmlr.getAttributeValue(null, "source"))) {
+                            // this is a ddi from pre 3.0, so we should add a publication
+                          /*  StudyRelPublication rp = new StudyRelPublication();
+                             metadata.getStudyRelPublications().add(rp);
+                             rp.setMetadata(metadata);
+                             rp.setText( parseText( xmlr, "relMat" ) );
+                             rp.setReplicationData(true);
+                             replicationForFound = true;*/
+                            HashSet<FieldDTO> set = new HashSet<>();
+                            addToSet(set, DatasetFieldConstant.publicationCitation, parseText(xmlr, "relMat"));
+                            publications.add(set);
+                            getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
+                        }
+                    } else {
+
+                        List<String> relMaterial = new ArrayList<String>();
+                        relMaterial.add(parseText(xmlr, "relMat"));
+                        getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.relatedMaterial, relMaterial));
+                    }
+                }  
+                 else if (xmlr.getLocalName().equals("relStdy")) {
+                    List<String> relStudy = new ArrayList<String>();
+                    relStudy.add(parseText(xmlr, "relStdy"));
+                    getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.relatedDatasets, relStudy));
+                 }  else if (xmlr.getLocalName().equals("relPubl")) {
+                    HashSet<FieldDTO> set = new HashSet<>();
+
+                    // call new parse text logic
+                    Object rpFromDDI = parseTextNew(xmlr, "relPubl");
+                    if (rpFromDDI instanceof Map) {
+                        Map rpMap = (Map) rpFromDDI;
+                        addToSet(set, DatasetFieldConstant.publicationCitation, (String) rpMap.get("text"));
+                        addToSet(set, DatasetFieldConstant.publicationIDNumber, (String) rpMap.get("idNumber"));
+                        addToSet(set, DatasetFieldConstant.publicationURL, (String) rpMap.get("url"));
+                        if (rpMap.get("idType")!=null) {
+                            set.add(FieldDTO.createVocabFieldDTO(DatasetFieldConstant.publicationIDType, ((String) rpMap.get("idType")).toLowerCase()));
+                        }
+                   //    rp.setText((String) rpMap.get("text"));
+                        //   rp.setIdType((String) rpMap.get("idType"));
+                        //   rp.setIdNumber((String) rpMap.get("idNumber"));
+                        //   rp.setUrl((String) rpMap.get("url"));
+                        // TODO: ask about where/whether we want to save this 
+                        //  if (!replicationForFound && rpMap.get("replicationData") != null) {
+                        //    rp.setReplicationData(true);
+                        ///    replicationForFound = true;
+                        //  }
+                    } else {
+                        addToSet(set, DatasetFieldConstant.publicationCitation, (String) rpFromDDI);
+                        //   rp.setText( (String) rpFromDDI );
+                    }
+                    publications.add(set);
+                    getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
+
+                } else if (xmlr.getLocalName().equals("otherRefs")) {
+
+                    List<String> otherRefs = new ArrayList<String>();
+                    otherRefs.add(parseText(xmlr, "otherRefs"));
+                    getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.otherReferences, otherRefs));
+
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+
+                if (xmlr.getLocalName().equals("othrStdyMat")) {
+                    return;
+                }
             }
         }
     }
@@ -946,6 +995,7 @@ public class ImportDDI {
 
                     //TODO: ask Gustavo "fundAg"?TO
                 } else if (xmlr.getLocalName().equals("fundAg")) {
+                    // save this in contributorName - member of compoundFieldContributor
                     //    metadata.setFundingAgency( parseText(xmlr) );
                 } else if (xmlr.getLocalName().equals("grantNo")) {
                     HashSet<FieldDTO> set = new HashSet<>();
@@ -1251,21 +1301,17 @@ public class ImportDDI {
     }
 
     private void parseStudyIdDOI(String _id, DatasetDTO datasetDTO) throws ImportException{
-
-        // TODO: 
-        // This method needs to be modified to reflect the specifics of DOI
-        // string conventions; 
-        // (in particular, there may be an extra character sequence embedded 
-        // between the authority and the id - ?? ("fk2" - ?)
-        // -- L.A. - v3.6. 
-       
+        int index1 = _id.indexOf(':');
         int index2 = _id.lastIndexOf('/');
+        if (index1==-1) {
+            throw new EJBException("Error parsing (DOI) IdNo: "+_id+". ':' not found in string");
+        }  
        
         if (index2 == -1) {
             throw new ImportException("Error parsing (DOI) IdNo: "+_id+". '/' not found in string");
 
         } else {
-            datasetDTO.setAuthority(_id.substring(0, index2));
+               datasetDTO.setAuthority(_id.substring(index1+1, index2));
         }
         datasetDTO.setProtocol("doi");
         datasetDTO.setDoiSeparator("/");
