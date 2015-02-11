@@ -7,15 +7,18 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -86,6 +89,17 @@ public class ControlledVocabularyValue implements Serializable  {
     }
     public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
         this.datasetFieldType = datasetFieldType;
+    }
+  
+   @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private Collection<ControlledVocabAlternate> controlledVocabAlternates = new ArrayList<>();
+
+    public Collection<ControlledVocabAlternate> getControlledVocabAlternates() {
+        return controlledVocabAlternates;
+    }
+
+    public void setControlledVocabAlternates(Collection<ControlledVocabAlternate> controlledVocabAlternates) {
+        this.controlledVocabAlternates = controlledVocabAlternates;
     }
 
 

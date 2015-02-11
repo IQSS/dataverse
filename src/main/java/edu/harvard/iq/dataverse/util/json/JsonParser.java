@@ -131,6 +131,7 @@ public class JsonParser {
         dataset.setAuthority(obj.getString("authority", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("authority"));
         dataset.setProtocol(obj.getString("protocol", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("protocol"));
         dataset.setDoiSeparator(obj.getString("doiSeparator", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("doiSeparator"));
+        dataset.setIdentifier(obj.getString("identifier",null));
         DatasetVersion dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"));
         LinkedList<DatasetVersion> versions = new LinkedList<>();
         versions.add(dsv);
@@ -389,7 +390,7 @@ public class JsonParser {
             List<ControlledVocabularyValue> vals = new LinkedList<>();
             for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                 String strValue = strVal.getString();
-                ControlledVocabularyValue cvv = cvvType.getControlledVocabularyValue(strValue);
+                ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue);
                 if (cvv == null) {
                     throw new JsonParseException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'");
                 }
@@ -399,7 +400,7 @@ public class JsonParser {
 
         } else {
             String strValue = json.getString("value", "");
-            ControlledVocabularyValue cvv = cvvType.getControlledVocabularyValue(strValue);
+            ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue);
             if (cvv == null) {
                 throw new JsonParseException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'");
             }

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.ControlledVocabAlternate;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -256,10 +257,19 @@ public class DatasetFieldServiceApi {
 
     private String parseControlledVocabulary(String[] values) {
         ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-        cvv.setDatasetFieldType(datasetFieldService.findByName(values[1]));
+        DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
+        cvv.setDatasetFieldType(dsv);
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(new Integer(values[4]).intValue());
+        for (int i=5; i< values.length; i++) {
+            ControlledVocabAlternate alt = new ControlledVocabAlternate();
+            alt.setDatasetFieldType(dsv);
+            alt.setControlledVocabularyValue(cvv);
+            alt.setStrValue(values[i]);
+            cvv.getControlledVocabAlternates().add(alt);
+          
+        }
 
         datasetFieldService.save(cvv);
         return cvv.getStrValue();
