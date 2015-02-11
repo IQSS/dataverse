@@ -91,7 +91,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="3">
-                                        <h:outputText styleClass="text-muted" value="http://root.edu/dataverse/"/>
+                                        <h:outputText styleClass="text-muted" value="#{systemConfig.dataverseSiteUrl}/dataverse/"/>
                                         <p:inputText id="identifier" tabindex="3" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="identifier" display="text"/>
                                     </p:panelGrid>
