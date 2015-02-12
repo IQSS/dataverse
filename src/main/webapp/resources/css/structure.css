@@ -250,13 +250,16 @@ form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
 form[id$='facetType'] > div.clearfix .facetTypeChBox {display:block; float:left;}
 form[id$='facetType'] > div.clearfix .facetTypeChBox > div.ui-chkbox {padding-top:2px;padding-right:4px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink {display:block; float:left; text-decoration:none;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px 4px 30px;}
+
+form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px;}
+
+/*form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px 4px 30px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataverse {background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataverse {background: url(/resources/images/icon_dataverse_dark.png) no-repeat 4px 50% / 18px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataset {background: url(/resources/images/icon_dataset.png) no-repeat 4px 50% / 18px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataset {background: url(/resources/images/icon_dataset_dark.png) no-repeat 4px 50% / 18px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeFile {background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeFile {background: url(/resources/images/icon_file_dark.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeFile {background: url(/resources/images/icon_file_dark.png) no-repeat 4px 50% / 18px;}*/
 
 div[id$='facetCategoryList'] {padding:4px; border:1px solid #DDD;}
 div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
