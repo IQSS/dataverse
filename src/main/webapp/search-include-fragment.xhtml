@@ -463,7 +463,7 @@
                         <ui:param name="descriptionAbbreviationThreshold" value="200"/>
                         <!--CARDS-->
                         <p:dataTable id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result">
-                            <p:column>
+                            <p:column styleClass="#{result.type == 'dataverses' ? 'dataverseResult' : (result.type == 'datasets' ? 'datasetResult' : '')}">
                                 <!--DATAVERSE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
                                     <div>
@@ -476,6 +476,9 @@
                                         <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" style="color:#999999; margin-left: .5em;" escape="false"/>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
+                                        
+                                        <i id="icon-dataverse" class="icon-dataverse text-warning pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                        
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
@@ -554,6 +557,9 @@
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.DEACCESSIONED}" styleClass="label label-info" rendered="#{result.deaccessionedState}"/>
+                                        
+                                        <i id="icon-dataset" class="icon-dataset text-info pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                        
                                     </div>
                                     <!--<span class="label label-default">Default</span>-->
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
@@ -600,7 +606,6 @@
                                         </ui:repeat>
                                     </ui:fragment>
                                 </ui:fragment>
-
                                 <!--FILE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'files'}">
                                     <div>
@@ -610,6 +615,9 @@
                                             <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
+                                        
+                                        <i id="icon-image" class="icon-image text-muted pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                        
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                         <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->

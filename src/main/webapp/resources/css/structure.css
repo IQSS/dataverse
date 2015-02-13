@@ -303,6 +303,9 @@ div[id$='resultsTable'] > .ui-datatable-tablewrapper > table {border-collapse:se
 
 div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
 
+div[id$='resultsTable'] .dataverseResult {border-color:#c55b28;}
+div[id$='resultsTable'] .datasetResult {border-color:#428bca;}
+
 /* -------- TABLES -------- */
 div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
 
