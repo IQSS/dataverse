@@ -299,7 +299,7 @@ public class JsonParserTest {
         }
         
         @Override
-        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue) {
+        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
             ControlledVocabularyValue cvv = new ControlledVocabularyValue();
             cvv.setDatasetFieldType(dsft);
             cvv.setStrValue(strValue);

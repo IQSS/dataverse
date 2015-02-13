@@ -110,10 +110,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * ControlledVocabularyValue.
      * @param strValue String value that may exist in a controlled vocabulary of
      * the provided DatasetFieldType.
+     * @param lenient should we accept alternate spellings for value from mapping table
      *
      * @return The ControlledVocabularyValue found or null.
      */
-    public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue) {
+    public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
         TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);
         typedQuery.setParameter("strvalue", strValue);
         typedQuery.setParameter("dsft", dsft);
@@ -121,17 +122,21 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             ControlledVocabularyValue cvv = typedQuery.getSingleResult();
             return cvv;
         } catch (NoResultException | NonUniqueResultException ex) {
-            // if the value isn't found, check in the list of alternate values for this datasetFieldType
-            TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
-            alternateQuery.setParameter("strvalue", strValue);
-            alternateQuery.setParameter("dsft", dsft);
-            try {
-                ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
-                return alternateValue.getControlledVocabularyValue();
-            } catch (NoResultException | NonUniqueResultException ex2) {
+            if (lenient) {
+                // if the value isn't found, check in the list of alternate values for this datasetFieldType
+                TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
+                alternateQuery.setParameter("strvalue", strValue);
+                alternateQuery.setParameter("dsft", dsft);
+                try {
+                    ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
+                    return alternateValue.getControlledVocabularyValue();
+                } catch (NoResultException | NonUniqueResultException ex2) {
+                    return null;
+                }
+
+            } else {
                 return null;
             }
-
         }
     }
 

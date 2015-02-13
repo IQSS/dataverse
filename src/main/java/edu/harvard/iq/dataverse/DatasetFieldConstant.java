@@ -99,6 +99,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String dateOfCollectionEnd="dateOfCollectionEnd";
     public final static String country="country";
     public final static String geographicCoverage="geographicCoverage";
+    public final static String otherGeographicCoverage="otherGeographicCoverage";
     public final static String geographicUnit="geographicUnit";
     public final static String westLongitude="westLongitude";
     public final static String eastLongitude="eastLongitude";

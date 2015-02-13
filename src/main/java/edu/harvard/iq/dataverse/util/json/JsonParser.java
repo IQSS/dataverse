@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -13,19 +14,24 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
@@ -39,11 +45,20 @@ public class JsonParser {
     DatasetFieldServiceBean datasetFieldSvc;
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
+    boolean lenient = false;  // if lenient, we will accept alternate spellings for controlled vocabulary values
 
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
+    }
+
+    public boolean isLenient() {
+        return lenient;
+    }
+
+    public void setLenient(boolean lenient) {
+        this.lenient = lenient;
     }
 
     public Dataverse parseDataverse(JsonObject jobj) throws JsonParseException {
@@ -76,7 +91,7 @@ public class JsonParser {
                     dvSubjectList.addAll(subjectType.getControlledVocabularyValues());
                 } else {
                     for (JsonString subject : subjectList) {
-                        ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(subjectType, subject.getString());
+                        ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(subjectType, subject.getString(),lenient);
                         if (cvv != null) {
                             dvSubjectList.add(cvv);
                         } else {
@@ -199,12 +214,62 @@ public class JsonParser {
             JsonObject blockJson = json.getJsonObject(blockName);
             JsonArray fieldsJson = blockJson.getJsonArray("fields");
             for (JsonObject fieldJson : fieldsJson.getValuesAs(JsonObject.class)) {
-                fields.add(parseField(fieldJson));
+                try {
+                    fields.add(parseField(fieldJson));
+                } catch (CompoundVocabularyException ex) {
+                    DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
+                    if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
+                        fields.add(remapGeographicCoverage( ex));                       
+                    } else {
+                        // if not lenient mode, re-throw exception
+                        throw ex;
+                    }
+                }
+
             }
         }
         convertKeywordsToSubjects(fields);
         return fields;
     }
+    /**
+     * Special processing for GeographicCoverage compound field:
+     * Handle parsing exceptions caused by invalid controlled vocabulary in the "country" field by
+     * putting the invalid data in "otherGeographicCoverage" in a new compound value.
+     * 
+     * @param ex - contains the invalid values to be processed
+     * @return a compound DatasetField that contains the newly created values, in addition to 
+     * the original valid values.
+     * @throws JsonParseException 
+     */
+    private DatasetField remapGeographicCoverage(CompoundVocabularyException ex) throws JsonParseException{
+        List<HashSet<FieldDTO>> geoCoverageList = new ArrayList<>();
+        // For each exception, create HashSet of otherGeographic Coverage and add to list
+        for (ControlledVocabularyException vocabEx : ex.getExList()) {
+            HashSet<FieldDTO> set = new HashSet<>();
+            set.add(FieldDTO.createPrimitiveFieldDTO(DatasetFieldConstant.otherGeographicCoverage, vocabEx.getStrValue()));
+            geoCoverageList.add(set);
+        }
+        FieldDTO geoCoverageDTO = FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicCoverage, geoCoverageList);
+
+        // convert DTO to datasetField so we can back valid values.
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(geoCoverageDTO);
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
+        JsonObject obj = jsonReader.readObject();
+        DatasetField geoCoverageField = parseField(obj);
+
+        // add back valid values
+        for (DatasetFieldCompoundValue dsfcv : ex.getValidValues()) {
+            if (!dsfcv.getChildDatasetFields().isEmpty()) {
+                dsfcv.setParentDatasetField(geoCoverageField);
+                geoCoverageField.getDatasetFieldCompoundValues().add(dsfcv);
+            }
+        }
+        return geoCoverageField;
+    }
+     
+    
+  
 
     public DatasetField parseField(JsonObject json) throws JsonParseException {
         if (json == null) {
@@ -288,9 +353,9 @@ public class JsonParser {
         for (DatasetFieldCompoundValue compoundVal : keywordField.getDatasetFieldCompoundValues()) {
             // Loop through the child fields to find the "keywordValue" field
             for (DatasetField childField : compoundVal.getChildDatasetFields()) {
-                if (childField.getDatasetFieldType().getName().equals("keywordValue")) {
+                if (childField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue)) {
                     // check if this value is a subject
-                    ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(type, childField.getValue());
+                    ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(type, childField.getValue(),lenient);
                     if (cvv == null) {
                         // the keyword was not found in the subject list, so retain it in filtered list
                         filteredValues.add(compoundVal);
@@ -325,27 +390,37 @@ public class JsonParser {
     }
     
     public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
-
+        List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
+        List<DatasetFieldCompoundValue> vals = new LinkedList<>();
         if (json.getBoolean("multiple")) {
-            List<DatasetFieldCompoundValue> vals = new LinkedList<>();
-
+     
             for (JsonObject obj : json.getJsonArray("value").getValuesAs(JsonObject.class)) {
                 DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
                 List<DatasetField> fields = new LinkedList<>();
                 for (String fieldName : obj.keySet()) {
                     JsonObject childFieldJson = obj.getJsonObject(fieldName);
-                    DatasetField f = parseField(childFieldJson);
-                    if (!compoundType.getChildDatasetFieldTypes().contains(f.getDatasetFieldType())) {
-                        throw new JsonParseException("field " + f.getDatasetFieldType().getName() + " is not a child of " + compoundType.getName());
+                    DatasetField f=null;
+                    try {
+                        f = parseField(childFieldJson);
+                    } catch(ControlledVocabularyException ex) {
+                        vocabExceptions.add(ex);
                     }
-                    f.setParentDatasetFieldCompoundValue(cv);
-                    fields.add(f);
+                    
+                    if (f!=null) {
+                        if (!compoundType.getChildDatasetFieldTypes().contains(f.getDatasetFieldType())) {
+                            throw new JsonParseException("field " + f.getDatasetFieldType().getName() + " is not a child of " + compoundType.getName());
+                        }
+                        f.setParentDatasetFieldCompoundValue(cv);
+                            fields.add(f);
+                    }
                 }
-                cv.setChildDatasetFields(fields);
-                vals.add(cv);
+                if (!fields.isEmpty()) {
+                    cv.setChildDatasetFields(fields);
+                    vals.add(cv);
+                }
             }
 
-            return vals;
+           
 
         } else {
 
@@ -354,15 +429,27 @@ public class JsonParser {
             JsonObject value = json.getJsonObject("value");
             for (String key : value.keySet()) {
                 JsonObject childFieldJson = value.getJsonObject(key);
-                DatasetField f = parseField(childFieldJson);
-                f.setParentDatasetFieldCompoundValue(cv);
-                fields.add(f);
+                DatasetField f = null;
+                try {
+                    f=parseField(childFieldJson);
+                } catch(ControlledVocabularyException ex ) {
+                    vocabExceptions.add(ex);
+                }
+                if (f!=null) {
+                    f.setParentDatasetFieldCompoundValue(cv);
+                    fields.add(f);
+                }
             }
-            cv.setChildDatasetFields(fields);
-            List<DatasetFieldCompoundValue> vals = new LinkedList<>();
-            vals.add(cv);
-            return vals;
+            if (!fields.isEmpty()) {
+                cv.setChildDatasetFields(fields);
+                vals.add(cv);
+            }
+      
+    }
+        if (!vocabExceptions.isEmpty()) {
+            throw new CompoundVocabularyException( "Invalid controlled vocabulary in compound field ", vocabExceptions, vals);
         }
+          return vals;
     }
 
     public List<DatasetFieldValue> parsePrimitiveValue(JsonObject json) throws JsonParseException {
@@ -390,9 +477,9 @@ public class JsonParser {
             List<ControlledVocabularyValue> vals = new LinkedList<>();
             for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                 String strValue = strVal.getString();
-                ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue);
+                ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue,lenient);
                 if (cvv == null) {
-                    throw new JsonParseException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'");
+                    ControlledVocabularyException ex = new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                 }
                 vals.add(cvv);
             }
@@ -400,9 +487,9 @@ public class JsonParser {
 
         } else {
             String strValue = json.getString("value", "");
-            ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue);
+            ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue,lenient);
             if (cvv == null) {
-                throw new JsonParseException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'");
+                throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
             }
             return Collections.singletonList(cvv);
         }

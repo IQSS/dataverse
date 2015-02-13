@@ -169,7 +169,9 @@ public class ImportServiceBean {
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset   
         try {
-            Dataset ds = new JsonParser(datasetfieldService, metadataBlockService, settingsService).parseDataset(obj);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            parser.setLenient(!importType.equals(ImportType.NEW));
+            Dataset ds = parser.parseDataset(obj);
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
