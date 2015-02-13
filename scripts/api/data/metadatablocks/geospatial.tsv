@@ -41,7 +41,7 @@
 	country	Bolivia, Plurinational State of		25											
 	country	Bonaire, Sint Eustatius and Saba		26											
 	country	Bosnia and Herzegovina		27											
-	country	Botswana		28											
+	country	Botswana		28	BOTSWANA										
 	country	Bouvet Island		29											
 	country	Brazil		30	Brasil										
 	country	British Indian Ocean Territory		31											
@@ -92,10 +92,10 @@
 	country	French Polynesia		76											
 	country	French Southern Territories		77											
 	country	Gabon		78											
-	country	Gambia		79											
+	country	Gambia		79	Gambia, The										
 	country	Georgia		80											
-	country	Germany		81											
-	country	Ghana		82											
+	country	Germany		81	Germany (Federal Republic of)										
+	country	Ghana		82	GHANA										
 	country	Gibraltar		83											
 	country	Greece		84											
 	country	Greenland		85											
@@ -114,10 +114,10 @@
 	country	Hong Kong		98											
 	country	Hungary		99											
 	country	Iceland		100											
-	country	India		101											
+	country	India		101	INDIA										
 	country	Indonesia		102	Sumatra										
-	country	Iran, Islamic Republic of		103	Iran										
-	country	Iraq		104											
+	country	Iran, Islamic Republic of		103	Iran	Iran (Islamic Republic of)									
+	country	Iraq		104	IRAQ										
 	country	Ireland		105											
 	country	Isle of Man		106											
 	country	Israel		107											
@@ -133,10 +133,10 @@
 	country	Korea, Republic of		117											
 	country	Kuwait		118											
 	country	Kyrgyzstan		119											
-	country	Lao People's Democratic Republic		120											
+	country	Lao People's Democratic Republic		120	Laos										
 	country	Latvia		121											
 	country	Lebanon		122											
-	country	Lesotho		123											
+	country	Lesotho		123	LESOTHO										
 	country	Liberia		124											
 	country	Libya		125											
 	country	Liechtenstein		126											
@@ -163,9 +163,9 @@
 	country	Montenegro		147											
 	country	Montserrat		148											
 	country	Morocco		149											
-	country	Mozambique		150											
+	country	Mozambique		150	MOZAMBIQUE										
 	country	Myanmar		151											
-	country	Namibia		152											
+	country	Namibia		152	NAMIBIA										
 	country	Nauru		153											
 	country	Nepal		154											
 	country	Netherlands		155											
@@ -225,7 +225,7 @@
 	country	Sudan		209											
 	country	Suriname		210											
 	country	Svalbard and Jan Mayen		211											
-	country	Swaziland		212											
+	country	Swaziland		212	SWAZILAND										
 	country	Sweden		213											
 	country	Switzerland		214											
 	country	Syrian Arab Republic		215											
@@ -258,7 +258,7 @@
 	country	Virgin Islands, U.S.		242											
 	country	Wallis and Futuna		243											
 	country	Western Sahara		244											
-	country	Yemen		245											
+	country	Yemen		245	YEMEN										
 	country	Zambia		246											
 	country	Zimbabwe		247											
 	country	Åland Islands		248											
