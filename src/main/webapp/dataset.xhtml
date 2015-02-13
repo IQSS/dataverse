@@ -1588,7 +1588,7 @@
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.compareVersionsCount > 2}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column>
-                                            <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))}">
+                                            <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                                                 <a id="versionLink" href="/dataset.xhtml?globalId=#{versionTab.dataset.globalId}&#38;versionId=#{versionTab.id}" class="ui-commandlink ui-widget" >
                                                     <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
                                                     <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
