@@ -43,7 +43,7 @@
 	country	Bosnia and Herzegovina		27											
 	country	Botswana		28											
 	country	Bouvet Island		29											
-	country	Brazil		30											
+	country	Brazil		30	Brasil										
 	country	British Indian Ocean Territory		31											
 	country	Brunei Darussalam		32											
 	country	Bulgaria		33											
@@ -115,8 +115,8 @@
 	country	Hungary		99											
 	country	Iceland		100											
 	country	India		101											
-	country	Indonesia		102											
-	country	Iran, Islamic Republic of		103											
+	country	Indonesia		102	Sumatra										
+	country	Iran, Islamic Republic of		103	Iran										
 	country	Iraq		104											
 	country	Ireland		105											
 	country	Isle of Man		106											
@@ -229,9 +229,9 @@
 	country	Sweden		213											
 	country	Switzerland		214											
 	country	Syrian Arab Republic		215											
-	country	Taiwan, Province of China		216											
+	country	Taiwan, Province of China		216	Taiwan										
 	country	Tajikistan		217											
-	country	Tanzania, United Republic of		218											
+	country	Tanzania, United Republic of		218	Tanzania										
 	country	Thailand		219											
 	country	Timor-Leste		220											
 	country	Togo		221											
@@ -245,9 +245,9 @@
 	country	Tuvalu		229											
 	country	Uganda		230											
 	country	Ukraine		231											
-	country	United Arab Emirates		232											
+	country	United Arab Emirates		232	UAE										
 	country	United Kingdom		233											
-	country	United States		234	U.S.A	USA
+	country	United States		234	U.S.A	USA	United States of America	U.S.A.							
 	country	United States Minor Outlying Islands		235											
 	country	Uruguay		236											
 	country	Uzbekistan		237											
