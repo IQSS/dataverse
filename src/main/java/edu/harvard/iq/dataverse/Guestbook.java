@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,11 +15,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.util.List;
+import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -50,7 +56,6 @@ public class Guestbook implements Serializable {
     private boolean emailRequired;
     private boolean institutionRequired;   
     private boolean positionRequired; 
-    private Long usageCount;
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date createTime;
     
@@ -131,14 +136,6 @@ public class Guestbook implements Serializable {
     public void setPositionRequired(boolean positionRequired) {
         this.positionRequired = positionRequired;
     }
-    
-    public Long getUsageCount() {
-        return usageCount;
-    }
-
-    public void setUsageCount(Long usageCount) {
-        this.usageCount = usageCount;
-    }    
     
     public Date getCreateTime() {
         return createTime;
@@ -286,5 +283,28 @@ public class Guestbook implements Serializable {
     public void addCustomQuestion(int index, CustomQuestion cq){
         customQuestions.add(index, cq);
     }
+    
+    @Transient
+    private Long usageCount;
+
+    public Long getUsageCount() {
+        return usageCount;
+    }
+    
+    public void setUsageCount(Long usageCount) {
+        this.usageCount = usageCount;
+    }
+    
+    @Transient 
+    private Long responseCount;
+
+    public Long getResponseCount() {
+        return responseCount;
+    }
+
+    public void setResponseCount(Long responseCount) {
+        this.responseCount = responseCount;
+    }
+    
     
 }

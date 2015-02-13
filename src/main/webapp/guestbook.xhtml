@@ -115,6 +115,7 @@
                                                                     <f:selectItem itemLabel="Text" itemValue="text" />
                                                                     <f:selectItem itemLabel="Option Buttons" itemValue="options" />
                                                                     <p:ajax update=":guestbookForm:customQuestions" />
+                                                                    <f:param name="SKIP_VALIDATION" value="true"/>
                                                                 </h:selectOneMenu>
                                                             </div>
                                                             <div class="checkbox">
@@ -130,7 +131,9 @@
                                                         </label>
                                                         <div>
                                                             <div>
-                                                                <p:inputText id="questionText" styleClass="form-control" value="#{cq.questionString}"/>
+                                                                <p:inputText id="questionText" styleClass="form-control" value="#{cq.questionString}">                                                                    
+                                                                    <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
+                                                                </p:inputText>
                                                                 <p:message for="questionText" display="text"/>
                                                             </div>
                                                         </div>
@@ -144,7 +147,9 @@
                                                                 <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount" var ="value">
                                                                     <div class="form-group">
                                                                         <div class="col-sm-8">
-                                                                            <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}"/>
+                                                                            <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}">
+                                                                                <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
+                                                                            </p:inputText>
                                                                             <p:message for="responseText" display="text"/>
                                                                         </div>
                                                                         <div class="col-sm-4">
@@ -152,11 +157,13 @@
                                                                             <p:commandButton styleClass="btn btn-default btn-sm" rendered="true"
                                                                                              title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false">
                                                                                 <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
+                                                                            <f:param name="SKIP_VALIDATION" value="true"/>
                                                                             </p:commandButton>
 
-                                                                            <p:commandButton styleClass="btn btn-default btn-sm" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
+                                                                            <p:commandButton styleClass="btn btn-default btn-sm" rendered="#{cq.customQuestionValues.size() > 1}"
                                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
                                                                                 <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
+                                                                            <f:param name="SKIP_VALIDATION" value="true"/>
                                                                             </p:commandButton>
                                                                         </div>
                                                                     </div>
@@ -169,21 +176,17 @@
                                                     <p:commandButton styleClass="btn btn-default btn-sm" style="margin:1.8em 1em 0 0;"
                                                                      title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false">
                                                         <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}" />
+                                                        <f:param name="SKIP_VALIDATION" value="true"/>
                                                     </p:commandButton>
                                                     <p:commandButton styleClass="btn btn-default btn-sm" style="margin:1.8em 1em 0 0;" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                                      title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false">
                                                         <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
+                                                        <f:param name="SKIP_VALIDATION" value="true"/>
                                                     </p:commandButton>
                                                 </div>
                                             </div>
                                         </ui:repeat>
                                     </p:fragment>
-                                    <div class="text-left">
-                                        <button type="submit" class="btn btn-default" 
-                                                jsf:action="#{GuestbookPage.addCustomQuestion}" jsf:rendered="#{!empty GuestbookPage.editMode}">
-                                            <span class="glyphicon glyphicon-plus"></span> Add Custom Question
-                                        </button>
-                                    </div>
                                     
                                 </div>
 
@@ -194,7 +197,9 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty GuestbookPage.editMode}" >
                         <h:commandButton type="submit" action="#{GuestbookPage.save()}" class="btn btn-default"
-                                         value="#{GuestbookPage.editMode == 'CREATE' ? 'Create Dataset Guestbook' : 'Save Changes'}" />
+                                         value="#{GuestbookPage.editMode == 'CREATE' ? 'Create Dataset Guestbook' : 'Save Changes'}" >
+                            <f:param name="SKIP_VALIDATION" value="true"/>
+                        </h:commandButton>
                         <h:button  class="btn btn-default"
                                    value="Cancel" outcome="/manage-guestbooks.xhtml?dataverseId=#{GuestbookPage.dataverse.id}" />
                     </p:panel>

@@ -165,6 +165,10 @@ public class DatasetPage implements java.io.Serializable {
     private String authority = "";
     private String separator = "";
     
+    private boolean noDVsAtAll = false;
+
+    private boolean noDVsRemaining = false;
+    
     private List<Dataverse> dataversesForLinking;
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
@@ -187,12 +191,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public Long getLinkingDataverseId() {
-        System.out.print("in getter " + linkingDataverseId);
         return linkingDataverseId;
     }
 
     public void setLinkingDataverseId(Long linkingDataverseId) {
-        System.out.print("in setter " + linkingDataverseId);
         this.linkingDataverseId = linkingDataverseId;
     }
 
@@ -209,14 +211,15 @@ public class DatasetPage implements java.io.Serializable {
         dataversesForLinking = new ArrayList();
         linkingDVSelectItems = new ArrayList();
         List<Dataverse> testingDataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
+        if (testingDataverses.isEmpty()){
+            setNoDVsAtAll(true);
+            return;
+        }
         for (Dataverse testDV: testingDataverses ){
-            Dataverse rootDV = dataverseService.findRootDataverse();
-            if(!testDV.equals(rootDV) && !testDV.equals(dataset.getOwner()) 
-                    && !testDV.getOwner().equals(dataset.getOwner()) 
-                    && !dataset.getOwner().equals(testDV) //&& testDV.isReleased() remove released as requirement for linking dv
-                    ){
-                dataversesForLinking.add(testDV);
-                
+            //allow linking to root dv
+            //&& testDV.isReleased() remove released as requirement for linking dv
+            if(!testDV.equals(dataset.getOwner())){
+                dataversesForLinking.add(testDV);               
             } 
         }
         for (Dataverse removeLinked: dsLinkingService.findLinkingDataverses(dataset.getId())){
@@ -226,8 +229,12 @@ public class DatasetPage implements java.io.Serializable {
             dataversesForLinking.remove(removeLinked);
         }
         
-        for(Dataverse selectDV : dataversesForLinking){
-            
+        if (dataversesForLinking.isEmpty()){
+            setNoDVsRemaining(true);
+            return;
+        }
+        
+        for(Dataverse selectDV : dataversesForLinking){            
             linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
         }
         
@@ -239,6 +246,23 @@ public class DatasetPage implements java.io.Serializable {
     
     public void updateSelectedLinkingDV(ValueChangeEvent event) {
         linkingDataverseId = (Long) event.getNewValue();
+    }
+    
+    
+    public boolean isNoDVsAtAll() {
+        return noDVsAtAll;
+    }
+
+    public void setNoDVsAtAll(boolean noDVsAtAll) {
+        this.noDVsAtAll = noDVsAtAll;
+    }
+
+    public boolean isNoDVsRemaining() {
+        return noDVsRemaining;
+    }
+
+    public void setNoDVsRemaining(boolean noDVsRemaining) {
+        this.noDVsRemaining = noDVsRemaining;
     }
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();

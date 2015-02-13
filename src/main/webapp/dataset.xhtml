@@ -2246,7 +2246,12 @@
                                              value="#{bundle['dataset.link.save']}" actionListener="#{DatasetPage.saveLinkedDataset()}"/>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 0}">
-                            <p>#{bundle['dataverse.link.no.linkable']}</p>
+                            <ui:fragment rendered="#{DatasetPage.noDVsAtAll }">
+                                <p>#{bundle['dataverse.link.no.linkable']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{ DatasetPage.noDVsRemaining }">
+                                <p>#{bundle['dataverse.link.no.linkable.remaining']}</p>
+                            </ui:fragment>
                         </ui:fragment>
                         <button type="button" class="btn btn-default" onclick="linkDatasetForm.hide()">
                             #{bundle['done']}

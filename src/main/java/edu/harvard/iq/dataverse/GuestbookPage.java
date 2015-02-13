@@ -13,7 +13,9 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -21,6 +23,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.ConstraintViolation;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -176,32 +180,28 @@ public class GuestbookPage implements java.io.Serializable {
         guestbook.addCustomQuestion(index, toAdd);       
     }
         
-    public String addCustomQuestion(Integer indexIn){
+    public void addCustomQuestion(Integer indexIn){
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList());
-        toAdd.setGuestbook(guestbook);
-        
+        toAdd.setGuestbook(guestbook);       
         guestbook.addCustomQuestion(indexIn, toAdd);
-        return "";
     }
     
-    public String addCustomQuestionValue(CustomQuestion cq, int index){
+    public void addCustomQuestionValue(CustomQuestion cq, int index){
         CustomQuestionValue toAdd = new CustomQuestionValue();
         toAdd.setValueString("");
         toAdd.setCustomQuestion(cq);
-        cq.addCustomQuestionValue(index, toAdd);
-        return "";       
+        cq.addCustomQuestionValue(index, toAdd);    
     }
     
-    public String removeCustomQuestionValue(CustomQuestion cq, Long index){
+    public void removeCustomQuestionValue(CustomQuestion cq, Long index){
         cq.removeCustomQuestionValue(index.intValue());
-        return "";
     }
     
     public void toggleQuestionType(CustomQuestion questionIn) {
         if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty() 
-                && questionIn.getQuestionType().equals("options")){
+                && questionIn.getQuestionType() !=null && questionIn.getQuestionType().equals("options")){
             questionIn.setCustomQuestionValues(new ArrayList());
             CustomQuestionValue addCQV = new CustomQuestionValue();
             addCQV.setCustomQuestion(questionIn);
@@ -223,8 +223,42 @@ public class GuestbookPage implements java.io.Serializable {
                     cq.setCustomQuestionValues(null);
                 }
             }
+
+            Iterator<CustomQuestion> cqIt = guestbook.getCustomQuestions().iterator();
+            while (cqIt.hasNext()) {
+                CustomQuestion cq = cqIt.next();
+                if (StringUtils.isBlank(cq.getQuestionString())) {
+                    cqIt.remove();
+                }
+            }
+
+            for (CustomQuestion cq : guestbook.getCustomQuestions()) {
+                if (cq != null && cq.getQuestionType().equals("options")) {
+                    Iterator<CustomQuestionValue> cqvIt = cq.getCustomQuestionValues().iterator();
+                    while (cqvIt.hasNext()) {
+                        CustomQuestionValue cqv = cqvIt.next();
+                        if (StringUtils.isBlank(cqv.getValueString())) {
+                            cqvIt.remove();
+                        }
+                    }
+                }
+            }
+            
+            for (CustomQuestion cq : guestbook.getCustomQuestions()) {
+                if (cq != null && cq.getQuestionType().equals("options")) {
+                    if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()){
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving." ));
+                        return null;
+                    }
+                    if (cq.getCustomQuestionValues().size() == 1){
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving." ));
+                        return null; 
+                    }
+                }
+            }
+            
         }
-      
+           
         Command<Dataverse> cmd;
         try {
             if (editMode == EditMode.CREATE || editMode == EditMode.CLONE ) {

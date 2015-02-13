@@ -53,8 +53,11 @@
                                 <p:column width="20%" sortBy="createDate" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
                                     <h:outputText value="#{guestbook.createDate} " />
                                 </p:column>
-                                <p:column width="10%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
+                                <p:column width="8%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
                                     <h:outputText value="#{guestbook.usageCount} " />
+                                </p:column>
+                                <p:column width="7%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
+                                    <h:outputText value="#{guestbook.responseCount} " />
                                 </p:column>
                                 <p:column width="35%" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
                                     <div class="btn-group" role="group" style="margin-right:0.5em;">
@@ -100,6 +103,7 @@
                                                    oncomplete="bind_tooltip_popover();"
                                                    style="color:black;margin-right:0.5em;"/>
                                     <p:commandLink styleClass="btn btn-default btn-sm"
+                                                   rendered="#{guestbook.responseCount > 0}"
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}"
                                                    action="#{manageGuestbooksPage.viewSelectedGuestbookResponses(guestbook)}"
                                                    oncomplete="viewGuestbookCollectedData.show();bind_tooltip_popover();"
@@ -118,6 +122,7 @@
                     <p:dialog id="viewGuestbook" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
                         <div class="text-right">
                             <h:outputLink styleClass="btn btn-default"
+                                          rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
                                           value="/guestbook.xhtml?id=#{manageGuestbooksPage.selectedGuestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=METADATA">
                                 <span class="glyphicon glyphicon-pencil"></span> #{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}
                             </h:outputLink>
@@ -187,7 +192,7 @@
                                             <h:outputText value="#{response.dataset.releasedVersion.title}"/>
                                         </span><br/>
                                         <br/>
-                                        <h:outputText value="#{response.dataFile.displayName}: #{response.name}"/>
+                                        <h:outputText value="#{response.dataFile.displayName}: #{response.name}, #{response.institution}, #{response.position}, #{response.responseTime}"/>
                                     </p>
                                 </ui:repeat>
                             </div>

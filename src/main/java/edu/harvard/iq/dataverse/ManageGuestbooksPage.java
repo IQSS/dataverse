@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateRootCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
@@ -42,6 +42,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     GuestbookResponseServiceBean guestbookResponseService;
     
     @EJB
+    GuestbookServiceBean guestbookService;
+    
+    @EJB
     EjbDataverseEngine engineService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -69,10 +72,11 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         dvpage.setDataverse(dataverse);
 
         guestbooks = new LinkedList<>();
-        setInheritGuestbooksValue(dataverse.isGuestbookRoot());
+        setInheritGuestbooksValue(!dataverse.isGuestbookRoot());
         if (inheritGuestbooksValue && dataverse.getOwner() != null) {
             for (Guestbook pg : dataverse.getParentGuestbooks()) {
-                pg.setDataverse(dataverse.getOwner());
+                pg.setUsageCount(guestbookService.findCountUsages(pg.getId()));
+                pg.setResponseCount(guestbookResponseService.findCountByGuestbookId(pg.getId()));
                 pg.setDeletable(true);
                 if (!(pg.getUsageCount().intValue() == 0)) {
                     pg.setDeletable(false);
@@ -82,9 +86,11 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         for (Guestbook cg : dataverse.getGuestbooks()) {
             cg.setDeletable(true);
+            cg.setUsageCount(guestbookService.findCountUsages(cg.getId()));
             if (!(cg.getUsageCount().intValue() == 0)) {
                 cg.setDeletable(false);
             }
+            cg.setResponseCount(guestbookResponseService.findCountByGuestbookId(cg.getId()));
             cg.setDataverse(dataverse);
             guestbooks.add(cg);
         }
@@ -132,9 +138,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void viewSelectedGuestbookResponses(Guestbook selectedGuestbook){
         this.selectedGuestbook = selectedGuestbook;
         guestbookPage.setGuestbook(selectedGuestbook);
-        System.out.print(" in update responses " + selectedGuestbook.getName());
-        setResponses(guestbookResponseService.findAllByGuestbookId(selectedGuestbook.getId()));
-        System.out.print(" after setresponses " + responses.size());
+        setResponses(guestbookResponseService.findAllByGuestbookId(selectedGuestbook.getId()));       
     }
 
     private void saveDataverse(String successMessage) {
@@ -232,9 +236,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     public String updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
-
-
-            dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(isInheritGuestbooksValue(), session.getUser(), getDataverse()));
+            dataverse = engineService.submit(new UpdateDataverseGuestbookRootCommand(!isInheritGuestbooksValue(), session.getUser(), getDataverse()));
             init();
             return "";
         } catch (CommandException ex) {

@@ -53,6 +53,17 @@ public class GuestbookResponseServiceBean {
         }
         return null;
     }
+    
+    public Long findCountByGuestbookId(Long guestbookId) {
+
+        if (guestbookId == null) {
+        } else {
+            String queryString = "select count(o) from GuestbookResponse as o where o.guestbook_id = " + guestbookId;
+            Query query = em.createNativeQuery(queryString);
+            return (Long) query.getSingleResult();
+        }
+        return new Long(0);
+    }
 
     public List<Long> findAllIds30Days() {
         return findAllIds30Days(null);

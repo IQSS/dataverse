@@ -543,10 +543,7 @@ public class DataversePage implements java.io.Serializable {
         
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
-    
-    public void openLinkDataverse(){
-          List<Dataverse> dataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.AddDataset);
-    }
+
 
     public void cancel(ActionEvent e) {
         // reset values

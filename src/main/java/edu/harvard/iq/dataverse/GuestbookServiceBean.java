@@ -29,22 +29,20 @@ public class GuestbookServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
     
-    
-    
-    
-    public List<DataverseFeaturedDataverse> findByRootDataverse() {
-        return em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = 1 order by o.displayOrder").getResultList();
-    }
+    public Long findCountUsages(Long guestbookId) {
+        System.out.print("in find count usages");
+        String queryString = "";
+        if (guestbookId != null) {
+            queryString = "select count(o.id) from Dataset  o  where o.guestbook_id  = " + guestbookId + " ";
+        } else {
+            return new Long(0) ;
+        }
 
-    public void delete(DataverseFeaturedDataverse dataverseFeaturedDataverse) {
-        em.remove(em.merge(dataverseFeaturedDataverse));
+        Query query = em.createNativeQuery(queryString);
+        return (Long) query.getSingleResult();
     }
     
-	public void deleteFeaturedDataversesFor( Dataverse d ) {
-		em.createNamedQuery("DataverseFeaturedDataverse.removeByOwnerId")
-			.setParameter("ownerId", d.getId())
-				.executeUpdate();
-	}
+    
         
    public Guestbook find(Object pk) {
         return em.find(Guestbook.class, pk);

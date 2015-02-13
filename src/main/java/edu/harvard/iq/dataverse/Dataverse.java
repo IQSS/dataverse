@@ -184,10 +184,8 @@ public class Dataverse extends DvObjectContainer {
         List<Guestbook> retList = new ArrayList();
         Dataverse testDV = this;
         while (testDV.getOwner() != null){   
-          
-           retList.addAll(testDV.getOwner().getGuestbooks());
-           
-           if(!testDV.getOwner().guestbookRoot){               
+           retList.addAll(testDV.getOwner().getGuestbooks());          
+           if(testDV.getOwner().guestbookRoot){               
                break;
            }           
            testDV = testDV.getOwner();
