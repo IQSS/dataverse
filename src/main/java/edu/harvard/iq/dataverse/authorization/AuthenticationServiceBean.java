@@ -210,6 +210,20 @@ public class AuthenticationServiceBean {
         }
     }
 
+    public AuthenticatedUser getAuthenticatedUserByEmail( String email ) {
+        try {
+            return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+        } catch ( NoResultException ex ) {
+            logger.info("no user found using " + email);
+            return null;
+        } catch ( NonUniqueResultException ex ) {
+            logger.info("multiple users found using " + email + ": " + ex);
+            return null;
+        }
+    }
+
     public AuthenticatedUser authenticate( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
@@ -413,7 +427,7 @@ public class AuthenticationServiceBean {
         return new Timestamp(new Date().getTime());
     }
 
-    public AuthenticatedUser convertBuiltInToShib(AuthenticatedUser builtInUserToConvert, String shibProviderId, UserIdentifier userIdentifier, RoleAssigneeDisplayInfo displayInfo) {
+    public AuthenticatedUser convertBuiltInToShib(AuthenticatedUser builtInUserToConvert, String shibProviderId, UserIdentifier newUserIdentifierInLookupTable, RoleAssigneeDisplayInfo displayInfo) {
         logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to shib");
         String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
         logger.info("builtin user identifier: " + builtInUserIdentifier);
@@ -435,7 +449,7 @@ public class AuthenticationServiceBean {
         authuserLookup.setAuthenticationProviderId(shibProviderId);
         String oldUserLookupIdentifier = authuserLookup.getPersistentUserId();
         logger.info("this should be 'pete' or whatever the old builtin username was: " + oldUserLookupIdentifier);
-        String perUserShibIdentifier = userIdentifier.getLookupStringPerAuthProvider();
+        String perUserShibIdentifier = newUserIdentifierInLookupTable.getLookupStringPerAuthProvider();
         authuserLookup.setPersistentUserId(perUserShibIdentifier);
         /**
          * @todo this should be a transaction of some kind. We want to update

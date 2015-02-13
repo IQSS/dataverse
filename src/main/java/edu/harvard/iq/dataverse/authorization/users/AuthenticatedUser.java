@@ -28,6 +28,8 @@ import javax.validation.constraints.NotNull;
                 query="SELECT au FROM AuthenticatedUser au WHERE au.superuser = TRUE"),
     @NamedQuery( name="AuthenticatedUser.findByIdentifier",
                 query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
+    @NamedQuery( name="AuthenticatedUser.findByEmail",
+                query="select au from AuthenticatedUser au WHERE au.email=:email"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
                 query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier")
 })
@@ -45,6 +47,13 @@ public class AuthenticatedUser implements User, Serializable {
     private String userIdentifier;
 
     private String name;
+
+    /**
+     * @todo add uniqueness constraint per
+     * https://github.com/IQSS/dataverse/issues/845
+     * @NotNull
+     * @Column(nullable = false, unique=true)
+     */
     private String email;
     private String affiliation;
     private boolean superuser;

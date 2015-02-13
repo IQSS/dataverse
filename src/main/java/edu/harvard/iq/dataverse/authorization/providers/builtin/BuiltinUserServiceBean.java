@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -25,6 +26,8 @@ import javax.persistence.PersistenceContext;
 @Stateless
 @Named
 public class BuiltinUserServiceBean {
+
+    private static final Logger logger = Logger.getLogger(BuiltinUserServiceBean.class.getCanonicalName());
 
     @EJB IndexServiceBean indexService;
 
@@ -63,6 +66,9 @@ public class BuiltinUserServiceBean {
                     .setParameter("userName", userName)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
+            return null;
+        } catch (NonUniqueResultException ex) {
+            logger.info("multiple accounts found for username " + userName);
             return null;
         }
     }

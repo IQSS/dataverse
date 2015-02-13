@@ -43,6 +43,19 @@ public class BuiltinUser implements Serializable {
     @Column( unique = true )
     private String userName;
 
+    /**
+     * @todo Why are we storing email both here *and* in the authenticateduser
+     * table? Is this a holdover from when this was the only user table? Yes, it
+     * probably is. Here are places in the system that rely on the email address
+     * being in this table:
+     *
+     * - password reset
+     *
+     * If this field is kept (probably shouldn't be) at least add a uniqueness
+     * constraint per https://github.com/IQSS/dataverse/issues/845
+     * @NotNull
+     * @Column(nullable = false, unique=true)
+     */
     @NotBlank(message = "Please enter a valid email address.")
     @Email(message = "Please enter a valid email address.")
     private String email;

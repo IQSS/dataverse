@@ -18,6 +18,10 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+/**
+ * @todo Consider merging this bean into the newer and more generic
+ * ShibServiceBean.
+ */
 @Named
 @Stateless
 public class ShibGroupServiceBean {

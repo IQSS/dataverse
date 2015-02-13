@@ -1,7 +1,9 @@
 #!/bin/bash -x
-psql -c "select id,name,useridentifier from authenticateduser order by id;" dataverse_db
+#psql -c "select id,name,useridentifier from authenticateduser order by id;" dataverse_db
+psql -c "select * from authenticateduser order by id;" dataverse_db
 psql -c "select * from authenticateduserlookup order by id;" dataverse_db
-psql -c "select id,encryptedpassword,firstname,lastname,username from builtinuser order by id;" dataverse_db
+psql -c "select * from builtinuser order by id;" dataverse_db
+#psql -c "select id,encryptedpassword,firstname,lastname,username from builtinuser order by id;" dataverse_db
 exit
 psql -c "select * from roleassignment;" dataverse_db
 psql -c "select datasetversionid,useridentifier from datasetversion_dataverseuser;" dataverse_db

@@ -1,0 +1,10 @@
+#!/bin/sh
+echo args: $@
+if [ -z "$1" ]; then
+    echo "call with foo:bar:baz"
+else
+    OUTPUT=`curl -s -X PUT -d "$@" http://localhost:8080/api/test/user/convert/builtin2shib`
+    echo $OUTPUT
+    echo
+    echo $OUTPUT | jq .
+fi
