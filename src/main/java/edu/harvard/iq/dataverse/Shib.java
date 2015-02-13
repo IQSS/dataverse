@@ -257,7 +257,14 @@ public class Shib implements java.io.Serializable {
         try {
             emailAddress = getRequiredValueFromAttribute(emailAttribute);
         } catch (Exception ex) {
-            return;
+            String shipIdp = "https://idp.testshib.org/idp/shibboleth";
+            if (shibIdp.equals(shipIdp)) {
+                logger.info("For " + shipIdp + " setting email address to value of eppn: " + shibUserIdentifier);
+                emailAddress = shibUserIdentifier;
+            } else {
+                // forcing all other IdPs to send us an an email
+                return;
+            }
         }
         internalUserIdentifer = generateFriendlyLookingUserIdentifer(usernameAttribute, emailAttribute);
         logger.info("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
@@ -327,8 +334,8 @@ public class Shib implements java.io.Serializable {
             logger.info("Couldn't find authenticated user based on " + userPersistentId);
             visibleTermsOfUse = true;
             /**
-             * Using the email address from the IdP, try to find an
-             * existing user.
+             * Using the email address from the IdP, try to find an existing
+             * user. For TestShib we convert the "eppn" to an email address.
              *
              * If found, prompt for password and offer to convert.
              *
@@ -707,9 +714,11 @@ public class Shib implements java.io.Serializable {
 
     private void mutateRequestForDevConstantTestShib() {
         request.setAttribute(shibIdpAttribute, "https://idp.testshib.org/idp/shibboleth");
-        request.setAttribute(uniquePersistentIdentifier, "constantTestShib");
+        // the TestShib "eppn" looks like an email address
+        request.setAttribute(uniquePersistentIdentifier, "constant@testshib.org");
         request.setAttribute(displayNameAttribute, "Sam El");
-        request.setAttribute(emailAttribute, "saml@mailinator.com");
+        // TestShib doesn't send "mail" attribute so let's mimic that.
+//        request.setAttribute(emailAttribute, "saml@mailinator.com");
         request.setAttribute(usernameAttribute, "saml");
     }
 
