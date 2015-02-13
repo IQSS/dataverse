@@ -652,8 +652,8 @@
                                                 <p:ajax update=":datasetForm:tabView:zipDownloadPanel" process="@this"/>
                                             </p:selectBooleanCheckbox>
                                         </p:column>
-                                        <p:column styleClass="col-xs-1" style="text-align:center;width:48px;">
-                                            <div style="position:relative;display:table-cell;">
+                                        <p:column styleClass="col-xs-1" style="width:48px;">
+                                            <div style="position:relative;display:table-cell;margin:0 auto;">
                                                 <!-- add hover here -->
                                                 <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}">
                                                     <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
@@ -661,7 +661,7 @@
                                                     </a>
                                                 </ui:fragment>
 
-                                                <p:graphicImage value="/resources/images/icon_file.png" rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.image)}"/>
+                                                <i id="icon-image" class="icon-image text-muted" style="font-size:3em;line-height:1.05;" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.image)}"/>
 
                                                 <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and fileMetadata.dataFile.image}">
                                                     <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
@@ -669,7 +669,7 @@
                                                 </ui:fragment>
                                                 <!-- Restricted File Icon -->
                                                 <ui:fragment rendered="#{fileMetadata.restricted}">
-                                                    <div style="display:block;position:absolute;bottom:-6px;right:-2px;"><span class="glyphicon glyphicon-lock"/></div>
+                                                    <div style="display:block;position:absolute;bottom:-4px;right:-4px;"><span class="glyphicon glyphicon-lock text-danger"/></div>
                                                 </ui:fragment>
                                             </div>
                                         </p:column>
