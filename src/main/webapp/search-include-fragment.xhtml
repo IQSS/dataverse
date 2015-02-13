@@ -4,7 +4,8 @@
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:p="http://primefaces.org/ui"
-     xmlns:o="http://omnifaces.org/ui">
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm" rendered="#{showSearch == true}">
@@ -104,7 +105,7 @@
                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                                     <f:param name="page" value="1"/>
                                     
-                                    <i id="icon-dataverse" class="icon-dataverse" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                    <i class="icon-dataverse" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
                                     
                                     <h:outputText value="Dataverses (#{SearchIncludeFragment.facetCountDataverses})" styleClass="facetTypeDataverse"/>
                                 </h:outputLink>
@@ -135,7 +136,7 @@
                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                                     <f:param name="page" value="1"/>
                                     
-                                    <i id="icon-dataset" class="icon-dataset" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                    <i class="icon-dataset" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
                                     
                                     <h:outputText value="Datasets (#{SearchIncludeFragment.facetCountDatasets})" styleClass="facetTypeDataset"/>
                                 </h:outputLink>
@@ -166,7 +167,7 @@
                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                                     <f:param name="page" value="1"/>
                                     
-                                    <i id="icon-image" class="icon-image" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                    <i class="icon-image" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
                                     
                                     <h:outputText value="Files (#{SearchIncludeFragment.facetCountFiles})" styleClass="facetTypeFile"/>
                                 </h:outputLink>
@@ -477,7 +478,7 @@
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                         
-                                        <i id="icon-dataverse" class="icon-dataverse text-warning pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                        <i class="icon-dataverse text-warning pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
                                         
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
@@ -558,7 +559,7 @@
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.DEACCESSIONED}" styleClass="label label-info" rendered="#{result.deaccessionedState}"/>
                                         
-                                        <i id="icon-dataset" class="icon-dataset text-info pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                        <i class="icon-dataset text-info pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
                                         
                                     </div>
                                     <!--<span class="label label-default">Default</span>-->
@@ -616,9 +617,10 @@
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                         
-                                        <i id="icon-image" class="icon-image text-muted pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
+                                        <i class="icon-image text-muted pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"/>
                                         
                                     </div>
+                                    <ui:remove>
                                     <div>
                                         <h:outputText value="(thumbnail available)" rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
                                         <h:outputText value="(thumbnail not available)" rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
@@ -626,12 +628,18 @@
                                     <div>
                                         <h:outputText value="#{dataFileServiceBean.getFileClassById(result.entityId)}"/>
                                     </div>
+                                    </ui:remove>
                                     
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                         <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
-                                        <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
-                                            <p:graphicImage value="/api/access/preview/#{result.entityId}"/>
-                                        </a>
+                                        <ui:fragment rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId)}">
+                                            <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="clear:left; margin-bottom: .5em;">
+                                                <p:graphicImage value="/api/access/preview/#{result.entityId}" />
+                                            </a>
+                                        </ui:fragment>
+                                        
+                                        <i class="icon-#{dataFileServiceBean.getFileClassById(result.entityId)} text-muted h1"
+                                           jsf:rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
                                     </div>
                                     
                                     <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
