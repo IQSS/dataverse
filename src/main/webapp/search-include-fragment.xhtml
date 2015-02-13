@@ -619,6 +619,14 @@
                                         <i id="icon-image" class="icon-image text-muted pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
                                         
                                     </div>
+                                    <div>
+                                        <h:outputText value="(thumbnail available)" rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
+                                        <h:outputText value="(thumbnail not available)" rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
+                                    </div>
+                                    <div>
+                                        <h:outputText value="#{dataFileServiceBean.getFileClassById(result.entityId)}"/>
+                                    </div>
+                                    
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                         <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
                                         <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
