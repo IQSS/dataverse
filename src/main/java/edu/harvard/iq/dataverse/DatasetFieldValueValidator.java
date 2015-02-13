@@ -124,7 +124,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             //updated to allow dashes
             Pattern p =  Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
             
-            Matcher m = p.matcher(value.getValue());
+            Matcher m = p.matcher(value.getValue().trim());
             boolean matchFound = m.matches();
             if (!matchFound) {
                 context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue()+" is not a valid email address.").addConstraintViolation();
