@@ -361,7 +361,7 @@ public class IngestServiceBean {
                 } else {
                     unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
                 } 
-                                                
+                                                                
                 while (true) { 
                     try {
                         zipEntry = unZippedIn.getNextEntry();
@@ -393,19 +393,28 @@ public class IngestServiceBean {
                         }
 
                         String fileEntryName = zipEntry.getName();
+                        logger.info("ZipEntry, file: "+fileEntryName);
 
                         if (fileEntryName != null && !fileEntryName.equals("")) {
 
-                            fileEntryName = fileEntryName.replaceFirst("^.*[\\/]", "");
+                            String shortName = fileEntryName.replaceFirst("^.*[\\/]", "");
 
                             // Check if it's a "fake" file - a zip archive entry 
                             // created for a MacOS X filesystem element: (these 
                             // start with "._")
-                            if (!fileEntryName.startsWith("._") && !fileEntryName.startsWith(".DS_Store")) {
+                            if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
                                 // OK, this seems like an OK file entry - we'll try 
                                 // to read it and create a DataFile with it:
 
-                                DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, MIME_TYPE_UNDETERMINED_DEFAULT, false);
+                                DataFile datafile = createSingleDataFile(version, unZippedIn, shortName, MIME_TYPE_UNDETERMINED_DEFAULT, false);
+
+                                if (!fileEntryName.equals(shortName)) {
+                                    String categoryName = fileEntryName.replaceFirst("[\\/][^\\/]*$", "");
+                                    if (!"".equals(categoryName)) {
+                                        logger.info("setting category to "+categoryName);
+                                        datafile.getFileMetadata().setCategory(categoryName.replaceAll("[\\/]", "-"));
+                                    }
+                                }
                                 
                                 if (datafile != null) {
                                     // We have created this datafile with the mime type "unknown";
@@ -415,7 +424,7 @@ public class IngestServiceBean {
                                     String tempFileName = getFilesTempDirectory() + "/" + datafile.getFileSystemName();
                                     
                                     try {
-                                        recognizedType = FileUtil.determineFileType(new File(tempFileName), fileEntryName);
+                                        recognizedType = FileUtil.determineFileType(new File(tempFileName), shortName);
                                         logger.fine("File utility recognized unzipped file as " + recognizedType);
                                         if (recognizedType != null && !recognizedType.equals("")) {
                                             datafile.setContentType(recognizedType);
@@ -428,7 +437,7 @@ public class IngestServiceBean {
                                 }
                             }
                         }
-                    }
+                    } 
                     unZippedIn.closeEntry(); 
                     
                 }
@@ -459,7 +468,18 @@ public class IngestServiceBean {
                     }
                     version.getFileMetadatas().add(datafile.getFileMetadata());
                     datafile.getFileMetadata().setDatasetVersion(version);
+                    if (datafile.getFileMetadata().getCategory() != null) {
+                        datafile.getFileMetadata().addCategoryByName(datafile.getFileMetadata().getCategory());
+                        datafile.getFileMetadata().setCategory(null);
+                    }
                     version.getDataset().getFiles().add(datafile);
+                }
+                // remove the uploaded zip file: 
+                try {
+                    Files.delete(tempFile);
+                } catch (IOException ioex) {
+                    // do nothing - it's just a temp file.
+                    logger.warning("Could not remove temp file "+tempFile.getFileName().toString());
                 }
                 // and return:
                 return datafiles;
@@ -910,11 +930,19 @@ public class IngestServiceBean {
                         if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}
                     }
 
+                    // delete the temporary file: 
                     try {
                         logger.fine("Will attempt to delete the temp file "+tempLocationPath.toString());
+                        // also, delete a temporary thumbnail image file, if exists:
+                        // (TODO: probably not a very good style, that the size of the thumbnail 
+                        // is hard-coded here; it may change in the future...)
+                        Path tempThumbnailPath = Paths.get(tempLocationPath.toString() + ".thumb64");
                         Files.delete(tempLocationPath);
+                        if (tempThumbnailPath.toFile().exists()) {
+                            Files.delete(tempThumbnailPath);
+                        }
                     } catch (IOException ex) {
-                        // (non-fatal)
+                        // (non-fatal - it's just a temp file.)
                         logger.warning("Failed to delete temp file "+tempLocationPath.toString());
                     }
                     // Any necessary post-processing: 
@@ -1396,6 +1424,10 @@ public class IngestServiceBean {
                     pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
                     logger.info("Ingest (" + dataFile.getFileMetadata().getDescription() + "); Sent push notification to the page.");
 
+                    if (additionalData != null) {
+                        // remove the extra tempfile, if there was one:
+                        additionalData.delete();
+                    }
                     ingestSuccessful = true;
                 }
             } else {

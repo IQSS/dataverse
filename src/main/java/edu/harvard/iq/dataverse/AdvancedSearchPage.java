@@ -2,12 +2,15 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -66,7 +69,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     }
 
-    public String find() throws IOException {
+    public String find() throws IOException, UnsupportedEncodingException {
         List<String> queryStrings = new ArrayList();
         queryStrings.add(constructDataverseQuery());
         queryStrings.add(constructDatasetQuery());
@@ -78,8 +81,12 @@ public class AdvancedSearchPage implements java.io.Serializable {
             }
         }
 
-        String returnString = "/dataverse.xhtml?q=" + constructQuery(queryStrings, false, false) + dataverseSubtree + "&faces-redirect=true";
-        logger.fine(returnString);
+        String returnString = "/dataverse.xhtml?q=";
+        returnString += URLEncoder.encode(constructQuery(queryStrings, false, false), "UTF-8");       
+        returnString += dataverseSubtree + "&faces-redirect=true";
+
+        
+        logger.fine(returnString);        
         return returnString;
     }
 

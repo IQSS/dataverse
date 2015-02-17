@@ -360,6 +360,8 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 
 .panel .panel-body .form-group {overflow: hidden;}
 
+.metadata-logo {max-width:180px;max-height:40px;}
+
 /* Primefaces vs Bootstrap selectOneMenu fix */
 .form-group div.ui-selectonemenu.form-control {padding:0px;}
 .form-group .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}

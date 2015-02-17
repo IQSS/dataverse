@@ -56,7 +56,7 @@
                                 <p:column width="8%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
                                     <h:outputText value="#{guestbook.usageCount} " />
                                 </p:column>
-                                <p:column width="7%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
+                                <p:column width="7%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.responses']}">
                                     <h:outputText value="#{guestbook.responseCount} " />
                                 </p:column>
                                 <p:column width="35%" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
@@ -194,6 +194,13 @@
                                         <br/>
                                         <h:outputText value="#{response.dataFile.displayName}: #{response.name}, #{response.institution}, #{response.position}, #{response.responseTime}"/>
                                     </p>
+                                    <ui:fragment rendered="#{response.customQuestionResponses.size() > 0}">
+                                        <ui:repeat value="#{response.customQuestionResponses}" var="customQResponse">
+                                            <h:outputText value="#{customQResponse.customQuestion.questionString}: #{customQResponse.response}"/>
+                                            <br/>
+                                        </ui:repeat>
+                                    </ui:fragment>
+                                    <br/>
                                 </ui:repeat>
                             </div>
                         </div>

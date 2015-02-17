@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.io.Serializable;
 import javax.persistence.Column;
@@ -138,8 +139,8 @@ public class BuiltinUser implements Serializable {
         return this.getFirstName() + " " + this.getLastName(); 
     }
     
-    public RoleAssigneeDisplayInfo createDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(getDisplayName(), getEmail(), getAffiliation() );
+    public AuthenticatedUserDisplayInfo getDisplayInfo() {
+        return new AuthenticatedUserDisplayInfo(getFirstName(), getLastName(), getEmail(), getAffiliation(), getPosition() );
     }
 
     @Override
@@ -162,9 +163,5 @@ public class BuiltinUser implements Serializable {
 	public String toString() {
 		return "BuiltinUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
 	}
-
-    RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(getDisplayName(), getEmail(), getAffiliation());
-    }
    
 }

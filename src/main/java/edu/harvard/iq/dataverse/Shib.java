@@ -5,6 +5,7 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
@@ -148,7 +149,7 @@ public class Shib implements java.io.Serializable {
     private final String firstNameAttribute = "givenName";
     private final String lastNameAttribute = "sn";
     private final String emailAttribute = "mail";
-    RoleAssigneeDisplayInfo displayInfo;
+    AuthenticatedUserDisplayInfo displayInfo;
     /**
      * @todo Remove this boolean some day? Now the mockups show a popup. Should
      * be re-worked. See also the comment about the lack of a Cancel button.
@@ -288,8 +289,11 @@ public class Shib implements java.io.Serializable {
          * need to parse something like
          * https://dataverse-demo.iq.harvard.edu/Shibboleth.sso/DiscoFeed
          */
+        /**
+         * @todo Add position and review firstname, lastname
+         */        
         String affiliation = "FIXME";
-        displayInfo = new RoleAssigneeDisplayInfo(displayName, emailAddress);
+        displayInfo = new AuthenticatedUserDisplayInfo(firstNameAttribute, lastNameAttribute, emailAddress, affiliation, null);
 
         userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
@@ -390,7 +394,7 @@ public class Shib implements java.io.Serializable {
         logger.info("builtin username: " + builtinUsername);
         AuthenticatedUser builtInUserToConvert = shibService.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
-            AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier, displayInfo);
+            AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier);
             if (au != null) {
                 authSvc.updateAuthenticatedUser(au, displayInfo);
                 logInUserAndSetShibAttributes(au);

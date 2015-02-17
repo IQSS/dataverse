@@ -11,12 +11,16 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
@@ -26,13 +30,18 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -188,7 +197,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     /*
+    ============================================================================
      edit configuration dialog // only for dataverse version of page
+    ============================================================================
      */
     
     private String authenticatedUsersContributorRoleAlias = null;
@@ -273,18 +284,19 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }    
 
     /*
+   ============================================================================
      assign roles dialog
+   ============================================================================
      */
-    private List<RoleAssignee> selectedRoleAssignees;
+    private List<RoleAssignee> roleAssignSelectedRoleAssignees;
     private Long selectedRoleId;
-    private List<RoleAssignee> roleAssigneeList = new ArrayList();
 
-    public List<RoleAssignee> getSelectedRoleAssignees() {
-        return selectedRoleAssignees;
+    public List<RoleAssignee> getRoleAssignSelectedRoleAssignees() {
+        return roleAssignSelectedRoleAssignees;
     }
 
-    public void setSelectedRoleAssignees(List<RoleAssignee> selectedRoleAssignees) {
-        this.selectedRoleAssignees = selectedRoleAssignees;
+    public void setRoleAssignSelectedRoleAssignees(List<RoleAssignee> selectedRoleAssignees) {
+        this.roleAssignSelectedRoleAssignees = selectedRoleAssignees;
     }
 
     public Long getSelectedRoleId() {
@@ -296,28 +308,32 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     public void initAssigneeDialog(ActionEvent ae) {
-        selectedRoleAssignees = null;
+        roleAssignSelectedRoleAssignees = new LinkedList<>();
         selectedRoleId = null;
         showNoMessages();
     }
-
+    
     public List<RoleAssignee> completeRoleAssignee( String query ) {
-        if (roleAssigneeList.isEmpty()) {
-            for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
-                roleAssigneeList.add(au);
-            }
-            for ( Group g : groupService.findAllGroups() ) {
-                roleAssigneeList.add( g );
-            }
+        List<RoleAssignee> roleAssigneeList = new ArrayList<>();
+        // TODO push this to the authentication and group services. Below code retrieves all the users.
+        for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
+            roleAssigneeList.add(au);
         }
-        List<RoleAssignee> returnList = new ArrayList();
+        for ( Group g : groupService.findGlobalGroups() ) {
+            roleAssigneeList.add( g );
+        }
+        roleAssigneeList.addAll( explicitGroupSvc.findAvailableFor(dvObject) );
+        
+        List<RoleAssignee> filteredList = new LinkedList();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) && (selectedRoleAssignees == null || !selectedRoleAssignees.contains(ra))) {
-                returnList.add(ra);
+            // @todo maybe add some solr/lucene style searching, did-you-mean style?
+            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) && 
+                    (roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))) {
+                filteredList.add(ra);
             }
         }
-        return returnList;
+        return filteredList;
     }
 
     public List<DataverseRole> getAvailableRoles() {
@@ -356,7 +372,13 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     public void assignRole(ActionEvent evt) {        
-        for (RoleAssignee roleAssignee : selectedRoleAssignees) {
+        logger.info("Got to assignRole");
+        List<RoleAssignee> selectedRoleAssigneesList = getRoleAssignSelectedRoleAssignees();
+        if ( selectedRoleAssigneesList == null ) {
+            logger.info("** SELECTED role asignees is null");
+            selectedRoleAssigneesList = new LinkedList<>();
+        }
+        for (RoleAssignee roleAssignee : selectedRoleAssigneesList) {
             assignRole(roleAssignee, roleService.find(selectedRoleId));
         }
     }
@@ -376,8 +398,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     /*
+    ============================================================================
      edit role dialog
-     */
+    ============================================================================
+    */
     private DataverseRole role = new DataverseRole();
     private List<String> selectedPermissions;
 
@@ -434,6 +458,122 @@ public class ManagePermissionsPage implements java.io.Serializable {
     boolean renderAssignmentMessages = false;
     boolean renderRoleMessages = false;
 
+    /* 
+    ============================================================================
+    Explicit Group dialogs
+    ============================================================================
+    */
+    
+    String explicitGroupName = "";
+    String explicitGroupFriendlyName = "";
+    String newExplicitGroupDescription = "";
+    
+    @EJB
+    ExplicitGroupServiceBean explicitGroupSvc;
+    
+    List<RoleAssignee> newExplicitGroupRoleAssignees = new LinkedList<>();
+    
+    public void initExplicitGroupDialog(ActionEvent ae) {
+        showNoMessages();
+        setExplicitGroupFriendlyName("");
+        setExplicitGroupName("");
+        setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
+    }
+
+    public void saveExplicitGroup(ActionEvent ae) {
+        
+        ExplicitGroup eg = explicitGroupSvc.getProvider().makeGroup();
+        eg.setDisplayName( getExplicitGroupFriendlyName() );
+        eg.setGroupAliasInOwner( getExplicitGroupName() );
+        eg.setDescription( getNewExplicitGroupDescription() );
+        
+        if ( getNewExplicitGroupRoleAssignees()!= null ) {
+            try {
+                for ( RoleAssignee ra : getNewExplicitGroupRoleAssignees() ) {
+                    eg.add( ra );
+                }
+            } catch ( GroupException ge ) {
+                JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                                        "Group Creation failed.", 
+                                        ge.getMessage());
+                return;
+            }
+        }
+        try {
+            eg = commandEngine.submit( new CreateExplicitGroupCommand(session.getUser(), (Dataverse) getDvObject(), eg));
+            JsfHelper.addSuccessMessage("Succesfully created group " + eg.getDisplayName());
+            
+        } catch (CommandException ex) {
+            logger.log(Level.WARNING, "Group creation failed", ex);
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                                    "Group Creation failed.", 
+                                    ex.getMessage());
+        } catch (Exception ex) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be saved.");
+            logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
+        }
+        showAssignmentMessages();
+    }
+
+    public void setExplicitGroupFriendlyName(String explicitGroupFriendlyName) {
+        this.explicitGroupFriendlyName = explicitGroupFriendlyName;
+    }
+
+    public String getExplicitGroupFriendlyName() {
+        return explicitGroupFriendlyName;
+    }
+
+    public void setExplicitGroupName(String explicitGroupName) {
+        this.explicitGroupName = explicitGroupName;
+    }
+
+    public String getExplicitGroupName() {
+        return explicitGroupName;
+    }
+
+    public void validateGroupName(FacesContext context, UIComponent toValidate, Object rawValue) {
+        String value = (String) rawValue;
+        UIInput input = (UIInput) toValidate;
+        
+        input.setValid(true); // Optimistic approach
+        
+        if ( ! StringUtils.isEmpty(value) ) {
+            
+            // cheap test - regex
+            if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
+                input.setValid(false);
+                input.setValidatorMessage( JH.localize("dataverse.permissions.explicitGroupEditDialog.groupName.invalid") );
+            
+            } else if ( explicitGroupSvc.findInOwner(getDvObject().getId(), value) != null ) {
+                // Ok, see that the alias is not taken
+                input.setValid(false);
+                input.setValidatorMessage( JH.localize("dataverse.permissions.explicitGroupEditDialog.groupName.taken") );
+            }
+        }
+    }
+
+    public void setNewExplicitGroupRoleAssignees(List<RoleAssignee> newExplicitGroupRoleAssignees) {
+        this.newExplicitGroupRoleAssignees = newExplicitGroupRoleAssignees;
+    }
+
+    public List<RoleAssignee> getNewExplicitGroupRoleAssignees() {
+        return newExplicitGroupRoleAssignees;
+    }
+
+    public String getNewExplicitGroupDescription() {
+        return newExplicitGroupDescription;
+    }
+
+    public void setNewExplicitGroupDescription(String newExplicitGroupDescription) {
+        this.newExplicitGroupDescription = newExplicitGroupDescription;
+    }
+    
+    /* 
+    ============================================================================
+    Internal methods
+    ============================================================================
+    */
+    
     private void showNoMessages() {
         renderConfigureMessages = false;
         renderAssignmentMessages = false;
@@ -482,7 +622,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         this.renderRoleMessages = renderRoleMessages;
     }
 
-    // inner class used fordisplay of role assignments
+    // inner class used for display of role assignments
     public static class RoleAssignmentRow {
 
         private final RoleAssigneeDisplayInfo assigneeDisplayInfo;

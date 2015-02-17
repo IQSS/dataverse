@@ -434,6 +434,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         // "Documents": PDF, assorted MS docs, etc. 
         
         String contentType = file.getContentType();
+        int scIndex = 0;
+        if (contentType != null && (scIndex = contentType.indexOf(';')) > 0) {
+            contentType = contentType.substring(0, scIndex);
+        }
         
         return (MIME_TYPE_PLAIN_TEXT.equalsIgnoreCase(contentType)
             || MIME_TYPE_DOCUMENT_PDF.equalsIgnoreCase(contentType)

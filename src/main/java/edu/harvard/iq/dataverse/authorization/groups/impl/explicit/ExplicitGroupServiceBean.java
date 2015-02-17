@@ -83,12 +83,12 @@ public class ExplicitGroupServiceBean {
         }
     }
 
-    public ExplicitGroup findInOwner(Long id, String groupAliasInOwner) {
+    public ExplicitGroup findInOwner(Long ownerId, String groupAliasInOwner) {
         try  {
             return provider.updateProvider( 
                     em.createNamedQuery("ExplicitGroup.findByOwnerIdAndAlias", ExplicitGroup.class)
                         .setParameter("alias", groupAliasInOwner)
-                        .setParameter("ownerId", id)
+                        .setParameter("ownerId", ownerId)
                         .getSingleResult());
         } catch ( NoResultException nre ) {
             return null;
@@ -99,10 +99,18 @@ public class ExplicitGroupServiceBean {
         em.remove( explicitGroup );
     }
     
-    public Set<ExplicitGroup> findAll() {
-        return provider.updateProvider( 
-                new HashSet<>(
-                        em.createNamedQuery("ExplicitGroup.findAll", ExplicitGroup.class).getResultList()));
+    /**
+     * Returns all the explicit groups that are available in the context of the passed DvObject.
+     * @param d The DvObject where the groups are queried
+     * @return All the explicit groups defined at {@code d} and its ancestors.
+     */
+    public Set<ExplicitGroup> findAvailableFor( DvObject d ) {
+        Set<ExplicitGroup> egs = new HashSet<>();
+        while ( d != null ) {
+            egs.addAll( findByOwner(d.getId()) );
+            d = d.getOwner();
+        }
+        return provider.updateProvider( egs );
     }
     
     /**

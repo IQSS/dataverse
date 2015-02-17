@@ -86,5 +86,7 @@ public class AuthenticatedUserLookup implements Serializable {
     public void setPersistentUserId(String persistentUserId) {
         this.persistentUserId = persistentUserId;
     }
+    
+    
 
 }

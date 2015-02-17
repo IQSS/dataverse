@@ -314,7 +314,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
                 roleAssigneeList.add(au);
             }
-            for ( Group g : groupService.findAllGroups() ) {
+            for ( Group g : groupService.findGlobalGroups() ) {
                 roleAssigneeList.add( g );
             }            
         }

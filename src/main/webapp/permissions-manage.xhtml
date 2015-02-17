@@ -98,6 +98,15 @@
                                                    oncomplete="userGroupsForm.show();bind_bsui_components();">
                                         <span class="glyphicon glyphicon-user" style="margin-right:0.3em;"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                     </p:commandLink>
+                                    <p:commandLink id="createGroup"
+                                                   styleClass="btn btn-default pull-right"
+												   style="margin-right: 0.5em;"
+                                                   actionListener="#{managePermissionsPage.initExplicitGroupDialog}"
+                                                   update="explicitGroupNewDialog"
+                                                   oncomplete="explicitGroupForm.show();bind_bsui_components();">
+                                        <span class="glyphicon glyphicon-plus-sign" style="margin-right:0.3em;"/>
+										#{bundle['dataverse.permissions.usersOrGroups.createGroupBtn']}
+                                    </p:commandLink>
                                     <p class="help-block clearfix">#{bundle['dataverse.permissions.usersOrGroups.description']}</p>
                                     <div>
                                         <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
@@ -198,6 +207,8 @@
                     <ui:include src="roles-assign.xhtml"/>
                     <!-- Roles Edit Popup -->
                     <ui:include src="roles-edit.xhtml"/>
+                    <!-- Explicit Group Edit Popup -->
+                    <ui:include src="explicitGroup-new-dialog.xhtml"/>
                 </h:form>
             </ui:define>
         </ui:composition>

@@ -9,7 +9,7 @@ package edu.harvard.iq.dataverse.authorization;
  */
 public class AuthenticationResponse {
     
-    public static AuthenticationResponse makeSuccess( String userId, RoleAssigneeDisplayInfo disInf ) {
+    public static AuthenticationResponse makeSuccess( String userId, AuthenticatedUserDisplayInfo disInf ) {
         return new AuthenticationResponse()
                .setStatus( Status.SUCCESS )
                .setUserId(userId)
@@ -35,7 +35,7 @@ public class AuthenticationResponse {
     private String message;
     private Throwable error;
     private String userId;
-    private RoleAssigneeDisplayInfo userDisplayInfo;
+    private AuthenticatedUserDisplayInfo userDisplayInfo;
 
     public Status getStatus() {
         return status;
@@ -73,11 +73,11 @@ public class AuthenticationResponse {
         return this;
     }
 
-    public RoleAssigneeDisplayInfo getUserDisplayInfo() {
+    public AuthenticatedUserDisplayInfo getUserDisplayInfo() {
         return userDisplayInfo;
     }
 
-    public AuthenticationResponse setUserDisplayInfo(RoleAssigneeDisplayInfo userDisplayInfo) {
+    public AuthenticationResponse setUserDisplayInfo(AuthenticatedUserDisplayInfo userDisplayInfo) {
         this.userDisplayInfo = userDisplayInfo;
         return this;
     }

@@ -26,6 +26,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.Transient;
+import javax.validation.constraints.Pattern;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * A group that explicitly lists {@link RoleAssignee}s that belong to it. Implementation-wise,
@@ -88,6 +90,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     @Column( length = 1024 )
     private String description;
     
+    @NotBlank
     private String displayName;
     
     /**
@@ -96,7 +99,9 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     @ManyToOne
     DvObject owner;
     
-    /** Given alias of the group, e.g by the user that created it.  */
+    /** Given alias of the group, e.g by the user that created it. Unique in the owner. */
+    @NotBlank
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String groupAliasInOwner;
     
     /** Alias of the group. Calculated from the group's name and its owner id. Unique in the table. */

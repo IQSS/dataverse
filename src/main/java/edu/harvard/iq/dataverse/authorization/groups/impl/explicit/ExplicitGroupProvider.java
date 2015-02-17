@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -53,9 +53,13 @@ public class ExplicitGroupProvider implements GroupProvider {
         return explicitGroupSvc.findByAlias( groupAlias );
     }
 
+    /**
+     * As explicit groups are defined per dataverse, we cannot return any of them here.
+     * @return empty set.
+     */
     @Override
-    public Set<ExplicitGroup> findAll() {
-        return explicitGroupSvc.findAll();
+    public Set<ExplicitGroup> findGlobalGroups() {
+        return Collections.emptySet();
     }
     
     public ExplicitGroup makeGroup() {
@@ -75,11 +79,22 @@ public class ExplicitGroupProvider implements GroupProvider {
         return roleAssigneeSvc.getRoleAssignee(roleAssigneeIdtf);
     }
     
+    /**
+     * Sets the provider of the passed explicit group to {@code this}.
+     * @param eg the collection
+     * @return the passed group, updated.
+     */
     ExplicitGroup updateProvider( ExplicitGroup eg ) {
         eg.setProvider(this);
         return eg;
     }
     
+    /**
+     * Sets the provider of the explicit groups to {@code this}.
+     * @param <T> Collection's type
+     * @param egs the collection
+     * @return the collection, with all the groups updated.
+     */
     <T extends Collection<ExplicitGroup>> T updateProvider( T egs ) {
         for ( ExplicitGroup eg : egs ) {
             updateProvider(eg);

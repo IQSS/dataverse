@@ -18,6 +18,7 @@ import javax.inject.Named;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.EnumSet;
+import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -109,7 +110,6 @@ public class EjbDataverseEngine {
 
     public <R> R submit(Command<R> aCommand) throws CommandException {
 
-		// Currently not in use
         // Check permissions - or throw an exception
         Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
         if (requiredMap == null) {
@@ -141,8 +141,11 @@ public class EjbDataverseEngine {
                         required, dvo);
             }
         }
-
-        return aCommand.execute(getContext());
+        try {
+            return aCommand.execute(getContext());
+        } catch ( EJBException ejbe ) {
+            throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
+        }
     }
 
     public CommandContext getContext() {

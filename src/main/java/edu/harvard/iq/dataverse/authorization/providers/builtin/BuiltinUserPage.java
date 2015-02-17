@@ -302,14 +302,14 @@ public class BuiltinUserPage implements java.io.Serializable {
         builtinUser = builtinUserService.save(builtinUser);
 
         if (editMode == EditMode.CREATE) {
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName(), builtinUser.createDisplayInfo());
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName(), builtinUser.getDisplayInfo());
             session.setUser(au);
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 
                                                      UserNotification.Type.CREATEACC, null);
             return "/dataverse.xhtml?faces-redirect=true;";
         } else {
-            authSvc.updateAuthenticatedUser(currentUser, builtinUser.createDisplayInfo());
+            authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
             editMode = null;
             logger.info("edit mode: " + editMode);
             String msg = "Your account information has been successfully updated.";

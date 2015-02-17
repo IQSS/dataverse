@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
@@ -40,5 +42,13 @@ public class JsfHelper {
 			return defaultValue;
 		}
 	}
+    
+    public String localize( String messageKey ) {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        String messageBundleName = facesContext.getApplication().getMessageBundle();
+        Locale locale = facesContext.getViewRoot().getLocale();
+        ResourceBundle bundle = ResourceBundle.getBundle("Bundle", locale);
+        return bundle.getString(messageKey);
+    }
     
 }

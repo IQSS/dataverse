@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -56,6 +57,9 @@ public class AuthenticatedUser implements User, Serializable {
      */
     private String email;
     private String affiliation;
+    private String position;
+    private String lastName;
+    private String firstName;
     private boolean superuser;
 
     /**
@@ -108,10 +112,13 @@ public class AuthenticatedUser implements User, Serializable {
      * Takes the passed info object and updated the internal fields according to it.
      * @param inf the info from which we update the fields.
     */
-    public void applyDisplayInfo( RoleAssigneeDisplayInfo inf ) {
+    public void applyDisplayInfo( AuthenticatedUserDisplayInfo inf ) {
+        setFirstName(inf.getFirstName());
+        setLastName(inf.getLastName());
         setEmail(inf.getEmailAddress());
         setAffiliation( inf.getAffiliation() );
-        setName( inf.getTitle() );
+        setPosition( inf.getPosition());
+
     }
     
     @Override
@@ -134,7 +141,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
 
     public String getName() {
-        return name;
+        return firstName + " " + lastName;
     }
 
     public void setName(String name) {
@@ -157,6 +164,30 @@ public class AuthenticatedUser implements User, Serializable {
         this.affiliation = affiliation;
     }
 
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
     public boolean isSuperuser() {
         return superuser;
     }
@@ -176,15 +207,11 @@ public class AuthenticatedUser implements User, Serializable {
 
     public boolean isBuiltInUser() {
         String authProviderString = authenticatedUserLookup.getAuthenticationProviderId();
-        if (authProviderString != null) {
-            if (authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
+        if (authProviderString != null && authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
+            return true;
         }
+        
+        return false;
     }
 
     @OneToOne(mappedBy = "authenticatedUser")

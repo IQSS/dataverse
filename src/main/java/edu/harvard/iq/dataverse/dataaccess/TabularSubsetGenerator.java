@@ -1107,6 +1107,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     cachedBytesRead += readlen;
                 }
                 cachedIn.close();
+                // delete the temp file: 
+                cachedTempFile.delete();
+                
             }
             
             if (cachedBytesRead != cachedfileSizes[varindex]) {
