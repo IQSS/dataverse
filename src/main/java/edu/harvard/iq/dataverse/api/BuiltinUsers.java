@@ -87,7 +87,7 @@ public class BuiltinUsers extends AbstractApiBean {
             }
             user = builtinUserSvc.save(user);
 
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName(), user.createDisplayInfo());
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName(), user.getDisplayInfo());
 
             ApiToken token = new ApiToken();
 
