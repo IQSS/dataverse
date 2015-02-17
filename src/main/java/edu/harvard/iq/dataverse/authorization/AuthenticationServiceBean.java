@@ -354,7 +354,7 @@ public class AuthenticationServiceBean {
      * @param userDisplayInfo 
      * @return the newly created user.
      */
-    public AuthenticatedUser createAuthenticatedUser(String authenticationProviderId, String authPrvUserPersistentId, RoleAssigneeDisplayInfo userDisplayInfo) {
+    public AuthenticatedUser createAuthenticatedUser(String authenticationProviderId, String authPrvUserPersistentId, AuthenticatedUserDisplayInfo userDisplayInfo) {
         UserIdentifier userIdentifier = new UserIdentifier(authPrvUserPersistentId, authPrvUserPersistentId);
         return createAuthenticatedUserWithDecoupledIdentifiers(authenticationProviderId, userIdentifier, userDisplayInfo);
     }
@@ -371,7 +371,7 @@ public class AuthenticationServiceBean {
      * @param userDisplayInfo
      * @return the newly created user.
      */
-    public AuthenticatedUser createAuthenticatedUserWithDecoupledIdentifiers(String authenticationProviderId, UserIdentifier userIdentifier, RoleAssigneeDisplayInfo userDisplayInfo) {
+    public AuthenticatedUser createAuthenticatedUserWithDecoupledIdentifiers(String authenticationProviderId, UserIdentifier userIdentifier, AuthenticatedUserDisplayInfo userDisplayInfo) {
         AuthenticatedUser auus = new AuthenticatedUser();
         auus.applyDisplayInfo(userDisplayInfo);
         String internalUserIdentifer = userIdentifier.getInternalUserIdentifer();
@@ -405,11 +405,11 @@ public class AuthenticationServiceBean {
                 .getSingleResult().intValue() > 0;
     }
     
-    public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, RoleAssigneeDisplayInfo userDisplayInfo) {
+    public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
         return update(user);
     }
-
+    
     public List<AuthenticatedUser> findAllAuthenticatedUsers() {
         return em.createNamedQuery("AuthenticatedUser.findAll", AuthenticatedUser.class).getResultList();
     }
@@ -427,7 +427,7 @@ public class AuthenticationServiceBean {
         return new Timestamp(new Date().getTime());
     }
 
-    public AuthenticatedUser convertBuiltInToShib(AuthenticatedUser builtInUserToConvert, String shibProviderId, UserIdentifier newUserIdentifierInLookupTable, RoleAssigneeDisplayInfo displayInfo) {
+    public AuthenticatedUser convertBuiltInToShib(AuthenticatedUser builtInUserToConvert, String shibProviderId, UserIdentifier newUserIdentifierInLookupTable) {
         logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to shib");
         String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
         logger.info("builtin user identifier: " + builtInUserIdentifier);
