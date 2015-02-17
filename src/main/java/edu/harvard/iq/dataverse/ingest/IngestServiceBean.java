@@ -474,6 +474,13 @@ public class IngestServiceBean {
                     }
                     version.getDataset().getFiles().add(datafile);
                 }
+                // remove the uploaded zip file: 
+                try {
+                    Files.delete(tempFile);
+                } catch (IOException ioex) {
+                    // do nothing - it's just a temp file.
+                    logger.warning("Could not remove temp file "+tempFile.getFileName().toString());
+                }
                 // and return:
                 return datafiles;
             }
@@ -923,11 +930,19 @@ public class IngestServiceBean {
                         if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}
                     }
 
+                    // delete the temporary file: 
                     try {
                         logger.fine("Will attempt to delete the temp file "+tempLocationPath.toString());
+                        // also, delete a temporary thumbnail image file, if exists:
+                        // (TODO: probably not a very good style, that the size of the thumbnail 
+                        // is hard-coded here; it may change in the future...)
+                        Path tempThumbnailPath = Paths.get(tempLocationPath.toString() + ".thumb64");
                         Files.delete(tempLocationPath);
+                        if (tempThumbnailPath.toFile().exists()) {
+                            Files.delete(tempThumbnailPath);
+                        }
                     } catch (IOException ex) {
-                        // (non-fatal)
+                        // (non-fatal - it's just a temp file.)
                         logger.warning("Failed to delete temp file "+tempLocationPath.toString());
                     }
                     // Any necessary post-processing: 
@@ -1409,6 +1424,10 @@ public class IngestServiceBean {
                     pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
                     logger.info("Ingest (" + dataFile.getFileMetadata().getDescription() + "); Sent push notification to the page.");
 
+                    if (additionalData != null) {
+                        // remove the extra tempfile, if there was one:
+                        additionalData.delete();
+                    }
                     ingestSuccessful = true;
                 }
             } else {
