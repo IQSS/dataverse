@@ -669,7 +669,14 @@
                                                 </ui:fragment>
                                                 <!-- Restricted File Icon -->
                                                 <ui:fragment rendered="#{fileMetadata.restricted}">
-                                                    <div style="display:block;position:absolute;bottom:-4px;right:-4px;"><span class="glyphicon glyphicon-lock text-danger"/></div>
+                                                    <div jsf:rendered="#{ fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')))}" 
+                                                         style="display:block;position:absolute;bottom:-4px;right:-4px;">
+                                                        <span class="glyphicon glyphicon-lock text-danger"/>
+                                                    </div>
+                                                    <div jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.restricted and permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')}" 
+                                                         style="display:block;position:absolute;bottom:-4px;right:-4px;">
+                                                        <i class="icon-unlock text-success"/>
+                                                    </div>
                                                 </ui:fragment>
                                             </div>
                                         </p:column>
