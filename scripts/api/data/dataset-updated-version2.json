@@ -1,5 +1,4 @@
 {
-  "createTime": "2014-05-20 11:52:55 -04",
   "UNF": "UNF",
   "versionNumber": 1,
   "versionMinorNumber": 0,
@@ -78,32 +77,7 @@
           "multiple": true,
           "typeName": "author"
         },
-        {
-          "value": [
-            "pete@malinator.com",
-            "beat@malinator.com",
-            "rete@malinator.com"
-          ],
-          "typeClass": "primitive",
-          "multiple": true,
-          "typeName": "distributorContact"
-        },
-        {
-          "value": "This is a shorter description",
-          "typeClass": "primitive",
-          "multiple": false,
-          "typeName": "dsDescription"
-        },
-        {
-          "value": [
-            "kw15",
-            "kw25",
-            "kw35"
-          ],
-          "typeClass": "primitive",
-          "multiple": true,
-          "typeName": "keyword"
-        },
+     
         {
           "value": [
             "Arts and Humanities",
@@ -154,40 +128,7 @@
           "multiple": true,
           "typeName": "otherId"
         },
-        {
-          "value": [
-            {
-              "contributorAbbreviation": {
-                "value": "DDD",
-                "typeClass": "primitive",
-                "multiple": false,
-                "typeName": "contributorAbbreviation"
-              },
-              "contributorAffiliation": {
-                "value": "Denmark",
-                "typeClass": "primitive",
-                "multiple": false,
-                "typeName": "contributorAffiliation"
-              },
-              "contributorName": {
-                "value": "Dennis",
-                "typeClass": "primitive",
-                "multiple": false,
-                "typeName": "contributorName"
-              },
-              "contributorType": {
-                "value": "Distributor",
-                "typeClass": "controlledVocabulary",
-                "multiple": false,
-                "typeName": "contributorType"
-              }
-            }
-          ],
-          "typeClass": "compound",
-          "multiple": true,
-          "typeName": "contributor"
-        },
-        {
+               {
           "value": "2014-02-03",
           "typeClass": "primitive",
           "multiple": false,
