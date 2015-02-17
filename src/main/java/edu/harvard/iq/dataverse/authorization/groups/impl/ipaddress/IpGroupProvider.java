@@ -70,7 +70,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
     
     @Override
-    public Set<IpGroup> findAll() {
+    public Set<IpGroup> findGlobalGroups() {
         return updateProvider( new HashSet<>(ipGroupsService.findAll()));
     }
     

@@ -68,7 +68,7 @@ public class Groups extends AbstractApiBean {
     public Response listIpGroups() {
          
         JsonArrayBuilder arrBld = Json.createArrayBuilder();
-        for ( IpGroup g : ipGroupPrv.findAll() ) {
+        for ( IpGroup g : ipGroupPrv.findGlobalGroups() ) {
             arrBld.add( json(g) );
         }
         return okResponse( arrBld );
@@ -111,7 +111,7 @@ public class Groups extends AbstractApiBean {
     @Path("shib")
     public Response listShibGroups() {
         JsonArrayBuilder arrBld = Json.createArrayBuilder();
-        for (ShibGroup g : shibGroupPrv.findAll()) {
+        for (ShibGroup g : shibGroupPrv.findGlobalGroups()) {
             arrBld.add(json(g));
         }
         return okResponse(arrBld);

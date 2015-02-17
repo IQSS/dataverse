@@ -47,5 +47,10 @@ public class RoleAssigneeDisplayInfo {
         this.affiliation = affiliation;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "RoleAssigneeDisplayInfo{" + "title=" + title + ", emailAddress=" + emailAddress + ", affiliation=" + affiliation + '}';
+    }
     
 }

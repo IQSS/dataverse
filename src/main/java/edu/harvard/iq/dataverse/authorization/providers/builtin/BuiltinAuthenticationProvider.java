@@ -85,7 +85,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     }
 
     @Override
-    public Set findAll() {
+    public Set findGlobalGroups() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

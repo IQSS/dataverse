@@ -108,10 +108,10 @@ public class GroupServiceBean {
         return groups;
     }
     
-    public Set<Group> findAllGroups() {
+    public Set<Group> findGlobalGroups() {
         Set<Group> groups = new HashSet<>();
         for ( GroupProvider gp : groupProviders.values() ) {
-            groups.addAll( gp.findAll() );
+            groups.addAll( gp.findGlobalGroups() );
         }
         return groups;
     }

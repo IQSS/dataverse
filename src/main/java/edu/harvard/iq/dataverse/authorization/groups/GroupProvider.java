@@ -37,5 +37,5 @@ public interface GroupProvider<T extends Group> {
     
     public T get( String groupAlias );
 
-    public Set<T> findAll();
+    public Set<T> findGlobalGroups();
 }

@@ -50,7 +50,7 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     }
 
     @Override
-    public Set<Group> findAll() {
+    public Set<Group> findGlobalGroups() {
         return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
     }
 

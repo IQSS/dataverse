@@ -54,7 +54,7 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
     }
 
     @Override
-    public Set<ShibGroup> findAll() {
+    public Set<ShibGroup> findGlobalGroups() {
         Set<ShibGroup> allShibGroups = new HashSet<>();
         for (ShibGroup shibGroup : shibGroupService.findAll()) {
             allShibGroups.add(shibGroup);
