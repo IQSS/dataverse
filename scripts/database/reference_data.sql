@@ -20,6 +20,6 @@ INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname
 
 INSERT INTO guestbook(
              emailrequired, enabled, institutionrequired, 
-            "name", namerequired, positionrequired, usagecount, dataverse_id)
+            "name", namerequired, positionrequired,  dataverse_id)
     VALUES (  false, true, false, 
-            'Default', false, false, 0, null);
+            'Default', false, false, null);
