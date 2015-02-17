@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.providers.echo;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,10 +54,12 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        RoleAssigneeDisplayInfo disinf = new RoleAssigneeDisplayInfo(
+        AuthenticatedUserDisplayInfo disinf = new AuthenticatedUserDisplayInfo(
+                prefix + " " + request.getCredential("Name") + " " + postfix,
                 prefix + " " + request.getCredential("Name") + " " + postfix,
                 request.getCredential("Email"),
-                request.getCredential("Affiliation"));
+                request.getCredential("Affiliation"), 
+                null);
         return AuthenticationResponse.makeSuccess(disinf.getEmailAddress(), disinf);
     }
     
