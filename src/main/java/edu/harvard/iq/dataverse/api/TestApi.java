@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
@@ -106,8 +107,9 @@ public class TestApi extends AbstractApiBean {
         String notUsed = null;
         String separator = "|";
         UserIdentifier newUserIdentifierInLookupTable = new UserIdentifier(idPEntityId + separator + eppn, notUsed);
-        String overwriteDisplayName = randomUser.get("displayName");
-        String overwriteEmail = randomUser.get("displayName");
+        String overwriteFirstName = randomUser.get("firstName");
+        String overwriteLastName = randomUser.get("lastName");
+        String overwriteEmail = randomUser.get("email");
         /**
          * @todo If affiliation is not null, put it in RoleAssigneeDisplayInfo
          * constructor.
@@ -118,7 +120,7 @@ public class TestApi extends AbstractApiBean {
          * https://github.com/IQSS/dataverse/issues/1444#issuecomment-74134694
          */
         String overwritePosition = "staff;student";
-        RoleAssigneeDisplayInfo displayInfo = new RoleAssigneeDisplayInfo(overwriteDisplayName, overwriteEmail);
+        AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(overwriteFirstName, overwriteLastName, overwriteEmail, overwriteAffiliation,overwritePosition);
         JsonObjectBuilder response = Json.createObjectBuilder();
         JsonArrayBuilder problems = Json.createArrayBuilder();
         if (password != null) {
@@ -131,7 +133,7 @@ public class TestApi extends AbstractApiBean {
                 AuthenticatedUser authenticatedUser = shibService.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert, password);
                 if (authenticatedUser != null) {
                     knowsExistingPassword = true;
-                    AuthenticatedUser convertedUser = authSvc.convertBuiltInToShib(builtInUserToConvert, shibProviderId, newUserIdentifierInLookupTable, displayInfo);
+                    AuthenticatedUser convertedUser = authSvc.convertBuiltInToShib(builtInUserToConvert, shibProviderId, newUserIdentifierInLookupTable);
                     if (convertedUser != null) {
                         /**
                          * @todo Display name is not being overwritten. Logic
@@ -159,7 +161,8 @@ public class TestApi extends AbstractApiBean {
         response.add("user to convert", builtInUserToConvert.getIdentifier());
         response.add("existing user found by email (prompt to convert)", existing);
         response.add("changing to this provider", shibProviderId);
-        response.add("value to overwrite old display name", overwriteDisplayName);
+        response.add("value to overwrite old first name", overwriteFirstName);
+        response.add("value to overwrite old last name", overwriteLastName);
         response.add("value to overwrite old email address", overwriteEmail);
         response.add("problems", problems);
         return okResponse(response);
