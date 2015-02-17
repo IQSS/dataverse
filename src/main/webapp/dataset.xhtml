@@ -660,8 +660,8 @@
                                                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                     </a>
                                                 </ui:fragment>
-
-                                                <i class="icon-file text-muted" style="font-size:3em;line-height:1.05;" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.image)}"/>
+                                                
+                                                <i class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} text-muted" style="font-size:3em;line-height:1.05;" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.image)}"/>
 
                                                 <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and fileMetadata.dataFile.image}">
                                                     <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
