@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -13,6 +15,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.ConstraintValidatorContext;
+import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
 @Named("PasswordResetPage")
@@ -43,6 +47,8 @@ public class PasswordResetPage implements java.io.Serializable {
     /**
      * The email address that is entered to initiate the password reset process.
      */
+    @NotBlank(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Password reset page default email message.")    
     String emailAddress;
 
     /**
@@ -68,7 +74,8 @@ public class PasswordResetPage implements java.io.Serializable {
         }
     }
 
-    public void sendPasswordResetLink() {
+    public String sendPasswordResetLink() {
+            
         logger.info("Send link button clicked. Email address provided: " + emailAddress);
         try {
             PasswordResetInitResponse passwordResetInitResponse = passwordResetService.requestReset(emailAddress);
@@ -92,6 +99,7 @@ public class PasswordResetPage implements java.io.Serializable {
              */
             logger.info("Error: " + ex);
         }
+        return "";
     }
 
     public String resetPassword() {
