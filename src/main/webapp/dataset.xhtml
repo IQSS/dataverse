@@ -907,7 +907,7 @@
                                                                                styleClass="btn btn-default glyphicon glyphicon-download-alt"
                                                                                action="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}"
                                                                                >
-                                                                     #{bundle.file.downloadBtn.format.all}
+                                                                     #{bundle['file.downloadBtn.format.all']}
                                                                 </p:commandLink>
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">

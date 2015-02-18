@@ -1646,7 +1646,7 @@ public class DatasetPage implements java.io.Serializable {
         
         String fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId();
         if (format != null && format.equals("bundle")){
-            fileDownloadUrl = "/api/access/datafile/bundle" + guestbookResponse.getDataFile().getId();
+            fileDownloadUrl = "/api/access/datafile/bundle/" + guestbookResponse.getDataFile().getId();
         }
         System.out.print("fileDownloadUrl: " + fileDownloadUrl);
         try {
