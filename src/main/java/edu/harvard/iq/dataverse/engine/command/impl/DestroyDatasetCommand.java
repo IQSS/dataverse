@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -50,7 +51,12 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
         
         final Dataset managedDoomed = ctxt.em().merge(doomed);
-       
+
+        // removed links
+        for (DatasetLinkingDataverse dld : ctxt.dsLinking().findDatasetLinkingDataverses(doomed.getId())) {
+            ctxt.em().remove(dld);
+        }
+        
         // files need to iterate through and remove 'by hand' to avoid
         // optimistic lock issues....        
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
