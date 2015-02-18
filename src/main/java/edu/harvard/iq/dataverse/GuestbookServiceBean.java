@@ -23,21 +23,14 @@ public class GuestbookServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    public List<Guestbook> findByDataverseId(Long dataverseId) {
-        Query query = em.createQuery("select object(o) from DataverseFeaturedDataverse as o where o.dataverse.id = :dataverseId order by o.displayOrder");
-        query.setParameter("dataverseId", dataverseId);
-        return query.getResultList();
-    }
     
     public Long findCountUsages(Long guestbookId) {
-        System.out.print("in find count usages");
         String queryString = "";
         if (guestbookId != null) {
             queryString = "select count(o.id) from Dataset  o  where o.guestbook_id  = " + guestbookId + " ";
         } else {
             return new Long(0) ;
         }
-
         Query query = em.createNativeQuery(queryString);
         return (Long) query.getSingleResult();
     }

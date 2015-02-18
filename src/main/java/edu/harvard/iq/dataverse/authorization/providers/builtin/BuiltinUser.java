@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.io.Serializable;
@@ -58,7 +59,7 @@ public class BuiltinUser implements Serializable {
      * @Column(nullable = false, unique=true)
      */
     @NotBlank(message = "Please enter a valid email address.")
-    @Email(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Please enter a valid email address.")
     private String email;
 
     @NotBlank(message = "Please enter your first name.")

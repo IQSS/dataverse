@@ -872,13 +872,15 @@
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
                                             <ui:fragment rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
-                                                <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
-                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                                                </a>
+                                                <p:commandLink 
+                                                    styleClass="btn btn-default glyphicon glyphicon-download-alt"
+                                                    action="#{DatasetPage.startFileDownload(fileMetadata, '')}">
+                                                                     #{bundle.download}
+                                                </p:commandLink>
                                             </ui:fragment>
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                                             <ui:fragment rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
-                                                <p:commandLink id="downloadPopupButton"
+                                                <p:commandLink 
                                                                styleClass="btn btn-default"
                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                                update="@form,:messagePanel"
@@ -904,9 +906,15 @@
                                                                 <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
                                                                     <h:outputText value="#{bundle['file.downloadBtn.format.tab']}"/>
                                                                 </h:outputLink>
+                                                                <p:commandLink 
+                                                                               styleClass="btn btn-default glyphicon glyphicon-download-alt"
+                                                                               action="#{DatasetPage.startFileDownload(fileMetadata, '')}"
+                                                                               >
+                                                                     #{bundle.download}
+                                                                </p:commandLink>
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
-                                                                <p:commandLink id="downloadPopupButtonTab"
+                                                                <p:commandLink 
                                                                                action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                                                update="@form,:messagePanel"
                                                                                oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">

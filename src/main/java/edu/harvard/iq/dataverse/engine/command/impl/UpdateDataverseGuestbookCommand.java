@@ -32,6 +32,14 @@ public class UpdateDataverseGuestbookCommand extends AbstractCommand<Dataverse> 
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
+        //remove dataset assignments of disabled guestbooks
+        if (!this.guestbook.isEnabled()) {
+            ctxt.em().createNativeQuery(
+                    "Update Dataset set guestbook_id = null "
+                    + "WHERE guestbook_id =" + this.guestbook.getId()
+            ).executeUpdate();
+        }
+
         ctxt.em().merge(this.guestbook);
         Dataverse result = ctxt.dataverses().save(editedDv);
         return result;
