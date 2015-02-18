@@ -903,9 +903,6 @@
                                                         <li role="presentation" class="divider"></li>
                                                         <li>
                                                             <ui:fragment rendered="#{!(DatasetPage.downloadPopupRequired)}">
-                                                                <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
-                                                                    <h:outputText value="#{bundle['file.downloadBtn.format.tab']}"/>
-                                                                </h:outputLink>
                                                                 <p:commandLink 
                                                                                styleClass="btn btn-default glyphicon glyphicon-download-alt"
                                                                                action="#{DatasetPage.startFileDownload(fileMetadata, '')}"
