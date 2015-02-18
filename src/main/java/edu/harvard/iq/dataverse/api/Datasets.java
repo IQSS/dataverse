@@ -288,7 +288,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    @POST
+    @GET
     @Path("{id}/actions/:publish") 
     public Response publishDataset( @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("key") String apiKey ) {
         try {
