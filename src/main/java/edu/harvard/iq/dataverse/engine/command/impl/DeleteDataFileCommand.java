@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -12,12 +13,14 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
@@ -32,15 +35,34 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(DeleteDataFileCommand.class.getCanonicalName());
 
     private final DataFile doomed;
+    private final User user;
+    private final boolean destroy;
 
     public DeleteDataFileCommand(DataFile doomed, User aUser) {
+        this(doomed, aUser, false);
+    }
+    
+    public DeleteDataFileCommand(DataFile doomed, User aUser, boolean destroy) {
         super(aUser, doomed.getOwner());
         this.doomed = doomed;
-    }
+        this.user = aUser;
+        this.destroy = destroy;
+    }    
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        if (doomed.isReleased()) {
+        if (destroy) {
+            //todo: clean this logic up!
+            //for now, if called as destroy, will check for superuser acess
+            if ( doomed.getOwner().isReleased() && (!(user instanceof AuthenticatedUser) || !((AuthenticatedUser) user).isSuperuser() ) ) {      
+                throw new PermissionException("Destroy can only be called by superusers.",
+                    this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
+            }            
+        }
+        
+        
+        // if destroy, we skip this and fully delete
+        if (doomed.isReleased() && !destroy) {
             logger.fine("Delete command called on a released (published) DataFile "+doomed.getId());
             /*
              If the file has been released but also previously published handle here.

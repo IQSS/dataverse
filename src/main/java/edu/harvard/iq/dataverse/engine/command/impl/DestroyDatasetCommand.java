@@ -50,13 +50,13 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
         
         final Dataset managedDoomed = ctxt.em().merge(doomed);
-
+       
         // files need to iterate through and remove 'by hand' to avoid
         // optimistic lock issues....        
         Iterator <DataFile> dfIt = doomed.getFiles().iterator();
         while (dfIt.hasNext()){
             DataFile df = dfIt.next();
-            ctxt.engine().submit(new DeleteDataFileCommand(df, getUser()));
+            ctxt.engine().submit(new DeleteDataFileCommand(df, getUser(), true));
             dfIt.remove();
         }
         
