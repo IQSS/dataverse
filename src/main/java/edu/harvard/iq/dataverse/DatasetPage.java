@@ -1643,7 +1643,11 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
+        
         String fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId();
+        if (format != null && format.equals("bundle")){
+            fileDownloadUrl = "/api/access/datafile/bundle" + guestbookResponse.getDataFile().getId();
+        }
         System.out.print("fileDownloadUrl: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);

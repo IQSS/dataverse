@@ -905,9 +905,9 @@
                                                             <ui:fragment rendered="#{!(DatasetPage.downloadPopupRequired)}">
                                                                 <p:commandLink 
                                                                                styleClass="btn btn-default glyphicon glyphicon-download-alt"
-                                                                               action="#{DatasetPage.startFileDownload(fileMetadata, '')}"
+                                                                               action="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}"
                                                                                >
-                                                                     #{bundle.download}
+                                                                     #{bundle.file.downloadBtn.format.all}
                                                                 </p:commandLink>
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
