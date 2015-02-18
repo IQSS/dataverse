@@ -298,6 +298,10 @@ public class GuestbookResponseServiceBean {
     }
 
     public String getUserPosition(User user) {
+        if (user.isAuthenticated()) {
+            AuthenticatedUser authUser = (AuthenticatedUser) user;
+            return authUser.getPosition();
+        }
         try {
             if (user.isBuiltInUser()) {
                 BuiltinUser builtinUser = (BuiltinUser) user;
