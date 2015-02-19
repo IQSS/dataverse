@@ -5,11 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 
 /**
  *
@@ -31,11 +29,8 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
     }
     
     public static boolean isEmailValid(String value, ConstraintValidatorContext context){
-          Pattern p =  Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
-            
-            Matcher m = p.matcher(value.trim());
-            boolean matchFound = m.matches();
-            if (!matchFound) {
+            boolean isValid= EmailValidator.getInstance().isValid(value.trim());        
+            if (!isValid) {
                 context.buildConstraintViolationWithTemplate( value + " is not a valid email address.").addConstraintViolation();
                 return false;
             }
