@@ -80,15 +80,15 @@ public class Dataverse extends DvObjectContainer {
     public String getFriendlyCategoryName(){
        switch (this.dataverseType) {
             case RESEARCHERS:
-                return "Researchers";
+                return "Researcher";
             case RESEARCH_PROJECTS:
-                return "Research Projects";
+                return "Research Project";
             case JOURNALS:
-                return "Journals";            
+                return "Journal";            
             case ORGANIZATIONS_INSTITUTIONS:
-                return "Organizations & Institutions";            
+                return "Organization or Institution";            
             case TEACHING_COURSES:
-                return "Teaching Courses";            
+                return "Teaching Course";            
             case UNCATEGORIZED:
                 return "Uncategorized";
             default:
