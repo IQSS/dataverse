@@ -21,10 +21,10 @@
                     <div class="col-sm-9">
                         <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
                                         multiple="true" forceSelection="true"
-										emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
+                                        emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
                                         value="#{managePermissionsPage.roleAssignSelectedRoleAssignees}"
-										completeMethod="#{managePermissionsPage.completeRoleAssignee}"
-                                        required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"
+                                        completeMethod="#{managePermissionsPage.completeRoleAssignee}"
+                                        required="#{param['DO_ASSIGN_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"
                                         var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                             <p:column>
                                 <h:outputText value="#{roleAssignee.displayInfo.title}" />
@@ -45,9 +45,9 @@
                     <div class="col-sm-9">
                         <p:fragment id="availableRoles">
                             <p:selectOneRadio id="assignRoleRadios" layout="pageDirection"
-											  value="#{managePermissionsPage.selectedRoleId}"
-											  required="#{param['DO_VALIDATION']}"
-											  requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.requiredMsg']}">
+                                              value="#{managePermissionsPage.selectedRoleId}"
+                                              required="#{param['DO_ASSIGN_VALIDATION']}"
+                                              requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.requiredMsg']}">
                                 <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{role.name}"/>
                                 <p:ajax update="roleDetails" process="@this"/>
                             </p:selectOneRadio>
@@ -73,8 +73,8 @@
             <p:commandLink styleClass="btn btn-default" value="#{bundle.saveChanges}"
                            update="assignRoleContent assignedRoles @([id$=Messages])"
                            actionListener="#{managePermissionsPage.assignRole}" 
-						   oncomplete="if (args &amp;&amp; !args.validationFailed) userGroupsForm.hide();">
-                <f:param name="DO_VALIDATION" value="false"/>
+                           oncomplete="if (args &amp;&amp; !args.validationFailed) userGroupsForm.hide();">
+                <f:param name="DO_ASSIGN_VALIDATION" value="true"/>
             </p:commandLink>
             <button type="button" class="btn btn-default" onclick="userGroupsForm.hide()" value="Cancel">#{bundle.cancel}</button>
         </p:fragment>
