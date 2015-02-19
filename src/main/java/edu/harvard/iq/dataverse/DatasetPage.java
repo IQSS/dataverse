@@ -1631,6 +1631,31 @@ public class DatasetPage implements java.io.Serializable {
     public void setDatasetVersionDifference(DatasetVersionDifference datasetVersionDifference) {
         this.datasetVersionDifference = datasetVersionDifference;
     }
+    
+    public String startFileDownload(FileMetadata fileMetadata, String format) {
+        System.out.print("In Download method");
+        initGuestbookResponse(fileMetadata);
+        Command cmd;
+        try {
+            cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
+            commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        
+        String fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId();
+        if (format != null && format.equals("bundle")){
+            fileDownloadUrl = "/api/access/datafile/bundle/" + guestbookResponse.getDataFile().getId();
+        }
+        System.out.print("fileDownloadUrl: " + fileDownloadUrl);
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
+        return fileDownloadUrl;
+    }
 
     public void initGuestbookResponse(FileMetadata fileMetadata) {
 
@@ -1644,6 +1669,7 @@ public class DatasetPage implements java.io.Serializable {
             this.guestbookResponse.setEmail("");
             this.guestbookResponse.setInstitution("");
             this.guestbookResponse.setPosition("");
+            this.guestbookResponse.setSessionId(session.toString());
             if (user.isAuthenticated()) {
                 AuthenticatedUser aUser = (AuthenticatedUser) user;
                 this.guestbookResponse.setName(aUser.getName());
@@ -1651,6 +1677,7 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse.setEmail(aUser.getEmail());
                 this.guestbookResponse.setInstitution(aUser.getAffiliation());
                 this.guestbookResponse.setPosition("");
+                this.guestbookResponse.setSessionId(session.toString());
             }
             /*
              if (user.isBuiltInUser()) {
@@ -1659,7 +1686,7 @@ public class DatasetPage implements java.io.Serializable {
              }*/
             this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
         } else {
-            this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), user);
+            this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), user, session);
         }
         if (this.dataset.getGuestbook() != null && !this.dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             this.guestbookResponse.setCustomQuestionResponses(new ArrayList());

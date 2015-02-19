@@ -298,6 +298,10 @@ public class GuestbookResponseServiceBean {
     }
 
     public String getUserPosition(User user) {
+        if (user.isAuthenticated()) {
+            AuthenticatedUser authUser = (AuthenticatedUser) user;
+            return authUser.getPosition();
+        }
         try {
             if (user.isBuiltInUser()) {
                 BuiltinUser builtinUser = (BuiltinUser) user;
@@ -318,12 +322,13 @@ public class GuestbookResponseServiceBean {
         return null;
     }
 
-    public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, User user) {
+    public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, User user, DataverseSession session) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         guestbookResponse.setGuestbook(findDefaultGuestbook());
         guestbookResponse.setDataFile(dataFile);
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
+        guestbookResponse.setSessionId(session.toString());
 
         if (user != null) {
             guestbookResponse.setEmail(getUserEMail(user));

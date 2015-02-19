@@ -105,7 +105,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(name, email, affiliation);
+        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
     }
     
     /**

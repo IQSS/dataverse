@@ -23,7 +23,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     public List<Dataset> findLinkedDataverses(Long linkingDataverseId) {
         List<Dataset> retList = new ArrayList();
         Query query = em.createQuery("select object(o.dataverse.id) from DatasetLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
@@ -37,15 +37,18 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     public List<Dataverse> findLinkingDataverses(Long datasetId) {
         List<Dataverse> retList = new ArrayList();
-        Query query = em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id");
-        query.setParameter("datasetId", datasetId);
-        for (Object o : query.getResultList()) {
-            DatasetLinkingDataverse convterted = (DatasetLinkingDataverse) o;
-            retList.add(convterted.getLinkingDataverse());
+        for (DatasetLinkingDataverse dld : findDatasetLinkingDataverses(datasetId)) {
+            retList.add(dld.getLinkingDataverse());
         }
         return retList;
     }
-    
+
+    public List<DatasetLinkingDataverse> findDatasetLinkingDataverses(Long datasetId) {
+        return em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id")
+                .setParameter("datasetId", datasetId)
+                .getResultList();
+    }
+
     public void save(DatasetLinkingDataverse datasetLinkingDataverse) {
         if (datasetLinkingDataverse.getId() == null) {
             em.persist(datasetLinkingDataverse);
@@ -53,5 +56,5 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
             em.merge(datasetLinkingDataverse);
         }
     }
-    
+
 }

@@ -18,6 +18,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -120,16 +123,9 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
 
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
-            //Pattern p =  Pattern.compile("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
-            //updated to allow dashes
-            Pattern p =  Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
-            
-            Matcher m = p.matcher(value.getValue().trim());
-            boolean matchFound = m.matches();
-            if (!matchFound) {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue()+" is not a valid email address.").addConstraintViolation();
-                return false;
-            }
+
+            return EMailValidator.isEmailValid(value.getValue(), context);
+
         }
                
         return true;

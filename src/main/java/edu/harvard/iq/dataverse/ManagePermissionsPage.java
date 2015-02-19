@@ -454,10 +454,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
 
-    boolean renderConfigureMessages = false;
-    boolean renderAssignmentMessages = false;
-    boolean renderRoleMessages = false;
-
     /* 
     ============================================================================
     Explicit Group dialogs
@@ -477,6 +473,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         showNoMessages();
         setExplicitGroupFriendlyName("");
         setExplicitGroupName("");
+        setNewExplicitGroupDescription("");
         setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
     }
 
@@ -537,7 +534,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
         
         input.setValid(true); // Optimistic approach
         
-        if ( ! StringUtils.isEmpty(value) ) {
+        if (context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null &&
+	   !StringUtils.isEmpty(value) ) {
             
             // cheap test - regex
             if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
@@ -573,6 +571,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
     Internal methods
     ============================================================================
     */
+    
+    boolean renderConfigureMessages = false;
+    boolean renderAssignmentMessages = false;
+    boolean renderRoleMessages = false;    
     
     private void showNoMessages() {
         renderConfigureMessages = false;

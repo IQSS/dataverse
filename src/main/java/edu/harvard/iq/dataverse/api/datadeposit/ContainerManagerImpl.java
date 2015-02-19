@@ -304,10 +304,9 @@ public class ContainerManagerImpl implements ContainerManager {
                                     Command<Dataset> cmd;
                                     try {
                                         boolean doMinorVersionBump = false;
-                                        if (dataset.getLatestVersion().isMinorUpdate()) {
+                                        // if dataset is unreleased, major version; if released, then check if can be minor
+                                        if (dataset.isReleased() && dataset.getLatestVersion().isMinorUpdate()) {
                                             doMinorVersionBump = true;
-                                        } else {
-                                            doMinorVersionBump = false;
                                         }
                                         cmd = new PublishDatasetCommand(dataset, user, doMinorVersionBump);
                                         dataset = engineSvc.submit(cmd);

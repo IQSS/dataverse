@@ -54,7 +54,7 @@ public class DataverseContact implements Serializable {
     private Dataverse dataverse;
 
     @NotBlank(message = "Please enter a valid email address.")
-    @Email(message = "Please enter a valid email address.")
+    @ValidateEmail(message = "Please enter a valid email address.")
     private String contactEmail;
     private int displayOrder;
 
