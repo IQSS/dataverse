@@ -22,3 +22,4 @@ Contents:
   native-api
   search
   sword
+  dataaccess
