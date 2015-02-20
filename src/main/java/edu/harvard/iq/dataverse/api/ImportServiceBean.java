@@ -21,7 +21,6 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportDDI;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
-import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -41,14 +40,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
@@ -169,17 +166,35 @@ public class ImportServiceBean {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj);
+            
+            // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
+            // we support, it will be rejected.
+            if (importType.equals(ImportType.NEW)) {
+                if (ds.getGlobalId() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+                    throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
+                }
+            }
+            
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
-            // If there are missing values in Required fields, fill them with "N/A"
-            if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
-                Set<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
-                if (!violations.isEmpty()) {
+            // Check data against validation contraints
+            Set<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
+            if (!violations.isEmpty()) {
+                if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
+                    // For migration and harvest, add NA for missing required values
                     for (ConstraintViolation v : violations) {
                         DatasetField f = ((DatasetField) v.getRootBean());
                         f.setSingleValue(DatasetField.NA_VALUE);
                     }
+                } else {
+                    // when importing a new dataset, the import will fail
+                    // if required values are missing.
+                    String errMsg = "Error importing data:";
+                    for (ConstraintViolation v : violations) {
+                        errMsg+=" "+v.getMessage();
+                    }
+                    throw new ImportException(errMsg);
                 }
             }
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
