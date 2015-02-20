@@ -147,14 +147,13 @@ public class Dataverse extends DvObjectContainer {
     @JoinTable(name = "dataversesubjects",
     joinColumns = @JoinColumn(name = "dataverse_id"),
     inverseJoinColumns = @JoinColumn(name = "controlledvocabularyvalue_id"))
-    @NotEmpty(message="At least one subject is required.")
-    private List<ControlledVocabularyValue> dataverseSubjects;
+    private Set<ControlledVocabularyValue> dataverseSubjects;
     
-    public List<ControlledVocabularyValue> getDataverseSubjects() {
+    public Set<ControlledVocabularyValue> getDataverseSubjects() {
         return dataverseSubjects;
     }
 
-    public void setDataverseSubjects(List<ControlledVocabularyValue> dataverseSubjects) {
+    public void setDataverseSubjects(Set<ControlledVocabularyValue> dataverseSubjects) {
         this.dataverseSubjects = dataverseSubjects;
     }
 
