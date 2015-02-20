@@ -155,21 +155,21 @@
                                     <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
                                         <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
-                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).id}"/>
                                             <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
                                         </h:outputFormat>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
                                         <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
-                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).id}"/>
                                             <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
                                         </h:outputFormat>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
                                         <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
-                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).id}"/>
                                             <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
                                         </h:outputFormat>
                                     </ui:fragment>                                    
