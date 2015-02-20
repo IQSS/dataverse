@@ -42,8 +42,11 @@ body .ui-widget {font-size: inherit;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
+td.no-padding-left-right {padding-left:0;padding-right:0;}
+
 .btn span.glyphicon {margin-right:.3em;}
-.btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
+.btn span.glyphicon.no-text {margin:0;}
+.btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
 
 .messagePanel {/*padding-top:1em;*/}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
