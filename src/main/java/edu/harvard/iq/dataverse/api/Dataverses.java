@@ -40,7 +40,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
