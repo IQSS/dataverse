@@ -88,9 +88,6 @@ public class ImportServiceBean {
                 d.setPermissionRoot(false);
                 d.setDescription("description");
                 d.setDataverseType(Dataverse.DataverseType.RESEARCHERS);
-                List<ControlledVocabularyValue> cvList = new ArrayList<>();
-                cvList.add(datasetfieldService.findNAControlledVocabularyValue());
-                d.setDataverseSubjects(cvList);
                 DataverseContact dc = new DataverseContact();
                 dc.setContactEmail("pete@mailinator.com");
                 ArrayList<DataverseContact> dcList = new ArrayList<>();
