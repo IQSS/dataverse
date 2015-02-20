@@ -7,8 +7,11 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -133,7 +136,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
-
+               
         ctxt.index().indexDataset(savedDataset);
         /**
          * @todo consider also ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset);
@@ -143,6 +146,25 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
          */
         IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset.getId());
 
+        // set the subject of the parent (all the way up) Dataverses
+        DatasetField subject = null;
+        for (DatasetField dsf : savedDataset.getLatestVersion().getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+                subject = dsf;
+                break;
+            }   
+        }
+        if (subject != null) {
+            Dataverse dv = savedDataset.getOwner();
+            while (dv != null) {
+                if (dv.getDataverseSubjects().addAll(subject.getControlledVocabularyValues())) {
+                    ctxt.index().indexDataverse(dv); // need to reindex to capture the new subjects
+                }
+                dv = dv.getOwner();
+            }
+        }        
+        
+        
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(savedDataset.getLatestVersion(), this.getUser());
 
         if (ddu != null) {
