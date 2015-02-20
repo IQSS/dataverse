@@ -81,12 +81,16 @@ public class JsonParser {
             }
             dv.setDataverseContacts(dvContactList);
         }
+        
+        /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
+            datasets - leavig this code in for now, in case we need to go back to it at some point
+        
         if (jobj.containsKey("dataverseSubjects")) {
             List<ControlledVocabularyValue> dvSubjectList = new LinkedList<>();
             DatasetFieldType subjectType = datasetFieldSvc.findByName(DatasetFieldConstant.subject);
             List<JsonString> subjectList = jobj.getJsonArray("dataverseSubjects").getValuesAs(JsonString.class);
             if (subjectList.size() > 0) {
-                // check first valie for "all"
+                // check first value for "all"
                 if (subjectList.get(0).getString().trim().toLowerCase().equals("all")) {
                     dvSubjectList.addAll(subjectType.getControlledVocabularyValues());
                 } else {
@@ -102,7 +106,8 @@ public class JsonParser {
             }
             dv.setDataverseSubjects(dvSubjectList);
         }
-
+        */
+                
         return dv;
     }
 
