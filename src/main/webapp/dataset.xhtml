@@ -309,7 +309,9 @@
                                                 <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
                                             </h:outputFormat>
                                         </ui:fragment>
-                                        <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" action="#{DatasetPage.releaseDraft}">
+                                        <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}">
+                                        </p:commandButton>
+                                        <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}">
                                         </p:commandButton>
                                         <p:commandButton value="#{bundle.cancel}" onclick="releaseDraft.hide()" type="button" />
                                     </p:confirmDialog>
@@ -364,7 +366,7 @@
                                 <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                     <div class="row bg-info" style="margin-bottom:.5em;">
                                         <div id="citation" class="col-md-9">
-                                            <span>#{DatasetPage.displayCitation}</span>
+                                            <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                             </ui:fragment>

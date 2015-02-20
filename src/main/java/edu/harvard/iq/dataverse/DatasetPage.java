@@ -862,6 +862,10 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    public String releaseMajor() {
+        return releaseDataset(false);
+    }
+
     public String sendBackToContributor() {
         Command<Dataset> cmd;
         workingVersion = dataset.getEditVersion();
@@ -1633,7 +1637,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String startFileDownload(FileMetadata fileMetadata, String format) {
-        System.out.print("In Download method");
         initGuestbookResponse(fileMetadata);
         Command cmd;
         try {

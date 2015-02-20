@@ -733,7 +733,7 @@ public class DatasetVersion implements Serializable {
                 str += ", ";
             }
             if (isOnlineVersion) {
-                str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getIdentifier() + "</a>";
+                str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
             } else {
                 str += this.getDataset().getPersistentURL();
             }
