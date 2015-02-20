@@ -643,7 +643,7 @@ public class DatasetPage implements java.io.Serializable {
             datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
             updateDatasetFieldInputLevels();
-            displayCitation = dataset.getCitation(false, workingVersion);
+            displayCitation = dataset.getCitation(true, workingVersion);
             setVersionTabList(resetVersionTabList());
             setReleasedVersionTabList(resetReleasedVersionTabList());
 
@@ -856,9 +856,9 @@ public class DatasetPage implements java.io.Serializable {
 
     public String releaseDraft() {
         if (releaseRadio == 1) {
-            return releaseDataset(false);
-        } else {
             return releaseDataset(true);
+        } else {
+            return releaseDataset(false);
         }
     }
 

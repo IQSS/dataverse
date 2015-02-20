@@ -200,12 +200,18 @@
                                     <label class="col-sm-3 control-label" for="mdbSelect">#{bundle['dataverse.metadataElements']}</label>
                                     <div class="col-sm-9">
                                         <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
-
-                                        <p:selectBooleanCheckbox tabindex="7" styleClass="metadata-blocks-default" rendered="#{DataversePage.dataverse.owner != null}"
-                                                                 value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="#{bundle['dataverse.metadataElements.from.tip']}">
-                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
-                                        </p:selectBooleanCheckbox>
-
+                                            
+                                        <label for="metadataRoot" style="margin-top:.75em;">
+                                            <h:selectBooleanCheckbox id="metadataRoot"  tabindex="7" styleClass="metadata-blocks-default" 
+                                                                     rendered="#{DataversePage.dataverse.owner != null}"
+                                                                     value="#{DataversePage.inheritMetadataBlockFromParent}" >
+                                                <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputFormat value="#{bundle['dataverse.metadataElements.from.tip']}">
+                                                <f:param value="#{DataversePage.dataverse.metadataRootDataverseName}"/>
+                                            </h:outputFormat>
+                                        </label>
+                         
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
                                             <div jsf:rendered="#{mdb.required}" class="checkbox">
                                                 <label>

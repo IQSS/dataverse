@@ -300,8 +300,8 @@
                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                                             #{bundle['dataset.selectVersionNumber']}
                                             <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
-                                                <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="1" />
-                                                <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />
+                                                <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
+                                                <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />                                                
                                             </p:selectOneRadio>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">

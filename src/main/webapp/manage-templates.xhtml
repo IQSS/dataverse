@@ -24,7 +24,9 @@
                             <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
                                 <p:ajax update="@form" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
                             </h:selectBooleanCheckbox>
-                            #{bundle['dataset.manageTemplates.select.txt']}
+                        <h:outputFormat value="#{bundle['dataset.manageTemplates.select.txt']}">
+                            <f:param value="#{manageTemplatesPage.dataverse.templateRootDataverseName}"/>
+                        </h:outputFormat>
                         </label>
                     </ui:fragment>
 
