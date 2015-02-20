@@ -48,6 +48,8 @@ td.no-padding-left-right {padding-left:0;padding-right:0;}
 .btn span.glyphicon.no-text {margin:0;}
 .btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
 
+.text-icon-inline {font-size:1.3em;line-height:1.1em;margin-right:4px;}
+
 .messagePanel {/*padding-top:1em;*/}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
