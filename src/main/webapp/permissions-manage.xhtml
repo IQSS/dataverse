@@ -177,7 +177,7 @@
                                                     <p:commandLink title="#{bundle['dataverse.permissions.roles.copy']}" style="margin-left:1em;"
                                                                    actionListener="#{managePermissionsPage.cloneRole(role.id)}"
                                                                    oncomplete="roleForm.show();handleResizeDialog('rolesPermissionsDialog');"
-                                                                   update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-retweet"></span></p:commandLink>
+                                                                   update=":#{p:component('editRolePanel')}"><span class="glyphicon glyphicon-duplicate"></span></p:commandLink>
                                                 </ui:fragment>
                                                 <div>
                                                     <ui:repeat value="#{role.permissions().toArray()}" var="prm">
