@@ -630,45 +630,35 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String releaseDataverse() {
-        if ( session.getUser() instanceof AuthenticatedUser ) {
+        if (session.getUser() instanceof AuthenticatedUser) {
             PublishDataverseCommand cmd = new PublishDataverseCommand((AuthenticatedUser) session.getUser(), dataverse);
             try {
                 commandEngine.submit(cmd);
-                JsfHelper.addFlashMessage( "Your dataverse is now public.");
-                return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
-            } catch (CommandException ex) {
-                String msg = "There was a problem publishing your dataverse: " + ex;
-                logger.severe(msg);
-                /**
-                 * @todo how do we get this message to show up in the GUI?
-                 */
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", msg);
-                FacesContext.getCurrentInstance().addMessage(null, message);
-                return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+                JsfHelper.addFlashMessage(JH.localize("dataverse.publish.success"));
+
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
+                JsfHelper.addFlashErrorMessage(JH.localize("dataverse.publish.failure"));
+
             }
         } else {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", "Only authenticated users can release a dataverse.");
             FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
+        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+
     }
 
     public String deleteDataverse() {
         DeleteDataverseCommand cmd = new DeleteDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
-           JsfHelper.addFlashMessage( "Your dataverse has been deleted.");
-          return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
-        } catch (CommandException ex) {
-            String msg = "There was a problem deleting your dataverse: " + ex;
-            logger.severe(msg);
-            /**
-             * @todo how do we get this message to show up in the GUI?
-             */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotDeleted", msg);
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+            JsfHelper.addFlashMessage(JH.localize("dataverse.delete.success"));
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
+            JsfHelper.addFlashErrorMessage(JH.localize("dataverse.delete.failure"));
         }
+        return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
     }
 
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {
