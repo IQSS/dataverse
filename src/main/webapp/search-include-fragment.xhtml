@@ -239,8 +239,9 @@
                         <div class="emptyResults bg-warning">
                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                 <!--THIS IS EMPTY / SEARCH-->
-                                <p>Sorry, there are no Dataverses, Datasets, or Files that match your search. Please try a new search. You can also check out the <a href="/guides/User/find-use-data.html" target="_blank">search guide</a> for tips.</p>
+                                <p>Sorry, there are no Dataverses, Datasets, or Files that match your search. Please try a new search by using other or broader terms. You can also check out the <a href="/guides/user/find-use-data.html" target="_blank">search guide</a> for tips.</p>
                                 <ui:fragment rendered="#{SearchIncludeFragment.errorFromSolr != null}">
+                                    <p>More technical details:</p>
                                     <pre><h:outputText value="#{SearchIncludeFragment.errorFromSolr}"/></pre>
                                 </ui:fragment>
                             </ui:fragment>
