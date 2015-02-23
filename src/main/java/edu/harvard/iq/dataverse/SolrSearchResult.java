@@ -76,7 +76,16 @@ public class SolrSearchResult {
     private boolean draftState;
     private boolean deaccessionedState;
     private long datasetVersionId;
+    //Determine if the search result is owned by any of the dvs in the tree of the DV displayed
+    private boolean isInTree; 
 
+    public boolean isIsInTree() {
+        return isInTree;
+    }
+
+    public void setIsInTree(boolean isInTree) {
+        this.isInTree = isInTree;
+    }
 //    public boolean isStatePublished() {
 //        return statePublished;
 //    }

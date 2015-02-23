@@ -485,7 +485,7 @@
                                              <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}"/>
                                         </h:outputLink>
                                     </div>
-
+                                    <h:outputText value="Linked" rendered="#{!result.isInTree}"/>
                                     <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right:.5em;"/>
 
                                     <h:outputLink value="#{dataversePage}?alias=#{result.dataverseParentAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
@@ -576,7 +576,7 @@
                                     </h:outputLink>
 
                                     <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock bg-info"/>
-
+                                    <h:outputText value="Linked" rendered="#{!result.isInTree}"/>
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
                                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">
@@ -639,7 +639,7 @@
                                         <i class="icon-#{dataFileServiceBean.getFileClassById(result.entityId)} text-muted h1"
                                            jsf:rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
                                     </div>
-                                    
+                                    <h:outputText  value="Linked " rendered="#{!result.parent.get('isInTree')}"/>
                                     <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
 
                                     <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">

@@ -327,9 +327,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
                     String parentId = solrSearchResult.getParent().get("id");
+                    solrSearchResult.setIsInTree(false);
                     if (parentId != null) {
                         Dataverse parentDataverseInCard = dataverseService.find(Long.parseLong(parentId));
                         solrSearchResult.setDataverseParentAlias(parentDataverseInCard.getAlias());
+                        List<Dataverse> dvTree = new ArrayList();
+                        Dataverse testDV = parentDataverseInCard;
+                        dvTree.add(testDV);
+                        while (testDV.getOwner() != null) {
+                            dvTree.add(testDV.getOwner());
+                            testDV = testDV.getOwner();
+                        }
+                        if (dvTree.contains(dataverse)) {
+                            solrSearchResult.setIsInTree(true);
+                        }
                     }
 
                     if (dataverseInCard != null) {
@@ -342,6 +353,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
                     Dataverse parentDataverse = dataverseService.find(dataverseId);
+                    solrSearchResult.setIsInTree(false);
+                    List<Dataverse> dvTree = new ArrayList();
+                    Dataverse testDV = parentDataverse;
+                    dvTree.add(testDV);
+                    while (testDV.getOwner() != null){
+                        dvTree.add(testDV.getOwner());
+                        testDV = testDV.getOwner();
+                    }
+                    if (dvTree.contains(dataverse)){
+                        solrSearchResult.setIsInTree(true);
+                    }
                     /**
                      * @todo can a dataverse alias ever be null?
                      */
