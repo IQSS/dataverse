@@ -17,7 +17,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     String userEmail = "";
     String userMessage = "";
-    String messageSubject = "";
+    private String messageSubject = "";
     
     
     @EJB
@@ -42,6 +42,10 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return userMessage;
     }
     
+    public void setMessageSubject(String messageSubject) {
+        this.messageSubject = messageSubject;
+    }
+    
     public String getMessageSubject() {
         if ("".equals(messageSubject)) {
             String versionString = dataverseService.getApplicationVersion();
@@ -61,12 +65,12 @@ public class SendFeedbackDialog implements java.io.Serializable {
     
     public String sendMessage() {
         if (isLoggedIn()) {
-            mailService.sendMail(loggedInUserEmail(), "support@thedata.org", messageSubject, userMessage);
+            mailService.sendMail(loggedInUserEmail(), "support@thedata.org", getMessageSubject(), userMessage);
             userMessage = "";
             return null;
         } else {
             if (userEmail != null && userMessage != null) {
-                mailService.sendMail(userEmail, "support@thedata.org", messageSubject, userMessage);
+                mailService.sendMail(userEmail, "support@thedata.org", getMessageSubject(), userMessage);
                 userMessage = "";
                 return null;
             } else {
@@ -75,6 +79,6 @@ public class SendFeedbackDialog implements java.io.Serializable {
             }
         }
     }
-    
+
     
 }
