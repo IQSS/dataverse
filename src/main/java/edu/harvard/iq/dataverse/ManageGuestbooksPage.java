@@ -103,7 +103,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         if (selectedGuestbook != null) {
             guestbooks.remove(selectedGuestbook);
             dataverse.getGuestbooks().remove(selectedGuestbook);
-            saveDataverse("The guestbook has been deleted.", "The guestbook cannot be deleted");
+            saveDataverse("dataset.manageGuestbooks.message.deleteSuccess", "dataset.manageGuestbooks.message.deleteFailure");
         } else {
             System.out.print("Selected Guestbook is null");
         }
@@ -115,13 +115,13 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     
     public String enableGuestbook(Guestbook selectedGuestbook) {
         selectedGuestbook.setEnabled(true);
-        saveDataverse("The guestbook has been enabled.", "The guestbook could not be enabled.");
+        saveDataverse("dataset.manageGuestbooks.message.enableSuccess", "dataset.manageGuestbooks.message.enableFailure");
         return "";
     }
 
     public String disableGuestbook(Guestbook selectedGuestbook) {
         selectedGuestbook.setEnabled(false);
-        saveDataverse("The guestbook has been disabled.", "The guestbook could not be disabled.");
+        saveDataverse("dataset.manageGuestbooks.message.disableSuccess", "dataset.manageGuestbooks.message.disableFailure");
         return "";
     }
     
@@ -133,16 +133,16 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     private void saveDataverse(String successMessage, String failureMessage) {
         if (successMessage.isEmpty()) {
-            successMessage = "Dataverse Guestbook data updated";
+            successMessage = "dataset.manageGuestbooks.message.editSuccess";
         }
-        if (successMessage.isEmpty()) {
-            successMessage = "Dataverse Guestbook data could not be updated.";
-        }
+        if (failureMessage.isEmpty()) {
+            failureMessage = "dataset.manageGuestbooks.message.editFailure";
+        }     
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser(), null));
-            JsfHelper.addSuccessMessage(successMessage);
+            JsfHelper.addSuccessMessage(JH.localize(successMessage));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, failureMessage + ex.getMessage());
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize(failureMessage));
         }
 
     }
