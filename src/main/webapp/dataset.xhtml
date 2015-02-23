@@ -466,6 +466,8 @@
                             <div class="col-sm-10">
                                 <h:outputText value="#{ DatasetPage.dataset.owner.name }" style="font-weight:bold;"/>
                                 <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
+                                <br></br>
+                                
 
                                 <ui:remove><!-- removed for beta -->
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
@@ -473,7 +475,11 @@
                                     </p:selectOneMenu>
                                 </ui:remove>
                             </div>
+                            
+                            
                         </div>
+                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value=""/><h:outputText value="#{bundle['dataset.asterisk.tip']}"/>                            
+
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}">
