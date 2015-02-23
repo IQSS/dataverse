@@ -98,89 +98,90 @@
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
                                 <div style="border-bottom:1px solid #DDDDDD; padding:5px;" class="#{item.displayAsRead ? '' : 'bg-warning'}">
+                                    <ui:fragment rendered="#{item.type == 'CREATEACC'}">
+                                        <i class="icon-dataverse text-icon-inline text-muted"></i>
+                                        <h:outputText value="#{bundle.welcome} " />
+                                        <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
+                                            <h:outputText value="#{bundle.googleGroup}" />
+                                        </h:outputLink>
+                                        <h:outputText value=" #{bundle.leaveFeedBack}" />
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDV'}">
-                                        <h:graphicImage value="/resources/images/icon_dataverse.png" alt="#{bundle.dataverse}" style="height:18px;margin-right:6px;" />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}">
+                                        <i class="icon-dataverse text-icon-inline text-muted"></i>
+                                        <!-- <h:graphicImage value="/resources/images/icon_dataverse.png" alt="#{bundle.dataverse}" style="height:18px;margin-right:6px;" />-->
+                                        <h:outputLink value="/dataverse.xhtml?alias=#{dataverseServiceBean.find(item.objectId).getAlias()}" title="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}">
                                             <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
                                         <h:outputText value="#{bundle.wasCreatedIn} " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}  #{bundle.dataverse}">
+                                        <h:outputLink value="/dataverse.xhtml?alias=#{dataverseServiceBean.find(item.objectId).getOwner().getAlias()}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}  #{bundle.dataverse}">
                                             <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
                                         <h:outputText value=" #{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <a href="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
                                         <h:outputText value="#{bundle.wasCreatedTo} " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}">
+                                        <h:outputLink value="/dataverse.xhtml?alias=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.getAlias()}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
                                         <h:outputText value=" #{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <a href="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
                                         <h:outputText value="#{bundle.wasSubmittedForReview} " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
+                                        <h:outputLink value="/dataverse.xhtml?alias=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.getAlias()}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}"/>
                                         </h:outputLink>
                                         <h:outputText value=" #{bundle.toReview}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <a href="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
                                         <h:outputText value="#{bundle.wasReturnedByReviewer} " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
+                                        <h:outputLink value="/dataverse.xhtml?salias=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.getAlias()}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}"/>
                                         </h:outputLink>                                        
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <a href="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
                                         <h:outputText value="#{bundle.wasPublished} " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
+                                        <h:outputLink value="/dataverse.xhtml?alias=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.getAlias()}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}"/>
                                         </h:outputLink>
                                     </ui:fragment>
-                                    
                                     <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
-                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).id}"/>
                                             <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
                                         </h:outputFormat>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
-                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).id}"/>
                                             <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
                                         </h:outputFormat>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
-                                            <f:param value="#{datasetServiceBean.find(item.objectId).globalId}"/>
+                                            <f:param value="#{datasetServiceBean.find(item.objectId).id}"/>
                                             <f:param value="#{datasetServiceBean.find(item.objectId).displayName}"/>
                                         </h:outputFormat>
                                     </ui:fragment>                                    
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
-                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="#{bundle.dataset}" style="height:18px;margin-right:6px;" />
+                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                         <h:outputText value="#{bundle.theDataset} " />
                                         <a value="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
                                         <h:outputText value=" #{bundle['worldMap.added']}" />
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                        <h:outputText value="#{bundle.welcome} " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
-                                        <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
-                                            <h:outputText value="#{bundle.googleGroup}" style="color: blue" />
-                                        </h:outputLink>
-                                        <h:outputText value=" #{bundle.leaveFeedBack}" />
-                                    </ui:fragment>
-                                    <h:outputText value="#{item.sendDate}" style="color:#999999; margin-left:1em; font-size:.85em;"/>
-                                    <!--<h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
-                                    <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />-->
+                                    
+                                    <h:outputText value="#{item.sendDate}" styleClass="text-muted small" style="margin-left:1em;"/>
+                                    
                                     <p:commandLink title="#{bundle.removeNotification}" styleClass="pull-right"
                                                    action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}">
                                         <span class="glyphicon glyphicon-remove"></span>

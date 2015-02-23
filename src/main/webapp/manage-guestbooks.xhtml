@@ -28,7 +28,9 @@
                             <h:selectBooleanCheckbox id="guestbookRoot" value="#{manageGuestbooksPage.inheritGuestbooksValue}">
                                 <p:ajax update="@form" listener="#{manageGuestbooksPage.updateGuestbooksRoot}" />
                             </h:selectBooleanCheckbox>
-                            #{bundle['dataset.manageGuestbooks.include']}
+                        <h:outputFormat value="#{bundle['dataset.manageGuestbooks.include']}">
+                            <f:param value="#{manageGuestbooksPage.dataverse.guestbookRootDataverseName}"/>
+                        </h:outputFormat>
                         </label>
                     </ui:fragment>
 
@@ -72,7 +74,7 @@
                                                       rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
                                                       value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CLONE&#38;sourceId=#{guestbook.id}"
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
-                                            <span class="glyphicon glyphicon-repeat"></span>
+                                            <span class="glyphicon glyphicon-duplicate"></span>
                                         </h:outputLink>
                                         <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                       rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"

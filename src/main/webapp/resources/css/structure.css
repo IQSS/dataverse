@@ -42,8 +42,13 @@ body .ui-widget {font-size: inherit;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
+td.no-padding-left-right {padding-left:0;padding-right:0;}
+
 .btn span.glyphicon {margin-right:.3em;}
-.btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
+.btn span.glyphicon.no-text {margin:0;}
+.btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
+
+.text-icon-inline {font-size:1.3em;line-height:1.1em;margin-right:4px;}
 
 .messagePanel {/*padding-top:1em;*/}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
@@ -261,7 +266,7 @@ form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTyp
 form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeFile {background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeFile {background: url(/resources/images/icon_file_dark.png) no-repeat 4px 50% / 18px;}*/
 
-div[id$='facetCategoryList'] {padding:4px; border:1px solid #DDD;}
+form[id$='facetCategoryForm'] {margin-top:1em;}
 div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
 div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
 div[id$='facetCategoryList'] > div > ul > li:last-child {border-bottom:0; margin-bottom:0;}

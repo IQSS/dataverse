@@ -24,7 +24,9 @@
                             <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
                                 <p:ajax update="@form" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
                             </h:selectBooleanCheckbox>
-                            #{bundle['dataset.manageTemplates.select.txt']}
+                        <h:outputFormat value="#{bundle['dataset.manageTemplates.select.txt']}">
+                            <f:param value="#{manageTemplatesPage.dataverse.templateRootDataverseName}"/>
+                        </h:outputFormat>
                         </label>
                     </ui:fragment>
 
@@ -80,7 +82,7 @@
                                                        action="#{manageTemplatesPage.cloneTemplate(template)}"
                                                        update="@form"
                                                        oncomplete="bind_tooltip_popover();">
-                                            <span class="glyphicon glyphicon-refresh"></span>
+                                            <span class="glyphicon glyphicon-duplicate"></span>
                                         </p:commandLink>
                                         <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip"  
                                                       rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"

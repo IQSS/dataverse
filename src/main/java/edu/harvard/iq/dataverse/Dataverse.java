@@ -332,6 +332,58 @@ public class Dataverse extends DvObjectContainer {
         }
     }
     
+    public String getGuestbookRootDataverseName() {
+        Dataverse testDV = this;
+        String retName = "Parent";
+        while (testDV.getOwner() != null) {
+            retName = testDV.getOwner().getDisplayName();
+            if (testDV.getOwner().guestbookRoot) {
+                break;
+            }
+            testDV = testDV.getOwner();
+        }
+        return retName;
+    }
+
+    public String getTemplateRootDataverseName() {
+        Dataverse testDV = this;
+        String retName = "Parent";
+        while (testDV.getOwner() != null) {
+            retName = testDV.getOwner().getDisplayName();
+            if (testDV.getOwner().templateRoot) {
+                break;
+            }
+            testDV = testDV.getOwner();
+        }
+        return retName;
+    }
+
+    public String getThemeRootDataverseName() {
+        Dataverse testDV = this;
+        String retName = "Parent";
+        while (testDV.getOwner() != null) {
+            retName = testDV.getOwner().getDisplayName();
+            if (testDV.getOwner().themeRoot) {
+                break;
+            }
+            testDV = testDV.getOwner();
+        }
+        return retName;
+    }
+
+    public String getMetadataRootDataverseName() {
+        Dataverse testDV = this;
+        String retName = "Parent";
+        while (testDV.getOwner() != null) {
+            retName = testDV.getOwner().getDisplayName();
+            if (testDV.getOwner().metadataBlockRoot) {
+                break;
+            }
+            testDV = testDV.getOwner();
+        }
+        return retName;
+    }
+    
     public String getLogoOwnerId() {
         if (themeRoot || getOwner()==null) {
             return this.getId().toString();
