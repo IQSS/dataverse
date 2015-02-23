@@ -217,7 +217,7 @@
                         </div>
                     </ui:fragment>
                 </p:fragment>
-                <p:commandButton value="#{bundle.saveChanges}" action="#{themeWidgetFragment.save()}"/>
+                <p:commandButton value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}" action="#{themeWidgetFragment.save()}"/>
                 <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
             </p:tab>
             <p:tab id="widgetsTab" title="#{bundle['dataverse.widgets.title']}">

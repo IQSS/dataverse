@@ -18,6 +18,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
@@ -266,11 +267,15 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             dataversePage.setDataverse(commandEngine.submit(cmd));           
             dataversePage.setEditMode(null);
             
-        } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());          
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "error updating dataverse theme", ex);
+           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Dataverse Save Failed-", JH.localize("dataverse.theme.failure")));
+        
+          return null;
+        } finally {
+              this.cleanupTempDirectory(); 
         }
-        JsfHelper.addFlashMessage("You have successfully updated the theme for this dataverse!");
-        this.cleanupTempDirectory();
+        JsfHelper.addSuccessMessage(JH.localize("dataverse.theme.success"));    
         return "dataverse?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
     }
    
