@@ -26,6 +26,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -522,22 +523,24 @@ public class DataversePage implements java.io.Serializable {
         }
 
         try {
-            dataverse = commandEngine.submit(cmd);
+           dataverse = commandEngine.submit(cmd);
             if (session.getUser() instanceof AuthenticatedUser) {
                 userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
             }
             editMode = null;
+          
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Could not save changes");
+            logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command",ex);
+            String errMsg = create ? JH.localize("dataverse.create.failure"): JH.localize("dataverse.update.failure");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
         } catch (Exception e) {
-            System.out.println("caught generic exception");
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Could not save changes");
+            logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command",e);
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataverse.create.failure"));
             return null;
         }
         if (message==null) {
-            String createStr=
-            message = (create)? JH.localize("dataverse.create.success") : JH.localize("dataverse.update.success");
+             message = (create)? JH.localize("dataverse.create.success") : JH.localize("dataverse.update.success");
         }
         JsfHelper.addFlashMessage(message);
         
