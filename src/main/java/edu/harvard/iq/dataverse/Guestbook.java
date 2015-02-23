@@ -166,11 +166,12 @@ public class Guestbook implements Serializable {
                 target.setRequired(sq.isRequired());
                 target.setQuestionString(sq.getQuestionString());
                 if(!sq.getCustomQuestionValues().isEmpty()){
+                    target.setCustomQuestionValues(new ArrayList());
                     for (CustomQuestionValue scqv: sq.getCustomQuestionValues()){
                         CustomQuestionValue newVal = new CustomQuestionValue();
-
                         newVal.setValueString(scqv.getValueString());
                         newVal.setCustomQuestion(target);
+                        target.getCustomQuestionValues().add(newVal);
                     }
                 }
                 newGuestbook.getCustomQuestions().add(target);
