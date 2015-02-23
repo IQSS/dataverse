@@ -542,7 +542,7 @@ public class DataversePage implements java.io.Serializable {
         if (message==null) {
              message = (create)? JH.localize("dataverse.create.success") : JH.localize("dataverse.update.success");
         }
-        JsfHelper.addFlashMessage(message);
+        JsfHelper.addSuccessMessage(message);
         
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
@@ -606,14 +606,14 @@ public class DataversePage implements java.io.Serializable {
     public String saveLinkedDataverse(){
         
         if (linkingDataverseId == null){
-           JsfHelper.addFlashMessage( "You must select a linking dataverse."); 
+           JsfHelper.addSuccessMessage( "You must select a linking dataverse."); 
            return "";
         }  
         linkingDataverse = dataverseService.find(linkingDataverseId);
         LinkDataverseCommand cmd = new LinkDataverseCommand(session.getUser(), linkingDataverse, dataverse );
         try {
             commandEngine.submit(cmd);          
-            JsfHelper.addFlashMessage( "This dataverse is now linked to " + linkingDataverse.getDisplayName() );
+            JsfHelper.addSuccessMessage( "This dataverse is now linked to " + linkingDataverse.getDisplayName() );
             //return "";
              return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
@@ -634,11 +634,11 @@ public class DataversePage implements java.io.Serializable {
             PublishDataverseCommand cmd = new PublishDataverseCommand((AuthenticatedUser) session.getUser(), dataverse);
             try {
                 commandEngine.submit(cmd);
-                JsfHelper.addFlashMessage(JH.localize("dataverse.publish.success"));
+                JsfHelper.addSuccessMessage(JH.localize("dataverse.publish.success"));
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addFlashErrorMessage(JH.localize("dataverse.publish.failure"));
+                JsfHelper.addErrorMessage(JH.localize("dataverse.publish.failure"));
 
             }
         } else {
@@ -653,10 +653,10 @@ public class DataversePage implements java.io.Serializable {
         DeleteDataverseCommand cmd = new DeleteDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
-            JsfHelper.addFlashMessage(JH.localize("dataverse.delete.success"));
+            JsfHelper.addSuccessMessage(JH.localize("dataverse.delete.success"));
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
-            JsfHelper.addFlashErrorMessage(JH.localize("dataverse.delete.failure"));
+            JsfHelper.addErrorMessage(JH.localize("dataverse.delete.failure"));
         }
         return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
     }
