@@ -16,14 +16,14 @@
                     <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                    <p:watermark for="formerAutoCompleteSearch" value="Search this Dataverse..."/>
+                    <p:watermark for="formerAutoCompleteSearch" value="#{bundle['dataverse.search.input.watermark']}"/>
                     <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
-                        <span class="glyphicon glyphicon-search"/> Find
+                        <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                     </p:commandLink>
                     <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>                  
                     <h:outputLink id="advsearchlink" value="/search/advanced.xhtml" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{showAdvancedSearchLink}">
                       <f:param name="dataverseIdentifier" value="#{SearchIncludeFragment.dataverse.alias}"/>
-                        <h:outputText value="Advanced Search"/>
+                        <h:outputText value="#{bundle['dataverse.search.advancedSearch']}"/>
                         <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
                     </h:outputLink>
                 </h:form>
@@ -33,18 +33,20 @@
             <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                      or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
                 
-                <div style="float:right;">
+                <div class="pull-right">
                     <button type="button" class="btn btn-default" onclick="addData_popup.show()">
-                        <span class="glyphicon glyphicon-plus"/> Add Data <span class="caret"></span>
+                        <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                     </button>
                 </div>
-                <p:confirmDialog header="Add Data" styleClass="text-left" widgetVar="addData_popup">                                           
+                <p:confirmDialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" styleClass="text-left" widgetVar="addData_popup">                                           
                     <f:facet name="message">
-                        You need to 
+                        #{bundle['dataverse.results.dialog.addDataGuest.prefix']}
                         <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
-                            <a href="/dataverseuser.xhtml#{dataverseHeaderFragment.loginRedirectPage}&amp;editMode=CREATE">Sign Up</a> or 
+                            <a href="/dataverseuser.xhtml#{dataverseHeaderFragment.loginRedirectPage}&amp;editMode=CREATE">#{bundle.signup}</a> 
+                            #{bundle['dataverse.results.dialog.addDataGuest.conjunction']} 
                         </ui:fragment>
-                        <a href="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">Log In</a> to create a dataverse or add a dataset.
+                        <a href="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">#{bundle.login}</a> 
+                        #{bundle['dataverse.results.dialog.addDataGuest.suffix']}
                     </f:facet>
                 </p:confirmDialog>  
             </ui:fragment>
@@ -54,17 +56,15 @@
                 <h:form id="shareForm">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            <span class="glyphicon glyphicon-plus"/> Add Data <span class="caret"></span>
+                            <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') }">
-                                <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
+                                <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
                             </ui:fragment>
                             <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand') }">
-                                <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
+                                <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a></li>
                             </ui:fragment>
-                            <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>-->
-                            <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>-->
                         </ul>
                     </div>
                 </h:form>
@@ -107,7 +107,7 @@
                                     
                                     <i class="icon-dataverse text-icon-inline"></i>
                                     
-                                    <h:outputText value="Dataverses (#{SearchIncludeFragment.facetCountDataverses})" styleClass="facetTypeDataverse"/>
+                                    <h:outputText value="#{bundle['dataverse.results.types.dataverses']} (#{SearchIncludeFragment.facetCountDataverses})" styleClass="facetTypeDataverse"/>
                                 </h:outputLink>
                             </div>
                             <!--DATASETS TOGGLE-->
@@ -138,7 +138,7 @@
                                     
                                     <i class="icon-dataset text-icon-inline"></i>
                                     
-                                    <h:outputText value="Datasets (#{SearchIncludeFragment.facetCountDatasets})" styleClass="facetTypeDataset"/>
+                                    <h:outputText value="#{bundle['dataverse.results.types.datasets']} (#{SearchIncludeFragment.facetCountDatasets})" styleClass="facetTypeDataset"/>
                                 </h:outputLink>
                             </div>
                             <!--FILES TOGGLE-->
@@ -169,7 +169,7 @@
                                     
                                     <i class="icon-file text-icon-inline"></i>
                                     
-                                    <h:outputText value="Files (#{SearchIncludeFragment.facetCountFiles})" styleClass="facetTypeFile"/>
+                                    <h:outputText value="#{bundle['dataverse.results.types.files']} (#{SearchIncludeFragment.facetCountFiles})" styleClass="facetTypeFile"/>
                                 </h:outputLink>
                             </div>
                         </h:form>
@@ -208,10 +208,10 @@
                                 <ui:fragment rendered="#{facetCategory.name != SearchIncludeFragment.searchFieldType and facetCategory.name != SearchIncludeFragment.searchFieldSubtree}">
                                     <p:panelGrid styleClass="facetsMoreLess" columns="2" rendered="#{(SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()) or (SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5)}">
                                         <ui:fragment>
-                                            <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,-5)}" update="facetCategoryList" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5}">Less...</p:commandLink>
+                                            <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,-5)}" update="facetCategoryList" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5}">#{bundle.less}</p:commandLink>
                                         </ui:fragment>
                                         <ui:fragment>
-                                            <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,5)}" update="facetCategoryList" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()}">More...</p:commandLink>
+                                            <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,5)}" update="facetCategoryList" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()}">#{bundle.less}</p:commandLink>
                                         </ui:fragment>  
                                     </p:panelGrid>
                                 </ui:fragment>
@@ -236,7 +236,7 @@
                     <!--DEBUG END-->
 
                     <ui:fragment rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}">
-                        <div class="emptyResults bg-warning">
+                        <div id="emptyResults" class="emptyResults bg-warning">
                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                 <!--THIS IS EMPTY / SEARCH-->
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
@@ -248,41 +248,53 @@
                                   <p>There are no search results based on how you have narrowed your search. You can check out the <a href="/guides/user/find-use-data.html" target="_blank">search guide</a> for tips.</p>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{SearchIncludeFragment.errorFromSolr != null}">
-                                    <p>More technical details:</p>
-                                    <pre><h:outputText value="#{SearchIncludeFragment.errorFromSolr}"/></pre>
+                                    <p>
+                                        <a data-toggle="collapse" data-parent="#emptyResults" href="#technicalDetails" aria-expanded="true" aria-controls="technicalDetails">[+] #{bundle['dataverse.results.empty.link.technicalDetails']}</a>
+                                    </p>
+                                    <div id="technicalDetails" class="collapse">
+                                        <pre><h:outputText value="#{SearchIncludeFragment.errorFromSolr}"/></pre>
+                                    </div>
                                 </ui:fragment>
                             </ui:fragment>
                             <ui:fragment rendered="#{!dataverseSession.user.authenticated and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / GUEST-->
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                                   <!--BROWSE GUEST ZERO COUNTS-->
-                                  <p>This dataverse currently has no dataverses, datasets, or files. Please <h:outputLink value="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">log in</h:outputLink> to see if you are able to add to it.</p>
+                                  <p>
+                                      <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.zero']}" escape="false">
+                                          <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                      </h:outputFormat>
+                                  </p>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
                                   <!--BROWSE GUEST HIDDEN-->
-                                  <p>There are no dataverses within this dataverse. Please <h:outputLink value="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">log in</h:outputLink> to see if you are able to add to it.</p>
+                                  <p>
+                                      <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.hidden']}" escape="false">
+                                          <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                      </h:outputFormat>
+                                  </p>
                                 </ui:fragment>
                             </ui:fragment>
                             <ui:fragment rendered="#{dataverseSession.user.authenticated and !(permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS-->
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                                   <!--BROWSE NO_ADD_BUTTON ZERO COUNTS-->
-                                  <p>This dataverse currently has no dataverses, datasets, or files. You can use the Email Dataverse Contact button above to ask about this dataverse or request access for this dataverse.</p>
+                                  <p>#{bundle['dataverse.results.empty.browse.loggedin.noperms.zero']}</p>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
                                   <!--BROWSE NO_ADD_BUTTON HIDDEN-->
-                                  <p>There are no dataverses within this dataverse.</p>
+                                  <p>#{bundle['dataverse.results.empty.browse.loggedin.noperms.hidden']}</p>
                                 </ui:fragment>
                             </ui:fragment>
                             <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / PERMS-->
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                                   <!--BROWSE CAN_ADD ZERO COUNTS-->
-                                  <p>This dataverse currently has no dataverses, datasets, or files. You can add to it by using the Add Data button on this page.</p>
+                                  <p>#{bundle['dataverse.results.empty.browse.loggedin.perms.zero']}</p>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
                                   <!--BROWSE CAN_ADD HIDDEN-->
-                                  <p>There are no dataverses within this dataverse. You can add to it by using the Add Data button on this page.</p>
+                                  <p>#{bundle['dataverse.results.empty.browse.loggedin.perms.hidden']}</p>
                                 </ui:fragment>
                             </ui:fragment>
                         </div>
@@ -311,9 +323,10 @@
                             <div id="resultsCountPaginatorBlock" class="clearfix">
                                 <!-- RESULTS COUNT -->
                                 <div class="results-count pull-left">
-                                    <h:outputText value="#{SearchIncludeFragment.paginationGuiStart} to #{SearchIncludeFragment.paginationGuiEnd} of "/>
-                                    <h:outputText value="#{SearchIncludeFragment.searchResultsCount} "/>
-                                    <h:outputText value="#{SearchIncludeFragment.searchResultsCount == 1 ? 'result' : 'results'}"/>
+                                    <h:outputText value="#{SearchIncludeFragment.paginationGuiStart} #{bundle['dataverse.results.count.to']} #{SearchIncludeFragment.paginationGuiEnd} #{bundle['dataverse.results.count.of']} "/>
+                                    <h:outputFormat value="#{SearchIncludeFragment.searchResultsCount} #{bundle['dataverse.results.count.result']}">
+                                        <f:param value="#{SearchIncludeFragment.searchResultsCount}"/>
+                                    </h:outputFormat>
                                 </div>
                                 <!-- SORT + PAGINATOR -->
                                 <div class="results-sort-pagination pull-right">
@@ -339,7 +352,7 @@
                                                 </li>
                                                 <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                                     <h:outputLink>
-                                                        <h:outputText value="&lt; Previous"/>
+                                                        <h:outputText value="&lt; #{bundle.previous}"/>
                                                         <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -358,7 +371,7 @@
                                                         <h:outputLink>
                                                             <h:outputText value="#{pageStatus.index}"/>
                                                             <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
-                                                                <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? ' (current)' : ''}"/>
+                                                                <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
                                                             </span>
                                                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -374,7 +387,7 @@
                                                 </c:forEach>
                                                 <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                                     <h:outputLink>
-                                                        <h:outputText value="Next &gt;"/>
+                                                        <h:outputText value="#{bundle.next} &gt;"/>
                                                         <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -406,12 +419,12 @@
                                     <!-- SORT BY -->
                                     <div class="btn-group pull-right">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-sort"/> Sort <span class="caret"/>
+                                            <span class="glyphicon glyphicon-sort"/> #{bundle['dataverse.results.btn.sort']} <span class="caret"/>
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
                                             <li>
                                                 <h:outputLink>
-                                                    <h:outputText value="Name (A-Z)" styleClass="#{SearchIncludeFragment.sortedByNameAsc ? 'highlightBold' : ''}"/>
+                                                    <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameAZ']}" styleClass="#{SearchIncludeFragment.sortedByNameAsc ? 'highlightBold' : ''}"/>
                                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -425,7 +438,7 @@
                                             </li>
                                             <li>
                                                 <h:outputLink>
-                                                    <h:outputText value="Name (Z-A)" styleClass="#{SearchIncludeFragment.sortedByNameDesc ? 'highlightBold' : ''}"/>
+                                                    <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameZA']}" styleClass="#{SearchIncludeFragment.sortedByNameDesc ? 'highlightBold' : ''}"/>
                                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -439,7 +452,7 @@
                                             </li>
                                             <li>
                                                 <h:outputLink>
-                                                    <h:outputText value="Newest" styleClass="#{SearchIncludeFragment.sortedByReleaseDateDesc? 'highlightBold' : ''}"/>
+                                                    <h:outputText value="#{bundle['dataverse.results.btn.sort.option.newest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateDesc? 'highlightBold' : ''}"/>
                                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -453,7 +466,7 @@
                                             </li>
                                             <li>
                                                 <h:outputLink>
-                                                    <h:outputText value="Oldest" styleClass="#{SearchIncludeFragment.sortedByReleaseDateAsc? 'highlightBold' : ''}"/>
+                                                    <h:outputText value="#{bundle['dataverse.results.btn.sort.option.oldest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateAsc? 'highlightBold' : ''}"/>
                                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -468,7 +481,7 @@
                                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                                 <li>
                                                     <h:outputLink>
-                                                        <h:outputText value="Relevance" styleClass="#{SearchIncludeFragment.sortedByRelevance ? 'highlightBold' : ''}"/>
+                                                        <h:outputText value="#{bundle['dataverse.results.btn.sort.option.relevance']}" styleClass="#{SearchIncludeFragment.sortedByRelevance ? 'highlightBold' : ''}"/>
                                                         <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -481,7 +494,6 @@
                                                     </h:outputLink>
                                                 </li>
                                             </ui:fragment>
-                                            <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Release Date (#3628 #3629)</a></li>-->
                                         </ul>
                                     </div>
                                 </div>
@@ -496,8 +508,8 @@
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
                                     <div>
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                            <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                            <h:outputText value="#{result.nameHighlightSnippet} Dataverse" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                            <h:outputText value="#{result.name} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                            <h:outputText value="#{result.nameHighlightSnippet} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                             <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                                         </h:outputLink>
                                         <h:outputText value="(#{result.dataverseAffiliation})" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}" style="color:#999999; margin-left: .5em;"/>
@@ -518,7 +530,7 @@
                                     <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right:.5em;"/>
 
                                     <h:outputLink value="#{dataversePage}?alias=#{result.dataverseParentAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                                        <h:outputText value="#{result.parent.get('name')} Dataverse"/>
+                                        <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                                     </h:outputLink>
 
                                     <hr style="margin:.5em;border:0;"/>
@@ -531,7 +543,7 @@
                                         </ui:repeat>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
-                                        <h:outputText value="Found in Metadata Fields: "/>
+                                        <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
                                         <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
                                             <h:outputText value="#{field}"/>
                                             <h:outputText value=", " rendered="#{varStatus.last != true}"/>
@@ -553,21 +565,23 @@
                                     <ui:fragment rendered="#{result.datasets.size() > 0}">
                                         <div style="clear:left;">
                                             <a data-toggle="collapse" data-parent="#accordion" href="#childDatasetBlock#{result.entityId}" value="javascript:void(0)">
-                                                Preview Recently Published Datasets [+]
+                                                [+] #{bundle['dataverse.results.cards.dataverse.preview.recentDatasets']}
                                             </a>
                                             <div class="panel-collapse collapse" id="childDatasetBlock#{result.entityId}">
                                                 <p:dataTable id="childDatasetTable" value="#{result.datasets}" var="dataset" rows="3" scrollable="true">
                                                     <p:column headerText="Title" style="font-size: smaller; width: 90%">
-                                                        <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset" />
+                                                        <i class="icon-dataset text-icon-inline text-muted"></i>
                                                         <a href="/dataset.xhtml?globalId=#{dataset.globalId}" target="#{showFacets == true ? '_self' : '_blank'}">
                                                             <h:outputText value="#{dataset.releasedVersion.title}" /></a>
                                                     </p:column>
-                                                    <p:column headerText="Files" style="font-size: smaller; width: 10%; text-align: right">
-                                                        <h:outputText value="#{dataset.releasedVersion.fileMetadatas.size()} #{dataset.releasedVersion.fileMetadatas.size() == 0 or dataset.releasedVersion.fileMetadatas.size() > 1 ? 'Files' : 'File'}" />
+                                                    <p:column headerText="Files" styleClass="text-right small" style="width: 10%;">
+                                                        <h:outputFormat value="#{dataset.releasedVersion.fileMetadatas.size()} #{bundle['dataverse.results.cards.dataverse.preview.files']}">
+                                                            <f:param value="#{dataset.releasedVersion.fileMetadatas.size()}"/>
+                                                        </h:outputFormat>
                                                     </p:column>
                                                     <f:facet name="footer">  
                                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" style="font-weight:normal; font-size: smaller;">
-                                                            <h:outputText value="View All Datasets and Dataverses &gt;"/>
+                                                            <h:outputText value="#{bundle['dataverse.results.cards.dataverse.preview.viewAll']} &gt;"/>
                                                         </h:outputLink>
                                                     </f:facet>
                                                 </p:dataTable>
@@ -601,7 +615,7 @@
 
                                     <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
                                     <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                                        <h:outputText value="#{result.parent.get('name')} Dataverse"/>
+                                        <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                                     </h:outputLink>
 
                                     <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock bg-info"/>
@@ -615,7 +629,7 @@
                                     </ui:fragment>
 
                                     <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
-                                        <h:outputText value="Found in Metadata Fields: "/>
+                                        <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
                                         <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
                                             <h:outputText value="#{field}"/>
                                             <h:outputText value=", " rendered="#{varStatus.last != true}"/>
@@ -676,7 +690,7 @@
                                     
                                     <ui:fragment>
                                         <br/>
-                                        <h:outputText value="Tabular Data" styleClass="text-muted" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}"/>
+                                        <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" styleClass="text-muted" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}"/>
                                         <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId) and result.fileTypeHighlightSnippet == null}"/>
                                         <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId) and result.fileTypeHighlightSnippet != null}" escape="false"/>
                                         
@@ -738,7 +752,7 @@
                                         </li>
                                         <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                             <h:outputLink>
-                                                <h:outputText value="&lt; Previous"/>
+                                                <h:outputText value="&lt; #{bundle.previous}"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -757,7 +771,7 @@
                                                 <h:outputLink>
                                                     <h:outputText value="#{pageStatus.index}"/>
                                                     <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
-                                                        <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? ' (current)' : ''}"/>
+                                                        <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
                                                     </span>
                                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -773,7 +787,7 @@
                                         </c:forEach>
                                         <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                             <h:outputLink>
-                                                <h:outputText value="Next &gt;"/>
+                                                <h:outputText value="#{bundle.next} &gt;"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -807,13 +821,15 @@
                 </div>
             </ui:fragment>
             <ui:fragment rendered="#{SearchIncludeFragment.solrIsDown}">
-                <h:outputText value="Please note: Due to an internal error, browsing and searching is not available." style="font-weight:bolder; font-size: xx-large"/>
-                <br/>
-                <br/>
-                <h:outputText value="#{SearchIncludeFragment.searchException.message}" style="font-weight:bolder; font-size: xx-large"/>
-                <br/>
-                <br/>
-                <h:outputText value="#{SearchIncludeFragment.searchException.cause.message}" style="font-weight:bolder; font-size: xx-large"/>
+                <p>
+                    <h:outputText value="#{bundle['dataverse.results.solrIsDown']}" style="font-weight:bolder; font-size: xx-large"/>
+                </p>
+                <p>
+                    <h:outputText value="#{SearchIncludeFragment.searchException.message}" style="font-weight:bolder; font-size: xx-large"/>
+                </p>
+                <p>
+                    <h:outputText value="#{SearchIncludeFragment.searchException.cause.message}" style="font-weight:bolder; font-size: xx-large"/>
+                </p>
             </ui:fragment>
         </div>
     </div>
