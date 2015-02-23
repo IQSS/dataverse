@@ -773,7 +773,7 @@ public class DatasetVersion implements Serializable {
             if (!StringUtil.isEmpty(str)) {
                 str += " ";
             }
-            str += getUNF();
+            str += "[" + getUNF() + "]";
         }
          /*
          String distributorNames = getDistributorNames();
