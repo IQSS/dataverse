@@ -239,7 +239,14 @@
                         <div class="emptyResults bg-warning">
                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                 <!--THIS IS EMPTY / SEARCH-->
-                                <p>Sorry, there are no Dataverses, Datasets, or Files that match your search. Please try a new search by using other or broader terms. You can also check out the <a href="/guides/user/find-use-data.html" target="_blank">search guide</a> for tips.</p>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
+                                  <!--SEARCH ZERO COUNTS-->
+                                  <p>There are no dataverses, datasets, or files that match your search. Please try a new search by using other or broader terms. You can also check out the <a href="/guides/user/find-use-data.html" target="_blank">search guide</a> for tips.</p>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 and SearchIncludeFragment.facetCountFiles gt 0}">
+                                  <!--SEARCH HIDDEN-->
+                                  <p>There are no search results based on how you have narrowed your search. You can check out the <a href="/guides/user/find-use-data.html" target="_blank">search guide</a> for tips.</p>
+                                </ui:fragment>
                                 <ui:fragment rendered="#{SearchIncludeFragment.errorFromSolr != null}">
                                     <p>More technical details:</p>
                                     <pre><h:outputText value="#{SearchIncludeFragment.errorFromSolr}"/></pre>
@@ -247,15 +254,36 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{!dataverseSession.user.authenticated and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / GUEST-->
-                                <p>This Dataverse currently has no Dataverses, Datasets, or Files. Please <h:outputLink value="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">log in</h:outputLink> to see if you are able to add to it.</p>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
+                                  <!--BROWSE GUEST ZERO COUNTS-->
+                                  <p>This dataverse currently has no dataverses, datasets, or files. Please <h:outputLink value="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">log in</h:outputLink> to see if you are able to add to it.</p>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
+                                  <!--BROWSE GUEST HIDDEN-->
+                                  <p>There are no dataverses within this dataverse. Please <h:outputLink value="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">log in</h:outputLink> to see if you are able to add to it.</p>
+                                </ui:fragment>
                             </ui:fragment>
                             <ui:fragment rendered="#{dataverseSession.user.authenticated and !(permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS-->
-                                <p>This Dataverse currently has no Dataverses, Datasets, or Files. You can contact the Dataverse administrator to gain access.</p>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
+                                  <!--BROWSE NO_ADD_BUTTON ZERO COUNTS-->
+                                  <p>This dataverse currently has no dataverses, datasets, or files. You can use the Email Dataverse Contact button above to ask about this dataverse or request access for this dataverse.</p>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
+                                  <!--BROWSE NO_ADD_BUTTON HIDDEN-->
+                                  <p>There are no dataverses within this dataverse.</p>
+                                </ui:fragment>
                             </ui:fragment>
                             <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / PERMS-->
-                                <p>This Dataverse currently has no Dataverses, Datasets, or Files. You can add to it by using the Add Data button on this page.</p>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
+                                  <!--BROWSE CAN_ADD ZERO COUNTS-->
+                                  <p>This dataverse currently has no dataverses, datasets, or files. You can add to it by using the Add Data button on this page.</p>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
+                                  <!--BROWSE CAN_ADD HIDDEN-->
+                                  <p>There are no dataverses within this dataverse. You can add to it by using the Add Data button on this page.</p>
+                                </ui:fragment>
                             </ui:fragment>
                         </div>
                     </ui:fragment>
