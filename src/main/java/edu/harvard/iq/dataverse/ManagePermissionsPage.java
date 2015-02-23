@@ -122,6 +122,17 @@ public class ManagePermissionsPage implements java.io.Serializable {
     /* 
      main page - role assignment table
      */
+    
+    // used by remove Role Assignment
+    private RoleAssignment selectedRoleAssignment;
+
+    public RoleAssignment getSelectedRoleAssignment() {
+        return selectedRoleAssignment;
+    }
+
+    public void setSelectedRoleAssignment(RoleAssignment selectedRoleAssignment) {
+        this.selectedRoleAssignment = selectedRoleAssignment;
+    }    
   
     public List<RoleAssignmentRow> getRoleAssignments() {
         List<RoleAssignmentRow> raList = null;
@@ -142,9 +153,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
         }
         return raList;
     }
-    
-    public void removeRoleAssignment(Long roleAssignmentId) {
-        revokeRole(roleAssignmentId);
+      
+    public void removeRoleAssignment() {
+        revokeRole(selectedRoleAssignment);
 
         if (dvObject instanceof Dataverse) {
             initAccessSettings(); // in case the revoke was for the AuthenticatedUsers group
@@ -154,9 +165,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
     
     // internal method used by removeRoleAssignment and saveConfiguration
-    private void revokeRole(Long roleAssignmentId) {
+    private void revokeRole(RoleAssignment ra) {
         try {
-            RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
             commandEngine.submit(new RevokeRoleCommand(ra, session.getUser()));
             JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
         } catch (PermissionException ex) {
@@ -255,7 +265,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 if (currentRole.equals(roleToAssign)) {
                     roleToAssign = null; // found the role, so no need to assign
                 } else {
-                    revokeRole(roleAssignment.getId());
+                    revokeRole(roleAssignment);
                 }
             }
         }
@@ -634,6 +644,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
             ra = anRa;
             assigneeDisplayInfo = disInf;
         }
+        
+        public RoleAssignment getRoleAssignment() {
+            return ra;
+        }        
 
         public RoleAssigneeDisplayInfo getAssigneeDisplayInfo() {
             return assigneeDisplayInfo;
@@ -646,6 +660,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         public String getRoleName() {
             return getRole().getName();
         }
+                
 
         public DvObject getDefinitionPoint() {
             return ra.getDefinitionPoint();
