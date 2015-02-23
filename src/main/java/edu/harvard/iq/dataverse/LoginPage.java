@@ -131,11 +131,6 @@ public class LoginPage implements java.io.Serializable {
             if(fc.getValue()==null || fc.getValue().isEmpty()){
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, "Please enter a "+fc.getCredential().getTitle());
             }
-            if (fc.getCredential().getTitle().equals("Password")){
-                if (fc.getValue()!=null && fc.getValue().length()<6){
-                    JH.addMessage(FacesMessage.SEVERITY_ERROR,"Please enter a 6 character length password with at least one characters and one number ");
-                }
-            }
             authReq.putCredential(fc.getCredential().getTitle(), fc.getValue());
         }
         authReq.setIpAddress( session.getUser().getRequestMetadata().getIpAddress() );
@@ -158,6 +153,7 @@ public class LoginPage implements java.io.Serializable {
 
             
         } catch (AuthenticationFailedException ex) {
+            String invalidLogin = JH.localize("login.invalid.unamepw");
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The username and/or password you entered is invalid. Contact support@dataverse.org if you need assistance accessing your account.", ex.getResponse().getMessage());
             return null;
         }
