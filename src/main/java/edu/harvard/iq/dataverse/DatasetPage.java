@@ -847,10 +847,13 @@ public class DatasetPage implements java.io.Serializable {
             // ?
         } else if (editMode == EditMode.FILE) {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
-        } else if (editMode == EditMode.METADATA) {
+        } else if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
             updateDatasetFieldInputLevels();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
+        } else if (editMode.equals(EditMode.LICENSE)){
+            System.out.print("License");
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
     }
 
@@ -939,11 +942,10 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Deaccession Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.deaccessionFailure"));
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your selected versions have been deaccessioned.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+        JsfHelper.addSuccessMessage(JH.localize("datasetVersion.message.deaccessionSuccess"));
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
 
@@ -987,8 +989,7 @@ public class DatasetPage implements java.io.Serializable {
                     cmd = new PublishDatasetCommand(dataset, (AuthenticatedUser) session.getUser(), minor);
                 }
                 dataset = commandEngine.submit(cmd);
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
-                FacesContext.getCurrentInstance().addMessage(null, message);
+                JsfHelper.addSuccessMessage(JH.localize("dataset.message.publishSuccess"));                        
                 if (workingVersion.isInReview()) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
                     List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
@@ -1000,7 +1001,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             } catch (CommandException ex) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.publishFailure"));
                 logger.severe(ex.getMessage());
             }
         } else {
@@ -1062,11 +1063,10 @@ public class DatasetPage implements java.io.Serializable {
              userNotificationService.delete(und);
              } */
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Delete Failed", " - " + ex.toString()));
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.deleteSuccess"));
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
     }
 
@@ -1075,12 +1075,12 @@ public class DatasetPage implements java.io.Serializable {
         try {
             cmd = new DeleteDatasetVersionCommand(session.getUser(), dataset);
             commandEngine.submit(cmd);
+            JsfHelper.addSuccessMessage(JH.localize("datasetVersion.message.deleteSuccess"));
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Version Delete Failed", " - " + ex.toString()));
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
+
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
 
@@ -1345,6 +1345,18 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
         newFiles.clear();
+        if(editMode.equals(EditMode.CREATE)){
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
+        }
+        if(editMode.equals(EditMode.METADATA)){
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
+        }
+        if(editMode.equals(EditMode.LICENSE)){
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.licenseSuccess"));
+        }
+        if(editMode.equals(EditMode.FILE)){
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+        }
         editMode = null;
 
         // Call Ingest Service one more time, to 
