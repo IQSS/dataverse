@@ -7,7 +7,6 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -29,6 +28,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ImportLogger;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
@@ -36,15 +36,19 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -72,8 +76,8 @@ public class ImportServiceBean {
     MetadataBlockServiceBean metadataBlockService;
     @EJB
     SettingsServiceBean settingsService;   
-    private static final Logger logger = Logger.getLogger(ImportServiceBean.class.getCanonicalName());
-  
+      @EJB ImportLogger importLogger;
+
     @TransactionAttribute(REQUIRES_NEW)
    public Dataverse createDataverse(File dir, User u) throws ImportException {
             Dataverse d = new Dataverse();
@@ -105,7 +109,7 @@ public class ImportServiceBean {
                             }
                         }
                     }
-                    logger.log(Level.SEVERE, sb.toString());
+                    importLogger.getLogger().log(Level.SEVERE, sb.toString());
                     System.out.println("Error creating dataverse: " + sb.toString());
                     throw new ImportException(sb.toString());
                 } catch (Exception e) {
@@ -120,27 +124,28 @@ public class ImportServiceBean {
   
   
     @TransactionAttribute(REQUIRES_NEW)
-    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException, IOException {
+    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException {
+       
         System.out.println("handling file: " + file.getAbsolutePath());
         String ddiXMLToParse;
         try {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
             JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse, importType);
             status.add("file", file.getName());
-            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
+            importLogger.getLogger().info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
       //  } catch (IOException e) {
             //      e.printStackTrace();
             //       logger.info("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage());
             //       throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
         } catch (ImportException ex) {
-            logger.info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+             importLogger.getLogger().info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
-            logger.info("Unexpected Error processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
+             importLogger.getLogger().info("Unexpected Error processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
             String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
             e.printStackTrace();
-            logger.severe(msg);
+             importLogger.getLogger().severe(msg);
             throw new ImportException("Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName(), e);
 
         }
@@ -230,13 +235,38 @@ public class ImportServiceBean {
 
         } catch (JsonParseException ex) {
             
-            logger.info("Error parsing datasetVersion: " + ex.getMessage());
+             importLogger.getLogger().info("Error parsing datasetVersion: " + ex.getMessage());
             throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
         } catch(CommandException ex) {  
-            logger.info("Error excuting Create dataset command: " + ex.getMessage());
+             importLogger.getLogger().info("Error excuting Create dataset command: " + ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
         return Json.createObjectBuilder().add("message", status).add("id", createdId);
      }
-     
+      private static class MyCustomFormatter extends Formatter {
+
+ 
+
+        @Override
+
+        public String format(LogRecord record) {
+
+            StringBuffer sb = new StringBuffer();
+
+            sb.append("Prefixn");
+
+            sb.append(record.getMessage());
+
+            sb.append("Suffixn");
+
+            sb.append("n");
+
+            return sb.toString();
+
+        }
+
+         
+
+    }
+
 }

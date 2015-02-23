@@ -10,9 +10,9 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.ImportLogger;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -26,17 +26,19 @@ import javax.json.JsonObjectBuilder;
  */
 @Stateless
 public class BatchServiceBean {
- @EJB
+
+    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     ImportServiceBean importService;
-    private static final Logger logger = Logger.getLogger(BatchImport.class.getCanonicalName());
+    @EJB
+    ImportLogger importLogger;
 
     @Asynchronous
-    public void processFilePath(String fileDir, String parentIdtf, User u, Dataverse owner, ImportUtil.ImportType importType) throws ImportException, IOException {
-        logger.info("BEGIN IMPORT");
+    public void processFilePath(String fileDir, String parentIdtf, User u, Dataverse owner, ImportUtil.ImportType importType) throws ImportException {
+        importLogger.getLogger().info("BEGIN IMPORT");
         JsonArrayBuilder status = Json.createArrayBuilder();
-    
+
         File dir = new File(fileDir);
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
@@ -45,25 +47,25 @@ public class BatchServiceBean {
                         status.add(handleDirectory(u, file, importType));
                     } else {
                         status.add(importService.handleFile(u, owner, file, importType));
-                       
+
                     }
                 }
             }
         } else {
             status.add(importService.handleFile(u, owner, dir, importType));
-          
+
         }
-        logger.info("END IMPORT");
+        importLogger.getLogger().info("END IMPORT");
 
     }
-    
-     public JsonArrayBuilder handleDirectory(User u, File dir, ImportUtil.ImportType importType) throws ImportException, IOException {
+
+    public JsonArrayBuilder handleDirectory(User u, File dir, ImportUtil.ImportType importType) throws ImportException{
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = dataverseService.findByAlias(dir.getName());
         if (owner == null) {
             if (importType.equals(ImportUtil.ImportType.MIGRATION) || importType.equals(ImportUtil.ImportType.NEW)) {
                 System.out.println("creating new dataverse: " + dir.getName());
-                owner=importService.createDataverse(dir, u);
+                owner = importService.createDataverse(dir, u);
             } else {
                 throw new ImportException("Can't find dataverse with identifier='" + dir.getName() + "'");
             }
@@ -80,5 +82,5 @@ public class BatchServiceBean {
         }
         return status;
     }
- 
+
 }
