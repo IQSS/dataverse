@@ -1003,7 +1003,6 @@
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
-                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.description']}</p>
                                     <div class="panel-group">
                                         <div class="panel panel-default" style="margin-bottom:1em;">
                                             <div data-toggle="collapse" data-target="#collapseLiscensingTOU" class="panel-heading text-info">
@@ -1030,17 +1029,16 @@
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.license.txt']}</p>
                                                                 </div>
                                                             </ui:fragment>
-
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{!empty DatasetPage.editMode }">
+                                                        <ui:fragment rendered="#{!empty DatasetPage.editMode}">
                                                             <div class="col-sm-9">
+                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.description']}</p>
                                                                 <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
                                                                     <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.CCO']}" itemValue="CC0" />
                                                                     <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.notCCO']}" itemValue="NONE" />
-                                                                    <p:ajax update=":datasetForm" />
+                                                                    <p:ajax update=":datasetForm" oncomplete="javascript:dataverseuser_page_rebind();" />
                                                                 </p:selectOneRadio>
                                                                 <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
-                                                                    <p>#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.tip']}</p>
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']}</p>
                                                                     <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}" escape="false"/></p>
                                                                     <p><img src="/resources/images/cc0.png" alt="CC0"/></p>
@@ -1062,6 +1060,7 @@
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{!empty DatasetPage.editMode}">
                                                                 <div class="col-sm-9">
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}</p>
                                                                     <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUse}" rows="5" cols="60" styleClass="form-control" />
                                                                 </div>
                                                             </ui:fragment>
