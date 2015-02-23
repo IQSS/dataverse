@@ -23,8 +23,8 @@ public class Setting implements Serializable {
     
     @Id
     private String name;
-    
-    @Column( length=1024 )
+
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     public Setting() {

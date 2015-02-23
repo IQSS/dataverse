@@ -25,6 +25,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /** Application-wide Terms of Use per installation. */
+        ApplicationTermsOfUse,
         /** Expose debug information in the UI that users shouldn't normally see. */
         Debug,
         /**
