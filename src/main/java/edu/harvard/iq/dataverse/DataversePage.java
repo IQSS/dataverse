@@ -528,7 +528,6 @@ public class DataversePage implements java.io.Serializable {
             }
             editMode = null;
         } catch (CommandException ex) {
-            System.out.println("caught command exception");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "Could not save changes");
             return null;
         } catch (Exception e) {
@@ -537,7 +536,8 @@ public class DataversePage implements java.io.Serializable {
             return null;
         }
         if (message==null) {
-            message = (create)? "You have successfully created your dataverse!": "You have successfully updated your dataverse!";
+            String createStr=
+            message = (create)? JH.localize("dataverse.create.success") : JH.localize("dataverse.update.success");
         }
         JsfHelper.addFlashMessage(message);
         
