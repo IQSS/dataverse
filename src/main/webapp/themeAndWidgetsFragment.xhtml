@@ -15,8 +15,9 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="inheritCustomization" style="white-space:nowrap;">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.theme.inheritCustomization.title']}">
-                                        #{bundle['dataverse.theme.inheritCustomization']}
-                                        <f:param value="#{themeWidgetFragment.editDv.metadataRootDataverseName}"/>
+                                        <h:outputFormat value="#{bundle['dataverse.theme.inheritCustomization']}">
+                                            <f:param value="#{themeWidgetFragment.editDv.themeRootDataverseName}"/>
+                                        </h:outputFormat>
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -27,7 +28,7 @@
                                             <p:ajax update="@widgetVar(content)" listener="#{themeWidgetFragment.checkboxListener()}"/>
                                         </h:selectBooleanCheckbox>
                                         <h:outputFormat value="#{bundle['dataverse.theme.inheritCustomization']}">
-                                            <f:param value="#{themeWidgetFragment.editDv.metadataRootDataverseName}"/>
+                                            <f:param value="#{themeWidgetFragment.editDv.themeRootDataverseName}"/>
                                         </h:outputFormat>
                                     </label>
                                 </div>
@@ -217,7 +218,7 @@
                         </div>
                     </ui:fragment>
                 </p:fragment>
-                <p:commandButton value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}" action="#{themeWidgetFragment.save()}"/>
+                <p:commandButton value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}"/>
                 <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
             </p:tab>
             <p:tab id="widgetsTab" title="#{bundle['dataverse.widgets.title']}">
