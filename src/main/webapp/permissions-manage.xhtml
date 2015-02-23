@@ -117,11 +117,11 @@
                                                     <f:param value="#{roleAssignment.assignedDvName}"/>
                                                 </h:outputFormat>
 
-                                                <p:commandLink styleClass="btn btn-default"
-                                                               action="#{managePermissionsPage.removeRoleAssignment(roleAssignment.id)}"
+                                                <p:commandLink styleClass="btn btn-default"                                           
                                                                rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
-                                                               update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])"
+                                                               onclick="confirmation.show()"
                                                                style="color:black;margin-right:0.5em;">
+                                                    <f:setPropertyActionListener value="#{roleAssignment.roleAssignment}" target="#{managePermissionsPage.selectedRoleAssignment}" />
                                                     <span class="glyphicon glyphicon-remove" style="margin-right:0.3em;"/> 
                                                     #{bundle['dataverse.permissions.usersOrGroups.removeBtn']}
                                                 </p:commandLink>
@@ -205,6 +205,16 @@
                     <ui:include src="roles-edit.xhtml"/>
                     <!-- Explicit Group Edit Popup -->
                     <ui:include src="explicitGroup-new-dialog.xhtml"/>
+                    
+                    
+                    <p:confirmDialog message="#{dataverse.permissions.usersOrGroups.removeBtn.confirmation}"
+                                     header="#{dataverse.permissions.usersOrGroups.removeBtn}" widgetVar="confirmation">
+                        <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" 
+                                         action="#{managePermissionsPage.removeRoleAssignment()}" 
+                                         update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
+                        <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
+                    </p:confirmDialog>                      
+
                 </h:form>
             </ui:define>
         </ui:composition>
