@@ -199,10 +199,10 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="mdbSelect">#{bundle['dataverse.metadataElements']}</label>
                                     <div class="col-sm-9">
-                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
+                                        <p class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
                                             
-                                        <label for="metadataRoot" style="margin-top:.75em;">
-                                            <h:selectBooleanCheckbox id="metadataRoot"  tabindex="7" styleClass="metadata-blocks-default" 
+                                        <label for="metadataRoot">
+                                            <h:selectBooleanCheckbox id="metadataRoot" tabindex="7" styleClass="metadata-blocks-default" 
                                                                      rendered="#{DataversePage.dataverse.owner != null}"
                                                                      value="#{DataversePage.inheritMetadataBlockFromParent}" >
                                                 <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
@@ -232,20 +232,20 @@
                                                     <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}" jsf:value="#{mdb.selected}"
                                                            name="mdbSelectRequiredInherited" disabled="disabled" jsf:rendered="#{DataversePage.inheritMetadataBlockFromParent}">
                                                         <p:ajax update="@widgetVar(optionBlock)" />
-                                                        <h:outputText value="#{mdb.displayName}"/>
                                                         <!-- REMOVE ME # { mdb.required ? bundle['dataverse.field.required']: bundle['dataverse.field.example1'].concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(bundle['dataverse.field.example2'])} -->
                                                     </input>
                                                     
                                                     <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}" jsf:value="#{mdb.selected}"
                                                            name="mdbSelectOptional" jsf:rendered="#{!DataversePage.inheritMetadataBlockFromParent}">
                                                         <p:ajax update="@widgetVar(optionBlock)" />
-                                                        <h:outputText value="#{mdb.displayName} #{mdb.required ? bundle['dataverse.field.required']: ''}" />
-                                                        <p:commandLink id="showDSFT" style="margin-left:1em;" rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock}"
-                                                                       actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
-                                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" />
-                                                            <h:outputText value="#{bundle['dataverse.field.set.tip']}" />
-                                                        </p:commandLink>
                                                     </input>
+                                                    
+                                                    <h:outputText value="#{mdb.displayName} #{mdb.required ? bundle['dataverse.field.required']: ''}" />
+                                                    <p:commandLink id="showDSFT" style="margin-left:1em;" rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock}"
+                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
+                                                         <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" />
+                                                         <h:outputText value="#{bundle['dataverse.field.set.tip']}" />
+                                                     </p:commandLink>
                                                 </label> 
                                             </div>
                                             
@@ -259,7 +259,7 @@
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
                                                                                                      disabled="#{!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required) }">
-                                                                                <p:ajax  update="@widgetVar(OptButton#{dsft.id})"  listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"   />
+                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})" listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"/>
                                                                             </p:selectBooleanCheckbox>
                                                                             <ui:fragment rendered="#{dsft.hasParent}">
                                                                                 <div class="checkbox">
@@ -271,12 +271,12 @@
                                                                         </td>
                                                                         <td>
                                                                             <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}"
-                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren  and dsft.hasRequiredChildren))}">
+                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}">
                                                                                 <f:selectItems value="#{dsft.optionSelectItems}"/>
-                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})"   />
+                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})"/>
                                                                             </p:selectOneRadio>
 
-                                                                            <ui:fragment rendered="#{(!dsft.hasChildren  and dsft.required) or (dsft.hasChildren  and dsft.hasRequiredChildren)}">
+                                                                            <ui:fragment rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
                                                                                 #{bundle['dataverse.field.requiredByDataverse']}
                                                                             </ui:fragment>
                                                                         </td>
@@ -302,20 +302,26 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="facetPickListCreate">#{bundle['dataverse.facetPickList.text']}</label>
                                     <div class="col-sm-9">
-                                        <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.facetPickList.tip']}</p>
+                                        <p class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.facetPickList.tip']}</p>
 
-                                        <p:selectBooleanCheckbox tabindex="8" styleClass="facet-category-default" rendered="#{DataversePage.dataverse.owner != null}"
-                                                                 value="#{DataversePage.inheritFacetFromParent}" itemLabel="#{bundle['dataverse.facetPickList.facetsFromHost.text']}">
-                                            <p:ajax update="editFacets" listener="#{DataversePage.toggleFacetRoot}"/>
-                                        </p:selectBooleanCheckbox>
+                                        <label for="facetsRoot">
+                                            <h:selectBooleanCheckbox id="facetsRoot" tabindex="8" styleClass="facets-blocks-default" 
+                                                                     rendered="#{DataversePage.dataverse.owner != null}"
+                                                                     value="#{DataversePage.inheritFacetFromParent}">
+                                                <p:ajax update="editFacets" listener="#{DataversePage.toggleFacetRoot}"/>
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputFormat value="#{bundle['dataverse.facetPickList.facetsFromHost.text']}">
+                                                <f:param value="#{DataversePage.dataverse.metadataRootDataverseName}"/>
+                                            </h:outputFormat>
+                                        </label>
 
                                         <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                                     itemLabel="#{facet.displayName}" itemValue="#{facet}"
-                                                    disabled ="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null }"
-                                                    rendered="true">
+                                                    disabled="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"
+                                                    style="margin-top:1em;">
                                             <f:facet name="sourceCaption">
                                                 <p:selectOneMenu styleClass="facet-category-default"
-                                                                 disabled ="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null }"
+                                                                 disabled="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"
                                                                  value="#{DataversePage.facetMetadataBlockId}">
                                                     <f:selectItem itemLabel="#{bundle['dataverse.facetPickList.metadataBlockList.all']}" itemValue=""/>
                                                     <f:selectItems value="#{DataversePage.allMetadataBlocks}" var="mdb" itemLabel="#{mdb.displayName}" itemValue="#{mdb.id}" />
