@@ -5,28 +5,10 @@
      xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui">
-    <ui:remove>
-        <div class="form-group clearfix">
-            <label for="valueY" class="col-sm-3 control-label">
-                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip desciption.">
-                    Inherit Permissions
-                </a>
-            </label>
-            <div class="col-sm-9">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" value="" checked="checked"/>
-                        Inherit all roles and permissions from parent dataverse.
-                    </label>
-                </div>
-            </div>
-        </div>
-    </ui:remove>
+    
     <div class="form-group clearfix">
         <label for="accessRadios" class="col-sm-3 control-label">
-            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.Q1']}">
-                #{bundle['dataverse.permissions.Q1']}
-            </a>
+            #{bundle['dataverse.permissions.Q1']}
         </label>
         <div class="col-sm-9">
             <p:selectOneRadio id="authenticatedUsersContributorRoleRadio" value="#{managePermissionsPage.authenticatedUsersContributorRoleAlias}" layout="grid" columns="1">
@@ -40,9 +22,7 @@
 
     <div class="form-group clearfix">
         <label for="contributorRadios" class="col-sm-3 control-label">
-            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.permissions.Q2.title']}">
-                #{bundle['dataverse.permissions.Q2']}
-            </a>
+            #{bundle['dataverse.permissions.Q2']}
         </label>
         <div class="col-sm-9">
             #{bundle['dataverse.permissions.Q2.answer']}
@@ -51,7 +31,6 @@
                 <f:selectItem itemLabel="#{bundle.manager}" itemValue="manager" />
                 <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator" />
             </p:selectOneRadio>
-
             <div class="radio">
                 <label>
                     <p:radioButton id="opt1" for="defaultContributorRoleRadio" itemIndex="0" />
