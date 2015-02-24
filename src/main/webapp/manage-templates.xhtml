@@ -43,7 +43,6 @@
                             #{bundle['dataset.manageTemplates.noTemplates.txt']}
                         </ui:fragment>    
                         <ui:fragment rendered="#{!empty manageTemplatesPage.templates}">    
-                            #{bundle['dataset.manageTemplates.info.message.notEmptyTable']}
                             <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates">
                                 <p:column width="35%" sortBy="name" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                     <h:outputText value="#{template.name}" />

@@ -75,6 +75,9 @@ public class ManageTemplatesPage implements java.io.Serializable {
             ct.setDataverse(dataverse);
             templates.add(ct);
         }
+        if (!templates.isEmpty()){
+             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.manageTemplates.info.message.notEmptyTable"));
+        }
 
     }
 
