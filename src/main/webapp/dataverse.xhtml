@@ -22,6 +22,7 @@
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>                    
                     <f:viewParam name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:viewParam name="alias" value="#{SearchIncludeFragment.dataverseAlias}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
@@ -447,7 +448,7 @@
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
                             <ui:fragment rendered="#{!empty DataversePage.dataverse.description}">
                                 <div id="dataverseDesc" style="margin-bottom:1em;">
-                                    <h:outputText value="#{DataversePage.dataverse.description}"/>
+                                    <h:outputText value="#{DataversePage.dataverse.description}" escape="false"/>
                                 </div>
                             </ui:fragment>
                             <ui:fragment rendered="#{DataversePage.dataverse.displayFeatured or DataversePage.dataverse.displayByType}">
