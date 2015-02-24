@@ -428,8 +428,11 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
+                                    
+                                    <!-- Terms of Use -->
+                                    <ui:include src="termsofuse.xhtml"/>
                                 </div>
-                                <ui:include src="termsofuse.xhtml"/>
+                                
                                 <p:panel styleClass="panelLayoutButtonBlock">
                                     <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
                                     <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" action="#{DataverseUserPage.cancel}" process="@this" update="@form">

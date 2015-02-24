@@ -2,22 +2,25 @@
      xmlns:h="http://java.sun.com/jsf/html"
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:p="http://primefaces.org/ui">
+     xmlns:p="http://primefaces.org/ui"
+     
+     class="form-group col-sm-12">
+        
+        <label for="position" class="#{empty DataverseUserPage.editMode ? 'col-sm-3' : 'col-sm-2'} control-label">
+            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.terms.tip']}">
+                #{bundle['user.terms']}
+            </a>
+        </label>
+        <div class="col-sm-9">
+            <textarea class="form-control" rows="4" style="margin:4px 10px;">
+              <h:outputText value="#{systemConfig.applicationTermsOfUse}"/>
+            </textarea>
+            <div class="checkbox" style="margin:4px 10px;">
+              <p:selectBooleanCheckbox style="margin:0;vertical-align:middle;" required="true" requiredMessage="#{bundle['user.terms.required']}">
+                <f:validator validatorId="requiredCheckboxValidator"/>
+              </p:selectBooleanCheckbox>
+              <h:outputText value=" #{bundle['user.terms.iagree']}"/>
+            </div>
+        </div>
 
-  <textarea class="form-control" rows="4">
-    <h:outputText value="#{systemConfig.applicationTermsOfUse}"/>
-  </textarea>
-  <div class="checkbox">
-    <p:selectBooleanCheckbox required="true" requiredMessage="Please check the box to indicate your acceptance of the Terms of Use">
-      <f:validator validatorId="requiredCheckboxValidator"/>
-    </p:selectBooleanCheckbox>
-    <h:outputText value="I have read and accept the Dataverse Terms of Use as outlined above."/>
-  </div>
-  <!--
-    <h:outputText value="View the "/>
-    <h:outputLink>
-      <h:outputText value="terms of use agreement"/>
-    </h:outputLink>
-    <h:outputText value=" in a larger window."/>
-  -->
 </div>

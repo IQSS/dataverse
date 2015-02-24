@@ -28,7 +28,10 @@
             <h:outputText value="Result: #{Shib.debugSummary}"/>
           </tt>
         </ui:fragment>
+          
         <ui:fragment rendered="#{Shib.offerToCreateNewAccount}">
+            
+            <!-- THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
           <div class="alert alert-info">
             <strong>Account Information</strong> - 
             <ui:fragment rendered="#{Shib.offerToConvertExistingAccount}">
@@ -38,72 +41,105 @@
               Please agree to the Dataverse Terms of Use to create your account.
             </ui:fragment>
           </div>
-          <table style="width:100%">
-            <tr>
-              <td><h:outputText value="Name"/></td>
-              <td><h:outputText value="#{Shib.displayNameToPersist}"/></td>
-            </tr>
-            <tr>
-              <td><h:outputText value="Email"/></td>
-              <td><h:outputText value="#{Shib.emailToPersist}"/></td>
-            </tr>
-            <tr>
-              <td><h:outputText value="Affiliation"/></td>
-              <td><h:outputText value="#{Shib.affiliationToPersist}"/></td>
-            </tr>
-          </table> 
-
-
-          <!--<div class="alert alert-info" role="alert" style="margin-top:3em;">-->
-          <!--<strong>Dataverse Terms of Use</strong> - By checking the box below, you accept the terms of use for Dataverse.-->
-          <!--</div>-->
-          <div class="row">
-            <h:form>
-              <ui:include src="termsofuse.xhtml"/>
-              <br/>
-              <h:commandButton styleClass="btn btn-success" value="Accept Terms and Create New Account" action="#{Shib.confirmAndCreateAccount()}"/>
-              <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->
+            <!-- END: THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
+            
+            <h:form styleClass="form-horizontal">
+                <div class="form-group">
+                    <label for="dataverseUsername" class="col-sm-3 control-label">
+                        #{bundle.name}
+                    </label>
+                    <div class="col-sm-3">
+                        <p class="form-control-static">
+                            #{Shib.displayNameToPersist}
+                        </p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dataverseUsername" class="col-sm-3 control-label">
+                        #{bundle.email}
+                    </label>
+                    <div class="col-sm-3">
+                        <p class="form-control-static">
+                            #{Shib.emailToPersist}
+                        </p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dataverseUsername" class="col-sm-3 control-label">
+                        #{bundle.affiliation}
+                    </label>
+                    <div class="col-sm-3">
+                        <p class="form-control-static">
+                            #{Shib.affiliationToPersist}
+                        </p>
+                    </div>
+                </div>
+                
+                <ui:include src="termsofuse.xhtml"/>
+                
+                <div class="form-group">
+                    <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.accept']}" action="#{Shib.confirmAndCreateAccount()}"/>
+                    <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->
+                </div>
             </h:form>
-          </div>
         </ui:fragment>
+        
         <ui:fragment rendered="#{Shib.offerToConvertExistingAccount}">
-          <!--<div class="alert alert-info" role="alert" style="margin-top:3em;">-->
-          <!--<strong>Dataverse Terms of Use</strong> - By checking the box below, you accept the terms of use for Dataverse.-->
-          <!--</div>-->
-          <div class="row">
             <h:form>
               <ui:fragment rendered="#{Shib.existingDisplayName != null}">
-                <h2>Welcome, #{Shib.existingDisplayName}</h2>
+                <h2>#{bundle['shib.welcome']} #{Shib.existingDisplayName}</h2>
               </ui:fragment>
               <div class="alert alert-info">
-                <h:outputText value="The email provided by #{Shib.friendlyNameForInstitution} authentication matches
-                              an existing Dataverse account. If you would like to have your pre-existing Dataverse account
-                              now associated with your institutional email, please enter your current Dataverse password and then
-                              click the Convert Account button."/>
+                  <p>
+                      <span class="glyphicon glyphicon-warning-sign"/> 
+                      <h:outputFormat value="#{bundle['shib.welcomeMessage']}">
+                          <f:param value="#{Shib.friendlyNameForInstitution}"/>
+                      </h:outputFormat>
+                  </p>
               </div>
-              <h:outputText value="Dataverse username: #{Shib.builtinUsername}"/>
-              <br/>
+                
               <ui:fragment rendered="#{Shib.passwordRejected}">
+                  <!-- THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
                 <div class="alert alert-danger">
-                  Accounts can only be converted if you provide the correct password for your existing account.
+                   Accounts can only be converted if you provide the correct password for your existing account.
                 </div>
+                  <!-- END: THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
               </ui:fragment>
-              <h:outputText value="Current Dataverse Password "/>
-              <p:password id="builtinPassword" value="#{Shib.builtinPassword}"/>
-              <br/>
-              <br/>
-              <ui:include src="termsofuse.xhtml"/>
-              <br/>
-              <h:commandButton styleClass="btn btn-success" value="Accept Terms and Convert Account" action="#{Shib.confirmAndConvertAccount()}"/>
-              <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->
-              <div style="margin-top:.5em;">
-                <a href="passwordreset.xhtml">
-                  #{bundle['login.forgot.text']}
-                </a>
-              </div>
+              
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label for="dataverseUsername" class="col-sm-3 control-label">
+                            #{bundle['shib.dataverseUsername']}
+                        </label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">
+                                #{Shib.builtinUsername}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataverseUsername" class="col-sm-3 control-label">
+                            #{bundle['shib.currentDataversePassword']}
+                        </label>
+                        <div class="col-sm-3">
+                            <p:password id="builtinPassword" styleClass="form-control" value="#{Shib.builtinPassword}"/>
+                        </div>
+                    </div>
+                    
+                    <ui:include src="termsofuse.xhtml"/>
+                    
+                    <div class="form-group">
+                        <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.accept']}" action="#{Shib.confirmAndConvertAccount()}"/>
+                        <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->
+                    </div>
+                    <div class="form-group">
+                        <a href="passwordreset.xhtml">#{bundle['login.forgot.text']}</a>
+                    </div>
+                </div>
             </h:form>
-          </div>
         </ui:fragment>
+        
+          <!-- REMOVE? -->
         <ui:fragment rendered="#{false}">
           <p:tabView>
             <p:tab title="Account Information">
@@ -134,6 +170,7 @@
             </p:tab>
           </p:tabView>
         </ui:fragment>
+          <!-- END: REMOVE? -->
       </ui:define>
     </ui:composition>
   </h:body>
