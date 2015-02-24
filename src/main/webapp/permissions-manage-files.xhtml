@@ -86,7 +86,9 @@
                                                 <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.action']}">
                                                     <p:commandLink styleClass="btn btn-default"
                                                                    update=":#{p:component('userGroups')} :#{p:component('restrictedFiles')} @([id$=Messages])"
-                                                                   actionListener="#{manageFilePermissionsPage.removeRoleAssignments(ra.value)}">
+                                                                   actionListener="#{manageFilePermissionsPage.showUserGroupMessages}"
+                                                                   onclick="confirmation.show()">
+                                                                   <f:setPropertyActionListener value="#{ra.value}" target="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" />
                                                         <span class="glyphicon glyphicon-remove"/> #{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}
                                                     </p:commandLink>
                                                 </p:column>
@@ -166,8 +168,7 @@
                         </div>
                         <p:commandLink styleClass="btn btn-default" value="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}"
                                        update="userGroups restrictedFiles @([id$=Messages])"
-                                       actionListener="#{manageFilePermissionsPage.removeRoleAssignments}"
-                                       oncomplete="viewRemoveWidget.hide();"/>
+                                       onclick="confirmation.show()"/>
                         <button type="button" class="btn btn-default" onclick="viewRemoveWidget.hide()" value="Cancel">#{bundle.cancel}</button>
                     </p:dialog>
                     <!-- Assign Users/Groups Popup -->
@@ -233,7 +234,19 @@
                                            actionListener="#{manageFilePermissionsPage.rejectAccessToRequests(manageFilePermissionsPage.fileRequester)}" oncomplete="assignWidget.hide();"/>                             
                             <button type="button" class="btn btn-default" onclick="assignWidget.hide()" value="Cancel">#{bundle.cancel}</button>
                         </p:fragment>
-                    </p:dialog> 
+                    </p:dialog>
+
+                    <p:confirmDialog message="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn.confirmation']}"
+                                     header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}" widgetVar="confirmation">
+                        <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" 
+                                         action="#{manageFilePermissionsPage.removeRoleAssignments()}" 
+                                         process="@this"
+                                         update=":#{p:component('userGroups')} :#{p:component('restrictedFiles')} @([id$=Messages])" 
+                                         oncomplete="viewRemoveWidget.hide();"/>
+                        <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
+                    </p:confirmDialog> 
+
+
                 </h:form>
             </ui:define>
         </ui:composition>
