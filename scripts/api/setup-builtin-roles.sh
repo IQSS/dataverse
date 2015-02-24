@@ -32,3 +32,7 @@ echo
 echo "Setting up curator role"
 curl -H "Content-type:application/json" -d @data/role-curator.json http://localhost:8080/api/s/roles/
 echo
+
+echo "Setting up member role"
+curl -H "Content-type:application/json" -d @data/role-member.json http://localhost:8080/api/s/roles/
+echo
