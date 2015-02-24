@@ -427,7 +427,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     boolean renderUserGroupMessages = false;
     boolean renderFileMessages = false;
        
-    private void showUserGroupMessages() {
+    public void showUserGroupMessages() {
         renderUserGroupMessages = true;
         renderFileMessages = false;
     }
