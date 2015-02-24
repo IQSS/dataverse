@@ -153,7 +153,7 @@ public class LoginPage implements java.io.Serializable {
 
             
         } catch (AuthenticationFailedException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "The username and/or password you entered is invalid. Contact support@dataverse.org if you need assistance accessing your account.", ex.getResponse().getMessage());
+            JsfHelper.addErrorMessage(JH.localize("login.invaliduserpassword"));
             return null;
         }
         
