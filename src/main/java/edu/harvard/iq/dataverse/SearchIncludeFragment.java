@@ -376,7 +376,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                                 solrSearchResult.setDeaccessionedState(true);
                             }
                             try {
-                                String citation = datasetVersion.getCitation();
+                                String citation = datasetVersion.getCitation(true);
                                 if (citation != null) {
                                     solrSearchResult.setCitation(citation);
                                 }
