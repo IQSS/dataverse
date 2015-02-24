@@ -384,6 +384,19 @@ public class Dataverse extends DvObjectContainer {
         return retName;
     }
     
+    public String getFacetRootDataverseName() {
+        Dataverse testDV = this;
+        String retName = "Parent";
+        while (testDV.getOwner() != null) {
+            retName = testDV.getOwner().getDisplayName();
+            if (testDV.getOwner().facetRoot) {
+                break;
+            }
+            testDV = testDV.getOwner();
+        }
+        return retName;
+    }
+    
     public String getLogoOwnerId() {
         if (themeRoot || getOwner()==null) {
             return this.getId().toString();
