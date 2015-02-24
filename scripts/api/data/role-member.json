@@ -1,0 +1,9 @@
+{
+    "alias":"member",
+    "name":"Member",
+    "description":"Member.",
+    "permissions":[
+        "ViewUnpublishedDataset",
+        "ViewUnpublishedDataverse" 
+    ]
+}
