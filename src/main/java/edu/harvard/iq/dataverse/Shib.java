@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -255,6 +254,18 @@ public class Shib implements java.io.Serializable {
         } catch (Exception ex) {
             return;
         }
+        String firstName;
+        try {
+            firstName = getRequiredValueFromAttribute(firstNameAttribute);
+        } catch (Exception ex) {
+            return;
+        }
+        String lastName;
+        try {
+            lastName = getRequiredValueFromAttribute(lastNameAttribute);
+        } catch (Exception ex) {
+            return;
+        }
         try {
             emailAddress = getRequiredValueFromAttribute(emailAttribute);
         } catch (Exception ex) {
@@ -282,7 +293,11 @@ public class Shib implements java.io.Serializable {
 //            logger.info("Will create a new, unique user so the account Terms of Use will be displayed.");
 //            userIdentifier = freshNewShibUser;
 //        }
-        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
+        /**
+         * @todo Shouldn't we persist the displayName too? It still exists on
+         * the authenticateduser table.
+         */
+//        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
         /**
          * @todo Update affiliation with "Harvard University". This is not
          * commonly sent as an attribute in the Shibboleth world but we might
@@ -293,7 +308,7 @@ public class Shib implements java.io.Serializable {
          * @todo Add position and review firstname, lastname
          */
         String affiliation = "FIXME";
-        displayInfo = new AuthenticatedUserDisplayInfo(firstNameAttribute, lastNameAttribute, emailAddress, affiliation, null);
+        displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
 
         userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
@@ -518,7 +533,10 @@ public class Shib implements java.io.Serializable {
     /**
      * @return The best display name we can retrieve or construct based on
      * attributes received from Shibboleth. Shouldn't be null, maybe "Unknown"
+     *
+     * @deprecated AuthenticatedUserDisplayInfo has no place for a display name.
      */
+    @Deprecated
     private String getDisplayName(String displayNameAttribute, String firstNameAttribute, String lastNameAttribute) {
         Object displayNameObject = request.getAttribute(displayNameAttribute);
         if (displayNameObject != null) {
@@ -536,7 +554,10 @@ public class Shib implements java.io.Serializable {
     /**
      * @return First name plus last name if available, just first name or just
      * last name or "Unknown".
+     *
+     * @deprecated AuthenticatedUserDisplayInfo has no place for a display name.
      */
+    @Deprecated
     private String getDisplayNameFromFirstNameLastName(String firstNameAttribute, String lastNameAttribute) {
         /**
          * @todo Should the first name attribute be required?
@@ -720,7 +741,9 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(shibIdpAttribute, "https://idp.testshib.org/idp/shibboleth");
         // the TestShib "eppn" looks like an email address
         request.setAttribute(uniquePersistentIdentifier, "constant@testshib.org");
-        request.setAttribute(displayNameAttribute, "Sam El");
+//        request.setAttribute(displayNameAttribute, "Sam El");
+        request.setAttribute(firstNameAttribute, "Sam");
+        request.setAttribute(lastNameAttribute, "El");
         // TestShib doesn't send "mail" attribute so let's mimic that.
 //        request.setAttribute(emailAttribute, "saml@mailinator.com");
         request.setAttribute(usernameAttribute, "saml");
@@ -729,7 +752,9 @@ public class Shib implements java.io.Serializable {
     private void mutateRequestForDevConstantHarvard1() {
         request.setAttribute(shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
         request.setAttribute(uniquePersistentIdentifier, "constantHarvard");
-        request.setAttribute(displayNameAttribute, "John Harvard");
+//        request.setAttribute(displayNameAttribute, "John Harvard");
+        request.setAttribute(firstNameAttribute, "John");
+        request.setAttribute(lastNameAttribute, "Harvard");
         request.setAttribute(emailAttribute, "jharvard@mailinator.com");
         request.setAttribute(usernameAttribute, "jharvard");
     }
@@ -737,7 +762,9 @@ public class Shib implements java.io.Serializable {
     private void mutateRequestForDevConstantHarvard2() {
         request.setAttribute(shibIdpAttribute, "https://fed.huit.harvard.edu/idp/shibboleth");
         request.setAttribute(uniquePersistentIdentifier, "constantHarvard2");
-        request.setAttribute(displayNameAttribute, "Grace Hopper");
+//        request.setAttribute(displayNameAttribute, "Grace Hopper");
+        request.setAttribute(firstNameAttribute, "Grace");
+        request.setAttribute(lastNameAttribute, "Hopper");
         request.setAttribute(emailAttribute, "ghopper@mailinator.com");
         request.setAttribute(usernameAttribute, "ghopper");
     }

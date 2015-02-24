@@ -15,7 +15,10 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     private String firstName;
     private String position;
     
-    
+    /**
+     * @todo Shouldn't we persist the displayName too? It still exists on the
+     * authenticateduser table.
+     */
     public AuthenticatedUserDisplayInfo(String firstName, String lastName, String emailAddress, String affiliation, String position) {
         super(firstName + " " + lastName,emailAddress,affiliation);
         this.firstName = firstName;
