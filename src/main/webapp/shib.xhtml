@@ -58,21 +58,8 @@
           <!--<strong>Dataverse Terms of Use</strong> - By checking the box below, you accept the terms of use for Dataverse.-->
           <!--</div>-->
           <div class="row">
-            <textarea class="form-control" rows="4">
-                <h:outputText value="#{Shib.applicationTermsOfUse}"/>
-            </textarea>
             <h:form>
-              <div class="checkbox">
-                <p:selectBooleanCheckbox required="true" requiredMessage="Please check the box to indicate your acceptance of the Terms of Use">
-                  <f:validator validatorId="requiredCheckboxValidator"/>
-                </p:selectBooleanCheckbox>
-                <h:outputText value="I have read and accept the Dataverse Terms of Use as outlined above."/>
-              </div>
-              <h:outputText value="View the "/>
-              <h:outputLink>
-                <h:outputText value="terms of use agreement"/>
-              </h:outputLink>
-              <h:outputText value=" in a larger window."/>
+              <ui:include src="termsofuse.xhtml"/>
               <br/>
               <h:commandButton styleClass="btn btn-success" value="Accept Terms and Create New Account" action="#{Shib.confirmAndCreateAccount()}"/>
               <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->
@@ -105,20 +92,7 @@
               <p:password id="builtinPassword" value="#{Shib.builtinPassword}"/>
               <br/>
               <br/>
-              <textarea class="form-control" rows="2">
-                <h:outputText value="#{Shib.applicationTermsOfUse}"/>
-              </textarea>
-              <div class="checkbox">
-                <p:selectBooleanCheckbox required="true" requiredMessage="Please check the box to indicate your acceptance of the Terms of Use">
-                  <f:validator validatorId="requiredCheckboxValidator"/>
-                </p:selectBooleanCheckbox>
-                <h:outputText value="I have read and accept the Dataverse Terms of Use as outlined above."/>
-              </div>
-              <h:outputText value="View the "/>
-              <h:outputLink>
-                <h:outputText value="terms of use agreement"/>
-              </h:outputLink>
-              <h:outputText value=" in a larger window."/>
+              <ui:include src="termsofuse.xhtml"/>
               <br/>
               <h:commandButton styleClass="btn btn-success" value="Accept Terms and Convert Account" action="#{Shib.confirmAndConvertAccount()}"/>
               <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->

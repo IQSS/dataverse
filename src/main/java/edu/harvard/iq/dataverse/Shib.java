@@ -574,13 +574,6 @@ public class Shib implements java.io.Serializable {
         return state.equals(State.PROMPT_TO_CONVERT_EXISTING_ACCOUNT);
     }
 
-//    curl -X PUT -d@/tmp/apptos.txt http://localhost:8080/api/s/settings/:ApplicationTermsOfUse
-    public String getApplicationTermsOfUse() {
-        String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
-        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
-        return appTermsOfUse;
-    }
-
     public String getDisplayNameToPersist() {
         return displayNameToPersist;
     }

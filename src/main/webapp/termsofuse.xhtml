@@ -1,43 +1,23 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:p="http://primefaces.org/ui">
 
-    <h:head>
-    </h:head>
-
-    <h:body>
-        <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Terms of Use - Dataverse"/>
-            <ui:param name="showDataverseHeader" value="false"/>
-            <ui:param name="showBreadcrumbs" value="false"/>
-            <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:define name="body">
-                <div class="alert alert-info" role="alert" style="margin-top:3em;">
-                    <strong>Dataverse Terms of Use</strong> - Please read these terms of use for your Dataverse account, and click "Accept" to continue.
-                </div>
-                <div class="row">
-                    <textarea class="form-control" rows="16">
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vitae massa quis libero rhoncus tincidunt. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam ut risus dapibus augue pulvinar rutrum quis eu massa. Aliquam accumsan tristique lacinia. Pellentesque malesuada condimentum suscipit. Nullam dapibus scelerisque leo, quis hendrerit ante commodo id. Morbi maximus ex eu tortor accumsan sodales. Sed convallis varius elit, ac egestas leo dapibus id. Ut luctus congue nibh, sit amet vehicula elit pellentesque at.
- 
-Morbi eu nisi magna. Proin porta dignissim orci eget porttitor. Aenean rutrum, nulla euismod ornare euismod, dui turpis feugiat leo, commodo gravida sem risus eget magna. Nullam sit amet libero sed est malesuada lobortis ut nec mi. Proin condimentum, velit quis mattis imperdiet, justo nisi porttitor urna, non semper nunc ipsum ac nunc. Nam cursus id arcu vel laoreet. Phasellus suscipit volutpat pretium. Mauris tempor erat ante, quis rhoncus diam mattis id. Vestibulum rhoncus accumsan lorem sit amet facilisis. Mauris eleifend a est hendrerit semper. Suspendisse sit amet dui commodo, lacinia tellus eu, sagittis tortor. Donec tincidunt, lacus dapibus fringilla sagittis, sem ex faucibus nibh, sed tristique nisl libero vel metus. Fusce a erat sit amet enim faucibus ultrices. In fermentum fringilla maximus. 
-
-Suspendisse sapien ex, feugiat et sapien nec, hendrerit molestie sem. Sed non posuere tortor, ac viverra erat. Pellentesque tincidunt viverra sem, vitae commodo velit iaculis vel. In in dapibus enim. Fusce ut lorem nibh. Nullam in mollis purus, vel tincidunt sapien. Nulla facilisi. Donec auctor euismod mauris, semper vehicula massa commodo eget. Maecenas libero sapien, mollis vehicula consequat ut, auctor quis lectus. Morbi hendrerit, diam eget tristique suscipit, velit nulla facilisis nulla, sit amet euismod lorem augue sit amet sem. Nulla tempus porta rutrum. Nullam ornare ipsum quis mattis tempus. Ut rhoncus ornare sem eget consequat. Fusce vel pellentesque arcu, at posuere lectus. Sed rutrum eu risus id convallis. Proin vitae tempor elit.
-                    </textarea>
-                    <div class="checkbox">
-                        <label>
-                          <input type="checkbox" value=""/>
-                          I have read and accept the Dataverse Terms of Use as outlined above.
-                        </label>
-                    </div>
-                    <p>
-                        <button type="button" class="btn btn-success">Accept Terms</button>
-                        <button type="button" class="btn btn-default">Cancel</button>
-                    </p>
-                </div>
-            </ui:define>
-        </ui:composition>
-    </h:body>
-</html>
+  <textarea class="form-control" rows="4">
+    <h:outputText value="#{systemConfig.applicationTermsOfUse}"/>
+  </textarea>
+  <div class="checkbox">
+    <p:selectBooleanCheckbox required="true" requiredMessage="Please check the box to indicate your acceptance of the Terms of Use">
+      <f:validator validatorId="requiredCheckboxValidator"/>
+    </p:selectBooleanCheckbox>
+    <h:outputText value="I have read and accept the Dataverse Terms of Use as outlined above."/>
+  </div>
+  <!--
+    <h:outputText value="View the "/>
+    <h:outputLink>
+      <h:outputText value="terms of use agreement"/>
+    </h:outputLink>
+    <h:outputText value=" in a larger window."/>
+  -->
+</div>
