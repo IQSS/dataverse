@@ -9,7 +9,7 @@ var scriptSource = (function() {
 
 var params = parseQueryString(scriptSource.split('?')[1]);
 
-params.id; // Dataverse ID
+params.alias; // Dataverse Alias
 params.dvUrl; // Dataverse Installation URL
 params.widget; // Widget type
 
@@ -30,13 +30,13 @@ if(params.widget === 'search') {
     /*
     * Dataverse Search Box
     */
-   document.write('<input type="text" onkeydown="if (event.keyCode == 13) document.getElementById(\'btnDataverseSearch\').click()"/>&#160;<input id="btnDataverseSearch" value="Find" type="button" onclick="window.open(&#39;' + params.dvUrl + '/dataverse.xhtml?id=' + params.id + '&amp;q=&#39; + this.previousSibling.previousSibling.value + &#39;&#39;, &#39;_blank&#39;);" />');
+   document.write('<input type="text" onkeydown="if (event.keyCode == 13) document.getElementById(\'btnDataverseSearch\').click()"/>&#160;<input id="btnDataverseSearch" value="Find" type="button" onclick="window.open(&#39;' + params.dvUrl + '/dataverse.xhtml?alias=' + params.alias + '&amp;q=&#39; + this.previousSibling.previousSibling.value + &#39;&#39;, &#39;_blank&#39;);" />');
 }
 
 if(params.widget === 'iframe') {
     /*
      * Dataverse Listing iFrame
      */
-    document.write('<iframe src="' + params.dvUrl + '/iframe.xhtml?id=' + params.id + '" width="100%" height="500"></iframe>');
+    document.write('<iframe src="' + params.dvUrl + '/iframe.xhtml?alias=' + params.alias + '" width="100%" height="500"></iframe>');
 }
 
