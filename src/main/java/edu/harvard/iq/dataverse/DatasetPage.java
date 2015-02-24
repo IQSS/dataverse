@@ -1084,7 +1084,7 @@ public class DatasetPage implements java.io.Serializable {
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
 
-    private List<FileMetadata> selectedFiles;
+    private List<FileMetadata> selectedFiles; // = new ArrayList<>();
 
     public List<FileMetadata> getSelectedFiles() {
         return selectedFiles;
@@ -1134,14 +1134,28 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void restrictFiles(boolean restricted) {
+        String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
             if (restricted && !fmd.isRestricted()) {
                 // show popup when a file is newly restricted
                 showAccessPopup = true;
+                // and collect the names of the newly-restrticted files, 
+                // to show in the success message:
+                if (fileNames == null) {
+                    fileNames = fmd.getLabel();
+                } else {
+                    fileNames = fileNames.concat(fmd.getLabel());
+                }
             }
             fmd.setRestricted(restricted);
         }
-    }
+        if (fileNames != null) {
+            String successMessage = JH.localize("file.restricted.success");
+            logger.fine(successMessage);
+            successMessage.replace("{0}", fileNames);
+            JsfHelper.addFlashMessage(successMessage);    
+        }
+    } 
 
     public int getRestrictedFileCount() {
         int restrictedFileCount = 0;
@@ -1157,6 +1171,18 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList();
 
     public void deleteFiles() {
+
+        String fileNames = null;
+        for (FileMetadata fmd : this.getSelectedFiles()) {
+                // collect the names of the newly-restrticted files, 
+            // to show in the success message:
+            if (fileNames == null) {
+                fileNames = fmd.getLabel();
+            } else {
+                fileNames = fileNames.concat(fmd.getLabel());
+            }
+        }
+
         filesToBeDeleted.addAll(selectedFiles);
         // remove from the files list
         //dataset.getLatestVersion().getFileMetadatas().removeAll(selectedFiles);
@@ -1176,6 +1202,13 @@ public class DatasetPage implements java.io.Serializable {
                     break;
                 }
             }
+        }
+
+        if (fileNames != null) {
+            String successMessage = JH.localize("file.deleted.success");
+            logger.fine(successMessage);
+            successMessage.replace("{0}", fileNames);
+            JsfHelper.addFlashMessage(successMessage);
         }
     }
 
@@ -1922,6 +1955,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setFileMetadataSelected(FileMetadata fm) {
         fileMetadataSelected = fm;
         logger.fine("set the file for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
+        alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
     }
 
     public FileMetadata getFileMetadataSelected() {
@@ -1980,6 +2014,8 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTags = selectedTags;
     }
 
+    private boolean alreadyDesignatedAsDatasetThumbnail = false; 
+    
     public boolean getUseAsDatasetThumbnail() {
 
         if (fileMetadataSelected != null) {
@@ -2097,18 +2133,27 @@ public class DatasetPage implements java.io.Serializable {
         // DataFile Tags: 
 
         if (selectedTags != null) {
+        
             if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
                 fileMetadataSelected.getDataFile().setTags(null);
                 for (int i = 0; i < selectedTags.length; i++) {
+                    
                     DataFileTag tag = new DataFileTag();
                     try {
                         tag.setTypeByLabel(selectedTags[i]);
                         tag.setDataFile(fileMetadataSelected.getDataFile());
                         fileMetadataSelected.getDataFile().addTag(tag);
+                        
                     } catch (IllegalArgumentException iax) {
                         // ignore 
                     }
                 }
+                
+                // success message: 
+                String successMessage = JH.localize("file.assignedTabFileTags.success");
+                logger.fine(successMessage);
+                successMessage.replace("{0}", fileMetadataSelected.getLabel());
+                JsfHelper.addFlashMessage(successMessage);
             }
             // reset:
             selectedTags = null;
@@ -2116,7 +2161,16 @@ public class DatasetPage implements java.io.Serializable {
 
         // Use-as-the-thumbnail assignment (do nothing?)
         // (it's already attached to the selected datafile)
-        // Language encoding for SPSS SAV (and, possibley, other tabular ingests:) 
+        // ...except we want to show a success message, if a new image has 
+        // been designated as such:
+        if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
+            String successMessage = JH.localize("file.assignedDataverseImage.success");
+            logger.info(successMessage);
+            successMessage.replace("{0}", fileMetadataSelected.getLabel());
+            JsfHelper.addFlashMessage(successMessage);
+        }
+        
+        // Language encoding for SPSS SAV (and, possibly, other tabular ingests:) 
         if (ingestLanguageEncoding != null) {
             if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
                 if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
@@ -2130,7 +2184,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         ingestLanguageEncoding = null;
 
-        // Extra labels for SPSS POR (and, possibley, other tabular ingests:)
+        // Extra labels for SPSS POR (and, possibly, other tabular ingests:)
         // (we are adding this parameter to the IngestRequest now, instead of back
         // when it was uploaded. This is because we want the user to be able to 
         // hit cancel and bail out, until they actually click 'save' in the 
