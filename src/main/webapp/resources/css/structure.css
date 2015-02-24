@@ -385,6 +385,8 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 .form-group table.ui-selectoneradio label {font-weight: normal; margin-right:1em;}
 .form-group .ui-radiobutton-box span.ui-radiobutton-icon {height: 16px; width: 16px; display: block; overflow: hidden;}
 
+div.ui-radiobutton {margin:0; vertical-align:text-bottom;}
+div.radio.no-padding-left label {padding-left:0;}
 
 /* Primefaces vs Bootstrap checkbox fix */
 .form-group .ui-chkbox .ui-chkbox-box {margin: 4px 0 0 0;}

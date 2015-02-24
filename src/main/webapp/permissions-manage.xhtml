@@ -63,9 +63,15 @@
                                                         #{bundle['dataverse.permissions.Q2']}
                                                     </label>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{bundle.editor}" rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'editor'}" />
-                                                        <h:outputText value="#{bundle.manager}" rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'manager'}" />
-                                                        <h:outputText value="#{bundle.curator}" rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'curator'}" />
+                                                        <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'editor'}">
+                                                            #{bundle.editor} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.editor.description']}</span>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'manager'}">
+                                                            #{bundle.manager} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.manager.description']}</span>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'curator'}">
+                                                            #{bundle.curator} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
+                                                        </ui:fragment>
                                                     </div>
                                                 </div>
                                             </div>
@@ -206,15 +212,13 @@
                     <!-- Explicit Group Edit Popup -->
                     <ui:include src="explicitGroup-new-dialog.xhtml"/>
                     
-                    
-                    <p:confirmDialog message="#{dataverse.permissions.usersOrGroups.removeBtn.confirmation}"
-                                     header="#{dataverse.permissions.usersOrGroups.removeBtn}" widgetVar="confirmation">
+                    <p:confirmDialog message="#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}"
+                                     header="#{bundle['dataverse.permissions.usersOrGroups.removeBtn']}" widgetVar="confirmation">
                         <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" 
                                          action="#{managePermissionsPage.removeRoleAssignment()}" 
                                          update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
                         <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
-                    </p:confirmDialog>                      
-
+                    </p:confirmDialog>
                 </h:form>
             </ui:define>
         </ui:composition>

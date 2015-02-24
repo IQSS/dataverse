@@ -31,24 +31,24 @@
                 <f:selectItem itemLabel="#{bundle.manager}" itemValue="manager" />
                 <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator" />
             </p:selectOneRadio>
-            <div class="radio">
-                <label>
+            <div class="radio no-padding-left">
+                <label for="opt1">
                     <p:radioButton id="opt1" for="defaultContributorRoleRadio" itemIndex="0" />
-                    <h:outputLabel for="opt1" value=" #{bundle.editor}" />
+                    #{bundle.editor}
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.editor.description']}</span>
                 </label>
             </div>
-            <div class="radio">
-                <label>
+            <div class="radio no-padding-left">
+                <label for="opt2">
                     <p:radioButton id="opt2" for="defaultContributorRoleRadio" itemIndex="1" />
-                    <h:outputLabel for="opt2" value=" #{bundle.manager}" />
+                    #{bundle.manager}
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.manager.description']}</span>
                 </label>
             </div>
-            <div class="radio">
-                <label>
+            <div class="radio no-padding-left">
+                <label for="opt3">
                     <p:radioButton id="opt3" for="defaultContributorRoleRadio" itemIndex="2" />
-                    <h:outputLabel for="opt3" value=" #{bundle.curator}" />
+                    #{bundle.curator}
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
                 </label>
             </div>
