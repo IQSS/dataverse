@@ -9,7 +9,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -32,23 +34,18 @@ import edu.harvard.iq.dataverse.util.ImportLogger;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -134,18 +131,12 @@ public class ImportServiceBean {
             status.add("file", file.getName());
             importLogger.getLogger().info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
-      //  } catch (IOException e) {
-            //      e.printStackTrace();
-            //       logger.info("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage());
-            //       throw new ImportException("Error reading file " + file.getAbsolutePath()+"msg = " + e.getMessage(), e);
         } catch (ImportException ex) {
              importLogger.getLogger().info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
-             importLogger.getLogger().info("Unexpected Error processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
-            String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
-            e.printStackTrace();
-             importLogger.getLogger().severe(msg);
+             String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();           
+             importLogger.getLogger().log(Level.SEVERE,msg, e);
             throw new ImportException("Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName(), e);
 
         }
@@ -183,7 +174,7 @@ public class ImportServiceBean {
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
-            // Check data against validation contraints
+            // Check data against required contraints
             Set<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
                 if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
@@ -202,6 +193,21 @@ public class ImportServiceBean {
                     throw new ImportException(errMsg);
                 }
             }
+            
+            // Check data against validation constraints
+            // If we are migrating and dataset contact email is invalid, then set it to NA
+            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
+            if( !invalidViolations.isEmpty()) {
+                if (importType.equals(ImportType.MIGRATION)) {
+                    for (ConstraintViolation v : invalidViolations) {
+                        DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
+                        if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+                            f.setValue(DatasetField.NA_VALUE);
+                        }
+                    }
+                }     
+            }
+        
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 
             if (existingDs != null) {
