@@ -201,7 +201,7 @@
                                     <div class="col-sm-9">
                                         <p class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
                                             
-                                        <label for="metadataRoot">
+                                        <label class="metadata-blocks-default" for="metadataRoot">
                                             <h:selectBooleanCheckbox id="metadataRoot" tabindex="7" styleClass="metadata-blocks-default" 
                                                                      rendered="#{DataversePage.dataverse.owner != null}"
                                                                      value="#{DataversePage.inheritMetadataBlockFromParent}" >
@@ -304,7 +304,7 @@
                                     <div class="col-sm-9">
                                         <p class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.facetPickList.tip']}</p>
 
-                                        <label for="facetsRoot">
+                                        <label class="metadata-blocks-default" for="facetsRoot">
                                             <h:selectBooleanCheckbox id="facetsRoot" tabindex="8" styleClass="facets-blocks-default" 
                                                                      rendered="#{DataversePage.dataverse.owner != null}"
                                                                      value="#{DataversePage.inheritFacetFromParent}">

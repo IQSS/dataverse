@@ -214,7 +214,8 @@ form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal div.form-group {vertical-align: middle;}
 
 input.metadata-blocks-default[type="checkbox"], input.facets-blocks-default[type="checkbox"] {margin: 4px 6px 0 0;}
-label[for="metadataRoot"], label[for="facetsRoot"] {margin-bottom:0; font-weight:normal;}
+div.checkbox input.metadata-blocks-default[type="checkbox"] {margin-left:-20px;}
+label.metadata-blocks-default {margin-bottom:0; font-weight:normal;}
 
 table[id$="facetPickListCreate"] td:last-child {padding-top:20px;}
 table[id$="facetPickListCreate"] div.ui-selectonemenu {width:178px !important;}

@@ -15,22 +15,22 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="inheritCustomization" style="white-space:nowrap;">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.theme.inheritCustomization.title']}">
-                                        <h:outputFormat value="#{bundle['dataverse.theme.inheritCustomization']}">
-                                            <f:param value="#{themeWidgetFragment.editDv.themeRootDataverseName}"/>
-                                        </h:outputFormat>
+                                        #{bundle['dataverse.theme.inheritCustomization.label']}
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
-                                    <label for="themeRoot" style="margin-top:.75em;">
-                                        <h:selectBooleanCheckbox id="themeRoot"  tabindex="7" styleClass="metadata-blocks-default" 
-                                                                 rendered="#{themeWidgetFragment.editDv.owner != null}"
-                                                                 value="#{themeWidgetFragment.inheritCustomization}" >
-                                            <p:ajax update="@widgetVar(content)" listener="#{themeWidgetFragment.checkboxListener()}"/>
-                                        </h:selectBooleanCheckbox>
-                                        <h:outputFormat value="#{bundle['dataverse.theme.inheritCustomization']}">
-                                            <f:param value="#{themeWidgetFragment.editDv.themeRootDataverseName}"/>
-                                        </h:outputFormat>
-                                    </label>
+                                    <div class="checkbox">
+                                        <label class="metadata-blocks-default" for="themeRoot">
+                                            <h:selectBooleanCheckbox id="themeRoot"  tabindex="7" styleClass="metadata-blocks-default" 
+                                                                     rendered="#{themeWidgetFragment.editDv.owner != null}"
+                                                                     value="#{themeWidgetFragment.inheritCustomization}" >
+                                                <p:ajax update="@widgetVar(content)" oncomplete="javascript:dataverseuser_page_rebind();" listener="#{themeWidgetFragment.checkboxListener()}"/>
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputFormat value="#{bundle['dataverse.theme.inheritCustomization.checkbox']}">
+                                                <f:param value="#{themeWidgetFragment.editDv.themeRootDataverseName}"/>
+                                            </h:outputFormat>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </ui:fragment>
@@ -157,7 +157,7 @@
                                         <div>
                                             <p:panelGrid columns="2" styleClass="noBorders">
                                                 <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.dataverseTheme.textColor}"/>
-                                                <p:message for="textColor" diplay="text"/>
+                                                <p:message for="textColor" display="text"/>
                                             </p:panelGrid>
                                         </div>
                                     </div>
