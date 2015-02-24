@@ -305,9 +305,10 @@ public class Shib implements java.io.Serializable {
          * https://dataverse-demo.iq.harvard.edu/Shibboleth.sso/DiscoFeed
          */
         /**
-         * @todo Add position and review firstname, lastname
+         * @todo Shibboleth: persist institution name as affiliation for users -
+         * https://github.com/IQSS/dataverse/issues/1497
          */
-        String affiliation = "FIXME";
+        String affiliation = null;
         displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
 
         userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
