@@ -154,6 +154,18 @@ function post_edit_metadata(){
 }
 
 /*
+ * Called after "Edit License and Terms"
+ */
+
+function post_edit_license(){
+   //console.log('post_edit_metadata');
+   //hide_breadcrumb();
+   bind_bsui_components();
+   //show_info_msg('Edit Dataset License and Terms ', 'Update the license and terms of use of your dataset.');
+
+}
+
+/*
  *  Used when cancelling either "Upload + Edit Files" or "Edit Metadata"
  */
 function post_cancel_edit_files_or_metadata(){

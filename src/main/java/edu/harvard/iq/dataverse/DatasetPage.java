@@ -846,14 +846,17 @@ public class DatasetPage implements java.io.Serializable {
         if (editMode == EditMode.INFO) {
             // ?
         } else if (editMode == EditMode.FILE) {
+            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editFiles"));
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
             updateDatasetFieldInputLevels();
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editMetadata"));
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
             System.out.print("License");
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editLicense"));
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
     }
 
@@ -919,10 +922,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public String releaseDataset() {
         return releaseDataset(false);
-    }
-
-    public String deaccessionDataset() {
-        return "";
     }
 
     public String deaccessionVersions() {
@@ -1216,7 +1215,9 @@ public class DatasetPage implements java.io.Serializable {
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+             //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
 
@@ -1370,11 +1371,12 @@ public class DatasetPage implements java.io.Serializable {
                 error.append(cause.getMessage() + " ");
             }
             logger.fine("Couldn't save dataset: " + error.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + error.toString()));
+            populateDatasetUpdateFailureMessage();
             return null;
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
+            populateDatasetUpdateFailureMessage();
             return null;
         }
         newFiles.clear();
@@ -1397,6 +1399,21 @@ public class DatasetPage implements java.io.Serializable {
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
+    }
+    
+    private void populateDatasetUpdateFailureMessage(){
+            if (editMode.equals(EditMode.CREATE)) {
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.createFailure"));
+            }
+            if (editMode.equals(EditMode.METADATA)) {
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.metadataFailure"));
+            }
+            if (editMode.equals(EditMode.LICENSE)) {
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.licenseFailure"));
+            }
+            if (editMode.equals(EditMode.FILE)) {
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
+            }
     }
 
     public String cancel() {
