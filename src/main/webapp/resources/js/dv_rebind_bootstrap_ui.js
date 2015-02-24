@@ -42,20 +42,6 @@ function toggle_dropdown(){
 }
 
 /*
- * show breadcrumb navigation
- */
-function show_breadcrumb(){
-   $('#breadcrumbNavBlock').show();  
-}
-
-/*
- * hide breadcrumb navigation
- */
-function hide_breadcrumb(){
-    $('#breadcrumbNavBlock').hide();
-}
-
-/*
  * Hide notification message
  */
 function hide_info_msg(){
@@ -99,7 +85,6 @@ function post_edit_dv_setup(){
  * Called after "Edit Dataverse" -  "General Information" or "Setup"
  */
 function post_edit_dv(){
-   hide_breadcrumb();
    hide_search_panels();
    bind_bsui_components();               
    //console.log('hide after edit3');
@@ -109,7 +94,6 @@ function post_edit_dv(){
  * Used after cancelling "Edit Dataverse"
  */
 function post_cancel_edit_dv(){
-   show_breadcrumb();
    show_search_panels()
    hide_info_msg();    
    bind_bsui_components();
@@ -147,7 +131,6 @@ function show_search_panels(){
  */
 function post_edit_files(){
    //console.log('post_edit_files');
-   hide_breadcrumb();
    bind_bsui_components();
    //show_info_msg('Upload + Edit Dataset Files', 'You can drag and drop your files from your desktop, directly into the upload widget.');
 }
@@ -166,10 +149,8 @@ function addDeleteTooltip(){
  */
 function post_edit_metadata(){
    //console.log('post_edit_metadata');
-   hide_breadcrumb();
    bind_bsui_components();
-   show_info_msg('Edit Dataset Metadata ', 'Add more metadata about your dataset to help others easily find it.');
-
+   // show_info_msg('Edit Dataset Metadata ', 'Add more metadata about your dataset to help others easily find it.');
 }
 
 /*
@@ -177,9 +158,8 @@ function post_edit_metadata(){
  */
 function post_cancel_edit_files_or_metadata(){
    //console.log('post_cancel_edit_metadata');
-   show_breadcrumb();
    bind_bsui_components();
-   hide_info_msg();
+   // hide_info_msg();
 }
 
 /*

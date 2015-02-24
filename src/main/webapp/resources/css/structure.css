@@ -125,6 +125,7 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 
 /* -------- BREADCRUMBS -------- */
+#breadcrumbNavBlock {margin-bottom:1em;}
 #breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
 #breadcrumbNavBlock .breadcrumbActive {font-weight:bold;}
 #breadcrumbNavBlock a[id^='breadcrumbLnkTree'] {cursor: pointer; cursor: hand;}
@@ -274,7 +275,7 @@ form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTyp
 form[id$='facetCategoryForm'] {margin-top:1em;}
 div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
 div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
-div[id$='facetCategoryList'] > div > ul > li:last-child {border-bottom:0; margin-bottom:0;}
+div/*[id$='facetCategoryList'] > div > ul > li:last-child {border-bottom:0; margin-bottom:0;}*/
 div[id$='facetCategoryList'] div li div {padding:4px 0px;}
 div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
 div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.ui-datalist div.ui-datalist-content {padding-top:0;}
