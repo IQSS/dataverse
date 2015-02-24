@@ -77,7 +77,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
         String dataverseSubtree = "";
         if (dataverse != null) {
             if (!dataverse.equals(dataverseServiceBean.findRootDataverse())) {
-                dataverseSubtree = "&id=" + dataverse.getId();
+                dataverseSubtree = "&alias=" + dataverse.getAlias();
             }
         }
 

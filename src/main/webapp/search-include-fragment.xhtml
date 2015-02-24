@@ -555,12 +555,12 @@
                                     <ui:fragment rendered="#{result.highlightsAsList.size() gt 0}">
                                         <ui:repeat value="#{result.highlightsAsList}" var="highlight">
                                             <ui:repeat value="#{highlight.snippets}" var="snippet">
-                                                <br/>
-                                                <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
-                                                <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
-                                                <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
-                                                <h:outputText value="#{highlight.solrField.nameSearchable}: "/>
-                                                <h:outputText value="#{snippet}" escape="false"/>
+                                                <div>
+                                                    <h:outputText value="#{highlight.solrField.nameSearchable}: #{snippet}" escape="false"/>
+                                                    <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
+                                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
+                                                </div>
                                             </ui:repeat>
                                         </ui:repeat>
                                     </ui:fragment>
@@ -641,12 +641,12 @@
                                     <ui:fragment rendered="#{result.highlightsAsList.size() > 0}">
                                         <ui:repeat value="#{result.highlightsAsList}" var="highlight">
                                             <ui:repeat value="#{highlight.snippets}" var="snippet">
-                                                <br/>
-                                                <!--<ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>-->
-                                                <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
-                                                <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
-                                                <h:outputText value="#{highlight.displayName}: "/>
-                                                <h:outputText value="#{snippet}" escape="false"/>
+                                                <div>
+                                                    <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                                                    <!--<ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>-->
+                                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
+                                                    <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
+                                                </div>
                                             </ui:repeat>
                                         </ui:repeat>
                                     </ui:fragment>
@@ -722,9 +722,9 @@
                                     <div jsf:rendered="#{result.highlightsAsList.size() > 0}">
                                         <ui:repeat value="#{result.highlightsAsList}" var="highlight">
                                             <ui:repeat value="#{highlight.snippets}" var="snippet">
-                                                <h:outputText value="#{highlight.displayName}: "/>
-                                                <h:outputText value="#{snippet}" escape="false"/>
-                                                <br/>
+                                                <div>
+                                                    <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                                                </div>
                                             </ui:repeat>
                                         </ui:repeat>
                                     </div>
