@@ -2072,7 +2072,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
+                        <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()"  update=":datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
                         <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                     </p:dialog>
 
