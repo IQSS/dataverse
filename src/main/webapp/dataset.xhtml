@@ -163,19 +163,19 @@
                                         </button>
                                         <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                             <li>
-                                                <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
+                                                <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files()">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}" />
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
+                                                <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_metadata()">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_metadata()">
+                                                <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_license()">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                                 </p:commandLink>
@@ -1002,7 +1002,7 @@
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="text-align:right; margin-bottom:.5em;">
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_license()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editLicenseBtn']}
                                             </p:commandLink>
@@ -1851,7 +1851,7 @@
                     </p:panel>
                     <p:commandButton value="Direct" id="datasetSave"
                                      style="display:none"
-                                     update=":datasetForm"
+                                     update=":datasetForm,:messagePanel"
                                      oncomplete="javascript:bind_bsui_components();"
                                      action="#{DatasetPage.save}">
                     </p:commandButton>
