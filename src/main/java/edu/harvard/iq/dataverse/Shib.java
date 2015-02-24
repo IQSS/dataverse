@@ -218,23 +218,7 @@ public class Shib implements java.io.Serializable {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
 
-        // set one of these to true in dev to avoid needing Shibboleth set up locally
-        boolean devRandom = false;
-        boolean devConstantTestShib = false;
-        boolean devConstantHarvard1 = false;
-        boolean devConstantHarvard2 = false;
-        if (devRandom) {
-            mutateRequestForDevRandom();
-        }
-        if (devConstantTestShib) {
-            mutateRequestForDevConstantTestShib();
-        }
-        if (devConstantHarvard1) {
-            mutateRequestForDevConstantHarvard1();
-        }
-        if (devConstantHarvard2) {
-            mutateRequestForDevConstantHarvard2();
-        }
+        possiblyMutateRequestInDev();
 
         try {
             shibIdp = getRequiredValueFromAttribute(shibIdpAttribute);
@@ -386,6 +370,77 @@ public class Shib implements java.io.Serializable {
 //        if (debug) {
 //            printAttributes(request);
 //        }
+    }
+
+    /**
+     * "Production" means "don't mess with the HTTP request".
+     */
+    public enum DevShibAccountType {
+
+        PRODUCTION,
+        RANDOM,
+        TESTSHIB1,
+        HARVARD1,
+        HARVARD2,
+    };
+
+    private DevShibAccountType getDevShibAccountType() {
+        DevShibAccountType saneDefault = DevShibAccountType.PRODUCTION;
+        String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType);
+        logger.fine("setting returned: " + settingReturned);
+        if (settingReturned != null) {
+            try {
+                DevShibAccountType parsedValue = DevShibAccountType.valueOf(settingReturned);
+                return parsedValue;
+            } catch (IllegalArgumentException ex) {
+                logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
+                return saneDefault;
+            }
+        } else {
+            logger.fine("Shibboleth dev mode has not been configured. Returning a sane default: " + saneDefault);
+            return saneDefault;
+        }
+
+    }
+
+    /**
+     * This method exists so developers don't have to run Shibboleth locally.
+     * You can populate the request with Shibboleth attributes by changing a
+     * setting like this:
+     *
+     * curl http://localhost:8080/api/s/settings/:DebugShibAccountType -X PUT -d
+     * RANDOM
+     *
+     * When you're done, feel free to delete the setting:
+     *
+     * curl -X DELETE http://localhost:8080/api/s/settings/:DebugShibAccountType
+     */
+    private void possiblyMutateRequestInDev() {
+        switch (getDevShibAccountType()) {
+            case PRODUCTION:
+                logger.fine("Request will not be mutated");
+                break;
+
+            case RANDOM:
+                mutateRequestForDevRandom();
+                break;
+
+            case TESTSHIB1:
+                mutateRequestForDevConstantTestShib1();
+                break;
+
+            case HARVARD1:
+                mutateRequestForDevConstantHarvard1();
+                break;
+
+            case HARVARD2:
+                mutateRequestForDevConstantHarvard2();
+                break;
+
+            default:
+                logger.info("Should never reach here");
+                break;
+        }
     }
 
     public String confirmAndCreateAccount() {
@@ -738,10 +793,10 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(uniquePersistentIdentifier, UUID.randomUUID().toString().substring(0, 8));
     }
 
-    private void mutateRequestForDevConstantTestShib() {
+    private void mutateRequestForDevConstantTestShib1() {
         request.setAttribute(shibIdpAttribute, "https://idp.testshib.org/idp/shibboleth");
         // the TestShib "eppn" looks like an email address
-        request.setAttribute(uniquePersistentIdentifier, "constant@testshib.org");
+        request.setAttribute(uniquePersistentIdentifier, "saml@testshib.org");
 //        request.setAttribute(displayNameAttribute, "Sam El");
         request.setAttribute(firstNameAttribute, "Sam");
         request.setAttribute(lastNameAttribute, "El");
