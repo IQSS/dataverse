@@ -46,6 +46,17 @@ This new script is a hybrid of the old installer from v.3.* and Michael's shell 
 
 All the future changes to the configuration that are Glassfish-specific and can be done through asadmin should now go into ``scripts/install/glassfish-setup.sh``. 
 
+Shibboleth
+++++++++++
+
+If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth users. Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
+
+``curl http://localhost:8080/api/s/settings/:DebugShibAccountType -X PUT -d RANDOM``
+
+For a list of possible values, please "find usages" on the settings key above and look at the enum.
+
+Now when you go to http://localhost:8080/shib.xhtml you should be prompted to create a Shibboleth account.
+
 Rebuilding your dev environment
 +++++++++++++++++++++++++++++++
 

@@ -25,6 +25,11 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /**
+         * For development only (see dev guide for details). Backed by an enum
+         * of possible account types.
+         */
+        DebugShibAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
         /** Expose debug information in the UI that users shouldn't normally see. */
