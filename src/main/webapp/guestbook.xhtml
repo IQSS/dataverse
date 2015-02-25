@@ -36,8 +36,8 @@
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestboobs.guestbook.name.tip']}">
-                                        #{bundle['dataset.manageGuestboobs.guestbook.name']}
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
+                                        #{bundle['dataset.manageGuestbooks.guestbook.name']}
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -52,8 +52,8 @@
                         <div class="row form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestboobs.guestbook.name.tip']}">
-                                        #{bundle['dataset.manageGuestboobs.guestbook.name']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
+                                        #{bundle['dataset.manageGuestbooks.guestbook.name']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
                                     </a>
                                 </label>
                                 <div class="col-sm-6">
@@ -63,10 +63,10 @@
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                    #{bundle['dataset.manageGuestboobs.guestbook.dataCollected']}
+                                    #{bundle['dataset.manageGuestbooks.guestbook.dataCollected']}
                                 </label>
                                 <div class="col-sm-9">
-                                    <p class="help-block">#{bundle['dataset.manageGuestboobs.guestbook.dataCollected.description']}</p>
+                                    <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.dataCollected.description']}</p>
                                     <div class="checkbox">
                                         <label jsf:for="nameRequiredCb">
                                           <input type="checkbox" jsf:id="nameRequiredCb" jsf:value="#{GuestbookPage.guestbook.nameRequired}"/> #{bundle.name}
@@ -92,12 +92,12 @@
                             
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                    #{bundle['dataset.manageGuestboobs.guestbook.customQuestions']}
+                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}
                                 </label>
 
                                 <!-- Compound fields -->
                                 <div class="col-sm-9">
-                                    <p class="help-block">#{bundle['dataset.manageGuestboobs.guestbook.customQuestions.description']}</p>
+                                    <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.description']}</p>
                                     <p:fragment id="customQuestions" rendered="#{showMessagePanel}">
                                         <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq" varStatus="valCount">
                                             <div class="form-group">
@@ -105,14 +105,14 @@
                                                 <div class="col-sm-9">
                                                     <div class="col-sm-3">
                                                         <label class="control-label" jsf:for="questionOptions">
-                                                            #{bundle['dataset.manageGuestboobs.guestbook.customQuestions.questionType']}
+                                                            #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType']}
                                                         </label>
                                                         <div>
                                                             <div>
                                                                 <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}"
                                                                                  onchange="#{GuestbookPage.toggleQuestionType(cq)}">
-                                                                    <f:selectItem itemLabel="Text" itemValue="text" />
-                                                                    <f:selectItem itemLabel="Option Buttons" itemValue="options" />
+                                                                    <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.text']}" itemValue="text" />
+                                                                    <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}" itemValue="options" />
                                                                     <p:ajax update=":guestbookForm:customQuestions" />
                                                                     <f:param name="SKIP_VALIDATION" value="true"/>
                                                                 </h:selectOneMenu>
@@ -126,7 +126,7 @@
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <label class="control-label" jsf:for="questionText">
-                                                            #{bundle['dataset.manageGuestboobs.guestbook.customQuestions.questionText']}
+                                                            #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionText']}
                                                         </label>
                                                         <div>
                                                             <div>
@@ -139,7 +139,7 @@
                                                     </div>
                                                     <div class="col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
                                                         <label class="control-label" jsf:for="questionResponseOptions">
-                                                            #{bundle['dataset.manageGuestboobs.guestbook.customQuestions.responseOptions']}
+                                                            #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
                                                         </label>
                                                         <div>
                                                             <div>
