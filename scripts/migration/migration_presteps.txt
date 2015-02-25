@@ -17,7 +17,7 @@ create table _dvn3_vdcrole as select * from vdcrole;
 -- run pg_dump to extract temp tables
 ----------------------------------------------
 
-./pg_dump -h localhost -U postgres thedata -t _dvn3_vdc -t _dvn3_vdcnetwork -t _dvn3_vdcuser -t _dvn3_vdcrole -f /tmp/dvn3_data.sql
+./pg_dump -h localhost -U postgres thedata -t _dvn3_* -f /tmp/dvn3_data.sql
 
 ----------------------------------------------
 -- import temp tables into 4.0 db
