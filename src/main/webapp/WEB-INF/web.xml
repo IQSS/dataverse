@@ -12,6 +12,11 @@
         <location>/404.xhtml</location>
     </error-page>
 
+    <error-page>
+        <error-code>500</error-code>
+        <location>/500.xhtml</location>
+    </error-page>
+
     <!-- Welcome page -->
     <welcome-file-list>
         <welcome-file>dataverse.xhtml</welcome-file>
