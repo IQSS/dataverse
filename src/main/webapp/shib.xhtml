@@ -19,6 +19,7 @@
       <ui:param name="showDataverseHeader" value="false"/>
       <ui:param name="showMessagePanel" value="#{true}"/>
       <ui:define name="body">
+        <!--TODO: take out this debug stuff?-->
         <ui:fragment rendered="#{Shib.debug}">
           <tt style="background-color: lightgray">
             <h:outputText value="State: #{Shib.state}"/>
@@ -32,12 +33,9 @@
             
             <!-- THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
           <div class="alert alert-info">
-            <strong>Account Information</strong> - 
-            <ui:fragment rendered="#{Shib.offerToConvertExistingAccount}">
-              Please agree to the Dataverse Terms of Use to continue converting your account.
-            </ui:fragment>
+            <strong>#{bundle['shib.accountInformation']}</strong> - 
             <ui:fragment rendered="#{Shib.offerToCreateNewAccount}">
-              Please agree to the Dataverse Terms of Use to create your account.
+              #{bundle['shib.offerToCreateNewAccount']}
             </ui:fragment>
           </div>
             <!-- END: THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
@@ -77,8 +75,7 @@
                 <ui:include src="termsofuse.xhtml"/>
                 
                 <div class="form-group">
-                    <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.accept']}" action="#{Shib.confirmAndCreateAccount()}"/>
-                    <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->
+                    <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.acceptAndCreate']}" action="#{Shib.confirmAndCreateAccount()}"/>
                 </div>
             </h:form>
         </ui:fragment>
@@ -91,18 +88,16 @@
               <div class="alert alert-info">
                   <p>
                       <span class="glyphicon glyphicon-warning-sign"/> 
-                      <h:outputFormat value="#{bundle['shib.welcomeMessage']}">
+                      <h:outputFormat value="#{bundle['shib.welcomeExistingUserMessage']}">
                           <f:param value="#{Shib.friendlyNameForInstitution}"/>
                       </h:outputFormat>
                   </p>
               </div>
                 
               <ui:fragment rendered="#{Shib.passwordRejected}">
-                  <!-- THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
                 <div class="alert alert-danger">
-                   Accounts can only be converted if you provide the correct password for your existing account.
+                   #{bundle['shib.passwordRejected']}
                 </div>
-                  <!-- END: THIS MSG SHOULD BE IN THE BACKING BEAN + BUNDLE, NOT HARDCODED HERE IN THE XHTML -->
               </ui:fragment>
               
                 <div class="form-horizontal">
@@ -128,8 +123,7 @@
                     <ui:include src="termsofuse.xhtml"/>
                     
                     <div class="form-group">
-                        <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.accept']}" action="#{Shib.confirmAndConvertAccount()}"/>
-                        <!--<h:commandButton styleClass="btn btn-default" value="Cancel" action="#{Shib.cancel()}"/>-->
+                        <h:commandButton styleClass="btn btn-default" value="#{bundle['shib.btn.acceptAndConvert']}" action="#{Shib.confirmAndConvertAccount()}"/>
                     </div>
                     <div class="form-group">
                         <a href="passwordreset.xhtml">#{bundle['login.forgot.text']}</a>
@@ -137,39 +131,6 @@
                 </div>
             </h:form>
         </ui:fragment>
-        
-          <!-- REMOVE? -->
-        <ui:fragment rendered="#{false}">
-          <p:tabView>
-            <p:tab title="Account Information">
-              <div class="alert alert-info">
-                <strong>Account Information</strong> - 
-                <ui:fragment rendered="#{Shib.offerToConvertExistingAccount}">
-                  Please agree to the Dataverse Terms of Use to continue converting your account.
-                </ui:fragment>
-                <ui:fragment rendered="#{Shib.offerToCreateNewAccount}">
-                  Please agree to the Dataverse Terms of Use to create your account.
-                </ui:fragment>
-              </div>
-              <h:form>
-                <p:selectBooleanCheckbox required="true" requiredMessage="Please check the box to indicate your acceptance of the Terms of Use">
-                  <f:validator validatorId="requiredCheckboxValidator"/>
-                </p:selectBooleanCheckbox>
-                <h:outputText value="I have read and agree to the Dataverse Terms of Use"/>
-                <br/>
-                <h:outputText value="View the "/>
-                <h:outputLink>
-                  <h:outputText value="terms of use agreement"/>
-                </h:outputLink>
-                <h:outputText value="."/>
-                <br/>
-                <h:commandButton styleClass="btn btn-success" value="Continue" action="#{Shib.confirmAndConvertAccount()}"/>
-                <button type="button" class="btn btn-default">Cancel</button>
-              </h:form>
-            </p:tab>
-          </p:tabView>
-        </ui:fragment>
-          <!-- END: REMOVE? -->
       </ui:define>
     </ui:composition>
   </h:body>

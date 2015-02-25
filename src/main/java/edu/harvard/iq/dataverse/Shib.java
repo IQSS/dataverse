@@ -204,6 +204,9 @@ public class Shib implements java.io.Serializable {
      * can revisit this. Maybe we'll use ORCID instead. Dunno.
      */
 //    private String positionToPersist = "Position not provided by institution log in";
+    /**
+     * @todo localize this
+     */
     private String friendlyNameForInstitution = "your institution";
     private State state;
     private String debugSummary;
@@ -258,9 +261,9 @@ public class Shib implements java.io.Serializable {
         try {
             emailAddress = getRequiredValueFromAttribute(emailAttribute);
         } catch (Exception ex) {
-            String shipIdp = "https://idp.testshib.org/idp/shibboleth";
-            if (shibIdp.equals(shipIdp)) {
-                logger.info("For " + shipIdp + " setting email address to value of eppn: " + shibUserIdentifier);
+            String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
+            if (shibIdp.equals(testShibIdpEntityId)) {
+                logger.info("For " + testShibIdpEntityId + " (which as of this writing doesn't provide the " + emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
                 emailAddress = shibUserIdentifier;
             } else {
                 // forcing all other IdPs to send us an an email
@@ -431,6 +434,7 @@ public class Shib implements java.io.Serializable {
         String affiliation = ShibUtil.getDisplayNameFromDiscoFeed(shibIdp, discoFeedJson);
         if (affiliation != null) {
             affiliationToDisplayAtConfirmation = affiliation;
+            friendlyNameForInstitution = affiliation;
             return affiliation;
         } else {
             logger.info("Couldn't find an affiliation from  " + shibIdp);
