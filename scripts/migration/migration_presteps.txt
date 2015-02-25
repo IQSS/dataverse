@@ -1,0 +1,30 @@
+----------------------------------------------
+-- On 3.6 database, run the following to create copies of needed tables
+----------------------------------------------
+
+-- ignore the root network
+create table _dvn3_vdcnetwork as select * from vdcnetwork where id != 0;
+
+create table _dvn3_vdc as select * from vdc;
+
+-- ignore network admin (assumes id of 1)
+create table _dvn3_vdcuser as select * from vdcuser where id != 1;
+
+create table _dvn3_vdcrole as select * from vdcrole;
+
+
+----------------------------------------------
+-- run pg_dump to extract temp tables
+----------------------------------------------
+
+./pg_dump -h localhost -U postgres thedata -t _dvn3_vdc -t _dvn3_vdcnetwork -t _dvn3_vdcuser -t _dvn3_vdcrole -f /tmp/dvn3_data.sql
+
+----------------------------------------------
+-- import temp tables into 4.0 db
+----------------------------------------------
+
+psql -h localhost -U postgres dvndb -f /tmp/dvn3_data.sql
+
+
+
+

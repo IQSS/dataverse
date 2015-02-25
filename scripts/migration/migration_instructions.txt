@@ -1,0 +1,38 @@
+Migration steps:
+
+Pre steps (cottoned in the migration_presteps document):
+
+
+-3. Create copies of tables in 3.6 database for migrated data
+-2. Run pg dump to extract tables copies
+-1. Import copied tables into 4.0 database
+
+
+Migration:
+
+1. run migrate_users script
+
+2. run migrate_dataverses script
+
+3. * run dataset APIs
+
+4. * run post dataset scrubbing
+
+5. * run files script
+
+__________________________________________________
+
+Still to be migrated:
+- Permissions
+- Groups
+- Guestbook / stats
+- Templates
+
+__________________________________________________
+
+Not being migrated (verify?):
+-- Study Comments
+-- File Access requests
+-- Classifications
+-- Study locks
+-- VDCNetworkStats (generated data)
