@@ -12,7 +12,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{themeWidgetFragment.editDv.name} #{bundle.dataverse}"/>
+            <ui:param name="pageTitle" value="#{bundle['dataverse.option.themeAndWidgets']} - #{themeWidgetFragment.editDv.name} #{bundle.dataverse}"/>
             <ui:param name="dataverse" value="#{themeWidgetFragment.editDv}"/>  
            
             <ui:param name="showMessagePanel" value="#{true}"/>
@@ -20,6 +20,7 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{themeWidgetFragment.editDv.id}"/>
                     <f:viewAction action="#{themeWidgetFragment.initEditDv}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(themeWidgetFragment.editDv, bundle['dataverse.option.themeAndWidgets'])}"/>
                 </f:metadata>
                 <h:form id="themeWidgetsForm">
                 <ui:include src="themeAndWidgetsFragment.xhtml"/>
