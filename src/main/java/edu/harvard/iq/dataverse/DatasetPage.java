@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -70,6 +71,7 @@ import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
 import javax.faces.model.SelectItem;
 import java.util.HashSet;
+import java.util.logging.Level;
 import javax.faces.component.UIInput;
 
 /**
@@ -919,9 +921,33 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
+    
+    public String releaseParentDVAndDataset(){
+        releaseParentDV();
+        return releaseDataset(false);
+    }
 
     public String releaseDataset() {
         return releaseDataset(false);
+    }
+    
+    private void releaseParentDV(){
+        if (session.getUser() instanceof AuthenticatedUser) {
+            PublishDataverseCommand cmd = new PublishDataverseCommand((AuthenticatedUser) session.getUser(), dataset.getOwner());
+            try {
+                commandEngine.submit(cmd);
+                JsfHelper.addSuccessMessage(JH.localize("dataverse.publish.success"));
+
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
+                JsfHelper.addErrorMessage(JH.localize("dataverse.publish.failure"));
+
+            }
+        } else {
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", "Only authenticated users can release a dataverse.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+        }
+        
     }
 
     public String deaccessionVersions() {
