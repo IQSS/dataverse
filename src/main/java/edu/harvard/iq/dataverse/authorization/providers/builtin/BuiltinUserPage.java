@@ -271,7 +271,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         int maxPasswordLength = 255;
 
         PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
-        boolean passwordIsComplexEnough = validator.validatePassword(password);
+        boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
         if (!passwordIsComplexEnough) {
             ((UIInput) toValidate).setValid(false);
             String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
