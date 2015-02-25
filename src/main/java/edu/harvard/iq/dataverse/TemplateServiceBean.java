@@ -48,5 +48,19 @@ public class TemplateServiceBean {
         query.setParameter("ownerId", ownerId);
         return query.getResultList();
     }
+    
+    public void incrementUsageCount(Long templateId) {
 
+        Long usageCount = (Long) em.createNativeQuery(
+                "select usageCount from  Template  "
+                + "WHERE id=" + templateId
+        ).getSingleResult();
+        
+        usageCount++;
+        
+        em.createNativeQuery(
+                "update Template SET  usagecount = " + usageCount + " "
+                + "WHERE id=" + templateId
+        ).executeUpdate();
+    }
 }

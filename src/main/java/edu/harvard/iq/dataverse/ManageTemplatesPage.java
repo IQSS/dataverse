@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -64,7 +65,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         }
  
         templates = new LinkedList<>();
-        setInheritTemplatesValue(dataverse.isTemplateRoot());
+        setInheritTemplatesValue(!dataverse.isTemplateRoot());
         if (inheritTemplatesValue && dataverse.getOwner() != null) {
             for (Template pt : dataverse.getParentTemplates()) {
                 pt.setDataverse(dataverse.getOwner());
@@ -137,10 +138,10 @@ public class ManageTemplatesPage implements java.io.Serializable {
         } catch (CommandException ex) {
             String failMessage = "Template update failed";
             if(successMessage.equals("The template has been deleted")){
-                failMessage = "The dataset template cannot be deleted. Please try again or contact support.";
+                failMessage = "The dataset template cannot be deleted.";
             }
             if(successMessage.equals("The template has been selected as the default template for this dataverse")){
-                failMessage = "The dataset template cannot be made default. Please try again or contact support.";
+                failMessage = "The dataset template cannot be made default.";
             }
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
         }
@@ -217,7 +218,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
                 }
             }
 
-            dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(isInheritTemplatesValue(), session.getUser(), getDataverse()));
+            dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(!isInheritTemplatesValue(), session.getUser(), getDataverse()));
             init();
             return "";
         } catch (CommandException ex) {

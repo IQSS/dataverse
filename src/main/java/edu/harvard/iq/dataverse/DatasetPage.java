@@ -663,7 +663,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
-            if (dataverseService.find(ownerId).isTemplateRoot()) {
+            if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
             }
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
@@ -1350,7 +1350,12 @@ public class DatasetPage implements java.io.Serializable {
         try {
             if (editMode == EditMode.CREATE) {
                 workingVersion.setLicense(DatasetVersion.License.CC0);
-                cmd = new CreateDatasetCommand(dataset, session.getUser());
+                if(selectedTemplate != null){
+                   cmd = new CreateDatasetCommand(dataset, session.getUser(), false, null, selectedTemplate); 
+                } else {
+                   cmd = new CreateDatasetCommand(dataset, session.getUser());
+                }
+                
             } else {
                 cmd = new UpdateDatasetCommand(dataset, session.getUser());
             }

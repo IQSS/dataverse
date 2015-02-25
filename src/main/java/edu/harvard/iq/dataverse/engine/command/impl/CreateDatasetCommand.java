@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -40,12 +41,14 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     private final boolean registrationRequired;
     // TODO: rather than have a boolean, create a sub-command for creating a dataset during import
     private final ImportUtil.ImportType importType;
+    private final Template template;
 
     public CreateDatasetCommand(Dataset theDataset, User user) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = false;
         this.importType=null;
+        this.template=null;
     }
 
     public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired) {
@@ -53,13 +56,25 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=null;
+        this.template=null;
     }
-      public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, ImportUtil.ImportType importType) {
+    
+    public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, ImportUtil.ImportType importType) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=importType;
+        this.template=null;
     }
+    
+    public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
+        super(user, theDataset.getOwner());
+        this.theDataset = theDataset;
+        this.registrationRequired = registrationRequired;
+        this.importType=importType;
+        this.template=template;
+    }
+    
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
@@ -146,6 +161,10 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         savedDataset = ctxt.em().merge(savedDataset);
+        
+        if(template != null){
+            ctxt.templates().incrementUsageCount(template.getId());
+        }
 
         try {
             // TODO make async

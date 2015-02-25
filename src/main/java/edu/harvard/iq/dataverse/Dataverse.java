@@ -268,7 +268,7 @@ public class Dataverse extends DvObjectContainer {
            }           
            retList.addAll(testDV.getOwner().getTemplates());
            
-           if(!testDV.getOwner().templateRoot){               
+           if(testDV.getOwner().templateRoot){               
                break;
            }           
            testDV = testDV.getOwner();
