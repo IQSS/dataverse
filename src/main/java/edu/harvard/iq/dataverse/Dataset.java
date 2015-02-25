@@ -232,6 +232,7 @@ public class Dataset extends DvObjectContainer {
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
             }
+            dsv.setFileAccessRequest(latestVersion.isFileAccessRequest());
             dsv.setTermsOfUse(latestVersion.getTermsOfUse());
             dsv.setTermsOfAccess(latestVersion.getTermsOfAccess());
             dsv.setConfidentialityDeclaration(latestVersion.getConfidentialityDeclaration());

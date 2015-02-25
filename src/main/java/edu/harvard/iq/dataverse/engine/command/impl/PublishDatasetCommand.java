@@ -134,7 +134,8 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
         }
-
+        
+        theDataset.setFileAccessRequest(theDataset.getLatestVersion().isFileAccessRequest());
         Dataset savedDataset = ctxt.em().merge(theDataset);
                
         ctxt.index().indexDataset(savedDataset);

@@ -236,6 +236,16 @@ public class DatasetVersion implements Serializable {
     @Column(columnDefinition="TEXT") 
     private String studyCompletion;
     
+    private boolean fileAccessRequest;
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }
+    
     private boolean inReview;
     public void setInReview(boolean inReview){
         this.inReview = inReview;
