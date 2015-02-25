@@ -1,6 +1,6 @@
 Migration steps:
 
-Pre steps (cottoned in the migration_presteps document):
+Pre steps (contained in the migration_presteps document):
 
 
 -3. Create copies of tables in 3.6 database for migrated data
@@ -10,9 +10,9 @@ Pre steps (cottoned in the migration_presteps document):
 
 Migration:
 
-1. run migrate_users script
+1. run migrate_users.sql script
 
-2. run migrate_dataverses script
+2. run migrate_dataverses.sql script
 
 3. * run dataset APIs
 
