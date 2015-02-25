@@ -24,7 +24,8 @@ insert into dataverse (	id, affiliation, alias, dataversetype, description, name
 
 -- Hard coded per installation: contact email
 insert into dataversecontact ( contactemail, displayorder, dataverse_id)
-        select                  'dataverse@lists.hmdc.harvard.edu',0,id from _dvn3_vdcnetwork;
+        select                  dc.contactemail, dc.displayorder, _dvn3_vdcnetwork.id from dataversecontact dc, _dvn3_vdcnetwork
+        where dc.dataverse_id=1;
 
 -----------------------
 -- dataverses
