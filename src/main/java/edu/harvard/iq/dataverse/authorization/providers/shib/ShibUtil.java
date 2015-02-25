@@ -11,7 +11,7 @@ public class ShibUtil {
      * @todo Use this to display "Harvard University", for example, based on
      * https://dataverse.harvard.edu/Shibboleth.sso/DiscoFeed
      */
-    public String getDisplayNameFromDiscoFeed(String entityIdToFind, String discoFeed) {
+    public static String getDisplayNameFromDiscoFeed(String entityIdToFind, String discoFeed) {
         JsonParser jsonParser = new JsonParser();
         JsonElement root = jsonParser.parse(discoFeed);
         JsonArray identityProviders = root.getAsJsonArray();

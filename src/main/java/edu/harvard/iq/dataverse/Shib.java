@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
@@ -12,9 +13,11 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceB
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -54,6 +57,8 @@ public class Shib implements java.io.Serializable {
     ShibGroupServiceBean shibGroupService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
 
     HttpServletRequest request;
 
@@ -193,7 +198,7 @@ public class Shib implements java.io.Serializable {
      * https://dataverse.harvard.edu/Shibboleth.sso/DiscoFeed for example. Check
      * the "ShibUtil" class
      */
-    private String affiliationToPersist = "Affiliation not provided by institution log in";
+    private String affiliationToDisplayAtConfirmation = "Affiliation not provided by institution log in";
     /**
      * @todo Once we can persist "position" to the authenticateduser table, we
      * can revisit this. Maybe we'll use ORCID instead. Dunno.
@@ -282,17 +287,7 @@ public class Shib implements java.io.Serializable {
          * the authenticateduser table.
          */
 //        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
-        /**
-         * @todo Update affiliation with "Harvard University". This is not
-         * commonly sent as an attribute in the Shibboleth world but we might
-         * need to parse something like
-         * https://dataverse-demo.iq.harvard.edu/Shibboleth.sso/DiscoFeed
-         */
-        /**
-         * @todo Shibboleth: persist institution name as affiliation for users -
-         * https://github.com/IQSS/dataverse/issues/1497
-         */
-        String affiliation = null;
+        String affiliation = getAffiliation();
         displayInfo = new AuthenticatedUserDisplayInfo(firstName, lastName, emailAddress, affiliation, null);
 
         userPersistentId = shibIdp + persistentUserIdSeparator + shibUserIdentifier;
@@ -370,6 +365,77 @@ public class Shib implements java.io.Serializable {
 //        if (debug) {
 //            printAttributes(request);
 //        }
+    }
+
+    /**
+     * @todo Move this to the shib service bean.
+     */
+    private String getAffiliation() {
+        JsonArray emptyJsonArray = new JsonArray();
+        String discoFeedJson = emptyJsonArray.toString();
+        String discoFeedUrl;
+        if (getDevShibAccountType().equals(DevShibAccountType.PRODUCTION)) {
+            discoFeedUrl = systemConfig.getDataverseSiteUrl() + "/Shibboleth.sso/DiscoFeed";
+        } else {
+            String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
+            discoFeedUrl = devUrl;
+        }
+        logger.info("Trying to get affiliation from disco feed URL: " + discoFeedUrl);
+        URL url = null;
+        try {
+            url = new URL(discoFeedUrl);
+        } catch (MalformedURLException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        if (url == null) {
+            logger.info("url object was null after parsing " + discoFeedUrl);
+            return null;
+        }
+        HttpURLConnection discoFeedRequest = null;
+        try {
+            discoFeedRequest = (HttpURLConnection) url.openConnection();
+        } catch (IOException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        if (discoFeedRequest == null) {
+            logger.info("disco feed request was null");
+            return null;
+        }
+        try {
+            discoFeedRequest.connect();
+        } catch (IOException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        JsonParser jp = new JsonParser();
+        JsonElement root = null;
+        try {
+            root = jp.parse(new InputStreamReader((InputStream) discoFeedRequest.getInputStream()));
+        } catch (IOException ex) {
+            logger.info(ex.toString());
+            return null;
+        }
+        if (root == null) {
+            logger.info("root was null");
+            return null;
+        }
+        JsonArray rootArray = root.getAsJsonArray();
+        if (rootArray == null) {
+            logger.info("Couldn't get JSON Array from URL");
+            return null;
+        }
+        discoFeedJson = rootArray.toString();
+        logger.fine("Dump of disco feed:" + discoFeedJson);
+        String affiliation = ShibUtil.getDisplayNameFromDiscoFeed(shibIdp, discoFeedJson);
+        if (affiliation != null) {
+            affiliationToDisplayAtConfirmation = affiliation;
+            return affiliation;
+        } else {
+            logger.info("Couldn't find an affiliation from  " + shibIdp);
+            return null;
+        }
     }
 
     /**
@@ -665,8 +731,8 @@ public class Shib implements java.io.Serializable {
         return emailToPersist;
     }
 
-    public String getAffiliationToPersist() {
-        return affiliationToPersist;
+    public String getAffiliationToDisplayAtConfirmation() {
+        return affiliationToDisplayAtConfirmation;
     }
 
 //    public String getPositionToPersist() {

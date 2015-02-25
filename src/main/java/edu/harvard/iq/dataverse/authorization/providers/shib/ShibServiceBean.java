@@ -44,7 +44,7 @@ public class ShibServiceBean {
     public AuthenticatedUser findAuthUserByEmail(String emailToFind) {
         return authSvc.getAuthenticatedUserByEmail(emailToFind);
     }
-    
+
     public BuiltinUser findBuiltInUserByAuthUserIdentifier(String authUserIdentifier) {
         return builtinUserService.findByUserName(authUserIdentifier);
     }
@@ -71,6 +71,10 @@ public class ShibServiceBean {
         }
     }
 
+    /**
+     * @todo Move the getAffiliation method from the Shib JSF backing bean to
+     * here.
+     */
     public String getFriendlyInstitutionName(String entityId) {
         /**
          * @todo Look for the entityId (i.e.
