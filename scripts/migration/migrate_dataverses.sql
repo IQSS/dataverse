@@ -31,8 +31,8 @@ insert into dataversecontact ( contactemail, displayorder, dataverse_id)
 -----------------------
 
 
-insert into dvobject (	id, owner_id, dtype, createdate, publicationdate, modificationtime, creator_id, releaseuser_id)
-	select 		id, vdcnetwork_id + 1, 'Dataverse', createddate, releasedate, now(), creator_id, creator_id
+insert into dvobject (	id, owner_id, dtype, createdate, publicationdate, modificationtime, permissionmodificationtime, creator_id, releaseuser_id)
+	select 		id, vdcnetwork_id + 1, 'Dataverse', createddate, releasedate, now(), now(), creator_id, creator_id
 	from _dvn3_vdc;
 
 insert into dataverse (	id, affiliation, alias, dataversetype, description, name, defaultcontributorrole_id,
