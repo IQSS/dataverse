@@ -2,7 +2,9 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.ControlledVocabAlternate;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.ControlledVocabularyValueServiceBean;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
@@ -18,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Consumes;
@@ -25,6 +29,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 
 @Path("datasetfield")
@@ -38,6 +43,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @EJB
     MetadataBlockServiceBean metadataBlockService;
+
+    @EJB
+    ControlledVocabularyValueServiceBean controlledVocabularyValueService;
 
     @GET
     public String getAll() {
@@ -136,6 +144,26 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             return Util.message2ApiError(sb.toString());
         }
 
+    }
+
+    /**
+     *
+     * See also http://irclog.greptilian.com/rest/2015-02-07#i_95635
+     *
+     * @todo is our convention camelCase? Or lisp-case? Or snake_case?
+     */
+    @GET
+    @Path("controlledVocabulary/subject")
+    public Response showControlledVocabularyForSubject() {
+        DatasetFieldType subjectDatasetField = datasetFieldService.findByName(DatasetFieldConstant.subject);
+        JsonArrayBuilder possibleSubjects = Json.createArrayBuilder();
+        for (ControlledVocabularyValue subjectValue : controlledVocabularyValueService.findByDatasetFieldTypeId(subjectDatasetField.getId())) {
+            String subject = subjectValue.getStrValue();
+            if (subject != null) {
+                possibleSubjects.add(subject);
+            }
+        }
+        return okResponse(possibleSubjects);
     }
 
     @GET
