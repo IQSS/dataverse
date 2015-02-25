@@ -57,8 +57,11 @@
                                         #{bundle.dataverse} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </a>
                                 </label>
-                                <div class="col-sm-9">
-                                    <p:inputText id="name" tabindex="1" styleClass="form-control" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
+                                <div class="col-sm-9 panelLayoutBlock">
+                                    <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="no-padding-left-right,no-class">
+                                        <p:inputText id="name" tabindex="1" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
+                                        <h:outputText styleClass="text-muted" value="#{bundle.dataverse}"/>
+                                    </p:panelGrid>
                                     <p:watermark for="name" value="#{bundle['dataverse.enterName']}"/>
                                 </div>
                             </div>
@@ -69,10 +72,12 @@
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputText id="affiliation" tabindex="4" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
+                                    <p:inputText id="affiliation" tabindex="2" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                     <p:message for="affiliation" display="text"/>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="identifier">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.identifier.title']}">
