@@ -151,6 +151,20 @@
                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                         <div id="topDatasetBlock">
                             <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
+                                <!-- View Published/Unpublished Button -->
+                                <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
+                                                         and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset')}">
+                                    <a class="btn btn-warning" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
+                                        <h:outputText value="#{bundle['dataset.viewVersion.unpublished']}"/>
+                                    </a>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion != DatasetPage.dataset.releasedVersion
+                                                         and !empty(DatasetPage.releasedVersionTabList)}">
+                                    <a class="btn btn-primary" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.releasedVersion.id}">
+                                        <h:outputText value="#{bundle['dataset.viewVersion.published']}"/>
+                                    </a>
+                                </ui:fragment>
+                                <!-- END: View Published/Unpublished Button -->
                                 <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                          and ((DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released))
                                                          or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and  DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
@@ -372,22 +386,7 @@
                                         <p:commandButton value="#{bundle.cancel}" onclick="sendBackToContributor.hide()" type="button" />
                                     </p:confirmDialog>
                                 </ui:fragment>
-                                <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
-                                                         and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset')}">
-
-                                    <a class="btn btn-warning pull-right" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
-                                        <h:outputText value="#{bundle['dataset.viewVersion.unpublished']}"/>
-                                    </a>
-
-                                </ui:fragment>
-                                <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion != DatasetPage.dataset.releasedVersion
-                                                         and !empty(DatasetPage.releasedVersionTabList)}">
-
-                                    <a class="btn btn-primary pull-right" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.releasedVersion.id}">
-                                        <h:outputText value="#{bundle['dataset.viewVersion.published']}"/>
-                                    </a>
-
-                                </ui:fragment>
+                                
                                 <div class="btn-group pull-right" jsf:id="datasetButtonBar" jsf:rendered="#{empty DatasetPage.editMode}" role="group" style="margin-right:.3em;">
                                     <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
                                         <span class="glyphicon glyphicon-envelope no-text"/>
