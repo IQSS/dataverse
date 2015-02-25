@@ -237,70 +237,6 @@
                                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
                                                 </button>
                                             </ui:fragment>
-
-                                            <p:confirmDialog message="#{bundle['dataset.publish.tip']}" header="#{bundle['dataset.publishBtn']}" widgetVar="confirmation">
-                                                <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
-                                                    #{bundle['dataset.unregistered.tip']}
-                                                </ui:fragment>
-                                                <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
-                                                </p:commandButton>
-                                                <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
-                                            </p:confirmDialog>
-                                            <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="publishParent">                                       
-                                                <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
-                                                    #{bundle['dataset.unregistered.tip']} 
-                                                </ui:fragment>
-                                                <div>
-                                                 #{bundle['dataset.publish.tip']}
-                                                </div>
-                                                <br></br>
-                                                <div>
-                                                    <h:outputFormat value="#{bundle['dataset.publishParent.tip']}">
-                                                        <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                                                    </h:outputFormat>
-                                                </div>
-                                                <br></br>
-                                                <p:commandButton value="#{bundle.continue}" onclick="publishParent.hide()" action="#{DatasetPage.releaseParentDVAndDataset}">
-                                                </p:commandButton>
-                                                <p:commandButton value="#{bundle.cancel}" onclick="publishParent.hide()" type="button" />
-                                            </p:dialog>
-                                            <p:confirmDialog message="#{bundle['dataset.republish.tip']}" header="#{bundle['dataset.publishBtn']}" widgetVar="releaseDraft">
-                                                <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
-                                                    #{bundle['dataset.selectVersionNumber']}
-                                                    <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
-                                                        <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
-                                                        <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />                                                
-                                                    </p:selectOneRadio>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
-                                                    <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}">
-                                                        <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
-                                                    </h:outputFormat>
-                                                </ui:fragment>
-                                                <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}">
-                                                </p:commandButton>
-                                                <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}">
-                                                </p:commandButton>
-                                                <p:commandButton value="#{bundle.cancel}" onclick="releaseDraft.hide()" type="button" />
-                                            </p:confirmDialog>
-                                            <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
-                                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                                                <h:outputFormat value="#{bundle['dataset.mayNotBePublished.tip']}">
-                                                    <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                                                </h:outputFormat>
-                                            </p:dialog>
-                                            <p:dialog header="#{bundle['dataset.mayNotBePublished']}" 
-                                                      widgetVar="maynotPublishParent">
-                                                <h:outputFormat value="#{bundle['dataset.mayNotBePublishedGrandparent.tip']}">
-                                                    <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                                                    <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
-                                                </h:outputFormat>
-                                            </p:dialog>
-                                            <p:confirmDialog message="#{bundle['dataset.rejectMessage']}" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
-                                                <p:commandButton value="#{bundle.continue}" onclick="sendBackToContributor.hide()" action="#{DatasetPage.sendBackToContributor}">
-                                                </p:commandButton>
-                                                <p:commandButton value="#{bundle.cancel}" onclick="sendBackToContributor.hide()" type="button" />
-                                            </p:confirmDialog>
                                         </ui:fragment>
                                         <!-- END: Publish/Submit for Review Button -->
                                         <!-- Edit Button -->
@@ -2336,6 +2272,72 @@
                         </p:commandButton>
                         <p:commandButton value="#{bundle.cancel}" onclick="inreview.hide()" type="button" />
                     </p:confirmDialog>
+                    
+                    <!-- Publish/Submit for Review Dialogs -->
+                    <p:confirmDialog message="#{bundle['dataset.publish.tip']}" header="#{bundle['dataset.publishBtn']}" widgetVar="confirmation">
+                        <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
+                            #{bundle['dataset.unregistered.tip']}
+                        </ui:fragment>
+                        <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
+                        </p:commandButton>
+                        <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
+                    </p:confirmDialog>
+                    <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="publishParent">                                       
+                        <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
+                            <p>
+                                #{bundle['dataset.unregistered.tip']}
+                            </p>
+                        </ui:fragment>
+                        <p>
+                         #{bundle['dataset.publish.tip']}
+                        </p>
+                        <p>
+                            <h:outputFormat value="#{bundle['dataset.publishParent.tip']}">
+                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                            </h:outputFormat>
+                        </p>
+                        <p:commandButton value="#{bundle.continue}" onclick="publishParent.hide()" action="#{DatasetPage.releaseParentDVAndDataset}">
+                        </p:commandButton>
+                        <p:commandButton value="#{bundle.cancel}" onclick="publishParent.hide()" type="button" />
+                    </p:dialog>
+                    <p:confirmDialog message="#{bundle['dataset.republish.tip']}" header="#{bundle['dataset.publishBtn']}" widgetVar="releaseDraft">
+                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
+                            #{bundle['dataset.selectVersionNumber']}
+                            <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
+                                <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
+                                <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />                                                
+                            </p:selectOneRadio>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
+                            <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}">
+                                <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
+                            </h:outputFormat>
+                        </ui:fragment>
+                        <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}">
+                        </p:commandButton>
+                        <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}">
+                        </p:commandButton>
+                        <p:commandButton value="#{bundle.cancel}" onclick="releaseDraft.hide()" type="button" />
+                    </p:confirmDialog>
+                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
+                        <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                        <h:outputFormat value="#{bundle['dataset.mayNotBePublished.tip']}">
+                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                        </h:outputFormat>
+                    </p:dialog>
+                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" 
+                              widgetVar="maynotPublishParent">
+                        <h:outputFormat value="#{bundle['dataset.mayNotBePublishedGrandparent.tip']}">
+                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                            <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                        </h:outputFormat>
+                    </p:dialog>
+                    <p:confirmDialog message="#{bundle['dataset.rejectMessage']}" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
+                        <p:commandButton value="#{bundle.continue}" onclick="sendBackToContributor.hide()" action="#{DatasetPage.sendBackToContributor}">
+                        </p:commandButton>
+                        <p:commandButton value="#{bundle.cancel}" onclick="sendBackToContributor.hide()" type="button" />
+                    </p:confirmDialog>
+                    <!-- END: Publish/Submit for Review Dialogs -->
 
                 </h:form>
             </ui:define>
