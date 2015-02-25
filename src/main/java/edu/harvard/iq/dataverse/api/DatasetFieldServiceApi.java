@@ -28,7 +28,7 @@ import javax.ws.rs.PathParam;
 import org.apache.commons.lang.StringUtils;
 
 @Path("datasetfield")
-public class DatasetFieldServiceApi {
+public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
@@ -137,20 +137,19 @@ public class DatasetFieldServiceApi {
         }
 
     }
-    
-    
+
     @GET
     @Path("loadNAControlledVocabularyValue")
-    public void loadNAControlledVocabularyValue() { 
+    public void loadNAControlledVocabularyValue() {
         // the find will throw a javax.persistence.NoResultException if no values are in db
         try {
             datasetFieldService.findNAControlledVocabularyValue();
-        } catch (Exception e){
-           ControlledVocabularyValue naValue = new ControlledVocabularyValue();
-           naValue.setStrValue(DatasetField.NA_VALUE);
-           datasetFieldService.save(naValue);
-       }
-    }   
+        } catch (Exception e) {
+            ControlledVocabularyValue naValue = new ControlledVocabularyValue();
+            naValue.setStrValue(DatasetField.NA_VALUE);
+            datasetFieldService.save(naValue);
+        }
+    }
 
     private enum HeaderType {
 
@@ -238,8 +237,8 @@ public class DatasetFieldServiceApi {
         dsf.setDescription(values[3]);
         dsf.setWatermark(values[4]);
         dsf.setFieldType(FieldType.valueOf(values[5].toUpperCase()));
-        dsf.setDisplayOrder( Integer.parseInt(values[6]) );
-        dsf.setDisplayFormat( values[7] );
+        dsf.setDisplayOrder(Integer.parseInt(values[6]));
+        dsf.setDisplayFormat(values[7]);
         dsf.setAdvancedSearchFieldType(Boolean.parseBoolean(values[8]));
         dsf.setAllowControlledVocabulary(Boolean.parseBoolean(values[9]));
         dsf.setAllowMultiples(Boolean.parseBoolean(values[10]));
@@ -262,13 +261,13 @@ public class DatasetFieldServiceApi {
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(new Integer(values[4]).intValue());
-        for (int i=5; i< values.length; i++) {
+        for (int i = 5; i < values.length; i++) {
             ControlledVocabAlternate alt = new ControlledVocabAlternate();
             alt.setDatasetFieldType(dsv);
             alt.setControlledVocabularyValue(cvv);
             alt.setStrValue(values[i]);
             cvv.getControlledVocabAlternates().add(alt);
-          
+
         }
 
         datasetFieldService.save(cvv);
