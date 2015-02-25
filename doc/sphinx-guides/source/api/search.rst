@@ -76,7 +76,7 @@ https://apitest.dataverse.org/api/search?q=trees
                     "file_type":"PNG Image",
                     "size_in_bytes":8361,
                     "md5":"0386269a5acb2c57b4eade587ff4db64",
-                    "dataset_citation":"Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/Y6RGTQ,  Root Dataverse,  V0"
+                    "dataset_citation":"Spruce, Sabrina, 2015, \"Spruce Goose\", http://dx.doi.org/10.5072/FK2/Y6RGTQ,  Root Dataverse,  V1"
                 },
                 {
                     "name":"Birds",

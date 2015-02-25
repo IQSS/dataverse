@@ -38,6 +38,13 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
     boolean minorRelease = false;
     Dataset theDataset;
 
+    /**
+     * @todo Is there any use case where this command should allow the
+     * publication of a "V0" version? Shouldn't the first published version of a
+     * dataset be "V1"? Before a fix/workaround was introduced, it was possible
+     * to use this command to create a published "V0" version. For details, see
+     * https://github.com/IQSS/dataverse/issues/1392
+     */
     public PublishDatasetCommand(Dataset datasetIn, AuthenticatedUser user, boolean minor) {
         super(user, datasetIn);
         minorRelease = minor;
