@@ -451,44 +451,45 @@
                                     <h:outputText value="#{DataversePage.dataverse.description}" escape="false"/>
                                 </div>
                             </ui:fragment>
-                            <ui:fragment rendered="#{DataversePage.dataverse.displayFeatured or DataversePage.dataverse.displayByType}">
-                                <div id="carouselBlocksWrapper">
-                                    <ui:fragment rendered="#{DataversePage.dataverse.displayFeatured and (!empty DataversePage.carouselFeaturedDataverses)}">
-                                        <div id="featuredDataversesBlock">
-                                            <div class="customNavigation">
-                                                <a class="btn prev1" title="#{bundle['dataverse.page.pre']}"><span class="glyphicon glyphicon-chevron-left"/></a>
+                            
+                            <!-- Featured Dataverses Carousel -->
+                            <div id="carouselBlocksWrapper" jsf:rendered="#{DataversePage.dataverse.displayFeatured and (!empty DataversePage.carouselFeaturedDataverses)}">
+                                <div id="featuredDataversesBlock">
+                                    <div class="customNavigation">
+                                        <a class="btn prev1" title="#{bundle['dataverse.page.pre']}"><span class="glyphicon glyphicon-chevron-left"/></a>
+                                    </div>
+                                    <div id="featuredDataversesList" class="owl-carousel owl-theme">
+                                        <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
+                                            <div class="item">
+                                                <div style="vertical-align:middle;">
+                                                <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
+                                                    <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                        <i class="icon-dataverse"></i>
+                                                    </a>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
+                                                    <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
+                                                    </a>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
+                                                    <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
+                                                    </a>
+                                                </ui:fragment>
+                                                <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                    <h:outputText value="#{dv.name} #{bundle.dataverse}"/>
+                                                </a>
+                                                </div>
                                             </div>
-                                            <div id="featuredDataversesList" class="owl-carousel owl-theme">
-                                                <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
-                                                    <div class="item">
-                                                        <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
-                                                            <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                                <i class="icon-dataverse"></i>
-                                                            </a>
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
-                                                            <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                                <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
-                                                            </a>
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                                                            <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                                <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
-                                                            </a>
-                                                        </ui:fragment>
-                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                            <h:outputText value="#{dv.name} #{bundle.dataverse}"/>
-                                                        </a>
-                                                    </div>
-                                                </ui:repeat>
-                                            </div>
-                                            <div class="customNavigation">
-                                                <a class="btn next1" title="#{bundle['dataverse.page.next']}"><span class="glyphicon glyphicon-chevron-right"/></a>
-                                            </div>
-                                        </div>
-                                    </ui:fragment>
+                                        </ui:repeat>
+                                    </div>
+                                    <div class="customNavigation">
+                                        <a class="btn next1" title="#{bundle['dataverse.page.next']}"><span class="glyphicon glyphicon-chevron-right"/></a>
+                                    </div>
                                 </div>
-                            </ui:fragment>
+                            </div>
+                            <!-- END: Featured Dataverses Carousel -->
                         </ui:fragment>
                     </ui:fragment>
 
@@ -654,12 +655,10 @@
 
                     function initCarousel() {
                         var owl1 = $("#featuredDataversesList");
-                        var owl2 = $("#categoryDataversesList");
 
                         owl1.owlCarousel({
                             pagination: false,
                             navigation: false,
-                            // navigationText: ["<span class=\"glyphicon glyphicon-chevron-left\" style=\"color:#999999;font-size:2em;\"/>","<span class=\"glyphicon glyphicon-chevron-right\" style=\"color:#999999;font-size:2em;\"/>"],
                             items: 4, //10 items above 1000px browser width
                             itemsDesktop: [1140, 4], //5 items between 1000px and 901px
                             itemsDesktopSmall: [940, 3], // betweem 900px and 601px
@@ -677,28 +676,8 @@
                         } else {
                             $("#featuredDataversesBlock .customNavigation a.btn").hide();
                         }
-
-                        owl2.owlCarousel({
-                            pagination: false,
-                            navigation: false,
-                            // navigationText: ["<span class=\"glyphicon glyphicon-chevron-left\" style=\"color:#999999;font-size:2em;\"/>","<span class=\"glyphicon glyphicon-chevron-right\" style=\"color:#999999;font-size:2em;\"/>"],
-                            items: 4, //10 items above 1000px browser width
-                            itemsDesktop: [1140, 4], //5 items between 1000px and 901px
-                            itemsDesktopSmall: [940, 3], // betweem 900px and 601px
-                            itemsTablet: [720, 2], //2 items between 600 and 0
-                            itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
-                        });
-                        if (owl2.find('div.owl-item').length > 4) {
-                            // Custom Navigation Events
-                            $(".next2").click(function () {
-                                owl2.trigger('owl.next');
-                            });
-                            $(".prev2").click(function () {
-                                owl2.trigger('owl.prev');
-                            });
-                        } else {
-                            $("#categoryDataversesBlock .customNavigation a.btn").hide();
-                        }
+                        
+                        $('#featuredDataversesList .item').matchHeight();
                     }
 
                     function initPopover() {

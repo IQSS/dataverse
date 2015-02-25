@@ -235,7 +235,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 #featuredDataversesList .item a {display:block;}
 #featuredDataversesList .item .icon-dataverse {font-size:50px;line-height:normal;color:#c55b28;}
 #featuredDataversesList .item img {max-width:160px; max-height:60px;}
-.owl-carousel {margin-bottom:1em;}
+.owl-carousel {margin-bottom:.5em;}
 .owl-carousel .item {text-align: center; padding: 10px; border: 1px solid #e3e3e3; border-radius: 4px; margin: 10px;}
 
 .logoPreview {max-width:80px;max-height:80px;}
