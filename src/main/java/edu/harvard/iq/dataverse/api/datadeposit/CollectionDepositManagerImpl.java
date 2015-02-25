@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -48,7 +48,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
-    ForeignMetadataImportServiceBean foreignMetadataImportService;
+    ImportGenericServiceBean importGenericService;
     @EJB
     SwordServiceBean swordService;
     @EJB
@@ -105,7 +105,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         String foreignFormat = SwordUtil.DCTERMS;
                         try {
-                            foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
+                            
+                            importGenericService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
                         } catch (Exception ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }

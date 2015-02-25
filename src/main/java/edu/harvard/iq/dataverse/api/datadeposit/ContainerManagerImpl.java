@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
-import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ public class ContainerManagerImpl implements ContainerManager {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
     @EJB
-    ForeignMetadataImportServiceBean foreignMetadataImportService;
+    ImportGenericServiceBean importGenericService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -131,7 +131,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         datasetVersion.setDatasetFields(emptyDatasetFields);
                         String foreignFormat = SwordUtil.DCTERMS;
                         try {
-                            foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, datasetVersion);
+                            importGenericService.importXML(deposit.getSwordEntry().toString(), foreignFormat, datasetVersion);
                         } catch (Exception ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }

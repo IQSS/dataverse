@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,6 +53,15 @@ public class ImportGenericServiceBean {
     
     @EJB
     DatasetFieldServiceBean datasetfieldService;
+    
+    @EJB
+    DatasetFieldServiceBean datasetFieldSvc;
+    
+    @EJB
+    MetadataBlockServiceBean blockService;
+    
+    @EJB
+    SettingsServiceBean settingsService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -65,8 +75,7 @@ public class ImportGenericServiceBean {
         }
     }
     
-    public void importXML(String xmlToParse, String foreignFormat) {
-        DatasetDTO datasetDTO = this.initializeDataset();
+    public void importXML(String xmlToParse, String foreignFormat, DatasetVersion datasetVersion) {
         
         StringReader reader = null;
         XMLStreamReader xmlr = null;        
@@ -80,16 +89,19 @@ public class ImportGenericServiceBean {
             reader = new StringReader(xmlToParse);
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
             xmlr =  xmlFactory.createXMLStreamReader(reader);
-            processXML(xmlr, mappingSupported, datasetDTO);
+            DatasetDTO datasetDTO = processXML(xmlr, mappingSupported);
         
             Gson gson = new Gson();
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             logger.info(json);
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
+        } catch (JsonParseException ex) {
+            Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (xmlr != null) { xmlr.close(); }
@@ -97,8 +109,7 @@ public class ImportGenericServiceBean {
         }
     }
     
-    public void importXML(File xmlFile, String foreignFormat) {
-        DatasetDTO datasetDTO = this.initializeDataset();
+    public void importXML(File xmlFile, String foreignFormat, DatasetVersion datasetVersion) {
         
         FileInputStream in = null;
         XMLStreamReader xmlr = null;
@@ -114,19 +125,22 @@ public class ImportGenericServiceBean {
             in = new FileInputStream(xmlFile);
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
             xmlr =  xmlFactory.createXMLStreamReader(in);
-            processXML(xmlr, mappingSupported, datasetDTO);
+            DatasetDTO datasetDTO = processXML(xmlr, mappingSupported);
 
             Gson gson = new Gson();
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             logger.info("Json:\n"+json);
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
         } catch (FileNotFoundException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred in mapDDI: File Not Found!");
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML (file "+xmlFile.getAbsolutePath()+"); ", ex);
+        } catch (JsonParseException ex) {
+            Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (xmlr != null) { xmlr.close(); }
@@ -139,8 +153,9 @@ public class ImportGenericServiceBean {
 
     }
 
-    private void processXML( XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
+    public DatasetDTO processXML( XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping) throws XMLStreamException {
         // init - similarly to what I'm doing in the metadata extraction code? 
+        DatasetDTO datasetDTO = this.initializeDataset();
 
         while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
 //        xmlr.nextTag();
@@ -155,6 +170,8 @@ public class ImportGenericServiceBean {
         }
                 
         processXMLElement(xmlr, ":", openingTag, foreignFormatMapping, datasetDTO);
+  
+        return datasetDTO;
 
     }
     
