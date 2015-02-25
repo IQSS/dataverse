@@ -193,15 +193,6 @@ public class MapLayerMetadata implements Serializable {
     }
 
 
-    /*
-     *  Link to the datafilemap.xhtml file.
-     *
-     *  This page gives a view of the file visualized on the WorldMap
-     *      (currently an embedded iframe)
-     */
-    public String getExploreMapLink(){
-        return "/datafilemap.xhtml?mapid=" + this.getId();
-    }
     
     @Override
     public String toString() {
