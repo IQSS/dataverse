@@ -242,7 +242,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                 }
                             } else {
                                 // we should never get here. throw an error explaining why
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataset is in illegal state (not released yet not in draft)");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataset is in illegal state (not published yet not in draft)");
                             }
                         }
                     } else {
@@ -320,10 +320,10 @@ public class ContainerManagerImpl implements ContainerManager {
                                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                                     return depositReceipt;
                                 } else {
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Latest version of dataset " + globalId + " has already been released.");
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Latest version of dataset " + globalId + " has already been published.");
                                 }
                             } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to release a dataset.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to publish a dataset.");
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
