@@ -237,6 +237,7 @@ public class IndexServiceBean {
         debug.append("\ndebug:\n");
         int numPublishedVersions = 0;
         List<DatasetVersion> versions = dataset.getVersions();
+        List<String> solrIdsOfFilesToDelete = new ArrayList<>();
         for (DatasetVersion datasetVersion : versions) {
             Long versionDatabaseId = datasetVersion.getId();
             String versionTitle = datasetVersion.getTitle();
@@ -251,6 +252,19 @@ public class IndexServiceBean {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<String> fileInfo = new ArrayList<>();
             for (FileMetadata fileMetadata : fileMetadatas) {
+                String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
+                /**
+                 * It sounds weird but the first thing we'll do is preemptively
+                 * delete the Solr documents of all published files. Don't
+                 * worry, published files will be re-indexed later along with
+                 * the dataset. We do this so users can delete files from
+                 * published versions of datasets and then re-publish a new
+                 * version without fear that their old published files (now
+                 * deleted from the latest published version) will be
+                 * searchable. See also
+                 * https://github.com/IQSS/dataverse/issues/762
+                 */
+                solrIdsOfFilesToDelete.add(solrIdOfPublishedFile);
                 fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
             }
             int numFiles = 0;
@@ -260,6 +274,8 @@ public class IndexServiceBean {
             debug.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
         }
         debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
+        IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
+        debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
         DatasetVersion latestVersion = dataset.getLatestVersion();
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
