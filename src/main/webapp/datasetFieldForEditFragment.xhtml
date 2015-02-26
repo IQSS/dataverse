@@ -6,7 +6,7 @@
     xmlns:p="http://primefaces.org/ui">
 
     <!-- input text start --><span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"></span>
-    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" 
+    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" tabindex="#{block.index+1}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary        
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -19,7 +19,8 @@
 
     <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
-    <p:inputTextarea value="#{dsfv.valueForEdit}" rows="5" cols="60" id="description" styleClass="form-control" 
+    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" tabindex="#{block.index+1}"
+                     rows="5" cols="60" styleClass="form-control" 
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}" />
 
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
@@ -38,8 +39,9 @@
 
     <!-- This button / script is for replication data for the title field and is client side only -->                         
     <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
-        <input type="button" id="replicationDataButton" class="btn btn-default" value="Add &#34;Replication Data for&#34; to Title" onclick="replicationFor();
-                return false;"/>
+        <input type="button" id="replicationDataButton" tabindex="#{block.index+1}"
+               class="btn btn-default" value="Add &#34;Replication Data for&#34; to Title" 
+               onclick="replicationFor();return false;"/>
 
         <script type="text/javascript">
             function replicationFor() {
