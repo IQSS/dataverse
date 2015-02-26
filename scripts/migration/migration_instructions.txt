@@ -1,7 +1,12 @@
 Migration steps:
 
-Pre steps (contained in the migration_presteps document):
+Assumptions:
 
+- DVN 3.6 networkAdmin has id = 1
+- Dataverse 4.0 admin has id = 1 (created by setup-all.sh script)
+
+
+Pre steps (contained in the migration_presteps document):
 
 -3. Create copies of tables in 3.6 database for migrated data
 -2. Run pg dump to extract tables copies
@@ -11,13 +16,9 @@ Pre steps (contained in the migration_presteps document):
 Migration:
 
 1. run migrate_users.sql script
-
 2. run migrate_dataverses.sql script
-
 3. * run dataset APIs
-
 4. * run post dataset scrubbing
-
 5. * run files script
 
 __________________________________________________
@@ -25,6 +26,7 @@ __________________________________________________
 Still to be migrated:
 - Permissions
 - Groups
+- Linked DVs / DSs
 - Guestbook / stats
 - Templates
 
@@ -36,3 +38,10 @@ Not being migrated (verify?):
 -- Classifications
 -- Study locks
 -- VDCNetworkStats (generated data)
+
+__________________________________________________
+
+Other notes:
+- subnetworks are all migrated as published, using create user and date also as the release user and date
+- subnetworks use the same contact e-mails as the Dataverse 4.0 root
+- Order of dataverse contacts for dataverses is not maintained
