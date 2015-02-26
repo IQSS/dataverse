@@ -307,7 +307,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 
                                                      UserNotification.Type.CREATEACC, null);
-            return "/dataverse.xhtml?faces-redirect=true;";
+            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true;";
         } else {
             authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
             editMode = null;
@@ -323,7 +323,7 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public String cancel() {
         if (editMode == EditMode.CREATE) {
-            return "/dataverse.xhtml?faces-redirect=true;";
+            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true;";
         }
 
         editMode = null;

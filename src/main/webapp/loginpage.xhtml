@@ -63,7 +63,7 @@
                                 <div class="form-group">
                                     <div class="col-sm-offset-2 col-sm-9">
                                         <p:commandButton id="login" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
-                                        <p:button value="#{bundle.cancel}" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
+                                        <p:button value="#{bundle.cancel}" style="margin-left:1em;" outcome="/dataverse.xhtml?alias=#{dataverseServiceBean.findRootDataverse().alias}"/>
                                     </div>
                                 </div>
                                 <div style="margin-top:.5em;">

@@ -161,7 +161,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
          */
 
         dataverseRedirectPage = StringUtils.isBlank(dataverseRedirectPage) ? "dataverse.xhtml" : dataverseRedirectPage;
-        String optionalDataverseScope = dataverse.getId().equals(dataverseService.findRootDataverse().getId()) ? "" : "&id=" + dataverse.getId();
+        String optionalDataverseScope = "&alias=" + dataverse.getAlias();
 
         return dataverseRedirectPage + "?faces-redirect=true&q=" + query + optionalDataverseScope;
 

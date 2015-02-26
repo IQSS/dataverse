@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -15,7 +15,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
@@ -28,6 +27,8 @@ public class PasswordResetPage implements java.io.Serializable {
     PasswordResetServiceBean passwordResetService;
     @EJB
     BuiltinUserServiceBean dataverseUserService;
+    @EJB
+    DataverseServiceBean dataverseService;    
     @EJB
     AuthenticationServiceBean authSvc;
     @Inject
@@ -109,7 +110,7 @@ public class PasswordResetPage implements java.io.Serializable {
             String builtinAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
             AuthenticatedUser au = authSvc.lookupUser(builtinAuthProviderId, user.getUserName());
             session.setUser(au);
-            return "/dataverse.xhtml?faces-redirect=true";
+            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, response.getMessageSummary(), response.getMessageDetail()));
             return null;

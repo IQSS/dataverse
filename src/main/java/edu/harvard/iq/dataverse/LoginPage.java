@@ -69,6 +69,9 @@ public class LoginPage implements java.io.Serializable {
     @Inject DataverseSession session;    
     
     @EJB
+    DataverseServiceBean dataverseService;
+    
+    @EJB
     BuiltinUserServiceBean dataverseUserService;
     
     @EJB
@@ -140,11 +143,15 @@ public class LoginPage implements java.io.Serializable {
             logger.log(Level.INFO, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             
+            if ("dataverse.xhtml".equals(redirectPage)) {
+                redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();
+            }
+            
             try {            
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-                redirectPage = "dataverse.xhtml";
+                redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
             logger.log(Level.INFO, "Sending user to = " + redirectPage);
