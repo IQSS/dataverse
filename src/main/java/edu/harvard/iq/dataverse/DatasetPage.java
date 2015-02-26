@@ -1148,23 +1148,39 @@ public class DatasetPage implements java.io.Serializable {
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
 
-    private boolean showAccessPopup = false;
-
+    List<FileMetadata> previouslyRestrictedFiles = null;
+    
     public boolean isShowAccessPopup() {
-        return showAccessPopup;
+        if (previouslyRestrictedFiles != null) {
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                if (fmd.isRestricted() && !previouslyRestrictedFiles.contains(fmd)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
+    
+    public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
 
-    public void setShowAccessPopup(boolean showAccessPopup) {
-        this.showAccessPopup = showAccessPopup;
-    }
 
     public void restrictFiles(boolean restricted) {
+        // since we are restricted files, first set the previously restricted file list, so we can compare for
+        // determinin whether to show the access popup
+        if (previouslyRestrictedFiles == null) {
+            previouslyRestrictedFiles = new ArrayList();
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                if (fmd.isRestricted()) {
+                    previouslyRestrictedFiles.add(fmd);
+                }
+            }
+        }        
+        
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
             if (restricted && !fmd.isRestricted()) {
-                // show popup when a file is newly restricted
-                showAccessPopup = true;
-                // and collect the names of the newly-restrticted files, 
+                // collect the names of the newly-restrticted files, 
                 // to show in the success message:
                 if (fileNames == null) {
                     fileNames = fmd.getLabel();
