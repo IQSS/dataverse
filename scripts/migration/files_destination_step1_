@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+
+use DBI;
+
+my $host = "dvndb-qa1.hmdc.harvard.edu";
+my $username = "dvnapp";
+my $password = "secret";
+my $database = "dvn-vm6";
+
+my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
+#my $sth = $dbh->prepare(qq {SELECT protocol, authority, identifier, id FROM dataset ORDER BY id}); 
+my $sth = $dbh->prepare(qq {SELECT d.protocol, d.authority, d.identifier, d.id, v.id FROM dataset d, datasetversion v WHERE v.dataset_id = d.id AND v.versionstate = 'RELEASED' ORDER BY d.id}); 
+$sth->execute();
+
+my $offset= 0; 
+
+while ( @_ = $sth->fetchrow() )
+{
+    $protocol = $_[0];
+    $authority = $_[1];
+    $identifier = $_[2];
+    $id = $_[3];
+    $vid = $_[4]; 
+
+    print $protocol . ":" . $authority . "/" . $identifier . "\t" . $id . "\t" . $vid . "\n"; 
+
+    $offset = $id; 
+}
+
+$sth-finish; 
+$dbh->disconnect; 
+
+print STDERR "last ID in DVOBJECT table: " . $offset . "\n";
+
+exit 0; 
+

@@ -1,0 +1,322 @@
+#!/usr/bin/perl
+
+my $dvobjectoffset = shift @ARGV;
+my $dtoffset = 0;
+my $dvoffset = 0; 
+
+use DBI;
+
+my $host = "dvn-60ox-db-1.lib.harvard.edu"; 
+my $username = "vdcApp";
+my $password = '$ci_d8a.4.RR';
+my $database = "iqss_dvn";
+
+
+my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
+
+open PL, ">packlist.txt";
+
+while ( <> )
+{
+    chop; 
+    ($globalid, $dsid, $dsvid) = split("\t", $_); 
+
+    if ($globalid =~/^([a-z]*):(.*)\/([^\/]*)$/)
+    {
+	$protocol = $1;
+	$authority = $2; 
+	$identifier = $3;
+
+#	print $protocol . " " . $authority . " " . $identifier . "\n";
+    }
+    else 
+    {
+	print STDERR "WARNING! illegal global id: " . $globalid . "\n";
+	next; 
+    }
+
+    my $sth; 
+
+    $sth = $dbh->prepare(qq {SELECT s.id, v.id FROM study s, studyversion v WHERE v.study_id = s.id AND s.protocol = '$protocol' AND s.authority='$authority' AND s.studyid = '$identifier' AND v.versionstate = 'RELEASED'}); 
+    $sth->execute();
+
+    $count = 0; 
+
+    my $sid; 
+    my $svid; 
+
+    while ( @foo = $sth->fetchrow() )
+    {
+	$sid = $foo[0];
+	$svid = $foo[1];
+
+#	print $sid . "\t" . $svid . "\n";
+	$count++;
+    }
+    $sth-finish; 
+
+    unless ($count == 1) 
+    {
+	print STDERR "WARNING: invalid number of released versions for study " . $globalid . " (" . $count . ")!\n";
+	next; 
+    }
+
+    $sth = $dbh->prepare(qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.subsettable, sf.originalfiletype, sf.unf, sf.id, sf.fileclass FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid});
+
+#    print qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.subsettable, sf.originalfiletype, sf.unf FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid} . "\n";
+
+    $sth->execute();
+
+    while ( @foo = $sth->fetchrow() )
+    {
+	# new filemetadata fields: 
+	$label = $foo[0];
+	$label = $dbh->quote($label);
+	$description = $foo[2];
+	$description =~s/\n/ /g;
+	$description = $dbh->quote($description);
+	# category: 
+	$category = $foo[1];
+	# new datafile fields: 
+	$type = $foo[3]; 
+	$md5 = $foo[5];
+	$restricted = $foo[6];
+	# location of the file, on the old filesystem: 
+	$fslocation = $foo[4];
+	# additional info for subsettable files: 
+	# (will go into the new datatable)
+	$subsettable = $foo[7]; 
+	$originalfiletype = $foo[8];
+	$unf = $foo[9]; 
+	# id of the existing studyfile: 
+	$sfid = $foo[10];
+	# "class" of the existing studyfile: 
+	# (tabular, "other", etc.)
+	$fileclass = $foo[11];
+	#print join ("\t", @_) . "\n";
+
+	$dvobjectoffset++; 
+
+	unless ( -f $fslocation ) 
+	{
+	    print STDERR "WARNING: file " . $fslocation . " not found!\n";
+	}
+	else 
+	{
+	    @fstats = stat($fslocation); 
+	    $fsize = $fstats[7]; 
+	    $mtime = $fstats[9]; 
+
+	    $fmtime = &formatTimeStamp($mtime);
+
+	    $packlistentry = $fslocation; 
+	    $packlistentry =~s/.*\/DVN\/data\///; 
+	    print PL $packlistentry . "\n";
+	}
+
+
+	$fsname = $fslocation; 
+	$fsname =~s/^.*\///g; 
+
+	$timestamp = "";
+
+	# dvobject: 
+
+	print qq {INSERT INTO dvobject (id, dtype, owner_id, modificationtime) VALUES ($dvobjectoffset, 'DataFile', $dsid, '$fmtime');} . "\n";
+	# datafile object:
+
+	print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($dvobjectoffset, '$type', '$fsname', $fsize, '$md5', TRUE);} . "\n";
+
+	# file metadata object:
+	print qq {INSERT INTO filemetadata (description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($description, $label, TRUE, 1, $dsvid, $dvobjectoffset);} . "\n";
+
+	# subsettable files: 
+
+
+	if ($fileclass eq "TabularDataFile")
+	{
+	    #print STDERR "this is a subsettable file.\n";	
+
+	    # NOTE: 
+	    # there's only one datatable per file - make sure to only run this once!
+	    # (i.e., not for every version!)
+	    
+	    $sth1 = $dbh->prepare(qq {SELECT id, varquantity, casequantity, unf, recordspercase FROM datatable WHERE studyfile_id = $sfid});
+
+	    $sth1->execute();
+
+	    $count = 0; 
+
+	    while ( @dt = $sth1->fetchrow() )
+	    {
+		$dtid = $dt[0];
+		$varquantity = $dt[1];
+		$casequantity = $dt[2];
+		$dtunf = $dt[3];
+		$recordspercase = $dt[4];
+
+		$count++;
+
+		unless ($unf eq $dtunf) 
+		{
+		    print STDERR "WARNING: unf mismatch, between studyfile and datatable: " + $unf + ":" + $dtunf + "\n";
+		}
+
+		# datatable object:
+
+		$dtoffset++;
+
+		if ($recordspercase) 
+		{
+		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $dvobjectoffset);} . "\n";
+		}
+		else
+		{
+		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $dvobjectoffset);} . "\n";
+		}
+	    }
+
+	    $sth1->finish;
+	    
+	    unless ($count == 1) 
+	    {
+		print STDERR "WARNING: invalid numbe of datatables: " + $count +".\n";
+	    }
+	    else 
+	    {
+		# variables:
+		$sth1 = $dbh->prepare(qq {SELECT name, label, variableformattype_id, variableintervaltype_id, formatcategory, formatschema, formatschemaname, unf, fileorder, weighted, orderedfactor, numberofdecimalpoints, universe, filestartposition, fileendposition, recordsegmentnumber FROM datavariable WHERE datatable_id = $dtid});
+
+
+		$sth1->execute();
+		
+		while ( @dv = $sth1->fetchrow() )
+		{
+		    $varname = $dv[0];
+		    $varname = $dbh->quote($varname);
+		    $varlabel = $dv[1];
+		    $varlabel = $dbh->quote($varlabel);
+		    $variableformattype_id = $dv[2];
+		    $variableintervaltype_id = $dv[3];
+		    $varformatcategory = $dv[4];
+		    $varformatschema = $dv[5];
+		    $varformatschemaname = $dv[6];
+		    $varunf = $dv[7];
+		    $varfileorder = $dv[8];
+		    $varweighted = $dv[9];
+		    if ($varweighted)
+		    {
+			$varweighted = "TRUE";
+		    }
+		    else 
+		    {
+			$varweighted = "FALSE";
+		    }
+		    $varorderedfactor  = $dv[10];
+		    if ($varorderedfactor)
+		    {
+			$varorderedfactor = "TRUE";
+		    }
+		    else 
+		    {
+			$varorderedfactor = "FALSE";
+		    }
+
+		    $varnumberofdecimalpoints = $dv[11];
+		    $varuniverse = $dv[12];
+		    $varfilestartposition = $dv[13];
+		    $varfileendposition = $dv[14];
+		    $varrecordsegmentnumber = $dv[15];
+
+		    
+
+		    # new datavariable object: 
+
+		    $dvoffset++;
+
+		    $newdvfields = "id, name, label, interval, type, unf, fileorder, orderedfactor, weighted, datatable_id";
+		    $newdvvalues = qq {$dvoffset, $varname, $varlabel, $variableintervaltype_id, $variableformattype_id, '$varunf', $varfileorder, $varorderedfactor, $varweighted, $dtoffset};
+
+		    if ($varformatschemaname)
+		    {
+			# becomes "format":
+			$newdvfields = $newdvfields . ", format";
+			$newdvvalues = qq{$newdvvalues, '$varformatschemaname'};
+		    }
+
+		    if ($varformatcategory)
+		    {
+			$newdvfields = $newdvfields . ", formatcategory";
+			$newdvvalues = qq{$newdvvalues, '$varformatcategory'};
+		    }
+
+		    if ($varfilestartposition)
+		    {
+			$newdvfields = $newdvfields . ", filestartposition";
+			$newdvvalues = qq{$newdvvalues, $varfilestartposition};
+		    }
+
+		    if ($varfileendposition)
+		    {
+			$newdvfields = $newdvfields . ", fileendposition";
+			$newdvvalues = qq{$newdvvalues, $varfileendposition};
+		    }
+
+		    if ($varrecordsegmentnumber)
+		    {
+			$newdvfields = $newdvfields . ", recordsegmentnumber";
+			$newdvvalues = qq{$newdvvalues, $varrecordsegmentnumber};
+		    }
+
+		    if ($varuniverse)
+		    {
+			$newdvfields = $newdvfields . ", universe";
+			$newdvvalues = qq{$newdvvalues, '$varuniverse'};
+		    }
+
+		    if ($varnumberofdecimalpoints)
+		    {
+			$newdvfields = $newdvfields . ", numberofdecimalpoints";
+			$newdvvalues = qq{$newdvvalues, $numberofdecimalpoints};
+		    }
+
+
+		    print qq {INSERT INTO datavariable ($newdvfields) VALUES ($newdvvalues);} . "\n";
+		}
+
+		$sth1->finish;
+	    }
+
+
+		
+	}
+    }
+
+    $sth->finish; 
+
+}
+
+$dbh->disconnect; 
+
+close PL; 
+
+exit 0; 
+
+sub formatTimeStamp () {
+    my ($mtime) = (@_);
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($mtime);
+
+    $year+=1900;
+    $mon++;
+
+    $fmt = $year . "-" . sprintf("%02d",$mon) . "-" . $mday . " " . 
+	sprintf("%02d", $hour) . ":" . sprintf("%02d",$min) . ":" . sprintf("%02d",$sec); 
+
+    return $fmt;
+}
+
+
+
+
+
+  
