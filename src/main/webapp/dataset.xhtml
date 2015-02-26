@@ -551,14 +551,14 @@
 
                                     <!-- Files Table -->
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
-                                    <p:dataTable id="filesTable" style="margin-top:1em;" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
+                                    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
                                                  rowIndexVar="rowNum"
                                                  selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable"
                                                  emptyMessage="#{bundle['file.notFound.tip']}">
                                         <f:facet name="header">
                                             <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
                                             <!-- Button Panels -->
-                                            <div jsf:id="zipDownloadPanel" style="text-align:right; margin-top:1em; margin-bottom:.5em;"
+                                            <div jsf:id="zipDownloadPanel" style="text-align:right; margin-bottom:1em;"
                                                  jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and
 
                                                                  ((dataverseSession.user.authenticated and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
@@ -566,7 +566,7 @@
 
                                                                  (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
 
-                                                <div class="btn-group" style="margin-right:1em;"
+                                                <div class="btn-group" 
                                                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
@@ -596,7 +596,7 @@
 
                                                 <p:commandLink rendered="#{dataverseSession.user.authenticated and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                                            and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}"
-                                                               style="color:black;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                                               style="color:black;margin-left:1em;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                     <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
                                                 </p:commandLink>
