@@ -31,6 +31,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.hibernate.validator.constraints.NotBlank;
+import org.mindrot.jbcrypt.BCrypt;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -252,7 +253,14 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void validateCurrentPassword(FacesContext context, UIComponent toValidate, Object value) {
+        
         String password = (String) value;
+        /* This is how you would do it with jbcrypt
+        if (!BCrypt.checkpw(password, builtinUser.getEncryptedPassword())){
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", "Password is incorrect.");
+            context.addMessage(toValidate.getClientId(context), message);
+        }*/
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
         if (!encryptedPassword.equals(builtinUser.getEncryptedPassword())) {
             ((UIInput) toValidate).setValid(false);

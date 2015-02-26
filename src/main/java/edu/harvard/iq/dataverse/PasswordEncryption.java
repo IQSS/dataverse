@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.commons.lang.RandomStringUtils;
+import org.mindrot.jbcrypt.BCrypt;
 import org.primefaces.util.Base64;
 
 /**
@@ -23,6 +24,13 @@ public final class PasswordEncryption  implements java.io.Serializable {
     }
 
     public synchronized String encrypt(String plaintext) {
+        /**
+        * below is how you encrypt a password with jbcrypt. gensalt() has a
+        * default log_rounds parameter of 10. To modify the complexity, add
+        * the parameter to the call, e.g., Bcrypt.gensalt(12) increases 
+        * complexity
+        */
+        //String bcryptedPassword = BCrypt.hashpw(plaintext, BCrypt.gensalt());
         MessageDigest md = null;
         try {
             /**

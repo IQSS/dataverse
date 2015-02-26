@@ -14,6 +14,7 @@ import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationPr
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import java.util.Set;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * An authentication provider built into the application. Uses JPA and the 
@@ -53,7 +54,10 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
         BuiltinUser u = bean.findByUserName( authReq.getCredential(KEY_USERNAME) );
         if ( u == null ) return AuthenticationResponse.makeFail("Bad username or password");
-        
+        /* how to use jbcrypt to check the password
+        return BCrypt.checkpw(authReq.getCredential(KEY_PASSWORD), u.getEncryptedPassword())
+            ? AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo())
+             : AuthenticationResponse.makeFail("Bad username or password");*/
         return ( u.getEncryptedPassword().equals( bean.encryptPassword(authReq.getCredential(KEY_PASSWORD))))
             ? AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo())
              : AuthenticationResponse.makeFail("Bad username or password");
