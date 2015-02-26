@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
@@ -148,6 +149,12 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             if (doiRetString.contains(theDataset.getIdentifier())) {
                 theDataset.setGlobalIdCreateTime(createDate);
             } 
+        } else {
+            // If harvest or migrate, and this is a released dataset, we don't need to register,
+            // so set the globalIdCreateTime to now
+            if (theDataset.getLatestVersion().getVersionState().equals(VersionState.RELEASED) ){
+                theDataset.setGlobalIdCreateTime(new Date());
+            }
         }
         
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
