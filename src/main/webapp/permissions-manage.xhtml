@@ -52,7 +52,7 @@
                                                         #{bundle['dataverse.permissions.Q1']}
                                                     </label>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer1']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq ''}" />
+                                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer1']}" rendered="#{empty managePermissionsPage.authenticatedUsersContributorRoleAlias}" />
                                                         <h:outputText value="#{bundle['dataverse.permissions.Q1.answer2']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dvContributor'}" />
                                                         <h:outputText value="#{bundle['dataverse.permissions.Q1.answer3']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dsContributor'}" />
                                                         <h:outputText value="#{bundle['dataverse.permissions.Q1.answer4']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'fullContributor'}" />
