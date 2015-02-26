@@ -1,0 +1,2 @@
+#!/bin/sh
+curl -s -X POST -H "Content-type:application/json" -d @scripts/issues/1262/sparrow1.json "http://localhost:8080/api/dvs/sparrows/datasets/?key=$SPARROWKEY"

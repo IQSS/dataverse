@@ -73,7 +73,7 @@ public class SearchServiceBean {
 //            solrQuery.setSort(sortClause);
 //        }
 //        solrQuery.setSort(sortClause);
-        solrQuery.setHighlight(true).setHighlightSnippets(1);
+        solrQuery.setHighlight(true).setHighlightSnippets(10);
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
