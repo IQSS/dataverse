@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
@@ -18,6 +19,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +57,7 @@ public class Search extends AbstractApiBean {
     @GET
     public Response search(
             @QueryParam("q") String query,
+            @QueryParam("key") String key,
             @QueryParam("type") final List<String> types,
             @QueryParam("subtree") String subtreeRequested,
             @QueryParam("sort") String sortField,
@@ -95,7 +98,7 @@ public class Search extends AbstractApiBean {
 
             // users can't change these (yet anyway)
             boolean dataRelatedToMe = getDataRelatedToMe();
-            User user = getUser();
+            User user = getUser(key);
 
             SolrQueryResponse solrQueryResponse;
             try {
@@ -181,17 +184,30 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private User getUser() {
+    private User getUser(String key) {
         /**
          * @todo support searching as non-guest:
          * https://github.com/IQSS/dataverse/issues/1299
          *
          * Note that superusers can't currently use the Search API because they
          * see permission documents (all Solr documents, really) and we get a
-         * NPE when trying to determine the DvObject type.
+         * NPE when trying to determine the DvObject type if their query matches
+         * a permission document.
          */
-        User user = new GuestUser();
-        return user;
+        if (nonPublicSearchAllowed()) {
+            if (key != null) {
+                AuthenticatedUser au = findUserByApiToken(key);
+                if (au != null) {
+                    return au;
+                }
+            }
+        }
+        return new GuestUser();
+    }
+
+    public boolean nonPublicSearchAllowed() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiNonPublicAllowed, safeDefaultIfKeyNotFound);
     }
 
     private boolean getDataRelatedToMe() {

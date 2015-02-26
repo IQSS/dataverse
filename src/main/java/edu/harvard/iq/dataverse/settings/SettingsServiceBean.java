@@ -26,6 +26,11 @@ public class SettingsServiceBean {
      */
     public enum Key {
         /**
+         * Experimental: Allow non-public search with a key/token using the
+         * Search API. See also https://github.com/IQSS/dataverse/issues/1299
+         */
+        SearchApiNonPublicAllowed,
+        /**
          * For development only (see dev guide for details). Backed by an enum
          * of possible account types.
          */
