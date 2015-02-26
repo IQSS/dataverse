@@ -1,0 +1,7 @@
+#!/bin/bash
+. scripts/search/export-keys
+. scripts/search/assumptions
+echo $FIRST_FINCH_DATASET_ID
+OUTPUT=`curl -s -X DELETE http://localhost:8080/api/datasets/$FIRST_FINCH_DATASET_ID/destroy?key=$FINCHKEY`
+echo $OUTPUT
+echo $OUTPUT | jq .

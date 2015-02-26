@@ -1,0 +1,9 @@
+#!/bin/bash
+# destroying requires publishing so uncomment this if need be
+# scripts/search/tests/publish-spruce1-and-test
+sleep 2
+. scripts/search/export-keys
+. scripts/search/assumptions
+OUTPUT=`curl -s -X DELETE http://localhost:8080/api/datasets/$FIRST_SPRUCE_DATASET_ID/destroy?key=$ADMINKEY`
+echo $OUTPUT
+echo $OUTPUT | jq .
