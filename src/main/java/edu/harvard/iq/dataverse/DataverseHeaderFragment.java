@@ -137,11 +137,11 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-            redirectPage = "dataverse.xhtml";
+            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
         }
 
         if (StringUtils.isEmpty(redirectPage)) {
-            redirectPage = "dataverse.xhtml";
+            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
         }
 
         logger.log(Level.INFO, "Sending user to = " + redirectPage);

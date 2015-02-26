@@ -74,16 +74,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
         queryStrings.add(constructDataverseQuery());
         queryStrings.add(constructDatasetQuery());
         queryStrings.add(constructFileQuery());
-        String dataverseSubtree = "";
-        if (dataverse != null) {
-            if (!dataverse.equals(dataverseServiceBean.findRootDataverse())) {
-                dataverseSubtree = "&alias=" + dataverse.getAlias();
-            }
-        }
 
         String returnString = "/dataverse.xhtml?q=";
         returnString += URLEncoder.encode(constructQuery(queryStrings, false, false), "UTF-8");       
-        returnString += dataverseSubtree + "&faces-redirect=true";
+        returnString += "&alias=" + dataverse.getAlias() + "&faces-redirect=true";
 
         
         logger.fine(returnString);        
