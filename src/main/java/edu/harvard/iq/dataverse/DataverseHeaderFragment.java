@@ -10,9 +10,8 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -29,8 +28,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
-import org.primefaces.model.DefaultTreeNode;
-import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -68,17 +65,25 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
     
     public void initBreadcrumbs(DvObject dvObject) {
+            if (dvObject.getId() != null) {
+                initBreadcrumbs(dvObject, null);
+            } else {
+                initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? JH.localize("newDataverse") : 
+                        dvObject instanceof Dataset ? JH.localize("newDataset") : null );
+            }
+    }
+
+    public void initBreadcrumbs(DvObject dvObject, String subPage) {
         breadcrumbs.clear();
 
         while (dvObject != null) {
             breadcrumbs.add(0, new Breadcrumb(dvObject.getDisplayName(), dvObject));
             dvObject = dvObject.getOwner();
+        }        
+        
+        if (subPage != null) {
+            breadcrumbs.add(new Breadcrumb(subPage, null));
         }
-    }
-
-    public void initBreadcrumbs(DvObject dvObject, String subPage) {
-        initBreadcrumbs(dvObject);
-        breadcrumbs.add(new Breadcrumb(subPage, null));
     }
 
 
