@@ -16,7 +16,7 @@
                     <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                    <p:watermark for="formerAutoCompleteSearch" value="#{bundle['dataverse.search.input.watermark']}"/>
+                    <p:watermark for="formerAutoCompleteSearch" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
                     <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
                         <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                     </p:commandLink>
@@ -290,7 +290,7 @@
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / PERMS-->
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                                   <!--BROWSE CAN_ADD ZERO COUNTS-->
-                                  <p>#{bundle['dataverse.results.empty.browse.loggedin.perms.zero']}</p>
+                                  <p><h:outputText value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false"/></p>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
                                   <!--BROWSE CAN_ADD HIDDEN-->
