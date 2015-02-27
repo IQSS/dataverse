@@ -315,7 +315,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 
                                                      UserNotification.Type.CREATEACC, null);
-            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true;";
+            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true";
         } else {
             authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
             editMode = null;
