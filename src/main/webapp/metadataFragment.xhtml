@@ -72,7 +72,7 @@
                             <div class="panel-body">
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                                     <ui:fragment rendered="#{((DatasetPage.editMode == 'METADATA' 
-                                                             or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required or dsf.datasetFieldType.requiredDV or dsf.datasetFieldType.hasRequiredChildren) and dsf.include)
+                                                             or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required or dsf.datasetFieldType.hasRequiredChildren) and dsf.include)
                                                              or (!empty TemplatePage.editMode and dsf.include)}">
 
                                         <div class="form-group">
@@ -80,7 +80,7 @@
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
                                                     #{dsf.datasetFieldType.title}
                                                 </a>
-                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required or dsf.datasetFieldType.requiredDV or dsf.datasetFieldType.hasRequiredChildren }" />
+                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
                                             </label>
 
 
@@ -158,7 +158,7 @@
                                                                     <ui:fragment>
                                                                         <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
                                                                             <a class="tooltiplabel right" data-original-title="#{subdsf.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetFieldType.title}</a>
-                                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.datasetFieldType.required or subdsf.datasetFieldType.requiredDV }" />
+                                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required }" />
                                                                         </label>
                                                                     </ui:fragment>
                                                                     <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">

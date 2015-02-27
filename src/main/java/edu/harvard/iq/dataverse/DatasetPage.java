@@ -498,7 +498,6 @@ public class DatasetPage implements java.io.Serializable {
         for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
             DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
             if (dsfIl != null) {
-                dsf.getDatasetFieldType().setRequiredDV(dsfIl.isRequired());
                 dsf.setInclude(dsfIl.isInclude());
             } else {
                 dsf.setInclude(true);

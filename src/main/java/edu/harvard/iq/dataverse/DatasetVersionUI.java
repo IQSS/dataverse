@@ -449,7 +449,7 @@ public class DatasetVersionUI implements Serializable {
             dvIdForInputLevel = dataverseService.find(dvIdForInputLevel).getMetadataRootId();
         }
 
-        List <DataverseFieldTypeInputLevel> dftilList = dataverseFieldTypeInputLevelServiceBean.findByDataverseId(dvIdForInputLevel);
+        List <DataverseFieldTypeInputLevel> dftilList = dataverseFieldTypeInputLevelServiceBean.findByDataverseId(dvIdForInputLevel);       
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
             mdb.setEmpty(true);
             mdb.setHasRequired(false);
@@ -459,25 +459,13 @@ public class DatasetVersionUI implements Serializable {
                 DataverseFieldTypeInputLevel dftil = dataverseFieldTypeInputLevelServiceBean.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
-                    if(dsf.isRequired() || (dftil != null &&  dftil.isRequired())){                          
-                        dsf.getDatasetFieldType().setRequiredDV(true);  
+                    if((dftil != null &&  dftil.isRequired())){                          
                         mdb.setHasRequired(true);                       
                     }                    
                     if (!dsf.isEmptyForDisplay()) {  
                         mdb.setEmpty(false);
                         datasetFieldsForView.add(dsf);
                     }
-                }
-                if (dsf.getDatasetFieldType().isHasChildren() && (!dftilList.isEmpty())){
-                    for (DatasetFieldType child :dsf.getDatasetFieldType().getChildDatasetFieldTypes() ){
-                        for (DataverseFieldTypeInputLevel dftilTest : dftilList){
-                            if (child.equals(dftilTest.getDatasetFieldType())){
-                                if (dftilTest.isRequired()){
-                                    dsf.setRequired(true);
-                                }                                                               
-                            }
-                        }
-                    }                    
                 }
             }
             
