@@ -312,9 +312,14 @@
                                 <!-- END: Edit/Publish Button Group -->
                                 <!-- Email/Link Button Group -->
                                 <div class="btn-group pull-right" id="datasetButtonBar" role="group">
-                                    <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contact_confirmation.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
+                                   <!-- had to change this button to command button, to use propertyActionListener 
+                                   <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contactForm.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
                                         <span class="glyphicon glyphicon-envelope no-text"/>
-                                    </button>
+                                    </button> -->
+                                   <p:commandButton value="contact"  update=":contactDialog" oncomplete="contactForm.show()" >                                      
+                                       <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                       <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
+                                   </p:commandButton> 
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated}"
                                                    title="Link Dataset to Your Dataverse"
                                                    action="#{DatasetPage.updateLinkableDataverses()}"

@@ -1,0 +1,60 @@
+<div 
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    <!-- Dialog Contact Form -->
+    <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true" style="min-width:500px;">
+        <h:form  id="emailForm" class="form-horizontal">
+            <div class="form-group">
+                <label for="messageTo" class="col-sm-2 control-label">#{bundle['feedback.to']}</label>
+                <div class="col-sm-10">
+                    <p id="messageTo" class="form-control-static">#{sendFeedbackDialog.getMessageTo()}</p>
+                </div>
+            </div>
+            <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
+                <div class="form-group">
+                    <label for="userEmailStatic" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
+                    <div class="col-sm-10">
+                        <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
+                    </div>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
+                <div class="form-group">
+                    <label for="userEmail" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
+                    <div class="col-sm-10">
+                        <h:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"/>
+                    </div>
+                </div>
+            </ui:fragment>
+            <div class="form-group">
+                <label for="messageSubject" class="col-sm-2 control-label">#{bundle['feedback.subject']}</label>
+                <div class="col-sm-10">
+                    <h:inputText rendered="#{sendFeedbackDialog.recipient!=null }" id="messageSubject" value="#{sendFeedbackDialog.messageSubject}" styleClass="form-control"/>
+                    <ui:fragment rendered="#{sendFeedbackDialog.recipient==null}">
+                        <p id="messageSubject" class="form-control-static">#{sendFeedbackDialog.messageSubject}</p>
+                    </ui:fragment>
+                </div>
+               
+                
+            </div>
+            <div class="form-group">
+                <label for="userMessage" class="col-sm-2 control-label">#{bundle['feedback.msg']}</label>
+                <div class="col-sm-10">
+                    <h:inputTextarea  required="true" requiredMessage="Message text is required." id="userMessage" styleClass="form-control" rows="10" value="#{sendFeedbackDialog.userMessage}"/>
+                   
+                </div>
+                  <h:message for="userMessage"/>
+            </div>
+
+            <p:commandButton update="@form" type="submit" oncomplete="if (!facesContext.validationFailed) contactForm.hide()" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}"/>
+            <button type="button" onclick="contactForm.hide()" class="btn btn-default"  value="#{bundle.cancel}">
+                #{bundle.cancel}
+            </button>
+        </h:form>
+    </p:dialog>
+
+
+</div>

@@ -64,7 +64,14 @@
                         </ul>
                     </li>
                     <li>
-                        <p:commandLink value="#{bundle['header.feedback']}" onclick="feedbackForm.show()"/>
+                        
+                        <h:form class="navbar-form navbar-left" >    
+                          
+                           <p:commandLink value="#{bundle['header.feedback']}"  oncomplete="contactForm.show()" update=":contactDialog" >
+                                   <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.feedback']}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                           </p:commandLink>
+                        </h:form>
                     </li>
                     <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                         <li>
@@ -81,7 +88,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                         <li class="dropdown accountName">
-                            <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">
+                            <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">s
                                 <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                     <span class="glyphicon glyphicon-user text-danger" style="margin-right:8px;"></span>
                                 </ui:fragment>
@@ -243,47 +250,11 @@
             <iqbs:messages id="messages" collapsible="true" />
         </div>
     </p:fragment>
-
-    <!-- Dialog Feedback Form -->
-    <p:dialog header="#{bundle['feedback.header']}" widgetVar="feedbackForm" modal="true" appendTo="@(body)">
-        <h:form class="form-horizontal">
-            <div class="form-group">
-                <label for="messageTo" class="col-sm-2 control-label">#{bundle['feedback.to']}</label>
-                <div class="col-sm-10">
-                    <p id="messageTo" class="form-control-static">#{bundle['feedback.support']}</p>
-                </div>
-            </div>
-            <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
-                <div class="form-group">
-                    <label for="userEmailStatic" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
-                    <div class="col-sm-10">
-                        <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
-                    </div>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
-                <div class="form-group">
-                    <label for="userEmail" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
-                    <div class="col-sm-10">
-                        <h:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"/>
-                    </div>
-                </div>
-            </ui:fragment>
-            <div class="form-group">
-                <label for="messageSubject" class="col-sm-2 control-label">#{bundle['feedback.subject']}</label>
-                <div class="col-sm-10">
-                    <p id="messageSubject" class="form-control-static">#{sendFeedbackDialog.messageSubject}</p>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="userMessage" class="col-sm-2 control-label">#{bundle['feedback.msg']}</label>
-                <div class="col-sm-10">
-                    <h:inputTextarea id="userMessage" styleClass="form-control" rows="10" value="#{sendFeedbackDialog.userMessage}"/>
-                </div>
-            </div>
-
-            <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}"/>
-            <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">#{bundle.cancel}</button>
-        </h:form>
-    </p:dialog>
+  
+                <ui:include src="contactFormFragment.xhtml">
+                    <ui:param name="formTitle" value="#{bundle['feedback.header']}"/>
+                    <ui:param name="formTo" value="#{bundle['feedback.to']}"/>
+                </ui:include>
+             
+   
 </div>
