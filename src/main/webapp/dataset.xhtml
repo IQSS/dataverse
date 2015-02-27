@@ -1034,7 +1034,7 @@
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{!empty DatasetPage.editMode}">
                                                                 <div class="col-sm-9">
-                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}</p>
+                                                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}" escape="false"/></p>
                                                                     <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUse}" rows="5" cols="60" styleClass="form-control" />
                                                                 </div>
                                                             </ui:fragment>
