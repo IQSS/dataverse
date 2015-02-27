@@ -2290,14 +2290,13 @@
                         <p>
                             #{bundle['dataset.publish.tip']}
                         </p>
-                        <p>
-                            <h:outputFormat value="#{bundle['dataset.publishParent.tip']}">
-                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                            </h:outputFormat>
-                        </p>
-                        <p:commandButton value="#{bundle.continue}" onclick="publishParent.hide()" action="#{DatasetPage.releaseParentDVAndDataset}">
+                        <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
+                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
+                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                        </h:outputFormat>
+                        <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="publishParent.hide()" action="#{DatasetPage.releaseParentDVAndDataset}">
                         </p:commandButton>
-                        <p:commandButton value="#{bundle.cancel}" onclick="publishParent.hide()" type="button" />
+                        <p:commandButton value="#{bundle.no}" onclick="publishParent.hide()" type="button" />
                     </p:dialog>
                     <p:confirmDialog message="#{bundle['dataset.republish.tip']}" header="#{bundle['dataset.publishBtn']}" widgetVar="releaseDraft">
                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
@@ -2319,15 +2318,17 @@
                         <p:commandButton value="#{bundle.cancel}" onclick="releaseDraft.hide()" type="button" />
                     </p:confirmDialog>
                     <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
-                        <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                        <h:outputFormat value="#{bundle['dataset.mayNotBePublished.tip']}">
+                        <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
+                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
                             <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
                         </h:outputFormat>
                     </p:dialog>
                     <p:dialog header="#{bundle['dataset.mayNotBePublished']}" 
                               widgetVar="maynotPublishParent">
-                        <h:outputFormat value="#{bundle['dataset.mayNotBePublishedGrandparent.tip']}">
+                        <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
+                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
                             <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                            <f:param value="#{DatasetPage.dataset.owner.owner.alias}"/>
                             <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
                         </h:outputFormat>
                     </p:dialog>

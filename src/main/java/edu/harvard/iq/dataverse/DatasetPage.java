@@ -498,11 +498,9 @@ public class DatasetPage implements java.io.Serializable {
         for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
             DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
             if (dsfIl != null) {
-                dsf.setRequired(dsfIl.isRequired());
                 dsf.getDatasetFieldType().setRequiredDV(dsfIl.isRequired());
                 dsf.setInclude(dsfIl.isInclude());
             } else {
-                dsf.setRequired(dsf.getDatasetFieldType().isRequired());
                 dsf.setInclude(true);
             }
         }
@@ -1874,12 +1872,12 @@ public class DatasetPage implements java.io.Serializable {
         String contNames = "";
         for (String id : version.getVersionContributorIdentifiers()) {
             id = id.startsWith("@") ? id.substring(1) : id;
-            BuiltinUser builtinUser = builtinUserService.findByUserName(id);
-            if (builtinUser != null) {
+            AuthenticatedUser au = authService.getAuthenticatedUser(id);
+            if (au != null) {
                 if (contNames.isEmpty()) {
-                    contNames = builtinUser.getDisplayName();
+                    contNames = au.getName();
                 } else {
-                    contNames = contNames + ", " + builtinUser.getDisplayName();
+                    contNames = contNames + ", " + au.getName();
                 }
             }
         }
