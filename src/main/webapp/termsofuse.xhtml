@@ -16,10 +16,11 @@
               <h:outputText value="#{systemConfig.applicationTermsOfUse}"/>
             </textarea>
             <div class="checkbox" style="margin:4px 10px;">
-              <p:selectBooleanCheckbox style="margin:0;vertical-align:middle;" required="true" requiredMessage="#{bundle['user.terms.required']}">
+              <p:selectBooleanCheckbox id="terms" style="margin:0;vertical-align:middle;" required="true" requiredMessage="#{bundle['user.terms.required']}">
                 <f:validator validatorId="requiredCheckboxValidator"/>
               </p:selectBooleanCheckbox>
               <h:outputText value=" #{bundle['user.terms.iagree']}"/>
+              <p:message for="terms" display="text" />
             </div>
         </div>
 
