@@ -331,7 +331,7 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public String cancel() {
         if (editMode == EditMode.CREATE) {
-            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true;";
+            return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true";
         }
 
         editMode = null;
