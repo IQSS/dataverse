@@ -66,6 +66,8 @@ td.no-padding-left-right {padding-left:0;padding-right:0;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
 table.selectManyCheckboxBlock label {font-weight:normal;}
+label.normal-text {font-weight:normal;}
+label.normal-text input {margin-right:4px;}
 
 /* Dropdown submenu */
 .dropdown-submenu {
