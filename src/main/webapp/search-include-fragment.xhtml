@@ -676,8 +676,13 @@
                                     </div>
                                     </ui:remove>
                                     
+                                    <h:outputText value="(locked)" rendered="#{dataFileServiceBean.find(result.entityId).restricted and (!(permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')))}"/>
+                                    <h:outputText value="(unlocked)" rendered="#{dataFileServiceBean.find(result.entityId).restricted and permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')}"/>
+                                         
+                                    
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                         <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
+                                            
                                         <ui:fragment rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId)}">
                                             <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="clear:left; margin-bottom: .5em;">
                                                 <p:graphicImage value="/api/access/preview/#{result.entityId}" />
@@ -686,7 +691,12 @@
                                         
                                         <i class="icon-#{dataFileServiceBean.getFileClassById(result.entityId)} text-muted h1"
                                            jsf:rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
+                                        
                                     </div>
+                                    
+                                    <!-- ui:fragment --> <!-- rendered="#{dataFileServiceBean.find(result.entityId).restricted}" -->
+                                        
+                                    <!-- /ui:fragment -->
 
                                     <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
 
