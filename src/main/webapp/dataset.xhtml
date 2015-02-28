@@ -614,12 +614,12 @@
                                                     </button>
                                                     <ul class="dropdown-menu multi-level pull-right" role="menu" style="text-align:left;">
                                                         <li>
-                                                            <p:commandLink update="filesTable" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
+                                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
                                                                 <h:outputText value="#{bundle['file.restrict']}"/>
                                                             </p:commandLink>
                                                         </li>
                                                         <li>
-                                                            <p:commandLink update="filesTable" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
+                                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
                                                                 <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                             </p:commandLink>
                                                         </li>
@@ -1663,7 +1663,7 @@
                         <ui:fragment rendered="#{DatasetPage.dataset.released}">
                             <p>#{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
-                        <p:commandButton value="#{bundle.continue}" update=":#{p:component('filesTable')}" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.deleteFiles()}">
+                        <p:commandButton value="#{bundle.continue}" update=":#{p:component('filesTable')},:messagePanel" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.deleteFiles()}">
                         </p:commandButton>
                         <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:dialog>

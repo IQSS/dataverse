@@ -1190,7 +1190,7 @@ public class DatasetPage implements java.io.Serializable {
         if (fileNames != null) {
             String successMessage = JH.localize("file.restricted.success");
             logger.fine(successMessage);
-            successMessage.replace("{0}", fileNames);
+            successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);    
         }
     } 
@@ -1245,7 +1245,7 @@ public class DatasetPage implements java.io.Serializable {
         if (fileNames != null) {
             String successMessage = JH.localize("file.deleted.success");
             logger.fine(successMessage);
-            successMessage.replace("{0}", fileNames);
+            successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
         }
     }
@@ -2213,7 +2213,7 @@ public class DatasetPage implements java.io.Serializable {
                 // success message: 
                 String successMessage = JH.localize("file.assignedTabFileTags.success");
                 logger.fine(successMessage);
-                successMessage.replace("{0}", fileMetadataSelected.getLabel());
+                successMessage = successMessage.replace("{0}", fileMetadataSelected.getLabel());
                 JsfHelper.addFlashMessage(successMessage);
             }
             // reset:
@@ -2227,7 +2227,7 @@ public class DatasetPage implements java.io.Serializable {
         if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
             String successMessage = JH.localize("file.assignedDataverseImage.success");
             logger.info(successMessage);
-            successMessage.replace("{0}", fileMetadataSelected.getLabel());
+            successMessage = successMessage.replace("{0}", fileMetadataSelected.getLabel());
             JsfHelper.addFlashMessage(successMessage);
         }
         
