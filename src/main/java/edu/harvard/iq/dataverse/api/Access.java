@@ -81,8 +81,6 @@ public class Access extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
     
     private static final String DEFAULT_FILE_ICON = "icon_file.png";
-    private static final String DEFAULT_DATASET_ICON = "icon_dataset.png";
-    private static final String DEFAULT_DATAVERSE_ICON = "icon_dataverse.png";
     
     @EJB
     DataFileServiceBean dataFileService;
@@ -457,13 +455,6 @@ public class Access extends AbstractApiBean {
             }
         }
         
-        /* 
-         Removing the old-style, non-vector default icons: 
-        if (imageThumbFileName == null) {
-            imageThumbFileName = getWebappImageResource (DEFAULT_DATASET_ICON);
-        }
-        */
-        
         if (imageThumbFileName != null) {
             InputStream in;
 
@@ -551,13 +542,6 @@ public class Access extends AbstractApiBean {
             }
         }
         
-        // Finally, if we haven't found anything - we'll give them the default 
-        // dataverse icon: 
-        
-        if (imageThumbFileName == null) {
-            imageThumbFileName = getWebappImageResource (DEFAULT_DATAVERSE_ICON);
-        }
-        
         if (imageThumbFileName != null) {
             InputStream in;
 
@@ -571,6 +555,10 @@ public class Access extends AbstractApiBean {
 
         return null; 
     }
+    
+    // TODO: 
+    // put this method into the dataverseservice; use it there
+    // -- L.A. 4.0 beta14
     
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {

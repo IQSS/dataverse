@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -36,6 +39,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     @EJB
     IndexServiceBean indexService;
 
+    @EJB
+    DatasetServiceBean datasetService;
+    
     @Inject
     DataverseSession session;
 
@@ -170,5 +176,76 @@ public class DataverseServiceBean implements java.io.Serializable {
         }        
         
         return appVersionString; 
+    }
+    
+    public boolean isDataverseCardImageAvailable(Long dataverseId, DataverseSession session) {
+        Dataverse dataverse = find(dataverseId);
+        
+        if (dataverse == null) {
+            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+dataverseId+"!");
+            return false; 
+        }
+        
+        String imageThumbFileName = null; 
+        
+        // First, check if the dataverse has a defined logo: 
+        
+        if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
+            File dataverseLogoFile = getLogo(dataverse);
+            if (dataverseLogoFile != null) {
+                String logoThumbNailPath = null;
+
+                if (dataverseLogoFile.exists()) {
+                    logoThumbNailPath = ImageThumbConverter.generateImageThumb(dataverseLogoFile.getAbsolutePath(), 48);
+                    if (logoThumbNailPath != null) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        // If there's no uploaded logo for this dataverse, go through its 
+        // [released] datasets and see if any of them have card images:
+        // 
+        // TODO:
+        // Discuss/Decide if we really want to do this - i.e., go through every
+        // file in every dataset below... 
+        // -- L.A. 4.0 beta14
+        
+        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
+            if (dataset != null) {
+                DatasetVersion releasedVersion = dataset.getReleasedVersion();
+                
+                if (releasedVersion != null) {
+                    if (datasetService.isDatasetCardImageAvailable(releasedVersion.getId(), session)) {
+                        return true;
+                    }
+                }
+            }
+        }        
+        
+        return false; 
+    }
+        
+    private File getLogo(Dataverse dataverse) {
+        if (dataverse.getId() == null) {
+            return null; 
+        }
+        
+        DataverseTheme theme = dataverse.getDataverseTheme(); 
+        if (theme != null && theme.getLogo() != null && !theme.getLogo().equals("")) {
+            Properties p = System.getProperties();
+            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+  
+            if (domainRoot != null && !"".equals(domainRoot)) {
+                return new File (domainRoot + File.separator + 
+                    "docroot" + File.separator + 
+                    "logos" + File.separator + 
+                    dataverse.getLogoOwnerId() + File.separator + 
+                    theme.getLogo());
+            }
+        }
+            
+        return null;         
     }
 }  
