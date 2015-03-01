@@ -610,7 +610,8 @@
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                         <!-- img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/ -->
                                         <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
-                                            <p:graphicImage value="/api/access/dsPreview/#{result.datasetVersionId}"/>
+                                            <p:graphicImage value="/api/access/dsCardImage/#{result.datasetVersionId}" rendered="#{datasetServiceBean.isDatasetCardImageAvailable(result.datasetVersionId, dataverseSession)}"/>
+                                            <h:outputText value="(no image available for dataset)" rendered="#{!datasetServiceBean.isDatasetCardImageAvailable(result.datasetVersionId, dataverseSession)}"/>
                                         </a>
                                     </div>
 

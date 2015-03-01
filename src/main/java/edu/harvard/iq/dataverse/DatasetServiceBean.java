@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -48,6 +49,12 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    DatasetVersionServiceBean versionService;
+    
+    @EJB
+    DataFileServiceBean fileService; 
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -416,5 +423,39 @@ public class DatasetServiceBean implements java.io.Serializable {
              }
              */
         }
+    }
+    
+    public boolean isDatasetCardImageAvailable(Long versionId, DataverseSession session) {
+        
+        DatasetVersion datasetVersion = versionService.find(versionId);
+        
+        if (datasetVersion == null) {
+            return false; 
+        }
+                
+        // First, check if this dataset has a designated thumbnail image: 
+        
+        if (datasetVersion.getDataset() != null) {
+            DataFile dataFile = datasetVersion.getDataset().getThumbnailFile();
+            if (dataFile != null) {
+                return ImageThumbConverter.isThumbnailAvailable(dataFile, 48);
+            }
+        }
+        
+        // If not, we'll try to use one of the files in this dataset version:
+        // (the first file with an available thumbnail, really)
+        
+        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            
+            if (fileService.isThumbnailAvailable(dataFile, session)) {
+                return true;
+            }
+ 
+        }
+        
+        return false;
     }
 }

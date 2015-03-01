@@ -274,20 +274,20 @@ public class DataFileServiceBean implements java.io.Serializable {
                 if (session.getUser().isAuthenticated()) {
                     user = (AuthenticatedUser) session.getUser();
                 } else {
-                    logger.info("User associated with the session is not an authenticated user. (Guest access will be assumed).");
+                    logger.fine("User associated with the session is not an authenticated user. (Guest access will be assumed).");
                     if (session.getUser() instanceof GuestUser) {
-                        logger.info("User associated with the session is indeed a guest user.");
+                        logger.fine("User associated with the session is indeed a guest user.");
                     }
                 }
             } else {
-                logger.info("No user associated with the session.");
+                logger.fine("No user associated with the session.");
             }
         } else {
-            logger.info("Session is null.");
+            logger.fine("Session is null.");
         } 
         
         if (!permissionService.userOn(user, file).has(Permission.DownloadFile)) { 
-            logger.info("No permission to download the file.");
+            logger.fine("No permission to download the file.");
             return false; 
         }
         

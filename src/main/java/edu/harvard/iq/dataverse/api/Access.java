@@ -398,10 +398,10 @@ public class Access extends AbstractApiBean {
         return null; 
     }
     
-    @Path("dsPreview/{versionId}")
+    @Path("dsCardImage/{versionId}")
     @GET
     @Produces({ "image/png" })
-    public InputStream dsPreview(@PathParam("versionId") Long versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    public InputStream dsCardImage(@PathParam("versionId") Long versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         
         
         /*
@@ -457,9 +457,12 @@ public class Access extends AbstractApiBean {
             }
         }
         
+        /* 
+         Removing the old-style, non-vector default icons: 
         if (imageThumbFileName == null) {
             imageThumbFileName = getWebappImageResource (DEFAULT_DATASET_ICON);
         }
+        */
         
         if (imageThumbFileName != null) {
             InputStream in;
