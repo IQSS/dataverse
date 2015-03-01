@@ -668,8 +668,8 @@
                                     </div>
                                     <ui:remove>
                                     <div>
-                                        <h:outputText value="(thumbnail available)" rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
-                                        <h:outputText value="(thumbnail not available)" rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
+                                        <h:outputText value="(thumbnail available)" rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}"/>
+                                        <h:outputText value="(thumbnail not available)" rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}"/>
                                     </div>
                                     <div>
                                         <h:outputText value="#{dataFileServiceBean.getFileClassById(result.entityId)}"/>
@@ -683,14 +683,14 @@
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                         <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
                                             
-                                        <ui:fragment rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId)}">
+                                        <ui:fragment rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}">
                                             <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="clear:left; margin-bottom: .5em;">
                                                 <p:graphicImage value="/api/access/preview/#{result.entityId}" />
                                             </a>
                                         </ui:fragment>
                                         
                                         <i class="icon-#{dataFileServiceBean.getFileClassById(result.entityId)} text-muted h1"
-                                           jsf:rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId)}"/>
+                                           jsf:rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}"/>
                                         
                                     </div>
                                     

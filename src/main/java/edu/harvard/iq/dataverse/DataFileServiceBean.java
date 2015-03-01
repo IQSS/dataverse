@@ -6,6 +6,9 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +36,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    PermissionServiceBean permissionService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -250,16 +255,49 @@ public class DataFileServiceBean implements java.io.Serializable {
      * ready to be downloaded. (it will try to generate a thumbnail for supported
      * file types, if not yet available)
     */
-    public boolean isThumbnailAvailable (DataFile file) {
+    public boolean isThumbnailAvailable (DataFile file, DataverseSession session) {
+        // If thumbnails are not even supported for this class of files, 
+        // there's notthing to talk about: 
+        
         if (!thumbnailSupported(file)) {
             return false;
         }
+        
+        // Also, thumbnails are only shown to users who have permission to see 
+        // the full-size image file. So before we do anything else, let's
+        // do some authentication and authorization:
+        
+        AuthenticatedUser user = null;
+        
+        if (session != null) {
+            if (session.getUser() != null) {
+                if (session.getUser().isAuthenticated()) {
+                    user = (AuthenticatedUser) session.getUser();
+                } else {
+                    logger.info("User associated with the session is not an authenticated user. (Guest access will be assumed).");
+                    if (session.getUser() instanceof GuestUser) {
+                        logger.info("User associated with the session is indeed a guest user.");
+                    }
+                }
+            } else {
+                logger.info("No user associated with the session.");
+            }
+        } else {
+            logger.info("Session is null.");
+        } 
+        
+        if (!permissionService.userOn(user, file).has(Permission.DownloadFile)) { 
+            logger.info("No permission to download the file.");
+            return false; 
+        }
+        
+        
         
        return ImageThumbConverter.isThumbnailAvailable(file);      
     }
     
  
-    public boolean isPreviewAvailable (Long fileId) {
+    public boolean isPreviewAvailable (Long fileId, DataverseSession dataverseSession) {
         if (fileId == null) {
             return false; 
         }
@@ -270,7 +308,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false; 
         }
         
-        return isThumbnailAvailable(file); 
+        return isThumbnailAvailable(file, dataverseSession); 
     }
     
     /* 
