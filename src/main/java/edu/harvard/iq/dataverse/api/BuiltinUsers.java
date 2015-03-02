@@ -85,10 +85,15 @@ public class BuiltinUsers extends AbstractApiBean {
             if (password != null) {
                 user.setEncryptedPassword(builtinUserSvc.encryptPassword(password));
             }
+            
+            // Make sure the identifier is unique
+            if ( (builtinUserSvc.findByUserName(user.getUserName()) != null)
+                    || ( authSvc.identifierExists(user.getUserName())) ) {
+                return errorResponse(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
+            }
             user = builtinUserSvc.save(user);
 
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName(), user.getDisplayInfo());
-
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName(), user.getDisplayInfo(), false);
             ApiToken token = new ApiToken();
 
             token.setTokenString(java.util.UUID.randomUUID().toString());
