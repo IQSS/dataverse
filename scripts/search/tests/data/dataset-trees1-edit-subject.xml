@@ -9,10 +9,6 @@
    <dcterms:license>NONE</dcterms:license>
    <dcterms:rights>Creative Commons CC-BY 3.0 (unported) http://creativecommons.org/licenses/by/3.0/</dcterms:rights>
    -->
-   <!--
-   <dcterms:subject>Chemistry</dcterms:subject>
+   <!-- Change the subject to just "Engineering" -->
    <dcterms:subject>Engineering</dcterms:subject>
-   <dcterms:subject>aircraft</dcterms:subject>
-   <dcterms:subject>planes</dcterms:subject>
-   -->
 </entry>

@@ -46,8 +46,31 @@ public class SwordServiceBean {
 
     }
 
-    public void addDatasetSubject(DatasetVersion datasetVersion) {
+    /**
+     * If no subject exists, mutate the dataset version, adding "N/A" for the
+     * subject. Otherwise, leave the dataset alone.
+     */
+    public void addDatasetSubjectIfMissing(DatasetVersion datasetVersion) {
         DatasetFieldType subjectDatasetFieldType = datasetFieldService.findByNameOpt(DatasetFieldConstant.subject);
+
+        boolean subjectFieldExists = false;
+        List<DatasetField> datasetFields = datasetVersion.getDatasetFields();
+        for (DatasetField datasetField : datasetFields) {
+            logger.info("datasetField: " + datasetField.getDisplayValue() + " ... " + datasetField.getDatasetFieldType().getName());
+            if (datasetField.getDatasetFieldType().getName().equals(subjectDatasetFieldType.getName())) {
+                subjectFieldExists = true;
+                logger.info("subject field exists already");
+                break;
+            }
+        }
+
+        if (subjectFieldExists) {
+            // return early. nothing to do. dataset already has a subject
+            logger.info("returning early because subject exists already");
+            return;
+        }
+
+        // if we made it here, we must not have a subject, so let's add one
         DatasetField subjectDatasetField = DatasetField.createNewEmptyDatasetField(subjectDatasetFieldType, datasetVersion);
         /**
          * @todo Once dataverse has subject
