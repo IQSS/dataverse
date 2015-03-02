@@ -1,7 +1,6 @@
 <div
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:p="http://primefaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <p:dialog id="explicitGroupNewDialog" header="#{bundle['dataverse.permissions.explicitGroupEditDialog.title.new']}" widgetVar="explicitGroupForm" modal="true">
@@ -14,6 +13,23 @@
             <div>
                 <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.help']}</p>
                 <div class="form-group">
+                    <label for="explicitGroupIdentifier" class="col-sm-3 control-label">
+                        #{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier']}
+                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                    </label>
+                    <div class="col-sm-9">
+                        <p:panelGrid columns="2" styleClass="noBorders">
+                            <p:inputText id="explicitGroupIdentifier" value="#{managePermissionsPage.explicitGroupIdentifier}"
+                                         required="#{param['DO_GROUP_VALIDATION']}"
+                                         requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.required']}"
+                                         validator="#{managePermissionsPage.validateGroupIdentifier}"
+										 binding="#{managePermissionsPage.explicitGroupIdentifierField}"
+										 />
+                            <p:message for="explicitGroupIdentifier"/>
+                        </p:panelGrid>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="explicitGroupName" class="col-sm-3 control-label">
                         #{bundle['dataverse.permissions.explicitGroupEditDialog.groupName']}
                         <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
@@ -22,23 +38,8 @@
                         <p:panelGrid columns="2" styleClass="noBorders">
                             <p:inputText id="explicitGroupName" value="#{managePermissionsPage.explicitGroupName}"
                                          required="#{param['DO_GROUP_VALIDATION']}"
-                                         requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupName.required']}"
-                                         validator="#{managePermissionsPage.validateGroupName}"/>
+                                         requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupName.required']}"/>
                             <p:message for="explicitGroupName"/>
-                        </p:panelGrid>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="explicitGroupFriendlyName" class="col-sm-3 control-label">
-                        #{bundle['dataverse.permissions.explicitGroupEditDialog.groupFriendlyName']}
-                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                    </label>
-                    <div class="col-sm-9">
-                        <p:panelGrid columns="2" styleClass="noBorders">
-                            <p:inputText id="explicitGroupFriendlyName" value="#{managePermissionsPage.explicitGroupFriendlyName}"
-                                         required="#{param['DO_GROUP_VALIDATION']}"
-                                         requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupFriendlyName.required']}"/>
-                            <p:message for="explicitGroupFriendlyName"/>
                         </p:panelGrid>
                     </div>
                 </div>

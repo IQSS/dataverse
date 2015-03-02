@@ -470,9 +470,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
     ============================================================================
     */
     
+    String explicitGroupIdentifier = "";
     String explicitGroupName = "";
-    String explicitGroupFriendlyName = "";
     String newExplicitGroupDescription = "";
+    UIComponent explicitGroupIdentifierField;
     
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -481,17 +482,20 @@ public class ManagePermissionsPage implements java.io.Serializable {
     
     public void initExplicitGroupDialog(ActionEvent ae) {
         showNoMessages();
-        setExplicitGroupFriendlyName("");
         setExplicitGroupName("");
+        setExplicitGroupIdentifier("");
         setNewExplicitGroupDescription("");
         setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(explicitGroupIdentifierField.getClientId(),
+                new FacesMessage(JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.helpText")));
     }
 
     public void saveExplicitGroup(ActionEvent ae) {
         
         ExplicitGroup eg = explicitGroupSvc.getProvider().makeGroup();
-        eg.setDisplayName( getExplicitGroupFriendlyName() );
-        eg.setGroupAliasInOwner( getExplicitGroupName() );
+        eg.setDisplayName( getExplicitGroupName() );
+        eg.setGroupAliasInOwner( getExplicitGroupIdentifier() );
         eg.setDescription( getNewExplicitGroupDescription() );
         
         if ( getNewExplicitGroupRoleAssignees()!= null ) {
@@ -522,40 +526,50 @@ public class ManagePermissionsPage implements java.io.Serializable {
         showAssignmentMessages();
     }
 
-    public void setExplicitGroupFriendlyName(String explicitGroupFriendlyName) {
-        this.explicitGroupFriendlyName = explicitGroupFriendlyName;
-    }
-
-    public String getExplicitGroupFriendlyName() {
-        return explicitGroupFriendlyName;
-    }
-
-    public void setExplicitGroupName(String explicitGroupName) {
-        this.explicitGroupName = explicitGroupName;
+    public void setExplicitGroupName(String explicitGroupFriendlyName) {
+        this.explicitGroupName = explicitGroupFriendlyName;
     }
 
     public String getExplicitGroupName() {
         return explicitGroupName;
     }
 
-    public void validateGroupName(FacesContext context, UIComponent toValidate, Object rawValue) {
+    public void setExplicitGroupIdentifier(String explicitGroupName) {
+        this.explicitGroupIdentifier = explicitGroupName;
+    }
+
+    public String getExplicitGroupIdentifier() {
+        return explicitGroupIdentifier;
+    }
+
+    public UIComponent getExplicitGroupIdentifierField() {
+        return explicitGroupIdentifierField;
+    }
+
+    public void setExplicitGroupIdentifierField(UIComponent explicitGroupIdentifierField) {
+        this.explicitGroupIdentifierField = explicitGroupIdentifierField;
+    }
+    
+    public void validateGroupIdentifier(FacesContext context, UIComponent toValidate, Object rawValue) {
         String value = (String) rawValue;
         UIInput input = (UIInput) toValidate;
-        
+        logger.info(">>> Validating the group identifier: " + rawValue);
         input.setValid(true); // Optimistic approach
         
-        if (context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null &&
-	   !StringUtils.isEmpty(value) ) {
+        if ( context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null 
+                && !StringUtils.isEmpty(value) ) {
             
+            logger.info(">>> In validation");
             // cheap test - regex
             if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
                 input.setValid(false);
-                input.setValidatorMessage( JH.localize("dataverse.permissions.explicitGroupEditDialog.groupName.invalid") );
+                context.addMessage(toValidate.getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
             
             } else if ( explicitGroupSvc.findInOwner(getDvObject().getId(), value) != null ) {
                 // Ok, see that the alias is not taken
                 input.setValid(false);
-                input.setValidatorMessage( JH.localize("dataverse.permissions.explicitGroupEditDialog.groupName.taken") );
+                input.setValidatorMessage( JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken") );
             }
         }
     }
