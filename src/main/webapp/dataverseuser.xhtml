@@ -284,7 +284,11 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="userName" tabindex="1" styleClass="form-control" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.builtinUser.userName}" disabled="#{DataverseUserPage.editMode != 'CREATE'}"/>
+                                                    <p:inputText id="userName" tabindex="1" 
+																 styleClass="form-control" validator="#{DataverseUserPage.validateUserName}" 
+																 value="#{DataverseUserPage.builtinUser.userName}"
+																 disabled="#{DataverseUserPage.editMode != 'CREATE'}"
+																 binding="#{DataverseUserPage.usernameField}"/>
                                                     <p:message for="userName" display="text" />
                                                 </p:panelGrid>
                                             </div>

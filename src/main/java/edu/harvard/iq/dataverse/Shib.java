@@ -519,7 +519,7 @@ public class Shib implements java.io.Serializable {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
         UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
-        AuthenticatedUser au = authSvc.createAuthenticatedUserWithDecoupledIdentifiers(shibAuthProvider.getId(), userIdentifier, displayInfo);
+        AuthenticatedUser au = authSvc.createAuthenticatedUser(shibAuthProvider.getId(), userIdentifier, displayInfo, true);
         if (au != null) {
             logger.info("created user " + au.getIdentifier());
         } else {
