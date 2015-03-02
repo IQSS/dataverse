@@ -19,7 +19,36 @@ Migration:
 2. run migrate_dataverses.sql script
 3. * run dataset APIs
 4. * run post dataset scrubbing
-5. * run files script
+5. run files script: 
+
+a. On the *destination* (4.0) server, step 1
+run the script, and save the output:
+
+./files_destination_step1_ > migrated_datasets.txt
+
+b. On the *source* (3.6) server - 
+run the script on the input produced in a., 
+save the sql output: 
+
+./files_source_ < migrated_datasets.txt > files_import.sql
+
+(the script will also produce the output file packlist.txt, 
+to be used in step d., copying of physical files)
+
+c. On the destination server, import the sql produced in b.:
+
+psql <... params ...> -f files_import.sql
+
+d. Package the files on the source server:
+
+[TODO: there will be a script for this too]
+
+as of now - can be done manually, by tarring the files listed 
+in packlist.txt
+
+e. Unpack the files packaged above in the files directory on 
+the destination server.
+
 
 __________________________________________________
 
