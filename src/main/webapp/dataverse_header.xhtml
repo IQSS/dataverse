@@ -70,6 +70,8 @@
                            <p:commandLink value="#{bundle['header.feedback']}"  oncomplete="contactForm.show()" update=":contactDialog" >
                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.feedback']}"/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                            </p:commandLink>
                         </h:form>
                     </li>

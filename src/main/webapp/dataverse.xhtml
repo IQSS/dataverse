@@ -444,10 +444,13 @@
                                     <span class="glyphicon glyphicon-envelope no-text"/>
                                 </button>          
                                 -->
-                                <p:commandButton value="contact"  update=":contactDialog" oncomplete="contactForm.show()" >                                      
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=" "/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
-                                </p:commandButton>
+                                <p:commandButton value="contact"  update=":contactDialog" oncomplete="contactForm.show()" >   
+                                   <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>                                     
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                               <f:param name="DO_VALIDATION" value="false"/>   
+                               <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
+                               </p:commandButton>
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}"                                                          
                                                title="Link Dataverse to Your Dataverse"
                                                action="#{DataversePage.updateLinkableDataverses()}"                                                          
