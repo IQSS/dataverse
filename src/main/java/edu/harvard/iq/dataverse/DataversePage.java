@@ -577,6 +577,17 @@ public class DataversePage implements java.io.Serializable {
             refreshAllMetadataBlocks();
         }        
     }
+    
+    public void editMetadataBlocks(boolean checkVal) {
+        setInheritMetadataBlockFromParent(checkVal);
+        if (!dataverse.isMetadataBlockRoot()) {
+            refreshAllMetadataBlocks();
+        }        
+    }
+    
+    public void cancelMetadataBlocks() {
+        setInheritMetadataBlockFromParent(false);       
+    }
 
     public boolean isInheritFacetFromParent() {
         return !dataverse.isFacetRoot();

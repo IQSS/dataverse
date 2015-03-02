@@ -208,14 +208,23 @@
                                             
                                         <label class="metadata-blocks-default" for="metadataRoot">
                                             <h:selectBooleanCheckbox id="metadataRoot" tabindex="7" styleClass="metadata-blocks-default" 
-                                                                     rendered="#{DataversePage.dataverse.owner != null}"
-                                                                     value="#{DataversePage.inheritMetadataBlockFromParent}" >
-                                                <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
+                                                                     rendered="#{DataversePage.dataverse.owner != null}"                                                                     
+                                                                     value="#{DataversePage.inheritMetadataBlockFromParent}" onclick="updateMetadata(this);">                                                
                                             </h:selectBooleanCheckbox>
                                             <h:outputFormat value="#{bundle['dataverse.metadataElements.from.tip']}">
                                                 <f:param value="#{DataversePage.dataverse.metadataRootDataverseName}"/>
-                                            </h:outputFormat>
+                                            </h:outputFormat>                                            
                                         </label>
+                                        <p:commandButton value="Direct" id="updateMetadataButton"
+                                                         style="display:none"
+                                                         update="@widgetVar(optionBlock)"
+                                                         actionListener="#{DataversePage.editMetadataBlocks(false)}">
+                                        </p:commandButton>
+                                        <p:commandButton value="Direct" id="cancelMetadataButton"
+                                                         style="display:none" 
+                                                         update="@widgetVar(optionBlock)"
+                                                         actionListener="#{DataversePage.editMetadataBlocks(false)}">
+                                        </p:commandButton>
                          
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
                                             <div jsf:rendered="#{mdb.required}" class="checkbox">
@@ -612,6 +621,14 @@
                         </button>
                     </ui:fragment>
                 </p:dialog>
+                <p:dialog id="resetModifications" header="#{bundle['dataverse.resetModifications']}" widgetVar="resetModifications" modal="true" closable="false">
+                    <h:outputText  value="#{bundle['dataverse.resetModifications.text']}" escape="false"/>
+                    <p:commandLink styleClass="btn btn-default"  value="#{bundle.continue}"
+                                   onclick="resetModifications.hide()"
+                                   update="@widgetVar(optionBlock)"
+                                   actionListener="#{DataversePage.editMetadataBlocks(true)}"/>
+                    <button type="button" class="btn btn-default" onclick="uncheck();resetModifications.hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                </p:dialog> 
                 
                 
                 <script type="text/javascript">
@@ -664,6 +681,20 @@
 
                     function updateInclude() {
                         $('button[id$="hiddenRefresh"]').trigger('click');
+                    }
+                    
+                    function updateMetadata(checkbox) {
+                        var checked = checkbox.checked;
+                        if (checked === false){
+                            $('button[id$="updateMetadataButton"]').trigger('click');
+                        } else {
+                            resetModifications.show();
+                        }
+
+                    }
+                    
+                    function uncheck() {
+                        $('button[id$="cancelMetadataButton"]').trigger('click');
                     }
                     //]]>
                 </script>
