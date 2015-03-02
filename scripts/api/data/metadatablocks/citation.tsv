@@ -12,7 +12,7 @@
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	8	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
 	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	9	- #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
 	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	(#VALUE)	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
-	datasetContact	Contact	Contact information.		none	11		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	datasetContact	Contact	The contact(s) for this Dataset.		none	11		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	12	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	14	[#EMAIL]	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
@@ -55,28 +55,29 @@
 	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	51	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate. Enter an absolute URL where the distributor's web site is found, such as http://www.my.org.	Enter full URL, starting with http://	url	52	<a href="#VALUE">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this  distributor's web-accessible logo image. Enter an absolute URL where the distributor's logo image is found, such as http://www.my.org/images/logo.gif.	Enter full URL for image, starting with http://	url	53	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
-	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	54		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	55		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	56	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	57	#VALUE (#NAME)	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
-	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	58	#VALUE (#NAME)	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
-	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.		none	59	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	60	#VALUE (#NAME)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
-	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	61	#VALUE (#NAME)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
-	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	62		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	series	Series	Information about the Dataset series.		none	63	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	64	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
-	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		text	65	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
-	software	Software	Information about the software used to generate the Dataset.		none	66	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	softwareName	Name	Name of software used to generate the Dataset.		text	67	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	citation
-	softwareVersion	Version	Version of the software used to generate the Dataset.		text	68	#VALUE (#NAME)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
-	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	69		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	70		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	73		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	74		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation.	YYYY-MM-DD	date	54		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		
+	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	55		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	56		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	57	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	58	#VALUE (#NAME)	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
+	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	59	#VALUE (#NAME)	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
+	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.		none	60	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	61	#VALUE (#NAME)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
+	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	62	#VALUE (#NAME)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
+	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	63		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	series	Series	Information about the Dataset series.		none	64	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	65	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
+	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		text	66	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
+	software	Software	Information about the software used to generate the Dataset.		none	67	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	softwareName	Name	Name of software used to generate the Dataset.		text	68	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	citation
+	softwareVersion	Version	Version of the software used to generate the Dataset.		text	69	#VALUE (#NAME)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
+	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	70		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	73		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	74		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	subject	Arts and Humanities		0											
 	subject	Astronomy and Astrophysics		1											
