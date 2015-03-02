@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportDDI;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
@@ -60,69 +61,67 @@ import javax.xml.stream.XMLStreamException;
  */
 @Stateless
 public class ImportServiceBean {
-@EJB
-	protected EjbDataverseEngine engineSvc;
-  @EJB
+
+    @EJB
+    protected EjbDataverseEngine engineSvc;
+    @EJB
     DatasetServiceBean datasetService;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
     DatasetFieldServiceBean datasetfieldService;
-   
+
     @EJB
     MetadataBlockServiceBean metadataBlockService;
     @EJB
-    SettingsServiceBean settingsService;   
-      @EJB ImportLogger importLogger;
+    SettingsServiceBean settingsService;
+    @EJB
+    ImportLogger importLogger;
 
     @TransactionAttribute(REQUIRES_NEW)
-   public Dataverse createDataverse(File dir, User u) throws ImportException {
-            Dataverse d = new Dataverse();
-                Dataverse root = dataverseService.findByAlias("root");
-                d.setOwner(root);
-                d.setAlias(dir.getName());
-                d.setName(dir.getName());
-                d.setAffiliation("affiliation");
-                d.setPermissionRoot(false);
-                d.setDescription("description");
-                d.setDataverseType(Dataverse.DataverseType.RESEARCHERS);
-                DataverseContact dc = new DataverseContact();
-                dc.setContactEmail("pete@mailinator.com");
-                ArrayList<DataverseContact> dcList = new ArrayList<>();
-                dcList.add(dc);
-                d.setDataverseContacts(dcList);
-                try {
-                    d = engineSvc.submit(new CreateDataverseCommand(d, u, null, null));
-                } catch (EJBException ex) {
-                    Throwable cause = ex;
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Error creating dataverse.");
-                    while (cause.getCause() != null) {
-                        cause = cause.getCause();
-                        if (cause instanceof ConstraintViolationException) {
-                            ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                            for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
-                            }
-                        }
+    public Dataverse createDataverse(File dir, AuthenticatedUser u) throws ImportException {
+        Dataverse d = new Dataverse();
+        Dataverse root = dataverseService.findByAlias("root");
+        d.setOwner(root);
+        d.setAlias(dir.getName());
+        d.setName(dir.getName());
+        d.setAffiliation("affiliation");
+        d.setPermissionRoot(false);
+        d.setDescription("description");
+        d.setDataverseType(Dataverse.DataverseType.RESEARCHERS);
+        DataverseContact dc = new DataverseContact();
+        dc.setContactEmail("pete@mailinator.com");
+        ArrayList<DataverseContact> dcList = new ArrayList<>();
+        dcList.add(dc);
+        d.setDataverseContacts(dcList);
+        try {
+            d = engineSvc.submit(new CreateDataverseCommand(d, u, null, null));
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append("Error creating dataverse.");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
                     }
-                    importLogger.getLogger().log(Level.SEVERE, sb.toString());
-                    System.out.println("Error creating dataverse: " + sb.toString());
-                    throw new ImportException(sb.toString());
-                } catch (Exception e) {
-                    throw new ImportException(e.getMessage());
                 }
-                return d;
+            }
+            importLogger.getLogger().log(Level.SEVERE, sb.toString());
+            System.out.println("Error creating dataverse: " + sb.toString());
+            throw new ImportException(sb.toString());
+        } catch (Exception e) {
+            throw new ImportException(e.getMessage());
+        }
+        return d;
 
-   }
-   
-  
-  
-  
-  
+    }
+
     @TransactionAttribute(REQUIRES_NEW)
     public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException {
-       
+
         System.out.println("handling file: " + file.getAbsolutePath());
         String ddiXMLToParse;
         try {
@@ -132,25 +131,26 @@ public class ImportServiceBean {
             importLogger.getLogger().info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
         } catch (ImportException ex) {
-             importLogger.getLogger().info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+            importLogger.getLogger().info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
-             String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();           
-             importLogger.getLogger().log(Level.SEVERE,msg, e);
+            String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
+            importLogger.getLogger().log(Level.SEVERE, msg, e);
             throw new ImportException("Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName(), e);
 
         }
     }
-     public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException {
-      
+
+    public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException {
+
         String status = "";
         Long createdId = null;
         DatasetDTO dsDTO = null;
-        try {            
+        try {
             ImportDDI importDDI = new ImportDDI(importType);
             dsDTO = importDDI.doImport(xmlToParse);
         } catch (XMLStreamException e) {
-            throw new ImportException("XMLStreamException" +  e);
+            throw new ImportException("XMLStreamException" + e);
         }
         // convert DTO to Json, 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -162,7 +162,7 @@ public class ImportServiceBean {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj);
-            
+
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
             if (importType.equals(ImportType.NEW)) {
@@ -170,7 +170,7 @@ public class ImportServiceBean {
                     throw new ImportException("Could not register id " + ds.getGlobalId() + ", protocol not supported");
                 }
             }
-            
+
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
@@ -188,16 +188,16 @@ public class ImportServiceBean {
                     // if required values are missing.
                     String errMsg = "Error importing data:";
                     for (ConstraintViolation v : violations) {
-                        errMsg+=" "+v.getMessage();
+                        errMsg += " " + v.getMessage();
                     }
                     throw new ImportException(errMsg);
                 }
             }
-            
+
             // Check data against validation constraints
             // If we are migrating and dataset contact email is invalid, then set it to NA
             Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
-            if( !invalidViolations.isEmpty()) {
+            if (!invalidViolations.isEmpty()) {
                 if (importType.equals(ImportType.MIGRATION)) {
                     for (ConstraintViolation v : invalidViolations) {
                         DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
@@ -205,21 +205,21 @@ public class ImportServiceBean {
                             f.setValue(DatasetField.NA_VALUE);
                         }
                     }
-                }     
+                }
             }
-        
+
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 
             if (existingDs != null) {
                 if (importType.equals(ImportType.HARVEST)) {
                     // For harvested datasets, there should always only be one version.
                     // We will replace the current version with the imported version.
-                    if (existingDs.getVersions().size()!=1) {
-                        throw new ImportException("Error importing Harvested Dataset, existing dataset has "+ existingDs.getVersions().size() + " versions");
+                    if (existingDs.getVersions().size() != 1) {
+                        throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                     }
-                    engineSvc.submit(new DestroyDatasetCommand(existingDs,u));
+                    engineSvc.submit(new DestroyDatasetCommand(existingDs, u));
                     Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, u, false, importType));
-                    status = " updated dataset, id=" + managedDs.getId() + ".";   
+                    status = " updated dataset, id=" + managedDs.getId() + ".";
                 } else {
                     // If we are adding a new version to an existing dataset,
                     // check that the version number isn't already in the dataset
@@ -228,11 +228,11 @@ public class ImportServiceBean {
                             throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId());
                         }
                     }
-                DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(u, existingDs, ds.getVersions().get(0)));
-                status = " created datasetVersion, id=" + dsv.getId() + ".";       
-                createdId = dsv.getId();
+                    DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(u, existingDs, ds.getVersions().get(0)));
+                    status = " created datasetVersion, id=" + dsv.getId() + ".";
+                    createdId = dsv.getId();
                 }
-               
+
             } else {
                 Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, u, false, importType));
                 status = " created dataset, id=" + managedDs.getId() + ".";
@@ -240,18 +240,17 @@ public class ImportServiceBean {
             }
 
         } catch (JsonParseException ex) {
-            
-             importLogger.getLogger().info("Error parsing datasetVersion: " + ex.getMessage());
+
+            importLogger.getLogger().info("Error parsing datasetVersion: " + ex.getMessage());
             throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
-        } catch(CommandException ex) {  
-             importLogger.getLogger().info("Error excuting Create dataset command: " + ex.getMessage());
+        } catch (CommandException ex) {
+            importLogger.getLogger().info("Error excuting Create dataset command: " + ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
         return Json.createObjectBuilder().add("message", status).add("id", createdId);
-     }
-      private static class MyCustomFormatter extends Formatter {
+    }
 
- 
+    private static class MyCustomFormatter extends Formatter {
 
         @Override
 
@@ -270,8 +269,6 @@ public class ImportServiceBean {
             return sb.toString();
 
         }
-
-         
 
     }
 

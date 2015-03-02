@@ -118,7 +118,7 @@ public class Dataverses extends AbstractApiBean {
                 dc.setDataverse(d);
             }
 
-            User u = findUserOrDie( apiKey );
+            AuthenticatedUser u = findUserOrDie( apiKey );
             d = execCommand( new CreateDataverseCommand(d, u, null, null), "Creating Dataverse" );
 			return createdResponse( "/dvs/"+d.getAlias(), json(d) );
         } catch ( WrappedResponse ww ) {

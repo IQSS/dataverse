@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -31,7 +31,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     private final List<DatasetFieldType> facetList;
 
     public CreateDataverseCommand(Dataverse created,
-            User aUser, List<DatasetFieldType> facetList, List<DataverseFieldTypeInputLevel> inputLevelList) {
+            AuthenticatedUser aUser, List<DatasetFieldType> facetList, List<DataverseFieldTypeInputLevel> inputLevelList) {
         super(aUser, created.getOwner());
         this.created = created;
         if (facetList != null) {
@@ -60,8 +60,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
         
         if (created.getCreator() == null) {
-            // FIXME Is the "creator" concept being carried over from 3.x?
-//			created.setCreator(getUser());
+			created.setCreator((AuthenticatedUser) getUser());
         }
 
         if (created.getDataverseType() == null) {

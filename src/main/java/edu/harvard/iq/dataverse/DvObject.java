@@ -50,7 +50,7 @@ public abstract class DvObject implements java.io.Serializable {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    private DvObjectContainer owner;
+    private DvObject owner;
 
     private Timestamp publicationDate;
 
@@ -85,6 +85,7 @@ public abstract class DvObject implements java.io.Serializable {
     /**
      * modificationTime is used for comparison with indexTime so we know if the
      * Solr index is stale.
+     * @param modificationTime
      */
     public void setModificationTime(Timestamp modificationTime) {
         this.modificationTime = modificationTime;
@@ -97,6 +98,7 @@ public abstract class DvObject implements java.io.Serializable {
     /**
      * indexTime is used for comparison with modificationTime so we know if the
      * Solr index is stale.
+     * @param indexTime
      */
     public void setIndexTime(Timestamp indexTime) {
         this.indexTime = indexTime;
@@ -123,7 +125,7 @@ public abstract class DvObject implements java.io.Serializable {
     }
 
     public DvObjectContainer getOwner() {
-        return owner;
+        return (DvObjectContainer)owner;
     }
 
     public Long getId() {

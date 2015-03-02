@@ -8,13 +8,12 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.ImportLogger;
 import java.io.IOException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -107,7 +106,7 @@ public class BatchImport extends AbstractApiBean  {
     
     private Response startBatchJob( String fileDir, String parentIdtf, String apiKey, ImportType importType) {
        
-        User u = findUserByApiToken(apiKey);
+        AuthenticatedUser u = findUserByApiToken(apiKey);
         if (u == null) {
             return badApiKey(apiKey);
         }

@@ -1,18 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.ImportLogger;
 import java.io.File;
-import java.io.IOException;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -35,7 +29,7 @@ public class BatchServiceBean {
     ImportLogger importLogger;
 
     @Asynchronous
-    public void processFilePath(String fileDir, String parentIdtf, User u, Dataverse owner, ImportUtil.ImportType importType) throws ImportException {
+    public void processFilePath(String fileDir, String parentIdtf, AuthenticatedUser u, Dataverse owner, ImportUtil.ImportType importType) throws ImportException {
         importLogger.getLogger().info("BEGIN IMPORT");
         JsonArrayBuilder status = Json.createArrayBuilder();
 
@@ -59,7 +53,7 @@ public class BatchServiceBean {
 
     }
 
-    public JsonArrayBuilder handleDirectory(User u, File dir, ImportUtil.ImportType importType) throws ImportException{
+    public JsonArrayBuilder handleDirectory(AuthenticatedUser u, File dir, ImportUtil.ImportType importType) throws ImportException{
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = dataverseService.findByAlias(dir.getName());
         if (owner == null) {

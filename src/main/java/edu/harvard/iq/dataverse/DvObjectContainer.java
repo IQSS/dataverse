@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse;
 
-import javax.persistence.Entity;
+import javax.persistence.MappedSuperclass;
 
 /**
  * A {@link DvObject} that can contain other {@link DvObject}s.
  * 
  * @author michael
  */
-@Entity
+@MappedSuperclass
 public abstract class DvObjectContainer extends DvObject {
 	
     public void setOwner(Dataverse owner) {

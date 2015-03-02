@@ -118,6 +118,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 import javax.annotation.PostConstruct;
+import javax.ejb.EJBException;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import org.apache.commons.io.FileUtils;
@@ -180,27 +181,31 @@ public class IngestServiceBean {
     @PostConstruct
     public void init() {
         logger.info("Initializing the Ingest Service.");
-        List<DataFile> ingestsInProgress = fileService.findIngestsInProgress();
-        if (ingestsInProgress != null && ingestsInProgress.size() > 0) {
-            logger.info("Ingest Service: " + ingestsInProgress.size()+" files are in the queue.");
-            // go through the queue, remove the "ingest in progress" flags and the 
-            // any dataset locks found:
-            Iterator dfit = ingestsInProgress.iterator();
-            while (dfit.hasNext()) {
-                DataFile datafile = (DataFile)dfit.next();
-                logger.info("Ingest Service: removing ingest-in-progress status on datafile "+datafile.getId());
-                datafile.setIngestDone();
-                datafile = fileService.save(datafile);
-                
-                if (datafile.getOwner() != null && datafile.getOwner().isLocked()) {
-                    if (datafile.getOwner().getId() != null) {
-                        logger.fine("Ingest Servioce: removing lock on dataset "+datafile.getOwner().getId());
-                        datasetService.removeDatasetLock(datafile.getOwner().getId());
+        try {
+            List<DataFile> ingestsInProgress = fileService.findIngestsInProgress();
+            if (ingestsInProgress != null && ingestsInProgress.size() > 0) {
+                logger.log(Level.INFO, "Ingest Service: {0} files are in the queue.", ingestsInProgress.size());
+                // go through the queue, remove the "ingest in progress" flags and the 
+                // any dataset locks found:
+                Iterator dfit = ingestsInProgress.iterator();
+                while (dfit.hasNext()) {
+                    DataFile datafile = (DataFile)dfit.next();
+                    logger.log(Level.INFO, "Ingest Service: removing ingest-in-progress status on datafile {0}", datafile.getId());
+                    datafile.setIngestDone();
+                    datafile = fileService.save(datafile);
+
+                    if (datafile.getOwner() != null && datafile.getOwner().isLocked()) {
+                        if (datafile.getOwner().getId() != null) {
+                            logger.log(Level.FINE, "Ingest Servioce: removing lock on dataset {0}", datafile.getOwner().getId());
+                            datasetService.removeDatasetLock(datafile.getOwner().getId());
+                        }
                     }
                 }
+            } else {
+                logger.info("Ingest Service: zero files in the ingest queue.");
             }
-        } else {
-            logger.info("Ingest Service: zero files in the ingest queue.");
+        } catch ( EJBException ex ) {
+            logger.log(Level.WARNING, "Error initing the IngestServiceBean: {0}", ex.getMessage());
         }
     }
     

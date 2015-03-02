@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -1333,7 +1327,7 @@ public class DatasetPage implements java.io.Serializable {
                      */
                     try {
                         Long idToRemove = fmd.getId(); ///dfn.getId();
-                        logger.info("deleting file, filemetadata id " + idToRemove);
+                        logger.log(Level.INFO, "deleting file, filemetadata id {0}", idToRemove);
 
                         // finally, check if this file is being used as the default thumbnail
                         // for its dataset: 
@@ -1390,8 +1384,13 @@ public class DatasetPage implements java.io.Serializable {
         try {
             if (editMode == EditMode.CREATE) {
                 workingVersion.setLicense(DatasetVersion.License.CC0);
-                if(selectedTemplate != null){
-                   cmd = new CreateDatasetCommand(dataset, session.getUser(), false, null, selectedTemplate); 
+                if ( selectedTemplate != null ) {
+                    if ( session.getUser().isAuthenticated() ) {
+                        cmd = new CreateDatasetCommand(dataset, (AuthenticatedUser) session.getUser(), false, null, selectedTemplate); 
+                    } else {
+                        JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.create.authenticatedUsersOnly"));
+                        return null;
+                    }
                 } else {
                    cmd = new CreateDatasetCommand(dataset, session.getUser());
                 }
@@ -1407,15 +1406,15 @@ public class DatasetPage implements java.io.Serializable {
             }
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
-            error.append(ex + " ");
-            error.append(ex.getMessage() + " ");
+            error.append(ex).append(" ");
+            error.append(ex.getMessage()).append(" ");
             Throwable cause = ex;
-            while (cause.getCause() != null) {
+            while (cause.getCause()!= null) {
                 cause = cause.getCause();
-                error.append(cause + " ");
-                error.append(cause.getMessage() + " ");
+                error.append(cause).append(" ");
+                error.append(cause.getMessage()).append(" ");
             }
-            logger.fine("Couldn't save dataset: " + error.toString());
+            logger.log(Level.FINE, "Couldn''t save dataset: {0}", error.toString());
             populateDatasetUpdateFailureMessage();
             return null;
         } catch (CommandException ex) {

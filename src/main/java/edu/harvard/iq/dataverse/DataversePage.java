@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
@@ -514,9 +509,14 @@ public class DataversePage implements java.io.Serializable {
         //TODO change to Create - for now the page is expecting INFO instead.
         Boolean create;
         if (dataverse.getId() == null) {
-            dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
-            create = Boolean.TRUE;
-            cmd = new CreateDataverseCommand(dataverse, session.getUser(), facets.getTarget(), listDFTIL);
+            if ( session.getUser().isAuthenticated() ) {
+                dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+                create = Boolean.TRUE;
+                cmd = new CreateDataverseCommand(dataverse, (AuthenticatedUser) session.getUser(), facets.getTarget(), listDFTIL);
+            } else {
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataverse.create.authenticatedUsersOnly"));
+                return null;
+            }
         } else {
             create=Boolean.FALSE;
             cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), featuredDataverses.getTarget(), session.getUser(), listDFTIL);

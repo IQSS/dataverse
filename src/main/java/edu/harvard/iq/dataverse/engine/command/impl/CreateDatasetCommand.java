@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -68,7 +69,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         this.template=null;
     }
     
-    public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
+    public CreateDatasetCommand(Dataset theDataset, AuthenticatedUser user, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
@@ -79,7 +80,6 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-        logger.log(Level.INFO, "start "  + formatter.format(new Date().getTime()));
        
         if (  importType!=ImportType.MIGRATION && !ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getDoiSeparator()) ) {
             throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
@@ -102,10 +102,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             throw new IllegalCommandException(validationFailedString, this);
         }
                 
-        logger.log(Level.INFO, "after validation "  + formatter.format(new Date().getTime()));
-        // FIXME - need to revisit this. Either
-        // theDataset.setCreator(getUser());
-        // if, at all, we decide to keep it.
+        logger.log(Level.INFO, "after validation "  + formatter.format(new Date().getTime())); // TODO remove
+        theDataset.setCreator((AuthenticatedUser) getUser());
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
         
