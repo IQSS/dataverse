@@ -112,7 +112,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         }
 
                         swordService.addDatasetContact(newDatasetVersion, user);
-                        swordService.addDatasetSubject(newDatasetVersion);
+                        swordService.addDatasetSubjectIfMissing(newDatasetVersion);
                         swordService.setDatasetLicenseAndTermsOfUse(newDatasetVersion, deposit.getSwordEntry());
 
                         Dataset createdDataset = null;

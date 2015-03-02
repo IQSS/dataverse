@@ -422,9 +422,16 @@
                                                         <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                     </h:link>
                                                 </li>
-                                                <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
+                                                <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">                                                   
                                                     <li>
                                                         <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">
+                                                            <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
+                                                        </p:commandLink>
+                                                    </li>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{empty DataversePage.featuredDataverses.source and empty DataversePage.featuredDataverses.target}">
+                                                    <li>
+                                                        <p:commandLink id="noPub" onclick="noPubDVs.show()">
                                                             <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
                                                         </p:commandLink>
                                                     </li>
@@ -453,19 +460,20 @@
                                     <span class="glyphicon glyphicon-envelope no-text"/>
                                 </button>          
                                 -->
-                                <p:commandButton value="contact"  update=":contactDialog" oncomplete="contactForm.show()" >   
+                                <p:commandLink value="contact"  update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">   
                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>                                     
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                <f:param name="DO_VALIDATION" value="false"/>   
                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
-                               </p:commandButton>
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}"                                                          
+                               </p:commandLink>
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                               rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}"                                                          
                                                title="Link Dataverse to Your Dataverse"
                                                action="#{DataversePage.updateLinkableDataverses()}"                                                          
                                                oncomplete="PF('linkDataverseForm').show()"
                                                update=":linkDataverseForm">
-                                    <span class="glyphicon glyphicon-link no-text"/>
+                                    <span class="glyphicon glyphicon-envelope no-text"/>
                                 </p:commandLink>
                             </div>
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
@@ -543,6 +551,9 @@
                     </p:dialog>
 
                     <ui:include src="rolesAndPermissionsFragment.xhtml"/>
+                    
+                    <p:confirmDialog message="#{bundle['dataverse.nopublished.tip']}" header="#{bundle['dataverse.nopublished']}" widgetVar="noPubDVs">
+                    </p:confirmDialog>
 
                     <!-- Publish Confirmation Popup -->
                     <p:confirmDialog message="#{bundle['dataverse.publish.tip']}" header="#{bundle['dataverse.publish']}" widgetVar="confirmation">
