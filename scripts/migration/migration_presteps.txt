@@ -12,6 +12,14 @@ create table _dvn3_vdcuser as select * from vdcuser where id != 1;
 
 create table _dvn3_vdcrole as select * from vdcrole;
 
+create table _dvn3_study as select * from study
+-- where owner_id in (select id from _dvn3_vdc)
+;
+
+
+create table _dvn3_studyversion as select * from studyversion
+-- where study_id in (select id from _dvn3_study)
+;
 
 ----------------------------------------------
 -- run pg_dump to extract temp tables
