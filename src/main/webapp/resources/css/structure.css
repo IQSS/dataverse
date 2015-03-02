@@ -273,10 +273,16 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
-div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div {clear:left; margin-bottom: .5em;}
 div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div > span.label {vertical-align:text-bottom; line-height: normal; margin-left:.5em;}
 div[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;padding:4px;}
 div[id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
+div[id$='resultsTable'] div.card-title-icon-block span[class^='icon'],
+div[id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {font-size:1.3em;}
+div[id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {margin-top:3px;}
+div[id$='resultsTable'] div.card-preview-icon-block {width:48px; float:left; margin:4px 12px 6px 0;}
+div[id$='resultsTable'] div.card-preview-icon-block a {display:block;line-height:normal;}
+div[id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
+div[id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
 form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
 form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}

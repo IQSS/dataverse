@@ -506,7 +506,7 @@
                             <p:column styleClass="#{result.type == 'dataverses' ? 'dataverseResult' : (result.type == 'datasets' ? 'datasetResult' : '')}">
                                 <!--DATAVERSE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
-                                    <div>
+                                    <div class="title-icon-block">
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.name} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
@@ -518,15 +518,12 @@
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                         
                                         <span class="glyphicon glyphicon-link text-warning pull-right" jsf:rendered="#{!result.isInTree}"/>
-                                        
-                                        <i class="icon-dataverse text-warning pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
-                                        
+                                        <span class="icon-dataverse text-warning pull-right"/>
                                     </div>
-                                    <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
-                                            <!--img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/-->
+                                    <div class="card-preview-icon-block">
+                                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
                                              <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}" rendered="#{dataverseServiceBean.isDataverseCardImageAvailable(result.entityId, dataverseSession)}"/>
-                                             <h:outputText value="(no image available for dataverse)" rendered="#{!dataverseServiceBean.isDataverseCardImageAvailable(result.entityId, dataverseSession)}"/>
+                                             <span class="icon-dataverse text-warning" jsf:rendered="#{!dataverseServiceBean.isDataverseCardImageAvailable(result.entityId, dataverseSession)}"/>
                                         </h:outputLink>
                                     </div>
                                     
@@ -593,7 +590,7 @@
                                 </ui:fragment>
                                 <!--DATASET CARDS-->
                                 <ui:fragment rendered="#{result.type == 'datasets'}">
-                                    <div>
+                                    <div class="title-icon-block">
                                         <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
@@ -603,16 +600,12 @@
                                         <h:outputText value="#{SearchIncludeFragment.DEACCESSIONED}" styleClass="label label-info" rendered="#{result.deaccessionedState}"/>
                                         
                                         <span class="glyphicon glyphicon-link text-info pull-right" jsf:rendered="#{!result.isInTree}"/>
-                                        
-                                        <i class="icon-dataset text-info pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"></i>
-                                        
+                                        <span class="icon-dataset text-info pull-right"/>
                                     </div>
-                                    <!--<span class="label label-default">Default</span>-->
-                                    <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                        <!-- img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/ -->
-                                        <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
+                                    <div class="card-preview-icon-block">
+                                        <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <p:graphicImage value="/api/access/dsCardImage/#{result.datasetVersionId}" rendered="#{datasetServiceBean.isDatasetCardImageAvailable(result.datasetVersionId, dataverseSession)}"/>
-                                            <h:outputText value="(no image available for dataset)" rendered="#{!datasetServiceBean.isDatasetCardImageAvailable(result.datasetVersionId, dataverseSession)}"/>
+                                            <span class="icon-dataset text-info" jsf:rendered="#{!datasetServiceBean.isDatasetCardImageAvailable(result.datasetVersionId, dataverseSession)}"/>
                                         </a>
                                     </div>
 
@@ -655,7 +648,7 @@
                                 </ui:fragment>
                                 <!--FILE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'files'}">
-                                    <div>
+                                    <div class="card-title-icon-block">
                                         <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
@@ -663,10 +656,10 @@
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                         
+                                        <span class="glyphicon glyphicon-lock text-danger pull-right" jsf:rendered="#{dataFileServiceBean.find(result.entityId).restricted and (!(permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')))}"/>
+                                        <span class="icon-unlock text-success pull-right" jsf:rendered="#{dataFileServiceBean.find(result.entityId).restricted and permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')}"/>
                                         <span class="glyphicon glyphicon-link text-muted pull-right" jsf:rendered="#{!result.parent.get('isInTree')}"/>
-                                        
-                                        <i class="icon-file text-muted pull-right" style="font-size:1.3em;line-height:1.1em;margin-right:4px;"/>
-                                        
+                                        <span class="icon-file text-muted pull-right"/>
                                     </div>
                                     <ui:remove>
                                     <div>
@@ -678,27 +671,14 @@
                                     </div>
                                     </ui:remove>
                                     
-                                    <h:outputText value="(locked)" rendered="#{dataFileServiceBean.find(result.entityId).restricted and (!(permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')))}"/>
-                                    <h:outputText value="(unlocked)" rendered="#{dataFileServiceBean.find(result.entityId).restricted and permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')}"/>
-                                         
-                                    
-                                    <div style="width:48px; float:left; margin:4px 12px 6px 0">
-                                        <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
-                                            
-                                        <ui:fragment rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}">
-                                            <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="clear:left; margin-bottom: .5em;">
-                                                <p:graphicImage value="/api/access/fileCardImage/#{result.entityId}" />
-                                            </a>
-                                        </ui:fragment>
-                                        
-                                        <i class="icon-#{dataFileServiceBean.getFileClassById(result.entityId)} text-muted h1"
+                                    <div class="card-preview-icon-block">
+                                        <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
+                                                      rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}">
+                                            <p:graphicImage value="/api/access/fileCardImage/#{result.entityId}" />
+                                        </h:outputLink>
+                                        <span class="icon-#{dataFileServiceBean.getFileClassById(result.entityId)} text-muted h1"
                                            jsf:rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}"/>
-                                        
                                     </div>
-                                    
-                                    <!-- ui:fragment --> <!-- rendered="#{dataFileServiceBean.find(result.entityId).restricted}" -->
-                                        
-                                    <!-- /ui:fragment -->
 
                                     <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
 
