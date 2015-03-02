@@ -592,7 +592,22 @@ public class DatasetVersion implements Serializable {
             }
         }
         if (this.getDataset().getReleasedVersion() != null) {
-            return this.getFileMetadatas().size() == this.getDataset().getReleasedVersion().getFileMetadatas().size();
+            if (this.getFileMetadatas().size() != this.getDataset().getReleasedVersion().getFileMetadatas().size()){
+                return false;
+            } else {
+                List <DataFile> current = new ArrayList();
+                List <DataFile> previous = new ArrayList();
+                for (FileMetadata fmdc : this.getFileMetadatas()){
+                    current.add(fmdc.getDataFile());
+                }
+                for (FileMetadata fmdc : this.getDataset().getReleasedVersion().getFileMetadatas()){
+                    previous.add(fmdc.getDataFile());
+                }
+                for (DataFile fmd: current){
+                    previous.remove(fmd);
+                }
+                return previous.isEmpty();                
+            }           
         }
         return true;
     }
