@@ -466,7 +466,7 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                <f:param name="DO_VALIDATION" value="false"/>   
                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
-                               </p:commandButton>
+                               </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
                                                rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}"                                                          
                                                title="Link Dataverse to Your Dataverse"
