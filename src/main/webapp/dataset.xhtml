@@ -648,10 +648,10 @@
                                                     </a>
                                                 </ui:fragment>
 
-                                                <i class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} text-muted" style="font-size:3em;line-height:1.05;" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.image)}"/>
+                                                <i class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} text-muted" style="font-size:3em;line-height:1.05;" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.fileSystemName, fileMetadata.dataFile.contentType))}"/>
 
-                                                <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and fileMetadata.dataFile.image}">
-                                                    <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
+                                                <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.fileSystemName, fileMetadata.dataFile.contentType)}">
+                                                    <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                                     <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                                 </ui:fragment>
                                                 <!-- Restricted File Icon -->

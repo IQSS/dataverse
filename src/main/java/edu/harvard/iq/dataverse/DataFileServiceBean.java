@@ -296,7 +296,12 @@ public class DataFileServiceBean implements java.io.Serializable {
        return ImageThumbConverter.isThumbnailAvailable(file);      
     }
     
- 
+    
+    /* 
+        TODO: 
+        rename this method "isCardThumbnailAvailable" 
+        -- L.A. 4.0 beta14
+    */
     public boolean isPreviewAvailable (Long fileId, DataverseSession dataverseSession) {
         if (fileId == null) {
             return false; 
@@ -309,6 +314,34 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         return isThumbnailAvailable(file, dataverseSession); 
+    }
+    
+    // TODO: 
+    // Document this.
+    // -- L.A. 4.0 beta14
+    
+    public boolean isTemporaryPreviewAvailable(String fileSystemId, String mimeType) {
+        
+        String filesRootDirectory = System.getProperty("dataverse.files.directory");
+        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
+            filesRootDirectory = "/tmp/files";
+        }
+
+        String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
+        
+        String imageThumbFileName = null;
+        
+        if ("application/pdf".equals(mimeType)) {
+            imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
+        } else if (mimeType != null && mimeType.startsWith("image/")) {
+            imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
+        }
+        
+        if (imageThumbFileName != null) {
+            return true; 
+        }
+            
+        return false;
     }
     
     /* 

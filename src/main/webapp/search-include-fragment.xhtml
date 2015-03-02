@@ -687,7 +687,7 @@
                                             
                                         <ui:fragment rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}">
                                             <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}" style="clear:left; margin-bottom: .5em;">
-                                                <p:graphicImage value="/api/access/preview/#{result.entityId}" />
+                                                <p:graphicImage value="/api/access/fileCardImage/#{result.entityId}" />
                                             </a>
                                         </ui:fragment>
                                         

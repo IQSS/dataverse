@@ -79,9 +79,7 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
 @Path("access")
 public class Access extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
-    
-    private static final String DEFAULT_FILE_ICON = "icon_file.png";
-    
+        
     @EJB
     DataFileServiceBean dataFileService;
     @EJB 
@@ -311,10 +309,10 @@ public class Access extends AbstractApiBean {
         return downloadInstance;
     }
     
-    @Path("imagethumb/{fileSystemId}")
+    @Path("tempPreview/{fileSystemId}")
     @GET
     @Produces({"image/png"})
-    public InputStream imagethumb(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public InputStream tempPreview(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
@@ -325,7 +323,7 @@ public class Access extends AbstractApiBean {
         
         String mimeTypeParam = uriInfo.getQueryParameters().getFirst("mimetype");
         String imageThumbFileName = null;
-        
+                
         if ("application/pdf".equals(mimeTypeParam)) {
             imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
         } else {
@@ -338,10 +336,21 @@ public class Access extends AbstractApiBean {
         // (or maybe we shouldn't delete it - but instead move it into the 
         // permanent location... so that it doesn't have to be generated again?)
         // -- L.A. Aug. 21 2014
+        // Update: 
+        // the temporary thumbnail file does get cleaned up now; 
+        // but yeay, maybe we should be saving it permanently instead, as 
+        // the above suggested...
+        // -- L.A. Feb. 28 2015
+        
         
         if (imageThumbFileName == null) {
+            return null; 
+        }
+        /* 
+         removing the old, non-vector default icon: 
             imageThumbFileName = getWebappImageResource(DEFAULT_FILE_ICON);
         }
+        */
 
         InputStream in;
 
@@ -357,10 +366,10 @@ public class Access extends AbstractApiBean {
     
     
     
-    @Path("preview/{fileId}")
+    @Path("fileCardImage/{fileId}")
     @GET
     @Produces({ "image/png" })
-    public InputStream preview(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    public InputStream fileCardImage(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         
         
         
@@ -378,9 +387,13 @@ public class Access extends AbstractApiBean {
             imageThumbFileName = ImageThumbConverter.generateImageThumb(df.getFileSystemLocation().toString(), 48);
         } else if ("application/zipped-shapefile".equalsIgnoreCase(df.getContentType())) {
             imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(df.getFileSystemLocation().toString(), 48);
-        } else {
+        } 
+        /* 
+         * Removing the old, non-vector default icon: 
+        else {
             imageThumbFileName = getWebappImageResource (DEFAULT_FILE_ICON);
         }
+        */
         
         if (imageThumbFileName != null) {
             InputStream in;
@@ -582,6 +595,8 @@ public class Access extends AbstractApiBean {
         return null;         
     }
     
+    /* 
+        removing: 
     private String getWebappImageResource(String imageName) {
         String imageFilePath = null;
         String persistenceFilePath = null;
@@ -601,6 +616,7 @@ public class Access extends AbstractApiBean {
 
         return null;
     }
+    */
     
     
     // TODO: 
