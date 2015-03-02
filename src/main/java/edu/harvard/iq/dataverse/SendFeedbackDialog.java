@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,6 +40,12 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return userEmail;
     }
     
+    public void initUserInput(ActionEvent ae) {
+        userEmail="";
+        userMessage="";
+        messageTo="";
+        messageSubject="";
+    }
     
     
     public String getMessageTo() {
@@ -129,12 +136,12 @@ public class SendFeedbackDialog implements java.io.Serializable {
         }
         logger.info("sending email to: "+email);
         if (isLoggedIn() && userMessage!=null) {
-            mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
+        //    mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
             userMessage = "";
             return null;
         } else {
             if (userEmail != null && userMessage != null) {
-                mailService.sendMail(userEmail, email, getMessageSubject(), userMessage);
+            //    mailService.sendMail(userEmail, email, getMessageSubject(), userMessage);
                 userMessage = "";
                 return null;
             } else {
