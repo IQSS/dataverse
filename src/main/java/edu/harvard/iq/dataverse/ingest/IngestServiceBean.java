@@ -1420,9 +1420,9 @@ public class IngestServiceBean {
                         dataFile.setIngestRequest(null);
                     }
                     dataFile = fileService.save(dataFile);
-                    FacesMessage facesMessage = new FacesMessage("ingest done");
+                    FacesMessage facesMessage = new FacesMessage("The file " + dataFile.getFileMetadata().getLabel() + " ingested.");
                     pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
-                    logger.info("Ingest (" + dataFile.getFileMetadata().getDescription() + "); Sent push notification to the page.");
+                    logger.info("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
 
                     if (additionalData != null) {
                         // remove the extra tempfile, if there was one:

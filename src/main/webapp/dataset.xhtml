@@ -498,14 +498,15 @@
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
                         <div id="contentTabs">
                             <ui:fragment> <!-- rendered="#{empty DatasetPage.editMode}" -->
-                                <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/>
+                                <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update=":datasetForm:tabView:filesTable,:messagePanel" style="display:none"/>
                                 <script type="text/javascript">
                                     function updateFilesTable(facesmessage) {
+                                        //flash['successMsg'] = facesmessage.text; -- not working as expected - ? L.A.
                                         $('button[id$="refreshButton"]').trigger('click');
                                     }
                                 </script>
                                 <p:socket channel="/ingest#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
-                                    <p:ajax event="message" update="@all" />
+                                    <!-- p:ajax event="message" update="@all" / -->
                                 </p:socket>
                             </ui:fragment>
                             <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">

@@ -1071,6 +1071,7 @@ public class DatasetPage implements java.io.Serializable {
             workingVersion = datasetVersionService.find(versionId);
         }
         displayCitation = dataset.getCitation(false, workingVersion);
+        JsfHelper.addSuccessMessage(JH.localize("dataset.message.files.ingestSuccess"));
     }
 
     public String deleteDataset() {
