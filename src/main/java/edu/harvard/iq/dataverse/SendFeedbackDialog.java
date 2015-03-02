@@ -1,12 +1,19 @@
 package edu.harvard.iq.dataverse;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.validator.routines.EmailValidator;
 
 /**
  *
@@ -21,6 +28,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     private String messageSubject = "";
     private String messageTo = "";
     private String defaultRecipientEmail = "support@thedata.org";
+    Long op1, op2, userSum;
     // Either the dataverse or the dataset that the message is pertaining to
     // If there is no recipient, this is a general feeback message
     private DvObject recipient;
@@ -41,10 +49,40 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
     
     public void initUserInput(ActionEvent ae) {
+        System.out.println("initUserInput()");
         userEmail="";
         userMessage="";
         messageTo="";
         messageSubject="";
+        Random random = new Random();
+        op1 = new Long(random.nextInt(10));
+        op2 = new Long(random.nextInt(10));
+        userSum=null;
+        
+    }
+
+    public Long getOp1() {
+        return op1;
+    }
+
+    public void setOp1(Long op1) {
+        this.op1 = op1;
+    }
+
+    public Long getOp2() {
+        return op2;
+    }
+
+    public void setOp2(Long op2) {
+        this.op2 = op2;
+    }
+
+    public Long getUserSum() {
+        return userSum;
+    }
+
+    public void setUserSum(Long userSum) {
+        this.userSum = userSum;
     }
     
     
@@ -67,6 +105,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public void setUserMessage (String mess) {
+        System.out.println("setUserMessage: "+mess);
         userMessage = mess;
     }
     
@@ -98,10 +137,10 @@ public class SendFeedbackDialog implements java.io.Serializable {
           this.recipient = recipient;
     }
     
-    private String getDataverseEmail() {
+    private String getDataverseEmail(Dataverse dataverse) {
         String email = "";
-        Dataverse dv = (Dataverse) recipient;
-        for (DataverseContact dc : dv.getDataverseContacts()) {
+       
+        for (DataverseContact dc : dataverse.getDataverseContacts()) {
             if (!email.isEmpty()) {
                 email += ",";
             }
@@ -109,17 +148,41 @@ public class SendFeedbackDialog implements java.io.Serializable {
         }
         return email;
     }
-    
+      public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+
+        if (op1 + op2 !=(Long)value) {
+
+            FacesMessage msg
+                    = new FacesMessage("Sum is incorrect, please try again.");
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+            throw new ValidatorException(msg);
+        }
+
+    }
+      
+  public void validateUserEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+
+        if (!EmailValidator.getInstance().isValid((String)value)) {
+
+            FacesMessage msg
+                    = new FacesMessage("Invalid email.");
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+            throw new ValidatorException(msg);
+        }
+
+    }     
     public String sendMessage() {
         String email = "";
         if (recipient!=null) {
             if (recipient.isInstanceofDataverse() ) {
-               email = getDataverseEmail();
+               email = getDataverseEmail((Dataverse)recipient);
             }
             else if (recipient.isInstanceofDataset()) {
                 Dataset d = (Dataset)recipient;
                 for (DatasetField df : d.getLatestVersion().getFlatDatasetFields()){
-                    if (df.getDatasetFieldType().equals(DatasetFieldConstant.datasetContactEmail)) {
+                    if (df.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
                         if (!email.isEmpty()) {
                             email+=",";
                         }
@@ -127,21 +190,20 @@ public class SendFeedbackDialog implements java.io.Serializable {
                     }
                 }
                 if (email.isEmpty()) {
-                    email = getDataverseEmail();
+                    email = getDataverseEmail(d.getOwner());
                 }
             }
         }
         if (email.isEmpty()) {
             email = defaultRecipientEmail;
         }
-        logger.info("sending email to: "+email);
         if (isLoggedIn() && userMessage!=null) {
-        //    mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
+            mailService.sendMail(loggedInUserEmail(), email, getMessageSubject(), userMessage);
             userMessage = "";
             return null;
         } else {
             if (userEmail != null && userMessage != null) {
-            //    mailService.sendMail(userEmail, email, getMessageSubject(), userMessage);
+                mailService.sendMail(userEmail, email, getMessageSubject(), userMessage);
                 userMessage = "";
                 return null;
             } else {

@@ -67,7 +67,7 @@
                         
                         <h:form class="navbar-form navbar-left" >    
                           
-                           <p:commandLink value="#{bundle['header.feedback']}"  oncomplete="contactForm.show()" update=":contactDialog" >
+                           <p:commandLink value="#{bundle['header.feedback']}"  oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}" >
                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.feedback']}"/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

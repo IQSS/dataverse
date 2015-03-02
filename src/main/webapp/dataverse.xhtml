@@ -460,7 +460,7 @@
                                     <span class="glyphicon glyphicon-envelope no-text"/>
                                 </button>          
                                 -->
-                                <p:commandButton value="contact"  update=":contactDialog" oncomplete="contactForm.show()" >   
+                                <p:commandLink value="contact"  update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">   
                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>                                     
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -473,7 +473,7 @@
                                                action="#{DataversePage.updateLinkableDataverses()}"                                                          
                                                oncomplete="PF('linkDataverseForm').show()"
                                                update=":linkDataverseForm">
-                                    <span class="glyphicon glyphicon-link no-text"/>
+                                    <span class="glyphicon glyphicon-envelope no-text"/>
                                 </p:commandLink>
                             </div>
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
