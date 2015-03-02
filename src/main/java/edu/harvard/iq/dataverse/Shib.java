@@ -59,6 +59,8 @@ public class Shib implements java.io.Serializable {
     SettingsServiceBean settingsService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    DataverseServiceBean dataverseService;
 
     HttpServletRequest request;
 
@@ -159,7 +161,6 @@ public class Shib implements java.io.Serializable {
      * be re-worked. See also the comment about the lack of a Cancel button.
      */
     private boolean visibleTermsOfUse;
-    private final String homepage = "/dataverse.xhtml";
     private final String loginpage = "/loginpage.xhtml";
     private final String identityProviderProblem = "Problem with Identity Provider";
 
@@ -302,10 +303,11 @@ public class Shib implements java.io.Serializable {
             logger.info("Updating display info for " + au.getName());
             authSvc.updateAuthenticatedUser(au, displayInfo);
             logInUserAndSetShibAttributes(au);
+            String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
             try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(homepage);
+                FacesContext.getCurrentInstance().getExternalContext().redirect(prettyFacesHomePageString);
             } catch (IOException ex) {
-                logger.info("Unable to redirect user to " + homepage);
+                logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
             }
         } else {
             state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
@@ -524,7 +526,7 @@ public class Shib implements java.io.Serializable {
             logger.info("couldn't create user " + userPersistentId);
         }
         logInUserAndSetShibAttributes(au);
-        return homepage + "?faces-redirect=true";
+        return getPrettyFacesHomePageString(true);
     }
 
     public String confirmAndConvertAccount() {
@@ -541,7 +543,7 @@ public class Shib implements java.io.Serializable {
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
                 JsfHelper.addSuccessMessage("Your Dataverse account is now associated with your institutional account.");
-                return homepage + "?faces-redirect=true";
+                return getPrettyFacesHomePageString(true);
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";
             }
@@ -701,6 +703,49 @@ public class Shib implements java.io.Serializable {
             return lastName;
         } else {
             return "Unknown";
+        }
+    }
+
+    public String getRootDataverseAlias() {
+        Dataverse rootDataverse = dataverseService.findRootDataverse();
+        if (rootDataverse != null) {
+            String rootDvAlias = rootDataverse.getAlias();
+            if (rootDvAlias != null) {
+                return rootDvAlias;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param includeFacetDashRedirect if true, include "faces-redirect=true" in
+     * the string
+     *
+     * @todo Once https://github.com/IQSS/dataverse/issues/1519 is done, revisit
+     * this method and have the home page be "/" rather than "/dataverses/root".
+     *
+     * @todo Like builtin users, Shibboleth should benefit from redirectPage
+     * logic per https://github.com/IQSS/dataverse/issues/1551
+     */
+    public String getPrettyFacesHomePageString(boolean includeFacetDashRedirect) {
+        String plainHomepageString = "/dataverse.xhtml";
+        String rootDvAlias = getRootDataverseAlias();
+        if (includeFacetDashRedirect) {
+            if (rootDvAlias != null) {
+                return plainHomepageString + "?alias=" + rootDvAlias + "&faces-redirect=true";
+            } else {
+                return plainHomepageString + "?faces-redirect=true";
+            }
+        } else {
+            if (rootDvAlias != null) {
+                /**
+                 * @todo Is there a constant for "/dataverse/" anywhere? I guess
+                 * we'll just hard-code it here.
+                 */
+                return "/dataverse/" + rootDvAlias;
+            } else {
+                return plainHomepageString;
+            }
         }
     }
 
