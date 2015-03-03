@@ -51,7 +51,6 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
              */
             UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
             if (userRequestMetadata == null) {
-                logger.log(Level.INFO, "In the groupsFor(User u) method, u.getRequestMetadata() was null for user \"{0}\". Returning empty set. See also https://github.com/IQSS/dataverse/issues/1354", u.getIdentifier());
                 return Collections.EMPTY_SET;
             }
             return updateProvider(ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress()));
