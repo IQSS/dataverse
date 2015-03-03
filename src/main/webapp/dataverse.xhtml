@@ -526,54 +526,73 @@
                         </ui:fragment>
                     </ui:fragment>
 
+                    <!-- Save / Cancel Button Panel -->
+                    <div class="button-block" jsf:rendered="#{!empty DataversePage.editMode}">
+                        <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all"/>
+                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
+                        <p:button tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                    </div>
+                   
+                    <!-- POPUPS -->
                     <!-- Featured Dataverses Popup -->
                     <p:dialog header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
-                        <!--<div class="form-group">
-                            <p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}"
-                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>
-                        </div>-->
                         <div class="form-group">
                             <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}"
                                                      itemLabel="#{bundle['dataverse.displayFeatured']}"/>
                         </div>
                         <div class="form-group">
-                            <p class="help-block">#{bundle['dataverse.selectToFeature']}</p>
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.selectToFeature']}</p>
                             <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"
                                         itemLabel="#{featureddataverse.name}"
                                         itemValue="#{featureddataverse}" converter="dataverseConverter"
                                         showSourceFilter="true" showTargetFilter="true" />
                         </div>
-                        <h:commandButton type="submit" action="#{DataversePage.saveFeature()}" class="btn btn-default" value="#{bundle.saveChanges}"/>
-                        <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.saveChanges}" action="#{DataversePage.saveFeature()}"/>
+                            <p:commandButton value="#{bundle.cancel}" onclick="browseOptsForm.hide()"/>
+                        </div>
+                    </p:dialog>
+                    <p:dialog header="#{bundle['dataverse.nopublished']}" widgetVar="noPubDVs">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.nopublished.tip']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="noPubDVs.hide()"/>
+                        </div>
                     </p:dialog>
 
-                    <ui:include src="rolesAndPermissionsFragment.xhtml"/>
-                    
-                    <p:confirmDialog message="#{bundle['dataverse.nopublished.tip']}" header="#{bundle['dataverse.nopublished']}" widgetVar="noPubDVs">
-                    </p:confirmDialog>
-
                     <!-- Publish Confirmation Popup -->
-                    <p:confirmDialog message="#{bundle['dataverse.publish.tip']}" header="#{bundle['dataverse.publish']}" widgetVar="confirmation">
-                        <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide();" type="button" />
-                    </p:confirmDialog>
-                    
-                    <p:confirmDialog message="#{bundle['dataverse.publish.failed.tip']}" header="#{bundle['dataverse.publish.failed']}" widgetVar="mayNotRelease"/>
-                    
-                    <p:confirmDialog message="#{bundle['dataverse.delete.tip']}" header="#{bundle['dataverse.delete']}" widgetVar="deleteConfirmation">
-                        <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{DataversePage.deleteDataverse}" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide();" type="button" />
-                    </p:confirmDialog>
-
-                    <!-- Save / Cancel Button Panel -->
-                    <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
-                        <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all"/>
-                        <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
-                        <p:button tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
-                    </p:panel>
+                    <p:dialog header="#{bundle['dataverse.publish']}" widgetVar="confirmation">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.tip']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide();" type="button" />
+                        </div>
+                    </p:dialog>
+                   
+                    <p:dialog header="#{bundle['dataverse.publish.failed']}" widgetVar="mayNotRelease">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.failed.tip']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="mayNotRelease.hide();" type="button" />
+                        </div>
+                    </p:dialog>
+                   
+                    <p:dialog header="#{bundle['dataverse.delete']}" widgetVar="deleteConfirmation">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.delete.tip']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{DataversePage.deleteDataverse}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide();" type="button" />
+                        </div>
+                    </p:dialog>
                 </h:form>
 
-                <!-- Content Panel -->
+                <!-- Search/Browse Facets Panel -->
                 <ui:fragment rendered="#{empty DataversePage.editMode}">
                     <ui:include src="search-include-fragment.xhtml">
                         <ui:param name="showAdvancedSearchLink" value="true"/>
@@ -581,10 +600,11 @@
                         <ui:param name="showSearch" value="true"/>
                     </ui:include>
                 </ui:fragment>
-                <!-- Dialog Link Dataverse Form -->
+               
+                <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{bundle['dataverse.link']}" widgetVar="linkDataverseForm" style="min-width:500px;">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
-                        <p class="help-block">#{bundle['dataverse.link.dataverse.choose']}</p>
+                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.dataverse.choose']}</p>
                         <div class="form-group">
                             <label class="col-sm-4 control-label">
                                 <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
@@ -597,13 +617,13 @@
                                 </h:selectOneMenu>
                             </div>
                         </div>
-                        <h:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
-                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
-                            #{bundle['cancel']}
-                        </button>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="linkDataverseForm.hide()"/>
+                        </div>
                     </h:form>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
-                        <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
+                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.no.choice']}</p>
                         <div class="form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">
@@ -616,28 +636,31 @@
                                 </div>
                             </div>
                         </div>
-                        <p:commandLink styleClass="btn btn-default" onclick="linkDataverseForm.hide()" 
-                                         value="#{bundle['dataverse.link.save']}" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
-                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
-                            #{bundle['cancel']}
-                        </button>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle['dataverse.link.save']}" onclick="linkDataverseForm.hide()" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
+                            <p:commandButton value="#{bundle.cancel}" onclick="linkDataverseForm.hide()"/>
+                        </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
-                        <p>#{bundle['dataverse.link.no.linkable']}</p>
-                        <button type="button" class="btn btn-default" onclick="linkDataverseForm.hide()">
-                            #{bundle['done']}
-                        </button>
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.link.no.linkable']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.cancel}" onclick="linkDataverseForm.hide()"/>
+                        </div>
                     </ui:fragment>
                 </p:dialog>
+               
+                <!-- Metadata Resest Modifications Popup -->
                 <p:dialog id="resetModifications" header="#{bundle['dataverse.resetModifications']}" widgetVar="resetModifications" modal="true" closable="false">
-                    <h:outputText  value="#{bundle['dataverse.resetModifications.text']}" escape="false"/>
-                    <p:commandLink styleClass="btn btn-default"  value="#{bundle.continue}"
-                                   onclick="resetModifications.hide()"
-                                   update="@widgetVar(optionBlock)"
-                                   actionListener="#{DataversePage.editMetadataBlocks(true)}"/>
-                    <button type="button" class="btn btn-default" onclick="uncheck();resetModifications.hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
-                </p:dialog> 
-                
+                    <p class="text-danger">
+                        <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.resetModifications.text']}
+                    </p>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle.continue}" onclick="resetModifications.hide()" update="@widgetVar(optionBlock)" actionListener="#{DataversePage.editMetadataBlocks(true)}"/>
+                        <p:commandButton value="#{bundle.cancel}" onclick="uncheck();resetModifications.hide()" />
+                    </div>
+                </p:dialog>
                 
                 <script type="text/javascript">
                     //<![CDATA[
