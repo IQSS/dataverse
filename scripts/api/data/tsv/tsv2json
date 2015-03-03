@@ -31,7 +31,7 @@ for row in rows:
     # FIXME: don't simply strip out single quotes
     row["description"] = row["description"].replace("'", "")
     jsondata = "%s%s%s" % ("'",json.dumps(row),"'")
-    start = 'curl -H "Content-type:application/json" -X POST "http://localhost:8080/api/dvs/'
+    start = 'curl -H "Content-type:application/json" -X POST "http://localhost:8080/api/dataverses/'
     print "echo creating dataverse ", row["alias"]
     print "%s%s%s%s%s%s" % (start, target, "?key=",creator, "\" -d ", jsondata)
     print

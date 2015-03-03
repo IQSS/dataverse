@@ -13,35 +13,35 @@ Dataverses
 Generates a new dataverse under ``$id``. Expects a json content describing the dataverse.
 If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
 
-    POST http://$SERVER/api/dvs/$id?key=$apiKey
+    POST http://$SERVER/api/dataverses/$id?key=$apiKey
 
 View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its alias, or the special value ``:root``. ::
 
-    GET http://$SERVER/api/dvs/$id
+    GET http://$SERVER/api/dataverses/$id
 
 Deletes the dataverse whose ID is given::
 
-    DELETE http://$SERVER/api/dvs/$id?key=$apiKey
+    DELETE http://$SERVER/api/dataverses/$id?key=$apiKey
 
 Lists all the DvObjects under dataverse ``id``. ::
 
-    GET http://$SERVER/api/dvs/$id/contents
+    GET http://$SERVER/api/dataverses/$id/contents
 
 All the roles defined directly in the dataverse identified by ``id``::
 
-  GET http://$SERVER/api/dvs/$id/roles?key=$apiKey
+  GET http://$SERVER/api/dataverses/$id/roles?key=$apiKey
 
 Creates a new role under dataverse ``id``. Needs a json file with the role description::
 
-  POST http://$SERVER/api/dvs/$id/roles?key=$apiKey
+  POST http://$SERVER/api/dataverses/$id/roles?key=$apiKey
 
 List all the role assignments at the given dataverse::
 
-  GET http://$SERVER/api/dvs/$id/assignments?key=$apiKey
+  GET http://$SERVER/api/dataverses/$id/assignments?key=$apiKey
 
 Assigns a new role, based on the POSTed JSON. ::
 
-  POST http://$SERVER/api/dvs/$id/assignments?key=$apiKey
+  POST http://$SERVER/api/dataverses/$id/assignments?key=$apiKey
 
 POSTed JSON example::
 
@@ -52,32 +52,32 @@ POSTed JSON example::
 
 Delete the assignment whose id is ``$id``::
 
-  DELETE http://$SERVER/api/dvs/$id/assignments/$id?key=$apiKey
+  DELETE http://$SERVER/api/dataverses/$id/assignments/$id?key=$apiKey
 
 Get the metadata blocks defined on the passed dataverse::
 
-  GET http://$SERVER/api/dvs/$id/metadatablocks?key=$apiKey
+  GET http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
 
 Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name). ::
 
-  POST http://$SERVER/api/dvs/$id/metadatablocks?key=$apiKey
+  POST http://$SERVER/api/dataverses/$id/metadatablocks?key=$apiKey
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks::
 
-  GET http://$SERVER/api/dvs/$id/metadatablocks/:isRoot?key=$apiKey
+  GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
-  POST http://$SERVER/api/dvs/$id/metadatablocks/:isRoot?key=$apiKey
+  POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey
 
 Create a new dataset in dataverse ``id``. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of ``"datasetVersion"``. The initial versions version number will be set to ``1.0``, and its state will be set to ``DRAFT`` regardless of the content of the json object. Example json can be found at ``data/dataset-create-new.json``. ::
 
-  POST http://$SERVER/api/dvs/$id/datasets/?key=$apiKey
+  POST http://$SERVER/api/dataverses/$id/datasets/?key=$apiKey
 
 Publish the Dataverse pointed by ``identifier``, which can either by the dataverse alias or its numerical id. ::
 
-  POST http://$SERVER/api/dvs/$identifier/actions/:publish?key=$apiKey
+  POST http://$SERVER/api/dataverses/$identifier/actions/:publish?key=$apiKey
 
 
 Datasets
@@ -167,7 +167,7 @@ Explicit groups list their members explicitly. These groups are defined in datav
   
 Create a new explicit group under dataverse ``$id``::
   
-  POST http://$server/api/dvs/$id/groups
+  POST http://$server/api/dataverses/$id/groups
 
 Data being POSTed is json-formatted description of the group::
 
@@ -179,31 +179,31 @@ Data being POSTed is json-formatted description of the group::
 
 List explicit groups under dataverse ``$id``::
 
-  GET http://$server/api/dvs/$id/groups
+  GET http://$server/api/dataverses/$id/groups
 
 Show group ``$groupAlias`` under dataverse ``$dv``::
 
-  GET http://$server/api/dvs/$dv/groups/$groupAlias
+  GET http://$server/api/dataverses/$dv/groups/$groupAlias
 
 Update group ``$groupAlias`` under dataverse ``$dv``. The request body is the same as the create group one, except that the group alias cannot be changed. Thus, the field ``aliasInOwner`` is ignored. ::
 
-  PUT http://$server/api/dvs/$dv/groups/$groupAlias
+  PUT http://$server/api/dataverses/$dv/groups/$groupAlias
 
 Delete group ``$groupAlias`` under dataverse ``$dv``::
 
-  DELETE http://$server/api/dvs/$dv/groups/$groupAlias
+  DELETE http://$server/api/dataverses/$dv/groups/$groupAlias
 
 Bulk add role assignees to an explicit group. The request body is a JSON array of role assignee identifiers, such as ``@admin``, ``&ip/localhosts`` or ``:authenticated-users``::
 
-  POST http://$server/api/dvs/$dv/groups/$groupAlias/roleAssignees
+  POST http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees
 
 Add a single role assignee to a group. Request body is ignored::
 
-  PUT http://$server/api/dvs/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
+  PUT http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
 Remove a single role assignee from an explicit group::
   
-  DELETE http://$server/api/dvs/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
+  DELETE http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
 
 

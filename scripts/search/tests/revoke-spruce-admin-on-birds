@@ -1,6 +1,6 @@
 #!/bin/sh
 . scripts/search/assumptions
-OUTPUT=`curl -s -X DELETE "http://localhost:8080/api/dvs/$BIRDS_DATAVERSE/assignments/$SPRUCE_ADMIN_ON_BIRDS?key=$FINCHKEY"`
+OUTPUT=`curl -s -X DELETE "http://localhost:8080/api/dataverses/$BIRDS_DATAVERSE/assignments/$SPRUCE_ADMIN_ON_BIRDS?key=$FINCHKEY"`
 echo $OUTPUT
 echo
 echo $OUTPUT | jq .data.message

@@ -44,13 +44,13 @@ echo
 
 echo "Setting up the root dataverse"
 adminKey=$(echo $adminResp | jq .data.apiToken | tr -d \")
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-root.json "$SERVER/dvs/?key=$adminKey"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-root.json "$SERVER/dataverses/?key=$adminKey"
 echo
 echo "Set the metadata block for Root"
-curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/dvs/:root/metadatablocks/?key=$adminKey
+curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/dataverses/:root/metadatablocks/?key=$adminKey
 echo
 echo "Set the default facets for Root"
-curl -s -X POST -H "Content-type:application/json" -d "[\"authorName\",\"subject\",\"keywordValue\",\"dateOfDeposit\"]" $SERVER/dvs/:root/facets/?key=$adminKey
+curl -s -X POST -H "Content-type:application/json" -d "[\"authorName\",\"subject\",\"keywordValue\",\"dateOfDeposit\"]" $SERVER/dataverses/:root/facets/?key=$adminKey
 echo
 
 

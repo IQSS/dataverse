@@ -1,11 +1,11 @@
 #!/bin/bash
 # We'll create a dataverse and then delete it
-ID_TO_DELETE=`curl -s -H "Content-type:application/json" -X POST -d @scripts/api/data/dv-uma-deletable.json "http://localhost:8080/api/dvs/umaTop?key=uma" | jq '.data.id'`
+ID_TO_DELETE=`curl -s -H "Content-type:application/json" -X POST -d @scripts/api/data/dv-uma-deletable.json "http://localhost:8080/api/dataverses/umaTop?key=uma" | jq '.data.id'`
 # Show the dataverse we just created
-#curl -s -X GET "http://localhost:8080/api/dvs/$ID_TO_DELETE?key=uma"
+#curl -s -X GET "http://localhost:8080/api/dataverses/$ID_TO_DELETE?key=uma"
 
 # We'll delete the dataverse we just created
-curl -s -X DELETE "http://localhost:8080/api/dvs/$ID_TO_DELETE?key=uma" > /dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/$ID_TO_DELETE?key=uma" > /dev/null
 # should yield:
 #{
 #    "status":"OK",
