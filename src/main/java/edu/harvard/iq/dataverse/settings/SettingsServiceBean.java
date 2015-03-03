@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,6 +36,18 @@ public class SettingsServiceBean {
          * API endpoints that are not accessible. Comma separated list.
          */
         BlockedApiEndpoints,
+        
+        /**
+         * A key that, with the right {@link ApiBlockingFilter.BlockPolicy},
+         * allows calling blocked APIs.
+         */
+        BlockedApiKey,
+        
+        
+        /**
+         * How to treat blocked APIs. One of drop, localhost-only, unblock-key
+         */
+        BlockedApiPolicy,
         
         /**
          * For development only (see dev guide for details). Backed by an enum
