@@ -149,13 +149,13 @@
         <div id="dataverseHeader" class="container" style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};">
             <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};">
-                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:940px" alt="logo"/>
+                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:940px" alt="#{dataverse.name} #{bundle.dataverse}"/>
                 </div>
             </ui:fragment>
             <div class="dataverseHeaderBlock">
                 <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
                     <div class="dataverseHeaderCell dataverseHeaderLogo">
-                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:100px;max-height:100px" alt="logo"/>
+                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:100px;max-height:100px" alt="#{dataverse.name} #{bundle.dataverse}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
