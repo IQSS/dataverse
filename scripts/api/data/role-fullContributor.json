@@ -1,6 +1,6 @@
 {
   "alias": "fullContributor",
-  "name": "Full Contributor",
+  "name": "Dataverse + Dataset Creator",
   "description": "Allows creation of Dataverse and Datset",
   "permissions": [
     "AddDataverse",
