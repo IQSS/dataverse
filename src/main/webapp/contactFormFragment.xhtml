@@ -1,4 +1,4 @@
-<div 
+<div
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -7,75 +7,72 @@
     <!-- Dialog Contact Form -->
     <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true" style="min-width:500px;">
         <p:fragment>
-        <h:form  id="emailForm" class="form-horizontal">
-            <div class="form-group">
-                <label for="messageTo" class="col-sm-2 control-label">#{bundle['feedback.to']}</label>
-                <div class="col-sm-10">
-                    <p id="messageTo" class="form-control-static">#{sendFeedbackDialog.getMessageTo()}</p>
-                </div>
-            </div>
-            <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
+            <h:form id="emailForm" class="form-horizontal">
                 <div class="form-group">
-                    <label for="userEmailStatic" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
+                    <label for="messageTo" class="col-sm-2 control-label">#{bundle['feedback.to']}</label>
                     <div class="col-sm-10">
-                        <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
+                        <p id="messageTo" class="form-control-static">#{sendFeedbackDialog.getMessageTo()}</p>
                     </div>
                 </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
-                <div class="form-group">
-                    <label for="userEmail" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
-                    <div class="col-sm-10">
-                        <p:inputText validatorMessage="#{bundle['feedback.from.invalid']}" validator="#{sendFeedbackDialog.validateUserEmail}" requiredMessage="#{bundle['feedback.from.required']}"  required="#{param['DO_VALIDATION']}" id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"/>
+                <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
+                    <div class="form-group">
+                        <label for="userEmailStatic" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
+                        <div class="col-sm-10">
+                            <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
+                        </div>
                     </div>
-                    <h:message for="userEmail" />
+                </ui:fragment>
+                <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
+                    <div class="form-group">
+                        <label for="userEmail" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
+                        <div class="col-sm-10">
+                            <p:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"
+                                         validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['feedback.from.invalid']}" requiredMessage="#{bundle['feedback.from.required']}" required="#{param['DO_VALIDATION']}"/>
+                        <h:message for="userEmail" styleClass="bg-danger text-danger"/>
+                        </div>
+                    </div>
+                </ui:fragment>
+                <div class="form-group">
+                    <label for="messageSubject" class="col-sm-2 control-label">#{bundle['feedback.subject']}</label>
+                    <div class="col-sm-10">
+                        <p:inputText id="messageSubject" styleClass="form-control" value="#{sendFeedbackDialog.messageSubject}"
+                                     requiredMessage="#{bundle['feedback.subject.required']}" required="#{param['DO_VALIDATION']}" rendered="#{sendFeedbackDialog.recipient!=null }"/>
+                        <ui:fragment rendered="#{sendFeedbackDialog.recipient==null}">
+                            <p id="messageSubject" class="form-control-static">#{sendFeedbackDialog.messageSubject}</p>
+                        </ui:fragment>
+                        <h:message for="messageSubject" styleClass="bg-danger text-danger"/>
+                    </div>
                 </div>
-            </ui:fragment>
-            <div class="form-group">
-                <label for="messageSubject" class="col-sm-2 control-label">#{bundle['feedback.subject']}</label>
-                <div class="col-sm-10">
-                    <p:inputText requiredMessage="#{bundle['feedback.subject.required']}" required="#{param['DO_VALIDATION']}" rendered="#{sendFeedbackDialog.recipient!=null }" id="messageSubject" value="#{sendFeedbackDialog.messageSubject}" styleClass="form-control"/>
-                    <ui:fragment rendered="#{sendFeedbackDialog.recipient==null}">
-                        <p id="messageSubject" class="form-control-static">#{sendFeedbackDialog.messageSubject}</p>
-                    </ui:fragment>
+                <div class="form-group">
+                    <label for="userMessage" class="col-sm-2 control-label">#{bundle['feedback.msg']}</label>
+                    <div class="col-sm-10">
+                        <p:inputTextarea  id="userMessage" styleClass="form-control"  value="#{sendFeedbackDialog.userMessage}"
+                            required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['feedback.msg.required']}" rows="10"/>
+                        <h:message for="userMessage" styleClass="bg-danger text-danger"/>
+                    </div>
                 </div>
-                <h:message for="messageSubject"/>
-               
-                
-            </div>
-            <div class="form-group">
-                <label for="userMessage" class="col-sm-2 control-label">#{bundle['feedback.msg']}</label>
-                <div class="col-sm-10">
-                    <p:inputTextarea  required="#{param['DO_VALIDATION']}"  requiredMessage="#{bundle['feedback.msg.required']}" id="userMessage" styleClass="form-control" rows="10" value="#{sendFeedbackDialog.userMessage}"/>
-                   
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <p>
+                            <h:outputFormat value="#{bundle['feedback.question']}"/>
+                        </p>
+                        <h:outputFormat value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
+                        <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['feedback.sum.converterMessage']}"
+                                     required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['feedback.sum.required']}"
+                                     validatorMessage="#{bundle['feedback.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}">
+                            <f:convertNumber integerOnly="true" type="number"/>
+                        </p:inputText>
+                        <h:message for="messageSum" styleClass="bg-danger text-danger"/>
+                    </div>
                 </div>
-                  <h:message for="userMessage"/>
-            </div>
-            <div class="form-group">
-              
-                <div class="col-sm-10">
-                   <h:outputFormat value="#{bundle['feedback.question']}"/>
-                  
-                </div> 
-            </div>
-        <div class="form-group">
-              
-                <div class="col-sm-10">
-                    <h:outputFormat value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/> 
-                    <p:inputText converterMessage="#{bundle['feedback.sum.converterMessage']}" label="Sum"  value="#{sendFeedbackDialog.userSum}" validatorMessage="#{bundle['feedback.sum.invalid']}"  validator="#{sendFeedbackDialog.validateUserSum}" id="messageSum" required="#{param['DO_VALIDATION']}"  requiredMessage="#{bundle['feedback.sum.required']}">
-                         <f:convertNumber  integerOnly="true" type="number"/>
-                    </p:inputText>
-                 <h:message for="messageSum"/>
-                </div> 
-            </div>     <p:commandLink update="@form"  oncomplete="if (args &amp;&amp; !args.validationFailed) contactForm.hide();" actionListener="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{bundle['feedback.send']}">
-                   <f:param name="DO_VALIDATION" value="true"/>
-            </p:commandLink>
-            <button type="button" onclick="contactForm.hide()" class="btn btn-default"  value="#{bundle.cancel}">
-                #{bundle.cancel}
-            </button>
-        </h:form>
+                <p:commandLink styleClass="btn btn-default" value="#{bundle['feedback.send']}"
+                                update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) contactForm.hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
+                    <f:param name="DO_VALIDATION" value="true"/>
+                </p:commandLink>
+                <button type="button" onclick="contactForm.hide()" class="btn btn-default" value="#{bundle.cancel}">
+                    #{bundle.cancel}
+                </button>
+            </h:form>
         </p:fragment>
     </p:dialog>
-
-
 </div>

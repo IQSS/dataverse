@@ -312,18 +312,16 @@
                                 <!-- END: Edit/Publish Button Group -->
                                 <!-- Email/Link Button Group -->
                                 <div class="btn-group pull-right" id="datasetButtonBar" role="group">
-                                   <!-- had to change this button to command button, to use propertyActionListener 
-                                   <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contactForm.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
-                                        <span class="glyphicon glyphicon-envelope no-text"/>
-                                    </button> -->
-                                   <p:commandLink value="contact"  update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}" >                                      
-                                       <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                       <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                       <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                       <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
-                                   </p:commandLink> 
+                                    <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                                   update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">                                      
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
+                                            <span class="glyphicon glyphicon-envelope no-text"/>
+                                    </p:commandLink>
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated}"
-                                                   title="Link Dataset to Your Dataverse"
+                                                   title="#{bundle['dataset.email.datasetLinkBtn.tip']}"
                                                    action="#{DatasetPage.updateLinkableDataverses()}"
                                                    oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                    update="linkDatasetForm">
