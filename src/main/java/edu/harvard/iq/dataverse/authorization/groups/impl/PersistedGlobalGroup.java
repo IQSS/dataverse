@@ -84,4 +84,9 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
         return Group.IDENTIFIER_PREFIX + getAlias();
     }
     
+    
+    @Override
+    public String toString() {
+        return "[PersistedGlobalGroup " + getIdentifier() + "]";
+    }
 }

@@ -17,6 +17,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import org.jboss.logging.Logger;
 
 /**
  * A bean providing the {@link ExplicitGroupProvider}s with container services,
@@ -129,7 +130,7 @@ public class ExplicitGroupServiceBean {
         if ( ra instanceof ExplicitGroup ) {
             for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
                 groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndSubExGroupId", ExplicitGroup.class)
-                  .setParameter("ownerId", o.getId())
+                  .setParameter("ownerId", cur.getId())
                   .setParameter("subExGroupId", ((ExplicitGroup)ra).getId())
                   .getResultList() );
             }
@@ -137,7 +138,7 @@ public class ExplicitGroupServiceBean {
         } else if ( ra instanceof AuthenticatedUser ) {
             for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
                 groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndAuthUserId", ExplicitGroup.class)
-                  .setParameter("ownerId", o.getId())
+                  .setParameter("ownerId", cur.getId())
                   .setParameter("authUserId", ((AuthenticatedUser)ra).getId())
                   .getResultList() );
             }
@@ -145,7 +146,7 @@ public class ExplicitGroupServiceBean {
         } else {
             for ( DvObject cur = o; cur != null; cur=cur.getOwner() ) {
                 groupList.addAll( em.createNamedQuery("ExplicitGroup.findByOwnerAndRAIdtf", ExplicitGroup.class)
-                  .setParameter("ownerId", o.getId())
+                  .setParameter("ownerId", cur.getId())
                   .setParameter("raIdtf", ra.getIdentifier())
                   .getResultList() );
             }

@@ -373,4 +373,8 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         return containedRoleAssignees;
     }
     
+    @Override
+    public String toString() {
+        return "[ExplicitGroup " + groupAlias + "]";
+    }
 }
