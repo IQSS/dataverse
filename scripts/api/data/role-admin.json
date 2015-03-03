@@ -1,7 +1,7 @@
 {
     "alias":"admin",
     "name":"Admin",
-    "description":"Someone that can do anything.",
+    "description":"A person who has all permissions for dataverses, datasets, and files.",
     "permissions":[
         "ALL"
     ]
