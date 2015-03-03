@@ -1,7 +1,7 @@
 {
   "alias": "dvContributor",
   "name": "Dataverse Contributor",
-  "description": "Allows creation of Dataverse",
+  "description": "A user who can add subdataverses within a dataverse.",
   "permissions": [
     "AddDataverse"
   ]
