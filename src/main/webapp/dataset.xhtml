@@ -2275,20 +2275,25 @@
                         </ui:fragment>
                     </p:dialog>
                     
-                    <p:confirmDialog id="inreview" message="#{bundle['dataset.submitMessage']}" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview">
-                        <p:commandButton value="#{bundle.continue}" onclick="inreview.hide()" action="#{DatasetPage.submitDataset}" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="inreview.hide()" type="button" />
-                    </p:confirmDialog>
+                    <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="inreview.hide()" action="#{DatasetPage.submitDataset}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="inreview.hide()" type="button" />
+                        </div>
+                    </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
                     <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="confirmation">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
-                            <p>
-                                #{bundle['dataset.unregistered.tip']}
+                            <p class="text-danger">
+                                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
                             </p>
                         </ui:fragment>
-                        <p class="help-block">
-                            #{bundle['dataset.publish.tip']}
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
                         </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}" />
@@ -2298,19 +2303,24 @@
                     
                     <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="publishParent">                                       
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
-                            <p>
-                                #{bundle['dataset.unregistered.tip']}
+                            <p class="text-danger">
+                                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
                             </p>
                         </ui:fragment>
-                        <p>
-                            #{bundle['dataset.publish.tip']}
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> 
+                            <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
+                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
+                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                            </h:outputFormat>
                         </p>
-                        <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
-                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                        </h:outputFormat>
-                        <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="publishParent.hide()" action="#{DatasetPage.releaseParentDVAndDataset}" />
-                        <p:commandButton value="#{bundle.no}" onclick="publishParent.hide()" type="button" />
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.publishBoth.tip']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="publishParent.hide()" action="#{DatasetPage.releaseParentDVAndDataset}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="publishParent.hide()" type="button" />
+                        </div>
                     </p:dialog>
                     
                     <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="releaseDraft">
@@ -2326,9 +2336,11 @@
                                 <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />                                                
                             </p:selectOneRadio>
                         </ui:fragment>
-                        <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
-                            <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
-                        </h:outputFormat>
+                        <p>
+                            <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
+                                <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
+                            </h:outputFormat>
+                        </p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseDraft}" />
                             <p:commandButton value="#{bundle.continue}" onclick="releaseDraft.hide()" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}" action="#{DatasetPage.releaseMajor}" />
@@ -2337,19 +2349,31 @@
                     </p:dialog>
                     
                     <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
-                        <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
-                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                        </h:outputFormat>
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> 
+                            <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
+                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
+                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="mayNotRelease.hide()" type="button" />
+                        </div>
                     </p:dialog>
                     
                     <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="maynotPublishParent">
-                        <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
-                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
-                        </h:outputFormat>
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> 
+                            <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
+                                <f:param value="#{DatasetPage.dataset.owner.alias}"/>
+                                <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                                <f:param value="#{DatasetPage.dataset.owner.owner.alias}"/>
+                                <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="maynotPublishParent.hide()" type="button" />
+                        </div>
                     </p:dialog>
                     
                     <p:confirmDialog message="#{bundle['dataset.rejectMessage']}" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
