@@ -455,25 +455,22 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link Button Group -->
                             <div class="btn-group pull-right" role="group">
-                                <!-- had to change this button to command button, to use propertyActionListener 
-                                <button type="button" class="btn btn-default bootstrap-button-tooltip" onclick="contactForm.show()" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="Email Dataset Contact">
-                                    <span class="glyphicon glyphicon-envelope no-text"/>
-                                </button>          
-                                -->
-                                <p:commandLink value="contact"  update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">   
-                                   <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
+                                               update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">   
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>                                     
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                               <f:param name="DO_VALIDATION" value="false"/>   
-                               <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
-                               </p:commandLink>
+                                    <f:param name="DO_VALIDATION" value="false"/>   
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
+                                        <span class="glyphicon glyphicon-envelope no-text"/>
+                                </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
                                                rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}"                                                          
-                                               title="Link Dataverse to Your Dataverse"
+                                               title="#{bundle['dataverse.link.btn.tip']}"
                                                action="#{DataversePage.updateLinkableDataverses()}"                                                          
                                                oncomplete="PF('linkDataverseForm').show()"
                                                update=":linkDataverseForm">
-                                    <span class="glyphicon glyphicon-envelope no-text"/>
+                                    <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
                             </div>
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">

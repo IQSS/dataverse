@@ -678,10 +678,10 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getTitle() {
-        String retVal = "Dataset Title";
+        String retVal = "";
         for (DatasetField dsfv : this.getDatasetFields()) {
             if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
-                retVal = dsfv.getValue();
+                retVal = dsfv.getDisplayValue();
             }
         }
         return retVal;
@@ -696,22 +696,48 @@ public class DatasetVersion implements Serializable {
         //todo get "List of Authors" from datasetfieldvalue table
         List retList = new ArrayList();
         for (DatasetField dsf : this.getDatasetFields()) {
+            Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                     DatasetAuthor datasetAuthor = new DatasetAuthor();
                     for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                            if (subField.isEmptyForDisplay()) {
+                                addAuthor = false;
+                            }
                             datasetAuthor.setName(subField);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                             datasetAuthor.setAffiliation(subField);
                         }
                     }
-                    retList.add(datasetAuthor);
+                    if (addAuthor) {
+                        retList.add(datasetAuthor);
+                    }
                 }
             }
         }
         return retList;
+    }
+    
+    public String getDatasetProducersString(){
+        String retVal = "";
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
+                            if (retVal.isEmpty()){
+                                retVal = subField.getDisplayValue();
+                            } else {
+                                retVal += ", " +  subField.getDisplayValue();
+                            }                           
+                        }
+                    }
+                }
+            }
+        }
+        return retVal;
     }
 
     public void setDatasetAuthors(List<DatasetAuthor> authors) {
@@ -730,6 +756,8 @@ public class DatasetVersion implements Serializable {
         String authors = this.getAuthorsStr(includeAffiliation);
         if (!StringUtil.isEmpty(authors)) {
             str += authors;
+        } else {
+            str += getDatasetProducersString();
         }
 
         if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
@@ -744,7 +772,6 @@ public class DatasetVersion implements Serializable {
             }
             str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));
         }
-
         if (this.getTitle() != null) {
             if (!StringUtil.isEmpty(this.getTitle())) {
                 if (!StringUtil.isEmpty(str)) {
