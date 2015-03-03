@@ -12,9 +12,8 @@
             </a>
         </label>
         <div class="col-sm-9">
-            <textarea class="form-control" rows="4" style="margin:4px 10px;">
-              <h:outputText value="#{systemConfig.applicationTermsOfUse}"/>
-            </textarea>
+            <textarea class="form-control" rows="4" style="margin:4px 10px;" readonly="readonly">
+              <h:outputText value="#{systemConfig.applicationTermsOfUse}"/></textarea>
             <div class="checkbox" style="margin:4px 10px;">
               <p:selectBooleanCheckbox id="terms" style="margin:0;vertical-align:middle;" required="true" requiredMessage="#{bundle['user.terms.required']}">
                 <f:validator validatorId="requiredCheckboxValidator"/>
