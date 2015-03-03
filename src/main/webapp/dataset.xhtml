@@ -866,48 +866,89 @@
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                                    <li>
-                                                        <h:outputLink value="/api/access/datafile/bundle/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
-                                                            <strong>#{bundle['file.downloadBtn.format.all']}</strong>
-                                                        </h:outputLink>
-                                                    </li>
-                                                    <li role="presentation" class="divider"></li>
+                                                    <li role="presentation" class="divider"></li>                                                    
                                                     <li>
                                                         <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                                                        action="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}">
                                                             #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'bundle')}"
                                                                        update="@form,:messagePanel"
                                                                        oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                                            #{bundle['file.downloadBtn.format.tab']}
+                                                            #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                     </li>
                                                     <li>
-                                                        <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original" disabled="#{empty fileMetadata.dataFile.id}">
+                                                        <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}" 
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
+                                                           
+                                                            <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
+                                                                        <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
+                                                                    </h:outputFormat>
+                                                        </p:commandLink>
+                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'original')}"
+                                                                       update="@form,:messagePanel" 
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                             <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                                                                 <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                                                             </h:outputFormat>
-                                                        </h:outputLink>
+                                                        </p:commandLink>
                                                     </li>
+                                                    <li>
+                                                        <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'tab')}">
+                                                            #{bundle['file.downloadBtn.format.tab']}
+                                                            
+                                                        </p:commandLink>
+                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'tab')}"
+                                                                       update="@form,:messagePanel"
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                            
+                                                            #{bundle['file.downloadBtn.format.tab']}
+                                                        </p:commandLink>
+                                                    </li>
+                                                    
                                                     <ui:fragment rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}">
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData" disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="#{bundle['file.downloadBtn.format.rdata']}"/>
-                                                            </h:outputLink>
-                                                        </li>
+                                                       <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'RData')}">
+                                                            #{bundle['file.downloadBtn.format.rdata']} 
+                                                        </p:commandLink>
+                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'RData')}"
+                                                                       update="@form,:messagePanel"
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                            #{bundle['file.downloadBtn.format.rdata']}
+                                                        </p:commandLink>
+                                                            </li>
                                                     </ui:fragment>
+                                                   
                                                     <li>
-                                                        <h:outputLink value="/api/meta/datafile/#{fileMetadata.dataFile.id}" disabled="#{empty fileMetadata.dataFile.id}">
-                                                            <h:outputText value="#{bundle['file.downloadBtn.format.var']}"/>
-                                                        </h:outputLink>
+                                                       <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'var')}">
+                                                            #{bundle['file.downloadBtn.format.var']}
+                                                        </p:commandLink>
+                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'var')}"
+                                                                       update="@form,:messagePanel"
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                            #{bundle['file.downloadBtn.format.var']}
+                                                        </p:commandLink>
                                                     </li>
                                                     <li>
-                                                        <p:commandLink id="fileDowloadDataSubsetButton"
-                                                                       actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                        <p:commandLink id="fileDowloadDataSubsetButton" rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'create')}"
                                                                        update=":datasetForm:downloadDataSubsetPopup"
                                                                        oncomplete="downloadDataSubsetPopup.show()"
+                                                                       value="Data Subset"
+                                                                       disabled="#{empty fileMetadata.dataFile.id}"/>
+                                                        <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{(DatasetPage.downloadPopupRequired)}"
+                                                                       actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'init')}"
+                                                                       update=":datasetForm:downloadDataSubsetPopup"
+                                                                       oncomplete="explorePopup.show()"
                                                                        value="Data Subset"
                                                                        disabled="#{empty fileMetadata.dataFile.id}"/>
                                                     </li>
@@ -2060,87 +2101,21 @@
                         <p class="help-block">
                             #{bundle['file.downloadDialog.tip']}
                         </p>
-                        <div class="form">
-                            <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
-                                <label class="col-sm-3 control-label" for="guestbook_tou">
-                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
-                                </label>
-                                <div class="col-sm-9">
-                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
-                                </div>
-                            </div>
-                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
-                                <label class="col-sm-3 control-label" for="guestbook_toa">
-                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                </label>
-                                <div class="col-sm-9">
-                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
-                                </div>
-                            </div>
-                            <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_name">
-                                        #{bundle.name}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_email">
-                                        #{bundle.email}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_institution">
-                                        #{bundle.institution}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_position">
-                                        #{bundle.position}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
-                                        Additional Questions
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
-                                            <div class="form-group">
-                                                <label>
-                                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
-                                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
-                                                </label>
-                                                <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                             rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
-                                                <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
-                                                    <f:selectItem itemLabel="Select" itemValue="" />
-                                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
-                                                </p:selectOneMenu>
-                                            </div>
-                                        </ui:repeat>
-                                    </div>
-                                </div>
-                            </ui:fragment>
-                        </div>
+                            <ui:include src="guestbookResponseFragment.xhtml"/>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.acceptTerms}" onclick="downloadPopup.hide()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse()}" />
+                            <p:commandButton value="#{bundle.acceptTerms}" onclick="downloadPopup.hide()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('download')}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
+                        </div>
+                    </p:dialog>
+                    
+                    <p:dialog id="exploreFileDialog" header="#{bundle['file.downloadDialog.header']}" widgetVar="explorePopup">
+                        <p class="help-block">
+                            #{bundle['file.downloadDialog.tip']}
+                        </p>
+                            <ui:include src="guestbookResponseFragment.xhtml"/>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.acceptTerms}" onclick="explorePopup.hide()" oncomplete="downloadDataSubsetPopup.show()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('explore')}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="explorePopup.hide()" type="button" />
                         </div>
                     </p:dialog>
 

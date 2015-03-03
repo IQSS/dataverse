@@ -684,7 +684,7 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
 
-    public String saveGuestbookResponse() {
+    public String saveGuestbookResponse(String type) {
 
         boolean valid = true;
 
@@ -746,18 +746,48 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
 
         }
-
-        if (guestbookResponse.getDataFile() != null) {
-            String fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId();
-            logger.fine("Returning file download url: " + fileDownloadUrl);
+        
+        if (guestbookResponse.getDataFile() != null && type.equals("download")) {
+            return callDownloadServlet(downloadFormat, guestbookResponse.getDataFile().getId());
+        }
+        
+        return "";
+    }
+    
+    private String callDownloadServlet( String downloadType, Long fileId){
+        
+        String fileDownloadUrl = "/api/access/datafile/" + fileId;
+                    
+        if (downloadType != null && downloadType.equals("bundle")){
+            fileDownloadUrl = "/api/access/datafile/bundle/" + guestbookResponse.getDataFile().getId();
+        }
+        if (downloadType != null && downloadType.equals("original")){
+            fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId() + "?format=original";
+        }
+        if (downloadType != null && downloadType.equals("RData")){
+            fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId() + "?format=RData";
+        }
+        if (downloadType != null && downloadType.equals("var")){
+            fileDownloadUrl = "/api/meta/datafile/" + guestbookResponse.getDataFile().getId();
+        }
+        if (downloadType != null && downloadType.equals("tab")){
+            fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId()+ "?format=tab";
+        }
+                    logger.fine("Returning file download url: " + fileDownloadUrl);
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
             } catch (IOException ex) {
-                logger.info("Failed to issue a redirect to file download url.");
+                logger.info("Failed to issue a redirect to file download url." + fileDownloadUrl);
             }
             return fileDownloadUrl;
-        }
-        return "";
+        
+        
+
     }
 
     public String getApiTokenKey() {
@@ -1742,8 +1772,8 @@ public class DatasetPage implements java.io.Serializable {
         this.datasetVersionDifference = datasetVersionDifference;
     }
     
-    public String startFileDownload(FileMetadata fileMetadata, String format) {
-        initGuestbookResponse(fileMetadata);
+    private void createSilentGuestbookEntry(FileMetadata fileMetadata, String format){
+                initGuestbookResponse(fileMetadata, format);
         Command cmd;
         try {
             cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
@@ -1753,24 +1783,35 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
         }
         
-        String fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId();
-        if (format != null && format.equals("bundle")){
-            fileDownloadUrl = "/api/access/datafile/bundle/" + guestbookResponse.getDataFile().getId();
-        }
-        System.out.print("fileDownloadUrl: " + fileDownloadUrl);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-        return fileDownloadUrl;
+    }
+    
+    public String startFileDownload(FileMetadata fileMetadata, String format) {
+        createSilentGuestbookEntry(fileMetadata, format);
+        return callDownloadServlet(format, fileMetadata.getDataFile().getId());
+    }
+    
+    private String downloadFormat;
+
+    public String getDownloadFormat() {
+        return downloadFormat;
     }
 
-    public void initGuestbookResponse(FileMetadata fileMetadata) {
+    public void setDownloadFormat(String downloadFormat) {
+        this.downloadFormat = downloadFormat;
+    }
+  
+    public void initGuestbookResponse(FileMetadata fileMetadata){
+         initGuestbookResponse(fileMetadata, "");
+    }
+
+    public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat) {
+        
+        setDownloadFormat(downloadFormat);
 
         if (this.guestbookResponse == null) {
             this.guestbookResponse = new GuestbookResponse();
         }
+        this.guestbookResponse.setDownloadtype(downloadFormat);
         User user = session.getUser();
         if (this.dataset.getGuestbook() != null) {
             this.guestbookResponse.setGuestbook(this.dataset.getGuestbook());
@@ -1788,11 +1829,6 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse.setPosition("");
                 this.guestbookResponse.setSessionId(session.toString());
             }
-            /*
-             if (user.isBuiltInUser()) {
-             BuiltinUser bUser = (BuiltinUser) user;
-             this.guestbookResponse.setPosition(bUser.getPosition());
-             }*/
             this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
         } else {
             this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), user, session);
@@ -2013,11 +2049,16 @@ public class DatasetPage implements java.io.Serializable {
 
     private FileMetadata fileMetadataSelected = null;
 
-    public void setFileMetadataSelected(FileMetadata fm) {
+    public void setFileMetadataSelected(FileMetadata fm, String guestbook) {
+        if (guestbook.equals("create")) {
+            createSilentGuestbookEntry(fm, "Subset");
+        } else {
+            initGuestbookResponse(fm, "Subset");
+        }
         fileMetadataSelected = fm;
         logger.fine("set the file for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
         alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
-    }
+    }           
 
     public FileMetadata getFileMetadataSelected() {
         if (fileMetadataSelected != null) {
