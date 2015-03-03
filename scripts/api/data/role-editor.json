@@ -1,7 +1,7 @@
 {
     "alias":"editor",
-    "name":"Editor",
-    "description":"Editor",
+    "name":"Author",
+    "description":"Author",
     "permissions":[
         "ViewUnpublishedDataset",
         "EditDataset",
