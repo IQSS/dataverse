@@ -346,6 +346,7 @@
    <field name="dateOfDeposit" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="distributionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="distributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="distributorAbbreviation" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="distributorAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -385,6 +386,7 @@
    <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="mraCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -594,6 +596,7 @@
    <copyField source="dateOfDeposit" dest="text" maxChars="3000"/>
    <copyField source="depositor" dest="text" maxChars="3000"/>
    <copyField source="deviationsFromSampleDesign" dest="text" maxChars="3000"/>
+   <copyField source="distributionDate" dest="text" maxChars="3000"/>
    <copyField source="distributor" dest="text" maxChars="3000"/>
    <copyField source="distributorAbbreviation" dest="text" maxChars="3000"/>
    <copyField source="distributorAffiliation" dest="text" maxChars="3000"/>
@@ -633,6 +636,7 @@
    <copyField source="keywordVocabularyURI" dest="text" maxChars="3000"/>
    <copyField source="kindOfData" dest="text" maxChars="3000"/>
    <copyField source="language" dest="text" maxChars="3000"/>
+   <copyField source="mraCollection" dest="text" maxChars="3000"/>
    <copyField source="northLongitude" dest="text" maxChars="3000"/>
    <copyField source="notesText" dest="text" maxChars="3000"/>
    <copyField source="originOfSources" dest="text" maxChars="3000"/>

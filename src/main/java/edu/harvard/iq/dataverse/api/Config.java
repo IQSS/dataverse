@@ -96,7 +96,11 @@ public class Config extends AbstractApiBean {
             }
 
             if (listOfStaticFields.contains(nameFacetable)) {
-                return error("facetable dataset metadata field conflict detected with static field: " + nameFacetable);
+                if (nameFacetable.equals(SearchFields.SUBJECT)) {
+                    // Skip, expected conflct.
+                } else {
+                    return error("facetable dataset metadata field conflict detected with static field: " + nameFacetable);
+                }
             }
 
             // <copyField source="*_i" dest="text" maxChars="3000"/>
