@@ -240,6 +240,9 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 #dataverse-info-dropdown .dataverse-info-logo-icon i.icon-dataverse {font-size:40px; line-height:40px;}
 #dataverse-info-dropdown .dataverse-info-general {float:left; width:300px;}
 
+.button-block {margin-top:1em;}
+.button-block button {margin-right:1em;}
+
 /* Featured Dataverses*/
 #carouselBlocksWrapper {border-bottom:1px solid #ddd; margin-bottom:1em;}
 #featuredDataversesBlock {overflow: hidden; padding-top:.5em; border-top:1px solid #ddd;}
@@ -294,14 +297,6 @@ form[id$='facetType'] > div.clearfix .facetTypeChBox > div.ui-chkbox {padding-to
 form[id$='facetType'] > div.clearfix a.facetTypeLink {display:block; float:left; text-decoration:none;}
 
 form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px;}
-
-/*form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px 4px 30px;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataverse {background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataverse {background: url(/resources/images/icon_dataverse_dark.png) no-repeat 4px 50% / 18px;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataset {background: url(/resources/images/icon_dataset.png) no-repeat 4px 50% / 18px;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataset {background: url(/resources/images/icon_dataset_dark.png) no-repeat 4px 50% / 18px;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeFile {background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;}
-form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeFile {background: url(/resources/images/icon_file_dark.png) no-repeat 4px 50% / 18px;}*/
 
 form[id$='facetCategoryForm'] {margin-top:1em;}
 div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
@@ -383,15 +378,15 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 .panelgridLayoutTable.titleCitationBlock tr.ui-widget-content, 
 .panelgridLayoutTable.titleCitationBlock tr.ui-widget-content td {border:0;}
 
-/* Buttons */
+#metadata-panel span.form-group:last-child {margin-bottom:0;}
 
+/* Buttons */
+.button-block.form-top {border-top: 1px solid #dddddd; padding:1em 0;}
+span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
+#replicationDataButton {margin-top:5px;}
 
 #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: 1em;}
 
-span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
-
-#replicationDataButton {margin-top:5px;}
-                                    
 #title {/*display:block;*/font-size:1.5em;font-weight:bold; /*margin-bottom:.5em;*/}
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation, #citation-download {padding:.5em;}
@@ -408,24 +403,24 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 .metadata-logo {max-width:180px;max-height:40px;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
-.form-group div.ui-selectonemenu.form-control {padding:0px;}
-.form-group .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
-.form-group .ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
-.form-group .ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:8px;}
+div.ui-selectonemenu.form-control {padding:0px;}
+.ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
+.ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
+.ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:8px;}
 
 /* Primefaces vs Bootstrap selectOneRadio fix */
-.form-group table.ui-selectoneradio {border-collapse:separate;}
-.form-group table.ui-selectoneradio td {padding:1px;}
-.form-group table.ui-selectoneradio span.ui-icon-bullet, .form-group .ui-radiobutton-box span.ui-icon-bullet {background-position: -81.3px -145.1px;}
-.form-group table.ui-selectoneradio label {font-weight: normal; margin-right:1em;}
-.form-group .ui-radiobutton-box span.ui-radiobutton-icon {height: 16px; width: 16px; display: block; overflow: hidden;}
+table.ui-selectoneradio {border-collapse:separate;}
+table.ui-selectoneradio td {padding:1px;}
+table.ui-selectoneradio span.ui-icon-bullet, .ui-radiobutton-box span.ui-icon-bullet {background-position: -81.3px -145.1px;}
+table.ui-selectoneradio label {font-weight: normal; margin-right:1em;}
+.ui-radiobutton-box span.ui-radiobutton-icon {height: 16px; width: 16px; display: block; overflow: hidden;}
 
 div.ui-radiobutton {margin:0; vertical-align:text-bottom;}
 div.radio.no-padding-left label {padding-left:0;}
 
 /* Primefaces vs Bootstrap checkbox fix */
-.form-group .ui-chkbox .ui-chkbox-box {margin: 4px 0 0 0; vertical-align:top;}
-.form-group .ui-chkbox .ui-chkbox-label {display:inline; vertical-align:text-top;}
+.ui-chkbox .ui-chkbox-box {margin: 4px 0 0 0; vertical-align:top;}
+.ui-chkbox .ui-chkbox-label {display:inline; vertical-align:text-top;}
 
 .ui-selectcheckboxmenu.form-control {height:auto;padding:0;}
 .ui-selectcheckboxmenu .ui-selectcheckboxmenu-trigger {width:30px; padding:6px; border-radius:0 4px 4px 0;}
