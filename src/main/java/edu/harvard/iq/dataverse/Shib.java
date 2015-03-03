@@ -9,6 +9,7 @@ import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
@@ -518,8 +519,8 @@ public class Shib implements java.io.Serializable {
     public String confirmAndCreateAccount() {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
-        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
-        AuthenticatedUser au = authSvc.createAuthenticatedUser(shibAuthProvider.getId(), userIdentifier, displayInfo, true);
+        AuthenticatedUser au = authSvc.createAuthenticatedUser(
+                new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifer, displayInfo, true);
         if (au != null) {
             logger.info("created user " + au.getIdentifier());
         } else {
