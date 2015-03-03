@@ -154,6 +154,8 @@ label.normal-text input {margin-right:4px;}
 #breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-e {background-position: -35px -16px;}
 
 /* -------- LOGIN -------- */
+#login-container {margin-top:1em;}
+
 div.panel.highlight {
     background-color: #f7f7f9;
 }
@@ -241,6 +243,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 #dataverse-info-dropdown .dataverse-info-general {float:left; width:300px;}
 
 .button-block {margin-top:1em;}
+.form-group > .button-block {margin-top:0;}
 .button-block button {margin-right:1em;}
 
 /* Featured Dataverses*/
