@@ -8,8 +8,6 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFa
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.Setting;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;

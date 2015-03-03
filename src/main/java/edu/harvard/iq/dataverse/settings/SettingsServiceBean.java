@@ -30,6 +30,12 @@ public class SettingsServiceBean {
          * Search API. See also https://github.com/IQSS/dataverse/issues/1299
          */
         SearchApiNonPublicAllowed,
+        
+        /**
+         * API endpoints that are not accessible. Comma separated list.
+         */
+        BlockedApiEndpoints,
+        
         /**
          * For development only (see dev guide for details). Backed by an enum
          * of possible account types.

@@ -60,3 +60,5 @@ echo
 
 # OPTIONAL USERS AND DATAVERSES
 #./setup-optional.sh
+
+echo "Setup done. Consider running post-install-api-block.sh for blocking the sensitive API."

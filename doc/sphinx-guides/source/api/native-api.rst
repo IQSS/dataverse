@@ -136,10 +136,6 @@ This endopint deals with users of the built-in authentication provider. Note tha
 For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
 each of the calls.
 
-List all users::
-
-  GET http://$SERVER/api/users?key=$key
-
 Generates a new user. Data about the user are posted via JSON. *Note that the password is passed as a parameter in the query*. ::
 
   POST http://$SERVER/api/users?password=$password&key=$key
