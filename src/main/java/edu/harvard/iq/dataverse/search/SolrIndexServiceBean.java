@@ -380,6 +380,11 @@ public class SolrIndexServiceBean {
              */
             return new IndexResponse("problem deleting the following documents from Solr: " + solrIdsToDelete);
         }
+        try {
+            solrServer.commit();
+        } catch (SolrServerException | IOException ex) {
+            return new IndexResponse("problem committing deletion of the following documents from Solr: " + solrIdsToDelete);
+        }
         return new IndexResponse("no known problem deleting the following documents from Solr:" + solrIdsToDelete);
     }
 
