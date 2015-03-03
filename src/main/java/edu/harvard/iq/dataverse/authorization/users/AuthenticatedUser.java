@@ -188,6 +188,7 @@ public class AuthenticatedUser implements User, Serializable {
         this.firstName = firstName;
     }
 
+    @Override
     public boolean isSuperuser() {
         return superuser;
     }

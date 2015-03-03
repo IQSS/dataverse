@@ -320,7 +320,7 @@
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
                                             <span class="glyphicon glyphicon-envelope no-text"/>
                                     </p:commandLink>
-                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.authenticated}"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.superuser}"
                                                    title="#{bundle['dataset.email.datasetLinkBtn.tip']}"
                                                    action="#{DatasetPage.updateLinkableDataverses()}"
                                                    oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
@@ -790,10 +790,22 @@
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <!-- TwoRavens explore option -->
-                                            <h:outputLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-                                                          style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}" target="_blank">
+
+                                            <h:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress) 
+                                                                      and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and !DatasetPage.downloadPopupRequired}"
+                                                          style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" 
+                                                          disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" 
+                                                          actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
                                                 <span class="glyphicon glyphicon-stats"/> <span class="ladda-label">#{bundle.explore}</span>
-                                            </h:outputLink>
+                                            </h:commandLink>
+                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress) 
+                                                                      and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and DatasetPage.downloadPopupRequired}"
+                                                           styleClass="btn btn-default"
+                                                           action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
+                                                           update="@form,:messagePanel"
+                                                           oncomplete="ravensPopup.show();handleResizeDialog('downloadFileDialog');" >
+                                                <span class="glyphicon glyphicon-stats"/> #{bundle.explore}
+                                            </p:commandLink>
 
                                             <!-- WorldMap explore option -->
                                             <h:outputLink rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
@@ -2116,6 +2128,18 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.acceptTerms}" onclick="explorePopup.hide()" oncomplete="downloadDataSubsetPopup.show()" update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('explore')}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="explorePopup.hide()" type="button" />
+                        </div>
+                    </p:dialog>
+                    
+                    <p:dialog id="ravensDialog" header="#{bundle['file.downloadDialog.header']}" widgetVar="ravensPopup">
+                        <p class="help-block">
+                            #{bundle['file.downloadDialog.tip']}
+                        </p>
+                        Ravens
+                            <ui:include src="guestbookResponseFragment.xhtml"/>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.acceptTerms}" onclick="ravensPopup.hide()"  update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('ravens')}"  />
+                            <p:commandButton value="#{bundle.cancel}" onclick="ravensPopup.hide()" type="button" />
                         </div>
                     </p:dialog>
 

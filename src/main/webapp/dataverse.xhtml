@@ -465,7 +465,7 @@
                                         <span class="glyphicon glyphicon-envelope no-text"/>
                                 </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
-                                               rendered="#{dataverseSession.user.authenticated and DataversePage.dataverse.owner != null}"                                                          
+                                               rendered="#{dataverseSession.user.superuser and DataversePage.dataverse.owner != null}"                                                          
                                                title="#{bundle['dataverse.link.btn.tip']}"
                                                action="#{DataversePage.updateLinkableDataverses()}"                                                          
                                                oncomplete="PF('linkDataverseForm').show()"

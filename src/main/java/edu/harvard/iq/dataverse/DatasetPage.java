@@ -685,7 +685,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String saveGuestbookResponse(String type) {
-
         boolean valid = true;
 
         if (dataset.getGuestbook() != null) {
@@ -730,6 +729,8 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
+        
+                System.out.print(" valid? " + valid);
 
         if (!valid) {
             logger.info("Guestbook response isn't valid.");
@@ -750,7 +751,31 @@ public class DatasetPage implements java.io.Serializable {
         if (guestbookResponse.getDataFile() != null && type.equals("download")) {
             return callDownloadServlet(downloadFormat, guestbookResponse.getDataFile().getId());
         }
+        System.out.print(" guestbookResponse.getDataFile() " + guestbookResponse.getDataFile());
+        System.out.print(" type.equals(\"ravens\") " + type.equals("ravens"));
+        if (guestbookResponse.getDataFile() != null && type.equals("ravens")) {
+            String retVal = getDataExploreURLComplete(guestbookResponse.getDataFile().getId());
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
+                System.out.print(retVal);
+                return retVal;
+            } catch (IOException ex) {
+                System.out.print("in catch "  + retVal);
+                logger.info("Failed to issue a redirect to file download url.");
+            }
+        }
         
+        return "";
+    }
+    
+    public String exploreOutputLink(FileMetadata fm, String type){
+        createSilentGuestbookEntry(fm, type);
+        String retVal = getDataExploreURLComplete(fm.getDataFile().getId());
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
         return "";
     }
     

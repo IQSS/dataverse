@@ -35,7 +35,12 @@ public class GuestUser implements User {
     public boolean isBuiltInUser(){
         return false;
     }
-
+    
+    @Override
+    public boolean isSuperuser() {
+        return false;
+    }
+   
     @Override
     public UserRequestMetadata getRequestMetadata() {
         return requestMetadata;
