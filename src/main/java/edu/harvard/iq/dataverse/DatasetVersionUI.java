@@ -66,7 +66,7 @@ public class DatasetVersionUI implements Serializable {
          */
         
         setDatasetVersion(datasetVersion);
-        this.setDatasetAuthors(new ArrayList());
+        //this.setDatasetAuthors(new ArrayList());
         this.setDatasetRelPublications(new ArrayList());
 
         // loop through vaues to get fields for view mode
@@ -81,7 +81,7 @@ public class DatasetVersionUI implements Serializable {
                 if(dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null){
                     DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);               
                     for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText)) {                          
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {                          
                                 descriptionString = subField.getValue();                             
                         }
                     }
@@ -92,7 +92,7 @@ public class DatasetVersionUI implements Serializable {
                 String keywordString = "";
                 for (DatasetFieldCompoundValue keywordValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : keywordValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue)) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue) && !subField.isEmptyForDisplay()) {
                             if (keywordString.isEmpty()){
                                 keywordString = subField.getValue();
                             } else {
@@ -102,24 +102,11 @@ public class DatasetVersionUI implements Serializable {
                     }
                 } 
                 setKeywordDisplay(keywordString);
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject) && !dsf.isEmptyForDisplay()) {
                 setSubject(dsf);
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText)) {
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText) && !dsf.isEmptyForDisplay()) {
                 this.setNotes(dsf);                
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    DatasetAuthor datasetAuthor = new DatasetAuthor();
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                            datasetAuthor.setName(subField);
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                            datasetAuthor.setAffiliation(subField);
-                        }
-                    }
-                    this.getDatasetAuthors().add(datasetAuthor);
-                }                
-            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
+            }  else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
                 //Special handling for Related Publications
                 // Treated as below the tabs for editing, but must get first value for display above tabs    
                 if (this.datasetRelPublications.isEmpty()) {
@@ -192,7 +179,7 @@ public class DatasetVersionUI implements Serializable {
         this.descriptionDisplay = descriptionDisplay;
     }
             
-    private List<DatasetAuthor> datasetAuthors = new ArrayList();    
+  
     private List<DatasetRelPublication> datasetRelPublications;    
 
     public DatasetField getTitle() {
@@ -236,13 +223,7 @@ public class DatasetVersionUI implements Serializable {
     }
 
 
-    public List<DatasetAuthor> getDatasetAuthors() {
-        return datasetAuthors;
-    }
 
-    public void setDatasetAuthors(List<DatasetAuthor> datasetAuthors) {
-        this.datasetAuthors = datasetAuthors;
-    }
 
 
     public List<DatasetRelPublication> getDatasetRelPublications() {
@@ -295,30 +276,6 @@ public class DatasetVersionUI implements Serializable {
             return dateString.substring(0, dateString.indexOf("-"));
         }
         return dateString;
-    }
-
-
-    public String getAuthorsStr() {
-        return getAuthorsStr(true);
-    }
-
-    public String getAuthorsStr(boolean affiliation) {
-        String str = "";
-        for (DatasetAuthor sa : this.getDatasetAuthors()) {
-            //Fix for RedMine 3731 if Author name is just one character.
-            if (str.trim().length() > 0) {
-                str += "; ";
-            }
-            if (sa.getName() != null && !StringUtil.isEmpty(sa.getName().getValue())) {
-                str += sa.getName().getValue();
-            }
-            if (affiliation) {
-                if (sa.getAffiliation() != null && !StringUtil.isEmpty(sa.getAffiliation().getValue())) {
-                    str += " (" + sa.getAffiliation().getValue() + ")";
-                }
-            }
-        }
-        return str;
     }
 
     public String getReleaseDate() {

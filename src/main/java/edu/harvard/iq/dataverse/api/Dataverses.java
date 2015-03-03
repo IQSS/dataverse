@@ -78,7 +78,7 @@ import javax.ws.rs.core.Response.Status;
  * @author michael
  */
 @Stateless
-@Path("dvs")
+@Path("dataverses")
 public class Dataverses extends AbstractApiBean {
        
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
@@ -120,7 +120,7 @@ public class Dataverses extends AbstractApiBean {
 
             AuthenticatedUser u = findUserOrDie( apiKey );
             d = execCommand( new CreateDataverseCommand(d, u, null, null), "Creating Dataverse" );
-			return createdResponse( "/dvs/"+d.getAlias(), json(d) );
+			return createdResponse( "/dataverses/"+d.getAlias(), json(d) );
         } catch ( WrappedResponse ww ) {
             return ww.getResponse();
             

@@ -39,7 +39,7 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
         if ( ra instanceof User ) {
             User user = (User) ra;
             Set<ShibGroup> shibGroups = new HashSet<>();
-            if (user.isAuthenticated()) {
+            if ( user instanceof AuthenticatedUser ) {
                 AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
                 Set<ShibGroup> groupsFor = shibGroupService.findFor(authenticatedUser);
                 for (ShibGroup shibGroup : groupsFor) {

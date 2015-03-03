@@ -197,7 +197,13 @@ while ( <> )
 		    $varlabel = $dv[1];
 		    $varlabel = $dbh->quote($varlabel);
 		    $variableformattype_id = $dv[2];
+		    # the old school formattype_id and 
+		    # intervaltype_id need to be adjusted by 1, 
+		    # to match the new enum values used in the
+		    # 4.0 datavariables:
+		    $variableformattype_id--;
 		    $variableintervaltype_id = $dv[3];
+		    $variableintervaltype_id--;
 		    $varformatcategory = $dv[4];
 		    $varformatschema = $dv[5];
 		    $varformatschemaname = $dv[6];

@@ -10,14 +10,14 @@ curl -s --insecure -X DELETE -u spruce:spruce https://localhost:8181/dvn/api/dat
 curl -s -X DELETE "http://localhost:8080/api/datasets/$FIRST_FINCH_DATASET_ID?key=$FINCHKEY" >/dev/null
 
 # delete all dataverses
-curl -s -X DELETE "http://localhost:8080/api/dvs/chestnutsparrows?key=$FINCHKEY" >/dev/null
-curl -s -X DELETE "http://localhost:8080/api/dvs/sparrows?key=$FINCHKEY" >/dev/null
-curl -s -X DELETE "http://localhost:8080/api/dvs/finches?key=$FINCHKEY" >/dev/null
-curl -s -X DELETE "http://localhost:8080/api/dvs/wrens?key=$FINCHKEY" >/dev/null
-curl -s -X DELETE "http://localhost:8080/api/dvs/birds?key=$FINCHKEY" >/dev/null
-curl -s -X DELETE "http://localhost:8080/api/dvs/spruce?key=$SPRUCEKEY" >/dev/null
-curl -s -X DELETE "http://localhost:8080/api/dvs/chestnuttrees?key=$SPRUCEKEY" >/dev/null
-curl -s -X DELETE "http://localhost:8080/api/dvs/trees?key=$SPRUCEKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/chestnutsparrows?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/sparrows?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/finches?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/wrens?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/birds?key=$FINCHKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/spruce?key=$SPRUCEKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/chestnuttrees?key=$SPRUCEKEY" >/dev/null
+curl -s -X DELETE "http://localhost:8080/api/dataverses/trees?key=$SPRUCEKEY" >/dev/null
 
 echo "Making sure finch can't see anything (silence is golden)"
 diff <(curl -s "http://localhost:8080/api/search?q=*&key=$FINCHKEY" | jq '.data.total_count') scripts/search/tests/expected/anon

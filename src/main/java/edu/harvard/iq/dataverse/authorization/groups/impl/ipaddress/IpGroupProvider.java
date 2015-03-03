@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -50,7 +51,6 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
              */
             UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
             if (userRequestMetadata == null) {
-                logger.info("In the groupsFor(User u) method, u.getRequestMetadata() was null for user \"" + u.getIdentifier() + "\". Returning empty set. See also https://github.com/IQSS/dataverse/issues/1354");
                 return Collections.EMPTY_SET;
             }
             return updateProvider(ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress()));

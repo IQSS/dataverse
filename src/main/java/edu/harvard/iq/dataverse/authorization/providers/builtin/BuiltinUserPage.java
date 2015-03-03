@@ -14,9 +14,11 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +33,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.hibernate.validator.constraints.NotBlank;
-import org.mindrot.jbcrypt.BCrypt;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -78,6 +79,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     private List<UserNotification> notificationsList;
     private int activeIndex;
     private String selectTab = "somedata";
+    UIInput usernameField;
 
     public EditMode getChangePasswordMode () {
         return EditMode.CHANGE_PASSWORD;
@@ -161,6 +163,14 @@ public class BuiltinUserPage implements java.io.Serializable {
         this.selectTab = selectTab;
     }
 
+    public UIInput getUsernameField() {
+        return usernameField;
+    }
+
+    public void setUsernameField(UIInput usernameField) {
+        this.usernameField = usernameField;
+    }
+
     public String init() {
         if (editMode == EditMode.CREATE) {
             if (!session.getUser().isAuthenticated()) { // in create mode for new user
@@ -228,7 +238,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         }
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "This username is already taken.", null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.username.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -310,7 +320,17 @@ public class BuiltinUserPage implements java.io.Serializable {
         builtinUser = builtinUserService.save(builtinUser);
 
         if (editMode == EditMode.CREATE) {
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName(), builtinUser.getDisplayInfo());
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(
+                    new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
+                    builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
+            if ( au == null ) {
+                // username exists
+                getUsernameField().setValid(false);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.username.taken"), null);
+                FacesContext context = FacesContext.getCurrentInstance();
+                context.addMessage(getUsernameField().getClientId(context), message);
+                return null;
+            }
             session.setUser(au);
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 
@@ -319,7 +339,6 @@ public class BuiltinUserPage implements java.io.Serializable {
         } else {
             authSvc.updateAuthenticatedUser(currentUser, builtinUser.getDisplayInfo());
             editMode = null;
-            logger.info("edit mode: " + editMode);
             String msg = "Your account information has been successfully updated.";
             if (passwordChanged) {
                 msg = "Your account password has been successfully changed.";

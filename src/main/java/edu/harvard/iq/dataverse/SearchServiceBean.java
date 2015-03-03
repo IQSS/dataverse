@@ -450,8 +450,9 @@ public class SearchServiceBean {
                  * @todo Expose this API URL after "dvs" is changed to
                  * "dataverses". Also, is an API token required for published
                  * dataverses?
+                 * Michael: url changed.
                  */
-//                solrSearchResult.setApiUrl(baseUrl + "/api/dvs/" + entityid);
+//                solrSearchResult.setApiUrl(baseUrl + "/api/dataverses/" + entityid);
             } else if (type.equals("datasets")) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);

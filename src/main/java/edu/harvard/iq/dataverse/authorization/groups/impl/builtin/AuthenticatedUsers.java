@@ -54,5 +54,9 @@ public class AuthenticatedUsers implements Group {
     public String getDescription() {
         return "All users, except for guests";
     }
-
+    
+    @Override
+    public String toString() {
+        return "[AuthenticatedUsers " + getIdentifier() + "]";
+    }
 }

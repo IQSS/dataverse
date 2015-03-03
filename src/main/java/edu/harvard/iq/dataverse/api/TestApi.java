@@ -39,7 +39,13 @@ public class TestApi extends AbstractApiBean {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     ShibServiceBean shibService;
-
+    
+    @Path("echo/{whatever}")
+    @GET
+    public Response echo( @PathParam("whatever") String body ) {
+        return okResponse(body);
+    }
+    
     @Path("permissions/{dvo}")
     @GET
     public Response findPermissonsOn(@PathParam("dvo") String dvo,

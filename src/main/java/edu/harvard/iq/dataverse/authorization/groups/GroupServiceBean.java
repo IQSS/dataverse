@@ -77,8 +77,8 @@ public class GroupServiceBean {
         Set<Group> groups = new HashSet<>();
         
         // first, get all groups the user directly belongs to
-        for ( GroupProvider gv : groupProviders.values() ) {
-            groups.addAll( gv.groupsFor(ra, dvo) );
+        for ( GroupProvider gp : groupProviders.values() ) {
+            groups.addAll( gp.groupsFor(ra, dvo) );
         }
         
         // now, get the explicit group transitive closure.
@@ -97,7 +97,7 @@ public class GroupServiceBean {
             perimeter.remove(g);
             
             Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
-            discovered.removeAll(visited); // Ideally this is always empty, as we don't allow cycles.
+            discovered.removeAll(visited); // Ideally the conjunction is always empty, as we don't allow cycles.
                                            // Still, coding defensively here, in case someone gets too
                                            // smart on the SQL console.
             

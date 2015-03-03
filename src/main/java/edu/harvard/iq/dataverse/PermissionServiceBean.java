@@ -131,9 +131,9 @@ public class PermissionServiceBean {
         
         // Add permissions specifically given to the user
         permissions.addAll( permissionsForSingleRoleAssignee(ra,d) );
-        
+        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra,d);
         // Add permissions gained from groups
-        for ( Group g : groupService.groupsFor(ra,d) ) {
+        for ( Group g : groupsRaBelongsTo ) {
             permissions.addAll( permissionsForSingleRoleAssignee(g,d) );
         }
         
@@ -192,12 +192,6 @@ public class PermissionServiceBean {
         Set<RoleAssignment> assignments = new HashSet<>();
         while (d != null) {
             assignments.addAll(roleService.directRoleAssignments(ra, d));
-            //@todo add support for all groups
-            //but for now we check role assignments for the AuthenticatedUsers group
-            if (ra instanceof AuthenticatedUser) {
-                assignments.addAll(roleService.directRoleAssignments(AuthenticatedUsers.get(), d));
-            }
-
             if (d instanceof Dataverse && ((Dataverse) d).isEffectivelyPermissionRoot()) {
                 return assignments;
             } else {

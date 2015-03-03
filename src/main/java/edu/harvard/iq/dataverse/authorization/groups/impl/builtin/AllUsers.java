@@ -67,5 +67,9 @@ public final class AllUsers implements Group {
     public String getDescription() {
         return "All users, including guests";
     }
-
+    
+    @Override
+    public String toString() {
+        return "[AllUsers " + getIdentifier() + "]";
+    }
 }

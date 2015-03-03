@@ -63,18 +63,14 @@
                             </li>
                         </ul>
                     </li>
-                    <li>
-                        
-                        <h:form class="navbar-form navbar-left" >    
-                          
-                           <p:commandLink value="#{bundle['header.feedback']}"  oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}" >
-                                   <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.feedback']}"/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                           </p:commandLink>
-                        </h:form>
-                    </li>
+                    <h:form class="navbar-form navbar-left navbar-form-link">
+                       <p:commandLink value="#{bundle['header.feedback']}" oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.feedback']}"/>
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                       </p:commandLink>
+                    </h:form>
                     <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                         <li>
                             <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
@@ -90,7 +86,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                         <li class="dropdown accountName">
-                            <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">s
+                            <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">
                                 <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                     <span class="glyphicon glyphicon-user text-danger" style="margin-right:8px;"></span>
                                 </ui:fragment>
@@ -123,7 +119,7 @@
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml">
                                         <f:param name="selectTab" value="accountInfo" />
-                                        <h:outputText value="Account Information" />
+                                        <h:outputText value="#{bundle['header.accountInfo']}" />
                                     </h:outputLink>
                                 </li>
                                 <li class="divider"></li>
@@ -153,13 +149,13 @@
         <div id="dataverseHeader" class="container" style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};">
             <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};">
-                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:900px;max-height:120px" alt="logo"/>
+                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:940px" alt="#{dataverse.name} #{bundle.dataverse}"/>
                 </div>
             </ui:fragment>
             <div class="dataverseHeaderBlock">
                 <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
                     <div class="dataverseHeaderCell dataverseHeaderLogo">
-                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:100px;max-height:100px" alt="logo"/>
+                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:100px;max-height:100px" alt="#{dataverse.name} #{bundle.dataverse}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
@@ -198,7 +194,7 @@
                 <div>
                     <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
                     <ui:fragment rendered="#{!status.last}" >
-                        <h:outputText value="#{breadcrumb.breadcrumbText}"  rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
+                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
                         
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
                             <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
@@ -253,10 +249,8 @@
         </div>
     </p:fragment>
   
-                <ui:include src="contactFormFragment.xhtml">
-                    <ui:param name="formTitle" value="#{bundle['feedback.header']}"/>
-                    <ui:param name="formTo" value="#{bundle['feedback.to']}"/>
-                </ui:include>
-             
-   
+    <ui:include src="contactFormFragment.xhtml">
+        <ui:param name="formTitle" value="#{bundle['feedback.header']}"/>
+        <ui:param name="formTo" value="#{bundle['feedback.to']}"/>
+    </ui:include>
 </div>

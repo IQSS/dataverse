@@ -67,9 +67,9 @@ class DataverseAPILink:
         , '/api/datasets/%s' % (SingleAPISpec.URL_PLACEHOLDER,), True, 1]\
     #,  ['view_dataset_versions_by_id', 'View Dataset By ID', '/api/datasets/%s/versions' % SingleAPISpec.URL_PLACEHOLDER, True, True]\
     # Dataverses
-    ,  ['list_dataverses', 'List Dataverses', '/api/dvs', False, 0]\
-    ,  ['get_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs/%s' % (SingleAPISpec.URL_PLACEHOLDER,), False, 1]\
-    ,  ['view_root_dataverse', 'View Root Dataverse', '/api/dvs/:root', False, 0]\
+    ,  ['list_dataverses', 'List Dataverses', '/api/dataverses', False, 0]\
+    ,  ['get_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dataverses/%s' % (SingleAPISpec.URL_PLACEHOLDER,), False, 1]\
+    ,  ['view_root_dataverse', 'View Root Dataverse', '/api/dataverses/:root', False, 0]\
     
     # Metadata
     ,  ['list_metadata_blocks', 'List metadata blocks', '/api/metadatablocks', False, 0]
@@ -82,9 +82,9 @@ class DataverseAPILink:
     API_WRITE_SPECS = (
         
         # Create a Dataverse
-        #   curl -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "http://localhost:8080/api/dvs/root?key=pete"
+        #   curl -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "http://localhost:8080/api/dataverses/root?key=pete"
         #
-        #[ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.URL_PLACEHOLDER, True, 1, True]\
+        #[ 'create_dataverse', 'Create Dataverse', '/api/dataverses/%s' % SingleAPISpec.URL_PLACEHOLDER, True, 1, True]\
         
         # Create a User
         #   curl -H "Content-type:application/json" -X POST -d @data/userPete.json "http://localhost:8080/api/users?password=pete"
@@ -213,7 +213,7 @@ class DataverseAPILink:
     
     def create_dataverse(self, parent_dv_alias_or_id, dv_params):
         """Create a dataverse
-        POST http://{{SERVER}}/api/dvs/{{ parent_dv_name }}?key={{username}}
+        POST http://{{SERVER}}/api/dataverses/{{ parent_dv_name }}?key={{username}}
 
         :param parent_dv_alias_or_id: str or integer, the alias or id of an existing datavese 
         :param dv_params: dict containing the parameters for the new dataverse
@@ -238,14 +238,14 @@ class DataverseAPILink:
         if not type(dv_params) is dict:
             msgx('dv_params is None')
             
-        url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (parent_dv_alias_or_id, self.apikey)
+        url_str = self.get_server_name() + '/api/dataverses/%s?key=%s' % (parent_dv_alias_or_id, self.apikey)
         headers = {'content-type': 'application/json'}    
         return self.make_api_call(url_str, self.HTTP_POST, params=dv_params, headers=headers)
         
     def publish_dataverse(self, dv_id_or_name):
         """
         Publish a dataverse based on its id or alias
-        #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
+        #POST http://{{SERVER}}/api/dataverses/{{identifier}}/actions/:publish?key={{apikey}}
         
         :param dv_id_or_name: Dataverse id (str or int) or alias (str)
         """
@@ -254,7 +254,7 @@ class DataverseAPILink:
         if dv_id_or_name is None:
             msgx('dv_id_or_name is None')
         
-        url_str = self.get_server_name() + '/api/dvs/%s/actions/:publish?key=%s' % (dv_id_or_name, self.apikey)
+        url_str = self.get_server_name() + '/api/dataverses/%s/actions/:publish?key=%s' % (dv_id_or_name, self.apikey)
         headers = {'content-type': 'application/json'}    
         return self.make_api_call(url_str, self.HTTP_POST)
         
@@ -388,7 +388,7 @@ class DataverseAPILink:
     
     def delete_dataverse_by_id(self, id_val):        
         msgt('delete_dataverse_by_id: %s' % id_val)    
-        url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (id_val, self.apikey) 
+        url_str = self.get_server_name() + '/api/dataverses/%s?key=%s' % (id_val, self.apikey) 
         return self.make_api_call(url_str, self.HTTP_DELETE)
 
     
@@ -397,7 +397,7 @@ class DataverseAPILink:
 if __name__=='__main__':
     import time
     
-    #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
+    #POST http://{{SERVER}}/api/dataverses/{{identifier}}/actions/:publish?key={{apikey}}
     
     server_with_api = 'https://dvn-build.hmdc.harvard.edu'
     dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')

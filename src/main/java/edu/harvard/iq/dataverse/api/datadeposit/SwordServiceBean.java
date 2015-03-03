@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +45,22 @@ public class SwordServiceBean {
 
         newDatasetVersion.getDatasetFields().add(emailDatasetField);
 
+    }
+
+    /**
+     * Mutate the dataset version, adding a depositor for the dataset.
+     */
+    public void addDatasetDepositor(DatasetVersion newDatasetVersion, User user) {
+        if (!user.isAuthenticated()) {
+            logger.info("returning early since user is not authenticated");
+            return;
+        }
+        AuthenticatedUser au = (AuthenticatedUser) user;
+        DatasetFieldType depositorDatasetFieldType = datasetFieldService.findByNameOpt(DatasetFieldConstant.depositor);
+        DatasetField depositorDatasetField = DatasetField.createNewEmptyDatasetField(depositorDatasetFieldType, newDatasetVersion);
+        depositorDatasetField.setSingleValue(au.getLastName() + ", " + au.getFirstName());
+
+        newDatasetVersion.getDatasetFields().add(depositorDatasetField);
     }
 
     /**

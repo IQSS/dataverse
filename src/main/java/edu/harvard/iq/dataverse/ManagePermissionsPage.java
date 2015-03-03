@@ -553,13 +553,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void validateGroupIdentifier(FacesContext context, UIComponent toValidate, Object rawValue) {
         String value = (String) rawValue;
         UIInput input = (UIInput) toValidate;
-        logger.info(">>> Validating the group identifier: " + rawValue);
         input.setValid(true); // Optimistic approach
         
         if ( context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null 
                 && !StringUtils.isEmpty(value) ) {
             
-            logger.info(">>> In validation");
             // cheap test - regex
             if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
                 input.setValid(false);

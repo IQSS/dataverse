@@ -12,25 +12,25 @@ if [ $# -eq 0 ]
 fi
 
 echo Pete
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "$SERVER/dvs/root?key=$1"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "$SERVER/dataverses/root?key=$1"
 echo
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-sub-normal.json "$SERVER/dvs/peteTop?key=$1"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-sub-normal.json "$SERVER/dataverses/peteTop?key=$1"
 echo
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-sub-restricted.json "$SERVER/dvs/peteTop?key=$1"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-sub-restricted.json "$SERVER/dataverses/peteTop?key=$1"
 echo
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-sub-secret.json "$SERVER/dvs/peteTop?key=$1"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-sub-secret.json "$SERVER/dataverses/peteTop?key=$1"
 echo
 
 echo Uma
 echo Pete creates top-level for Uma
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-top.json "$SERVER/dvs/root?key=$1"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-top.json "$SERVER/dataverses/root?key=$1"
 echo
 echo Pete makes Uma an admin on her own DV
-curl -s -H "Content-type:application/json" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"admin\"}" $SERVER/dvs/umaTop/assignments/?key=$1
+curl -s -H "Content-type:application/json" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"admin\"}" $SERVER/dataverses/umaTop/assignments/?key=$1
 echo
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub1.json "$SERVER/dvs/umaTop?key=$2"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub1.json "$SERVER/dataverses/umaTop?key=$2"
 echo
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub2.json "$SERVER/dvs/umaTop?key=$2"
+curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub2.json "$SERVER/dataverses/umaTop?key=$2"
 echo
 
 

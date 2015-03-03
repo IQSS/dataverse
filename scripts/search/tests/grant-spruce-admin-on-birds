@@ -1,6 +1,6 @@
 #!/bin/sh
 . scripts/search/assumptions
-OUTPUT=`curl -s -X POST -H "Content-type:application/json" -d "{\"assignee\": \"@spruce\",\"role\": \"admin\"}" "http://localhost:8080/api/dvs/birds/assignments?key=$ADMINKEY"`
+OUTPUT=`curl -s -X POST -H "Content-type:application/json" -d "{\"assignee\": \"@spruce\",\"role\": \"admin\"}" "http://localhost:8080/api/dataverses/birds/assignments?key=$ADMINKEY"`
 echo $OUTPUT
 echo
 echo $OUTPUT | jq ' .data | {assignee,_roleAlias}'

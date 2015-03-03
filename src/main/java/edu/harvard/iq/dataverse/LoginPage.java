@@ -130,7 +130,12 @@ public class LoginPage implements java.io.Serializable {
     public String login() {
         
         AuthenticationRequest authReq = new AuthenticationRequest();
-        for ( FilledCredential fc : getFilledCredentials() ) {
+        List<FilledCredential> filledCredentialsList = getFilledCredentials();
+        if ( filledCredentialsList == null ) {
+            logger.info("Credential list is null!");
+            return null;
+        }
+        for ( FilledCredential fc : filledCredentialsList ) {
             if(fc.getValue()==null || fc.getValue().isEmpty()){
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, "Please enter a "+fc.getCredential().getTitle());
             }
@@ -154,9 +159,9 @@ public class LoginPage implements java.io.Serializable {
                 redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
-            logger.log(Level.INFO, "Sending user to = " + redirectPage);
+            logger.log(Level.INFO, "Sending user to = {0}", redirectPage);
 
-            return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
+            return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
 
             
         } catch (AuthenticationFailedException ex) {
