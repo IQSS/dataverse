@@ -186,14 +186,17 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @GET
     @Path("loadNAControlledVocabularyValue")
-    public void loadNAControlledVocabularyValue() {
+    public Response loadNAControlledVocabularyValue() {
         // the find will throw a javax.persistence.NoResultException if no values are in db
         try {
             datasetFieldService.findNAControlledVocabularyValue();
+            return okResponse("NA value exists.");
+            
         } catch (Exception e) {
             ControlledVocabularyValue naValue = new ControlledVocabularyValue();
             naValue.setStrValue(DatasetField.NA_VALUE);
             datasetFieldService.save(naValue);
+            return okResponse("NA value created.");
         }
     }
 
