@@ -31,6 +31,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import javax.persistence.NoResultException;
+import javax.ws.rs.core.Response.Status;
 
 @Path("datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
@@ -48,7 +52,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
 
     @GET
-    public String getAll() {
+    public Response getAll() {
         try {
             List<String> listOfIsHasParentsTrue = new ArrayList<>();
             List<String> listOfIsHasParentsFalse = new ArrayList<>();
@@ -64,8 +68,18 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 }
             }
             final List<DatasetFieldType> requiredFields = datasetFieldService.findAllRequiredFields();
-            return "have parents: " + listOfIsHasParentsTrue + "\n\n" + "no parent: " + listOfIsHasParentsFalse + "\n\n"
-                    + "allows multiples: " + listOfIsAllowsMultiplesTrue + "\n\n" + "doesn't allow multiples: " + listOfIsAllowsMultiplesFalse + "\n\n" + "required fields: " + requiredFields + "\n";
+            final List<String> requiredFieldNames = new ArrayList<>(requiredFields.size());
+            for ( DatasetFieldType dt : requiredFields ) {
+                requiredFieldNames.add( dt.getName() );
+            }
+            return okResponse( Json.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
+                    .add("noParents", asJsonArray(listOfIsHasParentsFalse))
+                    .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
+                    .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
+                    .add("doesNotAllowMultiples", asJsonArray(listOfIsAllowsMultiplesFalse))
+                    .add("required", asJsonArray(requiredFieldNames))
+            );
+            
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -89,13 +103,13 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     }
                 }
             }
-            return Util.message2ApiError(sb.toString());
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
         }
     }
 
     @GET
     @Path("{name}")
-    public String getByName(@PathParam("name") String name) {
+    public Response getByName(@PathParam("name") String name) {
         try {
             DatasetFieldType dsf = datasetFieldService.findByName(name);
             Long id = dsf.getId();
@@ -108,40 +122,44 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             boolean allowsMultiples = dsf.isAllowMultiples();
             boolean isRequired = dsf.isRequired();
             String parentAllowsMultiplesDisplay = "N/A (no parent)";
-            Boolean parentAllowsMultiplesBoolean = false;
+            boolean parentAllowsMultiplesBoolean;
             if (hasParent) {
                 DatasetFieldType parent = dsf.getParentDatasetFieldType();
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
-                parentAllowsMultiplesDisplay = parentAllowsMultiplesBoolean.toString();
+                parentAllowsMultiplesDisplay = Boolean.toString(parentAllowsMultiplesBoolean);
             }
-            return dsf.getName() + ":\n"
-                    + "- id: " + id + "\n"
-                    + "- title: " + title + "\n"
-                    + "- metadataBlock: " + metadataBlock + "\n"
-                    + "- fieldType: " + fieldType + "\n"
-                    + "- allowsMultiples: " + allowsMultiples + "\n"
-                    + "- hasParent: " + hasParent + "\n"
-                    + "- parentAllowsMultiples: " + parentAllowsMultiplesDisplay + "\n"
-                    + "- solrFieldSearchable: " + solrFieldSearchable + "\n"
-                    + "- solrFieldFacetable: " + solrFieldFacetable + "\n"
-                    + "- isRequired: " + isRequired + "\n"
-                    + "";
+            return okResponse(NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("name", dsf.getName())
+                    .add("id", id )
+                    .add("title", title)
+                    .add( "metadataBlock", metadataBlock)
+                    .add("fieldType", fieldType.name())
+                    .add("allowsMultiples", allowsMultiples)
+                    .add("hasParent", hasParent)
+                    .add("parentAllowsMultiples", parentAllowsMultiplesDisplay)
+                    .add("solrFieldSearchable", solrFieldSearchable)
+                    .add("solrFieldFacetable", solrFieldFacetable)
+                    .add("isRequired", isRequired));
+        
+        } catch ( NoResultException nre ) {
+            return notFound(name);
+            
         } catch (EJBException | NullPointerException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
-            sb.append(ex + " ");
+            sb.append(ex).append(" ");
             while (cause.getCause() != null) {
                 cause = cause.getCause();
-                sb.append(cause.getClass().getCanonicalName() + " ");
-                sb.append(cause.getMessage() + " ");
+                sb.append(cause.getClass().getCanonicalName()).append(" ");
+                sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                     for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
+                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
                     }
                 }
             }
-            return Util.message2ApiError(sb.toString());
+            return errorResponse( Status.INTERNAL_SERVER_ERROR, sb.toString() );
         }
 
     }
@@ -187,7 +205,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @POST
     @Consumes("text/tab-separated-values")
     @Path("load")
-    public String loadDatasetFields(File file) {
+    public Response loadDatasetFields(File file) {
         BufferedReader br = null;
         String line = "";
         String splitBy = "\t";
@@ -246,19 +264,19 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             }
         }
 
-        return "File parsing completed:\n\n" + returnString;
+        return okResponse("File parsing completed:\n\n" + returnString);
     }
 
-    private String parseMetadataBlock(String[] values) {
+    private Response parseMetadataBlock(String[] values) {
         MetadataBlock mdb = new MetadataBlock();
         mdb.setName(values[1]);
         mdb.setDisplayName(values[2]);
 
         metadataBlockService.save(mdb);
-        return mdb.getName();
+        return okResponse(mdb.getName());
     }
 
-    private String parseDatasetField(String[] values) {
+    private Response parseDatasetField(String[] values) {
         DatasetFieldType dsf = new DatasetFieldType();
         dsf.setName(values[1]);
         dsf.setTitle(values[2]);
@@ -279,16 +297,16 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
 
         datasetFieldService.save(dsf);
-        return dsf.getName();
+        return okResponse(dsf.getName());
     }
 
-    private String parseControlledVocabulary(String[] values) {
+    private Response parseControlledVocabulary(String[] values) {
         ControlledVocabularyValue cvv = new ControlledVocabularyValue();
         DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
         cvv.setDatasetFieldType(dsv);
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
-        cvv.setDisplayOrder(new Integer(values[4]).intValue());
+        cvv.setDisplayOrder(Integer.parseInt(values[4]));
         for (int i = 5; i < values.length; i++) {
             ControlledVocabAlternate alt = new ControlledVocabAlternate();
             alt.setDatasetFieldType(dsv);
@@ -299,6 +317,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
 
         datasetFieldService.save(cvv);
-        return cvv.getStrValue();
+        return okResponse(cvv.getStrValue());
     }
 }

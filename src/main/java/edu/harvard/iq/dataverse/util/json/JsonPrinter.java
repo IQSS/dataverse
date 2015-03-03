@@ -51,6 +51,14 @@ public class JsonPrinter {
     	
 	public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 	
+    public static JsonArrayBuilder asJsonArray( Collection<String> strings ) {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for ( String s : strings ) {
+            arr.add(s);
+        }
+        return arr;
+    }
+    
 	public static JsonObjectBuilder json( User u ) {
         RoleAssigneeDisplayInfo displayInfo = u.getDisplayInfo();
         return jsonObjectBuilder()

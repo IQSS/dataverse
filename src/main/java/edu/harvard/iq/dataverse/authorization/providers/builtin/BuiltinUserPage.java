@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -319,7 +320,9 @@ public class BuiltinUserPage implements java.io.Serializable {
         builtinUser = builtinUserService.save(builtinUser);
 
         if (editMode == EditMode.CREATE) {
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(
+                    new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
+                    builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
             if ( au == null ) {
                 // username exists
                 getUsernameField().setValid(false);

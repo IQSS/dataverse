@@ -6,10 +6,10 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -17,17 +17,16 @@ import javax.ws.rs.Path;
  * @author Leonid Andreev
  */
 @Path("mail")
-public class Mail {
-    private static final Logger logger = Logger.getLogger(Mail.class.getCanonicalName());
+public class Mail extends AbstractApiBean {
     
     @EJB
     MailServiceBean mailService;
     
     @GET
     @Path("notifications")
-    public String sendMail() {
+    public Response sendMail() {
         mailService.bulkSendNotifications();
-        return null;
+        return okResponse("bulk send notification started");
     }
     
 }

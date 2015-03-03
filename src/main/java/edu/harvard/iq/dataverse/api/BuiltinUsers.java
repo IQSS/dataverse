@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -72,6 +73,11 @@ public class BuiltinUsers extends AbstractApiBean {
     public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key) {
         return internalSave(user, password, key);
     }
+    
+    @POST
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
+        return internalSave(user, password, key);
+    }
 
     private Response internalSave(BuiltinUser user, String password, String key) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
@@ -93,7 +99,11 @@ public class BuiltinUsers extends AbstractApiBean {
             }
             user = builtinUserSvc.save(user);
 
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName(), user.getDisplayInfo(), false);
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(
+                    new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName()),
+                    user.getUserName(), 
+                    user.getDisplayInfo(),
+                    false);
             ApiToken token = new ApiToken();
 
             token.setTokenString(java.util.UUID.randomUUID().toString());
@@ -122,11 +132,6 @@ public class BuiltinUsers extends AbstractApiBean {
             logger.log(Level.WARNING, "Error saving user", e);
             return errorResponse(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
         }
-    }
-
-    @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-        return internalSave(user, password, key);
     }
 
 }

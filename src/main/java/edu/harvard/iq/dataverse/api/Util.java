@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +50,7 @@ public class Util {
         return stringWriter.toString();
     }
 
+    @Deprecated
     static String jsonArray2prettyString(JsonArray jsonArray) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
@@ -64,16 +63,6 @@ public class Util {
         return stringWriter.toString();
     }
 
-    @Deprecated
-    static String message2ApiError(String message) {
-        JsonObject error = Json.createObjectBuilder()
-                .add("message", message)
-                .add("documentation_url", "http://thedata.org")
-                .build();
-        return jsonObject2prettyString(error);
-
-    }
-	
     static JsonArray asJsonArray( String str ) {
         try ( JsonReader rdr = Json.createReader(new StringReader(str)) ) {
             return rdr.readArray();

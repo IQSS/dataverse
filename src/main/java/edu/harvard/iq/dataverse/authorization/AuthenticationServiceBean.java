@@ -235,7 +235,8 @@ public class AuthenticationServiceBean {
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
             return ( user == null ) ?
-                AuthenticationServiceBean.this.createAuthenticatedUser( authenticationProviderId, resp.getUserId(), resp.getUserDisplayInfo(), true )
+                AuthenticationServiceBean.this.createAuthenticatedUser(
+                        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true )
                 : updateAuthenticatedUser( user, resp.getUserDisplayInfo() );
 
         } else { 
@@ -344,21 +345,47 @@ public class AuthenticationServiceBean {
     }
 
     /**
-     * @see #createAuthenticatedUser(java.lang.String, edu.harvard.iq.dataverse.authorization.UserIdentifier, edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo, boolean) 
-     * @param authenticationProviderId
-     * @param proposedUserIdentifier
+     * Creates an authenticated user based on the passed
+     * {@code userDisplayInfo}, a lookup entry for them based
+     * UserIdentifier.getLookupStringPerAuthProvider (within the supplied
+     * authentication provider), and internal user identifier (used for role
+     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifer.
+     *
+     * @param userRecordId
+     * @param proposedAuthenticatedUserIdentifier
      * @param userDisplayInfo
-     * @param autoGenerateUserIdentifier
-     * @return 
+     * @param generateUniqueIdentifier if {@code true}, create a new, unique user identifier for the created user, if the suggested one exists.
+     * @return the newly created user, or {@code null} if the proposed identifier exists and {@code generateUniqueIdentifier} was {@code false}.
      */
-    public AuthenticatedUser createAuthenticatedUser(String authenticationProviderId,
-                                                     String proposedUserIdentifier,
+    public AuthenticatedUser createAuthenticatedUser(UserRecordIdentifier userRecordId,
+                                                     String proposedAuthenticatedUserIdentifier,
                                                      AuthenticatedUserDisplayInfo userDisplayInfo,
-                                                     boolean autoGenerateUserIdentifier) {
-        return createAuthenticatedUser(authenticationProviderId, 
-                new UserIdentifier(authenticationProviderId, proposedUserIdentifier), 
-                userDisplayInfo,
-                autoGenerateUserIdentifier);
+                                                     boolean generateUniqueIdentifier) {
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.applyDisplayInfo(userDisplayInfo);
+        
+        // we now select a username for the generated AuthenticatedUser, or give up
+        String internalUserIdentifer = proposedAuthenticatedUserIdentifier;
+        // TODO should lock table authenticated users for write here
+        if ( identifierExists(internalUserIdentifer) ) {
+            if ( ! generateUniqueIdentifier ) {
+                return null;
+            }
+            int i=1;
+            String identifier = internalUserIdentifer + i;
+            while ( identifierExists(identifier) ) {
+                i += 1;
+            }
+            authenticatedUser.setUserIdentifier(identifier);
+        } else {
+            authenticatedUser.setUserIdentifier(internalUserIdentifer);
+        }
+        authenticatedUser = save( authenticatedUser );
+        // TODO should unlock table authenticated users for write here
+        AuthenticatedUserLookup auusLookup = userRecordId.createAuthenticatedUserLookup(authenticatedUser);
+        em.persist( auusLookup );
+        authenticatedUser.setAuthenticatedUserLookup(auusLookup);
+        return authenticatedUser;
     }
     
     /**
@@ -367,13 +394,14 @@ public class AuthenticationServiceBean {
      * UserIdentifier.getLookupStringPerAuthProvider (within the supplied
      * authentication provider), and internal user identifier (used for role
      * assignments, etc.) based on UserIdentifier.getInternalUserIdentifer.
-     *
+     *  @deprecated  use {@link #createAuthenticatedUser(edu.harvard.iq.dataverse.authorization.UserRecordIdentifier, java.lang.String, edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo, boolean) }
      * @param authenticationProviderId
      * @param proposedIdentifier
      * @param userDisplayInfo
      * @param generateUniqueIdentifier if {@code true}, create a new, unique user identifier for the created user, if the suggested one exists.
      * @return the newly created user, or {@code null} if the proposed identifier exists and {@code generateUniqueIdentifier} was {@code false}.
      */
+    @Deprecated
     public AuthenticatedUser createAuthenticatedUser(String authenticationProviderId,
                                                      UserIdentifier proposedIdentifier,
                                                      AuthenticatedUserDisplayInfo userDisplayInfo,
@@ -402,7 +430,9 @@ public class AuthenticationServiceBean {
         authenticatedUser = save( authenticatedUser );
         // TODO should unlock table authenticated users for write here
         String lookupStringPerAuthProvider = proposedIdentifier.getLookupStringPerAuthProvider();
-        AuthenticatedUserLookup auusLookup = new AuthenticatedUserLookup(lookupStringPerAuthProvider, authenticationProviderId, authenticatedUser);
+        AuthenticatedUserLookup auusLookup = new AuthenticatedUserLookup(lookupStringPerAuthProvider,
+                authenticationProviderId,
+                authenticatedUser);
         em.persist( auusLookup );
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
         return authenticatedUser;
