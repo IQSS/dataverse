@@ -1,7 +1,7 @@
 {
     "alias":"manager",
-    "name":"Manager",
-    "description":"Manager",
+    "name":"Curator",
+    "description":"Curator",
     "permissions":[
         "ViewUnpublishedDataset",
         "EditDataset",

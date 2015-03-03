@@ -1,6 +1,6 @@
 {
   "alias": "dvContributor",
-  "name": "DV Contributor",
+  "name": "Dataverse Contributor",
   "description": "Allows creation of Dataverse",
   "permissions": [
     "AddDataverse"
