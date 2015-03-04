@@ -37,7 +37,7 @@
         <div class="container clearfix" id="footer">
             <div class="pull-left">
                 <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><img src="/resources/images/Twitter_logo_blue.png" width="20" alt="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><img src="/resources/images/githubicon.png" width="20" alt="#{bundle['footer.dataverseOnGitHub']}"/></a><br/>
-                <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> &#160;|&#160; <a href="#{systemConfig.applicationPrivacyPolicyUrl}" target="_blank">#{bundle['footer.privacyPolicy']}</a>
+                <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty systemConfig.applicationPrivacyPolicyUrl}">&#160;|&#160; <h:outputLink value="#{systemConfig.applicationPrivacyPolicyUrl}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
             </div>
             <div class="pull-right clearfix">
                 <div class="poweredbylogo pull-left"><span>#{bundle['footer.poweredby']}</span> <h:graphicImage value="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></div>
