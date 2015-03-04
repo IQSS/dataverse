@@ -29,12 +29,12 @@ Solr must be firewalled off from all hosts except the server(s) running Datavers
 Settings
 ++++++++
 
-ApplicationPrivacyPolicy
-------------------------
+ApplicationPrivacyPolicyUrl
+---------------------------
 
-Upload a file containing the privacy policy for your installation.
+Specify a URL where users can read your Privacy Policy.
 
-``curl -X PUT -d@/tmp/privacy-policy http://localhost:8080/api/s/settings/:ApplicationPrivacyPolicy``
+``curl -X PUT -d http://best-practices.dataverse.org http://localhost:8080/api/s/settings/:ApplicationPrivacyPolicyUrl``
 
 SolrHostColonPort
 -----------------

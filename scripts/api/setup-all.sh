@@ -36,6 +36,7 @@ curl -X PUT -d / "$SERVER/s/settings/:DoiSeparator"
 curl -X PUT -d burrito $SERVER/s/settings/BuiltinUsers.KEY
 curl -X PUT -d empanada $SERVER/s/settings/:BlockedApiKey
 curl -X PUT -d localhost-only $SERVER/s/settings/:BlockedApiPolicy
+curl -X PUT -d http://best-practices.dataverse.org $SERVER/s/settings/:ApplicationPrivacyPolicyUrl
 echo
 
 echo "Setting up the admin user (and as superuser)"

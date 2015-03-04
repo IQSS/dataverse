@@ -183,10 +183,10 @@ public class SystemConfig {
         return appTermsOfUse;
     }
 
-    public String getApplicationPrivacyPolicy() {
-        String saneDefaultForPrivacyPolicy = "There is not Privacy Policy for this Dataverse installation.";
-        String appPrivacyPolicy = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicy, saneDefaultForPrivacyPolicy);
-        return appPrivacyPolicy;
+    public String getApplicationPrivacyPolicyUrl() {
+        String saneDefaultForPrivacyPolicyUrl = "#";
+        String appPrivacyPolicyUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);
+        return appPrivacyPolicyUrl;
     }
 
 }
