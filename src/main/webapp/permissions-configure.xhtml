@@ -28,7 +28,6 @@
             #{bundle['dataverse.permissions.Q2.answer']}
             <p:selectOneRadio id="defaultContributorRoleRadio" value="#{managePermissionsPage.defaultContributorRoleAlias}" layout="custom">
                 <f:selectItem itemLabel="#{bundle.editor}" itemValue="editor" />
-                <f:selectItem itemLabel="#{bundle.manager}" itemValue="manager" />
                 <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator" />
             </p:selectOneRadio>
             <div class="radio no-padding-left">
@@ -36,13 +35,6 @@
                     <p:radioButton id="opt1" for="defaultContributorRoleRadio" itemIndex="0" />
                     #{bundle.editor}
                     <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.editor.description']}</span>
-                </label>
-            </div>
-            <div class="radio no-padding-left">
-                <label for="opt2">
-                    <p:radioButton id="opt2" for="defaultContributorRoleRadio" itemIndex="1" />
-                    #{bundle.manager}
-                    <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.manager.description']}</span>
                 </label>
             </div>
             <div class="radio no-padding-left">
