@@ -262,6 +262,8 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 
 .logoPreview {max-width:80px;max-height:80px;}
 
+#metadataFieldOptionsPanel {width:70%;margin-left:60px;margin-top:.5em;}
+#metadataFieldOptionsPanel-Body {max-height:400px;overflow-y:scroll;}
 #metadataFieldOptions td {vertical-align: middle;}
 
 /* -------- SEARCH -------- */

@@ -204,7 +204,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="mdbSelect">#{bundle['dataverse.metadataElements']}</label>
                                     <div class="col-sm-9">
-                                        <p class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
+                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.metadataElements.tip']}</p>
                                             
                                         <label class="metadata-blocks-default" for="metadataRoot">
                                             <h:selectBooleanCheckbox id="metadataRoot" tabindex="7" styleClass="metadata-blocks-default" 
@@ -263,9 +263,9 @@
                                                 </label> 
                                             </div>
                                             
-                                            <div jsf:rendered="#{mdb.showDatasetFieldTypes}" style="width:70%;margin-left:60px;margin-top:.5em;">
-                                                <div class="panel panel-default">
-                                                    <div class="panel-body" style="max-height:400px;overflow-y:scroll;">
+                                            <div jsf:rendered="#{mdb.showDatasetFieldTypes}">
+                                                <div id="metadataFieldOptionsPanel" class="panel panel-default">
+                                                    <div id="metadataFieldOptionsPanel-Body" class="panel-body">
                                                         <table id="metadataFieldOptions" class="table table-striped">
                                                             <tbody>
                                                                 <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">
@@ -316,7 +316,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="facetPickListCreate">#{bundle['dataverse.facetPickList.text']}</label>
                                     <div class="col-sm-9">
-                                        <p class="text-primary"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.facetPickList.tip']}</p>
+                                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.facetPickList.tip']}</p>
 
                                         <label class="metadata-blocks-default" for="facetsRoot">
                                             <h:selectBooleanCheckbox id="facetsRoot" tabindex="8" styleClass="facets-blocks-default" 
