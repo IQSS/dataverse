@@ -686,7 +686,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public String saveGuestbookResponse(String type) {
         boolean valid = true;
-
         if (dataset.getGuestbook() != null) {
             if (dataset.getGuestbook().isNameRequired()) {
                 if (guestbookResponse.getName() == null) {
@@ -729,8 +728,6 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
-        
-                System.out.print(" valid? " + valid);
 
         if (!valid) {
             logger.info("Guestbook response isn't valid.");
@@ -751,16 +748,13 @@ public class DatasetPage implements java.io.Serializable {
         if (guestbookResponse.getDataFile() != null && type.equals("download")) {
             return callDownloadServlet(downloadFormat, guestbookResponse.getDataFile().getId());
         }
-        System.out.print(" guestbookResponse.getDataFile() " + guestbookResponse.getDataFile());
-        System.out.print(" type.equals(\"ravens\") " + type.equals("ravens"));
+
         if (guestbookResponse.getDataFile() != null && type.equals("ravens")) {
             String retVal = getDataExploreURLComplete(guestbookResponse.getDataFile().getId());
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
-                System.out.print(retVal);
                 return retVal;
             } catch (IOException ex) {
-                System.out.print("in catch "  + retVal);
                 logger.info("Failed to issue a redirect to file download url.");
             }
         }
@@ -804,14 +798,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
-            try {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-            } catch (IOException ex) {
-                logger.info("Failed to issue a redirect to file download url." + fileDownloadUrl);
-            }
-            return fileDownloadUrl;
-        
-        
+            return fileDownloadUrl;       
 
     }
 
@@ -1798,7 +1785,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void createSilentGuestbookEntry(FileMetadata fileMetadata, String format){
-                initGuestbookResponse(fileMetadata, format);
+        initGuestbookResponse(fileMetadata, format);
         Command cmd;
         try {
             cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
@@ -1836,7 +1823,6 @@ public class DatasetPage implements java.io.Serializable {
         if (this.guestbookResponse == null) {
             this.guestbookResponse = new GuestbookResponse();
         }
-        this.guestbookResponse.setDownloadtype(downloadFormat);
         User user = session.getUser();
         if (this.dataset.getGuestbook() != null) {
             this.guestbookResponse.setGuestbook(this.dataset.getGuestbook());
@@ -1871,9 +1857,8 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 this.guestbookResponse.getCustomQuestionResponses().add(cqr);
             }
-
         }
-
+        this.guestbookResponse.setDownloadtype(downloadFormat);
         this.guestbookResponse.setDataset(dataset);
     }
 

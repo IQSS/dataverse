@@ -405,9 +405,18 @@ public class DatasetVersionUI implements Serializable {
         if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()){
             dvIdForInputLevel = dataverseService.find(dvIdForInputLevel).getMetadataRootId();
         }
-
-        List <DataverseFieldTypeInputLevel> dftilList = dataverseFieldTypeInputLevelServiceBean.findByDataverseId(dvIdForInputLevel);       
-        for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
+        
+        List<DatasetField> filledInFields = this.datasetVersion.getDatasetFields(); 
+        
+        List <MetadataBlock> actualMDB = new ArrayList();
+        for (DatasetField dsfv : filledInFields){
+            MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
+            if (!actualMDB.contains(mdbTest)){
+                actualMDB.add(mdbTest);
+            }
+        }        
+        
+        for (MetadataBlock mdb : actualMDB) {
             mdb.setEmpty(true);
             mdb.setHasRequired(false);
             List<DatasetField> datasetFieldsForView = new ArrayList();
