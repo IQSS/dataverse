@@ -2,7 +2,9 @@
 
 my $dvobjectoffset = shift @ARGV;
 my $dtoffset = 0;
-my $dvoffset = 0; 
+my $dvoffset = 0;
+my $fmoffset = 0; # file metadatas
+my $fcoffset = 0; # file categories
 
 use DBI;
 
@@ -20,6 +22,8 @@ while ( <> )
 {
     chop; 
     ($globalid, $dsid, $dsvid) = split("\t", $_); 
+
+    %FILECATEGORIES = {}; # file categories for this dataset.
 
     if ($globalid =~/^([a-z]*):(.*)\/([^\/]*)$/)
     {
@@ -128,8 +132,30 @@ while ( <> )
 	print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($dvobjectoffset, '$type', '$fsname', $fsize, '$md5', TRUE);} . "\n";
 
 	# file metadata object:
-	print qq {INSERT INTO filemetadata (description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($description, $label, TRUE, 1, $dsvid, $dvobjectoffset);} . "\n";
+	$fmoffset++; 
+	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmoffset, $description, $label, TRUE, 1, $dsvid, $dvobjectoffset);} . "\n";
 
+	# and the category, if exists:
+
+	if ($category && $category ne "") 
+	{
+	    $category = $dbh->quote($category); 
+	    unless ($FILECATEGORIES{$category})
+	    {
+		# this is a new category (for this dataset), 
+		# so it needs to be created: 
+
+		$fcoffset++; 
+
+		print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($fcoffset, $category, $dvobjectoffset);} . "\n";
+
+		$FILECATEGORIES{$category} = $fcoffset; 
+	    }
+
+	    $fcid = $FILECATEGORIES{$category};
+	    print qq{INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES ($fcid, $fmoffset);} . "\n";
+
+	}
 	# subsettable files: 
 
 
