@@ -11,46 +11,18 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="API Token - #{dataverseServiceBean.findRootDataverse().name} Dataverse"/>
-<!--            <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>-->
+            <ui:param name="pageTitle" value="#{bundle['apitoken.title']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
-                <f:metadata>
-<!--                    <f:viewAction action="#{ApiTokenPage.init}" />                    -->
-                </f:metadata>
-                <style type="text/css">
-                    .highlight {
-                        padding: 9px 14px;
-                        margin-bottom: 1em;
-                        background-color: #f7f7f9;
-                        border: 1px solid #e1e1e8;
-                        border-radius: 4px;
-                    }
-                    .highlight pre {
-                        background-color: transparent;
-                        border: 0;
-                        margin-bottom: 0;
-                        margin-top: 0;
-                        padding: 0;
-                        white-space: nowrap;
-                        word-break: normal;
-                    }
-                    .highlight pre code {
-                        display: inline-block;
-                        color: #333;
-                        font-size: inherit;
-                        background-color: transparent;
-                        border-radius: 0;
-                        color: inherit;
-                        padding: 0;
-                        white-space: pre-wrap;
-                    }
-                </style>
-                <h:form id="apiTokenForm" style="margin-top:1em;">
+                <h:form id="apiTokenForm">
                     <p:tabView id="apiTokenView">
                         <p:tab id="apiTokenTab" title="API Token">
-                            <p style="display:block; margin-bottom:.5em;" class="text-primary">
-                                <span class="glyphicon glyphicon-info-sign"></span> Here is your API Token. Check out our <a href="/guides/API/index.html" target="_blank">API Guide</a> for more information.
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-info-sign"/>&#160;
+                                <h:outputFormat value="#{bundle['apitoken.message']}" escape="false">
+                                    <f:param value="&lt;a href=&#34;/guides/API/index.html&#34; target=&#34;_blank&#34;&gt;"/>
+                                    <f:param value="&lt;/a&gt;"/>
+                                </h:outputFormat>
                             </p>
                             <div class="highlight">
                                  <pre>
@@ -59,7 +31,7 @@
                             </div>
                             <div>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
-                                    Generate
+                                    #{bundle['apitoken.generateBtn']}
                                 </button>
                             </div>
                         </p:tab>

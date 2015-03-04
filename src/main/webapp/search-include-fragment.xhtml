@@ -658,7 +658,7 @@
                                         
                                         <span class="glyphicon glyphicon-lock text-danger pull-right" jsf:rendered="#{dataFileServiceBean.find(result.entityId).restricted and (!(permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')))}"/>
                                         <span class="icon-unlock text-success pull-right" jsf:rendered="#{dataFileServiceBean.find(result.entityId).restricted and permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')}"/>
-                                        <span class="glyphicon glyphicon-link text-muted pull-right" jsf:rendered="#{!result.parent.get('isInTree')}"/>
+                                        <span class="glyphicon glyphicon-link text-muted pull-right" jsf:rendered="#{!result.isInTree}"/>
                                         <span class="icon-file text-muted pull-right"/>
                                     </div>
                                     <ui:remove>

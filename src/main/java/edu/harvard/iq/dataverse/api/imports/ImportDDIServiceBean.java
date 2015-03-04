@@ -1,18 +1,15 @@
 package edu.harvard.iq.dataverse.api.imports;
 
-import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,20 +19,20 @@ import java.util.*;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.json.Json;
+import javax.ejb.Stateless;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.xml.stream.XMLInputFactory;
 
 /**
  *
  * @author ellenk
  */
-public class ImportDDI {
+@Stateless
+public class ImportDDIServiceBean {
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
     
     public static final String NAMING_PROTOCOL_HANDLE = "hdl";
@@ -89,16 +86,15 @@ public class ImportDDI {
     private XMLInputFactory xmlInputFactory = null;
     private ImportType importType;
      
-    public ImportDDI(ImportType importType) {
-        this.importType=importType;
-        xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
-        xmlInputFactory.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
-
-    }
+    @EJB CustomFieldServiceBean customFieldService;
+   
+    @EJB DatasetFieldServiceBean datasetFieldService;
     
       
-    public DatasetDTO doImport(String xmlToParse) throws XMLStreamException, ImportException {
-        DatasetDTO datasetDTO = this.initializeDataset();
+    public DatasetDTO doImport(ImportType importType, String xmlToParse) throws XMLStreamException, ImportException {
+         this.importType=importType;
+        xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
+        xmlInputFactory.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE); DatasetDTO datasetDTO = this.initializeDataset();
 
         // Read docDescr and studyDesc into DTO objects.
         Map fileMap = mapDDI(xmlToParse, datasetDTO);
@@ -160,6 +156,7 @@ public class ImportDDI {
 
         return filesMap;
     }
+    
     private void processDDI( XMLStreamReader xmlr, DatasetDTO datasetDTO, Map filesMap) throws XMLStreamException, ImportException {
        
         // make sure we have a codeBook
@@ -199,8 +196,7 @@ public class ImportDDI {
         
 
     }
-    // EMK TODO: update unit test so this doesn't have to be public
-    public DatasetDTO initializeDataset() {
+     public DatasetDTO initializeDataset() {
         DatasetDTO  datasetDTO = new DatasetDTO();
         DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
         datasetDTO.setDatasetVersion(datasetVersionDTO);
@@ -213,7 +209,7 @@ public class ImportDDI {
         datasetVersionDTO.getMetadataBlocks().get("socialscience").setFields(new ArrayList<FieldDTO>());
         datasetVersionDTO.getMetadataBlocks().put("geospatial", new MetadataBlockDTO());
         datasetVersionDTO.getMetadataBlocks().get("geospatial").setFields(new ArrayList<FieldDTO>());
-     
+        
         return datasetDTO;
         
     }
@@ -621,36 +617,75 @@ public class ImportDDI {
         }
         return set;
     }
-   private void processMethod(XMLStreamReader xmlr, DatasetVersionDTO dvDTO ) throws XMLStreamException {
+   private void processMethod(XMLStreamReader xmlr, DatasetVersionDTO dvDTO ) throws XMLStreamException, ImportException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("dataColl")) {
                     processDataColl(xmlr, dvDTO);
                 } else if (xmlr.getLocalName().equals("notes")) {
-                    // As of 3.0, this note is going to be used for the extended
-                    // metadata fields. For now, we are not going to try to 
-                    // process these in any meaningful way.
-                    // We also don't want them to become the "Study-Level Error
-                    // notes" -- that's what the note was being used for 
-                    // exclusively in pre-3.0 practice. 
-                    // TODO: this needs to be revisited after 3.0, when we 
-                    // figure out how DVNs will be harvesting each others'
-                    // extended metadata.
-                    
-                    // TODO: clarify mapping. The spreadsheet says that datasetLevelErrorNotes should
-                    // be mapped from anlyInfo.  datasetLevelErrorNotes isn't currently defined in tsv
-                    // file, so I don't know if it's intended to allowMultiples.
+                   
                     String noteType = xmlr.getAttributeValue(null, "type");
-                    if (!NOTE_TYPE_EXTENDED_METADATA.equalsIgnoreCase(noteType) ) {
+                    if (NOTE_TYPE_EXTENDED_METADATA.equalsIgnoreCase(noteType) ) {
+                        processCustomField(xmlr, dvDTO);                       
+                    } else {
                         addNote("Subject: Study Level Error Note, Notes: "+ parseText( xmlr,"notes" ) +";", dvDTO);
                        
-                        
                     }
                 } else if (xmlr.getLocalName().equals("anlyInfo")) {
                     processAnlyInfo(xmlr, getSocialScience(dvDTO));
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("method")) return;
+            }
+        }
+    }
+   
+    private void processCustomField(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException, ImportException {
+        String subject = xmlr.getAttributeValue(null, "subject");
+        if (!subject.isEmpty()) {
+            // Syntax of subject attribute:
+            // TEMPLATE:Contains Custom Fields;FIELD:Customfield1
+            // first parse by semicolon
+            String template = subject.substring(subject.indexOf(":") + 1, subject.indexOf(";"));
+            String sourceField = subject.substring(subject.lastIndexOf(":") + 1);
+            String fieldValue = parseText(xmlr);
+            System.out.println("template = " + template + ", sourceField = " + sourceField + ", fieldValue = " + fieldValue);
+
+            CustomFieldMap map = customFieldService.findByTemplateField(template, sourceField);
+            if (map == null) {
+                throw new ImportException("Unsupported Custom Field: " + template + " " + sourceField);
+            }
+            // 1. Get datasetFieldType for the targetField
+            // 2. find the metadatablock for this field type
+            // 3. If this metadatablock doesn't exist in DTO, create it
+            // 4. add field to mdatadatablock
+
+            DatasetFieldType dsfType = datasetFieldService.findByName(map.getTargetDatasetField());
+            String metadataBlockName = dsfType.getMetadataBlock().getName();
+            MetadataBlockDTO customBlock = dvDTO.getMetadataBlocks().get(metadataBlockName);
+            if (customBlock == null) {
+                customBlock = new MetadataBlockDTO();
+                customBlock.setDisplayName(metadataBlockName);
+                dvDTO.getMetadataBlocks().put(metadataBlockName, customBlock);
+            }
+            if (dsfType.isAllowMultiples()) {
+                List<String> valList = new ArrayList<>();
+                valList.add(fieldValue);
+                if (dsfType.isAllowControlledVocabulary()) {
+                    customBlock.addField(FieldDTO.createMultipleVocabFieldDTO(dsfType.getName(), valList));
+                } else if (dsfType.isPrimitive()) {
+                    customBlock.addField(FieldDTO.createMultiplePrimitiveFieldDTO(dsfType.getName(), valList));
+                } else {
+                    throw new ImportException("Unsupported custom field type: " + dsfType);
+                }
+            } else {
+                if (dsfType.isAllowControlledVocabulary()) {
+                    customBlock.addField(FieldDTO.createVocabFieldDTO(dsfType.getName(), fieldValue));
+                } else if (dsfType.isPrimitive()) {
+                    customBlock.addField(FieldDTO.createPrimitiveFieldDTO(dsfType.getName(), fieldValue));
+                } else {
+                    throw new ImportException("Unsupported custom field type: " + dsfType);
+                }
             }
         }
     }

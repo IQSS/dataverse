@@ -10,7 +10,7 @@ import java.util.List;
  */
 public  class MetadataBlockDTO {
          String displayName;
-         List<FieldDTO> fields;
+         List<FieldDTO> fields = new ArrayList<FieldDTO>();
 
         public String getDisplayName() {
             return displayName;
@@ -21,6 +21,7 @@ public  class MetadataBlockDTO {
         }
 
         public FieldDTO getField(String typeName) {
+            
             for( FieldDTO field : fields) {
                 if (field.getTypeName().equals(typeName)) {
                     return field;
@@ -42,6 +43,10 @@ public  class MetadataBlockDTO {
                     ArrayList<HashSet<FieldDTO>> currentValue = current.getMultipleCompound();
                     currentValue.addAll(newField.getMultipleCompound());
                     current.setMultipleCompound(currentValue);
+                } else if (newField.typeClass.equals("controlledVocabulary")) {
+                    List<String> currentValue = current.getMultipleVocab();
+                    currentValue.addAll(newField.getMultipleVocab());
+                    current.setMultipleVocab(currentValue);
                 } else {
                     List<String> currentValue = current.getMultiplePrimitive();
                     currentValue.addAll(newField.getMultiplePrimitive());

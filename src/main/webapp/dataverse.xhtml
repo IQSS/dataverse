@@ -266,8 +266,8 @@
                                                 </label> 
                                             </div>
                                             
-                                            <div jsf:rendered="#{mdb.showDatasetFieldTypes}">
-                                                <div id="metadataFieldOptionsPanel" class="panel panel-default">
+                                            <div id="metadataFieldOptionsPanel-Block" jsf:rendered="#{mdb.showDatasetFieldTypes}">
+                                                <div class="panel panel-default">
                                                     <div id="metadataFieldOptionsPanel-Body" class="panel-body">
                                                         <table id="metadataFieldOptions" class="table table-striped">
                                                             <tbody>
@@ -278,13 +278,11 @@
                                                                                                      disabled="#{!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required) }">
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id})" listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"/>
                                                                             </p:selectBooleanCheckbox>
-                                                                            <ui:fragment rendered="#{dsft.hasParent}">
-                                                                                <div class="checkbox">
-                                                                                    <label>
-                                                                                        <h:outputText value="#{dsft.displayName}"/>
-                                                                                    </label>
-                                                                                </div>
-                                                                            </ui:fragment>
+                                                                            <div class="checkbox child-field" jsf:rendered="#{dsft.hasParent}">
+                                                                                <label>
+                                                                                    <h:outputText value="#{dsft.displayName}"/>
+                                                                                </label>
+                                                                            </div>
                                                                         </td>
                                                                         <td>
                                                                             <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}"
@@ -293,9 +291,9 @@
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id})"/>
                                                                             </p:selectOneRadio>
 
-                                                                            <ui:fragment rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
+                                                                            <span class="text-muted" jsf:rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
                                                                                 #{bundle['dataverse.field.requiredByDataverse']}
-                                                                            </ui:fragment>
+                                                                            </span>
                                                                         </td>
                                                                     </tr>
                                                                 </ui:repeat>

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse.api;
+package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -20,7 +20,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
-import edu.harvard.iq.dataverse.api.imports.ImportDDI;
+import edu.harvard.iq.dataverse.api.imports.ImportDDIServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -75,6 +75,8 @@ public class ImportServiceBean {
     MetadataBlockServiceBean metadataBlockService;
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB ImportDDIServiceBean importDDIService;
     @EJB
     ImportLogger importLogger;
 
@@ -147,8 +149,8 @@ public class ImportServiceBean {
         Long createdId = null;
         DatasetDTO dsDTO = null;
         try {
-            ImportDDI importDDI = new ImportDDI(importType);
-            dsDTO = importDDI.doImport(xmlToParse);
+           
+            dsDTO = importDDIService.doImport(importType, xmlToParse);
         } catch (XMLStreamException e) {
             throw new ImportException("XMLStreamException" + e);
         }

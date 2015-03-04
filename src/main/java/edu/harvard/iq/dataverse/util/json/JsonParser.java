@@ -484,7 +484,7 @@ public class JsonParser {
                 String strValue = strVal.getString();
                 ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue,lenient);
                 if (cvv == null) {
-                    ControlledVocabularyException ex = new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
+                    throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                 }
                 vals.add(cvv);
             }
