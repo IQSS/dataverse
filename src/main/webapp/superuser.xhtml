@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui">
+
+  <h:head>
+  </h:head>
+
+  <h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+      <ui:param name="pageTitle" value="Superuser - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+      <ui:param name="showDataverseHeader" value="false"/>
+      <ui:define name="body">
+        <h:form id="indexAllForm">
+          <div>
+            <button class="btn btn-default" jsf:action="#{SuperUserPage.startIndexAll()}">
+              Index All
+            </button>
+            <button class="btn btn-default" jsf:action="#{SuperUserPage.updateIndexAllStatus()}">
+              Check Status of Index All
+            </button>
+            <br/>
+            ${SuperUserPage.indexAllStatus}
+          </div>
+        </h:form>
+      </ui:define>
+    </ui:composition>
+  </h:body>
+</html>

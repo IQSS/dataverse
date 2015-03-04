@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
@@ -41,7 +42,12 @@ public class Index extends AbstractApiBean {
     @GET
     public Response indexAll() {
         try {
-            return okResponse(indexService.indexAll());
+            /**
+             * @todo How can we expose the String returned from "index all" via
+             * the API?
+             */
+            Future<String> indexAllFuture = indexService.indexAll();
+            return okResponse("index all has been started");
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

@@ -26,10 +26,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.ws.rs.container.AsyncResponse;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -85,18 +89,24 @@ public class IndexServiceBean {
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     private Dataverse rootDataverseCached;
 
-    public String indexAll() {
+    @Asynchronous
+    public Future<String> indexAll() {
+        String status;
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-        logger.info("deleting all Solr documents before a complete re-index");
+        logger.info("attempting to delete all Solr documents before a complete re-index");
         try {
             server.deleteByQuery("*:*");// CAUTION: deletes everything!
         } catch (SolrServerException | IOException ex) {
-            return ex.toString();
+            status = ex.toString();
+            logger.info(status);
+            return new AsyncResult<>(status);
         }
         try {
             server.commit();
         } catch (SolrServerException | IOException ex) {
-            return ex.toString();
+            status = ex.toString();
+            logger.info(status);
+            return new AsyncResult<>(status);
         }
 
         List<Dataverse> dataverses = dataverseService.findAll();
@@ -117,7 +127,8 @@ public class IndexServiceBean {
         logger.info("done iterating through all datasets");
 
         IndexResponse indexResponse = solrIndexService.indexAllPermissions();
-        return dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed\n";
+        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed\n";
+        return new AsyncResult<>(status);
     }
 
     public String indexDataverse(Dataverse dataverse) {
