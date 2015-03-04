@@ -59,6 +59,8 @@ public class SettingsServiceBean {
         DebugShibAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
+        /** Application-wide Privacy Policy per installation. */
+        ApplicationPrivacyPolicy,
         /** Expose debug information in the UI that users shouldn't normally see. */
         Debug,
         /**
