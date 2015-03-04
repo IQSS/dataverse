@@ -125,6 +125,33 @@ label.normal-text input {margin-right:4px;}
     border-radius: 6px 0 6px 6px;
 }
 
+.highlight {
+    padding: 9px 14px;
+    margin-bottom: 1em;
+    background-color: #f7f7f9;
+    border: 1px solid #e1e1e8;
+    border-radius: 4px;
+}
+.highlight pre {
+    background-color: transparent;
+    border: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+    padding: 0;
+    white-space: nowrap;
+    word-break: normal;
+}
+.highlight pre code {
+    display: inline-block;
+    color: #333;
+    font-size: inherit;
+    background-color: transparent;
+    border-radius: 0;
+    color: inherit;
+    padding: 0;
+    white-space: pre-wrap;
+}
+
 /* -------- HEADER -------- */
 #dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
