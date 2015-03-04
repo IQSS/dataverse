@@ -293,9 +293,10 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 
 .logoPreview {max-width:80px;max-height:80px;}
 
-#metadataFieldOptionsPanel {width:70%;margin-left:60px;margin-top:.5em;}
-#metadataFieldOptionsPanel-Body {max-height:400px;overflow-y:scroll;}
+#metadataFieldOptionsPanel-Block {width:70%; margin-left:60px; margin-top:.5em;}
+#metadataFieldOptionsPanel-Body {padding:0; max-height:400px; overflow-y:scroll;}
 #metadataFieldOptions td {vertical-align: middle;}
+#metadataFieldOptions div.checkbox.child-field {padding-left:18px;}
 
 /* -------- SEARCH -------- */
 .panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;padding:0;}
