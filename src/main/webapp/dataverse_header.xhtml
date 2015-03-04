@@ -38,7 +38,7 @@
                         </div>
                         <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value;
                                 return false;">
-                            <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> #{bundle.find}
+                            <span class="glyphicon glyphicon-search"/> #{bundle.find}
                         </button>
                     </form>
                     <li>
@@ -88,7 +88,7 @@
                         <li class="dropdown accountName">
                             <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">
                                 <ui:fragment rendered="#{dataverseSession.user.superuser}">
-                                    <span class="glyphicon glyphicon-user text-danger" style="margin-right:8px;"></span>
+                                    <span class="glyphicon glyphicon-user text-danger"></span>
                                 </ui:fragment>
                                 <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                 <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
@@ -149,25 +149,25 @@
         <div id="dataverseHeader" class="container" style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};">
             <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};">
-                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:940px" alt="#{dataverse.name} #{bundle.dataverse}"/>
+                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
                 </div>
             </ui:fragment>
             <div class="dataverseHeaderBlock">
                 <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
                     <div class="dataverseHeaderCell dataverseHeaderLogo">
-                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" style="max-width:100px;max-height:100px" alt="#{dataverse.name} #{bundle.dataverse}"/>
+                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
                     <div class="dataverseHeaderCell dataverseHeaderName">
-                        <a href="/dataverse/#{dataverse.alias}" style="font-size: 1.3em; color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name} #{bundle.dataverse}</a>
+                        <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name} #{bundle.dataverse}</a>
                         <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                         <h:outputText value="#{bundle.unpublished}" styleClass="label label-danger" rendered="#{!dataverse.released}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{empty dataverse.name}">
                     <div class="dataverseHeaderCell dataverseHeaderName">
-                        <h:outputText style="font-size: 1.3em;" value="#{bundle.newDataverse}"/>
+                        <h:outputText styleClass="dataverseHeaderDataverseName" value="#{bundle.newDataverse}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.dataverseTheme.tagline}">
