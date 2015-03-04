@@ -192,7 +192,7 @@
                             <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.builtinUser}">
                                 <!-- Username -->
                                 <div class="form-group">
-                                    <label for="userNameEmail" class="col-sm-2 control-label">
+                                    <label for="userNameEmail" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.username.illegal.tip']}">
                                             #{bundle['user.username']}
                                         </a>
@@ -204,7 +204,7 @@
 
                                 <!-- First Name -->
                                 <div class="form-group">
-                                    <label for="firstName" class="col-sm-2 control-label">
+                                    <label for="firstName" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.firstName.tip']}">
                                             #{bundle['user.firstName']}
                                         </a>
@@ -216,7 +216,7 @@
 
                                 <!-- Last Name -->
                                 <div class="form-group">
-                                    <label for="lastName" class="col-sm-2 control-label">
+                                    <label for="lastName" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.lastName.tip']}">
                                             #{bundle['user.lastName']}
                                         </a>
@@ -228,7 +228,7 @@
 
                                 <!-- Email -->
                                 <div class="form-group">
-                                    <label for="email" class="col-sm-2 control-label">
+                                    <label for="email" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.email.tip']}">
                                             #{bundle.email}
                                         </a>
@@ -240,7 +240,7 @@
 
                                 <!-- Affiliation -->
                                 <div class="form-group">
-                                    <label for="affiliation" class="col-sm-2 control-label">
+                                    <label for="affiliation" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.affiliation.tip']}">
                                             #{bundle.affiliation}
                                         </a>
@@ -252,7 +252,7 @@
 
                                 <!-- Position -->
                                 <div class="form-group">
-                                    <label for="position" class="col-sm-2 control-label">
+                                    <label for="position" class="col-sm-3 control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.position.tip']}">
                                             #{bundle['user.position']}
                                         </a>
@@ -272,23 +272,28 @@
 
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
-                            <div class="clearfix" style="padding-bottom:.75em;">
+                            <div class="clearfix">
+                                <h:outputFormat styleClass="h2 text-info show" value="#{bundle['user.updatePassword.welcome']}">
+                                    <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                    <f:param value="#{dataverseSession.user.displayInfo.title}"/>
+                                </h:outputFormat>
+                                <p class="help-block"><span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['user.updatePassword.warning']}</span></p>
                                 <div class="form-horizontal">
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Username -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="userNameEmail" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="userNameEmail" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.username.illegal.tip']}">
                                                     #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="userName" tabindex="1" 
-																 styleClass="form-control" validator="#{DataverseUserPage.validateUserName}" 
-																 value="#{DataverseUserPage.builtinUser.userName}"
-																 disabled="#{DataverseUserPage.editMode != 'CREATE'}"
-																 binding="#{DataverseUserPage.usernameField}"/>
+                                                    <p:inputText id="userName" styleClass="form-control" tabindex="1" 
+                                                                    validator="#{DataverseUserPage.validateUserName}" 
+                                                                    value="#{DataverseUserPage.builtinUser.userName}"
+                                                                    disabled="#{DataverseUserPage.editMode != 'CREATE'}"
+                                                                    binding="#{DataverseUserPage.usernameField}"/>
                                                     <p:message for="userName" display="text" />
                                                 </p:panelGrid>
                                             </div>
@@ -297,8 +302,8 @@
 
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Current Password -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="currentPassword" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="currentPassword" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.currentPasswd.tip']}">
                                                     #{bundle['user.currentPasswd']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
@@ -313,8 +318,8 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Password -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="inputPassword" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="inputPassword" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.passwd.illegal.tip']}">
                                                     <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" />
                                                     <span class="glyphicon glyphicon-asterisk text-danger"></span>
@@ -325,13 +330,14 @@
                                                     <p:password id="inputPassword" tabindex="2" label="#{DataverseUserPage.editMode == 'CREATE' ? 'Password' : 'New Password'}" styleClass="form-control" match="retypePassword" value="#{DataverseUserPage.inputPassword}" validator="#{DataverseUserPage.validateNewPassword}"  />
                                                     <p:message for="inputPassword" display="text" />
                                                 </p:panelGrid>
+                                                <p class="help-block">#{bundle['user.updatePassword.password']}</p>
                                             </div>
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Retype Password -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="retypePassword" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="retypePassword" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.rePasswd.tip']}">
                                                     #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
@@ -347,8 +353,8 @@
 
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- First Name -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="firstName" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="firstName" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.firstName.tip']}">
                                                     #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
@@ -363,8 +369,8 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Last Name -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="lastName" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="lastName" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.lastName.tip']}">
                                                     #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"></span>
                                                 </a>
@@ -380,8 +386,8 @@
 
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Email -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="email" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="email" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{user.email.tip}">
                                                     #{bundle.email}
                                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
@@ -400,8 +406,8 @@
 
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Affiliation -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="affiliation" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="affiliation" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.affiliation.tip']}">
                                                     #{bundle.affiliation}
                                                 </a>
@@ -417,8 +423,8 @@
 
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Position -->
-                                        <div class="form-group col-sm-12">
-                                            <label for="position" class="col-sm-2 control-label">
+                                        <div class="form-group col-sm-10">
+                                            <label for="position" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.position.tip']}">
                                                     #{bundle['user.position']}
                                                 </a>
@@ -432,16 +438,18 @@
                                         </div>
                                     </ui:fragment>
                                     
+                                    <ui:fragment rendered="DataverseUserPage.editMode == 'CREATE'">
                                     <!-- Terms of Use -->
-                                    <ui:include src="termsofuse.xhtml"/>
+                                        <ui:include src="termsofuse.xhtml"/>
+                                    </ui:fragment>
                                 </div>
                                 
-                                <p:panel styleClass="panelLayoutButtonBlock">
+                                <div class="button-block pull-left">
                                     <p:commandButton id="save" tabindex="9" value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}" action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
                                     <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" action="#{DataverseUserPage.cancel}" process="@this" update="@form">
                                         <p:resetInput target="@form" />
                                     </p:commandButton>
-                                </p:panel>
+                                </div>
                             </div>
                         </p:tab>
                     </p:tabView>
