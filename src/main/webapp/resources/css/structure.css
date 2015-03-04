@@ -28,7 +28,7 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
 #navbarFixed .dropdown.accountName .logout a:hover, #navbarFixed .dropdown.accountName .logout a:focus {background-color: #E8E8E8; background-image: linear-gradient(to bottom, #F5F5F5 0px, #E8E8E8 100%); background-repeat: repeat-x; color: #262626; outline: 0; text-decoration: none;}
 
-#footer {margin-top:3em;}
+#footer {margin-top:3em; padding-bottom:4em;}
 #footer .poweredbylogo span {color:#808080;font-size:.85em;margin-right:.3em;}
 #footer .version {margin-top:24px;font-size:.85em;color:#808080;}
 
@@ -64,12 +64,12 @@ td.no-padding-left-right {padding-left:0;padding-right:0;}
 
 .highlightBold {font-weight:bold;}
 
-#footer {padding-bottom:4em;}
-
 #ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:1111;}
 #ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
 
 .italic {font-style: italic;}
+.margin-top {margin-top:1em;}
+.no-margin-bottom {margin-bottom:0;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
 table.selectManyCheckboxBlock label {font-weight:normal;}
