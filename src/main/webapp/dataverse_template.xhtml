@@ -38,6 +38,12 @@
             <div class="pull-left">
                 <a href="http://datascience.iq.harvard.edu/" target="_blank">Data Science</a> at <a href="http://www.iq.harvard.edu/" target="_blank">The Institute for Quantitative and Social Science</a> &#160;|&#160; Dataverse Project on <a href="https://twitter.com/dataverseorg" target="_blank" title="Dataverse Project on Twitter"><img src="/resources/images/Twitter_logo_blue.png" width="20" alt="Dataverse Project on Twitter"/></a> &#160;|&#160; Code available at <a href="https://github.com/IQSS/dataverse" target="_blank" title="Dataverse on GitHub"><img src="/resources/images/githubicon.png" width="20" alt="Dataverse on GitHub"/></a><br/>
                 Copyright &#169; 2015, The President &#38; Fellows of Harvard College
+                <p>
+                  <a data-toggle="collapse" data-parent="#emptyResults" href="#privacyPolicy" aria-expanded="true" aria-controls="privacyPolicy">[+] #{bundle['footer.privacyPolicy']}</a>
+                </p>
+                <div id="privacyPolicy" class="collapse">
+                  <pre><h:outputText value="#{systemConfig.applicationPrivacyPolicy}"/></pre>
+                </div>
             </div>
             <div class="pull-right clearfix">
                 <div class="poweredbylogo pull-left"><span style="color:#808080;font-size:.85em;margin-right:.3em;">Powered by</span> <h:graphicImage value="/resources/images/dataverseproject_logo.jpg" /></div>
