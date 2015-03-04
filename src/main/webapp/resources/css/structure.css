@@ -30,7 +30,7 @@ body .ui-widget {font-size: inherit;}
 
 .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
-.form-group table.noBorders tr.ui-widget-content, .form-group table.noBorders td {border:0;}
+.form-group table.noBorders tr.ui-widget-content, .form-group table.noBorders td {border:0; padding-left:0;}
 
 .panelgridLayoutTable, .panelgridFormTable {width:100%;}
 .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
