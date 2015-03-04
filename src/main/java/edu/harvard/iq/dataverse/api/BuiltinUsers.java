@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -81,13 +82,18 @@ public class BuiltinUsers extends AbstractApiBean {
 
     private Response internalSave(BuiltinUser user, String password, String key) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
+        
         if (expectedKey == null) {
             return errorResponse(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
         }
         if (!expectedKey.equals(key)) {
             return badApiKey(key);
         }
+        
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "create");
+        
         try {
+            
             if (password != null) {
                 user.setEncryptedPassword(builtinUserSvc.encryptPassword(password));
             }
@@ -118,9 +124,13 @@ public class BuiltinUsers extends AbstractApiBean {
             JsonObjectBuilder resp = Json.createObjectBuilder();
             resp.add("user", json(user));
             resp.add("apiToken", token.getTokenString());
+            
+            alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );
             return okResponse(resp);
             
         } catch ( EJBException ejbx ) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo( alr.getInfo() + "// " + ejbx.getMessage());
             if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
                 return errorResponse(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
             } else {
@@ -130,7 +140,11 @@ public class BuiltinUsers extends AbstractApiBean {
             
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error saving user", e);
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo( alr.getInfo() + "// " + e.getMessage());
             return errorResponse(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
         }
     }
 

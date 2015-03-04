@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetVersionUI;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;

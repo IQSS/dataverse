@@ -44,6 +44,23 @@ public abstract class DvObject implements java.io.Serializable {
             return df.getFileMetadata().getLabel();
         }
     };
+    public static final Visitor<String> NameIdPrinter = new Visitor<String>(){
+
+        @Override
+        public String visit(Dataverse dv) {
+            return "[" + dv.getId() + " " + dv.getName() + "]";
+        }
+
+        @Override
+        public String visit(Dataset ds) {
+            return "[" + ds.getId() + " " + ds.getLatestVersion().getTitle() + "]";
+        }
+
+        @Override
+        public String visit(DataFile df) {
+            return "[" + df.getId() + " " + df.getFileMetadata().getLabel() + "]";
+        }
+    };
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

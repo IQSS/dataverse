@@ -40,6 +40,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                     /**
                      * @todo Why would getId be null? Should we call
                      * indexDefinitionPoint here too?
+                     * A: it's null for new roles.
                      */
 			return aRole;
 		} else {

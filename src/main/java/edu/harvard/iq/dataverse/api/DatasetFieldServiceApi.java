@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,6 +34,8 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.NoResultException;
 import javax.ws.rs.core.Response.Status;
 
@@ -209,6 +212,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @Consumes("text/tab-separated-values")
     @Path("load")
     public Response loadDatasetFields(File file) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "loadDatasetFields");
+        alr.setInfo( file.getName() );
         BufferedReader br = null;
         String line = "";
         String splitBy = "\t";
@@ -255,8 +260,12 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             }
         } catch (FileNotFoundException e) {
             returnString = "File not found.";
+            alr.setActionResult(ActionLogRecord.Result.BadRequest);
+            alr.setInfo( alr.getInfo() + "// file not found");
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(DatasetFieldServiceApi.class.getName()).log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo( alr.getInfo() + "// " + e.getMessage());
         } finally {
             if (br != null) {
                 try {
@@ -265,6 +274,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     e.printStackTrace();
                 }
             }
+            actionLogSvc.log(alr);
         }
 
         return okResponse("File parsing completed:\n\n" + returnString);

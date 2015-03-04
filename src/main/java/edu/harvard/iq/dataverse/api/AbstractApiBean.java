@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -99,6 +100,9 @@ public abstract class AbstractApiBean {
     
     @EJB
     protected GroupServiceBean groupSvc;
+    
+    @EJB
+    protected ActionLogServiceBean actionLogSvc;
     
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;

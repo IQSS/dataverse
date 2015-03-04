@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.shib;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.ArrayList;
@@ -35,7 +37,9 @@ public class ShibGroupServiceBean {
     RoleAssigneeServiceBean roleAssigneeSvc;
     @EJB
     GroupServiceBean groupService;
-
+    @EJB
+    ActionLogServiceBean actionLogSvc;
+	
     /**
      * @return A ShibGroup or null.
      */
@@ -56,10 +60,15 @@ public class ShibGroupServiceBean {
     }
 
     public ShibGroup save(String name, String shibIdpAttribute, String shibIdp) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "shibCreate");
+        alr.setInfo( name + ": " + shibIdp + "/" + shibIdpAttribute );
+        
         ShibGroup institutionalGroup = new ShibGroup(name, shibIdpAttribute, shibIdp, groupService.getShibGroupProvider());
         em.persist(institutionalGroup);
         em.flush();
         ShibGroup merged = em.merge(institutionalGroup);
+        
+        actionLogSvc.log(alr);
         return merged;
     }
 
@@ -87,9 +96,13 @@ public class ShibGroupServiceBean {
     }
 
     public boolean delete(ShibGroup doomed) throws Exception {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "shibDelete");
+        alr.setInfo( doomed.getName() + ":" + doomed.getIdentifier() );
+        
         List<RoleAssignment> assignments = roleAssigneeSvc.getAssignmentsFor(doomed.getIdentifier());
         if (assignments.isEmpty()) {
             em.remove(doomed);
+            actionLogSvc.log( alr );
             return true;
         } else {
             /**
@@ -101,6 +114,9 @@ public class ShibGroupServiceBean {
             }
             String message = "Could not delete Shibboleth group id " + doomed.getId() + " due to existing role assignments: " + assignmentIds;
             logger.info(message);
+            actionLogSvc.log( alr.setActionResult(ActionLogRecord.Result.BadRequest)
+                                 .setInfo( alr.getInfo() + "// " + message ) );
+            
             throw new Exception(message);
         }
     }

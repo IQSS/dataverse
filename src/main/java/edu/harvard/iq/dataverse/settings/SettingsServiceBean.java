@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -117,6 +120,9 @@ public class SettingsServiceBean {
     @PersistenceContext
     EntityManager em;
     
+    @EJB
+    ActionLogServiceBean actionLogSvc;
+    
     /**
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
@@ -164,13 +170,13 @@ public class SettingsServiceBean {
     public Setting set( String name, String content ) {
         Setting s = new Setting( name, content );
         s = em.merge(s);
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
+                            .setInfo(name + ": " + content));
         return s;
     }
     
     public Setting setValueForKey( Key key, String content ) {
-        Setting s = new Setting( key.toString(), content );
-        s = em.merge(s);
-        return s;
+        return set( key.toString(), content );
     }
     
     /**
@@ -194,6 +200,8 @@ public class SettingsServiceBean {
     }
     
     public void delete( String name ) {
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+                            .setInfo(name));
         em.createNamedQuery("Setting.deleteByName")
                 .setParameter("name", name)
                 .executeUpdate();

@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -20,7 +19,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     private static final Logger logger = Logger.getLogger(IpGroupProvider.class.getCanonicalName());
 
     private final IpGroupsServiceBean ipGroupsService;
-
+    
     public IpGroupProvider(IpGroupsServiceBean ipGroupsService) {
         this.ipGroupsService = ipGroupsService;
     }

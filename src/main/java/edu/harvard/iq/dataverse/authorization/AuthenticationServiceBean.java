@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
@@ -27,7 +29,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.faces.application.FacesMessage;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -53,9 +54,13 @@ public class AuthenticationServiceBean {
     
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
+    
     @EJB
     IndexServiceBean indexService;
-
+    
+    @EJB
+    protected ActionLogServiceBean actionLogSvc;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -125,11 +130,16 @@ public class AuthenticationServiceBean {
                     "Duplicate id " + aProvider.getId() + " for authentication provider.");
         }
         authenticationProviders.put( aProvider.getId(), aProvider);
-        logger.log( Level.INFO, "Registered Authentication Provider {0} as {1}", new Object[]{aProvider.getInfo().getTitle(), aProvider.getId()});
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
+            .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
+        
     }
 
     public void deregisterProvider( String id ) {
         authenticationProviders.remove( id );
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
+            .setInfo(id));
+
         logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
         logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
     }
@@ -195,8 +205,11 @@ public class AuthenticationServiceBean {
                 BuiltinUser builtin = builtinUserServiceBean.findByUserName(user.getUserIdentifier());
                 em.remove(builtin);
             }
+            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deleteUser")
+                .setInfo(user.getUserIdentifier()));
             em.remove(user.getAuthenticatedUserLookup());         
             em.remove(user);
+
         }
     }
             
@@ -304,7 +317,9 @@ public class AuthenticationServiceBean {
         c.roll(Calendar.YEAR, 1);
         apiToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
         save(apiToken);
-        
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "generateApiToken")
+            .setInfo("user:" + au.getIdentifier() + " token:" +  apiToken.getTokenString()));
+
         return apiToken;
     }
 
@@ -385,6 +400,11 @@ public class AuthenticationServiceBean {
         AuthenticatedUserLookup auusLookup = userRecordId.createAuthenticatedUserLookup(authenticatedUser);
         em.persist( auusLookup );
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
+        
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
+            .setInfo(authenticatedUser.getIdentifier()));
+
+        
         return authenticatedUser;
     }
     
@@ -396,6 +416,8 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
+            .setInfo(user.getIdentifier()));
         return update(user);
     }
     

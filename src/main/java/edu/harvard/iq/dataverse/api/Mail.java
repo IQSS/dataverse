@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -20,7 +21,9 @@ public class Mail extends AbstractApiBean {
     @GET
     @Path("notifications")
     public Response sendMail() {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "sendMail");
         mailService.bulkSendNotifications();
+        actionLogSvc.log(alr);
         return okResponse("bulk send notification started");
     }
     
