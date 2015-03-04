@@ -32,7 +32,7 @@ Differences in Dataverse 4.0 have lead to a few minor backward incompatible chan
 
 - Deaccessioning is no longer supported. An alternative is being developed at https://github.com/IQSS/dataverse/issues/778
 
-- The Service Document will show a single Account Terms of Use rather than root level and dataverse level Deposit Terms of Use per https://github.com/IQSS/dataverse/issues/551#issuecomment-60762177
+- The Service Document will show a single API Terms of Use rather than root level and dataverse level Deposit Terms of Use.
 
 New features as of v1.1
 -----------------------

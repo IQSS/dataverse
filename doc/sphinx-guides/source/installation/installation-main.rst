@@ -36,6 +36,13 @@ Specify a URL where users can read your Privacy Policy.
 
 ``curl -X PUT -d http://best-practices.dataverse.org http://localhost:8080/api/s/settings/:ApplicationPrivacyPolicyUrl``
 
+ApiTermsOfUse
+-------------
+
+Upload a text file containing the API Terms of Use.
+
+``curl -X PUT -d@/tmp/api-tos.txt http://localhost:8080/api/s/settings/:ApiTermsOfUse``
+
 SolrHostColonPort
 -----------------
 

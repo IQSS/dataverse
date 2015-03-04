@@ -1,5 +1,5 @@
 #!/bin/bash
-USERNAME=pete
+USERNAME=admin
 PASSWORD=$USERNAME
 if [ -z "$1" ]; then
   HOSTNAME=localhost:8181

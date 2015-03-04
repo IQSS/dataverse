@@ -183,6 +183,12 @@ public class SystemConfig {
         return appTermsOfUse;
     }
 
+    public String getApiTermsOfUse() {
+        String saneDefaultForApiTermsOfUse = "There are no API Terms of Use for this Dataverse installation.";
+        String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
+        return apiTermsOfUse;
+    }
+
     public String getApplicationPrivacyPolicyUrl() {
         String saneDefaultForPrivacyPolicyUrl = "#";
         String appPrivacyPolicyUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);

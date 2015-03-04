@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -27,6 +28,8 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
     DataverseServiceBean dataverseService;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    SystemConfig systemConfig;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -65,16 +68,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
                 swordCollection.setTitle(dataverse.getName());
                 swordCollection.setHref(hostnamePlusBaseUrl + "/collection/dataverse/" + dvAlias);
                 swordCollection.addAcceptPackaging(UriRegistry.PACKAGE_SIMPLE_ZIP);
-                /**
-                 * @todo for backwards-compatibility with DVN 3.x, display terms
-                 * of uses for root dataverse and the dataverse we are iterating
-                 * over. What if the root dataverse is not the direct parent of
-                 * the dataverse we're iterating over? Show the terms of use
-                 * each generation back to the root?
-                 *
-                 * See also https://github.com/IQSS/dataverse/issues/551
-                 */
-                swordCollection.setCollectionPolicy(dataverseService.findRootDataverse().getName() + " deposit terms of use: " + dataverseService.findRootDataverse().getDepositTermsOfUse() + "\n---\n" + dataverse.getName() + " deposit terms of use: " + dataverse.getDepositTermsOfUse());
+                swordCollection.setCollectionPolicy(systemConfig.getApiTermsOfUse());
                 swordWorkspace.addCollection(swordCollection);
             }
         }

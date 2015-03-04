@@ -59,6 +59,8 @@ public class SettingsServiceBean {
         DebugShibAccountType,
         /** Application-wide Terms of Use per installation. */
         ApplicationTermsOfUse,
+        /** Terms of Use specific to API per installation. */
+        ApiTermsOfUse,
         /**
          * URL for the application-wide Privacy Policy per installation, linked
          * to from the footer.
