@@ -487,8 +487,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         setNewExplicitGroupDescription("");
         setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
         FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(explicitGroupIdentifierField.getClientId(),
-                new FacesMessage(JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.helpText")));
+        
     }
 
     public void saveExplicitGroup(ActionEvent ae) {
