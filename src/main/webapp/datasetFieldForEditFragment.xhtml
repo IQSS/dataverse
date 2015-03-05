@@ -1,14 +1,17 @@
-<div 
+<div
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-    <!-- input text start --><span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"></span>
+    <!-- input text start -->
+    <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/>
+
     <p:inputText value="#{dsfv.valueForEdit}" id="inputText" tabindex="#{block.index+1}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
-                 rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary        
+                 rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
@@ -20,27 +23,23 @@
     <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
     <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" tabindex="#{block.index+1}"
-                     rows="5" cols="60" styleClass="form-control" 
+                     rows="5" cols="60" styleClass="form-control"
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}" />
 
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
-    <ui:fragment rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
-        <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" style="margin:6px 0;">
-            <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
-        </div>
-    </ui:fragment>    
+    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
+        <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
+    </div>
 
-    <ui:fragment rendered="#{!empty dsfv.validationMessage}">
-        <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" style="margin:6px 0;">
-            <span class="ui-message-error-detail">#{dsfv.validationMessage}</span>
-        </div>
-    </ui:fragment>
+    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsfv.validationMessage}">
+        <span class="ui-message-error-detail">#{dsfv.validationMessage}</span>
+    </div>
 
-    <!-- This button / script is for replication data for the title field and is client side only -->                         
+    <!-- This button / script is for replication data for the title field and is client side only -->
     <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
         <input type="button" id="replicationDataButton" tabindex="#{block.index+1}"
-               class="btn btn-default" value="Add &#34;Replication Data for&#34; to Title" 
+               class="btn btn-default" value="Add &#34;Replication Data for&#34; to Title"
                onclick="replicationFor();return false;"/>
 
         <script type="text/javascript">
@@ -48,6 +47,6 @@
                 $(".datasetfield-title")[0].value = "Replication Data for: " + $(".datasetfield-title")[0].value;
                 $('#replicationDataButton').prop('disabled', true);
             }
-        </script>    
+        </script>
     </ui:fragment>
 </div>

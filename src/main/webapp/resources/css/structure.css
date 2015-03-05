@@ -77,7 +77,7 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 label.normal-text {font-weight:normal;}
 label.normal-text input {margin-right:4px;}
 
-span.glyphicon[data-toggle='tooltip'] {cursor:pointer; cursor:hand;}
+span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 
 /* Dropdown submenu */
 .dropdown-submenu {
@@ -440,9 +440,12 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 #datasetForm .form-group, #templateForm .form-group {overflow: hidden;}
 #datasetForm .form-col-container .form-col-container, #templateForm .form-col-container .form-col-container {padding-left:0;}
 #datasetForm .form-col-container .form-col-container .ui-selectonemenu, #templateForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
+div.form-col-container.edit-dataset-compound-field div.form-col-container {margin-bottom:.5em;}
 
 .panel .panel-body .form-group {overflow: hidden;}
-
+div.dataset-field-values div.dataset-field-add-delete a.btn {margin:0 1em 0 0;}
+div.dataset-field-values div.dataset-field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
+div.edit-dataset-field div.ui-message {margin:6px 0;}
 .metadata-logo {max-width:180px;max-height:40px;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
