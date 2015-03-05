@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseHeaderFragment;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.PasswordEncryption;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
@@ -265,14 +264,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void validateCurrentPassword(FacesContext context, UIComponent toValidate, Object value) {
         
         String password = (String) value;
-        /* This is how you would do it with jbcrypt
-        if (!BCrypt.checkpw(password, builtinUser.getEncryptedPassword())){
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", "Password is incorrect.");
-            context.addMessage(toValidate.getClientId(context), message);
-        }*/
-        String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
-        if (!encryptedPassword.equals(builtinUser.getEncryptedPassword())) {
+        
+        if ( ! PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword()) ) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", "Password is incorrect.");
             context.addMessage(toValidate.getClientId(context), message);
@@ -305,7 +298,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         if (user == null) {
             user = builtinUserService.findByEmail(userName);
         }
-        user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(plainTextPassword));
+        user.updateEncryptedPassword(PasswordEncryption.get().encrypt(plainTextPassword), PasswordEncryption.getLatestVersionNumber());
         builtinUserService.save(user);
     }
 
@@ -313,7 +306,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         boolean passwordChanged = false;
         if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE_PASSWORD) {
             if (inputPassword != null) {
-                builtinUser.setEncryptedPassword(builtinUserService.encryptPassword(inputPassword));
+                builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword), PasswordEncryption.getLatestVersionNumber());
                 passwordChanged = true;
             }
         }

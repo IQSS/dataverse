@@ -273,10 +273,6 @@
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <div class="clearfix">
-                                <h:outputFormat styleClass="h2 text-info show" value="#{bundle['user.updatePassword.welcome']}">
-                                    <f:param value="#{dataverseServiceBean.applicationVersion}"/>
-                                    <f:param value="#{dataverseSession.user.displayInfo.title}"/>
-                                </h:outputFormat>
                                 <p class="help-block"><span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['user.updatePassword.warning']}</span></p>
                                 <div class="form-horizontal">
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">

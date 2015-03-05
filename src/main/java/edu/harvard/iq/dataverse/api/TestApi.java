@@ -3,10 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -23,6 +23,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * An API to test internal models without the need to deal with UI etc.
@@ -70,7 +71,24 @@ public class TestApi extends AbstractApiBean {
         return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.")
                 : okResponse(json(ra.getDisplayInfo()));
     }
-
+    
+    @Path("bcrypt/encrypt/{word}")
+    @GET
+    public String encrypt( @PathParam("word")String word, @QueryParam("len") String len ) {
+        int saltLen = (len==null || len.trim().isEmpty() ) ? 10 : Integer.parseInt(len);
+        return BCrypt.hashpw(word, BCrypt.gensalt(saltLen)) + "\n";
+    }
+    
+    @Path("password/{w1}")
+    @GET
+    public String test( @PathParam("w1") String w1 ) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[0] ").append( PasswordEncryption.getVersion(0).encrypt(w1)).append("\n");
+        sb.append("[1] ").append( PasswordEncryption.getVersion(1).encrypt(w1)).append("\n");
+        
+        return sb.toString();
+    }
+    
     @Path("user/convert/builtin2shib")
     @PUT
     public Response builtin2shib(String content) {

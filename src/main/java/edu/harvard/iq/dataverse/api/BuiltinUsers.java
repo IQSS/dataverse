@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -95,7 +96,7 @@ public class BuiltinUsers extends AbstractApiBean {
         try {
             
             if (password != null) {
-                user.setEncryptedPassword(builtinUserSvc.encryptPassword(password));
+                user.updateEncryptedPassword(PasswordEncryption.get().encrypt(password), PasswordEncryption.getLatestVersionNumber());
             }
             
             // Make sure the identifier is unique

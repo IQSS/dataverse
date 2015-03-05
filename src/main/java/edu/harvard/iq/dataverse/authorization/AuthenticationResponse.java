@@ -16,6 +16,13 @@ public class AuthenticationResponse {
                .setUserDisplayInfo(disInf);
     }
     
+    public static AuthenticationResponse makeBreakout( String userId, String redirectUrl ) {
+        return new AuthenticationResponse()
+               .setStatus( Status.BREAKOUT )
+               .setUserId(userId)
+               .setMessage(redirectUrl);
+    }
+    
     public static AuthenticationResponse makeFail( String message ) {
         return new AuthenticationResponse()
                .setStatus( Status.FAIL )
@@ -26,10 +33,22 @@ public class AuthenticationResponse {
         return new AuthenticationResponse()
                .setStatus( Status.ERROR )
                .setMessage(message)
-                .setError(t);
+               .setError(t);
     }
     
-    public enum Status { SUCCESS, FAIL, ERROR }
+    public enum Status { 
+        /** Authentication succeeded - go on to the next phase */
+        SUCCESS,
+        
+        /** UserProvider wants to take the user through some process. Go to link in the message field */
+        BREAKOUT,
+        
+        /** Authentication failed (e.g wrong password) */
+        FAIL,
+        
+        /** Can't authenticate (e.g database is down) */
+        ERROR
+    }
     
     private Status status;
     private String message;
