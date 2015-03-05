@@ -158,10 +158,10 @@
                                     </button>
                                     <ul class="dropdown-menu" role="menu">
                                         <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
-                                            <li>
+                                            <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
                                                 <a id="viewVersionLink" href="/dataset.xhtml?globalId=#{versionLinks.dataset.globalId}&#38;versionId=#{versionLinks.id}" class="ui-commandlink ui-widget">
-                                                    <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" />
-                                                    <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" /></a>
+                                                    <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" />
+                                                    <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
                                             </li>
                                         </ui:repeat>
                                     </ul>
