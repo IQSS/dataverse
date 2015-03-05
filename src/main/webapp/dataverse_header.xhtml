@@ -47,9 +47,9 @@
                         </h:outputLink>
                     </li>
                     <li class="dropdown">
-                        <a value="#" id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
+                        <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
                             #{bundle['header.support']} <b class="caret"></b>
-                        </a>
+                        </span>
                         <ul class="dropdown-menu">
                             <li>
                                 <h:outputLink value="http://datascience.iq.harvard.edu/dataverse/support" target="_blank">
@@ -86,14 +86,14 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                         <li class="dropdown accountName">
-                            <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">
+                            <span id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown">
                                 <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                     <span class="glyphicon glyphicon-user text-danger"></span>
                                 </ui:fragment>
                                 <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                 <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
                                 <b class="caret"></b>
-                            </a>
+                            </span>
                             <ul class="dropdown-menu">
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml">
