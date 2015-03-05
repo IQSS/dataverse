@@ -3,7 +3,8 @@
  */
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.util.StringUtil;
+import java.util.Arrays;
+import java.util.Collections;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -77,5 +78,39 @@ public class StringUtilTest {
         assertTrue( StringUtil.isAlphaNumericChar('Z') );
         assertFalse( StringUtil.isAlphaNumericChar('@') );
     }
-    
+
+    @Test
+    public void testHtml2Text() {
+        assertEquals(StringUtil.html2text("be <b>bold</b>!"), "be bold!");
+        assertEquals(StringUtil.html2text(null), null);
+        assertEquals(StringUtil.html2text("<p><b>Description:</b><br />\n"
+                + "Data were taken May-June 2003 and 2005. Flux units are in mJy per 31 arcsecond beam.\n"
+                + "</p>\n"
+                + "\n"
+                + "<p><b>Telescope Information</b><br />\n"
+                + "<a href=\"http://www.submm.caltech.edu/cso/\">Caltech Submillimeter Observatory</a></p>\n"
+                + "\n"
+                + "<p><b>Status:</b><br />\n"
+                + "Final</p>\n"
+                + "\n"
+                + "<p><b>Sampling:</b><br />\n"
+                + "Sensitivity: Average 1 sigma rms = 10 mJy per beam.<br />\n"
+                + "Waveband: 1120 microns<br />\n"
+                + "Resolution: 31 arcsecond beam in 10 arcsecond pixels (diffuse large-scale structure is lost)\n"
+                + "</p>\n"
+                + "\n"
+                + "<p><b>Areal Coverage:</b><br />\n"
+                + "11 square degrees\n"
+                + "</p>\n"
+                + "\n"
+                + "<p><b>Map Center (Galactic):</b><br />\n"
+                + "NA<br />\n"
+                + "NA</p>\n"
+                + "\n"
+                + "<p><b>Map Center (J2000):</b><br />\n"
+                + "RA = 18:29:00<br />\n"
+                + "Dec = +00:30:00 </p>"), "Description: Data were taken May-June 2003 and 2005. Flux units are in mJy per 31 arcsecond beam. Telescope Information Caltech Submillimeter Observatory Status: Final Sampling: Sensitivity: Average 1 sigma rms = 10 mJy per beam. Waveband: 1120 microns Resolution: 31 arcsecond beam in 10 arcsecond pixels (diffuse large-scale structure is lost) Areal Coverage: 11 square degrees Map Center (Galactic): NA NA Map Center (J2000): RA = 18:29:00 Dec = +00:30:00");
+        assertEquals(StringUtil.htmlArray2textArray(Arrays.asList("be <b>bold</b>!")), Arrays.asList("be bold!"));
+        assertEquals(StringUtil.htmlArray2textArray(null), Collections.emptyList());
+    }
 }

@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jsoup.Jsoup;
 
 /**
  *
@@ -48,5 +51,26 @@ public class StringUtil {
         
         return finalString;             
     } 
-    
+
+    public static String html2text(String html) {
+        if (html == null) {
+            return null;
+        }
+        return Jsoup.parse(html).text();
+    }
+
+    /**
+     * @return A list of clean strings or an empty list.
+     */
+    public static List<String> htmlArray2textArray(List<String> htmlArray) {
+        List cleanTextArray = new ArrayList<>();
+        if (htmlArray == null) {
+            return cleanTextArray;
+        }
+        for (String html : htmlArray) {
+            cleanTextArray.add(Jsoup.parse(html).text());
+        }
+        return cleanTextArray;
+    }
+
 }

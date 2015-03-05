@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -168,8 +169,8 @@ public class IndexServiceBean {
 //        if (dataverse.getOwner() != null) {
 //            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
 //        }
-        solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
-        solrInputDocument.addField(SearchFields.DATAVERSE_DESCRIPTION, dataverse.getDescription());
+        solrInputDocument.addField(SearchFields.DESCRIPTION, StringUtil.html2text(dataverse.getDescription()));
+        solrInputDocument.addField(SearchFields.DATAVERSE_DESCRIPTION, StringUtil.html2text(dataverse.getDescription()));
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
         if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
             /**
@@ -677,9 +678,19 @@ public class IndexServiceBean {
                                 }
                             }
                         } else {
-                            solrInputDocument.addField(solrFieldSearchable, dsf.getValues());
-                            if (dsfType.getSolrField().isFacetable()) {
-                                solrInputDocument.addField(solrFieldFacetable, dsf.getValues());
+                            if (dsfType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)) {
+                                // strip HTML
+                                List<String> htmlFreeText = StringUtil.htmlArray2textArray(dsf.getValues());
+                                solrInputDocument.addField(solrFieldSearchable, htmlFreeText);
+                                if (dsfType.getSolrField().isFacetable()) {
+                                    solrInputDocument.addField(solrFieldFacetable, htmlFreeText);
+                                }
+                            } else {
+                                // do not strip HTML
+                                solrInputDocument.addField(solrFieldSearchable, dsf.getValues());
+                                if (dsfType.getSolrField().isFacetable()) {
+                                    solrInputDocument.addField(solrFieldFacetable, dsf.getValues());
+                                }
                             }
                         }
                     }
