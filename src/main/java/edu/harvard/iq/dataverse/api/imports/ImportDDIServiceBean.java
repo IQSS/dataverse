@@ -659,6 +659,10 @@ public class ImportDDIServiceBean {
                 //TODO - put exception back in when we have all the mapping data
           //      throw new ImportException("Unsupported Custom Field: " + template + " " + sourceField);
             }
+            if (map.getTargetDatasetField().equals("country")) {
+                System.out.println("skipping country custom code");
+                return;
+            }
            
             // 1. Get datasetFieldType for the targetField
             // 2. find the metadatablock for this field type
@@ -672,6 +676,9 @@ public class ImportDDIServiceBean {
                 customBlock = new MetadataBlockDTO();
                 customBlock.setDisplayName(metadataBlockName);
                 dvDTO.getMetadataBlocks().put(metadataBlockName, customBlock);
+            }
+            if (dsfType.isChild()) {
+                handleChildField(customBlock, dsfType, fieldValue);
             }
             if (dsfType.isAllowMultiples()) {
                 List<String> valList = new ArrayList<>();
@@ -693,6 +700,16 @@ public class ImportDDIServiceBean {
                 }
             }
         }
+    }
+    
+    private void handleChildField(MetadataBlockDTO customBlock, DatasetFieldType dsfType, String fieldValue) {
+        DatasetFieldType parent = dsfType.getParentDatasetFieldType();
+        if (parent.isAllowMultiples())
+        {
+            
+        }   else {
+            
+        }     
     }
    
     private void processSources(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
