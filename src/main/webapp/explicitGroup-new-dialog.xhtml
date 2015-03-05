@@ -62,10 +62,7 @@
                                         var="roleAssignee" 
                                         itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                             <p:column>
-                                <h:outputText value="#{roleAssignee.displayInfo.title}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{roleAssignee.displayInfo.affiliation}" />
+                                #{roleAssignee.identifier} #{roleAssignee.displayInfo.title} (#{roleAssignee.displayInfo.affiliation})
                             </p:column>
                             <p:ajax process="@this" event="itemSelect" />
                             <p:ajax process="@this" event="itemUnselect" />
