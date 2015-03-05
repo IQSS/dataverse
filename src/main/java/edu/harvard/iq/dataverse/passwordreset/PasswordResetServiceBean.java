@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
-import edu.harvard.iq.dataverse.PasswordEncryption;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -43,62 +44,67 @@ public class PasswordResetServiceBean {
         deleteAllExpiredTokens();
         BuiltinUser user = dataverseUserService.findByEmail(emailAddress);
         if (user != null) {
-            // delete old tokens for the user
-            List<PasswordResetData> oldTokens = findPasswordResetDataByDataverseUser(user);
-            for (PasswordResetData oldToken : oldTokens) {
-                em.remove(oldToken);
-            }
-            // create a fresh token for the user
-            PasswordResetData passwordResetData = new PasswordResetData(user);
-            PasswordResetData savedPasswordResetData = null;
-            try {
-                em.persist(passwordResetData);
-                savedPasswordResetData = em.merge(passwordResetData);
-            } catch (Exception ex) {
-                String msg = "Unable to save token for " + emailAddress;
-                throw new PasswordResetException(msg);
-            }
-            if (savedPasswordResetData != null) {
-                PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
-                /**
-                 * @todo is the response the best place to store the reset link?
-                 */
-                String passwordResetUrl = passwordResetInitResponse.getResetUrl();
-                String messageBody = "Hi " + user.getDisplayName() + ",\n\n"
-                        + "Someone, hopefully you, requested a password reset for " + user.getUserName() + ".\n\n"
-                        + "Please click the link below to reset your Dataverse account password:\n\n"
-                        + passwordResetUrl + "\n\n"
-                        + "The link above will only work for the next " + SystemConfig.getMinutesUntilPasswordResetTokenExpires() + " minutes.\n\n"
-                        /**
-                         * @todo It would be a nice touch to show the IP from
-                         * which the password reset originated.
-                         */
-                        + "Please contact us if you did not request this password reset or need further help.\n\n"
-                        + "Thank you,\n\n"
-                        + "Dataverse Support Team";
-                try {
-                    String fromAddress = "do-not-reply@dataverse.org";
-                    String toAddress = emailAddress;
-                    String subject = "Dataverse Password Reset Requested";
-                    mailService.sendMail(fromAddress, toAddress, subject, messageBody);
-                } catch (Exception ex) {
-                    /**
-                     * @todo get more specific about the exception that's thrown
-                     * when `asadmin create-javamail-resource` (or equivalent)
-                     * hasn't been run.
-                     */
-                    throw new PasswordResetException("Problem sending password reset email possibily due to mail server not being configured.");
-                }
-                logger.info("attempted to send mail to " + emailAddress);
-                return passwordResetInitResponse;
-            } else {
-                throw new PasswordResetException("Internal error. Unable to persist password reset token.");
-            }
+            return requestPasswordReset( user, true, PasswordResetData.Reason.FORGOT_PASSWORD );
         } else {
             return new PasswordResetInitResponse(false);
         }
     }
+    
+    public PasswordResetInitResponse requestPasswordReset( BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason ) throws PasswordResetException {
+        // delete old tokens for the user
+        List<PasswordResetData> oldTokens = findPasswordResetDataByDataverseUser(aUser);
+        for (PasswordResetData oldToken : oldTokens) {
+            em.remove(oldToken);
+        }
+        
+        // create a fresh token for the user
+        PasswordResetData passwordResetData = new PasswordResetData(aUser);
+        passwordResetData.setReason(reason);
+        try {
+            em.persist(passwordResetData);
+            PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
+            if ( sendEmail ) {
+                sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl());
+            }
 
+            return passwordResetInitResponse;
+            
+        } catch (Exception ex) {
+            String msg = "Unable to save token for " + aUser.getEmail();
+            throw new PasswordResetException(msg, ex);
+        }
+        
+    }
+
+    private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
+        String messageBody = "Hi " + aUser.getDisplayName() + ",\n\n"
+                + "Someone, hopefully you, requested a password reset for " + aUser.getUserName() + ".\n\n"
+                + "Please click the link below to reset your Dataverse account password:\n\n"
+                + passwordResetUrl + "\n\n"
+                + "The link above will only work for the next " + SystemConfig.getMinutesUntilPasswordResetTokenExpires() + " minutes.\n\n"
+                /**
+                 * @todo It would be a nice touch to show the IP from
+                 * which the password reset originated.
+                 */
+                + "Please contact us if you did not request this password reset or need further help.\n\n"
+                + "Thank you,\n\n"
+                + "Dataverse Support Team";
+        try {
+            String fromAddress = "do-not-reply@dataverse.org";
+            String toAddress = aUser.getEmail();
+            String subject = "Dataverse Password Reset Requested";
+            mailService.sendMail(fromAddress, toAddress, subject, messageBody);
+        } catch (Exception ex) {
+            /**
+             * @todo get more specific about the exception that's thrown
+             * when `asadmin create-javamail-resource` (or equivalent)
+             * hasn't been run.
+             */
+            throw new PasswordResetException("Problem sending password reset email possibily due to mail server not being configured.");
+        }
+        logger.log(Level.INFO, "attempted to send mail to {0}", aUser.getEmail());
+    }
+    
     /**
      * Process the password reset token, allowing the user to reset the password
      * or report on a invalid token.
@@ -128,7 +134,7 @@ public class PasswordResetServiceBean {
      */
     private PasswordResetData findSinglePasswordResetDataByToken(String token) {
         PasswordResetData passwordResetData = null;
-        TypedQuery<PasswordResetData> typedQuery = em.createQuery("SELECT OBJECT(o) FROM PasswordResetData AS o WHERE o.token = :token", PasswordResetData.class);
+        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findByToken", PasswordResetData.class);
         typedQuery.setParameter("token", token);
         try {
             passwordResetData = typedQuery.getSingleResult();
@@ -139,14 +145,14 @@ public class PasswordResetServiceBean {
     }
 
     public List<PasswordResetData> findPasswordResetDataByDataverseUser(BuiltinUser user) {
-        TypedQuery<PasswordResetData> typedQuery = em.createQuery("SELECT OBJECT(o) FROM PasswordResetData AS o WHERE o.dataverseUser = :user", PasswordResetData.class);
+        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findByUser", PasswordResetData.class);
         typedQuery.setParameter("user", user);
         List<PasswordResetData> passwordResetDatas = typedQuery.getResultList();
         return passwordResetDatas;
     }
 
     public List<PasswordResetData> findAllPasswordResetData() {
-        TypedQuery<PasswordResetData> typedQuery = em.createQuery("SELECT OBJECT(o) FROM PasswordResetData AS o", PasswordResetData.class);
+        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findAll", PasswordResetData.class);
         List<PasswordResetData> passwordResetDatas = typedQuery.getResultList();
         return passwordResetDatas;
     }
@@ -163,7 +169,6 @@ public class PasswordResetServiceBean {
                 numDeleted++;
             }
         }
-        logger.fine("expired tokens deleted: " + numDeleted);
         return numDeleted;
     }
 
@@ -219,8 +224,12 @@ public class PasswordResetServiceBean {
             logger.info(messageDetail);
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }
-        user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(newPassword));
+        
+        String newHashedPass = PasswordEncryption.get().encrypt(newPassword);
+        int latestVersionNumber = PasswordEncryption.getLatestVersionNumber();
+        user.updateEncryptedPassword(newHashedPass, latestVersionNumber);
         BuiltinUser savedUser = dataverseUserService.save(user);
+        
         if (savedUser != null) {
             messageSummary = messageSummarySuccess;
             messageDetail = messageDetailSuccess;

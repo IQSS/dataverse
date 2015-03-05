@@ -9,4 +9,8 @@ public class PasswordResetException extends Exception {
         super(message);
     }
 
+    public PasswordResetException(String message, Throwable cause) {
+        super(message, cause);
+    }
+    
 }

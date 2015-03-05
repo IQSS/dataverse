@@ -3,11 +3,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
+import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -82,7 +84,7 @@ public class LoginPage implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
-
+    
     private String credentialsAuthProviderId;
     
     private List<FilledCredential> filledCredentials;
@@ -142,7 +144,6 @@ public class LoginPage implements java.io.Serializable {
             authReq.putCredential(fc.getCredential().getTitle(), fc.getValue());
         }
         authReq.setIpAddress( session.getUser().getRequestMetadata().getIpAddress() );
-        
         try {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
             logger.log(Level.INFO, "User authenticated: {0}", r.getEmail());
@@ -165,8 +166,21 @@ public class LoginPage implements java.io.Serializable {
 
             
         } catch (AuthenticationFailedException ex) {
-            JsfHelper.addErrorMessage(JH.localize("login.invaliduserpassword"));
-            return null;
+            AuthenticationResponse response = ex.getResponse();
+            switch ( response.getStatus() ) {
+                case FAIL:
+                    JsfHelper.addErrorMessage(JH.localize("login.invaliduserpassword"));
+                    return null;
+                case ERROR:
+                    JsfHelper.addErrorMessage(JH.localize("login.error"));
+                    logger.log( Level.WARNING, "Error logging in: " + response.getMessage(), response.getError() );
+                    return null;
+                case BREAKOUT:
+                    return response.getMessage();
+                default:
+                    JsfHelper.addErrorMessage("INTERNAL ERROR");
+                    return null;
+            }
         }
         
     }

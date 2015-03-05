@@ -53,9 +53,15 @@ public class BuiltinUser implements Serializable {
     @NotBlank(message = "Please enter your last name.")
     private String lastName;
     
+    private int passwordEncryptionVersion; 
     private String encryptedPassword;
     private String affiliation;
     private String position;
+    
+    public void updateEncryptedPassword( String encryptedPassword, int algorithmVersion ) {
+        setEncryptedPassword(encryptedPassword);
+        setPasswordEncryptionVersion(algorithmVersion);
+    }
     
     public Long getId() {
         return id;
@@ -100,7 +106,15 @@ public class BuiltinUser implements Serializable {
     public String getEncryptedPassword() {
         return encryptedPassword;
     }
-
+    
+    /**
+     * JPA-use only. Humans should call {@link #updateEncryptedPassword(java.lang.String, int)}
+     * and update the password and the algorithm at the same time.
+     * 
+     * @param encryptedPassword
+     * @deprecated
+     */
+    @Deprecated()
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
     }
@@ -149,5 +163,13 @@ public class BuiltinUser implements Serializable {
 	public String toString() {
 		return "BuiltinUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
 	}
-   
+
+    public int getPasswordEncryptionVersion() {
+        return passwordEncryptionVersion;
+    }
+
+    public void setPasswordEncryptionVersion(int passwordEncryptionVersion) {
+        this.passwordEncryptionVersion = passwordEncryptionVersion;
+    }
+    
 }
