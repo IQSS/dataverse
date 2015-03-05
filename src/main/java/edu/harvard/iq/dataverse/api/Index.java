@@ -89,7 +89,11 @@ public class Index extends AbstractApiBean {
             if (type.equals("dataverses")) {
                 Dataverse dataverse = dataverseService.find(id);
                 if (dataverse != null) {
-                    return okResponse(indexService.indexDataverse(dataverse));
+                    /**
+                     * @todo Can we display the result of indexing to the user?
+                     */
+                    Future<String> indexDataverseFuture = indexService.indexDataverse(dataverse);
+                    return okResponse("starting reindex of dataverse " + id);
                 } else {
                     String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataverse + id);
                     return notFound("Could not find dataverse with id of " + id + ". Result from deletion attempt: " + response);

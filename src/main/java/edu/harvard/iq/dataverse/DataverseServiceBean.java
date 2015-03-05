@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.Properties;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -52,8 +53,11 @@ public class DataverseServiceBean implements java.io.Serializable {
        
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
         Dataverse savedDataverse = em.merge(dataverse);
-        String indexingResult = indexService.indexDataverse(savedDataverse);
-        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
+        /**
+         * @todo check the result to see if indexing was successful or not
+         */
+        Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
+//        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
         return savedDataverse;
     }
 

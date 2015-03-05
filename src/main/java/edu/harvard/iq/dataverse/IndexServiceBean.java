@@ -131,16 +131,18 @@ public class IndexServiceBean {
         return new AsyncResult<>(status);
     }
 
-    public String indexDataverse(Dataverse dataverse) {
+    @Asynchronous
+    public Future<String> indexDataverse(Dataverse dataverse) {
         logger.info("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
             String msg = "unable to index dataverse. id was null (alias: " + dataverse.getAlias() + ")";
             logger.info(msg);
-            return msg;
+            return new AsyncResult<>(msg);
         }
         Dataverse rootDataverse = findRootDataverseCached();
         if (dataverse.getId() == rootDataverse.getId()) {
-            return "The root dataverse shoud not be indexed.";
+            String msg = "The root dataverse shoud not be indexed.";
+            return new AsyncResult<>(msg);
         }
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
@@ -213,6 +215,7 @@ public class IndexServiceBean {
 
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
+        String status;
         try {
             if (dataverse.getId() != null) {
                 server.add(docs);
@@ -220,16 +223,21 @@ public class IndexServiceBean {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
         } catch (SolrServerException | IOException ex) {
-            return ex.toString();
+            status = ex.toString();
+            logger.info(status);
+            return new AsyncResult<>(status);
         }
         try {
             server.commit();
         } catch (SolrServerException | IOException ex) {
-            return ex.toString();
+            status = ex.toString();
+            logger.info(status);
+            return new AsyncResult<>(status);
         }
 
         dvObjectService.updateContentIndexTime(dataverse);
-        return "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias();
+        String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias();
+        return new AsyncResult<>(msg);
 
     }
 
