@@ -47,10 +47,11 @@
                                     <div>
                                         <p:fragment id="userGroups">
                                             <p:dataTable id="fileAccessRequests" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}" style="margin-bottom:1em;">
-                                                <p:column width="35%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
-                                                    <h:outputText value="#{access.key.displayInfo.title}"/>
+                                                <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
+                                                    <h:outputText value="@identifier #{access.key.displayInfo.title}"/>
+                                                    <h:outputText value=" (#{access.key.displayInfo.affiliation})" rendered="#{!empty access.key.displayInfo.affiliation}"/>
                                                 </p:column>
-                                                <p:column width="25%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
+                                                <p:column width="20%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
                                                     <p:commandLink id="viewUserGroups"
                                                                    actionListener="#{manageFilePermissionsPage.initAssignDialogForFileRequester(access.key)}"
                                                                    update=":#{p:component('assignDialog')}"
@@ -72,10 +73,11 @@
                                                 </p:column>
                                             </p:dataTable>
                                             <p:dataTable id="userGroupsAccess" var="ra" value="#{manageFilePermissionsPage.roleAssigneeMap.entrySet().toArray()}">
-                                                <p:column width="35%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
-                                                    <h:outputText value="#{ra.key.displayInfo.title}"/>
+                                                <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
+                                                    <h:outputText value="@identifier #{ra.key.displayInfo.title}"/>
+                                                    <h:outputText value=" (#{ra.key.displayInfo.affiliation})" rendered="#{!empty ra.key.displayInfo.affiliation}"/>
                                                 </p:column>
-                                                <p:column width="25%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
+                                                <p:column width="20%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
                                                     <p:commandLink id="viewUserGroups"
                                                                    actionListener="#{manageFilePermissionsPage.initViewRemoveDialogByRoleAssignee(ra.key, ra.value)}"
                                                                    update=":#{p:component('viewRemoveDialog')}"
