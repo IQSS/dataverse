@@ -339,7 +339,8 @@ public class SolrSearchResult {
                  */
                 .add("published_at", getDateTimePublished())
                 /**
-                 * @todo Maybe we should expose MIME Type also.
+                 * @todo Expose MIME Type:
+                 * https://github.com/IQSS/dataverse/issues/1595
                  */
                 .add("file_type", this.filetype)
                 .add("size_in_bytes", getFileSizeInBytes())
