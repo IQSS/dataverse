@@ -651,10 +651,15 @@ public class ImportDDIServiceBean {
             String fieldValue = parseText(xmlr);
             System.out.println("template = " + template + ", sourceField = " + sourceField + ", fieldValue = " + fieldValue);
 
-            CustomFieldMap map = customFieldService.findByTemplateField(template, sourceField);
+            CustomFieldMap map = customFieldService.findByTemplateField(template.trim(), sourceField.trim());
+            
             if (map == null) {
-                throw new ImportException("Unsupported Custom Field: " + template + " " + sourceField);
+                System.out.println("did not find mapping for template: "+template+", sourceField: "+sourceField);
+                return;
+                //TODO - put exception back in when we have all the mapping data
+          //      throw new ImportException("Unsupported Custom Field: " + template + " " + sourceField);
             }
+           
             // 1. Get datasetFieldType for the targetField
             // 2. find the metadatablock for this field type
             // 3. If this metadatablock doesn't exist in DTO, create it
