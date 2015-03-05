@@ -190,7 +190,7 @@ public class SystemConfig {
     }
 
     public String getApplicationPrivacyPolicyUrl() {
-        String saneDefaultForPrivacyPolicyUrl = "#";
+        String saneDefaultForPrivacyPolicyUrl = null;
         String appPrivacyPolicyUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);
         return appPrivacyPolicyUrl;
     }
