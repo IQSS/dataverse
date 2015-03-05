@@ -87,14 +87,14 @@
                                                     <div class="form-col-container col-sm-12">
                                                         <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >
                                                             <div class="form-group dataset-field-values">
-                                                                <div class="form-col-container col-sm-9 edit-dataset-field">
+                                                                <div class="form-col-container col-sm-9 edit-field">
                                                                     <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                         <ui:param name="dsfv" value="#{dsfv}"/>
                                                                         <ui:param name="dsfvIndex" value="#{valCount.index}"/>
                                                                     </ui:include>
                                                                 </div>
                                                                 <!-- Add / Remove buttons -->
-                                                                <div class="col-xs-3 dataset-field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
+                                                                <div class="col-xs-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                                     <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}"
                                                                                      styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                                      actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
@@ -138,7 +138,7 @@
                                         <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.compound}">
                                             <div class="form-group form-col-container col-sm-9 dataset-field-values">
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
-                                                    <div class="form-group form-col-container col-sm-9 edit-dataset-compound-field">
+                                                    <div class="form-group form-col-container col-sm-9 edit-compound-field">
                                                         <!-- Sub Fields -->
                                                         <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
                                                             <div class="form-col-container #{(subdsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'col-sm-12' : 'col-sm-6'}">
@@ -175,7 +175,7 @@
                                                             </div>
                                                         </ui:repeat>
                                                     </div>
-                                                    <div class="col-sm-3 dataset-field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
+                                                    <div class="col-sm-3 field-add-delete" jsf:rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                         <p:commandLink tabindex="#{block.index+1}" title="#{bundle.add}" 
                                                                          styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                          actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"

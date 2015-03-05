@@ -51,13 +51,13 @@
                         <!-- Name Panel -->
                         <!-- Edit Info Panel -->
                         <div class="row">
-                            <div class="col-xs-6 form-group">
+                            <div class="col-xs-6 form-group form-col-container">
                                 <label class="col-sm-3 control-label" for="name">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.title']}">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.title']}">
                                         #{bundle.dataverse} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    </a>
+                                    </span>
                                 </label>
-                                <div class="col-sm-9 panelLayoutBlock">
+                                <div class="col-sm-9 panelLayoutBlock form-col-container">
                                     <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="no-padding-left-right,no-class">
                                         <p:inputText id="name" tabindex="1" styleClass="form-control" value="#{DataversePage.dataverse.name}"/>
                                         <h:outputText styleClass="text-muted" value="#{bundle.dataverse}"/>
@@ -67,9 +67,9 @@
                             </div>
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="affiliation">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.affiliation.title']}">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.affiliation.title']}">
                                         #{bundle.affiliation}
-                                    </a>
+                                    </span>
                                 </label>
                                 <div class="col-sm-9">
                                     <p:inputText id="affiliation" tabindex="2" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
@@ -78,13 +78,13 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-xs-6 form-group">
+                            <div class="col-xs-6 form-group form-col-container">
                                 <label class="col-sm-3 control-label" for="identifier">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.identifier.title']}">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.identifier.title']}">
                                         #{bundle.identifier} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    </a>
+                                    </span>
                                 </label>
-                                <div class="col-sm-9 panelLayoutBlock">
+                                <div class="col-sm-9 panelLayoutBlock form-col-container">
                                     <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="no-padding-left-right,no-padding-left-right">
                                         <h:outputText styleClass="text-muted small" value="#{systemConfig.dataverseSiteUrl}/dataverse/"/>
                                         <p:inputText id="identifier" tabindex="3" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
@@ -94,9 +94,9 @@
                             </div>
                             <div class="col-xs-6 form-group" jsf:rendered="#{DataversePage.ownerId != null}">
                                 <label class="col-sm-3 control-label" for="hostDataverse">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.host.title']}">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.host.title']}">
                                         #{bundle.hostDataverse}
-                                    </a>
+                                    </span>
                                 </label>
                                 <div class="col-sm-9">
                                     <p class="form-control-static">#{DataversePage.dataverse.getOwner().name}</p>
@@ -114,9 +114,9 @@
                             <div class="col-xs-6 form-group">
                                 <div class="form-group clearfix">
                                     <label class="col-sm-3 control-label" for="dataverseCategory">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.category.title']}">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.category.title']}">
                                             #{bundle['dataverse.category']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                        </a>
+                                        </span>
                                     </label>
                                     <div class="col-sm-9">
                                         <h:selectOneMenu id="dataverseCategory" tabindex="5" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
@@ -134,31 +134,31 @@
                                 <div class="form-group clearfix">
                                     <p:fragment autoUpdate="true">
                                         <label class="col-sm-3 control-label" for="contactEmail">
-                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.email.title']}">
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.email.title']}">
                                                 #{bundle['dataverse.email']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                            </a>
+                                            </span>
                                         </label>
-                                        <div class="col-sm-9">
+                                        <div class="col-sm-9 form-col-container edit-compound-field">
                                             <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
-                                                <div class="form-group clearfix">
-                                                    <div class="col-sm-8" style="padding-left:0;">
+                                                <div class="form-group">
+                                                    <div class="col-sm-8 form-col-container">
                                                         <p:inputText id="contactEmail" tabindex="7" styleClass="form-control" value="#{contacts.contactEmail}">
                                                             <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
                                                         </p:inputText>
                                                         <p:message for="contactEmail" display="text"/>
                                                     </div>
                                                     <!-- Add / Remove buttons -->
-                                                    <div class="col-sm-4">
-                                                        <p:commandLink styleClass="btn btn-default btn-sm" style="#{'margin:0 1em 0 0;'}"
-                                                                         title="#{bundle['dataverse.record.add']}" 
-                                                                         actionListener="#{DataversePage.dataverse.addDataverseContact(valCount.index + 1)}">
+                                                    <div class="col-sm-4 form-col-container field-add-delete">
+                                                        <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" title="#{bundle.add}" 
+                                                                         actionListener="#{DataversePage.dataverse.addDataverseContact(valCount.index + 1)}"
+                                                                         oncomplete="javascript:bind_bsui_components();">
                                                             <f:param name="SKIP_VALIDATION" value="true"/>
                                                             <h:outputText styleClass="glyphicon glyphicon-plus no-text"/>
                                                         </p:commandLink>
-                                                        <p:commandLink styleClass="btn btn-default btn-sm"
-                                                                         title="#{bundle['dataverse.record.delete']}" 
+                                                        <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" title="#{bundle.delete}" 
                                                                          rendered="#{DataversePage.dataverse.dataverseContacts.size() > 1}"
-                                                                         actionListener="#{DataversePage.dataverse.removeDataverseContact(valCount.index)}">
+                                                                         actionListener="#{DataversePage.dataverse.removeDataverseContact(valCount.index)}"
+                                                                         oncomplete="javascript:bind_bsui_components();">
                                                             <f:param name="SKIP_VALIDATION" value="true"/>
                                                             <h:outputText styleClass="glyphicon glyphicon-minus no-text"/>
                                                         </p:commandLink>
@@ -171,9 +171,9 @@
                             </div>
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="description">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.description.title']}">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.description.title']}">
                                         #{bundle.description}
-                                    </a>
+                                    </span>
                                 </label>
                                 <div class="col-sm-9">
                                     <p:inputTextarea id="description" tabindex="6" styleClass="form-control" value="#{DataversePage.dataverse.description}"
@@ -185,17 +185,10 @@
                             </div>
                         </div>
                         
-                        <hr style="border-color: #ddd;"/>
+                        <hr/>
                         
                         <!-- Metadata Panel -->
-                        <p:panel styleClass="panelLayoutBlock"  widgetVar="optionBlock">
-
-                            <style type="text/css">
-                                /*.metadata-blocks-default input:focus {outline:1px dotted red;}*/
-                                /*.metadata-blocks-default .ui-chkbox-icon {width:18px; height:18px; outline: -webkit-focus-ring-color auto 5px;}*/
-                                div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5px;}
-                            </style>
-                            
+                        <p:panel styleClass="panelLayoutBlock"  widgetVar="optionBlock">                            
                             <p:commandButton id="hiddenRefresh" value="back" style="display:none" 
                                              actionListener="#{DataversePage.refresh}"
                                              update="@widgetVar(optionBlock)" />

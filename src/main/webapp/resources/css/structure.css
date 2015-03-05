@@ -20,8 +20,9 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .label.beta {display:block; float:left; margin-top:12px; background:#C55B28; font-size:18px; font-weight:normal;}
 
 #navbarFixed form.navbar-form.navbar-form-link {margin:0; padding:0;}
-#navbarFixed form.navbar-form-link a.ui-commandlink {display:block; padding:15px; color: #777;}
-#navbarFixed form.navbar-form-link a.ui-commandlink:hover, #navbarFixed form.navbar-form-link a.ui-commandlink:focus {color: #262626; text-decoration: none;}
+#navbarFixed form.navbar-form-link a.ui-commandlink, #navbarFixed ul.navbar-nav li.dropdown span.dropdown-toggle {display:block; padding:15px; color: #777;}
+#navbarFixed form.navbar-form-link a.ui-commandlink:hover, #navbarFixed form.navbar-form-link a.ui-commandlink:focus,
+#navbarFixed ul.navbar-nav li.dropdown span.dropdown-toggle:hover, #navbarFixed ul.navbar-nav li.dropdown span.dropdown-toggle:focus {color: #262626; text-decoration: none;}
 #navbarFixed #navbar-search-toggle, #navbarFixed #dataverseSupportLink, #navbarFixed #lnk_header_account_dropdown {cursor: pointer; cursor: hand;}
 #navbarFixed .dropdown.accountName #lnk_header_account_dropdown span.glyphicon {margin-right:8px;}
 #navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em; line-height:normal; vertical-align:text-top;}
@@ -78,6 +79,8 @@ label.normal-text {font-weight:normal;}
 label.normal-text input {margin-right:4px;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
+
+hr {border-color: #ddd;}
 
 /* Dropdown submenu */
 .dropdown-submenu {
@@ -271,6 +274,8 @@ table[id$="facetPickListCreate"] label.ui-selectonemenu-label {width:152px !impo
 table.ui-selectmanycheckbox.metadata-blocks-select label {font-weight:normal; margin-top:1px;}
 table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {background:inherit;}
 
+div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5px;}
+
 /* Buttons */
 #actionButtonBlock {margin-bottom:1em;}
 #edit-publish-btn-group {margin-left:1em;}
@@ -283,6 +288,9 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 .form-group > .button-block, .panel-body > .button-block {margin-top:0;}
 .button-block button, .button-block a.btn {margin-right:1em;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child {margin-right:0;}
+div.field-add-delete a.btn {margin:0 1em 0 0;}
+div.field-add-delete a.btn:last-child {margin-right:0;}
+div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
 
 /* Featured Dataverses*/
 #carouselBlocksWrapper {border-bottom:1px solid #ddd; margin-bottom:1em;}
@@ -438,14 +446,12 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group, #templateForm .form-group {overflow: hidden;}
-#datasetForm .form-col-container .form-col-container, #templateForm .form-col-container .form-col-container {padding-left:0;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu, #templateForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
-div.form-col-container.edit-dataset-compound-field div.form-col-container {margin-bottom:.5em;}
+div.form-col-container div.form-col-container {padding-left:0;}
+div.form-col-container div.form-col-container .ui-selectonemenu {display:block;}
+div.form-col-container.edit-compound-field div.form-col-container {margin-bottom:.5em;}
 
 .panel .panel-body .form-group {overflow: hidden;}
-div.dataset-field-values div.dataset-field-add-delete a.btn {margin:0 1em 0 0;}
-div.dataset-field-values div.dataset-field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
-div.edit-dataset-field div.ui-message {margin:6px 0;}
+div.edit-field div.ui-message {margin:6px 0;}
 .metadata-logo {max-width:180px;max-height:40px;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
