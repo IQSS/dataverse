@@ -4,15 +4,15 @@
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:p="http://primefaces.org/ui"
      
-     class="form-group col-sm-12">
+     class="form-group col-sm-10">
         
-        <label for="position" class="#{empty DataverseUserPage.editMode ? 'col-sm-3' : 'col-sm-2'} control-label">
-            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['user.terms.tip']}">
+        <label for="position" class="#{empty DataverseUserPage.editMode ? 'col-sm-2' : 'col-sm-3'} control-label">
+            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.terms.tip']}">
                 #{bundle['user.terms']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-            </a>
+            </span>
         </label>
         <div class="col-sm-9">
-            <textarea class="form-control" rows="4" style="margin:4px 10px;" readonly="readonly">
+            <textarea class="form-control" rows="4" readonly="readonly">
               <h:outputText value="#{systemConfig.applicationTermsOfUse}"/></textarea>
             <div class="checkbox" style="margin:4px 10px;">
               <p:selectBooleanCheckbox id="terms" style="margin:0;vertical-align:middle;" required="true" requiredMessage="#{bundle['user.terms.required']}">
