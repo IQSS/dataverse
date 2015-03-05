@@ -67,7 +67,7 @@ public class SolrIndexServiceBean {
      *
      * See also https://github.com/IQSS/dataverse/issues/50
      */
-    private boolean unpublishedDataRelatedToMeModeEnabled = false;
+    private boolean unpublishedDataRelatedToMeModeEnabled = true;
 
     public List<DvObjectSolrDoc> determineSolrDocs(Long dvObjectId) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
