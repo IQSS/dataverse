@@ -408,7 +408,9 @@ public class DatasetVersionUI implements Serializable {
         
         List<DatasetField> filledInFields = this.datasetVersion.getDatasetFields(); 
         
-        List <MetadataBlock> actualMDB = this.datasetVersion.getDataset().getOwner().getMetadataBlocks();
+        List <MetadataBlock> actualMDB = new ArrayList();
+            
+        actualMDB.addAll(this.datasetVersion.getDataset().getOwner().getMetadataBlocks());
         
         for (DatasetField dsfv : filledInFields) {
             if (!dsfv.isEmptyForDisplay()) {

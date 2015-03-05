@@ -205,8 +205,10 @@ public class Template implements Serializable {
         metadataBlocksForEdit.clear();
         List<DatasetField> filledInFields = this.getDatasetFields(); 
         
-        List <MetadataBlock> actualMDB = this.getDataverse().getMetadataBlocks();
         
+        List <MetadataBlock> actualMDB = new ArrayList();
+            
+        actualMDB.addAll(this.getDataverse().getMetadataBlocks());
         for (DatasetField dsfv : filledInFields) {
             if (!dsfv.isEmptyForDisplay()) {
                 MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();

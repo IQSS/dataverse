@@ -165,7 +165,7 @@ public class Dataverse extends DvObjectContainer {
     @JoinColumn(nullable = true)
     private Template defaultTemplate;  
     
-    @OneToMany(cascade = {CascadeType.MERGE})
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<Template> templates; 
     
     @OneToMany(cascade = {CascadeType.MERGE})
