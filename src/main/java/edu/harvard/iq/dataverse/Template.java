@@ -203,7 +203,20 @@ public class Template implements Serializable {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
-        for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
+        List<DatasetField> filledInFields = this.getDatasetFields(); 
+        
+        List <MetadataBlock> actualMDB = this.getDataverse().getMetadataBlocks();
+        
+        for (DatasetField dsfv : filledInFields) {
+            if (!dsfv.isEmptyForDisplay()) {
+                MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
+                if (!actualMDB.contains(mdbTest)) {
+                    actualMDB.add(mdbTest);
+                }
+            }
+        }       
+        
+        for (MetadataBlock mdb : actualMDB) {
             List<DatasetField> datasetFieldsForView = new ArrayList();
             List<DatasetField> datasetFieldsForEdit = new ArrayList();
             for (DatasetField dsf : this.getDatasetFields()) {

@@ -88,7 +88,7 @@ public class DatasetVersionUI implements Serializable {
                 }                 
                 setDescriptionDisplay(descriptionString);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
-                //setKeyword(dsf.getCompoundDisplayValue());
+                setKeyword(dsf);
                 String keywordString = "";
                 for (DatasetFieldCompoundValue keywordValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : keywordValue.getChildDatasetFields()) {
@@ -410,12 +410,14 @@ public class DatasetVersionUI implements Serializable {
         
         List <MetadataBlock> actualMDB = this.datasetVersion.getDataset().getOwner().getMetadataBlocks();
         
-        for (DatasetField dsfv : filledInFields){
-            MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
-            if (!actualMDB.contains(mdbTest)){
-                actualMDB.add(mdbTest);
+        for (DatasetField dsfv : filledInFields) {
+            if (!dsfv.isEmptyForDisplay()) {
+                MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
+                if (!actualMDB.contains(mdbTest)) {
+                    actualMDB.add(mdbTest);
+                }
             }
-        }        
+        }       
         
         for (MetadataBlock mdb : actualMDB) {
             mdb.setEmpty(true);

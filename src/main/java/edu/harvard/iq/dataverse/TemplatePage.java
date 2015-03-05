@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDateverseTemplateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
@@ -166,7 +166,7 @@ public class TemplatePage implements java.io.Serializable {
             return "";
         }
         boolean create = false;
-        Command<Dataverse> cmd;
+        Command cmd;
         try {
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
@@ -176,7 +176,7 @@ public class TemplatePage implements java.io.Serializable {
                 create = true;
                 commandEngine.submit(cmd);
             } else {
-                cmd = new UpdateDateverseTemplateCommand(dataverse, template, session.getUser());
+                cmd = new UpdateDataverseTemplateCommand(dataverse, template, session.getUser());
                 commandEngine.submit(cmd);
             }
 
