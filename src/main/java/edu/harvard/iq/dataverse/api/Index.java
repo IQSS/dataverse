@@ -97,7 +97,8 @@ public class Index extends AbstractApiBean {
             } else if (type.equals("datasets")) {
                 Dataset dataset = datasetService.find(id);
                 if (dataset != null) {
-                    return okResponse(indexService.indexDataset(dataset));
+                    Future<String> indexDatasetFuture = indexService.indexDataset(dataset);
+                    return okResponse("starting reindex of dataset " + id);
                 } else {
                     /**
                      * @todo what about published, deaccessioned, etc.? Need
@@ -109,8 +110,11 @@ public class Index extends AbstractApiBean {
             } else if (type.equals("files")) {
                 DataFile dataFile = dataFileService.find(id);
                 Dataset datasetThatOwnsTheFile = datasetService.find(dataFile.getOwner().getId());
-                String output = indexService.indexDataset(datasetThatOwnsTheFile);
-                return okResponse("indexed " + type + "/" + id + " " + output);
+                /**
+                 * @todo How can we display the result to the user?
+                 */
+                Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile);
+                return okResponse("started reindexing " + type + "/" + id);
             } else {
                 return errorResponse( Status.BAD_REQUEST, "illegal type: " + type);
             }

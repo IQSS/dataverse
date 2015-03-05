@@ -233,7 +233,8 @@ public class IndexServiceBean {
 
     }
 
-    public String indexDataset(Dataset dataset) {
+    @Asynchronous
+    public Future<String> indexDataset(Dataset dataset) {
         logger.info("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
@@ -357,7 +358,7 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
                 indexDatasetPermissions(dataset);
-                return result;
+                return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, true);
@@ -401,9 +402,10 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
                 indexDatasetPermissions(dataset);
-                return result;
+                return new AsyncResult<>(result);
             } else {
-                return "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
+                String result = "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
+                return new AsyncResult<>(result);
             }
         } else if (atLeastOnePublishedVersion == true) {
             results.append("Published versions found. ")
@@ -451,7 +453,7 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
                 indexDatasetPermissions(dataset);
-                return result;
+                return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
 
                 IndexableDataset indexableDraftVersion = new IndexableDataset(latestVersion);
@@ -496,12 +498,16 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
                 indexDatasetPermissions(dataset);
-                return result;
+                return new AsyncResult<>(result);
             } else {
-                return "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
+                String result = "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
+                logger.info(result);
+                return new AsyncResult<>(result);
             }
         } else {
-            return "No-op. Unexpected condition reached: Has a version been published or not?";
+            String result = "No-op. Unexpected condition reached: Has a version been published or not?";
+            logger.info(result);
+            return new AsyncResult<>(result);
         }
     }
 

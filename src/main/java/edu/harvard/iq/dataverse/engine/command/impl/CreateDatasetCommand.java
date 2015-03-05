@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
@@ -172,9 +173,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         try {
-            // TODO make async
-            String indexingResult = ctxt.index().indexDataset(savedDataset);
-            logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
+            /**
+             * @todo Do something with the result. Did it succeed or fail?
+             */
+            Future<String> indexDatasetFuture = ctxt.index().indexDataset(savedDataset);
+//            logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
         } catch ( RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
         }

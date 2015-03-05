@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
@@ -109,9 +110,13 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
-        String indexingResult = ctxt.index().indexDataset(savedDataset);
+        /**
+         * @todo What should we do with the indexing result? Print it to the
+         * log?
+         */
+        Future<String> indexingResult = ctxt.index().indexDataset(savedDataset);
         //String indexingResult = "(Indexing Skipped)";
-        logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
+//        logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
 
         if (ddu != null) {
