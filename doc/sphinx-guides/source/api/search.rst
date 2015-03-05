@@ -145,6 +145,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "global_id":"doi:10.5072/FK2/CE0052",
                     "published_at":"2015-01-12T18:01:37Z",
                     "citation":"Finch, Fiona, 2015, \"Darwin's Finches\", http://dx.doi.org/10.5072/FK2/CE0052,  Root Dataverse,  V1",
+                    "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
                     "matches":[
                         {
                             "authorName":{

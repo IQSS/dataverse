@@ -457,8 +457,11 @@ public class SearchServiceBean {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dsPreview/" + datasetVersionId);
-                String datasetDescription = (String) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
-                solrSearchResult.setDescriptionNoSnippet(datasetDescription);
+                ArrayList<String> datasetDescriptions = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
+                String firstDatasetDescription = datasetDescriptions.get(0);
+                if (firstDatasetDescription != null) {
+                    solrSearchResult.setDescriptionNoSnippet(firstDatasetDescription);
+                }
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
                 solrSearchResult.setCitation(citation);
                 if (title != null) {

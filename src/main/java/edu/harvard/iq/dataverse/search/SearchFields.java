@@ -150,7 +150,7 @@ public class SearchFields {
      */
     public static final String PARENT_CITATION = "parent_citation_s";
 
-    public static final String DATASET_DESCRIPTION = "dsDescription";
+    public static final String DATASET_DESCRIPTION = "dsDescriptionValue";
     /**
      * @todo Add this to schema.xml with no "_s" and make it indexed=false
      */
