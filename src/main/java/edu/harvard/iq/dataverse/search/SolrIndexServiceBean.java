@@ -48,6 +48,27 @@ public class SolrIndexServiceBean {
     @EJB
     DataverseRoleServiceBean rolesSvc;
 
+    /**
+     * This non-default mode changes the behavior of the "Data Related To Me"
+     * feature to be more like "**Unpublished** Data Related to Me" after you
+     * have changed this boolean to true and run "index all".
+     *
+     * The "Data Related to Me" feature relies on *always* indexing permissions
+     * regardless of if the DvObject is published or not.
+     *
+     * In "Unpublished Data Related to Me" mode, we first check if the DvObject
+     * is published. If it's published, we set the search permissions to *only*
+     * contain "group_public", which is quick and cheap to do. If the DvObject
+     * in question is *not* public, we perform the expensive operation of
+     * rooting around in the system to determine who should be able to
+     * "discover" the unpublished version of DvObject. By default this mode is
+     * *not* enabled. If you want to enable it, change the boolean to true and
+     * run "index all".
+     *
+     * See also https://github.com/IQSS/dataverse/issues/50
+     */
+    private boolean unpublishedDataRelatedToMeModeEnabled = false;
+
     public List<DvObjectSolrDoc> determineSolrDocs(Long dvObjectId) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
         List<DvObjectSolrDoc> solrDocs = emptyList;
@@ -89,7 +110,16 @@ public class SolrIndexServiceBean {
      * datasets and files return lists.
      */
     private DvObjectSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
-        List<String> perms = searchPermissionsService.findDataversePerms(dataverse);
+        List<String> perms = new ArrayList<>();
+        if (unpublishedDataRelatedToMeModeEnabled) {
+            if (dataverse.isReleased()) {
+                perms.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                perms = searchPermissionsService.findDataversePerms(dataverse);
+            }
+        } else {
+            perms = searchPermissionsService.findDataversePerms(dataverse);
+        }
         DvObjectSolrDoc dvDoc = new DvObjectSolrDoc(dataverse.getId().toString(), IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId(), dataverse.getName(), perms);
         return dvDoc;
     }
@@ -122,7 +152,16 @@ public class SolrIndexServiceBean {
                 String solrIdStart = IndexServiceBean.solrDocIdentifierFile + dataFile.getId();
                 String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
-                List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                List<String> perms = new ArrayList<>();
+                if (unpublishedDataRelatedToMeModeEnabled) {
+                    if (datasetVersionFileIsAttachedTo.isReleased()) {
+                        perms.add(IndexServiceBean.getPUBLISHED_STRING());
+                    } else {
+                        perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                    }
+                } else {
+                    perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                }
                 DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, dataFile.getDisplayName(), perms);
                 datafileSolrDocs.add(dataFileSolrDoc);
             }
@@ -137,7 +176,16 @@ public class SolrIndexServiceBean {
         for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
             boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
             if (cardShouldExist) {
-                List<String> perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                List<String> perms = new ArrayList<>();
+                if (unpublishedDataRelatedToMeModeEnabled) {
+                    if (datasetVersionFileIsAttachedTo.isReleased()) {
+                        perms.add(IndexServiceBean.getPublicGroupString());
+                    } else {
+                        perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                    }
+                } else {
+                    perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                }
                 for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
                     Long fileId = fileMetadata.getDataFile().getId();
                     String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
@@ -170,7 +218,16 @@ public class SolrIndexServiceBean {
         String solrIdEnd = getDatasetOrDataFileSolrEnding(version.getVersionState());
         String solrId = solrIdStart + solrIdEnd;
         String name = version.getTitle();
-        List<String> perms = searchPermissionsService.findDatasetVersionPerms(version);
+        List<String> perms = new ArrayList<>();
+        if (unpublishedDataRelatedToMeModeEnabled) {
+            if (version.isReleased()) {
+                perms.add(IndexServiceBean.getPublicGroupString());
+            } else {
+                perms = searchPermissionsService.findDatasetVersionPerms(version);
+            }
+        } else {
+            perms = searchPermissionsService.findDatasetVersionPerms(version);
+        }
         return new DvObjectSolrDoc(version.getDataset().getId().toString(), solrId, name, perms);
     }
 
