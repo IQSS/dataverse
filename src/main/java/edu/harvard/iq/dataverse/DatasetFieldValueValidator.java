@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -69,6 +70,9 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             String YYYYformat = "yyyy";
             if (!valid ) {
                 valid = isValidDate(value.getValue(), YYYYformat);
+                if(!StringUtils.isNumeric(value.getValue())){
+                    valid = false;
+                }
             }
             if (!valid) {
                 // TODO: 
@@ -134,11 +138,11 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         private boolean isValidDate(String dateString, String pattern) {
         boolean valid=true;
         Date date;
-        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);       
         sdf.setLenient(false);
         try {
             dateString = dateString.trim();
-            date = sdf.parse(dateString);
+            date = sdf.parse(dateString);           
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
             int year = calendar.get(Calendar.YEAR);
