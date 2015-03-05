@@ -34,7 +34,7 @@ ApplicationPrivacyPolicyUrl
 
 Specify a URL where users can read your Privacy Policy.
 
-``curl -X PUT -d http://best-practices.dataverse.org http://localhost:8080/api/s/settings/:ApplicationPrivacyPolicyUrl``
+``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html http://localhost:8080/api/s/settings/:ApplicationPrivacyPolicyUrl``
 
 ApiTermsOfUse
 -------------
