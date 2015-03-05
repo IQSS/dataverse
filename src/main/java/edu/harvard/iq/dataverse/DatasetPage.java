@@ -261,7 +261,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
 
-    private GuestbookResponse guestbookResponse = new GuestbookResponse();
+    private GuestbookResponse guestbookResponse;
     private Guestbook selectedGuestbook;
 
     public GuestbookResponse getGuestbookResponse() {
@@ -594,6 +594,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String init() {
         String nonNullDefaultIfKeyNotFound = "";
+        guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
@@ -683,36 +684,37 @@ public class DatasetPage implements java.io.Serializable {
 
         return null;
     }
+    
 
     public String saveGuestbookResponse(String type) {
         boolean valid = true;
         if (dataset.getGuestbook() != null) {
             if (dataset.getGuestbook().isNameRequired()) {
-                if (guestbookResponse.getName() == null) {
+                if (this.guestbookResponse.getName() == null) {
                     valid = false;
                 } else {
-                    valid &= !guestbookResponse.getName().isEmpty();
+                    valid &= !this.guestbookResponse.getName().isEmpty();
                 }
             }
             if (dataset.getGuestbook().isEmailRequired()) {
-                if (guestbookResponse.getEmail() == null) {
+                if (this.guestbookResponse.getEmail() == null) {
                     valid = false;
                 } else {
-                    valid &= !guestbookResponse.getEmail().isEmpty();
+                    valid &= !this.guestbookResponse.getEmail().isEmpty();
                 }
             }
             if (dataset.getGuestbook().isInstitutionRequired()) {
-                if (guestbookResponse.getInstitution() == null) {
+                if (this.guestbookResponse.getInstitution() == null) {
                     valid = false;
                 } else {
-                    valid &= !guestbookResponse.getInstitution().isEmpty();
+                    valid &= !this.guestbookResponse.getInstitution().isEmpty();
                 }
             }
             if (dataset.getGuestbook().isPositionRequired()) {
-                if (guestbookResponse.getPosition() == null) {
+                if (this.guestbookResponse.getPosition() == null) {
                     valid = false;
                 } else {
-                    valid &= !guestbookResponse.getPosition().isEmpty();
+                    valid &= !this.guestbookResponse.getPosition().isEmpty();
                 }
             }
         }
@@ -720,9 +722,10 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
                 if (cq.isRequired()) {
-                    for (CustomQuestionResponse cqr : guestbookResponse.getCustomQuestionResponses()) {
+                    for (CustomQuestionResponse cqr : this.guestbookResponse.getCustomQuestionResponses()) {
                         if (cqr.getCustomQuestion().equals(cq)) {
                             valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
+                             logger.info(valid + " after CQ empty");
                         }
                     }
                 }
@@ -730,14 +733,14 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (!valid) {
-            logger.info("Guestbook response isn't valid.");
+            logger.info("Guestbook response isn't valid");
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Please complete required fields for download and re-try."));
             return "";
         }
 
         Command cmd;
         try {
-            cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
+            cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
             commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
@@ -749,7 +752,7 @@ public class DatasetPage implements java.io.Serializable {
             return callDownloadServlet(downloadFormat, guestbookResponse.getDataFile().getId());
         }
 
-        if (guestbookResponse.getDataFile() != null && type.equals("ravens")) {
+        if (guestbookResponse.getDataFile() != null && type.equals("explore")) {
             String retVal = getDataExploreURLComplete(guestbookResponse.getDataFile().getId());
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
@@ -1817,12 +1820,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat) {
-        
-        setDownloadFormat(downloadFormat);
 
-        if (this.guestbookResponse == null) {
-            this.guestbookResponse = new GuestbookResponse();
-        }
+        setDownloadFormat("download");
+        
+        this.guestbookResponse = new GuestbookResponse();
+        
         User user = session.getUser();
         if (this.dataset.getGuestbook() != null) {
             this.guestbookResponse.setGuestbook(this.dataset.getGuestbook());
@@ -1837,7 +1839,7 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse.setAuthenticatedUser(aUser);
                 this.guestbookResponse.setEmail(aUser.getEmail());
                 this.guestbookResponse.setInstitution(aUser.getAffiliation());
-                this.guestbookResponse.setPosition("");
+                this.guestbookResponse.setPosition(aUser.getPosition());
                 this.guestbookResponse.setSessionId(session.toString());
             }
             this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
@@ -1858,7 +1860,15 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse.getCustomQuestionResponses().add(cqr);
             }
         }
-        this.guestbookResponse.setDownloadtype(downloadFormat);
+        this.guestbookResponse.setDownloadtype("Download");
+        if(downloadFormat.toLowerCase().equals("subset")){
+            this.guestbookResponse.setDownloadtype("Subset");
+            setDownloadFormat("subset");
+        }
+        if(downloadFormat.toLowerCase().equals("explore")){
+            setDownloadFormat("explore");
+            this.guestbookResponse.setDownloadtype("Explore");
+        }
         this.guestbookResponse.setDataset(dataset);
     }
 
@@ -2059,12 +2069,19 @@ public class DatasetPage implements java.io.Serializable {
 
     private FileMetadata fileMetadataSelected = null;
 
+    public void  setFileMetadataSelected(FileMetadata fm){
+       setFileMetadataSelected(fm, null); 
+    }
+    
     public void setFileMetadataSelected(FileMetadata fm, String guestbook) {
-        if (guestbook.equals("create")) {
-            createSilentGuestbookEntry(fm, "Subset");
-        } else {
-            initGuestbookResponse(fm, "Subset");
+        if (guestbook != null) {
+            if (guestbook.equals("create")) {
+                createSilentGuestbookEntry(fm, "Subset");
+            } else {
+                initGuestbookResponse(fm, "Subset");
+            }
         }
+
         fileMetadataSelected = fm;
         logger.fine("set the file for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
         alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
