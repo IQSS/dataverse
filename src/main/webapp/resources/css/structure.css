@@ -77,6 +77,8 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 label.normal-text {font-weight:normal;}
 label.normal-text input {margin-right:4px;}
 
+span.glyphicon[data-toggle='tooltip'] {cursor:pointer; cursor:hand;}
+
 /* Dropdown submenu */
 .dropdown-submenu {
     position: relative;
@@ -431,6 +433,8 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 .button-block.form-top {border-top: 1px solid #dddddd; padding:1em 0;}
 span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #replicationDataButton {margin-top:5px;}
+
+#deaccession-reason-block {padding:4px; margin-bottom:.5em;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group, #templateForm .form-group {overflow: hidden;}

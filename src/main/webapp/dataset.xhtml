@@ -151,19 +151,21 @@
                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                         <div id="topDatasetBlock">
                             <div id="actionButtonBlock" class="clearfix">
-                                <!-- View Published/Unpublished Button -->
-                                <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
-                                                         and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset')}">
-                                    <a class="btn btn-warning" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
-                                        <h:outputText value="#{bundle['dataset.viewVersion.unpublished']}"/>
-                                    </a>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion != DatasetPage.dataset.releasedVersion
-                                                         and !empty(DatasetPage.releasedVersionTabList)}">
-                                    <a class="btn btn-primary" href="/dataset.xhtml?globalId=#{DatasetPage.dataset.globalId}&#38;versionId=#{DatasetPage.dataset.releasedVersion.id}">
-                                        <h:outputText value="#{bundle['dataset.viewVersion.published']}"/>
-                                    </a>
-                                </ui:fragment>
+                                <!-- View Dataset Versions Button -->
+                                <div class="btn-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
+                                    <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        View Dataset Versions <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
+                                            <li>
+                                                <a id="viewVersionLink" href="/dataset.xhtml?globalId=#{versionLinks.dataset.globalId}&#38;versionId=#{versionLinks.id}" class="ui-commandlink ui-widget">
+                                                    <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" />
+                                                    <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" /></a>
+                                            </li>
+                                        </ui:repeat>
+                                    </ul>
+                                </div>
                                 <!-- END: View Published/Unpublished Button -->
                                 <!-- Edit/Publish Button Group -->
                                 <ui:fragment rendered="#{dataverseSession.user.authenticated 
@@ -342,15 +344,11 @@
                                 <div id="citation-block" class="row bg-citation" jsf:rendered="#{!empty DatasetPage.displayCitation}">
                                     <div id="citation" class="col-md-9">
                                         <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
-                                        <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                            <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
-                                            <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                            <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
-                                        </ui:fragment>
+                                        
+                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                                        
                                         <div id="whycite" class="text-muted small">#{bundle['dataset.cite.whyCite.tip']} <a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></div>
                                     </div>
                                     <div id="citation-download" class="col-md-3 text-right">
@@ -374,7 +372,7 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-danger" style="padding:4px;margin-bottom:.5em;" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                <div id="deaccession-reason-block" class="bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                     <p><strong>#{bundle['dataset.deaccession.reason']}</strong> #{DatasetPage.workingVersion.versionNote}</p>
                                     <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
                                         <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
@@ -427,7 +425,7 @@
                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{bundle['dataverse.host.title']}">#{bundle.hostDataverse}</a>
                             </label>
                             <div class="col-sm-10">
-                                <h:outputText value="#{DatasetPage.dataset.owner.name}" style="font-weight:bold;"/>
+                                <strong><h:outputText value="#{DatasetPage.dataset.owner.name}"/></strong>
                                 <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
                                 <ui:remove><!-- removed for beta -->
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
@@ -1031,7 +1029,12 @@
                                                             <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
                                                                 <div class="col-sm-9">
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']}</p>
-                                                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}" escape="false"/></p>
+                                                                    <p class="help-block">
+                                                                        <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}" escape="false">
+                                                                            <f:param value="&lt;a href=&#34;http://best-practices.dataverse.org/harvard-policies/community-norms.html&#34; target=&#34;_blank&#34;&gt;"/>
+                                                                            <f:param value="&lt;/a&gt;"/>
+                                                                        </h:outputFormat>
+                                                                    </p>
                                                                     <p><img src="/resources/images/cc0.png" alt="CC0"/></p>
                                                                 </div>
                                                             </ui:fragment>
