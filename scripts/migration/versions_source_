@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+
+my $url = shift @ARGV;
+
+use DBI;
+
+#my $host = "dvn-60ox-db-1.lib.harvard.edu"; 
+#my $username = "vdcApp";
+my $password = '$ci_d8a.4.RR';
+#my $database = "iqss_dvn";
+my $host = "localhost"; 
+my $username = "vdcApp";
+my $database = "olddb";
+
+
+my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
+
+unless ( -d "ddi" )
+{
+    mkdir "ddi"; 
+}
+
+while ( <> )
+{
+    chop; 
+    ($dvalias) = $_; #split("\t", $_);
+
+    unless ( -d "ddi/$dvalias" )
+    {
+	mkdir "ddi/$dvalias"; 
+    }
+
+    my $sth;
+
+    $sth = $dbh->prepare(qq {SELECT s.id FROM study s, vdc v WHERE s.owner_id = v.id AND v.alias = '$dvalias'});
+
+    $sth->execute();
+
+    my $sid; 
+
+    while ( @foo = $sth->fetchrow() )
+    {
+	$sid = $foo[0];
+	
+	my $sth1; 
+
+	$sth1 = $dbh->prepare(qq {SELECT versionnumber FROM studyversion v WHERE study_id=$sid AND NOT (versionstate = 'RELEASED')}); 
+	$sth1->execute();
+
+	my $vn; 
+
+	while ( @bar = $sth1->fetchrow() )
+	{
+	    $vn = $bar[0];
+
+	    print STDERR "executing: wget -O ddi/" . $dvalias . "/" . $sid . "-" . $vn . ".xml '" . $url . "?studyId=" . $sid . "&versionNumber=" . $vn . "'\n";
+	    system "wget -O ddi/" . $dvalias . "/" . $sid . "-" . $vn . ".xml '" . $url . "?studyId=" . $sid . "&versionNumber=" . $vn . "'\n";
+	}
+	$sth1->finish; 
+    }
+
+    $sth->finish;
+}
+
+$dbh->disconnect; 
+
+exit 0; 
+
+
+
+
+  

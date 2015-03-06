@@ -44,5 +44,19 @@ create table _dvn3_studyfile_usergroup as select * from studyfile_usergroup;
 psql -h localhost -U postgres dvndb -f /tmp/dvn3_data.sql
 
 
+----------------------------------------------
+-- exporting non-released versions: 
+----------------------------------------------
+The script accepts a list of the dataverse aliases on the standard input, 
+and takes the URL of the ddi export servlet as the command line argument. 
+for example: 
+
+# for vdc in angola benin belize GSD_Test_2
+> do
+> echo $vdc | ./versions_source_ "http://dvn-4.hmdc.harvard.edu/dvn/ddi"
+> done
+
+
+
 
 
