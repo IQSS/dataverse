@@ -4,13 +4,10 @@ my $url = shift @ARGV;
 
 use DBI;
 
-#my $host = "dvn-60ox-db-1.lib.harvard.edu"; 
-#my $username = "vdcApp";
-my $password = '$ci_d8a.4.RR';
-#my $database = "iqss_dvn";
 my $host = "localhost"; 
-my $username = "vdcApp";
-my $database = "olddb";
+my $username = "xxxxx";
+my $password = 'xxxxx';
+my $database = "xxxxx";
 
 
 my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
