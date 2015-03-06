@@ -25,6 +25,12 @@ create table _dvn3_studyversion as select * from studyversion
 -- where study_id in (select id from _dvn3_study)
 ;
 
+
+-- permissions
+create table _dvn3_studyfile_vdcuser as select * from studyfile_vdcuser;
+create table _dvn3_studyfile_usergroup as select * from studyfile_usergroup;
+
+
 ----------------------------------------------
 -- run pg_dump to extract temp tables
 ----------------------------------------------
