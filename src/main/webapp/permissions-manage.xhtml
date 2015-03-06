@@ -33,17 +33,17 @@
                                         Permissions <span class="glyphicon glyphicon-chevron-up"/>
                                     </div>
                                     <div id="panelCollapsePermissions" class="collapse in">
-                                        <p:fragment id="configureMessages">
-                                            <div class="messagePanel" style="width:100%; margin-left: auto; margin-right: auto; padding-left: 15px; padding-right: 15px;">
-                                                <iqbs:messages  collapsible="true" rendered="#{managePermissionsPage.renderConfigureMessages}"/>
-                                            </div>
-                                        </p:fragment>
                                         <div class="panel-body">
+                                            <p:fragment id="configureMessages">
+                                                <div class="messagePanel">
+                                                    <iqbs:messages  collapsible="true" rendered="#{managePermissionsPage.renderConfigureMessages}"/>
+                                                </div>
+                                            </p:fragment>
                                             <p:commandLink id="configureButton" styleClass="btn btn-default pull-right"
                                                            actionListener="#{managePermissionsPage.initAccessSettings}"
                                                            update="accessDialog"
                                                            oncomplete="accessForm.show();">
-                                                <span class="glyphicon glyphicon-cog" style="margin-right:0.3em;"/> #{bundle['dataverse.permissions.access.accessBtn']}
+                                                <span class="glyphicon glyphicon-cog"/> #{bundle['dataverse.permissions.access.accessBtn']}
                                             </p:commandLink>
                                             <p class="help-block clearfix">#{bundle['dataverse.permissions.description']}</p>
                                             <div>
@@ -84,12 +84,12 @@
                                 #{bundle['dataverse.permissions.usersOrGroups']} <span class="glyphicon #{!managePermissionsPage.dvObject.instanceofDataverse ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                             </div>
                             <div id="panelCollapseUsersGroups" class="collapse #{!managePermissionsPage.dvObject.instanceofDataverse ? 'in' : ''}">
-                                <p:fragment id="assignmentMessages">
-                                    <div class="messagePanel" style="width:100%; margin-left: auto; margin-right: auto; padding-left: 15px; padding-right: 15px;">
-                                        <iqbs:messages collapsible="true" rendered="#{managePermissionsPage.renderAssignmentMessages}"/>
-                                    </div>
-                                </p:fragment>
                                 <div class="panel-body">
+                                    <p:fragment id="assignmentMessages">
+                                        <div class="messagePanel">
+                                            <iqbs:messages collapsible="true" rendered="#{managePermissionsPage.renderAssignmentMessages}"/>
+                                        </div>
+                                    </p:fragment>
                                     <div class="button-block">
                                         <p:commandLink id="userGroupsAdd"
                                                        styleClass="btn btn-default pull-right"
@@ -107,14 +107,14 @@
                                     <p class="help-block clearfix">#{bundle['dataverse.permissions.usersOrGroups.description']}</p>
                                     <div>
                                         <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
-                                            <p:column width="40%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
+                                            <p:column width="50%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
                                                 <h:outputText value="@identifier #{roleAssignment.assigneeDisplayInfo.title}"/>
                                                 <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
                                             </p:column>
-                                            <p:column width="20%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
+                                            <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
                                                 <h:outputText value="#{roleAssignment.roleName}"/>
                                             </p:column>
-                                            <p:column width="40%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.action']}">
+                                            <p:column width="30%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.action']}">
                                                 <h:outputFormat styleClass="text-muted italic" value="#{bundle['dataverse.permissions.usersOrGroups.assignedAt']}" rendered="#{managePermissionsPage.dvObject ne roleAssignment.definitionPoint}">
                                                     <f:param value="#{roleAssignment.assignedDvName}"/>
                                                 </h:outputFormat>
