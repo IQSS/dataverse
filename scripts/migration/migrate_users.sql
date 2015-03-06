@@ -22,7 +22,7 @@ insert into authenticateduserlookup(	authenticationproviderid, persistentuserid,
 insert into explicitgroup(  id, description, displayname, groupalias, groupaliasinowner, owner_id)
         select (id, friendlyname, friendlyname, '1-'||name, name, 1)
         from _dvn3_usergroup
-        where;
+        where id in (select usergroups_id from _dvn3_vdcuser_usergroup);
 
 insert into explicitgroup_authenticateduser(  explicitgroup_id, containedauthenticatedusers_id)
         select usergroups_id, users_id
