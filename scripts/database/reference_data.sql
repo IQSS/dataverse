@@ -19,7 +19,7 @@ INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (17, 'type', 'contributorType', TRUE, 16, 1 );
 
 INSERT INTO guestbook(
-             emailrequired, enabled, institutionrequired, 
+             emailrequired, enabled, institutionrequired, createtime,
             "name", namerequired, positionrequired,  dataverse_id)
-    VALUES (  false, true, false, 
+    VALUES (  false, true, false, now(),
             'Default', false, false, null);
