@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
 
 /**
  *
@@ -34,7 +36,14 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         if ( latest.isWorkingCopy() ) {
             throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
         }
-        
+         Set<ConstraintViolation> constraintViolations = newVersion.validate();
+        if (!constraintViolations.isEmpty()) {
+            String validationFailedString = "Validation failed:";
+            for (ConstraintViolation constraintViolation : constraintViolations) {
+                validationFailedString += " " + constraintViolation.getMessage();
+            }
+            throw new IllegalCommandException(validationFailedString, this);
+        }
         Timestamp now = new Timestamp(new Date().getTime());
         newVersion.setCreateTime(now);
         newVersion.setLastUpdateTime(now);
@@ -43,7 +52,7 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         ctxt.em().persist(newVersion);
 
         // TODO make async
-        ctxt.index().indexDataset(dataset);
+    //    ctxt.index().indexDataset(dataset);
         
         return newVersion;
     }
