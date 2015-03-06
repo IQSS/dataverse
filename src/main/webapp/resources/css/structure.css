@@ -291,7 +291,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 
 .button-block {margin-top:1em;}
 .form-group > .button-block, .panel-body > .button-block {margin-top:0;}
-.button-block button, .button-block a.btn {margin-right:1em;}
+.button-block button, .button-block a.btn, .button-block input.btn {margin-right:1em;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child {margin-right:0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}

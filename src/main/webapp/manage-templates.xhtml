@@ -21,7 +21,7 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <h:form id="manageTemplatesForm">
-                    <div class="clearfix">
+                    <div class="form-group clearfix">
                         <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null and manageTemplatesPage.inheritTemplatesAllowed}">
                             <label for="templateRoot" class="normal-text">
                                 <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
@@ -41,7 +41,7 @@
                         </div>
                     </div>
                     <div>
-                        <div jsf:rendered="#{empty manageTemplatesPage.templates}">
+                        <div id="no-templates-message" jsf:rendered="#{empty manageTemplatesPage.templates}">
                             <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.why.header']}</span>
                             <ul>
                                 <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.why.reason1']}" escape="false"/></li>
@@ -57,7 +57,7 @@
                                 </li>
                             </ul>
                             <p><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.getStarted']}" escape="false"/></p>
-                        </div>   
+                        </div>
                         <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates"
                                      rendered="#{!empty manageTemplatesPage.templates}">
                             <p:column width="35%" sortBy="name" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
@@ -84,7 +84,7 @@
                                                 oncomplete="bind_tooltip_popover();">
                                      <span class="glyphicon glyphicon-eye-open"></span>
                                  </p:commandLink>
-                                <div class="btn-group" role="group" style="margin-right:0.5em;">
+                                <div class="btn-group" role="group">
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.view']}" 
                                                    action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
@@ -119,33 +119,39 @@
                     </div>
 
                     <p:dialog header="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation">
-                        <h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" />
+                        <p class="help-block">
+                            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> &#160;<h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" /></span>
+                        </p>
                         <ui:fragment rendered="#{manageTemplatesPage.selectedTemplate.isDefaultForDataverse}">
-                            <p></p>
                             <p>
                                 <h:outputText value="#{bundle['dataset.manageTemplates.delete.usedAsDefault']}" />
                             </p>
-                            <p>
+                            <ul>
                                 <ui:repeat value="#{manageTemplatesPage.selectedTemplate.dataversesHasAsDefault}" var="dv">
                                     <li>
-                                    <h:outputText value="#{dv.displayName}"/>
+                                        <h:outputText value="#{dv.displayName}"/>
                                     </li>
                                 </ui:repeat>  
-                            </p>
+                            </ul>
                         </ui:fragment>
-                        <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all">
-                        </p:commandButton>
-                        <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
+                        </div>
                     </p:dialog>
 
-                    <p:dialog id="viewTemplate" header="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.header']}" widgetVar="viewTemplate" width="600px" height="600px" style="overflow-y: scroll;">
+                    <p:dialog id="viewTemplate" styleClass="largePopUp" header="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.header']}" widgetVar="viewTemplate">
                         <div class="form-horizontal">
                             <div class="form-group">
                                 <label for="select_DatasetTemplate" class="col-sm-3 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="test">#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}</a>
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="test">
+                                        #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
+                                    </span>
                                 </label>
-                                <div class="col-sm-7" style="padding-top: 7px;">
-                                    #{manageTemplatesPage.selectedTemplate.name}
+                                <div class="col-sm-7">
+                                    <p class="form-control-static">
+                                        #{manageTemplatesPage.selectedTemplate.name}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -154,7 +160,5 @@
                 </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>
-
