@@ -9,7 +9,11 @@
             <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
                 <div class="row form-horizontal">
                     <div class="col-xs-6 form-group">
-                        <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="#{bundle['dataverse.permissions.roles.name.title']}">#{bundle['dataverse.permissions.roles.name']}</label>
+                        <label class="col-sm-3 control-label" for="roleName">
+                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.name.title']}">
+                                #{bundle['dataverse.permissions.roles.name']}
+                            </span>
+                        </label>
                         <div class="col-sm-9">
                             <p:panelGrid columns="2" styleClass="noBorders">
                                 <p:inputText id="roleName" value="#{managePermissionsPage.role.name}"/>
@@ -18,7 +22,11 @@
                         </div>
                     </div>
                     <div class="col-xs-6 form-group">
-                        <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="#{bundle['dataverse.permissions.roles.id.title']}">#{bundle['dataverse.permissions.roles.id']}</label>
+                        <label class="col-sm-3 control-label" for="roleName">
+                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.id.title']}">
+                                #{bundle['dataverse.permissions.roles.id']}
+                            </span>
+                        </label>
                         <div class="col-sm-9">
                             <p:panelGrid columns="2" styleClass="noBorders">
                                 <p:inputText id="roleAlias" value="#{managePermissionsPage.role.alias}"/>
@@ -27,7 +35,11 @@
                         </div>
                     </div>
                     <div class="col-xs-6 form-group">
-                        <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="#{bundle['dataverse.permissions.roles.description.title']}">#{bundle.description}</label>
+                        <label class="col-sm-3 control-label" for="roleName">
+                           <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.description.title']}">
+                                #{bundle.description}
+                            </span>
+                        </label>
                         <div class="col-sm-9">
                             <p:panelGrid columns="2" styleClass="noBorders" style="width:100%;">
                                 <h:panelGroup>
@@ -44,19 +56,17 @@
                                       layout="pageDirection" styleClass="selectManyCheckboxBlock">
                     <f:selectItems value="#{managePermissionsPage.permissions}" var="pmsn"
                                    itemLabel="#{pmsn.humanName} &#160; &#60;span class=&#34;label label-default&#34;&#62;#{pmsn.name()}&#60;/span&#62;"
-                                   itemValue="#{pmsn.name()}" itemLabelEscaped="false"
-                                   />
+                                   itemValue="#{pmsn.name()}" itemLabelEscaped="false"/>
                 </h:selectManyCheckbox>
             </p:panel>
-            <p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
+            <div id="editRoleButtonPanel" class="button-block">
                 <p:commandLink styleClass="btn btn-default" 
                                value="#{bundle.saveChanges}" 
                                oncomplete="roleForm.hide()"
                                update="roleDisplay availableRoles @([id$=Messages])"
-                               actionListener="#{managePermissionsPage.updateRole}"
-                               style="color:black;margin-right:0.5em;" />
+                               actionListener="#{managePermissionsPage.updateRole}"/>
                 <button type="button" class="btn btn-default" onclick="roleForm.hide()" value="Cancel">#{bundle.cancel}</button>
-            </p:panel>
+            </div>
         </p:panel>
     </p:dialog>
 </div>

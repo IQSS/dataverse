@@ -23,11 +23,11 @@
             <ui:param name="showMessagePanel" value="false"/>
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm">
-                    <div class="panel-group" style="margin-top:2em;">
+                    <div class="panel-group">
                         <!-- Users/Groups Access Panel -->
-                        <div class="panel panel-default" style="margin-bottom:1em;">
+                        <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#collapseUsersGroups" class="panel-heading text-info">
-                                #{bundle['dataverse.permissionsFiles.usersOrGroups']} <span class="glyphicon glyphicon-chevron-up" style="margin-left:.3em;top:3px;"/>
+                                #{bundle['dataverse.permissionsFiles.usersOrGroups']} <span class="glyphicon glyphicon-chevron-up"/>
                             </div>
                             <div id="collapseUsersGroups" class="collapse in">
                                 <div class="panel-body">
@@ -103,7 +103,7 @@
                         <!-- Files (Restricted) Panel -->
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#collapseFiles" class="panel-heading text-info">
-                                #{bundle['dataverse.permissionsFiles.files']} <span class="glyphicon glyphicon-chevron-down" style="margin-left:.3em;top:3px;"/>
+                                #{bundle['dataverse.permissionsFiles.files']} <span class="glyphicon glyphicon-chevron-down"/>
                             </div>
                             <div id="collapseFiles" class="collapse">
                                 <div class="panel-body">
@@ -155,7 +155,7 @@
                         </div>
                     </div>
                     <!-- View / Remove Users/Groups Popup -->
-                    <p:dialog id="viewRemoveDialog" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true" style="min-width:600px;max-width:80%;">
+                    <p:dialog id="viewRemoveDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
                         <div>
                             <p:dataTable id="assignedRoles" var="roleAssignment" value="#{manageFilePermissionsPage.roleAssignments}"
                                          selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}">
@@ -235,7 +235,6 @@
                             <button type="button" class="btn btn-default" onclick="assignWidget.hide()" value="Cancel">#{bundle.cancel}</button>
                         </p:fragment>
                     </p:dialog>
-
                     <p:confirmDialog message="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn.confirmation']}"
                                      header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}" widgetVar="confirmation">
                         <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()"
@@ -245,8 +244,6 @@
                                          oncomplete="viewRemoveWidget.hide();"/>
                         <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
                     </p:confirmDialog>
-
-
                 </h:form>
             </ui:define>
         </ui:composition>

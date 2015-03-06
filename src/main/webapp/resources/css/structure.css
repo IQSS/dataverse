@@ -10,6 +10,8 @@ body .ui-widget {font-size: inherit;}
 .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
 
 .text-brand {color:#C55B28;}
+.bg-brand {background:#C55B28;}
+.bg-muted {background:#f5f5f5;}
 
 #navbarFixed {margin-bottom:0;}
 .navbar-fixed-top, .navbar-fixed-bottom {
@@ -58,6 +60,8 @@ body .ui-widget {font-size: inherit;}
 .btn span.glyphicon {margin-right:.3em;}
 .btn span.glyphicon.no-text {margin:0;}
 .btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
+.icon-inline-action {margin-left:.3em;}
+.icon-inline-action:first-of-type {margin-left:1em;}
 
 .text-icon-inline {font-size:1.3em;line-height:1.1em;margin-right:4px;}
 
@@ -71,6 +75,7 @@ body .ui-widget {font-size: inherit;}
 
 .italic {font-style: italic;}
 .margin-top {margin-top:1em;}
+.margin-bottom {margin-bottom:1em;}
 .no-margin-bottom {margin-bottom:0;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
@@ -159,7 +164,7 @@ hr {border-color: #ddd;}
 }
 
 /* -------- HEADER -------- */
-#dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
+#dataverseHeader {margin:0 auto .5em auto;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
 #dataverseHeader .dataverseHeaderCell {display:table-cell;}
 #dataverseHeader .dataverseHeaderLogo {text-align:center;}
@@ -400,7 +405,7 @@ div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
 
 /* -------- POPUP -------- */
 div.ui-dialog.smallPopUp {max-width:600px;}
-div.ui-dialog.largePopUp {min-width:60%;}
+div.ui-dialog.largePopUp {min-width:60%; max-width:80%;}
 
 div.ui-dialog div.highlight {
     background-color: #f7f7f9;
@@ -450,7 +455,7 @@ div.form-col-container div.form-col-container {padding-left:0;}
 div.form-col-container div.form-col-container .ui-selectonemenu {display:block;}
 div.form-col-container.edit-compound-field div.form-col-container {margin-bottom:.5em;}
 
-div.ui-tabs-panel div.panel-group div.panel {margin-bottom:1em;}
+div.panel-group div.panel {margin-bottom:1em;}
 div.panel div.panel-body div.form-group {overflow: hidden;}
 div.edit-field div.ui-message {margin:6px 0;}
 .metadata-logo {max-width:180px;max-height:40px;}
