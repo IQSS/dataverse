@@ -20,7 +20,7 @@ insert into authenticateduserlookup(	authenticationproviderid, persistentuserid,
 
 -- only copy over groups that have users
 insert into explicitgroup(  id, description, displayname, groupalias, groupaliasinowner, owner_id)
-        select (id, friendlyname, friendlyname, '1-'||name, name, 1)
+        select id, friendlyname, friendlyname, '1-'||name, name, 1
         from _dvn3_usergroup
         where id in (select usergroups_id from _dvn3_vdcuser_usergroup);
 
