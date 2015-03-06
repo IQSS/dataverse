@@ -220,9 +220,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         int lineNumber = 0;
         HeaderType header = null;
         String returnString = "";
-
+        JsonArrayBuilder responseArr = Json.createArrayBuilder();
         try {
-
             br = new BufferedReader(new FileReader("/" + file));
             while ((line = br.readLine()) != null) {
                 lineNumber++;
@@ -244,14 +243,23 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 } else {
                     switch (header) {
                         case METADATABLOCK:
-                            returnString += parseMetadataBlock(values) + " MetadataBlock added.\n";
+                            responseArr.add( Json.createObjectBuilder()
+                                                    .add("name", parseMetadataBlock(values))
+                                                    .add("type", "MetadataBlock"));
                             break;
+                            
                         case DATASETFIELD:
-                            returnString += parseDatasetField(values) + " DatasetField added.\n";
+                            responseArr.add( Json.createObjectBuilder()
+                                                    .add("name", parseDatasetField(values))
+                                                    .add("type", "DatasetField") );
                             break;
+                            
                         case CONTROLLEDVOCABULARY:
-                            returnString += parseControlledVocabulary(values) + " Controlled Vocabulary added.\n";
+                            responseArr.add( Json.createObjectBuilder()
+                                                    .add("name", parseControlledVocabulary(values))
+                                                    .add("type", "Controlled Vocabulary") );
                             break;
+                            
                         default:
                             throw new IOException("No #header defined in file.");
 
@@ -262,34 +270,39 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             returnString = "File not found.";
             alr.setActionResult(ActionLogRecord.Result.BadRequest);
             alr.setInfo( alr.getInfo() + "// file not found");
-        } catch (IOException e) {
+            return errorResponse(Status.EXPECTATION_FAILED, "File not found");
+            
+        } catch (Exception e) {
             Logger.getLogger(DatasetFieldServiceApi.class.getName()).log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + e.getMessage());
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            
         } finally {
             if (br != null) {
                 try {
                     br.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger.getLogger(DatasetFieldServiceApi.class.getName())
+                            .log(Level.WARNING, "Error closing the reader while importing Dataset Fields.");
                 }
             }
             actionLogSvc.log(alr);
         }
 
-        return okResponse("File parsing completed:\n\n" + returnString);
+        return okResponse( Json.createObjectBuilder().add("added", responseArr) );
     }
 
-    private Response parseMetadataBlock(String[] values) {
+    private String parseMetadataBlock(String[] values) {
         MetadataBlock mdb = new MetadataBlock();
         mdb.setName(values[1]);
         mdb.setDisplayName(values[2]);
 
         metadataBlockService.save(mdb);
-        return okResponse(mdb.getName());
+        return mdb.getName();
     }
 
-    private Response parseDatasetField(String[] values) {
+    private String parseDatasetField(String[] values) {
         DatasetFieldType dsf = new DatasetFieldType();
         dsf.setName(values[1]);
         dsf.setTitle(values[2]);
@@ -310,10 +323,10 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
 
         datasetFieldService.save(dsf);
-        return okResponse(dsf.getName());
+        return dsf.getName();
     }
 
-    private Response parseControlledVocabulary(String[] values) {
+    private String parseControlledVocabulary(String[] values) {
         ControlledVocabularyValue cvv = new ControlledVocabularyValue();
         DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
         cvv.setDatasetFieldType(dsv);
@@ -330,6 +343,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
 
         datasetFieldService.save(cvv);
-        return okResponse(cvv.getStrValue());
+        return cvv.getStrValue();
     }
 }

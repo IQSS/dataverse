@@ -292,7 +292,7 @@ public abstract class AbstractApiBean {
     protected Response errorResponse( Status sts, String msg ) {
         return Response.status(sts)
                 .entity( Json.createObjectBuilder().add("status", "ERROR")
-                        .add( "message", msg ).build())
+                        .add( "message", (msg!=null) ? msg : "<message was null>" ).build())
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .build();
     }
