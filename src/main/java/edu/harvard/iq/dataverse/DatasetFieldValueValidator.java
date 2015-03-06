@@ -111,12 +111,8 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                 return false;
             }
         }
-        
-        if (fieldType.equals(FieldType.TEXT)  && value.getValue().length() > 255) {
-                 context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " may not be more than 255 characters.").addConstraintViolation(); 
-                 return false;
-        }
-        
+        // Note, length validation for FieldType.TEXT was removed to accommodate migrated data that is greater than 255 chars.
+                
         if (fieldType.equals(FieldType.URL) && !lengthOnly) {
             try {
                 URL url = new URL(value.getValue());
