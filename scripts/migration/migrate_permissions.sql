@@ -29,3 +29,15 @@ insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 -----------------------
 -- file role assignments
 -----------------------
+
+insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
+	select 			'@'|| useridentifier, studyfiles_id, dr.id
+	from _dvn3_studyfile_vdcuser, authenticateduser, dataverserole dr
+	where _dvn3_studyfile_vdcuser.allowdusers_id = authenticateduser.id
+	and dr.alias='filedownloader';
+
+insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
+	select 			'&'|| groupalias, studyfiles_id, dr.id
+	from _dvn3_studyfile_usergroup, explicitgroup, dataverserole dr
+	where _dvn3_studyfile_usergroup.allowedgroups_id = explicitgroup.id
+	and dr.alias='filedownloader';
