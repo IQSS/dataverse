@@ -244,7 +244,7 @@ public class DatasetField implements Serializable {
         String returnString = "";
         for (String value : getValues()) {
             if(value == null) value="";
-            returnString += (returnString.equals("") ? "" : "; ") + value;
+            returnString += (returnString.equals("") ? "" : "; ") + value.trim();
         }
         return returnString;
     }
@@ -255,7 +255,7 @@ public class DatasetField implements Serializable {
             for (DatasetField dsf : dscv.getChildDatasetFields()) {
                 for (String value : dsf.getValues()) {
                     if (!(value == null)) {
-                        returnString += (returnString.equals("") ? "" : "; ") + value;
+                        returnString += (returnString.equals("") ? "" : "; ") + value.trim();
                     }
                 }
             }

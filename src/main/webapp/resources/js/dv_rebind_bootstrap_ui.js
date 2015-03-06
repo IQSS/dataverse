@@ -1,27 +1,24 @@
-/* 
+/*
  * Rebind bootstrap UI components after Primefaces ajax calls
  */
 function bind_bsui_components(){
-    //console.log('bind_bsui_components');
     // Breadcrumb Tree Keep Open
     $(document).on('click', '.dropdown-menu', function (e) {
         $(this).hasClass('keep-open'),
         e.stopPropagation();
     });
     // Collapse Header Icons
-    $('div[id^="collapse"]').on('shown.bs.collapse', function () {
-      //console.log('hello block');
+    $('div[id^="panelCollapse"]').on('shown.bs.collapse', function () {
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
     });
 
-    $('div[id^="collapse"]').on('hidden.bs.collapse', function () {
-      //console.log('goodbye block');
-       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
+    $('div[id^="panelCollapse"]').on('hidden.bs.collapse', function () {
+      $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
 
     // Tooltip + popover functionality
     bind_tooltip_popover();
-    
+
 }
 
 function dataverseuser_page_rebind(){
@@ -55,9 +52,8 @@ function hide_info_msg(){
  */
 function show_info_msg(mtitle, mtext){
    if ($('div.messagePanel').length > 0){
-     //  alert('msg panel exists');
        edit_msg = '<div class="alert alert-dismissable alert-info"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>'
-                       + '<span class="glyphicon glyphicon-info-sign"></span>'
+                       + '<span class="glyphicon glyphicon-info-sign"/>'
                        + '<strong> ' + mtitle + '</strong> &#150; ' + mtext + '</div>';
        $('div.messagePanel').html(edit_msg );
    }else{
@@ -71,23 +67,8 @@ function show_info_msg(mtitle, mtext){
  */
 function post_edit_dv_general_info(){
     show_info_msg('Edit Dataverse', 'Edit your dataverse and click Save Changes. Asterisks indicate required fields.');
-    post_edit_dv();
-}
-
-/*
- * Called after "Edit Dataverse" - "Setup"
- */
-function post_edit_dv_setup(){
-    show_info_msg('Dataverse Setup', 'Edit the Metadata Blocks and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list.'); 
-    post_edit_dv();
-}
-/*
- * Called after "Edit Dataverse" -  "General Information" or "Setup"
- */
-function post_edit_dv(){
-   hide_search_panels();
-   bind_bsui_components();               
-   //console.log('hide after edit3');
+    hide_search_panels();
+    bind_bsui_components();
 }
 
 /*
@@ -95,10 +76,9 @@ function post_edit_dv(){
  */
 function post_cancel_edit_dv(){
    show_search_panels()
-   hide_info_msg();    
+   hide_info_msg();
    bind_bsui_components();
    initCarousel();
-   //console.log('show after cancel edit3');
 }
 
 /*
@@ -130,27 +110,14 @@ function show_search_panels(){
  * Called after "Upload + Edit Files"
  */
 function post_edit_files(){
-   //console.log('post_edit_files');
    bind_bsui_components();
-   //show_info_msg('Upload + Edit Dataset Files', 'You can drag and drop your files from your desktop, directly into the upload widget.');
 }
-
-// this method is not called anymore, but we are keeping it here for reference
-/*
-function addDeleteTooltip(){
-    var fileChckbx = $('div[id$="filesTable"] table td.ui-selection-column div.ui-chkbox-box span.ui-chkbox-icon');
-    $(fileChckbx).wrapInner('<a href="#" data-toggle="tooltip" data-container="body" data-trigger="hover" data-placement="top" data-original-title="Delete file" onclick="event.preventDefault();" style="width:16px;height:16px;display:block;"></a>');
-    $(fileChckbx).children('a[data-toggle="tooltip"]').tooltip();
-}
-*/
 
 /*
  * Called after "Edit Metadta"
  */
 function post_edit_metadata(){
-   //console.log('post_edit_metadata');
    bind_bsui_components();
-   // show_info_msg('Edit Dataset Metadata ', 'Add more metadata about your dataset to help others easily find it.');
 }
 
 /*
@@ -158,20 +125,14 @@ function post_edit_metadata(){
  */
 
 function post_edit_license(){
-   //console.log('post_edit_metadata');
-   //hide_breadcrumb();
    bind_bsui_components();
-   //show_info_msg('Edit Dataset License and Terms ', 'Update the license and terms of use of your dataset.');
-
 }
 
 /*
  *  Used when cancelling either "Upload + Edit Files" or "Edit Metadata"
  */
 function post_cancel_edit_files_or_metadata(){
-   //console.log('post_cancel_edit_metadata');
    bind_bsui_components();
-   // hide_info_msg();
 }
 
 /*
@@ -185,39 +146,39 @@ function post_differences(){
 }
 
 function handleResizeDialog(dialog) {
-                        var el = $('div[id$="' + dialog + '"]');
-                        var doc = $('body');
-                        var win = $(window);
-                        var elPos = '';
-                        var bodyHeight = '';
-                        var bodyWidth = '';
-                        // position:fixed is maybe cool, but it makes the dialog not scrollable on browser level, even if document is big enough
-                        if (el.height() > win.height()) {
-                            bodyHeight = el.height() + 'px';
-                            elPos = 'absolute';
-                        }   
-                        if (el.width() > win.width()) {
-                            bodyWidth = el.width() + 'px';
-                            elPos = 'absolute';
-                        }
-                        el.css('position', elPos);
-                        doc.css('width', bodyWidth);
-                        doc.css('height', bodyHeight);
-                        var pos = el.offset();
-                        if (pos.top + el.height() > doc.height())
-                            pos.top = doc.height() - el.height();
-                        if (pos.left + el.width() > doc.width())
-                            pos.left = doc.width() - el.width();
-                        var offsetX = 0;
-                        var offsetY = 0;
-                        if (elPos != 'absolute') {
-                            offsetX = $(window).scrollLeft();
-                            offsetY = $(window).scrollTop();
-                        }
-                        // scroll fix for position fixed
-                        if (pos.left < offsetX)
-                            pos.left = offsetX;
-                        if (pos.top < offsetY)
-                            pos.top = offsetY;
-                        el.offset(pos);
-                    }
+        var el = $('div[id$="' + dialog + '"]');
+        var doc = $('body');
+        var win = $(window);
+        var elPos = '';
+        var bodyHeight = '';
+        var bodyWidth = '';
+        // position:fixed is maybe cool, but it makes the dialog not scrollable on browser level, even if document is big enough
+        if (el.height() > win.height()) {
+            bodyHeight = el.height() + 'px';
+            elPos = 'absolute';
+        }
+        if (el.width() > win.width()) {
+            bodyWidth = el.width() + 'px';
+            elPos = 'absolute';
+        }
+        el.css('position', elPos);
+        doc.css('width', bodyWidth);
+        doc.css('height', bodyHeight);
+        var pos = el.offset();
+        if (pos.top + el.height() > doc.height())
+            pos.top = doc.height() - el.height();
+        if (pos.left + el.width() > doc.width())
+            pos.left = doc.width() - el.width();
+        var offsetX = 0;
+        var offsetY = 0;
+        if (elPos != 'absolute') {
+            offsetX = $(window).scrollLeft();
+            offsetY = $(window).scrollTop();
+        }
+        // scroll fix for position fixed
+        if (pos.left < offsetX)
+            pos.left = offsetX;
+        if (pos.top < offsetY)
+            pos.top = offsetY;
+        el.offset(pos);
+}

@@ -75,6 +75,7 @@ public abstract class DvObject implements java.io.Serializable {
     @ManyToOne
     private AuthenticatedUser releaseUser;
     
+    @Column( nullable = false )
     private Timestamp createDate;
 
     @Column(nullable = false)

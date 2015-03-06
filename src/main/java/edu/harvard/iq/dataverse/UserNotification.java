@@ -1,19 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
@@ -34,10 +31,13 @@ public class UserNotification implements Serializable {
     private Long id;
 
     @ManyToOne
+    @JoinColumn( nullable = false )
     private AuthenticatedUser user;
     private Timestamp sendDate;
     private boolean readNotification;
+    
     @Enumerated
+    @Column( nullable = false )
     private Type type;
     private Long objectId;
 

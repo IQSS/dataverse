@@ -86,7 +86,7 @@ public class DatasetFieldDefaultValue implements Serializable {
         this.parentDatasetFieldDefaultValue = parentDatasetFieldDefaultValue;
     }
         
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition="TEXT", nullable=false )
     private String strValue;
 
     public String getStrValue() {

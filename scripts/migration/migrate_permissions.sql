@@ -1,3 +1,11 @@
+
+-----------------------
+-- offsets
+-----------------------
+update _dvn3_vdcrole set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdc_usergroup set vdcs_id = vdcs_id + (select max(id) from _dvn3_vdcnetwork);
+--todo: offsets needed for files
+
 -----------------------
 -- dataverses role assignments
 -----------------------

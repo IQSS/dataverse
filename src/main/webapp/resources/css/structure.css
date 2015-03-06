@@ -405,7 +405,7 @@ div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
 
 /* -------- POPUP -------- */
 div.ui-dialog.smallPopUp {max-width:600px;}
-div.ui-dialog.largePopUp {min-width:60%; max-width:80%;}
+div.ui-dialog.largePopUp {min-width:60%; max-width:80%; overflow-y:scroll;}
 
 div.ui-dialog div.highlight {
     background-color: #f7f7f9;
@@ -440,7 +440,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 
-#metadata-panel div.form-group:last-child {margin-bottom:0;}
+div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
 
 /* Buttons */
 .button-block.form-top {border-top: 1px solid #dddddd; padding:1em 0;}

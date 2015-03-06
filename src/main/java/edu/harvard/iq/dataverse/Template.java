@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -50,6 +51,7 @@ public class Template implements Serializable {
 
     @NotBlank(message = "Please add in a name for the dataset template.")
     @Size(max = 255, message = "Name must be at most 255 characters.")
+    @Column( nullable = false )
     private String name;
 
     public String getName() {
@@ -71,6 +73,7 @@ public class Template implements Serializable {
     }
 
     @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable = false )
     private Date createTime;
 
     public Date getCreateTime() {

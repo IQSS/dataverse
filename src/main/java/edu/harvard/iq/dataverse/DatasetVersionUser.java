@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import javax.persistence.Id;
@@ -31,6 +32,7 @@ public class DatasetVersionUser implements Serializable {
     @JoinColumn(name = "datasetversion_id")
     private DatasetVersion datasetVersion;
 
+    @Column( nullable=false )
     private Timestamp lastUpdateDate;
 
     public String getUserIdentifier() {

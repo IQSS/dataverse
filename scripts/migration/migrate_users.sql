@@ -27,3 +27,11 @@ insert into explicitgroup(  id, description, displayname, groupalias, groupalias
 insert into explicitgroup_authenticateduser(  explicitgroup_id, containedauthenticatedusers_id)
         select usergroups_id, users_id
         from _dvn3_vdcuser_usergroup;
+
+-----------------------
+-- reset sequences
+-----------------------
+
+SELECT setval('builtinuser_id_seq', (SELECT MAX(id) FROM builtinuser));
+SELECT setval('authenticateduser_id_seq', (SELECT MAX(id) FROM authenticateduser));
+SELECT setval('explicitgroup_id_seq', (SELECT MAX(id) FROM explicitgroup));

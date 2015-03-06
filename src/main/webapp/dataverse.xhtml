@@ -483,7 +483,7 @@
                             </ui:fragment>
                             
                             <!-- Featured Dataverses Carousel -->
-                            <div id="carouselBlocksWrapper" jsf:rendered="#{DataversePage.dataverse.displayFeatured and (!empty DataversePage.carouselFeaturedDataverses)}">
+                            <div id="carouselBlocksWrapper" jsf:rendered="#{!empty DataversePage.carouselFeaturedDataverses}">
                                 <div id="featuredDataversesBlock">
                                     <div class="customNavigation">
                                         <a class="btn prev1" title="#{bundle['dataverse.page.pre']}"><span class="glyphicon glyphicon-chevron-left"/></a>
@@ -533,10 +533,6 @@
                     <!-- POPUPS -->
                     <!-- Featured Dataverses Popup -->
                     <p:dialog header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
-                        <div class="form-group">
-                            <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}"
-                                                     itemLabel="#{bundle['dataverse.displayFeatured']}"/>
-                        </div>
                         <div class="form-group">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.selectToFeature']}</p>
                             <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"

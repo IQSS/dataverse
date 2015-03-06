@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
@@ -20,6 +15,7 @@ public class CustomQuestionValue implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column( nullable = false )
     @NotBlank(message = "Please enter a response.")
     private String valueString;
 
