@@ -4,7 +4,6 @@
 -----------------------
 update _dvn3_vdcnetwork set id = id + (select max(id) from dvobject);
 update _dvn3_vdc set id = id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdcrole set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
 
 
 -----------------------
@@ -53,6 +52,4 @@ insert into dataversecontact (  contactemail, displayorder, dataverse_id)
 -- reset sequences
 -----------------------
 
-SELECT setval('builtinuser_id_seq', (SELECT MAX(id) FROM builtinuser));
-SELECT setval('authenticateduser_id_seq', (SELECT MAX(id) FROM authenticateduser));
 SELECT setval('dvobject_id_seq', (SELECT MAX(id) FROM dvobject));
