@@ -8,11 +8,10 @@ my $fcoffset = 0; # file categories
 
 use DBI;
 
-my $host = "dvn-60ox-db-1.lib.harvard.edu"; 
-my $username = "vdcApp";
-my $password = '$ci_d8a.4.RR';
-my $database = "iqss_dvn";
-
+my $host = "localhost";
+my $username = "xxxxx";
+my $password = 'xxxxx';
+my $database = "xxxxx";
 
 my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
 
@@ -104,6 +103,8 @@ while ( <> )
 	unless ( -f $fslocation ) 
 	{
 	    print STDERR "WARNING: file " . $fslocation . " not found!\n";
+	    $fsize = 0;
+	    $fmtime = &formatTimeStamp(time);
 	}
 	else 
 	{
@@ -341,7 +342,7 @@ sub formatTimeStamp () {
     $year+=1900;
     $mon++;
 
-    $fmt = $year . "-" . sprintf("%02d",$mon) . "-" . $mday . " " . 
+    $fmt = $year . "-" . sprintf("%02d",$mon) . "-" . sprintf("%02d",$mday) . " " . 
 	sprintf("%02d", $hour) . ":" . sprintf("%02d",$min) . ":" . sprintf("%02d",$sec); 
 
     return $fmt;
