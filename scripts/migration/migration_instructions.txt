@@ -79,4 +79,8 @@ __________________________________________________
 Other notes:
 - subnetworks are all migrated as published, using create user and date also as the release user and date
 - subnetworks use the same contact e-mails as the Dataverse 4.0 root
+- subnetwork short description is NOT migrated
+- dataverse type is set to "UNCATEGORIZED"
 - Order of dataverse contacts for dataverses is not maintained
+- Groups were system wide in 3.6, so are migrated as belonging to the root dataverse, but it may make sense to manually move some groups to child dataverses
+
