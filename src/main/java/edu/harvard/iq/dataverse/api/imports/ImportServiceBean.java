@@ -233,7 +233,7 @@ public class ImportServiceBean {
                         }
                     }
                     DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(u, existingDs, ds.getVersions().get(0)));
-                    status = " created datasetVersion, id=" + dsv.getId() + ".";
+                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalId();
                     createdId = dsv.getId();
                 }
 
@@ -251,7 +251,7 @@ public class ImportServiceBean {
             importLogger.getLogger().info("Error excuting Create dataset command: " + ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
-        return Json.createObjectBuilder().add("message", status).add("id", createdId);
+        return Json.createObjectBuilder().add("message", status);
     }
 
     private static class MyCustomFormatter extends Formatter {
