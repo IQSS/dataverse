@@ -47,12 +47,14 @@ public class DataFile extends DvObject {
     
     private String name;
     
-    @NotBlank    
+    @NotBlank
+    @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "Content-Type must contain a slash")
     private String contentType;
     
+    @Column( nullable = false )
     private String fileSystemName;
-
+    
     private String md5;
 
     @Column(nullable=true)
@@ -195,10 +197,7 @@ public class DataFile extends DvObject {
         return "Ingest failed. No further information is available.";
     }
     public boolean isTabularData() {
-        if ( getDataTables() != null && getDataTables().size() > 0 ) {
-            return true; 
-        }
-        return false; 
+        return getDataTables() != null && getDataTables().size() > 0; 
     }
     
     public String getOriginalFileFormat() {

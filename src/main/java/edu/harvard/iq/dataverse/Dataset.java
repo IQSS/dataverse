@@ -8,13 +8,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -39,9 +39,13 @@ public class Dataset extends DvObjectContainer {
     private String protocol;
     private String authority;
     private String doiSeparator;
+    
+    @Column( nullable=false )
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
+    
     @NotBlank(message = "Please enter an identifier for your dataset.")
+    @Column( nullable=false )
     private String identifier;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("versionNumber DESC, minorVersionNumber DESC")

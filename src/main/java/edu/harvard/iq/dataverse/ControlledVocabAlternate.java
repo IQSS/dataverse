@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 /**
@@ -20,7 +21,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 public class ControlledVocabAlternate implements Serializable {
-     @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -32,7 +33,7 @@ public class ControlledVocabAlternate implements Serializable {
         this.id = id;
     }
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition="TEXT", nullable = false) 
     private String strValue;
 
     public String getStrValue() {
@@ -44,7 +45,9 @@ public class ControlledVocabAlternate implements Serializable {
     }
     
     @ManyToOne
+    @JoinColumn( nullable = false )
     private DatasetFieldType datasetFieldType;
+    
     public DatasetFieldType getDatasetFieldType() {
         return datasetFieldType;
     }
@@ -53,6 +56,7 @@ public class ControlledVocabAlternate implements Serializable {
     }
     
     @ManyToOne
+    @JoinColumn( nullable = false )
     private ControlledVocabularyValue controlledVocabularyValue;
 
     public ControlledVocabularyValue getControlledVocabularyValue() {

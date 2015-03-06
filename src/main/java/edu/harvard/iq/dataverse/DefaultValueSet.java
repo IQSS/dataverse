@@ -9,12 +9,12 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 
 /**
  *
@@ -33,6 +33,7 @@ public class DefaultValueSet implements Serializable{
         this.id = id;
     }
     
+    @Column( nullable = false )
     private String name;
     public String getName() {
         return name;

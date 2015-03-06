@@ -9,10 +9,8 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,7 +18,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 /**
  *
@@ -43,7 +40,7 @@ public class DataFileCategory implements Serializable {
         this.id = id;
     }
 
-    /*
+    /**
      * Dataset to which this file category belongs:
      */
     @ManyToOne
@@ -57,7 +54,8 @@ public class DataFileCategory implements Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-
+    
+    @Column( nullable = false )
     private String name;
     
     public String getName() {

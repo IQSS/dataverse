@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
@@ -43,15 +37,15 @@ public class DataverseFeaturedDataverse implements Serializable {
         this.id = id;
     }
 
-  @ManyToOne
-  @JoinColumn(name="dataverse_id")
-  private Dataverse dataverse;
+    @ManyToOne
+    @JoinColumn(name="dataverse_id")
+    private Dataverse dataverse;
 
-  @ManyToOne
-  @JoinColumn(name="featureddataverse_id")
-  private Dataverse featuredDataverse;
-  
-  private int displayOrder;
+    @ManyToOne
+    @JoinColumn(name="featureddataverse_id")
+    private Dataverse featuredDataverse;
+
+    private int displayOrder;
 
     public Dataverse getDataverse() {
         return dataverse;

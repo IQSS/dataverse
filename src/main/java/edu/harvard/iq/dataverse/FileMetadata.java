@@ -1,15 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,7 +17,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
-//import org.hibernate.validator.Pattern;
 import javax.validation.constraints.Pattern;
 
 
@@ -36,9 +30,9 @@ public class FileMetadata implements Serializable {
     
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 
-    //@NotBlank(message = "Please specify a file name.")
     @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
     @NotBlank(message = "Please specify a file name.")
+    @Column( nullable=false )
     private String label = "";
     @Column(columnDefinition = "TEXT")
     private String description = "";
@@ -199,12 +193,12 @@ public class FileMetadata implements Serializable {
 
                 
                 if (fileCategory != null) {
-                    logger.info("Found file category for "+newCategoryName);
+                    logger.log(Level.INFO, "Found file category for {0}", newCategoryName);
 
                     this.addCategory(fileCategory);
                     fileCategory.addFileMetadata(this);
                 } else {
-                    logger.info("Could not find file category for "+newCategoryName);
+                    logger.log(Level.INFO, "Could not find file category for {0}", newCategoryName);
                 }
             } else {
                 // don't do anything - this file metadata already belongs to
@@ -289,32 +283,7 @@ public class FileMetadata implements Serializable {
         }
         FileMetadata other = (FileMetadata) object;
         
-        /* experimental comparison logic for 2 filemetadatas that 
-           haven't been persisted with the entity manager yet, 
-           and thus don't have db ids:
-           compare by the dataset versions and the file md5s, 
-           if available.
-           
-           (for it to work, comparison of dataset versions need to be
-            added; and new equals() method needs to be defined in the 
-            DatasetVersion class as well - that similarly does a better
-            work comparing DatasetVersions with null ids) 
-        
-        if (this.id == null && other.id == null) {
-            if (this.getDataFile() != null
-                    && this.getDataFile().getmd5() != null
-                    && other.getDataFile() != null) {
-                return this.getDataFile().getmd5().equals(other.getDataFile().getmd5());
-                
-            } 
-            return false; 
-        }
-        */
-        
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     /* 

@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,12 +44,14 @@ public class Dataverse extends DvObjectContainer {
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "Please enter a name.")
+    @Column( nullable = false )
     private String name;
 
     /**
      * @todo add @Column(nullable = false) for the database to enforce non-null
      */
     @NotBlank(message = "Please enter an alias.")
+    @Column( nullable = false )
     @Size(max = 60, message = "Alias must be at most 60 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
@@ -60,6 +61,7 @@ public class Dataverse extends DvObjectContainer {
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Please select a category for your dataverse.")
+    @Column( nullable = false )
     private DataverseType dataverseType;
     
     /**
@@ -138,10 +140,6 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
-    
-
-
-
     
     @ManyToMany
     @JoinTable(name = "dataversesubjects",

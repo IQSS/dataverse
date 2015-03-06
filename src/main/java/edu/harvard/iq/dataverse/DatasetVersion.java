@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -103,10 +98,6 @@ public class DatasetVersion implements Serializable {
         this.UNF = UNF;
     }
     
-    private String UNF;
-
-    @Version
-    private Long version;
 
     /**
      * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
@@ -118,6 +109,11 @@ public class DatasetVersion implements Serializable {
 
     public void setVersion(Long version) {
     }
+    
+    private String UNF;
+
+    @Version
+    private Long version;
 
     private Long versionNumber;
     private Long minorVersionNumber;
@@ -179,8 +175,10 @@ public class DatasetVersion implements Serializable {
      private List<VersionContributor> versionContributors;
      */
     @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
     private Date createTime;
     @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable=false )
     private Date lastUpdateTime;
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date releaseTime;

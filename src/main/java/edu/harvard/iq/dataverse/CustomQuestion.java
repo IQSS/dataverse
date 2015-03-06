@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
 import org.hibernate.validator.constraints.NotBlank;
@@ -42,6 +36,7 @@ public class CustomQuestion implements Serializable {
     private String questionType;
     
     @NotBlank(message = "Please enter question text.")
+    @Column( nullable = false )
     private String questionString;
     private boolean required;
     

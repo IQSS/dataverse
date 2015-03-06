@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.persistence.Column;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -57,9 +58,10 @@ public class Guestbook implements Serializable {
     private boolean institutionRequired;   
     private boolean positionRequired; 
     @Temporal(value = TemporalType.TIMESTAMP)
+    @Column( nullable = false )
     private Date createTime;
     
-    /** WE PROBABLY NEED HELP INFO TEXT...
+    /* WE PROBABLY NEED HELP INFO TEXT...
      * public String guestbook() {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Guestbook", " – Edit your dataset guestbook and click Save Changes. Asterisks indicate required fields."));
         return null;

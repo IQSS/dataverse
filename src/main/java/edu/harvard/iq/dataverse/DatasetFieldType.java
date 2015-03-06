@@ -47,7 +47,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return id.toString();
     }
 
-    @Column(name = "name", columnDefinition = "TEXT")
+    @Column(name = "name", columnDefinition = "TEXT", nullable = false)
     private String name;    // This is the internal, DDI-like name, no spaces, etc.
     @Column(name = "title", columnDefinition = "TEXT")
     private String title;   // A longer, human-friendlier name - punctuation allowed
@@ -55,6 +55,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     private String description; // A user-friendly Description; will be used for 
     // mouse-overs, etc. 
     @Enumerated(EnumType.STRING)
+    @Column( nullable=false )
     private FieldType fieldType;
     private boolean allowControlledVocabulary;
     private String watermark;
