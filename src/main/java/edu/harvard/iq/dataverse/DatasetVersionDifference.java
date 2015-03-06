@@ -221,7 +221,7 @@ public class DatasetVersionDifference {
                     }
                     if (originalValue.isEmpty() && !newValue.isEmpty()) {
                         totalAdded++;
-                    } else if (!newValue.isEmpty() && !originalValue.equals(newValue)) {
+                    } else if (!newValue.isEmpty() && !originalValue.trim().equals(newValue.trim())) {
                         totalChanged++;
                     }
                 }
@@ -248,7 +248,7 @@ public class DatasetVersionDifference {
                 if (newField.getValues().size() >= (index + 1)) {
                     nString = newField.getValues().get(index);
                 }
-                if (nString != null && oString != null && !oString.equals(nString)) {
+                if (nString != null && oString != null && !oString.trim().equals(nString.trim())) {
                     totalChanged++;
                 }
             }

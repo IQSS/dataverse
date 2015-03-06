@@ -124,7 +124,7 @@ public class Dataverse extends DvObjectContainer {
     private boolean themeRoot;
     private boolean templateRoot;    
     private boolean displayByType;
-    private boolean displayFeatured;
+
     
     @OneToOne(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
       private DataverseTheme dataverseTheme;
@@ -509,14 +509,6 @@ public class Dataverse extends DvObjectContainer {
 
     public void setDisplayByType(boolean displayByType) {
         this.displayByType = displayByType;
-    }
-
-    public boolean isDisplayFeatured() {
-        return displayFeatured;
-    }
-
-    public void setDisplayFeatured(boolean displayFeatured) {
-        this.displayFeatured = displayFeatured;
     }
 
     public void addRole(DataverseRole role) {
