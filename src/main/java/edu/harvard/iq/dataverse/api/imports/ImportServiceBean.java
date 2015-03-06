@@ -138,6 +138,8 @@ public class ImportServiceBean {
         } catch (Exception e) {
             String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
             importLogger.getLogger().log(Level.SEVERE, msg, e);
+            System.out.println(msg);
+            e.printStackTrace();
             throw new ImportException("Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName(), e);
 
         }
