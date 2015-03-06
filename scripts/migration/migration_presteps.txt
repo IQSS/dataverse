@@ -10,6 +10,10 @@ create table _dvn3_vdc as select * from vdc;
 -- ignore network admin (assumes id of 1)
 create table _dvn3_vdcuser as select * from vdcuser where id != 1;
 
+-- groups
+create table _dvn3_usergroup as select * from usergroup;
+create table _dvn3_vdcuser_usergroupe as select * from vdcuser_usergroup;
+
 create table _dvn3_vdcrole as select * from vdcrole;
 
 create table _dvn3_study as select * from study
