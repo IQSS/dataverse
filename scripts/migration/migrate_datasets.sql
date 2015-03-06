@@ -25,3 +25,12 @@ and d.identifier = s.studyid
 and dvobject.id = d.id
 and sv.study_id = s.id
 and sv.versionstate!='DRAFT' group by sv.study_id, dvobject.id) m where m.id = dvobject.id;
+
+-- set dvobject creator_id for each dataset with study.creator_id
+update dvobject
+set creator_id = s.creator_id
+from _dvn3_study s, dataset d
+where d.authority = s.authority
+and d.protocol = s.protocol
+and d.identifier = s.studyid
+and dvobject.id = d.id;
