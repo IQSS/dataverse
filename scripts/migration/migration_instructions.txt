@@ -86,4 +86,5 @@ Other notes:
 - Order of dataverse contacts for dataverses is not maintained
 - only groups that had explicit users are copied
 - Groups were system wide in 3.6, so are migrated as belonging to the root dataverse, but it may make sense to manually move some groups to child dataverses
+- request access only exists in study, so this value is copied to dataset and all dataset versions.
 

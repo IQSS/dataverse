@@ -29,6 +29,7 @@ and sv.versionstate!='DRAFT' group by sv.study_id, dvobject.id) m where m.id = d
 -- set dvobject creator_id for each dataset with study.creator_id
 update dvobject
 set creator_id = s.creator_id
+set createtime = s.createtime
 from _dvn3_study s, dataset d
 where d.authority = s.authority
 and d.protocol = s.protocol
