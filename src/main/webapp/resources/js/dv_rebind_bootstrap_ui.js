@@ -9,12 +9,12 @@ function bind_bsui_components(){
         e.stopPropagation();
     });
     // Collapse Header Icons
-    $('div[id^="collapse"]').on('shown.bs.collapse', function () {
+    $('div[id^="panelCollapse"]').on('shown.bs.collapse', function () {
       //console.log('hello block');
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
     });
 
-    $('div[id^="collapse"]').on('hidden.bs.collapse', function () {
+    $('div[id^="panelCollapse"]').on('hidden.bs.collapse', function () {
       //console.log('goodbye block');
        $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });

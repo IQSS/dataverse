@@ -440,7 +440,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 
-#metadata-panel div.form-group:last-child {margin-bottom:0;}
+div.panel-body div.form-group:last-child {margin-bottom:0;}
 
 /* Buttons */
 .button-block.form-top {border-top: 1px solid #dddddd; padding:1em 0;}
