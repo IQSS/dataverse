@@ -1,6 +1,6 @@
 {
     "alias":"editor",
-    "name":"Editor",
+    "name":"Contributor",
     "description":"For datasets, a person who can add datasets, edit License + Terms, and then submit them for review.",
     "permissions":[
         "ViewUnpublishedDataset",
