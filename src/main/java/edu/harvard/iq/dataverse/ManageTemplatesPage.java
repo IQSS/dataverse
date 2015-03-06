@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateRootCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -34,6 +35,9 @@ public class ManageTemplatesPage implements java.io.Serializable {
     @EJB
     DataverseServiceBean dvService;
 
+    @EJB
+    TemplateServiceBean templateService;
+    
     @EJB
     EjbDataverseEngine engineService;
 
@@ -74,6 +78,8 @@ public class ManageTemplatesPage implements java.io.Serializable {
         }
         for (Template ct : dataverse.getTemplates()) {
             ct.setDataverse(dataverse);
+            ct.setDataversesHasAsDefault(templateService.findDataversesByDefaultTemplateId(ct.getId()));
+            ct.setIsDefaultForDataverse(!ct.getDataversesHasAsDefault().isEmpty());
             templates.add(ct);
         }
         if (!templates.isEmpty()){
@@ -114,15 +120,23 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     public void deleteTemplate() {
+        List <Dataverse> dataverseWDefaultTemplate = null;
         if (selectedTemplate != null) {
             templates.remove(selectedTemplate);
             if(dataverse.getDefaultTemplate() != null && dataverse.getDefaultTemplate().equals(selectedTemplate)){
                 dataverse.setDefaultTemplate(null);
             }
-            dataverse.getTemplates().remove(selectedTemplate);            
-            saveDataverse("The template has been deleted");
+            dataverse.getTemplates().remove(selectedTemplate);  
+            dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(selectedTemplate.getId());
         } else {
             System.out.print("selected template is null");
+        }
+        try {
+            engineService.submit(new DeleteTemplateCommand(session.getUser(), getDataverse(), selectedTemplate, dataverseWDefaultTemplate  ));
+            JsfHelper.addFlashMessage("The template has been deleted");
+        } catch (CommandException ex) {
+            String failMessage = "The dataset template cannot be deleted.";
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
         }
     }
 

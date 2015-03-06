@@ -118,11 +118,25 @@
                         </p:dataTable>
                     </div>
 
-                    <p:confirmDialog message="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" header="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation">
+                    <p:dialog header="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation">
+                        <h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.delete.dialog.tip']}" />
+                        <ui:fragment rendered="#{manageTemplatesPage.selectedTemplate.isDefaultForDataverse}">
+                            <p></p>
+                            <p>
+                                <h:outputText value="#{bundle['dataset.manageTemplates.delete.usedAsDefault']}" />
+                            </p>
+                            <p>
+                                <ui:repeat value="#{manageTemplatesPage.selectedTemplate.dataversesHasAsDefault}" var="dv">
+                                    <li>
+                                    <h:outputText value="#{dv.displayName}"/>
+                                    </li>
+                                </ui:repeat>  
+                            </p>
+                        </ui:fragment>
                         <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all">
                         </p:commandButton>
                         <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
-                    </p:confirmDialog>
+                    </p:dialog>
 
                     <p:dialog id="viewTemplate" header="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.header']}" widgetVar="viewTemplate" width="600px" height="600px" style="overflow-y: scroll;">
                         <div class="form-horizontal">

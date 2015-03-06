@@ -97,6 +97,29 @@ public class Template implements Serializable {
     private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap();
     @Transient
     private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap();
+    
+    @Transient
+    private boolean isDefaultForDataverse;
+
+    public boolean isIsDefaultForDataverse() {
+        return isDefaultForDataverse;
+    }
+
+    public void setIsDefaultForDataverse(boolean isDefaultForDataverse) {
+        this.isDefaultForDataverse = isDefaultForDataverse;
+    }
+    
+    @Transient
+    private List<Dataverse> dataversesHasAsDefault;
+
+    public List<Dataverse> getDataversesHasAsDefault() {
+        return dataversesHasAsDefault;
+    }
+
+    public void setDataversesHasAsDefault(List<Dataverse> dataversesHasAsDefault) {
+        this.dataversesHasAsDefault = dataversesHasAsDefault;
+    }
+    
 
     public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
