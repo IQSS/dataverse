@@ -1,0 +1,46 @@
+#metadataBlock	name	displayName													
+	customDigaai	Digaai Metadata													
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+	Ttulo	Título	Título do jornal ou revista.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customDigaai
+	Nmero	Número	Número do jornal ou revista.		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+	DatadePublicao	Data de Publicação	Entrar dia/mes/ano.	dia/mes/ano	text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+	LocaldePublicao	Local de Publicação	Local de Publicação.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+	Proprietrio	Proprietário	Proprietário		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
+	Ttulo	Achei USA		0											
+	Ttulo	Acontece Magazine		1											
+	Ttulo	A Notícia		2											
+	Ttulo	Brasil Best		3											
+	Ttulo	Brasileiros & Brasileiras		4											
+	Ttulo	Brasil USA		5											
+	Ttulo	Brazil Explore		6											
+	Ttulo	Brazilian Press		7											
+	Ttulo	Brazilian Voice		8											
+	Ttulo	Brazil News		9											
+	Ttulo	Brazuca		10											
+	Ttulo	Cia Brasil		11											
+	Ttulo	Comunidade News		12											
+	Ttulo	Diário do Brasil		13											
+	Ttulo	FaceBrasil		14											
+	Ttulo	Green and Yellow News		15											
+	Ttulo	Jornal dos Sports		16											
+	Ttulo	Jornal Moderno		17											
+	Ttulo	Metropolitan		18											
+	Ttulo	National		19											
+	Ttulo	Negócio Fechado		20											
+	Ttulo	Nossa Gente		21											
+	Ttulo	Nossa Terra		22											
+	Ttulo	O Brasileirinho		23											
+	Ttulo	O Imigrante Cristão		24											
+	Ttulo	O Jornal Brasileiro		25											
+	Ttulo	O Popular		26											
+	Ttulo	Revista Linha Aberta		27											
+	Ttulo	Revista MASSA		28											
+	Ttulo	Revista Tititi		29											
+	Ttulo	Sucesso USA		30											
+	Ttulo	Ta na Mão		31											
+	Ttulo	TC Brazil		32											
+	Ttulo	Texas Magazine		33											
+	Ttulo	The Brazilian Journal		34											
+	Ttulo	Today Magazine		35											
+	Ttulo	Viver Magazine		36											
