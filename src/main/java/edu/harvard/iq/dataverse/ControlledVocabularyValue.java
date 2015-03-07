@@ -84,7 +84,7 @@ public class ControlledVocabularyValue implements Serializable  {
        
     
     @ManyToOne
-    @JoinColumn( nullable = false )
+    // @JoinColumn( nullable = false ) TODO this breaks for the N/A value. need to create an N/A type for that value.
     private DatasetFieldType datasetFieldType;
     public DatasetFieldType getDatasetFieldType() {
         return datasetFieldType;
