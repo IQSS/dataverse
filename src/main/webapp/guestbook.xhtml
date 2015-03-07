@@ -115,11 +115,6 @@
                                                                 <f:param name="SKIP_VALIDATION" value="true"/>
                                                             </h:selectOneMenu>
                                                         </div>
-                                                        <div class="checkbox">
-                                                            <label jsf:for="cqRequiredCb">
-                                                              <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/> #{bundle.requiredField}
-                                                            </label>
-                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-sm-9">
@@ -135,48 +130,49 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
+                                                <div class="col-sm-offset-3 col-sm-9" jsf:rendered="#{cq.questionType eq 'options'}">
                                                     <label class="control-label" jsf:for="questionResponseOptions">
                                                         #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
                                                     </label>
-                                                    <div>
-                                                        <div>
-                                                            <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount" var="value">
-                                                                <div class="form-group">
-                                                                    <div class="col-sm-8">
-                                                                        <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}">
-                                                                            <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
-                                                                        </p:inputText>
-                                                                        <p:message for="responseText" display="text"/>
-                                                                    </div>
-                                                                    <div class="col-sm-4">
-                                                                        <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" 
-                                                                                       title="#{bundle.add}">
-                                                                            <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
-                                                                            <f:param name="SKIP_VALIDATION" value="true"/>
-                                                                            <span class="glyphicon glyphicon-plus no-text"/>
-                                                                        </p:commandLink>
-                                                                        <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" rendered="#{cq.customQuestionValues.size() > 1}"
-                                                                                       title="#{bundle.delete}">
-                                                                            <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
-                                                                            <f:param name="SKIP_VALIDATION" value="true"/>
-                                                                            <span class="glyphicon glyphicon-minus no-text"/>
-                                                                        </p:commandLink>
-                                                                    </div>
-                                                                </div>
-                                                            </ui:repeat>
+                                                    <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount" var="value">
+                                                        <div class="form-group">
+                                                            <div class="col-sm-8">
+                                                                <p:inputText id="responseText" styleClass="form-control" value="#{value.valueString}">
+                                                                    <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
+                                                                </p:inputText>
+                                                                <p:message for="responseText" display="text"/>
+                                                            </div>
+                                                            <div class="col-sm-4 field-add-delete">
+                                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn" 
+                                                                               title="#{bundle.add}">
+                                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
+                                                                    <f:param name="SKIP_VALIDATION" value="true"/>
+                                                                    <span class="glyphicon glyphicon-plus no-text"/>
+                                                                </p:commandLink>
+                                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn" 
+                                                                               title="#{bundle.delete}" rendered="#{cq.customQuestionValues.size() > 1}">
+                                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
+                                                                    <f:param name="SKIP_VALIDATION" value="true"/>
+                                                                    <span class="glyphicon glyphicon-minus no-text"/>
+                                                                </p:commandLink>
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    </ui:repeat>
+                                                </div>
+                                                <div class="col-sm-9 checkbox">
+                                                    <label jsf:for="cqRequiredCb">
+                                                      <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/> #{bundle.requiredField}
+                                                    </label>
                                                 </div>
                                             </div>
-                                            <div class="col-sm-3">
-                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip"
+                                            <div class="col-sm-3 field-add-delete">
+                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
                                                                title="#{bundle.add}">
                                                     <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}" />
                                                     <f:param name="SKIP_VALIDATION" value="true"/>
                                                     <span class="glyphicon glyphicon-plus no-text"/>
                                                 </p:commandLink>
-                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
+                                                <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                                title="#{bundle.delete}">
                                                     <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
                                                     <f:param name="SKIP_VALIDATION" value="true"/>

@@ -63,13 +63,13 @@
                             <p:column width="35%" sortBy="name" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                 <h:outputText value="#{template.name}" />
                             </p:column>
-                            <p:column width="15%" sortBy="createDate" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
+                            <p:column width="15%" class="text-center" sortBy="createDate" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
                                 <h:outputText value="#{template.createDate}" />
                             </p:column>
-                            <p:column width="10%" sortBy="usageCount" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
+                            <p:column width="10%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
                                 <h:outputText value="#{template.usageCount}" />
                             </p:column>
-                            <p:column width="40%" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}">
+                            <p:column width="40%" class="text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}">
                                 <p:commandLink styleClass="btn btn-default" 
                                                 value="#{bundle['dataset.manageTemplates.tab.action.btn.makeDefault']}"
                                                 rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"

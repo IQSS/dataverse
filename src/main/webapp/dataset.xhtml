@@ -1481,15 +1481,15 @@
                                                                 #{bundle['file.dataFilesTab.terms.list.guestbook.noSelected']}
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
-                                                                <h:outputText value="#{DatasetPage.dataset.guestbook.name} " rendered="#{!empty DatasetPage.dataset.guestbook}"/>
-                                                                <p:commandLink styleClass="btn btn-default" rendered="#{!empty DatasetPage.dataset.guestbook}"
-                                                                               value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                                               action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                                               oncomplete="viewGuestbook.show()"
-                                                                               update=":datasetForm"
-                                                                               style="color:black;margin-right:0.5em;"/>
-                                                                <p>#{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}</p>
                                                                 <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
+                                                                <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}: #{DatasetPage.dataset.guestbook.name} "/></p>
+                                                                <div>
+                                                                    <p:commandLink styleClass="btn btn-default" 
+                                                                                   value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                                                   action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
+                                                                                   oncomplete="viewGuestbook.show();bind_bsui_components();"
+                                                                                   update=":datasetForm"/>
+                                                                </div>
                                                             </ui:fragment>
                                                         </div>
                                                     </ui:fragment>
@@ -1501,38 +1501,36 @@
                                                         </label>
                                                         <div class="col-sm-9">
                                                             <ui:fragment rendered="#{empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-                                                                #{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable']}
                                                                 <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.title']}</p>
+                                                                <p>#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable']}</p>
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
                                                                 <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}
                                                                     <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}</p>
+                                                                    <p>#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}</p>
                                                                 </ui:fragment>
                                                                 <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
-                                                                    #{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}
-                                                                    <p class="help-text">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
-                                                                    <p>
+                                                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.title']}</p>
+                                                                    <p>#{bundle['file.dataFilesTab.terms.list.guestbook.inUse']}</p>
+                                                                    <div>
                                                                         <p:commandButton value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
-                                                                    </p>
+                                                                    </div>
                                                                 </ui:fragment>
-                                                                <p:dataTable id="guestbookTable" styleClass="headerless-table"
+                                                                <p:dataTable id="guestbookTable" styleClass="headerless-table margin-top"
                                                                              value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
                                                                              rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
                                                                              rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}" rowKey="#{guestbook}">
                                                                     <p:column selectionMode="single" rendered="true"
                                                                               style="width:2%;text-align:center"/>
-
                                                                     <p:column>
-                                                                        <h:outputText value="#{guestbook.name} " />
-                                                                    </p:column>
-                                                                    <p:column>
-                                                                        <p:commandLink styleClass="btn btn-default"
+                                                                        <p class="form-control-static pull-left">
+                                                                            <h:outputText value="#{guestbook.name}" />
+                                                                        </p>
+                                                                        <p:commandLink styleClass="btn btn-default pull-right"
                                                                                        value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                                                        action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
-                                                                                       oncomplete="viewGuestbook.show()"
-                                                                                       update=":datasetForm"
-                                                                                       style="color:black;margin-right:0.5em;"/>
+                                                                                       oncomplete="viewGuestbook.show();bind_bsui_components();"
+                                                                                       update=":datasetForm"/>
                                                                     </p:column>
                                                                 </p:dataTable>
                                                             </ui:fragment>
@@ -1543,7 +1541,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <p:dialog id="viewGuestbook" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" width="600px" height="600px" style="overflow-y: scroll;">
+                                <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook">
                                     <div class="form-horizontal">
                                         <div class="form-group">
                                             <label class="col-sm-4 control-label">
@@ -1555,6 +1553,15 @@
                                                 <p class="form-control-static">
                                                     #{DatasetPage.selectedGuestbook.name}
                                                 </p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">
+                                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
+                                                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
+                                                </span>
+                                            </label>
+                                            <div class="col-sm-8">
                                                 <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString}">
                                                     <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}" escape="false"/>
                                                 </div>
@@ -2078,13 +2085,13 @@
 
                     <p:dialog id="downloadFileDialog" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
                         <p class="help-block">
-                            #{bundle['file.downloadDialog.tip']}
+                            <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.downloadDialog.tip']}
                         </p>
-                            <ui:include src="guestbookResponseFragment.xhtml"/>
+                        <ui:include src="guestbookResponseFragment.xhtml"/>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadFormat=='download'}"
                                              update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('download')}" />
-                            <p:commandButton value="#{bundle.acceptTerms}"  oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()" 
+                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()" 
                                              update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadFormat=='subset'}" />
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()"  
                                              update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadFormat=='explore'}" />

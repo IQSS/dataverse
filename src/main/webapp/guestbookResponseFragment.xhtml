@@ -1,89 +1,87 @@
-<html xmlns="http://www.w3.org/1999/xhtml"
+<div xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
-        
     
-                            <div class="form">
-                            <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
-                                <label class="col-sm-3 control-label" for="guestbook_tou">
-                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+        <div class="form-horizontal">
+            <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
+                <label class="col-sm-3 control-label" for="guestbook_tou">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                </label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
+                </div>
+            </div>
+            <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
+                <label class="col-sm-3 control-label" for="guestbook_toa">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                </label>
+                <div class="col-sm-6">
+                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
+                </div>
+            </div>
+            <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_name">
+                        #{bundle.name}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_email">
+                        #{bundle.email}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_institution">
+                        #{bundle.institution}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_position">
+                        #{bundle.position}
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"/>
+                    </div>
+                </div>
+                <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
+                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
+                        Additional Questions
+                    </label>
+                    <div class="col-sm-6">
+                        <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
+                            <div>
+                                <label class="control-label" style="display: inline-block;">
+                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
+                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
                                 </label>
-                                <div class="col-sm-9">
-                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
-                                </div>
+                                <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"
+                                             rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
+                                <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
+                                    <f:selectItem itemLabel="Select" itemValue="" />
+                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
+                                </p:selectOneMenu>
                             </div>
-                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
-                                <label class="col-sm-3 control-label" for="guestbook_toa">
-                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                </label>
-                                <div class="col-sm-9">
-                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
-                                </div>
-                            </div>
-                            <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_name">
-                                        #{bundle.name}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_email">
-                                        #{bundle.email}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_institution">
-                                        #{bundle.institution}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_position">
-                                        #{bundle.position}
-                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"/>
-                                    </div>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
-                                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
-                                        Additional Questions
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
-                                            <div class="form-group">
-                                                <label>
-                                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
-                                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
-                                                </label>
-                                                <h:inputText styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                             rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
-                                                <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
-                                                    <f:selectItem itemLabel="Select" itemValue="" />
-                                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
-                                                </p:selectOneMenu>
-                                            </div>
-                                        </ui:repeat>
-                                    </div>
-                                </div>
-                            </ui:fragment>
-                        </div>
-
-</html>
+                        </ui:repeat>
+                    </div>
+                </div>
+            </ui:fragment>
+        </div>
+</div>

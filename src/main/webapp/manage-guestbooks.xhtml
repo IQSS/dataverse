@@ -61,19 +61,37 @@
                         
                         <p:dataTable id="allGuestbooks" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
                                      rendered="#{!empty manageGuestbooksPage.guestbooks}">
-                            <p:column width="30%" sortBy="name" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
+                            <p:column width="29%" sortBy="name" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
                                 <h:outputText value="#{guestbook.name}" />
                             </p:column>
-                            <p:column width="20%" sortBy="createDate" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
+                            <p:column width="14%" sortBy="createDate" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
                                 <h:outputText value="#{guestbook.createDate}" />
                             </p:column>
-                            <p:column width="8%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
+                            <p:column width="9%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
                                 <h:outputText value="#{guestbook.usageCount}" />
                             </p:column>
-                            <p:column width="7%" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.responses']}">
+                            <p:column width="13%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.responses']}">
                                 <h:outputText value="#{guestbook.responseCount}" />
                             </p:column>
-                            <p:column width="35%" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
+                            <p:column width="35%" class="text-center" headerText="#{bundle['dataset.manageGuestbooks.tab.header.action']}">
+                                <p:commandLink styleClass="btn btn-default btn-sm"
+                                               value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"
+                                               rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
+                                               action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
+                                               update="@form,:messagePanel"
+                                               oncomplete="bind_tooltip_popover();"/>
+                                <p:commandLink styleClass="btn btn-default btn-sm"
+                                               value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"
+                                               rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
+                                               action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
+                                               update="@form,:messagePanel"
+                                               oncomplete="bind_tooltip_popover();"/>
+                                <p:commandLink styleClass="btn btn-default btn-sm"
+                                               rendered="#{guestbook.responseCount > 0}"
+                                               value="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}"
+                                               action="#{manageGuestbooksPage.viewSelectedGuestbookResponses(guestbook)}"
+                                               oncomplete="viewGuestbookCollectedData.show();bind_tooltip_popover();"
+                                               update=":manageGuestbooksForm"/>
                                 <div class="btn-group" role="group">
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
@@ -102,24 +120,6 @@
                                         <span class="glyphicon glyphicon-trash"></span>
                                     </p:commandLink>
                                 </div>
-                                <p:commandLink styleClass="btn btn-default btn-sm"
-                                               value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"
-                                               rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
-                                               action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
-                                               update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();"/>
-                                <p:commandLink styleClass="btn btn-default btn-sm"
-                                               value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"
-                                               rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
-                                               action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
-                                               update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();"/>
-                                <p:commandLink styleClass="btn btn-default btn-sm"
-                                               rendered="#{guestbook.responseCount > 0}"
-                                               value="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}"
-                                               action="#{manageGuestbooksPage.viewSelectedGuestbookResponses(guestbook)}"
-                                               oncomplete="viewGuestbookCollectedData.show();bind_tooltip_popover();"
-                                               update=":manageGuestbooksForm"/>
                             </p:column>
                         </p:dataTable>
                     </div>
