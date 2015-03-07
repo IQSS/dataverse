@@ -186,7 +186,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
         return okResponse(possibleSubjects);
     }
-
+    
+    
+    // TODO consider replacing with a @Startup method on the datasetFieldServiceBean
     @GET
     @Path("loadNAControlledVocabularyValue")
     public Response loadNAControlledVocabularyValue() {
@@ -215,11 +217,10 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "loadDatasetFields");
         alr.setInfo( file.getName() );
         BufferedReader br = null;
-        String line = "";
+        String line;
         String splitBy = "\t";
         int lineNumber = 0;
         HeaderType header = null;
-        String returnString = "";
         JsonArrayBuilder responseArr = Json.createArrayBuilder();
         try {
             br = new BufferedReader(new FileReader("/" + file));
@@ -267,7 +268,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 }
             }
         } catch (FileNotFoundException e) {
-            returnString = "File not found.";
             alr.setActionResult(ActionLogRecord.Result.BadRequest);
             alr.setInfo( alr.getInfo() + "// file not found");
             return errorResponse(Status.EXPECTATION_FAILED, "File not found");
