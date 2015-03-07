@@ -4,9 +4,9 @@
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:p="http://primefaces.org/ui"
      
-     class="form-group col-sm-10">
+     class="form-group col-sm-10"><!-- # {DataverseUserPage.editMode == 'CREATE' ? 'col-sm-3' : 'col-sm-2'} -->
         
-        <label for="position" class="#{empty DataverseUserPage.editMode ? 'col-sm-2' : 'col-sm-3'} control-label">
+        <label for="position" class="col-sm-3 control-label">
             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.terms.tip']}">
                 #{bundle['user.terms']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
             </span>
@@ -14,13 +14,12 @@
         <div class="col-sm-9">
             <textarea class="form-control" rows="4" readonly="readonly">
               <h:outputText value="#{systemConfig.applicationTermsOfUse}"/></textarea>
-            <div class="checkbox" style="margin:4px 10px;">
-              <p:selectBooleanCheckbox id="terms" style="margin:0;vertical-align:middle;" required="true" requiredMessage="#{bundle['user.terms.required']}">
+            <div class="checkbox">
+              <p:selectBooleanCheckbox id="terms" required="true" requiredMessage="#{bundle['user.terms.required']}">
                 <f:validator validatorId="requiredCheckboxValidator"/>
               </p:selectBooleanCheckbox>
               <h:outputText value=" #{bundle['user.terms.iagree']}"/>
               <p:message for="terms" display="text" />
             </div>
         </div>
-
 </div>

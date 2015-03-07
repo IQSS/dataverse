@@ -77,7 +77,7 @@
                     </div>
 
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
-                        <h:outputText value="#{bundle['user.lostPasswdTip']}" style="color: green" />
+                        <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
 
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
@@ -273,7 +273,6 @@
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <div class="clearfix">
-                                <p class="help-block"><span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['user.updatePassword.warning']}</span></p>
                                 <div class="form-horizontal">
                                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Username -->
