@@ -14,15 +14,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <link type="image/png" rel="icon" href="/resources/images/favicondataverse.png"/>
-        <h:outputStylesheet library="bs" name="css/bootstrap.css" />
-        <h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
-        <h:outputStylesheet library="css" name="ie-compat.css" />
-        <h:outputStylesheet library="css" name="owl.carousel.css" />
-        <h:outputStylesheet library="css" name="fontcustom.css"/>
-        <h:outputStylesheet library="css" name="structure.css"/>
     </h:head>
 
     <h:body>
+        <f:facet name="last">
+            <h:outputStylesheet library="bs" name="css/bootstrap.css" />
+            <h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
+            <h:outputStylesheet library="css" name="ie-compat.css" />
+            <h:outputStylesheet library="css" name="owl.carousel.css" />
+            <h:outputStylesheet library="css" name="fontcustom.css"/>
+            <h:outputStylesheet library="css" name="structure.css"/>
+        </f:facet>
         <f:loadBundle basename="Bundle" var="bundle"/>
         <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
         <ui:include src="dataverse_header.xhtml">            
