@@ -55,7 +55,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     private File uploadedFile;
     private Dataverse editDv= new Dataverse();
     private HtmlInputText linkUrlInput;
-    private HtmlInputText linkTextInput;
+//    private HtmlInputText linkTextInput;
  
       @Inject
     DataverseSession session;
@@ -71,7 +71,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     public void setLinkUrlInput(HtmlInputText linkUrlInput) {
         this.linkUrlInput = linkUrlInput;
     }
-
+/*
     public HtmlInputText getLinkTextInput() {
         return linkTextInput;
     }
@@ -79,7 +79,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     public void setLinkTextInput(HtmlInputText linkTextInput) {
         this.linkTextInput = linkTextInput;
     }
-   
+*/
  
    
     
@@ -149,8 +149,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
     public void validateTagline(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
-        if (!StringUtils.isEmpty((String) value) && !StringUtils.isAlphanumericSpace((String) value)) {
-
+        //if (!StringUtils.isEmpty((String) value) && !StringUtils.isAlphanumericSpace((String) value)) {
+        if (!StringUtils.isEmpty((String) value) && ((String) value).matches("[^a-zA-Z0-9 .,]")) {
             FacesMessage msg
                     = new FacesMessage("Tagline may only contain alphanumeric characters.");
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);

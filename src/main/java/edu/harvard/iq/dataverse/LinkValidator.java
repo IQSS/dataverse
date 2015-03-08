@@ -16,7 +16,7 @@ import javax.faces.validator.ValidatorException;
 
  @FacesValidator(value = "linkValidator")
 public class LinkValidator implements Validator {
-
+/*
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         UIInput linkTextInput = (UIInput) component.getAttributes().get("linkTextInput");
@@ -45,4 +45,35 @@ public class LinkValidator implements Validator {
          }
 
      }
+*/ 
+    
+    @Override
+    public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        UIInput taglineInput = (UIInput) component.getAttributes().get("taglineInput");
+        UIInput linkUrlInput = (UIInput) component.getAttributes().get("linkUrlInput");
+
+        String taglineStr = (String) taglineInput.getSubmittedValue();
+        String urlStr = (String) linkUrlInput.getSubmittedValue();
+
+        if (taglineStr.isEmpty() && urlStr.isEmpty()) {
+             return;
+         }
+         FacesMessage msg = null;
+         if (taglineStr.isEmpty()) {
+              msg = new FacesMessage("tagline is required for Link Url.");
+             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+           FacesContext.getCurrentInstance().addMessage(taglineInput.getClientId(), msg);
+           }
+         if (urlStr.isEmpty()) {
+            msg = new FacesMessage("Url is required for link text.");
+             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+             FacesContext.getCurrentInstance().addMessage(linkUrlInput.getClientId(), msg);
+            
+         }
+         if (msg!=null) {
+            throw new ValidatorException(msg);
+         }
+
+     }
+     
 }

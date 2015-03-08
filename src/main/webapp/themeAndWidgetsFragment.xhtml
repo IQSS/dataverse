@@ -181,7 +181,7 @@
                                 <h:inputHidden id="linkAndUrl" value="true">
                                     <f:validator validatorId="linkValidator"/>
                                     <f:attribute name="linkUrlInput" value="#{themeWidgetFragment.linkUrlInput}"/>
-                                    <f:attribute name="linkTextInput" value="#{themeWidgetFragment.linkTextInput}"/>
+                                    <f:attribute name="taglineInput" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
                                 </h:inputHidden>
 
                                 <div class="form-group col-sm-9">
@@ -193,18 +193,25 @@
                                         </label>
                                         <div>
                                             <p:inputText binding="#{themeWidgetFragment.linkUrlInput}" validatorMessage="#{bundle['dataverse.theme.linkUrl.invalidMsg']}" validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.dataverseTheme.linkUrl}"/>
+                                            <p:watermark for="linkUrl" value="Your personal site, http://" id="watermark" />
                                             <p:message  for="linkUrl" display="text"/>
                                         </div>
                                     </div>
                                     <div class="form-col-container col-sm-6">
-                                        <label for="linkText" class="control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.theme.linkTxt.title']}">
-                                                #{bundle['dataverse.theme.linkTxt']}
+                                        <!-- label for="linkText" class="control-label">
+                                            <span data-toggle="tooltip" 
+                                        data-placement="auto right" 
+                                        class="tooltiplabel text-info" 
+                                        data-original-title="{bundle['dataverse.theme.linkTxt.title']}">
+                                                {bundle['dataverse.theme.linkTxt']}
                                             </span>
-                                        </label>
+                                        </label -->
                                         <div>
-                                            <p:inputText binding="#{themeWidgetFragment.linkTextInput}" styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.dataverseTheme.linkText}"/>
-                                            <p:message  for="linkText" display="text"/>
+                                            <!-- p:inputText
+                                            binding="{themeWidgetFragment.linkTextInput}" 
+                                            styleClass="form-control" id="linkText" 
+                                            value="{themeWidgetFragment.editDv.dataverseTheme.linkText}"/>
+                                            <p:message  for="linkText" display="text"/ -->
                                         </div>
                                     </div>
                                 </div>
