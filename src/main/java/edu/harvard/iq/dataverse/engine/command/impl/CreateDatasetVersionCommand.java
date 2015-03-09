@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -34,7 +36,13 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
-            throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
+            // In the case of ImportType.MIGRATION, it's possible that 
+            // the newVersion will be released (ie versions are not migrated in the order that 
+            // they were created in the old system), so check the newVersion state 
+            // before throwing an Exception
+            if (newVersion.getVersionState().equals(VersionState.DRAFT)){
+                throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
+            }
         }
          Set<ConstraintViolation> constraintViolations = newVersion.validate();
         if (!constraintViolations.isEmpty()) {
