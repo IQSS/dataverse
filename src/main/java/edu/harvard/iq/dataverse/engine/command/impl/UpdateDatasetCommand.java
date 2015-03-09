@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -125,9 +126,11 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         } else {
             DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
             datasetDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
-            datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime);
-            datasetDataverseUser.setDatasetversionid(savedDataset.getLatestVersion().getId());
-            datasetDataverseUser.setUserIdentifier(getUser().getIdentifier());
+            datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime); 
+            String id = getUser().getIdentifier();
+            id = id.startsWith("@") ? id.substring(1) : id;
+            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
+            datasetDataverseUser.setAuthenticatedUser(au);
             ctxt.em().merge(datasetDataverseUser);
         }
         return savedDataset;

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceB
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -259,6 +260,17 @@ public class Shib implements java.io.Serializable {
             lastName = getRequiredValueFromAttribute(lastNameAttribute);
         } catch (Exception ex) {
             return;
+        }
+        ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(firstName, lastName, null);
+        if (shibUserNameFields != null) {
+            String betterFirstName = shibUserNameFields.getFirstName();
+            if (betterFirstName != null) {
+                firstName = betterFirstName;
+            }
+            String betterLastName = shibUserNameFields.getLastName();
+            if (betterLastName != null) {
+                lastName = betterLastName;
+            }
         }
         try {
             emailAddress = getRequiredValueFromAttribute(emailAttribute);
@@ -914,7 +926,7 @@ public class Shib implements java.io.Serializable {
         // the TestShib "eppn" looks like an email address
         request.setAttribute(uniquePersistentIdentifier, "saml@testshib.org");
 //        request.setAttribute(displayNameAttribute, "Sam El");
-        request.setAttribute(firstNameAttribute, "Sam");
+        request.setAttribute(firstNameAttribute, "Samuel;Sam");
         request.setAttribute(lastNameAttribute, "El");
         // TestShib doesn't send "mail" attribute so let's mimic that.
 //        request.setAttribute(emailAttribute, "saml@mailinator.com");

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -103,7 +104,10 @@ public class EjbDataverseEngine {
     RoleAssigneeServiceBean roleAssignees;
     
     @EJB
-    UserNotificationServiceBean userNotificationService;    
+    UserNotificationServiceBean userNotificationService;   
+    
+    @EJB
+    AuthenticationServiceBean authentication; 
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -304,7 +308,13 @@ public class EjbDataverseEngine {
                 @Override
                 public UserNotificationServiceBean notifications() {
                     return userNotificationService;
-                }                
+                } 
+                
+                @Override
+                public AuthenticationServiceBean authentication() {
+                    return authentication;
+                } 
+                
             };
         }
 
