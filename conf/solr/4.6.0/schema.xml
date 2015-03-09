@@ -282,6 +282,11 @@
    <field name="ARCS3" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="ARCS4" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="ARCS5" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="ClassificationSchema" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="DatadePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="DatesAdditionalInformation" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="LocaldePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="Nmero" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="PSRI1" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="PSRI10" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="PSRI11" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -293,6 +298,12 @@
    <field name="PSRI7" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="PSRI8" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="PSRI9" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="Proprietrio" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="Provenance" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="RightsAvailability" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="Source" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="Ttulo" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="Variables" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="alternativeTitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -404,6 +415,14 @@
    <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="productionPlace" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="psiBehavior" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiDonor" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiHealthArea" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiIntervention" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiPopulation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiProductsServices" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiStudyDesignElement" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="publicationIDNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -532,6 +551,11 @@
    <copyField source="ARCS3" dest="text" maxChars="3000"/>
    <copyField source="ARCS4" dest="text" maxChars="3000"/>
    <copyField source="ARCS5" dest="text" maxChars="3000"/>
+   <copyField source="ClassificationSchema" dest="text" maxChars="3000"/>
+   <copyField source="DatadePublicao" dest="text" maxChars="3000"/>
+   <copyField source="DatesAdditionalInformation" dest="text" maxChars="3000"/>
+   <copyField source="LocaldePublicao" dest="text" maxChars="3000"/>
+   <copyField source="Nmero" dest="text" maxChars="3000"/>
    <copyField source="PSRI1" dest="text" maxChars="3000"/>
    <copyField source="PSRI10" dest="text" maxChars="3000"/>
    <copyField source="PSRI11" dest="text" maxChars="3000"/>
@@ -543,6 +567,12 @@
    <copyField source="PSRI7" dest="text" maxChars="3000"/>
    <copyField source="PSRI8" dest="text" maxChars="3000"/>
    <copyField source="PSRI9" dest="text" maxChars="3000"/>
+   <copyField source="Proprietrio" dest="text" maxChars="3000"/>
+   <copyField source="Provenance" dest="text" maxChars="3000"/>
+   <copyField source="RightsAvailability" dest="text" maxChars="3000"/>
+   <copyField source="Source" dest="text" maxChars="3000"/>
+   <copyField source="Ttulo" dest="text" maxChars="3000"/>
+   <copyField source="Variables" dest="text" maxChars="3000"/>
    <copyField source="accessToSources" dest="text" maxChars="3000"/>
    <copyField source="actionsToMinimizeLoss" dest="text" maxChars="3000"/>
    <copyField source="alternativeTitle" dest="text" maxChars="3000"/>
@@ -654,6 +684,14 @@
    <copyField source="producerURL" dest="text" maxChars="3000"/>
    <copyField source="productionDate" dest="text" maxChars="3000"/>
    <copyField source="productionPlace" dest="text" maxChars="3000"/>
+   <copyField source="psiBehavior" dest="text" maxChars="3000"/>
+   <copyField source="psiDonor" dest="text" maxChars="3000"/>
+   <copyField source="psiHealthArea" dest="text" maxChars="3000"/>
+   <copyField source="psiIntervention" dest="text" maxChars="3000"/>
+   <copyField source="psiPopulation" dest="text" maxChars="3000"/>
+   <copyField source="psiProductsServices" dest="text" maxChars="3000"/>
+   <copyField source="psiStudyDesignElement" dest="text" maxChars="3000"/>
+   <copyField source="psiStudyType" dest="text" maxChars="3000"/>
    <copyField source="publication" dest="text" maxChars="3000"/>
    <copyField source="publicationCitation" dest="text" maxChars="3000"/>
    <copyField source="publicationIDNumber" dest="text" maxChars="3000"/>
