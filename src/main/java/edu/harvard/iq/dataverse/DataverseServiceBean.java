@@ -101,10 +101,10 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     public Dataverse findByAlias(String anAlias) {
         try {
-            return (anAlias.equals(":root"))
+            return (anAlias.toLowerCase().equals(":root"))
 				? findRootDataverse()
-				: em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
-					.setParameter("alias", anAlias)
+				: em.createQuery("select d from Dataverse d WHERE lower(d.alias)=:alias", Dataverse.class)
+					.setParameter("alias", anAlias.toLowerCase())
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
             return null;
@@ -145,6 +145,15 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     public List<MetadataBlock> findAllMetadataBlocks() {
         return em.createQuery("select object(o) from MetadataBlock as o order by o.id").getResultList();
+    }
+    
+    public List<MetadataBlock> findSystemMetadataBlocks(){
+        return em.createQuery("select object(o) from MetadataBlock as o where o.dataverse.id=null  order by o.id").getResultList();
+    }
+    
+    public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
+        return em.createQuery("select object(o) from MetadataBlock as o where o.dataverse.id=:dataverse_id order by o.id")
+                .setParameter("dataverse_id", dataverse_id).getResultList();
     }
     
     public DataverseFacet findFacet(Long id) {

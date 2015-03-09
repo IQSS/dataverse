@@ -165,9 +165,16 @@
                                         #{bundle['dataverse.theme.tagline']}
                                     </span>
                                 </label>
+                                
+                                <h:inputHidden id="linkAndUrl" value="true">
+                                    <f:validator validatorId="linkValidator"/>
+                                    <f:attribute name="linkUrlInput" value="#{themeWidgetFragment.linkUrlInput}"/>
+                                    <f:attribute name="taglineInput" value="#{themeWidgetFragment.taglineInput}"/>
+                                </h:inputHidden>                                
+                                
                                 <div class="col-sm-8">
                                     <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
-                                        <p:inputText validator="#{themeWidgetFragment.validateTagline}" styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
+                                        <p:inputText binding="#{themeWidgetFragment.taglineInput}" validator="#{themeWidgetFragment.validateTagline}" styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
                                         <p:message for="tagline" display="text"/>
                                     </p:panelGrid>
                                 </div>
@@ -178,11 +185,7 @@
                                         #{bundle['dataverse.theme.addLink']}
                                     </span>
                                 </label>
-                                <h:inputHidden id="linkAndUrl" value="true">
-                                    <f:validator validatorId="linkValidator"/>
-                                    <f:attribute name="linkUrlInput" value="#{themeWidgetFragment.linkUrlInput}"/>
-                                    <f:attribute name="taglineInput" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
-                                </h:inputHidden>
+
 
                                 <div class="form-group col-sm-9">
                                     <div class="form-col-container col-sm-6">

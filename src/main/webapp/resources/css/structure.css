@@ -261,6 +261,10 @@ ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a
     text-decoration: none;
 }
 
+/* -------- USER -------- */
+div[id$='notifications'].ui-tabs-panel div.notification-item {border-bottom:1px solid #DDDDDD; padding:5px;}
+div[id$='notifications'].ui-tabs-panel span.text-muted.small {margin-left:1em;}
+
 /* -------- DATAVERSE -------- */
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget tr, 

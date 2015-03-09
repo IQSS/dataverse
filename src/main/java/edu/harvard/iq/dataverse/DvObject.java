@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
 
@@ -134,7 +135,7 @@ public abstract class DvObject implements java.io.Serializable {
     /**
      * Sets the owner of the object. This is {@code protected} rather than
      * {@code public}, since different sub-classes have different possible owner
-     * types: a {@link DataFile} can only have a {@link DataSet}, for example.
+     * types: a {@link DataFile} can only have a {@link Dataset}, for example.
      *
      * @param newOwner
      */
@@ -261,4 +262,7 @@ public abstract class DvObject implements java.io.Serializable {
         
         return null;
     }    
+    
+    @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    List<RoleAssignment> roleAssignments;
 }
