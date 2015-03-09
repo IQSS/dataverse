@@ -461,7 +461,7 @@ public class DatasetVersion implements Serializable {
         }
         List<String> ret = new LinkedList<>();
         for (DatasetVersionUser contributor : this.getDatasetVersionDataverseUsers()) {
-            ret.add(contributor.getUserIdentifier());
+            ret.add(contributor.getAuthenticatedUser().getIdentifier());
         }
         return ret;
     }
