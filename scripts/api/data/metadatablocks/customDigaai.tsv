@@ -7,40 +7,40 @@
 	localdePublicao	Local de Publicação	Local de Publicação.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
 	proprietrio	Proprietário	Proprietário		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	Ttulo	Achei USA		0											
-	Ttulo	Acontece Magazine		1											
-	Ttulo	A Notícia		2											
-	Ttulo	Brasil Best		3											
-	Ttulo	Brasileiros & Brasileiras		4											
-	Ttulo	Brasil USA		5											
-	Ttulo	Brazil Explore		6											
-	Ttulo	Brazilian Press		7											
-	Ttulo	Brazilian Voice		8											
-	Ttulo	Brazil News		9											
-	Ttulo	Brazuca		10											
-	Ttulo	Cia Brasil		11											
-	Ttulo	Comunidade News		12											
-	Ttulo	Diário do Brasil		13											
-	Ttulo	FaceBrasil		14											
-	Ttulo	Green and Yellow News		15											
-	Ttulo	Jornal dos Sports		16											
-	Ttulo	Jornal Moderno		17											
-	Ttulo	Metropolitan		18											
-	Ttulo	National		19											
-	Ttulo	Negócio Fechado		20											
-	Ttulo	Nossa Gente		21											
-	Ttulo	Nossa Terra		22											
-	Ttulo	O Brasileirinho		23											
-	Ttulo	O Imigrante Cristão		24											
-	Ttulo	O Jornal Brasileiro		25											
-	Ttulo	O Popular		26											
-	Ttulo	Revista Linha Aberta		27											
-	Ttulo	Revista MASSA		28											
-	Ttulo	Revista Tititi		29											
-	Ttulo	Sucesso USA		30											
-	Ttulo	Ta na Mão		31											
-	Ttulo	TC Brazil		32											
-	Ttulo	Texas Magazine		33											
-	Ttulo	The Brazilian Journal		34											
-	Ttulo	Today Magazine		35											
-	Ttulo	Viver Magazine		36											
+	titulo	Achei USA		0											
+	titulo	Acontece Magazine		1											
+	titulo	A Notícia		2											
+	titulo	Brasil Best		3											
+	titulo	Brasileiros & Brasileiras		4											
+	titulo	Brasil USA		5											
+	titulo	Brazil Explore		6											
+	titulo	Brazilian Press		7											
+	titulo	Brazilian Voice		8											
+	titulo	Brazil News		9											
+	titulo	Brazuca		10											
+	titulo	Cia Brasil		11											
+	titulo	Comunidade News		12											
+	titulo	Diário do Brasil		13											
+	titulo	FaceBrasil		14											
+	titulo	Green and Yellow News		15											
+	titulo	Jornal dos Sports		16											
+	titulo	Jornal Moderno		17											
+	titulo	Metropolitan		18											
+	titulo	National		19											
+	titulo	Negócio Fechado		20											
+	titulo	Nossa Gente		21											
+	titulo	Nossa Terra		22											
+	titulo	O Brasileirinho		23											
+	titulo	O Imigrante Cristão		24											
+	titulo	O Jornal Brasileiro		25											
+	titulo	O Popular		26											
+	titulo	Revista Linha Aberta		27											
+	titulo	Revista MASSA		28											
+	titulo	Revista Tititi		29											
+	titulo	Sucesso USA		30											
+	titulo	Ta na Mão		31											
+	titulo	TC Brazil		32											
+	titulo	Texas Magazine		33											
+	titulo	The Brazilian Journal		34											
+	titulo	Today Magazine		35											
+	titulo	Viver Magazine		36											
