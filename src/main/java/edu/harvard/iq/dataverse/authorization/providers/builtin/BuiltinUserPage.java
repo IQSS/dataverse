@@ -21,6 +21,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -31,6 +32,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.primefaces.event.TabChangeEvent;
 
@@ -265,6 +267,21 @@ public class BuiltinUserPage implements java.io.Serializable {
         
         String password = (String) value;
         
+        if (StringUtils.isBlank(password)){
+            logger.log(Level.WARNING, "current password is blank");
+            
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                "Password Error", "Password is blank: re-type it again.");
+            context.addMessage(toValidate.getClientId(context), message);
+            return;
+            
+        } else {
+            logger.log(Level.INFO, "current paswword is not blank");
+        }
+        
+        
+        
         if ( ! PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion()).check(password, builtinUser.getEncryptedPassword()) ) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", "Password is incorrect.");
@@ -274,6 +291,19 @@ public class BuiltinUserPage implements java.io.Serializable {
     
     public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
+        if (StringUtils.isBlank(password)){
+            logger.log(Level.WARNING, "new password is blank");
+            
+            ((UIInput) toValidate).setValid(false);
+
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                "Password Error", "The new password is blank: re-type it again");
+            context.addMessage(toValidate.getClientId(context), message);
+            return;
+            
+        } else {
+            logger.log(Level.INFO, "new paswword is not blank");
+        }
 
         int minPasswordLength = 6;
         boolean forceNumber = true;
@@ -308,6 +338,14 @@ public class BuiltinUserPage implements java.io.Serializable {
             if (inputPassword != null) {
                 builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword), PasswordEncryption.getLatestVersionNumber());
                 passwordChanged = true;
+            } else {
+                // just defensive coding: for in case when the validator is not
+                // working
+                logger.log(Level.WARNING, "inputPassword is still null");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.noPasswd"), null);
+                FacesContext context = FacesContext.getCurrentInstance();
+                context.addMessage(null, message);
+                return null;
             }
         }
         builtinUser = builtinUserService.save(builtinUser);
