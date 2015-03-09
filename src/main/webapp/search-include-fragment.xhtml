@@ -40,13 +40,11 @@
                 </div>
                 <p:confirmDialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" styleClass="text-left" widgetVar="addData_popup">                                           
                     <f:facet name="message">
-                        #{bundle['dataverse.results.dialog.addDataGuest.prefix']}
-                        <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
-                            <a href="/dataverseuser.xhtml#{dataverseHeaderFragment.loginRedirectPage}&amp;editMode=CREATE">#{bundle.signup}</a> 
-                            #{bundle['dataverse.results.dialog.addDataGuest.conjunction']} 
-                        </ui:fragment>
-                        <a href="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">#{bundle.login}</a> 
-                        #{bundle['dataverse.results.dialog.addDataGuest.suffix']}
+                        <p>
+                            <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
+                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                            </h:outputFormat>
+                        </p>
                     </f:facet>
                 </p:confirmDialog>  
             </ui:fragment>

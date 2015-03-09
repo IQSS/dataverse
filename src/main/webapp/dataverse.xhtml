@@ -361,12 +361,12 @@
                                     <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('PublishDataverseCommand')}">
                                         <ui:fragment rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
                                             <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish']}
+                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                             </button>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
                                             <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish']}
+                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                             </button>
                                         </ui:fragment>
                                     </ui:fragment>
@@ -555,7 +555,7 @@
                     </p:dialog>
 
                     <!-- Publish Confirmation Popup -->
-                    <p:dialog header="#{bundle['dataverse.publish']}" widgetVar="confirmation">
+                    <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="confirmation">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.tip']}
                         </p>

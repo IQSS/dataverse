@@ -210,19 +210,19 @@
                                                                  and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                  and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                             <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
+                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                             </button>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                             <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
+                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                             </button>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released 
                                                                  and !permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') 
                                                                  and !DatasetPage.locked}">
                                             <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
+                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                             </button>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released 
@@ -230,7 +230,7 @@
                                                                  and (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released)
                                                                  and !DatasetPage.locked}">
                                             <button type="button" class="btn btn-default" onclick="publishParent.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
+                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                             </button>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released 
@@ -238,7 +238,7 @@
                                                                  and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
                                                                  and !DatasetPage.locked}">
                                             <button type="button" class="btn btn-default" onclick="maynotPublishParent.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publishBtn']}
+                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                             </button>
                                         </ui:fragment>
                                     </ui:fragment>
@@ -2079,11 +2079,11 @@
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:confirmDialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup">
                         <f:facet name="message">
-                            You need to
-                            <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
-                                <a href="/dataverseuser.xhtml#{dataverseHeaderFragment.loginRedirectPage}&amp;editMode=CREATE">Sign Up</a> or
-                            </ui:fragment>
-                            <a href="/loginpage.xhtml#{dataverseHeaderFragment.loginRedirectPage}">Log In</a> to request access to this file.
+                            <p>
+                                <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
+                                    <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                </h:outputFormat>
+                            </p>
                         </f:facet>
                     </p:confirmDialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
@@ -2237,7 +2237,7 @@
                     </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
-                    <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="confirmation">
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="confirmation">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -2252,7 +2252,7 @@
                         </div>
                     </p:dialog>
                     
-                    <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="publishParent">                                       
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishParent">                                       
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -2274,7 +2274,7 @@
                         </div>
                     </p:dialog>
                     
-                    <p:dialog header="#{bundle['dataset.publishBtn']}" widgetVar="releaseDraft">
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                         </p>
@@ -2327,10 +2327,15 @@
                         </div>
                     </p:dialog>
                     
-                    <p:confirmDialog message="#{bundle['dataset.rejectMessage']}" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
-                        <p:commandButton value="#{bundle.continue}" onclick="sendBackToContributor.hide()" action="#{DatasetPage.sendBackToContributor}" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="sendBackToContributor.hide()" type="button" />
-                    </p:confirmDialog>
+                    <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="sendBackToContributor.hide()" action="#{DatasetPage.sendBackToContributor}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="sendBackToContributor.hide()" type="button" />
+                        </div>
+                    </p:dialog>
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
             </ui:define>
