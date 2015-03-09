@@ -307,6 +307,7 @@
    <field name="authorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="characteristicOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="city" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="classificationSchemaCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="cleaningOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="collectionMode" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="collectorTraining" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -335,6 +336,7 @@
    <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="datadePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="datasetContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetContactAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetContactEmail" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -344,6 +346,7 @@
    <field name="dateOfCollectionEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dateOfDeposit" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="datesAdditionalInformationCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="distributionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -386,9 +389,11 @@
    <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="localdePublicao" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="mraCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="numero" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="otherDataAppraisal" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="otherGeographicCoverage" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -404,6 +409,16 @@
    <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="productionPlace" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="proprietrio" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="provenanceCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="psiBehavior" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiDonor" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiHealthArea" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiIntervention" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiPopulation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiProductsServices" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiStudyDesignElement" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="psiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="publicationIDNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -418,6 +433,7 @@
    <field name="resolution.Spectral" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="rightsAvailabilityCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="samplingProcedure" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="series" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -430,6 +446,7 @@
    <field name="software" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="softwareName" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="softwareVersion" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="sourceCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="southLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="state" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="studyAssayCellType" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -451,12 +468,14 @@
    <field name="timePeriodCoveredEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="timePeriodCoveredStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="title" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="titulo" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassVocab" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassVocabURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassification" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="unitOfAnalysis" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="variablesCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
  </fields>
@@ -557,6 +576,7 @@
    <copyField source="authorName" dest="text" maxChars="3000"/>
    <copyField source="characteristicOfSources" dest="text" maxChars="3000"/>
    <copyField source="city" dest="text" maxChars="3000"/>
+   <copyField source="classificationSchemaCHIA" dest="text" maxChars="3000"/>
    <copyField source="cleaningOperations" dest="text" maxChars="3000"/>
    <copyField source="collectionMode" dest="text" maxChars="3000"/>
    <copyField source="collectorTraining" dest="text" maxChars="3000"/>
@@ -585,6 +605,7 @@
    <copyField source="dataCollectionSituation" dest="text" maxChars="3000"/>
    <copyField source="dataCollector" dest="text" maxChars="3000"/>
    <copyField source="dataSources" dest="text" maxChars="3000"/>
+   <copyField source="datadePublicao" dest="text" maxChars="3000"/>
    <copyField source="datasetContact" dest="text" maxChars="3000"/>
    <copyField source="datasetContactAffiliation" dest="text" maxChars="3000"/>
    <copyField source="datasetContactEmail" dest="text" maxChars="3000"/>
@@ -594,6 +615,7 @@
    <copyField source="dateOfCollectionEnd" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollectionStart" dest="text" maxChars="3000"/>
    <copyField source="dateOfDeposit" dest="text" maxChars="3000"/>
+   <copyField source="datesAdditionalInformationCHIA" dest="text" maxChars="3000"/>
    <copyField source="depositor" dest="text" maxChars="3000"/>
    <copyField source="deviationsFromSampleDesign" dest="text" maxChars="3000"/>
    <copyField source="distributionDate" dest="text" maxChars="3000"/>
@@ -636,9 +658,11 @@
    <copyField source="keywordVocabularyURI" dest="text" maxChars="3000"/>
    <copyField source="kindOfData" dest="text" maxChars="3000"/>
    <copyField source="language" dest="text" maxChars="3000"/>
+   <copyField source="localdePublicao" dest="text" maxChars="3000"/>
    <copyField source="mraCollection" dest="text" maxChars="3000"/>
    <copyField source="northLongitude" dest="text" maxChars="3000"/>
    <copyField source="notesText" dest="text" maxChars="3000"/>
+   <copyField source="numero" dest="text" maxChars="3000"/>
    <copyField source="originOfSources" dest="text" maxChars="3000"/>
    <copyField source="otherDataAppraisal" dest="text" maxChars="3000"/>
    <copyField source="otherGeographicCoverage" dest="text" maxChars="3000"/>
@@ -654,6 +678,16 @@
    <copyField source="producerURL" dest="text" maxChars="3000"/>
    <copyField source="productionDate" dest="text" maxChars="3000"/>
    <copyField source="productionPlace" dest="text" maxChars="3000"/>
+   <copyField source="proprietrio" dest="text" maxChars="3000"/>
+   <copyField source="provenanceCHIA" dest="text" maxChars="3000"/>
+   <copyField source="psiBehavior" dest="text" maxChars="3000"/>
+   <copyField source="psiDonor" dest="text" maxChars="3000"/>
+   <copyField source="psiHealthArea" dest="text" maxChars="3000"/>
+   <copyField source="psiIntervention" dest="text" maxChars="3000"/>
+   <copyField source="psiPopulation" dest="text" maxChars="3000"/>
+   <copyField source="psiProductsServices" dest="text" maxChars="3000"/>
+   <copyField source="psiStudyDesignElement" dest="text" maxChars="3000"/>
+   <copyField source="psiStudyType" dest="text" maxChars="3000"/>
    <copyField source="publication" dest="text" maxChars="3000"/>
    <copyField source="publicationCitation" dest="text" maxChars="3000"/>
    <copyField source="publicationIDNumber" dest="text" maxChars="3000"/>
@@ -668,6 +702,7 @@
    <copyField source="resolution.Spectral" dest="text" maxChars="3000"/>
    <copyField source="resolution.Temporal" dest="text" maxChars="3000"/>
    <copyField source="responseRate" dest="text" maxChars="3000"/>
+   <copyField source="rightsAvailabilityCHIA" dest="text" maxChars="3000"/>
    <copyField source="samplingErrorEstimates" dest="text" maxChars="3000"/>
    <copyField source="samplingProcedure" dest="text" maxChars="3000"/>
    <copyField source="series" dest="text" maxChars="3000"/>
@@ -680,6 +715,7 @@
    <copyField source="software" dest="text" maxChars="3000"/>
    <copyField source="softwareName" dest="text" maxChars="3000"/>
    <copyField source="softwareVersion" dest="text" maxChars="3000"/>
+   <copyField source="sourceCHIA" dest="text" maxChars="3000"/>
    <copyField source="southLongitude" dest="text" maxChars="3000"/>
    <copyField source="state" dest="text" maxChars="3000"/>
    <copyField source="studyAssayCellType" dest="text" maxChars="3000"/>
@@ -701,12 +737,14 @@
    <copyField source="timePeriodCoveredEnd" dest="text" maxChars="3000"/>
    <copyField source="timePeriodCoveredStart" dest="text" maxChars="3000"/>
    <copyField source="title" dest="text" maxChars="3000"/>
+   <copyField source="titulo" dest="text" maxChars="3000"/>
    <copyField source="topicClassValue" dest="text" maxChars="3000"/>
    <copyField source="topicClassVocab" dest="text" maxChars="3000"/>
    <copyField source="topicClassVocabURI" dest="text" maxChars="3000"/>
    <copyField source="topicClassification" dest="text" maxChars="3000"/>
    <copyField source="unitOfAnalysis" dest="text" maxChars="3000"/>
    <copyField source="universe" dest="text" maxChars="3000"/>
+   <copyField source="variablesCHIA" dest="text" maxChars="3000"/>
    <copyField source="weighting" dest="text" maxChars="3000"/>
    <copyField source="westLongitude" dest="text" maxChars="3000"/>
 
