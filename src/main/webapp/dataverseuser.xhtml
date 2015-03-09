@@ -39,40 +39,38 @@
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search(true)}" />
                 </f:metadata>
-                <h:form id="dataverseUserForm" style="margin-top:1em;">
+                <h:form id="dataverseUserForm" styleClass="margin-top">
                     <p:focus context="dataverseUserForm"/>
                     <div class="clearfix" jsf:rendered="#{empty DataverseUserPage.editMode}">
-                        <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
-                            <div class="btn-group">
-                                <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                    <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
-                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']} 
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
-                                        #{bundle['account.info']} 
-                                    </ui:fragment>
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu pull-right text-left" role="menu">
-                                    <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
-                                        <li>
-                                            <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@form">
-                                                <h:outputText value="#{bundle['account.info']}" />
-                                            </p:commandLink>
-                                        </li>
-                                        <li>
-                                            <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" update="@form">
-                                                <h:outputText value="#{bundle.passwd}" />
-                                            </p:commandLink>
-                                        </li>
-                                    </ui:fragment>
+                        <div class="btn-group pull-right">
+                            <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
+                                    <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']} 
+                                </ui:fragment>
+                                <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
+                                    #{bundle['account.info']} 
+                                </ui:fragment>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right text-left" role="menu">
+                                <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser}">
                                     <li>
-                                        <h:outputLink value="/apitoken.xhtml">
-                                            <h:outputText value="#{bundle.apiTaken}" />
-                                        </h:outputLink>
+                                        <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@form">
+                                            <h:outputText value="#{bundle['account.info']}" />
+                                        </p:commandLink>
                                     </li>
-                                </ul>
-                            </div>
+                                    <li>
+                                        <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" update="@form">
+                                            <h:outputText value="#{bundle.passwd}" />
+                                        </p:commandLink>
+                                    </li>
+                                </ui:fragment>
+                                <li>
+                                    <h:outputLink value="/apitoken.xhtml">
+                                        <h:outputText value="#{bundle.apiTaken}" />
+                                    </h:outputLink>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -93,18 +91,15 @@
                         </p:tab>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
-                                <div style="border-bottom:1px solid #DDDDDD; padding:5px;" class="#{item.displayAsRead ? '' : 'bg-warning'}">
+                                <div class="notification-item #{item.displayAsRead ? '' : 'bg-warning'}">
                                     <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                        <i class="icon-dataverse text-icon-inline text-muted"></i>
-                                        <h:outputText value="#{bundle.welcome} " />
-                                        <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
-                                            <h:outputText value="#{bundle.googleGroup}" />
-                                        </h:outputLink>
-                                        <h:outputText value=" #{bundle.leaveFeedBack}" />
+                                        <i class="icon-dataverse text-icon-inline text-muted"></i>                                        
+                                        <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
+                                            <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                        </h:outputFormat>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                         <i class="icon-dataverse text-icon-inline text-muted"></i>
-                                        <!-- <h:graphicImage value="/resources/images/icon_dataverse.png" alt="#{bundle.dataverse}" style="height:18px;margin-right:6px;" />-->
                                         <h:outputLink value="/dataverse.xhtml?alias=#{dataverseServiceBean.find(item.objectId).getAlias()}" title="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}">
                                             <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
@@ -112,7 +107,7 @@
                                         <h:outputLink value="/dataverse.xhtml?alias=#{dataverseServiceBean.find(item.objectId).getOwner().getAlias()}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}  #{bundle.dataverse}">
                                             <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value=" #{bundle.toPublish}" />
+                                        <h:outputText value=". #{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                         <i class="icon-dataset text-icon-inline text-muted"></i>
@@ -121,7 +116,7 @@
                                         <h:outputLink value="/dataverse.xhtml?alias=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.getAlias()}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{bundle.dataverse}" />
                                         </h:outputLink>
-                                        <h:outputText value=" #{bundle.toPublish}" />
+                                        <h:outputText value=". #{bundle.toPublish}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
                                         <i class="icon-dataset text-icon-inline text-muted"></i>
@@ -130,7 +125,7 @@
                                         <h:outputLink value="/dataverse.xhtml?alias=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.getAlias()}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().displayName}"/>
                                         </h:outputLink>
-                                        <h:outputText value=" #{bundle.toReview}" />
+                                        <h:outputText value=". #{bundle.toReview}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
                                         <i class="icon-dataset text-icon-inline text-muted"></i>
@@ -171,15 +166,17 @@
                                     </ui:fragment>                                    
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                         <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputText value="#{bundle.theDataset} " />
-                                        <a value="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}"><h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" /></a>
+                                        <h:outputLink value="/dataset.xhtml?globalId=#{datasetVersionServiceBean.find(item.objectId).dataset.globalId}" title="#{datasetVersionServiceBean.find(item.objectId).getTitle()}">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}"/>
+                                        </h:outputLink>
                                         <h:outputText value=" #{bundle['worldMap.added']}" />
                                     </ui:fragment>
                                     
-                                    <h:outputText value="#{item.sendDate}" styleClass="text-muted small" style="margin-left:1em;"/>
+                                    <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
                                     
-                                    <p:commandLink title="#{bundle.removeNotification}" styleClass="pull-right"
-                                                   action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}">
+                                    <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip pull-right"
+                                                   action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}"
+                                                   oncomplete="bind_bsui_components();">
                                         <span class="glyphicon glyphicon-remove"></span>
                                     </p:commandLink>
                                 </div>
