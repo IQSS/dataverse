@@ -80,7 +80,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         
         // version users and versions 
         for (DatasetVersion ver : managedDoomed.getVersions()) {
-            for (DatasetVersionUser ddu : ver.getDatasetVersionUsers()) {
+            for (DatasetVersionUser ddu : ver.getDatasetVersionDataverseUsers()) {
                 ctxt.em().remove(ddu);
             }
             ctxt.em().remove(ver);
