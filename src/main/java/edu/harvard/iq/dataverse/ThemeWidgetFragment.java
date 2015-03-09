@@ -55,6 +55,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     private File uploadedFile;
     private Dataverse editDv= new Dataverse();
     private HtmlInputText linkUrlInput;
+    private HtmlInputText taglineInput;
  
       @Inject
     DataverseSession session;
@@ -69,6 +70,14 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     public void setLinkUrlInput(HtmlInputText linkUrlInput) {
         this.linkUrlInput = linkUrlInput;
+    }
+
+    public HtmlInputText getTaglineInput() {
+        return taglineInput;
+    }
+
+    public void setTaglineInput(HtmlInputText taglineInput) {
+        this.taglineInput = taglineInput;
     }
 
  
