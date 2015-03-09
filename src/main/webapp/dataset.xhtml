@@ -1674,24 +1674,29 @@
                     <!-- END View/Tabs infoMode -->
                     <p:confirmDialog id="compareTwo" message="#{bundle['file.dataFilesTab.versions.showDiff.dialog.header']}" header="#{bundle['file.dataFilesTab.versions.showDiff.dialog.txt']}" widgetVar="compareTwo">
                     </p:confirmDialog>
-                    <p:confirmDialog message="#{bundle['file.deleteDialog.tip']}" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation">
-                        <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}">
-                        </p:commandButton>
-                        <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
-                    </p:confirmDialog>
-                    <p:confirmDialog message="#{bundle['file.deleteDraftDialog.tip']}" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation">
-                        <p:commandButton value="#{bundle.continue}" onclick="deleteVersionConfirmation.hide()" action="#{DatasetPage.deleteDatasetVersion()}">
-                        </p:commandButton>
-                        <p:commandButton value="#{bundle.cancel}" onclick="deleteVersionConfirmation.hide()" type="button" />
-                    </p:confirmDialog>
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
+                        </div>
+                    </p:dialog>
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDraftDialog.tip']}</p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteVersionConfirmation.hide()" action="#{DatasetPage.deleteDatasetVersion()}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteVersionConfirmation.hide()" type="button" />
+                        </div>
+                    </p:dialog>
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation">
-                        <p><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                            <p>#{bundle['file.deleteFileDialog.failed.tip']}</p>
+                            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
-                        <p:commandButton value="#{bundle.continue}" update=":#{p:component('filesTable')},:messagePanel" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.deleteFiles()}">
-                        </p:commandButton>
-                        <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" update=":#{p:component('filesTable')},:messagePanel" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.deleteFiles()}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
+                        </div>
                     </p:dialog>
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
