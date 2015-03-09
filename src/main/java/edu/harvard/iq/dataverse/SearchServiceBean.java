@@ -457,6 +457,9 @@ public class SearchServiceBean {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dsPreview/" + datasetVersionId);
+                /**
+                 * @todo Could use getFieldValues (plural) here.
+                 */
                 ArrayList<String> datasetDescriptions = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                 if (datasetDescriptions != null) {
                     String firstDatasetDescription = datasetDescriptions.get(0);
@@ -472,8 +475,10 @@ public class SearchServiceBean {
                 } else {
                     solrSearchResult.setTitle("NULL: NO TITLE INDEXED OR PROBLEM FINDING TITLE DATASETFIELD");
                 }
-                ArrayList authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
-                solrSearchResult.setDatasetAuthors(authors);
+                List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
+                if (authors != null) {
+                    solrSearchResult.setDatasetAuthors(authors);
+                }
             } else if (type.equals("files")) {
                 String parentGlobalId = null;
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
