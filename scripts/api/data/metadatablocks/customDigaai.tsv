@@ -1,11 +1,11 @@
 #metadataBlock	name	displayName													
 	customDigaai	Digaai Metadata													
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	Ttulo	Título	Título do jornal ou revista.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customDigaai
-	Nmero	Número	Número do jornal ou revista.		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
-	DatadePublicao	Data de Publicação	Entrar dia/mes/ano.	dia/mes/ano	text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
-	LocaldePublicao	Local de Publicação	Local de Publicação.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
-	Proprietrio	Proprietário	Proprietário		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+	titulo	Título	Título do jornal ou revista.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customDigaai
+	numero	Número	Número do jornal ou revista.		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+	datadePublicao	Data de Publicação	Entrar dia/mes/ano.	dia/mes/ano	text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+	localdePublicao	Local de Publicação	Local de Publicação.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
+	proprietrio	Proprietário	Proprietário		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	Ttulo	Achei USA		0											
 	Ttulo	Acontece Magazine		1											
