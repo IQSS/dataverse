@@ -51,7 +51,6 @@ public class DataverseTheme implements Serializable {
     private String logo;
     private String tagline;
     private String linkUrl;
-//    private String linkText;
     private String linkColor;
     private String textColor;
     private String backgroundColor;
@@ -106,14 +105,6 @@ public class DataverseTheme implements Serializable {
     public void setLinkUrl(String linkUrl) {
         this.linkUrl = linkUrl;
     }
-
-//    public String getLinkText() {
-//        return linkText;
-//    }
-
-//    public void setLinkText(String linkText) {
-//        this.linkText = linkText;
-//    }
 
     public String getLinkColor() {
         return linkColor;
