@@ -18,15 +18,17 @@ Migration:
 
 1. run migrate_users.sql script
 2. run migrate_dataverses.sql script
-3. run dataset APIs: execute the following HTTP  request on the Dataverse 4.0 application to initiate dataset migration:
+3. run custom_field_map.sql script (this must updated to contain the custom field mappings specific to 
+    the migration source installation.)
+4. run dataset APIs: execute the following HTTP  request on the Dataverse 4.0 application to initiate dataset migration:
     
     http://<hostname>/api/batch/migrate?path=<parent directory of DDI files>&key=<Dataverse Admin API Key>
 
     This will return a success message and begin an asynchronous migration job - the status of the job is viewable in the import-log file
     in the Glassfish logs directory.
 
-4. * run post dataset scrubbing
-5. run files script: 
+5. * run post dataset scrubbing
+6. run files script: 
 
 a. On the *destination* (4.0) server, step 1
 run the script, and save the output:
