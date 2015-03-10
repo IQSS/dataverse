@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -22,7 +23,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
 
@@ -55,7 +55,11 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             }
             throw new IllegalCommandException(validationFailedString, this);
         }
-
+        
+        if ( ! (getUser() instanceof AuthenticatedUser) ) {
+            throw new IllegalCommandException("Only authenticated users can update datasets", this);
+        }
+        
         return save(ctxt);
     }
 
@@ -64,6 +68,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     }
 
     public Dataset save(CommandContext ctxt) {
+        
         Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
             if (dsfIt.next().removeBlankDatasetFieldValues()) {
@@ -80,6 +85,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(updateTime);
+                dataFile.setCreator((AuthenticatedUser) getUser());
             }
         }
 
