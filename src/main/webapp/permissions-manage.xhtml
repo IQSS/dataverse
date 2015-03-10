@@ -108,7 +108,7 @@
                                     <div>
                                         <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
                                             <p:column width="50%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
-                                                <h:outputText value="@identifier #{roleAssignment.assigneeDisplayInfo.title}"/>
+                                                <h:outputText value="#{roleAssignment.roleAssignment.assigneeIdentifier} #{roleAssignment.assigneeDisplayInfo.title}"/>
                                                 <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
                                             </p:column>
                                             <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
