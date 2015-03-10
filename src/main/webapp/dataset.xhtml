@@ -1012,40 +1012,26 @@
                                                             #{bundle['file.dataFilesTab.terms.list.termsOfUse.license']}
                                                         </span>
                                                     </label>
-                                                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                                                        <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
-                                                            <div class="col-sm-9">
-                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']}</p>
-                                                                <p class="help-block">
-                                                                    <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}" escape="false">
-                                                                        <f:param value="&lt;a href=&#34;http://best-practices.dataverse.org/harvard-policies/community-norms.html&#34; target=&#34;_blank&#34;&gt;"/>
-                                                                        <f:param value="&lt;/a&gt;"/>
-                                                                    </h:outputFormat>
-                                                                </p>
-                                                                <p><img src="/resources/images/cc0.png" alt="CC0"/></p>
-                                                            </div>
+                                                    <div class="col-sm-9">
+                                                        <ui:fragment rendered="#{empty DatasetPage.editMode and DatasetPage.workingVersion.license == 'NONE'}">
+                                                            <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.license.txt']}" escape="false"/></p>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'NONE'}">
-                                                            <div class="col-sm-9">
-                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.license.txt']}</p>
-                                                            </div>
-                                                        </ui:fragment>
-                                                    </ui:fragment>
-                                                    <ui:fragment rendered="#{!empty DatasetPage.editMode}">
-                                                        <div class="col-sm-9">
-                                                            <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.description']}</p>
+                                                        <ui:fragment rendered="#{!empty DatasetPage.editMode}">
+                                                            <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.description']}" escape="false"/></p>
                                                             <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
                                                                 <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.CCO']}" itemValue="CC0" />
                                                                 <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.notCCO']}" itemValue="NONE" />
                                                                 <p:ajax update=":datasetForm" oncomplete="javascript:dataverseuser_page_rebind();" />
                                                             </p:selectOneRadio>
-                                                            <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
-                                                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']}</p>
-                                                                <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}" escape="false"/></p>
-                                                                <p><img src="/resources/images/cc0.png" alt="CC0"/></p>
-                                                            </ui:fragment>
-                                                        </div>
-                                                    </ui:fragment>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
+                                                            <p class="help-block">#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']}</p>
+                                                            <p>
+                                                                <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}" escape="false"/>
+                                                            </p>
+                                                            <div><img src="/resources/images/cc0.png" alt="CC0"/></div>
+                                                        </ui:fragment>
+                                                    </div>
                                                 </div>
                                                 <ui:fragment rendered="#{DatasetPage.workingVersion.license != 'CC0'}">
                                                     <div class="form-group">
