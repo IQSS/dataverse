@@ -2061,9 +2061,9 @@
                         </p>
                         <ui:include src="guestbookResponseFragment.xhtml"/>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadFormat=='download'}"
-                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('download')}" />
-                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
+                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
+                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('download')}" rendered="#{DatasetPage.downloadFormat=='download'}" />
+                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()" 
                                              update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadFormat=='subset'}" />
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
                                              update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadFormat=='explore'}" />
