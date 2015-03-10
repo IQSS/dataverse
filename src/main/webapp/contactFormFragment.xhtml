@@ -3,29 +3,30 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
     <!-- Dialog Contact Form -->
-    <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true" style="min-width:500px;">
+    <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true">
         <p:fragment>
             <h:form id="emailForm" class="form-horizontal">
                 <div class="form-group">
-                    <label for="messageTo" class="col-sm-2 control-label">#{bundle['feedback.to']}</label>
-                    <div class="col-sm-10">
+                    <label for="messageTo" class="col-sm-3 control-label">#{bundle['feedback.to']}</label>
+                    <div class="col-sm-9">
                         <p id="messageTo" class="form-control-static">#{sendFeedbackDialog.getMessageTo()}</p>
                     </div>
                 </div>
                 <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
                     <div class="form-group">
-                        <label for="userEmailStatic" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
-                        <div class="col-sm-10">
+                        <label for="userEmailStatic" class="col-sm-3 control-label">#{bundle['feedback.from']}</label>
+                        <div class="col-sm-9">
                             <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
                         </div>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
                     <div class="form-group">
-                        <label for="userEmail" class="col-sm-2 control-label">#{bundle['feedback.from']}</label>
-                        <div class="col-sm-10">
+                        <label for="userEmail" class="col-sm-3 control-label">#{bundle['feedback.from']}</label>
+                        <div class="col-sm-9">
                             <p:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"
                                          validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['feedback.from.invalid']}" requiredMessage="#{bundle['feedback.from.required']}" required="#{param['DO_VALIDATION']}"/>
                         <h:message for="userEmail" styleClass="bg-danger text-danger"/>
@@ -33,8 +34,8 @@
                     </div>
                 </ui:fragment>
                 <div class="form-group">
-                    <label for="messageSubject" class="col-sm-2 control-label">#{bundle['feedback.subject']}</label>
-                    <div class="col-sm-10">
+                    <label for="messageSubject" class="col-sm-3 control-label">#{bundle['feedback.subject']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" jsf:rendered="#{sendFeedbackDialog.recipient==null}"/></label>
+                    <div class="col-sm-9">
                         <p:inputText id="messageSubject" styleClass="form-control" value="#{sendFeedbackDialog.messageSubject}"
                                      requiredMessage="#{bundle['feedback.subject.required']}" required="#{param['DO_VALIDATION']}" rendered="#{sendFeedbackDialog.recipient!=null }"/>
                         <ui:fragment rendered="#{sendFeedbackDialog.recipient==null}">
@@ -44,17 +45,17 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="userMessage" class="col-sm-2 control-label">#{bundle['feedback.msg']}</label>
-                    <div class="col-sm-10">
+                    <label for="userMessage" class="col-sm-3 control-label">#{bundle['feedback.msg']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                    <div class="col-sm-9">
                         <p:inputTextarea  id="userMessage" styleClass="form-control"  value="#{sendFeedbackDialog.userMessage}"
                             required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['feedback.msg.required']}" rows="10"/>
                         <h:message for="userMessage" styleClass="bg-danger text-danger"/>
                     </div>
                 </div>
                 <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
+                    <div class="col-sm-offset-3 col-sm-9">
                         <p>
-                            <h:outputFormat value="#{bundle['feedback.question']}"/>
+                            <h:outputFormat value="#{bundle['feedback.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                         </p>
                         <h:outputFormat value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
                         <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['feedback.sum.converterMessage']}"
@@ -65,13 +66,15 @@
                         <h:message for="messageSum" styleClass="bg-danger text-danger"/>
                     </div>
                 </div>
-                <p:commandLink styleClass="btn btn-default" value="#{bundle['feedback.send']}"
-                                update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) contactForm.hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
-                    <f:param name="DO_VALIDATION" value="true"/>
-                </p:commandLink>
-                <button type="button" onclick="contactForm.hide()" class="btn btn-default" value="#{bundle.cancel}">
-                    #{bundle.cancel}
-                </button>
+                <div class="button-block">
+                    <p:commandLink styleClass="btn btn-default" value="#{bundle['feedback.send']}"
+                                    update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) contactForm.hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
+                        <f:param name="DO_VALIDATION" value="true"/>
+                    </p:commandLink>
+                    <button type="button" onclick="contactForm.hide()" class="btn btn-default" value="#{bundle.cancel}">
+                        #{bundle.cancel}
+                    </button>
+                </div>
             </h:form>
         </p:fragment>
     </p:dialog>
