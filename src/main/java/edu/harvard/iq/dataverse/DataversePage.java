@@ -710,7 +710,22 @@ public class DataversePage implements java.io.Serializable {
     private void refreshAllMetadataBlocks() {
         Long dataverseIdForInputLevel = dataverse.getId();
         List<MetadataBlock> retList = new ArrayList();
-        for (MetadataBlock mdb : dataverseService.findAllMetadataBlocks()) {
+        
+        List<MetadataBlock> availableBlocks = new ArrayList();
+        //Add System level blocks
+        availableBlocks.addAll(dataverseService.findSystemMetadataBlocks());
+        
+        Dataverse testDV = dataverse;
+        //Add blocks associated with DV
+        availableBlocks.addAll(dataverseService.findMetadataBlocksByDataverseId(dataverse.getId()));
+        
+        //Add blocks associated with dv going up inheritance tree
+        while (testDV.getOwner() != null) {
+            availableBlocks.addAll(dataverseService.findMetadataBlocksByDataverseId(testDV.getOwner().getId()));
+            testDV = testDV.getOwner();
+        }
+
+        for (MetadataBlock mdb : availableBlocks) {
             mdb.setSelected(false);
             mdb.setShowDatasetFieldTypes(false);
             if (!dataverse.isMetadataBlockRoot() && dataverse.getOwner() != null) {

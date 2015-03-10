@@ -1,5 +1,5 @@
-#metadataBlock	name	displayName													
-	customDigaai	Digaai Metadata													
+#metadataBlock	name	dataverseAlias   displayName													
+	customDigaai		Digaai Metadata													
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	titulo	Título	Título do jornal ou revista.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customDigaai
 	numero	Número	Número do jornal ou revista.		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
