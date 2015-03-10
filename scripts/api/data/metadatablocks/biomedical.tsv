@@ -1,5 +1,5 @@
-#metadataBlock	name	displayName													
-	biomedical	Life Sciences Metadata													
+#metadataBlock	name    dataverseAlias    displayName													
+	biomedical		Life Sciences Metadata													
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyFactorType	Factor Type	Factors used in the Dataset. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical

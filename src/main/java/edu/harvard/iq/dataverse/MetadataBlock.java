@@ -9,9 +9,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 /**
@@ -79,6 +81,18 @@ public class MetadataBlock implements Serializable {
     public boolean isRequired() {
         // eventually this will be dynamic, for now only citation is required
         return "citation".equals(name);
+    }
+    
+    @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
+    @JoinColumn(name="dataverse_id", unique=false, nullable=true, insertable=true, updatable=true)
+    private Dataverse dataverse;
+
+    public Dataverse getDataverse() {
+        return dataverse;
+    }
+
+    public void setDataverse(Dataverse dataverse) {
+        this.dataverse = dataverse;
     }
     
     @Transient

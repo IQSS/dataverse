@@ -1,5 +1,5 @@
-#metadataBlock	name	displayName													
-	customGSD	Graduate School of Design Metadata													
+#metadataBlock	name	dataverseAlias   displayName													
+	customGSD		Graduate School of Design Metadata													
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	gsdStudentName	Student Name	Full name of the student: Last Name, First Name (example: Smith, Jane). Use the name that the GSD Administrator has on file.	LastName, FirstName	text	0		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		customGSD
 	gsdStudentProgram	Student's Program of Study	Student's program of study.		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD

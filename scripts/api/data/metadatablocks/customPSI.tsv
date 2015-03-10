@@ -1,5 +1,5 @@
-#metadataBlock	name	displayName													
-	customPSI	PSI Metadata													
+#metadataBlock	name	dataverseAlias   displayName													
+	customPSI		PSI Metadata													
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	psiBehavior	Behavior	Behavior		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
 	psiDonor	Donor	Donor		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
