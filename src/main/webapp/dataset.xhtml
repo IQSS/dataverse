@@ -2153,13 +2153,18 @@
                     
                     <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" style="min-width:500px;">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
+                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
                             <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 1}">
+                            <p class="help-block">#{bundle['dataverse.link.dataset.choose']}</p>
+                            </ui:fragment>
                             <div class="form-horizontal">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label class="col-sm-4 control-label">                                       
                                         <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
-                                            <f:param value="DatasetPage.dataversesForLinking.size()"/>
-                                        </h:outputFormat>
+                                            <f:param value="#{DatasetPage.dataversesForLinking.size()}"/>
+                                        </h:outputFormat>                                         
                                     </label>
                                     <div class="col-sm-7">
                                         <h:selectOneMenu styleClass="form-control" value="#{DatasetPage.linkingDataverseId}"
