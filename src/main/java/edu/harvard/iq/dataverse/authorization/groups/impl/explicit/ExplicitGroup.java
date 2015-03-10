@@ -59,7 +59,7 @@ import org.hibernate.validator.constraints.NotBlank;
 public class ExplicitGroup implements Group, java.io.Serializable {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     
     /**
