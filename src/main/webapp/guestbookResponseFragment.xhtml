@@ -75,7 +75,7 @@
                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
                                 <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}"
                                                  rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
-                                    <f:selectItem itemLabel="Select" itemValue="" />
+                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
                                 </p:selectOneMenu>
                             </div>
