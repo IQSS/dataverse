@@ -6,6 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:pt="http://java.sun.com/jsf/passthrough"
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
       >
@@ -152,166 +153,148 @@
                     <!-- Header / Button Panel -->
                     <!-- View editMode -->
                     <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
-                        <div id="actionButtonBlock" class="clearfix">
-                            <!-- View Dataset Versions Button -->
-                            <div class="btn-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
-                                <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                    View Dataset Versions <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu" role="menu">
-                                    <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
-                                        <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
-                                            <a id="viewVersionLink" href="/dataset.xhtml?globalId=#{versionLinks.dataset.globalId}&#38;versionId=#{versionLinks.id}" class="ui-commandlink ui-widget">
-                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" />
-                                                <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
-                                        </li>
-                                    </ui:repeat>
-                                </ul>
-                            </div>
-                            <!-- END: Dataset Versions Button -->
+                        <div id="actionButtonBlock" class="button-block clearfix">
                             <!-- Edit/Publish Button Group -->
                             <ui:fragment rendered="#{dataverseSession.user.authenticated
-                                                     and ((DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released))
-                                                     or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and  DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
-                                                     and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
-                                                     and !DatasetPage.locked}">
-                                <div id="edit-publish-btn-group" class="btn-group pull-right">
-                                    <!-- Submit for Review Button -->
-                                    <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
-                                                             and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
-                                        <button type="button" class="btn btn-default #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="inreview.show()">
-                                            <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledubmittedBtn'] : bundle['dataset.submitBtn']}
-                                        </button>
-                                    </ui:fragment>
-                                    <!-- End: Submit for Review Button -->
-                                    <!-- Publish Button -->
-                                    <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
-                                        <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime == null
-                                                                 and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                                 and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
-                                            <button type="button" class="btn btn-default" onclick="registerDataset()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.registerBtn']}
-                                            </button>
-                                            <p:commandButton value="Direct" id="registerDataset"
-                                                             style="display:none"
-                                                             update="@form"
-                                                             action="#{DatasetPage.registerDataset()}">
-                                            </p:commandButton>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview and !DatasetPage.locked}">
-                                            <button type="button" class="btn btn-default" onclick="sendBackToContributor.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.rejectBtn']}
-                                            </button>
-                                        </ui:fragment>                                       
-                                        <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
-                                                                 and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                                 and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
-                                            <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
-                                            </button>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
-                                            <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
-                                            </button>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
-                                                                 and !permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
-                                                                 and !DatasetPage.locked}">
-                                            <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
-                                            </button>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
-                                                                 and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
-                                                                 and ( DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
-                                                                 and !DatasetPage.locked}">
-                                            <button type="button" class="btn btn-default" onclick="publishParent.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
-                                            </button>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
-                                                                 and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
-                                                                 and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
-                                                                 and !DatasetPage.locked}">
-                                            <button type="button" class="btn btn-default" onclick="maynotPublishParent.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
-                                            </button>
-                                        </ui:fragment>
-                                    </ui:fragment>
-                                    <!-- END: Publish/Submit for Review Button -->
-                                    <!-- Edit Button -->
-                                    <div class="btn-group">
-                                        <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                                and ((DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released))
+                                                                or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and  DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
+                                                                and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
+                                                                and !DatasetPage.locked}">
+                                <!-- Edit Button -->
+                                <div class="btn-group pull-right">
+                                    <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                        <li>
+                                            <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files()">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}" />
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_metadata()">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_license()">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="dropdown-submenu">
+                                            <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                        <h:outputText value="Dataset" />
+                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                    </h:link>
+                                                </li>
+                                                <li>
+                                                    <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
+                                                        <h:outputText value="File" />
+                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                    </h:link>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
+                                            <li class="divider"></li>
                                             <li>
-                                                <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files()">
-                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}" />
+                                                <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">
+                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDataset']}" />
                                                 </p:commandLink>
                                             </li>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
+                                            <li class="divider"></li>
                                             <li>
-                                                <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_metadata()">
-                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
+                                                <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">
+                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}" />
                                                 </p:commandLink>
                                             </li>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
+                                            <li class="divider"></li>
                                             <li>
-                                                <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_license()">
-                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
+                                                <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">
+                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                                 </p:commandLink>
                                             </li>
-                                            <li class="dropdown-submenu">
-                                                <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                            <h:outputText value="Dataset" />
-                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                        </h:link>
-                                                    </li>
-                                                    <li>
-                                                        <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                                            <h:outputText value="File" />
-                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                        </h:link>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
-                                                <li class="divider"></li>
-                                                <li>
-                                                    <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">
-                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDataset']}" />
-                                                    </p:commandLink>
-                                                </li>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
-                                                <li class="divider"></li>
-                                                <li>
-                                                    <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">
-                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}" />
-                                                    </p:commandLink>
-                                                </li>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
-                                                <li class="divider"></li>
-                                                <li>
-                                                    <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">
-                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
-                                                    </p:commandLink>
-                                                </li>
-                                            </ui:fragment>
-                                        </ul>
-                                    </div>
-                                    <!-- END: Edit Button -->
+                                        </ui:fragment>
+                                    </ul>
                                 </div>
+                                <!-- END: Edit Button -->
+                                <!-- Submit for Review Button -->
+                                <button type="button" class="btn btn-default pull-right #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="inreview.show()"
+                                        jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                     and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                     and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
+                                                     and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
+                                    <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledubmittedBtn'] : bundle['dataset.submitBtn']}
+                                </button>
+                                <!-- End: Submit for Review Button -->
+                                <!-- Publish Button -->
+                                <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
+                                    
+                                    <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime == null
+                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                             and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
+                                        <button type="button" class="btn btn-default pull-right" onclick="registerDataset()">
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.registerBtn']}
+                                        </button>
+                                        <p:commandButton value="Direct" id="registerDataset"
+                                                         style="display:none"
+                                                         update="@form"
+                                                         action="#{DatasetPage.registerDataset()}">
+                                        </p:commandButton>
+                                    </ui:fragment>
+                                    
+                                    <button type="button" class="btn btn-default pull-right" onclick="sendBackToContributor.show()"
+                                            jsf:rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview and !DatasetPage.locked}">
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.rejectBtn']}
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-default pull-right" onclick="confirmation.show()"
+                                            jsf:rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
+                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                         and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-default pull-right" onclick="releaseDraft.show()"
+                                            jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-default pull-right" onclick="mayNotRelease.show()"
+                                            jsf:rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                         and !permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
+                                                         and !DatasetPage.locked}">
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-default pull-right" onclick="publishParent.show()"
+                                            jsf:rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                         and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
+                                                         and (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released)
+                                                         and !DatasetPage.locked}">
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-default pull-right" jsf:rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                         and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
+                                                         and ( DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
+                                                         and !DatasetPage.locked}"
+                                                onclick="maynotPublishParent.show()">
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
+                                    </button>
+                                </ui:fragment>
+                                <!-- END: Publish/Submit for Review Button -->
                             </ui:fragment>
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link Button Group -->
@@ -335,6 +318,23 @@
                             <p:confirmDialog message="#{bundle['dataset.email.tip']}" header="#{bundle['dataset.email.datasetContactBtn']}" widgetVar="contact_confirmation">
                             </p:confirmDialog>
                             <!-- END: Email/Link Button Group -->
+                            
+                            <!-- View Dataset Versions Button -->
+                            <div class="btn-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
+                                <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    View Dataset Versions <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
+                                        <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
+                                            <a id="viewVersionLink" href="/dataset.xhtml?globalId=#{versionLinks.dataset.globalId}&#38;versionId=#{versionLinks.id}" class="ui-commandlink ui-widget">
+                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" />
+                                                <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
+                                        </li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
+                            <!-- END: Dataset Versions Button -->
                         </div>
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
@@ -767,201 +767,207 @@
                                         <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                             #{bundle['file.ingestInproGress']}
                                         </div>
-                                       
-                                        <!-- Ingest Problem -->
-                                        <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
-                                            <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
-                                                <span class="glyphicon glyphicon-warning-sign text-danger"/>
-                                            </span>
-                                        </ui:fragment>
-                                       
-                                        <!-- TwoRavens explore option -->
-                                        <h:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-                                                                  and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and !DatasetPage.downloadPopupRequired}"
-                                                      class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                                      disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore"
-                                                      actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
-                                            <span class="glyphicon glyphicon-stats"/> <span class="ladda-label">#{bundle.explore}</span>
-                                        </h:commandLink>
-                                        <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-                                                                  and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and DatasetPage.downloadPopupRequired}"
-                                                       styleClass="btn btn-default"
-                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
-                                                       update="@form,:messagePanel"
-                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');" >
-                                            <span class="glyphicon glyphicon-stats"/> #{bundle.explore}
-                                        </p:commandLink>
-
-                                        <!-- WorldMap Explore -->
-                                        <h:outputLink rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-                                                      class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
-                                            <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
-                                        </h:outputLink>
-                                        <!-- WorldMap Map Data - and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }" -->
-                                        <h:outputLink rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-                                                      styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                                            <span class="glyphicon glyphicon-map-marker"/> #{bundle['file.mapData']}
-                                        </h:outputLink>
-
-                                        <!-- ( NOT ACTIVE:  Needed for mapping tabular data when there are 2 options for Explore ) -->
-                                        <!-- START: Explore dropdown for tabularData, ingestInProgress (?), or MapLayerMetadata -->
-                                        <ui:remove>
-                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress or DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <div class="dropdown">
-                                                    <!-- explore button that toggles dropdown -->
-                                                    <button type="button" id="exploreDropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                        <span class="glyphicon glyphicon-stats"/> #{bundle.explore}<span class="caret"></span>
-                                                    </button>
-                                                    <!-- dropdown options -->
-                                                    <ul class="dropdown-menu pull-left text-left" role="menu">
-                                                        <!-- WorldMap explore option -->
-                                                        <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                            <li>
-                                                                (add map explore button)
-                                                            </li>
-                                                        </ui:fragment>
-                                                        <!-- TwoRavens option -->
-                                                        <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
-                                                            <li>
-                                                                <a href="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}">#{bundle.explore} Two Ravens</a>
-                                                            </li>
-                                                        </ui:fragment>
-                                                    </ul>
-                                                </div>
+                                        
+                                        <div class="button-block">
+                                            <!-- Ingest Problem -->
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
+                                                <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
+                                                    <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                                                </span>
                                             </ui:fragment>
-                                        </ui:remove>
-                                        <!-- END  EXPLORE dropdown -->
 
-                                        <!-- non-tabular data file: -->
-                                        <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                                        <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-                                                       styleClass="btn btn-default"
-                                                       action="#{DatasetPage.startFileDownload(fileMetadata, '')}">
-                                            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                                        </p:commandLink>
-                                        <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                        <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-                                                       styleClass="btn btn-default"
-                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
-                                                       update="@form,:messagePanel"
-                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                                        </p:commandLink>
-                                        <!-- Download Dropdown -->
-                                        <div class="btn-group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
-                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                                <li role="presentation" class="divider"></li>                                                   
-                                                <li>
-                                                    <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                   action="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}">
-                                                        #{bundle['file.downloadBtn.format.all']}
-                                                    </p:commandLink>
-                                                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                                   action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'bundle')}"
-                                                                   update="@form,:messagePanel"
-                                                                   oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                                        #{bundle['file.downloadBtn.format.all']}
-                                                    </p:commandLink>
-                                                </li>
-                                                <li>
-                                                    <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                   action="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
-                                                        <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
-                                                            <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
-                                                        </h:outputFormat>
-                                                    </p:commandLink>
-                                                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                                   action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'original')}"
-                                                                   update="@form,:messagePanel"
-                                                                   oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                                        <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
-                                                            <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
-                                                        </h:outputFormat>
-                                                    </p:commandLink>
-                                                </li>
-                                                <li>
-                                                    <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                   action="#{DatasetPage.startFileDownload(fileMetadata, 'tab')}">
-                                                        #{bundle['file.downloadBtn.format.tab']}
-                                                    </p:commandLink>
-                                                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                                   action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'tab')}"
-                                                                   update="@form,:messagePanel"
-                                                                   oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                                        #{bundle['file.downloadBtn.format.tab']}
-                                                    </p:commandLink>
-                                                </li>
-                                                <ui:fragment rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}">
+                                            <!-- TwoRavens explore option -->
+                                            <h:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
+                                                                      and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and !DatasetPage.downloadPopupRequired}"
+                                                          class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                                          disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore"
+                                                          actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
+                                                <span class="glyphicon glyphicon-stats"/> <span class="ladda-label">#{bundle.explore}</span>
+                                            </h:commandLink>
+                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
+                                                                      and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and DatasetPage.downloadPopupRequired}"
+                                                           styleClass="btn btn-default"
+                                                           action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
+                                                           update="@form,:messagePanel"
+                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');" >
+                                                <span class="glyphicon glyphicon-stats"/> #{bundle.explore}
+                                            </p:commandLink>
+
+                                            <div class="btn-group" role="group" jsf:rendered="#{permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile') and (DatasetPage.hasMapLayerMetadata(fileMetadata) or (dataverseSession.user.authenticated and DatasetPage.isShapefileType(fileMetadata)))}">
+                                                <!-- WorldMap Explore -->
+                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                              class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                                                    <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
+                                                </h:outputLink>
+                                                <!-- WorldMap Map Data -->
+                                                <h:outputLink pt:role="button" rendered="#{dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                              styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+                                                    <span class="glyphicon glyphicon-map-marker" jsf:rendered="#{!DatasetPage.hasMapLayerMetadata(fileMetadata)}"/> #{bundle['file.mapData']}
+                                                </h:outputLink>
+                                            </div>
+
+                                            <!-- ( NOT ACTIVE:  Needed for mapping tabular data when there are 2 options for Explore ) -->
+                                            <!-- START: Explore dropdown for tabularData, ingestInProgress (?), or MapLayerMetadata -->
+                                            <ui:remove>
+                                                <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress or DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                    <div class="dropdown">
+                                                        <!-- explore button that toggles dropdown -->
+                                                        <button type="button" id="exploreDropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            <span class="glyphicon glyphicon-stats"/> #{bundle.explore}<span class="caret"></span>
+                                                        </button>
+                                                        <!-- dropdown options -->
+                                                        <ul class="dropdown-menu pull-left text-left" role="menu">
+                                                            <!-- WorldMap explore option -->
+                                                            <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                                <li>
+                                                                    (add map explore button)
+                                                                </li>
+                                                            </ui:fragment>
+                                                            <!-- TwoRavens option -->
+                                                            <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
+                                                                <li>
+                                                                    <a href="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}">#{bundle.explore} Two Ravens</a>
+                                                                </li>
+                                                            </ui:fragment>
+                                                        </ul>
+                                                    </div>
+                                                </ui:fragment>
+                                            </ui:remove>
+                                            <!-- END  EXPLORE dropdown -->
+
+                                            <!-- non-tabular data file: -->
+                                            <!-- no guest book/terms of use/etc. - straight to the download API url: -->
+                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                           styleClass="btn btn-default"
+                                                           action="#{DatasetPage.startFileDownload(fileMetadata, '')}">
+                                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                                            </p:commandLink>
+                                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                           styleClass="btn btn-default"
+                                                           action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
+                                                           update="@form,:messagePanel"
+                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                                            </p:commandLink>
+                                            <!-- Download Dropdown -->
+                                            <div class="btn-group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                                    <li role="presentation" class="divider"></li>                                                   
                                                     <li>
                                                         <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'RData')}">
-                                                            #{bundle['file.downloadBtn.format.rdata']}
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}">
+                                                            #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'RData')}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'bundle')}"
                                                                        update="@form,:messagePanel"
                                                                        oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                                            #{bundle['file.downloadBtn.format.rdata']}
+                                                            #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                     </li>
-                                                </ui:fragment>
-                                                <li>
-                                                   <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                   action="#{DatasetPage.startFileDownload(fileMetadata, 'var')}">
-                                                        #{bundle['file.downloadBtn.format.var']}
-                                                    </p:commandLink>
-                                                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                                   action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'var')}"
-                                                                   update="@form,:messagePanel"
-                                                                   oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
-                                                        #{bundle['file.downloadBtn.format.var']}
-                                                    </p:commandLink>
-                                                </li>
-                                                <li>
-                                                    <p:commandLink id="fileDowloadDataSubsetButton" rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                   actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'create')}"
-                                                                   update=":datasetForm:downloadDataSubsetPopup"
-                                                                   oncomplete="downloadDataSubsetPopup.show()"
-                                                                   value="Data Subset"
-                                                                   disabled="#{empty fileMetadata.dataFile.id}"/>
-                                                    <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{(DatasetPage.downloadPopupRequired)}"
-                                                                   actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'init')}"
-                                                                   update=":datasetForm:downloadDataSubsetPopup"
-                                                                   oncomplete="downloadPopup.show()"
-                                                                   value="Data Subset"
-                                                                   disabled="#{empty fileMetadata.dataFile.id}"/>
-                                                </li>
-                                                <li class="dropdown-submenu">
-                                                    <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
-                                                    <ul class="dropdown-menu">
+                                                    <li>
+                                                        <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
+                                                            <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
+                                                                <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
+                                                            </h:outputFormat>
+                                                        </p:commandLink>
+                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'original')}"
+                                                                       update="@form,:messagePanel"
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                            <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
+                                                                <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
+                                                            </h:outputFormat>
+                                                        </p:commandLink>
+                                                    </li>
+                                                    <li>
+                                                        <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'tab')}">
+                                                            #{bundle['file.downloadBtn.format.tab']}
+                                                        </p:commandLink>
+                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'tab')}"
+                                                                       update="@form,:messagePanel"
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                            #{bundle['file.downloadBtn.format.tab']}
+                                                        </p:commandLink>
+                                                    </li>
+                                                    <ui:fragment rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}">
                                                         <li>
-                                                            <h:commandLink id="risLinkFile" actionListener="#{DatasetPage.downloadDatafileCitationRIS(fileMetadata)}">
-                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
-                                                            </h:commandLink>
+                                                            <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                           action="#{DatasetPage.startFileDownload(fileMetadata, 'RData')}">
+                                                                #{bundle['file.downloadBtn.format.rdata']}
+                                                            </p:commandLink>
+                                                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                           action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'RData')}"
+                                                                           update="@form,:messagePanel"
+                                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                                #{bundle['file.downloadBtn.format.rdata']}
+                                                            </p:commandLink>
                                                         </li>
-                                                        <li>
-                                                            <h:commandLink id="endNoteLinkFile" action="#{DatasetPage.downloadDatafileCitationXML(fileMetadata)}">
-                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
-                                                            </h:commandLink>
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
+                                                    </ui:fragment>
+                                                    <li>
+                                                       <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'var')}">
+                                                            #{bundle['file.downloadBtn.format.var']}
+                                                        </p:commandLink>
+                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                                       action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'var')}"
+                                                                       update="@form,:messagePanel"
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                            #{bundle['file.downloadBtn.format.var']}
+                                                        </p:commandLink>
+                                                    </li>
+                                                    <li>
+                                                        <p:commandLink id="fileDowloadDataSubsetButton" rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                                       actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'create')}"
+                                                                       update=":datasetForm:downloadDataSubsetPopup"
+                                                                       oncomplete="downloadDataSubsetPopup.show()"
+                                                                       value="Data Subset"
+                                                                       disabled="#{empty fileMetadata.dataFile.id}"/>
+                                                        <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{(DatasetPage.downloadPopupRequired)}"
+                                                                       actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'init')}"
+                                                                       update=":datasetForm:downloadDataSubsetPopup"
+                                                                       oncomplete="downloadPopup.show()"
+                                                                       value="Data Subset"
+                                                                       disabled="#{empty fileMetadata.dataFile.id}"/>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <h:commandLink id="risLinkFile" actionListener="#{DatasetPage.downloadDatafileCitationRIS(fileMetadata)}">
+                                                                    <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
+                                                                </h:commandLink>
+                                                            </li>
+                                                            <li>
+                                                                <h:commandLink id="endNoteLinkFile" action="#{DatasetPage.downloadDatafileCitationXML(fileMetadata)}">
+                                                                    <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
+                                                                </h:commandLink>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <!-- Request Access -->
+                                            <p:commandLink styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                           actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}"
+                                                           update="filesTable"
+                                                           disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                                                <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+                                            </p:commandLink>
+                                            <button type="button" class="btn btn-default" jsf:rendered="#{!dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                    onclick="accessSignUpLogIn_popup.show()">
+                                                <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+                                            </button>
+                                        
                                         </div>
-                                        <!-- Request Access -->
-                                        <p:commandLink styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-                                                       actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}"
-                                                       update="filesTable"
-                                                       disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-                                            <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-                                        </p:commandLink>
-                                        <button type="button" class="btn btn-default" jsf:rendered="#{!dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-                                                onclick="accessSignUpLogIn_popup.show()">
-                                            <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-                                        </button>
+                                        <!-- END: button-block -->
                                     </p:column>
                                 </p:dataTable>
                             </p:tab>
