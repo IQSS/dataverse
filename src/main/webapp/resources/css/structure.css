@@ -76,12 +76,15 @@ body .ui-widget {font-size: inherit;}
 .italic {font-style: italic;}
 .margin-top {margin-top:1em;}
 .margin-bottom {margin-bottom:1em;}
+.margin-bottom-half {margin-bottom:.5em;}
 .no-margin-bottom {margin-bottom:0;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
 table.selectManyCheckboxBlock label {font-weight:normal;}
 label.normal-text {font-weight:normal;}
 label.normal-text input {margin-right:4px;}
+
+td.col-dropdown-visible {overflow:visible;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 
@@ -517,6 +520,9 @@ div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
+
+span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
+span.ingest-warning span.glyphicon {top:5px;} 
 
 div[id$='versionsTab'] .ui-state-highlight .ui-icon, div[id$='filesTable'] .ui-state-highlight .ui-icon {background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");}
 div[id$='versionsTab'] .ui-state-highlight .ui-commandlink {color:#FFFFFF;}
