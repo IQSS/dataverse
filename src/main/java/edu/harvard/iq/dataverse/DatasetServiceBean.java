@@ -365,12 +365,10 @@ public class DatasetServiceBean implements java.io.Serializable {
         Query query = em.createQuery("select object(o) from DatasetVersionUser as o "
                 + "where o.datasetVersion.id =:versionId and o.authenticatedUser.id =:userId");
         query.setParameter("versionId", version.getId());
-                    String id = user.getIdentifier();
-            id = id.startsWith("@") ? id.substring(1) : id;
-        AuthenticatedUser au = authentication.getAuthenticatedUser(id);
+        String identifier = user.getIdentifier();
+        identifier = identifier.startsWith("@") ? identifier.substring(1) : identifier;
+        AuthenticatedUser au = authentication.getAuthenticatedUser(identifier);
         query.setParameter("userId", au.getId());
-
-        System.out.print(query.toString());
         try {
             ddu = (DatasetVersionUser) query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
