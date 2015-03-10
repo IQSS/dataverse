@@ -26,7 +26,7 @@ public class LinkValidator implements Validator {
 
         FacesMessage msg = null;
         if (taglineStr.isEmpty() && !urlStr.isEmpty()) {
-            msg = new FacesMessage("tagline is required for Link Url.");
+            msg = new FacesMessage("Tagline is required for Website.");
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             FacesContext.getCurrentInstance().addMessage(taglineInput.getClientId(), msg);
         }

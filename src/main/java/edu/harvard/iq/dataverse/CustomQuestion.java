@@ -42,6 +42,16 @@ public class CustomQuestion implements Serializable {
     
     private boolean hidden;  //when a question is marked for removal, but it has data it is set to hidden
 
+    private int displayOrder;
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+    
     public boolean isHidden() {
         return hidden;
     }

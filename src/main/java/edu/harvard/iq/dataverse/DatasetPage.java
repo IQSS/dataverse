@@ -164,7 +164,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private boolean noDVsRemaining = false;
 
-    private List<Dataverse> dataversesForLinking;
+    private List<Dataverse> dataversesForLinking = new ArrayList();
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
@@ -198,7 +198,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setDataversesForLinking(List<Dataverse> dataversesForLinking) {
-
         this.dataversesForLinking = dataversesForLinking;
     }
 
@@ -225,7 +224,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (dataversesForLinking.isEmpty()) {
-            setNoDVsRemaining(true);
+            setNoDVsRemaining(true);            
             return;
         }
 
@@ -1167,7 +1166,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             commandEngine.submit(cmd);
             JsfHelper.addFlashMessage("This dataset is now linked to " + linkingDataverse.getDisplayName());
-            System.out.print("command seems to have worked");
+            //JsfHelper.addSuccessMessage(JH.localize("dataset.message.linkSuccess")+ linkingDataverse.getDisplayName());
             //return "";
 
         } catch (CommandException ex) {
