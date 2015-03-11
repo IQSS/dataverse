@@ -53,7 +53,8 @@ public class Dataverse extends DvObjectContainer {
     @NotBlank(message = "Please enter an alias.")
     @Column( nullable = false )
     @Size(max = 60, message = "Alias must be at most 60 characters.")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'."), 
+        @Pattern(regexp=".*\\D.*", message="Alias should not be a number")})
     private String alias;
 
     @Column(name = "description", columnDefinition = "TEXT")

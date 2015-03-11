@@ -444,6 +444,9 @@ public class RemoteDataFrameService {
             result.put("Rversion", Rversion);
             
             dbgLog.fine("result object (before closing the Rserve):\n"+result);
+            
+            String deleteLine = "file.remove('"+tempFileNameIn+"')";
+            c.eval(deleteLine);
  
             c.close();
         
@@ -556,6 +559,11 @@ public class RemoteDataFrameService {
             
             int fileSize = getFileSize(c,tempFileNameOut);
             preprocessedDataFile = transferRemoteFile(c, tempFileNameOut, PREPROCESS_FILE_PREFIX, "json", fileSize);
+            
+            String deleteLine = "file.remove('"+tempFileNameOut+"')";
+            c.eval(deleteLine);
+            
+            c.close();
             
         } catch (RserveException rse) {
             // RserveException (Rserve is not running maybe?)
@@ -677,6 +685,16 @@ public class RemoteDataFrameService {
             }
 
         }
+        
+        // delete remote file: 
+        
+        try {
+            String deleteLine = "file.remove('"+targetFilename+"')";
+            c.eval(deleteLine);
+        } catch (Exception ex) {
+            // do nothing.
+        }
+        
         return tmprsltfl;
     }
     

@@ -76,12 +76,15 @@ body .ui-widget {font-size: inherit;}
 .italic {font-style: italic;}
 .margin-top {margin-top:1em;}
 .margin-bottom {margin-bottom:1em;}
+.margin-bottom-half {margin-bottom:.5em;}
 .no-margin-bottom {margin-bottom:0;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
 table.selectManyCheckboxBlock label {font-weight:normal;}
 label.normal-text {font-weight:normal;}
 label.normal-text input {margin-right:4px;}
+
+.ui-datatable tbody td.col-dropdown-visible {overflow:visible;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 
@@ -261,6 +264,10 @@ ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a
     text-decoration: none;
 }
 
+/* -------- USER -------- */
+div[id$='notifications'].ui-tabs-panel div.notification-item {border-bottom:1px solid #DDDDDD; padding:5px;}
+div[id$='notifications'].ui-tabs-panel span.text-muted.small {margin-left:1em;}
+
 /* -------- DATAVERSE -------- */
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget tr, 
@@ -282,17 +289,17 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5px;}
 
 /* Buttons */
-#actionButtonBlock {margin-bottom:1em;}
-#edit-publish-btn-group {margin-left:1em;}
+#actionButtonBlock {margin-bottom:1em; margin-top:0;}
 #dataverse-info-dropdown {padding:.5em 1em .25em 1em; overflow:hidden; width:400px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon {width:40px; float:left; margin-right:12px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon i.icon-dataverse {font-size:40px; line-height:40px;}
 #dataverse-info-dropdown .dataverse-info-general {float:left; width:300px;}
 
 .button-block {margin-top:1em;}
-.form-group > .button-block, .panel-body > .button-block {margin-top:0;}
-.button-block button, .button-block a.btn, .button-block input.btn {margin-right:1em;}
-.button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child {margin-right:0;}
+.form-group > .button-block, .panel-body > .button-block, td.col-dropdown-visible > .button-block {margin-top:0;}
+.button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group {margin-right:1em;}
+.button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
+.button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
@@ -513,6 +520,9 @@ div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
+
+span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
+span.ingest-warning span.glyphicon {top:5px;} 
 
 div[id$='versionsTab'] .ui-state-highlight .ui-icon, div[id$='filesTable'] .ui-state-highlight .ui-icon {background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");}
 div[id$='versionsTab'] .ui-state-highlight .ui-commandlink {color:#FFFFFF;}

@@ -27,7 +27,7 @@
             <div class="collapse navbar-collapse" id="topNavBar">
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a value="#" id="navbar-search-toggle" title="#{bundle['header.search.title']}">
+                        <a id="navbar-search-toggle" title="#{bundle['header.search.title']}">
                             <span class="glyphicon glyphicon-search"></span>
                         </a>
                     </li>
@@ -170,15 +170,15 @@
                         <h:outputText styleClass="dataverseHeaderDataverseName" value="#{bundle.newDataverse}"/>
                     </div>
                 </ui:fragment>
-                <ui:fragment rendered="#{!empty dataverse.dataverseTheme.tagline}">
+                <ui:fragment rendered="#{!empty dataverse.dataverseTheme.tagline and empty dataverse.dataverseTheme.linkUrl}">
                     <div class="dataverseHeaderCell dataverseHeaderTagline">
                         <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value="#{dataverse.dataverseTheme.tagline}" />
                     </div>
                 </ui:fragment>
-                <ui:fragment rendered="#{!empty dataverse.dataverseTheme.linkUrl}">
+                <ui:fragment rendered="#{!empty dataverse.dataverseTheme.tagline and !empty dataverse.dataverseTheme.linkUrl}">
                     <div class="dataverseHeaderCell dataverseHeaderLink">
                         <h:outputLink value="#{dataverse.dataverseTheme.linkUrl}" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};" target="_blank">
-                            <h:outputText value="#{dataverse.dataverseTheme.linkText}" escape="false"/>
+                            <h:outputText value="#{dataverse.dataverseTheme.tagline}" escape="false"/>
                         </h:outputLink>
                     </div>
                 </ui:fragment>

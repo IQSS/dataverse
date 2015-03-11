@@ -40,7 +40,6 @@ public class Dataset extends DvObjectContainer {
     private String authority;
     private String doiSeparator;
     
-    @Column( nullable=false )
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
     

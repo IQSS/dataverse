@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -31,6 +32,8 @@ public class Index extends AbstractApiBean {
     @EJB
     IndexServiceBean indexService;
     @EJB
+    IndexAllServiceBean indexAllService;
+    @EJB
     SolrIndexServiceBean solrIndexService;
     @EJB
     DataverseServiceBean dataverseService;
@@ -46,7 +49,7 @@ public class Index extends AbstractApiBean {
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<String> indexAllFuture = indexService.indexAll();
+            Future<String> indexAllFuture = indexAllService.indexAll();
             return okResponse("index all has been started");
         } catch (EJBException ex) {
             Throwable cause = ex;

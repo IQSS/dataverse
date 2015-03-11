@@ -402,7 +402,7 @@ public class JsonParser {
         List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
         if (json.getBoolean("multiple")) {
-     
+            int order = 0;
             for (JsonObject obj : json.getJsonArray("value").getValuesAs(JsonObject.class)) {
                 DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
                 List<DatasetField> fields = new LinkedList<>();
@@ -425,14 +425,16 @@ public class JsonParser {
                 }
                 if (!fields.isEmpty()) {
                     cv.setChildDatasetFields(fields);
+                    cv.setDisplayOrder(order);
                     vals.add(cv);
                 }
+                order++;
             }
 
            
 
         } else {
-
+            
             DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
             List<DatasetField> fields = new LinkedList<>();
             JsonObject value = json.getJsonObject("value");

@@ -346,7 +346,8 @@ public class ImportDDIServiceBean {
                             HashSet<FieldDTO> set = new HashSet<>();
                             addToSet(set, DatasetFieldConstant.publicationCitation, parseText(xmlr, "relMat"));
                             publications.add(set);
-                            getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
+                            if (publications.size()>0)
+                                getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
                         }
                     } else {
 
@@ -386,7 +387,9 @@ public class ImportDDIServiceBean {
                         //   rp.setText( (String) rpFromDDI );
                     }
                     publications.add(set);
-                    getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
+                    if (publications.size()>0) {
+                        getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
+                    }
 
                 } else if (xmlr.getLocalName().equals("otherRefs")) {
 
@@ -454,8 +457,10 @@ public class ImportDDIServiceBean {
             
                  else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr,dvDTO);
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (xmlr.getLocalName().equals("stdyInfo")) {
-                    getCitation(dvDTO).getFields().add(FieldDTO.createMultipleCompoundFieldDTO("dsDescription", descriptions));
+                if (xmlr.getLocalName().equals("stdyInfo") ) {
+                    if (descriptions.size()>0) {
+                        getCitation(dvDTO).getFields().add(FieldDTO.createMultipleCompoundFieldDTO("dsDescription", descriptions));
+                    }
                     return;
                 }
             }
@@ -482,8 +487,12 @@ public class ImportDDIServiceBean {
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("subject")) {
-                    citation.getFields().add(FieldDTO.createMultipleCompoundFieldDTO("keyword", keywords));
-                    citation.getFields().add(FieldDTO.createMultipleCompoundFieldDTO("topicClassification", topicClasses));
+                    if (keywords.size()>0) {
+                        citation.getFields().add(FieldDTO.createMultipleCompoundFieldDTO("keyword", keywords));
+                    }
+                    if (topicClasses.size()>0) {
+                        citation.getFields().add(FieldDTO.createMultipleCompoundFieldDTO("topicClassification", topicClasses));
+                    }
                     return;
                 }
             } else {
@@ -1130,8 +1139,11 @@ public class ImportDDIServiceBean {
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("rspStmt")) {
-                    FieldDTO author = FieldDTO.createMultipleCompoundFieldDTO("author", authors);
-                    citation.getFields().add(author);
+                    if (authors.size()>0) {
+                        FieldDTO author = FieldDTO.createMultipleCompoundFieldDTO("author", authors);
+                        citation.getFields().add(author);
+                    }
+                  
                     return;
                 }
             }

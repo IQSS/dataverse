@@ -155,7 +155,7 @@ public class SolrIndexServiceBean {
                 List<String> perms = new ArrayList<>();
                 if (unpublishedDataRelatedToMeModeEnabled) {
                     if (datasetVersionFileIsAttachedTo.isReleased()) {
-                        perms.add(IndexServiceBean.getPUBLISHED_STRING());
+                        perms.add(IndexServiceBean.getPublicGroupString());
                     } else {
                         perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                     }

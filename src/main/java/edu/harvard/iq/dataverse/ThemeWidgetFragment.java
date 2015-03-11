@@ -55,7 +55,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     private File uploadedFile;
     private Dataverse editDv= new Dataverse();
     private HtmlInputText linkUrlInput;
-    private HtmlInputText linkTextInput;
+    private HtmlInputText taglineInput;
  
       @Inject
     DataverseSession session;
@@ -72,14 +72,14 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         this.linkUrlInput = linkUrlInput;
     }
 
-    public HtmlInputText getLinkTextInput() {
-        return linkTextInput;
+    public HtmlInputText getTaglineInput() {
+        return taglineInput;
     }
 
-    public void setLinkTextInput(HtmlInputText linkTextInput) {
-        this.linkTextInput = linkTextInput;
+    public void setTaglineInput(HtmlInputText taglineInput) {
+        this.taglineInput = taglineInput;
     }
-   
+
  
    
     
@@ -149,10 +149,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
     public void validateTagline(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
-        if (!StringUtils.isEmpty((String) value) && !StringUtils.isAlphanumericSpace((String) value)) {
-
-            FacesMessage msg
-                    = new FacesMessage("Tagline may only contain alphanumeric characters.");
+        if (!StringUtils.isEmpty((String) value) && ((String) value).length() > 140) {
+            FacesMessage msg = new FacesMessage("Tagline must be at most 140 characters.");
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
 
             throw new ValidatorException(msg);

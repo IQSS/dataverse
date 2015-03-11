@@ -33,8 +33,9 @@ import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
-import javax.ws.rs.container.AsyncResponse;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -90,48 +91,7 @@ public class IndexServiceBean {
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     private Dataverse rootDataverseCached;
 
-    @Asynchronous
-    public Future<String> indexAll() {
-        String status;
-        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-        logger.info("attempting to delete all Solr documents before a complete re-index");
-        try {
-            server.deleteByQuery("*:*");// CAUTION: deletes everything!
-        } catch (SolrServerException | IOException ex) {
-            status = ex.toString();
-            logger.info(status);
-            return new AsyncResult<>(status);
-        }
-        try {
-            server.commit();
-        } catch (SolrServerException | IOException ex) {
-            status = ex.toString();
-            logger.info(status);
-            return new AsyncResult<>(status);
-        }
-
-        List<Dataverse> dataverses = dataverseService.findAll();
-        int dataverseIndexCount = 0;
-        for (Dataverse dataverse : dataverses) {
-            logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + ": " + indexDataverse(dataverse));
-            dataverseIndexCount++;
-        }
-
-        int datasetIndexCount = 0;
-        List<Dataset> datasets = datasetService.findAll();
-        for (Dataset dataset : datasets) {
-            datasetIndexCount++;
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
-        }
-//        logger.info("advanced search fields: " + advancedSearchFields);
-//        logger.info("not advanced search fields: " + notAdvancedSearchFields);
-        logger.info("done iterating through all datasets");
-
-        IndexResponse indexResponse = solrIndexService.indexAllPermissions();
-        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed\n";
-        return new AsyncResult<>(status);
-    }
-
+    @TransactionAttribute(REQUIRES_NEW)
     @Asynchronous
     public Future<String> indexDataverse(Dataverse dataverse) {
         logger.info("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
@@ -237,11 +197,13 @@ public class IndexServiceBean {
         }
 
         dvObjectService.updateContentIndexTime(dataverse);
-        String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias();
+        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse.getId());
+        String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
 
     }
 
+    @TransactionAttribute(REQUIRES_NEW)
     @Asynchronous
     public Future<String> indexDataset(Dataset dataset) {
         logger.info("indexing dataset " + dataset.getId());

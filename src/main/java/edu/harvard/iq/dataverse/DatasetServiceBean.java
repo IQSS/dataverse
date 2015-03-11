@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -52,6 +53,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     DatasetVersionServiceBean versionService;
+    
+    @EJB
+    AuthenticationServiceBean authentication;
     
     @EJB
     DataFileServiceBean fileService; 
@@ -359,12 +363,12 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         DatasetVersionUser ddu = null;
         Query query = em.createQuery("select object(o) from DatasetVersionUser as o "
-                + "where o.datasetversionid =:versionId and o.userIdentifier =:userId");
+                + "where o.datasetVersion.id =:versionId and o.authenticatedUser.id =:userId");
         query.setParameter("versionId", version.getId());
-        query.setParameter("userId", user.getIdentifier());
-        System.out.print("versionId: " + version.getId());
-        System.out.print("userId: " + user.getIdentifier());
-        System.out.print(query.toString());
+        String identifier = user.getIdentifier();
+        identifier = identifier.startsWith("@") ? identifier.substring(1) : identifier;
+        AuthenticatedUser au = authentication.getAuthenticatedUser(identifier);
+        query.setParameter("userId", au.getId());
         try {
             ddu = (DatasetVersionUser) query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {

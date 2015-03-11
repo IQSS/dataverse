@@ -72,4 +72,48 @@ public class ShibUtilTest {
 //        assertEquals(null, unparseAbleDiscoFeed);
     }
 
+    @Test
+    public void testFindBestFirstAndLastName() {
+
+        ShibUserNameFields expected1 = new ShibUserNameFields("John", "Harvard");
+        ShibUserNameFields actual1 = ShibUtil.findBestFirstAndLastName("John", "Harvard", null);
+        assertEquals(expected1.getFirstName(), actual1.getFirstName());
+        assertEquals(expected1.getLastName(), actual1.getLastName());
+
+        ShibUserNameFields expected2 = new ShibUserNameFields("Guido", "van Rossum");
+        ShibUserNameFields actual2 = ShibUtil.findBestFirstAndLastName("Guido", "van Rossum", null);
+        assertEquals(expected2.getFirstName(), actual2.getFirstName());
+        assertEquals(expected2.getLastName(), actual2.getLastName());
+
+        ShibUserNameFields expected3 = new ShibUserNameFields("Philip Seymour", "Hoffman");
+        ShibUserNameFields actual3 = ShibUtil.findBestFirstAndLastName("Philip Seymour", "Hoffman", "Philip Seymour Hoffman");
+        assertEquals(expected3.getFirstName(), actual3.getFirstName());
+        assertEquals(expected3.getLastName(), actual3.getLastName());
+
+        ShibUserNameFields expected4 = new ShibUserNameFields("Edward", "Cummings");
+        ShibUserNameFields actual4 = ShibUtil.findBestFirstAndLastName("Edward;e e", "Cummings", null);
+        assertEquals(expected4.getFirstName(), actual4.getFirstName());
+        assertEquals(expected4.getLastName(), actual4.getLastName());
+
+        ShibUserNameFields expected5 = new ShibUserNameFields("Edward", "Cummings");
+        ShibUserNameFields actual5 = ShibUtil.findBestFirstAndLastName("Edward;e e", "Cummings", "e e cummings");
+        assertEquals(expected5.getFirstName(), actual5.getFirstName());
+        assertEquals(expected5.getLastName(), actual5.getLastName());
+
+        ShibUserNameFields expected6 = new ShibUserNameFields("Anthony", "Stark");
+        ShibUserNameFields actual6 = ShibUtil.findBestFirstAndLastName("Tony;Anthony", "Stark", null);
+        assertEquals(expected6.getFirstName(), actual6.getFirstName());
+        assertEquals(expected6.getLastName(), actual6.getLastName());
+
+        ShibUserNameFields expected7 = new ShibUserNameFields("Anthony", "Stark");
+        ShibUserNameFields actual7 = ShibUtil.findBestFirstAndLastName("Anthony;Tony", "Stark", null);
+        assertEquals(expected7.getFirstName(), actual7.getFirstName());
+        assertEquals(expected7.getLastName(), actual7.getLastName());
+
+        ShibUserNameFields expected8 = new ShibUserNameFields("Antoni", "Gaudí");
+        ShibUserNameFields actual8 = ShibUtil.findBestFirstAndLastName("Antoni", "Gaudí i Cornet;Gaudí", null);
+        assertEquals(expected8.getFirstName(), actual8.getFirstName());
+        assertEquals(expected8.getLastName(), actual8.getLastName());
+    }
+
 }

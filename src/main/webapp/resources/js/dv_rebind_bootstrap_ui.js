@@ -31,7 +31,7 @@ function dataverseuser_page_rebind(){
 function bind_tooltip_popover(){
     // rebind tooltips and popover to all necessary elements
     $(".bootstrap-button-tooltip, [data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
-    $("a[data-toggle='popover']").popover();
+    $("span[data-toggle='popover']").popover();
 }
 
 function toggle_dropdown(){

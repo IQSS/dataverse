@@ -256,6 +256,11 @@ public class GuestbookPage implements java.io.Serializable {
                     }
                 }
             }
+            int i = 0;
+            for (CustomQuestion cq : guestbook.getCustomQuestions()) {
+                cq.setDisplayOrder(i);
+                i++;
+            }
             
         }
            

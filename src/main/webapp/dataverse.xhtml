@@ -351,102 +351,96 @@
                     <!-- View Mode / Description Panel -->
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
 
-                        <div id="actionButtonBlock" class="clearfix">
+                        <div id="actionButtonBlock" class="button-block clearfix">
                             <!-- Edit/Publish Button Group -->
                             <ui:fragment rendered="#{dataverseSession.user.authenticated and
                                                      (permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')
                                                         or permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('PublishDataverseCommand'))}">
-                                <div id="edit-publish-btn-group" class="btn-group pull-right">
-                                    <!-- Publish Button -->
-                                    <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('PublishDataverseCommand')}">
-                                        <ui:fragment rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
-                                            <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish']}
-                                            </button>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
-                                            <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                                <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish']}
-                                            </button>
-                                        </ui:fragment>
-                                    </ui:fragment>
-                                    <!-- END: Publish Button -->
                                     <!-- Edit Button -->
-                                    <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')}">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-pencil"/> #{bundle['dataverse.edit']} <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                <li>
-                                                    <div id="dataverse-info-dropdown">
-                                                        <div class="dataverse-info-logo-icon">
-                                                            <i class="icon-dataverse text-brand"></i>
-                                                        </div>
-                                                        <div class="dataverse-info-general">
-                                                            <div><h:outputText value="#{DataversePage.dataverse.name} #{bundle.dataverse}" styleClass="highlightBold"/> <h:outputText value=" (#{DataversePage.dataverse.affiliation})" styleClass="text-muted" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
-                                                            <div class="text-muted">#{DataversePage.dataverse.alias}</div>
-                                                        </div>
+                                    <div class="btn-group pull-right" jsf:rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')}">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataverse.edit']} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right text-left" role="menu">
+                                            <li>
+                                                <div id="dataverse-info-dropdown">
+                                                    <div class="dataverse-info-logo-icon">
+                                                        <i class="icon-dataverse text-brand"></i>
                                                     </div>
-                                                </li>
-                                                <li class="divider" role="presentation"></li>
+                                                    <div class="dataverse-info-general">
+                                                        <div><h:outputText value="#{DataversePage.dataverse.name} #{bundle.dataverse}" styleClass="highlightBold"/> <h:outputText value=" (#{DataversePage.dataverse.affiliation})" styleClass="text-muted" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
+                                                        <div class="text-muted">#{DataversePage.dataverse.alias}</div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="divider" role="presentation"></li>
+                                            <li>
+                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
+                                                    <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
+                                                </p:commandLink>
+                                            </li>
+                                            <li>
+                                                <h:link outcome="ThemeAndWidgets" id="themeWidgetsOpts" >
+                                                    <f:param name="id" value="#{DataversePage.dataverse.id}" />
+                                                    <h:outputText value="#{bundle['dataverse.option.themeAndWidgets']}" />
+                                                </h:link>
+                                            </li>
+                                            <li>
+                                                <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                    <h:outputText value="#{bundle['dataverse.option.permissions']}" />
+                                                    <f:param name="id" value="#{DataversePage.dataverse.id}" />
+                                                </h:link>
+                                            </li>
+                                            <li>
+                                                <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
+                                                    <h:outputText value="#{bundle['dataverse.option.datasetTemplates']}" />
+                                                    <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                                </h:link>
+                                            </li>
+                                            <li>
+                                                <h:link id="manageGuestbooks" styleClass="ui-commandlink ui-widget" outcome="manage-guestbooks">
+                                                    <h:outputText value="#{bundle['dataverse.option.datasetGuestbooks']}" />
+                                                    <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                                </h:link>
+                                            </li>
+                                            <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">                                                   
                                                 <li>
-                                                    <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();initPopover();">
-                                                        <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
+                                                    <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">
+                                                        <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
                                                     </p:commandLink>
                                                 </li>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{empty DataversePage.featuredDataverses.source and empty DataversePage.featuredDataverses.target}">
                                                 <li>
-                                                    <h:link outcome="ThemeAndWidgets" id="themeWidgetsOpts" >
-                                                        <f:param name="id" value="#{DataversePage.dataverse.id}" />
-                                                        <h:outputText value="#{bundle['dataverse.option.themeAndWidgets']}" />
-                                                    </h:link>
+                                                    <p:commandLink id="noPub" onclick="noPubDVs.show()">
+                                                        <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
+                                                    </p:commandLink>
                                                 </li>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null)
+                                                                     and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DeleteDataverseCommand')}">
+                                                <li class="divider"></li>
                                                 <li>
-                                                    <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                        <h:outputText value="#{bundle['dataverse.option.permissions']}" />
-                                                        <f:param name="id" value="#{DataversePage.dataverse.id}" />
-                                                    </h:link>
+                                                    <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">
+                                                        <h:outputText value="#{bundle['dataverse.option.deleteDataverse']}" />
+                                                    </p:commandLink>
                                                 </li>
-                                                <li>
-                                                    <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
-                                                        <h:outputText value="#{bundle['dataverse.option.datasetTemplates']}" />
-                                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-                                                    </h:link>
-                                                </li>
-                                                <li>
-                                                    <h:link id="manageGuestbooks" styleClass="ui-commandlink ui-widget" outcome="manage-guestbooks">
-                                                        <h:outputText value="#{bundle['dataverse.option.datasetGuestbooks']}" />
-                                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-                                                    </h:link>
-                                                </li>
-                                                <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">                                                   
-                                                    <li>
-                                                        <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">
-                                                            <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
-                                                        </p:commandLink>
-                                                    </li>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{empty DataversePage.featuredDataverses.source and empty DataversePage.featuredDataverses.target}">
-                                                    <li>
-                                                        <p:commandLink id="noPub" onclick="noPubDVs.show()">
-                                                            <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
-                                                        </p:commandLink>
-                                                    </li>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null)
-                                                                         and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DeleteDataverseCommand')}">
-                                                    <li class="divider"></li>
-                                                    <li>
-                                                        <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">
-                                                            <h:outputText value="#{bundle['dataverse.option.deleteDataverse']}" />
-                                                        </p:commandLink>
-                                                    </li>
-                                                </ui:fragment>
-                                            </ul>
-                                        </div>
-                                    </ui:fragment>
+                                            </ui:fragment>
+                                        </ul>
+                                    </div>
                                     <!-- END: Edit Button -->
-                                </div>
+                                    <!-- Publish Button -->
+                                    <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('PublishDataverseCommand')}">
+                                        <button type="button" class="btn btn-default pull-right" onclick="confirmation.show()"
+                                                jsf:rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
+                                        </button>
+                                        <button type="button" class="btn btn-default pull-right" onclick="mayNotRelease.show()"
+                                                jsf:rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
+                                            <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
+                                        </button>
+                                    </ui:fragment>
+                                    <!-- END: Publish Button -->
                             </ui:fragment>
 
                             <!-- END: Edit/Publish Button Group -->
@@ -555,7 +549,7 @@
                     </p:dialog>
 
                     <!-- Publish Confirmation Popup -->
-                    <p:dialog header="#{bundle['dataverse.publish']}" widgetVar="confirmation">
+                    <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="confirmation">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.tip']}
                         </p>

@@ -274,7 +274,7 @@ public class IngestServiceBean {
                 }
             }
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             logger.warning("Failed to run the file utility mime type check on file " + fileName);
         }
         
@@ -434,7 +434,7 @@ public class IngestServiceBean {
                                         if (recognizedType != null && !recognizedType.equals("")) {
                                             datafile.setContentType(recognizedType);
                                         }
-                                    } catch (IOException ex) {
+                                    } catch (Exception ex) {
                                         logger.warning("Failed to run the file utility mime type check on file " + fileName);
                                     }
                                     
@@ -717,7 +717,7 @@ public class IngestServiceBean {
         String contentType;
         try {
             contentType = FileUtil.determineFileType(fileObject, fileObject.getName());
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             logger.warning("FileUtil.determineFileType failed for file with name: " + fileObject.getName());
             contentType = null;
         }
@@ -1407,6 +1407,9 @@ public class IngestServiceBean {
                     }
 
                     Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                    // delete the temp tab-file:
+                    tabFile.delete();
+                    
 
                     // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
@@ -1425,8 +1428,8 @@ public class IngestServiceBean {
                         dataFile.setIngestRequest(null);
                     }
                     dataFile = fileService.save(dataFile);
-                    FacesMessage facesMessage = new FacesMessage("The file " + dataFile.getFileMetadata().getLabel() + " ingested.");
-                    pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
+                    FacesMessage facesMessage = new FacesMessage("Success " + dataFile.getFileMetadata().getLabel());
+                    pushContext.push("/ingest" + dataFile.getOwner().getId(), "Success " + dataFile.getFileMetadata().getLabel()); //facesMessage);
                     logger.info("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
 
                     if (additionalData != null) {
@@ -1470,7 +1473,7 @@ public class IngestServiceBean {
 
                 dataFile = fileService.save(dataFile);
                 FacesMessage facesMessage = new FacesMessage("ingest failed");
-                pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
+                pushContext.push("/ingest" + dataFile.getOwner().getId(), "failure");
                 logger.info("Unknown excepton saving ingested file; Sent push notification to the page.");
             } else {
                 // ??

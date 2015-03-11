@@ -13,36 +13,28 @@ import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
-
- @FacesValidator(value = "linkValidator")
+@FacesValidator(value = "linkValidator")
 public class LinkValidator implements Validator {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        UIInput linkTextInput = (UIInput) component.getAttributes().get("linkTextInput");
+        UIInput taglineInput = (UIInput) component.getAttributes().get("taglineInput");
         UIInput linkUrlInput = (UIInput) component.getAttributes().get("linkUrlInput");
 
-        String textStr = (String) linkTextInput.getSubmittedValue();
+        String taglineStr = (String) taglineInput.getSubmittedValue();
         String urlStr = (String) linkUrlInput.getSubmittedValue();
 
-        if (textStr.isEmpty() && urlStr.isEmpty()) {
-             return;
-         }
-         FacesMessage msg = null;
-         if (textStr.isEmpty()) {
-              msg = new FacesMessage("Link Text is required for Link Url.");
-             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-           FacesContext.getCurrentInstance().addMessage(linkTextInput.getClientId(), msg);
-           }
-         if (urlStr.isEmpty()) {
-            msg = new FacesMessage("Url is required for link text.");
-             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-             FacesContext.getCurrentInstance().addMessage(linkUrlInput.getClientId(), msg);
-            
-         }
-         if (msg!=null) {
-            throw new ValidatorException(msg);
-         }
+        FacesMessage msg = null;
+        if (taglineStr.isEmpty() && !urlStr.isEmpty()) {
+            msg = new FacesMessage("Tagline is required for Website.");
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            FacesContext.getCurrentInstance().addMessage(taglineInput.getClientId(), msg);
+        }
 
-     }
+        if (msg != null) {
+            throw new ValidatorException(msg);
+        }
+
+    }
+
 }
