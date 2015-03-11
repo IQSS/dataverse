@@ -30,7 +30,7 @@ import javax.persistence.OneToMany;
 public class ForeignMetadataFormatMapping implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
     @OneToMany(mappedBy = "foreignMetadataFormatMapping", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
