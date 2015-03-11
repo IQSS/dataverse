@@ -123,6 +123,7 @@ public class DataFileConverter {
                 try {
                     File cachedConvertedFile = new File (cachedFileSystemLocation);
                     FileUtil.copyFile(formatConvertedFile,cachedConvertedFile);
+                    formatConvertedFile.delete();
                 } catch (IOException ex) {
                     // Whatever. For whatever reason we have failed to cache
                     // the format-converted copy of the file we just produced.
