@@ -486,7 +486,7 @@
                                 }
                             </script>
                             <p:socket channel="/ingest#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
-                                <!-- p:ajax event="message" update="@all" / -->
+                                <p:ajax event="message" update="@all" />
                             </p:socket>
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
