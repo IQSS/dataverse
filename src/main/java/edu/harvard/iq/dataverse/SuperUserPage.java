@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -18,6 +19,8 @@ public class SuperUserPage implements java.io.Serializable {
 
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    IndexAllServiceBean indexAllService;
 
     private String indexAllStatus = "No status available";
 
@@ -42,7 +45,7 @@ public class SuperUserPage implements java.io.Serializable {
     public void startIndexAll() {
         User user = session.getUser();
         if (user.isSuperuser()) {
-            indexAllFuture = indexService.indexAll();
+            indexAllFuture = indexAllService.indexAll();
             indexAllStatus = "Index all started...";
         } else {
             indexAllStatus = "Only a superuser can run index all";
