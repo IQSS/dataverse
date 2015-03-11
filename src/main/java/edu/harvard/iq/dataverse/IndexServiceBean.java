@@ -127,7 +127,6 @@ public class IndexServiceBean {
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
-        IndexResponse indexResponse = solrIndexService.indexAllPermissions();
         status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed\n";
         return new AsyncResult<>(status);
     }
