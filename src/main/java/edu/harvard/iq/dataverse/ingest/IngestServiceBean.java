@@ -1407,6 +1407,9 @@ public class IngestServiceBean {
                     }
 
                     Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                    // delete the temp tab-file:
+                    tabFile.delete();
+                    
 
                     // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
