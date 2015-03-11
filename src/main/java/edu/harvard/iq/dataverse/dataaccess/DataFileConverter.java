@@ -116,14 +116,15 @@ public class DataFileConverter {
 
             // for local files, cache the result:
 
-            if (/*!file.isRemote() &&*/
-                    formatConvertedFile != null &&
+            if (formatConvertedFile != null &&
                     formatConvertedFile.exists()) {
 
                 try {
                     File cachedConvertedFile = new File (cachedFileSystemLocation);
                     FileUtil.copyFile(formatConvertedFile,cachedConvertedFile);
                     formatConvertedFile.delete();
+                    formatConvertedFile = cachedConvertedFile;
+                    
                 } catch (IOException ex) {
                     // Whatever. For whatever reason we have failed to cache
                     // the format-converted copy of the file we just produced.
