@@ -782,7 +782,7 @@
                                                                       and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and DatasetPage.downloadPopupRequired}"
                                                            styleClass="btn btn-default"
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
-                                                           update="@form,:messagePanel"
+                                                           update="@form"
                                                            oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');" >
                                                 <span class="glyphicon glyphicon-stats"/> #{bundle.explore}
                                             </p:commandLink>
@@ -840,7 +840,7 @@
                                             <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
                                                            styleClass="btn btn-default"
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
-                                                           update="@form,:messagePanel"
+                                                           update="@form"
                                                            oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                             </p:commandLink>
@@ -857,7 +857,7 @@
                                                         </p:commandLink>
                                                         <p:commandLink styleClass="highlightBold" rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'bundle')}"
-                                                                       update="@form,:messagePanel"
+                                                                       update="@form"
                                                                        oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                             #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
@@ -872,7 +872,7 @@
                                                         </p:commandLink>
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'original')}"
-                                                                       update="@form,:messagePanel"
+                                                                       update="@form"
                                                                        oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                             <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                                                                 <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
@@ -886,7 +886,7 @@
                                                         </p:commandLink>
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'tab')}"
-                                                                       update="@form,:messagePanel"
+                                                                       update="@form"
                                                                        oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                             #{bundle['file.downloadBtn.format.tab']}
                                                         </p:commandLink>
@@ -899,7 +899,7 @@
                                                             </p:commandLink>
                                                             <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'RData')}"
-                                                                           update="@form,:messagePanel"
+                                                                           update="@form"
                                                                            oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                                 #{bundle['file.downloadBtn.format.rdata']}
                                                             </p:commandLink>
@@ -912,7 +912,7 @@
                                                         </p:commandLink>
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'var')}"
-                                                                       update="@form,:messagePanel"
+                                                                       update="@form"
                                                                        oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                             #{bundle['file.downloadBtn.format.var']}
                                                         </p:commandLink>
@@ -2058,11 +2058,11 @@
                         <ui:include src="guestbookResponseFragment.xhtml"/>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
-                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('download')}" />
+                                             action="#{DatasetPage.saveGuestbookResponse('download')}" />
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
-                                             update=":messagePanel:downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
+                                             update="downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
-                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
+                                             action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
                         </div>
                     </p:dialog>
