@@ -34,7 +34,6 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.ws.rs.container.AsyncResponse;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -92,6 +91,7 @@ public class IndexServiceBean {
 
     @Asynchronous
     public Future<String> indexAll() {
+        long indexAllTimeBegin = System.currentTimeMillis();
         String status;
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         logger.info("attempting to delete all Solr documents before a complete re-index");
@@ -127,7 +127,10 @@ public class IndexServiceBean {
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
-        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed\n";
+        long indexAllTimeEnd = System.currentTimeMillis();
+        String timeElapsed = "index all took " + (indexAllTimeEnd - indexAllTimeBegin) + " milliseconds";
+        logger.info(timeElapsed);
+        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed " + timeElapsed + "\n";
         return new AsyncResult<>(status);
     }
 
