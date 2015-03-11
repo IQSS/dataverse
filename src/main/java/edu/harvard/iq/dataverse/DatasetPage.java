@@ -760,7 +760,6 @@ public class DatasetPage implements java.io.Serializable {
                 logger.info("Failed to issue a redirect to file download url.");
             }
         }
-        
         return "";
     }
     
@@ -891,7 +890,6 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editMetadata"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
-            System.out.print("License");
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editLicense"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
@@ -1158,7 +1156,6 @@ public class DatasetPage implements java.io.Serializable {
     public String saveLinkedDataset() {
         if (linkingDataverseId == null) {
             JsfHelper.addFlashMessage("You must select a linking dataverse.");
-            System.out.print("no linking dv...");
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
@@ -1813,14 +1810,25 @@ public class DatasetPage implements java.io.Serializable {
     public void setDownloadFormat(String downloadFormat) {
         this.downloadFormat = downloadFormat;
     }
+    
+    private String downloadType = "";
+
+    public String getDownloadType() {
+        return downloadType;
+    }
+
+    public void setDownloadType(String downloadType) {
+        this.downloadType = downloadType;
+    }
+    
   
     public void initGuestbookResponse(FileMetadata fileMetadata){
          initGuestbookResponse(fileMetadata, "");
     }
 
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat) {
-
-        setDownloadFormat("download");
+        setDownloadFormat(downloadFormat);
+        setDownloadType("download");
         
         this.guestbookResponse = new GuestbookResponse();
         
@@ -1863,9 +1871,11 @@ public class DatasetPage implements java.io.Serializable {
         if(downloadFormat.toLowerCase().equals("subset")){
             this.guestbookResponse.setDownloadtype("Subset");
             setDownloadFormat("subset");
+            setDownloadType("subset");
         }
         if(downloadFormat.toLowerCase().equals("explore")){
             setDownloadFormat("explore");
+            setDownloadType("explore");
             this.guestbookResponse.setDownloadtype("Explore");
         }
         this.guestbookResponse.setDataset(dataset);
@@ -2385,7 +2395,7 @@ public class DatasetPage implements java.io.Serializable {
         // present the user with the popup: 
 
         // 1. License and Terms of Use:
-        if (!"CC0".equals(workingVersion.getLicense())
+        if (!DatasetVersion.License.CC0.equals(workingVersion.getLicense())
                 && !(workingVersion.getTermsOfUse() == null
                 || workingVersion.getTermsOfUse().equals(""))) {
             return true;

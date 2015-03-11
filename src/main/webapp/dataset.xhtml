@@ -926,8 +926,8 @@
                                                                        disabled="#{empty fileMetadata.dataFile.id}"/>
                                                         <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{(DatasetPage.downloadPopupRequired)}"
                                                                        actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'init')}"
-                                                                       update=":datasetForm:downloadDataSubsetPopup"
-                                                                       oncomplete="downloadPopup.show()"
+                                                                       update="@form"
+                                                                       oncomplete="downloadPopup.show()"                                                                       
                                                                        value="Data Subset"
                                                                        disabled="#{empty fileMetadata.dataFile.id}"/>
                                                     </li>
@@ -2057,12 +2057,12 @@
                         </p>
                         <ui:include src="guestbookResponseFragment.xhtml"/>
                         <div class="button-block">
+                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
+                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('download')}" />
+                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
+                                             update=":messagePanel:downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
-                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('download')}" rendered="#{DatasetPage.downloadFormat=='download'}" />
-                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()" 
-                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadFormat=='subset'}" />
-                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
-                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadFormat=='explore'}" />
+                                             update=":messagePanel" action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
                         </div>
                     </p:dialog>
