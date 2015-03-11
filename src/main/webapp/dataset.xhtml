@@ -581,7 +581,7 @@
 
                                             <p:commandLink rendered="#{dataverseSession.user.authenticated and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                                        and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}"
-                                                           style="color:black;margin-left:1em;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                                           style="color:black;margin-left:1em;" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
                                             </p:commandLink>
@@ -974,7 +974,7 @@
                                                          and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                     <div class="" style="text-align:right; margin-bottom:.5em;">
                                         <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
-                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
+                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                         </p:commandLink>
@@ -991,7 +991,7 @@
                                                          and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                     <div style="text-align:right; margin-bottom:.5em;">
                                         <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
-                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form" oncomplete="javascript:post_edit_license()" disabled="#{DatasetPage.locked}">
+                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{bundle['file.dataFilesTab.metadata.addBtn']}" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_license()" disabled="#{DatasetPage.locked}">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                             <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editLicenseBtn']}
                                         </p:commandLink>
