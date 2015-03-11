@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -30,7 +25,6 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -473,7 +467,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     String explicitGroupIdentifier = "";
     String explicitGroupName = "";
     String newExplicitGroupDescription = "";
-    UIComponent explicitGroupIdentifierField;
+    UIInput explicitGroupIdentifierField;
     
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -510,8 +504,15 @@ public class ManagePermissionsPage implements java.io.Serializable {
             }
         }
         try {
+            logger.info( "Attempting to create group " + eg.getGroupAliasInOwner() ); // TODO MBS remove
             eg = commandEngine.submit( new CreateExplicitGroupCommand(session.getUser(), (Dataverse) getDvObject(), eg));
             JsfHelper.addSuccessMessage("Succesfully created group " + eg.getDisplayName());
+        
+        } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
+            logger.info( "Got me then message " + gaee.getMessage() ); // TODO MBS remove
+            explicitGroupIdentifierField.setValid( false );
+            FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
+                           new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));
             
         } catch (CommandException ex) {
             logger.log(Level.WARNING, "Group creation failed", ex);
@@ -520,7 +521,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                                     ex.getMessage());
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be saved.");
-            logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
+             logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
         }
         showAssignmentMessages();
     }
@@ -541,11 +542,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return explicitGroupIdentifier;
     }
 
-    public UIComponent getExplicitGroupIdentifierField() {
+    public UIInput getExplicitGroupIdentifierField() {
         return explicitGroupIdentifierField;
     }
 
-    public void setExplicitGroupIdentifierField(UIComponent explicitGroupIdentifierField) {
+    public void setExplicitGroupIdentifierField(UIInput explicitGroupIdentifierField) {
         this.explicitGroupIdentifierField = explicitGroupIdentifierField;
     }
     
@@ -566,7 +567,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
             } else if ( explicitGroupSvc.findInOwner(getDvObject().getId(), value) != null ) {
                 // Ok, see that the alias is not taken
                 input.setValid(false);
-                input.setValidatorMessage( JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken") );
+                context.addMessage(toValidate.getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken")));
             }
         }
     }

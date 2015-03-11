@@ -19,11 +19,12 @@
                     </label>
                     <div class="col-sm-9">
                         <p:panelGrid columns="2" styleClass="noBorders">
-                            <p:inputText id="explicitGroupIdentifier" styleClass="form-control" value="#{managePermissionsPage.explicitGroupIdentifier}"
+                            <p:inputText id="explicitGroupIdentifier" styleClass="form-control"
+										 value="#{managePermissionsPage.explicitGroupIdentifier}"
                                          required="#{param['DO_GROUP_VALIDATION']}"
                                          requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.required']}"
                                          validator="#{managePermissionsPage.validateGroupIdentifier}"
-					 binding="#{managePermissionsPage.explicitGroupIdentifierField}"/>
+										binding="#{managePermissionsPage.explicitGroupIdentifierField}"/>
                             <p:message for="explicitGroupIdentifier"/>
                         </p:panelGrid>
                         <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.helpText']}</p>

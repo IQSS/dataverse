@@ -1,21 +1,40 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
 /**
+ * A command that creates an explicit group in the context of a {@link Dataverse}.
  *
  * @author michael
  */
 @RequiredPermissions( Permission.ManageDataversePermissions )
 public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup>{
+    
+    public class GroupAliasExistsException extends CommandException {
+        private final String alias;
+        
+        public GroupAliasExistsException(String anAlias) {
+            super("Alias '" + anAlias + "' already exists in context of Dataverse" 
+                    + CreateExplicitGroupCommand.this.getAffectedDvObjects().get("").accept(DvObject.NamePrinter),
+                    CreateExplicitGroupCommand.this);
+            alias = anAlias;
+        }
+
+        public String getAlias() {
+            return alias;
+        }
+        
+    }
     
     private final ExplicitGroup eg;
     private final Dataverse dv;
@@ -34,9 +53,7 @@ public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup>{
         
         ExplicitGroup existing = eg.getGroupProvider().get( eg.getAlias()  );
         if ( existing != null ) {
-            throw new IllegalCommandException( "Explicit group with the alias " 
-                                                    + eg.getGroupAliasInOwner() + " already exists for dataverse " + dv.getId(),
-                                              this);
+            throw new GroupAliasExistsException( eg.getGroupAliasInOwner() );
         }
         
         // persist
