@@ -62,12 +62,12 @@
                 </div>
                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
                     <label class="col-sm-3 control-label" for="guestbookuser_questions">
-                        Additional Questions
+                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
                     </label>
                     <div class="col-sm-6">
                         <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
                             <div>
-                                <label class="control-label" style="display: inline-block;">
+                                <label class="control-label">
                                     <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
                                     <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
                                 </label>
@@ -75,8 +75,8 @@
                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"/>
                                 <p:selectOneMenu styleClass="form-control" value="#{customQuestionResponse.response}"
                                                  rendered="#{customQuestionResponse.customQuestion.questionType=='options'}">
-                                    <f:selectItem itemLabel="Select" itemValue="" />
-                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}"></f:selectItems>
+                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
                                 </p:selectOneMenu>
                             </div>
                         </ui:repeat>
