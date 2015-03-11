@@ -30,8 +30,6 @@ import javax.persistence.PersistenceContext;
 @ViewScoped
 public class DatasetVersionUI implements Serializable {
 
-     @EJB
-    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelServiceBean;
     @EJB
     DataverseServiceBean dataverseService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -427,26 +425,25 @@ public class DatasetVersionUI implements Serializable {
             List<DatasetField> datasetFieldsForView = new ArrayList();
             List<DatasetField> datasetFieldsForEdit = new ArrayList();
             for (DatasetField dsf : datasetVersion.getDatasetFields()) {
-                DataverseFieldTypeInputLevel dftil = dataverseFieldTypeInputLevelServiceBean.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
-                    if((dftil != null &&  dftil.isRequired())){                          
-                        mdb.setHasRequired(true);                       
-                    }                    
-                    if (!dsf.isEmptyForDisplay()) {  
+                    if (dsf.isRequired()) {
+                        mdb.setHasRequired(true);
+                    }
+                    if (!dsf.isEmptyForDisplay()) {
                         mdb.setEmpty(false);
                         datasetFieldsForView.add(dsf);
                     }
                 }
             }
-            
+
             if (!datasetFieldsForView.isEmpty()) {
                 metadataBlocksForView.put(mdb, datasetFieldsForView);
             }
             if (!datasetFieldsForEdit.isEmpty()) {
                 metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
+            }
         }
-    }
     }
 
 }
