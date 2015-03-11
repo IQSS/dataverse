@@ -620,30 +620,28 @@
                                     </p:column>
                                     <p:column class="col-xs-1 text-center" style="width:64px;">
                                         <div style="position:relative;width:64px;margin:0 auto;"><!-- display:table-cell; -->
-                                            <!-- add hover here -->
-                                            <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession)}">
-                                                <span class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                                                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
-                                                </span>
-                                            </ui:fragment>
-
-                                            <i class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} text-muted" style="font-size:3em;line-height:1.05;" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.fileSystemName, fileMetadata.dataFile.contentType))}"/>
+                                            <!-- Thumbnail Preview -->
+                                            <span class="imageThumbPreview" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession)}"
+                                                  data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+                                                <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                                            </span>
+                                            
+                                            <!-- Default Icon -->
+                                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} text-muted" style="font-size:3em;line-height:1.05;" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.fileSystemName, fileMetadata.dataFile.contentType))}"/>
 
                                             <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.fileSystemName, fileMetadata.dataFile.contentType)}">
                                                 <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
                                             <!-- Restricted File Icon -->
-                                            <ui:fragment rendered="#{fileMetadata.restricted}">
-                                                <div jsf:rendered="#{ fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')))}"
-                                                     style="display:block;position:absolute;bottom:-4px;right:10px;">
-                                                    <span class="glyphicon glyphicon-lock text-danger"/>
-                                                </div>
-                                                <div jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.restricted and permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')}"
-                                                     style="display:block;position:absolute;bottom:-4px;right:10px;">
-                                                    <i class="icon-unlock text-success"/>
-                                                </div>
-                                            </ui:fragment>
+                                            <div jsf:rendered="#{fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')))}"
+                                                 style="display:block;position:absolute;bottom:-4px;right:10px;">
+                                                <span class="glyphicon glyphicon-lock text-danger"/>
+                                            </div>
+                                            <div jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.restricted and permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')}"
+                                                 style="display:block;position:absolute;bottom:-4px;right:10px;">
+                                                <span class="icon-unlock text-success"/>
+                                            </div>
                                         </div>
                                         <!-- WorldMap Preview -->
                                         <ui:fragment rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}">
@@ -689,9 +687,8 @@
                                             <h:outputText id="fileCreatePublishDate" value="#{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
 
                                             <div class="mD5-block">
-                                                <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
-
-                                                <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal']: bundle['file.MD5']}: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
+                                                <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                                                <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal']: bundle['file.MD5']}: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
                                                 <ui:fragment rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}">
                                                     <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">#{bundle['file.MD5.exists.tip']}</span></div>
                                                 </ui:fragment>
@@ -850,22 +847,22 @@
                                             <!-- Download Dropdown -->
                                             <div class="btn-group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
+                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
                                                 </button>
-                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                                    <li role="presentation" class="divider"></li>                                                   
+                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                           
                                                     <li>
-                                                        <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                        <p:commandLink styleClass="highlightBold" rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                                                        action="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}">
                                                             #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
-                                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                        <p:commandLink styleClass="highlightBold" rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'bundle')}"
                                                                        update="@form,:messagePanel"
                                                                        oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
                                                             #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                     </li>
+                                                    <li role="presentation" class="divider"></li>                        
                                                     <li>
                                                         <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                                                        action="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
@@ -962,7 +959,6 @@
                                                     onclick="accessSignUpLogIn_popup.show()">
                                                 <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
                                             </button>
-                                        
                                         </div>
                                         <!-- END: button-block -->
                                     </p:column>
@@ -2071,13 +2067,11 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="downloadDataSubsetPopup" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
+                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="Download Data Subset" widgetVar="downloadDataSubsetPopup"
                               rendered="#{empty DatasetPage.editMode}" modal="true">
-                        <ui:fragment rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
-                            <div class="form-inline clearfix" style="width:600px;">
-                                <ui:include src="/subset/gui_subset.xhtml"/>
-                            </div>
-                        </ui:fragment>
+                        <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
+                            <ui:include src="/subset/gui_subset.xhtml"/>
+                        </div>
                     </p:dialog>
 
                     <p:dialog id="fileCategoriesPopup" styleClass="smallPopUp" header="#{bundle['file.editCategoriesDialog.header']}" widgetVar="fileCategoriesPopup" modal="true">
