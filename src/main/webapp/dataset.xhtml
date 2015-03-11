@@ -280,13 +280,13 @@
                                     <p:commandLink styleClass="btn btn-default pull-right" onclick="publishParent.show()"
                                             rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                          and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
-                                                         and (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released)}">
+                                                         and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
                                     
                                     <p:commandLink styleClass="btn btn-default pull-right" rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                          and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
-                                                         and ( DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))}"
+                                                         and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)}"
                                                 onclick="maynotPublishParent.show()">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
