@@ -788,7 +788,7 @@
                                             </p:commandLink>
 
                                             <ui:remove><!-- WorldMap Explore | Map Data button group --></ui:remove>
-                                            <div class="btn-group" role="group" jsf:rendered="#{ DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) or DatasetPage.canUserSeeMapDataButton(fileMetadata)}">
+                                            <div class="btn-group" role="group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) or DatasetPage.canUserSeeMapDataButton(fileMetadata)}">
                                                 <!-- WorldMap Explore -->
                                                 <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
                                                               class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
