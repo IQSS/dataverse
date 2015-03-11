@@ -568,6 +568,77 @@ public class DatasetPage implements java.io.Serializable {
         return this.mapLayerMetadataLookup.get(df.getId());
     }
 
+    
+     /**
+     * Should there be a Map Data Button for this file?
+     * 
+     *  (1) Is the user logged in?
+     *  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
+     *  (3) Does the logged in user have permission to edit the Dataset to which this FileMetadata belongs?
+     * 
+     * @param fm FileMetadata
+     * @return boolean
+     */
+    public boolean canUserSeeMapDataButton(FileMetadata fm){
+
+        if (fm==null){
+            return false;
+        }  
+        
+        // (1) Is there an authenticated user?
+        if (!(this.session.getUser().isAuthenticated())){
+            return false;
+        }
+        
+        //  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
+        //
+        //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
+        //
+        if (!(this.isShapefileType(fm))){
+            return false;
+        }
+
+        // (3) If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
+        if (!(this.permissionService.userOn(this.session.getUser(), fm.getDataFile().getOwner()).has(Permission.EditDataset))) { 
+            return false;
+        }
+        
+
+        // Looks good
+        //
+        return true;
+    }
+    
+    /**
+     * Should there be a Explore WorldMap Button for this file?
+     * 
+     *  (1) Does the file have MapLayerMetadata?
+     *  (2) Is there DownloadFile permission for this file?
+     * 
+     * @param fm FileMetadata
+     * @return boolean
+     */
+    public boolean canUserSeeExploreWorldMapButton(FileMetadata fm){
+        if (fm==null){
+            return false;
+        }
+        
+        // (1) Does the file have MapLayerMetadata?
+        if (!(this.hasMapLayerMetadata(fm))){
+            return false;
+        }
+         
+        // (2) Is there DownloadFile permission for this file?
+        //
+        if (!(this.permissionService.on(fm.getDataFile()).has(Permission.DownloadFile))){
+                return false;
+        }
+              
+        // Looks good
+        //
+        return true;
+    }
+
     /**
      * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
      *

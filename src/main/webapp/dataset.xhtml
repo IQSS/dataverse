@@ -787,19 +787,21 @@
                                                 <span class="glyphicon glyphicon-stats"/> #{bundle.explore}
                                             </p:commandLink>
 
-                                            <div class="btn-group" role="group" jsf:rendered="#{permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile') and (DatasetPage.hasMapLayerMetadata(fileMetadata) or (dataverseSession.user.authenticated and DatasetPage.isShapefileType(fileMetadata)))}">
+                                            <ui:remove><!-- WorldMap Explore | Map Data button group --></ui:remove>
+                                            <div class="btn-group" role="group" jsf:rendered="#{ DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) or DatasetPage.canUserSeeMapDataButton(fileMetadata)}">
                                                 <!-- WorldMap Explore -->
-                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
                                                               class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
                                                     <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
                                                 </h:outputLink>
                                                 <!-- WorldMap Map Data -->
-                                                <h:outputLink pt:role="button" rendered="#{dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata)}"
                                                               styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                                                    <span class="glyphicon glyphicon-map-marker" jsf:rendered="#{!DatasetPage.hasMapLayerMetadata(fileMetadata)}"/> #{bundle['file.mapData']}
+                                                    <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
                                                 </h:outputLink>
                                             </div>
 
+                                          
                                             <!-- ( NOT ACTIVE:  Needed for mapping tabular data when there are 2 options for Explore ) -->
                                             <!-- START: Explore dropdown for tabularData, ingestInProgress (?), or MapLayerMetadata -->
                                             <ui:remove>
