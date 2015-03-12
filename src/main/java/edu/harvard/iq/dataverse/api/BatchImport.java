@@ -98,7 +98,7 @@ public class BatchImport extends AbstractApiBean  {
      */
     @GET 
     @Path("import")
-    public Response getImport(@QueryParam("path") String fileDir, @QueryParam("identifier") String parentIdtf, @QueryParam("key") String apiKey)  {
+    public Response getImport(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey)  {
       
         return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.NEW);
      
