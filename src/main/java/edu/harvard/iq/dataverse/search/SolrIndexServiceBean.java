@@ -357,7 +357,17 @@ public class SolrIndexServiceBean {
          * @todo Re-indexing the definition point itself seems to be necessary
          * for revoke but not necessarily grant.
          */
-        dvObjectsToReindexPermissionsFor.add(definitionPoint.getId());
+
+        // We don't create a Solr "primary/content" doc for the root dataverse
+        // so don't create a Solr "permission" doc either.
+        if (definitionPoint.isInstanceofDataverse()) {
+            Dataverse selfDataverse = (Dataverse) definitionPoint;
+            if (!selfDataverse.equals(dataverseService.findRootDataverse())) {
+                dvObjectsToReindexPermissionsFor.add(definitionPoint.getId());
+            }
+        } else {
+            dvObjectsToReindexPermissionsFor.add(definitionPoint.getId());
+        }
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
