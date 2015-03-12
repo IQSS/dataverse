@@ -7,4 +7,6 @@ curl -L -O https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz
 # https://issues.jboss.org/browse/WELD-1704
 # WELD-1704 Fix possible ThreadLocal leak during request and session context association https://github.com/weld/core/commit/19dcc077a6ff6f1f6c70fa902491620e09eafd54
 # https://github.com/payara/Payara/issues/76  
-curl -L -O http://search.maven.org/remotecontent?filepath=org/jboss/weld/weld-osgi-bundle/2.2.4.Final/weld-osgi-bundle-2.2.4.Final.jar
+#curl -L -O http://search.maven.org/remotecontent?filepath=org/jboss/weld/weld-osgi-bundle/2.2.4.Final/weld-osgi-bundle-2.2.4.Final.jar
+# "Attached is a modified bundle for GlassFish 4.1 users." https://issues.jboss.org/browse/WELD-1857
+curl -L -O https://issues.jboss.org/secure/attachment/12387674/weld-osgi-bundle-2.2.9.Final.jar
