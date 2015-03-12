@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  * Your goto bean for everything {@link DvObject}, that's not tied to any
@@ -74,6 +75,12 @@ public class DvObjectServiceBean implements java.io.Serializable {
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
         return savedDvObject;
+    }
+
+    public int clearAllIndexTimes() {
+        Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL");
+        int numRowsUpdated = clearIndexTimes.executeUpdate();
+        return numRowsUpdated;
     }
 
 }
