@@ -1,14 +1,14 @@
 Dataverse 
 ==========
 
-Dataverse is an open source web application for sharing, citing, analyzing, and preserving research data (developed at the Institute for Quantitative Social Science at Harvard University).
+Dataverse is an open source web application for sharing, citing, analyzing, and preserving research data (developed by the [Data Science team] (http://datascience.iq.harvard.edu/dataverse) at the [Institute for Quantitative Social Science] (http://iq.harvard.edu/)).
 
 Institutions and organizations can choose to install the Dataverse software for their own use. 
 In this case, the institution will be responsible for maintaining the application; installing upgrades, 
 setting up backups and data replication as needed. Dataverse 4.0 is in beta and available for all to try out here: [dataverse-demo.iq.harvard.edu] (http://dataverse-demo.iq.harvard.edu/)
 
-For more general information about Dataverse please visit our 
-[Data Science site] (http://datascience.iq.harvard.edu/dataverse). 
+For more general information about Dataverse please visit
+[dataverse.org] (http://dataverse.org). 
 
 The Dataverse code is *open-source* and *free*. 
 
