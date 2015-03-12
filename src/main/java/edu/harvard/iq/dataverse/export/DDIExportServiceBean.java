@@ -497,7 +497,7 @@ public class DDIExportServiceBean {
         String persistentId = version.getDataset().getIdentifier(); 
         
         
-        xmlw.writeStartElement("StdyDscr");
+        xmlw.writeStartElement("stdyDscr");
             xmlw.writeStartElement("citation");
         
                 xmlw.writeStartElement("titlStmt");
