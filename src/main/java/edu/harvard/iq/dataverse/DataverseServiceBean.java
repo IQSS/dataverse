@@ -81,6 +81,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
 
+    /**
+     * @todo Do we really want this method to sometimes throw a
+     * NoResultException which is a RuntimeException?
+     */
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
     }

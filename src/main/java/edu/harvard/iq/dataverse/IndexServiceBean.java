@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
@@ -101,9 +102,14 @@ public class IndexServiceBean {
             return new AsyncResult<>(msg);
         }
         Dataverse rootDataverse = findRootDataverseCached();
-        if (dataverse.getId() == rootDataverse.getId()) {
-            String msg = "The root dataverse shoud not be indexed.";
+        if (rootDataverse == null) {
+            String msg = "Could not find root dataverse and the root dataverse should not be indexed. Returning.";
             return new AsyncResult<>(msg);
+        } else {
+            if (dataverse.getId() == rootDataverse.getId()) {
+                String msg = "The root dataverse should not be indexed. Returning.";
+                return new AsyncResult<>(msg);
+            }
         }
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
@@ -1071,7 +1077,18 @@ public class IndexServiceBean {
              * Let's just find the root dataverse and be done with it. We'll
              * figure out the caching later.
              */
-            return dataverseService.findRootDataverse();
+            try {
+                Dataverse rootDataverse = dataverseService.findRootDataverse();
+                return rootDataverse;
+            } catch (EJBException ex) {
+                logger.info("caught " + ex);
+                Throwable cause = ex.getCause();
+                while (cause.getCause() != null) {
+                    logger.info("caused by... " + cause);
+                    cause = cause.getCause();
+                }
+                return null;
+            }
         }
 
         /**
