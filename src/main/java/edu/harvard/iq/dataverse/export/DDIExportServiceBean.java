@@ -406,6 +406,8 @@ public class DDIExportServiceBean {
         xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
         writeAttribute(xmlw, "version", "2.0");
 
+        createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, df.getOwner().getLatestVersion());
+        
         DataTable dt = fileService.findDataTableByFileId(df.getId());
 
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
@@ -518,6 +520,11 @@ public class DDIExportServiceBean {
                     xmlw.writeEndElement(); // AuthEnty
         
                 xmlw.writeEndElement(); // rspStmt
+                xmlw.writeStartElement("biblCit");
+                
+                xmlw.writeCharacters(version.getCitation());
+                
+                xmlw.writeEndElement(); // biblCit
         
             xmlw.writeEndElement(); // citation
         xmlw.writeEndElement(); // stdyDscr
