@@ -44,7 +44,7 @@ public class DataverseRole implements Serializable  {
     
     //constants for the built in roles references in the code
     public static final String ADMIN = "admin";
-    public static final String FILE_DOWNLOADER = "filedownloader";
+    public static final String FILE_DOWNLOADER = "fileDownloader";
     public static final String FULL_CONTRIBUTOR = "fullContributor";
     public static final String DV_CONTRIBUTOR = "dvContributor";
     public static final String DS_CONTRIBUTOR = "dsContributor";
