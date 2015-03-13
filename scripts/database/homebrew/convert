@@ -1,0 +1,3 @@
+#!/bin/sh
+sed -i -e "s/postgres/$USER/" /tmp/dataverse_db.sql
+sed -i -e 's/dvnapp/dataverse_app/' /tmp/dataverse_db.sql
