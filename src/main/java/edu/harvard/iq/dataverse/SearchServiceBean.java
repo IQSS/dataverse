@@ -458,7 +458,7 @@ public class SearchServiceBean {
             } else if (type.equals("datasets")) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
-                solrSearchResult.setImageUrl(baseUrl + "/api/access/dsPreview/" + datasetVersionId);
+                solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */
@@ -498,7 +498,7 @@ public class SearchServiceBean {
                  * JSON.
                  */
 //                solrSearchResult.setApiUrl(baseUrl + "/api/meta/datafile/" + entityid);
-                solrSearchResult.setImageUrl(baseUrl + "/api/access/preview/" + entityid);
+                solrSearchResult.setImageUrl(baseUrl + "/api/access/fileCardImage/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
                 Object fileSizeInBytesObject = solrDocument.getFieldValue(SearchFields.FILE_SIZE_IN_BYTES);
