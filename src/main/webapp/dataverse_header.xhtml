@@ -4,6 +4,7 @@
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:p="http://primefaces.org/ui"
      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+     xmlns:jsf="http://xmlns.jcp.org/jsf"
      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs" style="margin-top:50px;">
 
     <!-- Navbar Panel -->
@@ -145,73 +146,58 @@
     <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
 
     <!-- Header Panel -->
-    <ui:fragment rendered="#{showDataverseHeader}">
-        <div id="dataverseHeader" class="container bg-muted" style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};">
-            <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};">
-                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
-                </div>
-            </ui:fragment>
-            <div class="dataverseHeaderBlock">
-                <ui:fragment rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
-                    <div class="dataverseHeaderCell dataverseHeaderLogo">
-                        <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
-                    </div>
-                </ui:fragment>
-                <ui:fragment rendered="#{!empty dataverse.name}">
-                    <div class="dataverseHeaderCell dataverseHeaderName">
-                        <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name} #{bundle.dataverse}</a>
-                        <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
-                        <h:outputText value="#{bundle.unpublished}" styleClass="label label-danger" rendered="#{!dataverse.released}"/>
-                    </div>
-                </ui:fragment>
-                <ui:fragment rendered="#{empty dataverse.name}">
-                    <div class="dataverseHeaderCell dataverseHeaderName">
-                        <h:outputText styleClass="dataverseHeaderDataverseName" value="#{bundle.newDataverse}"/>
-                    </div>
-                </ui:fragment>
-                <ui:fragment rendered="#{!empty dataverse.dataverseTheme.tagline and empty dataverse.dataverseTheme.linkUrl}">
-                    <div class="dataverseHeaderCell dataverseHeaderTagline">
-                        <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value="#{dataverse.dataverseTheme.tagline}" />
-                    </div>
-                </ui:fragment>
-                <ui:fragment rendered="#{!empty dataverse.dataverseTheme.tagline and !empty dataverse.dataverseTheme.linkUrl}">
-                    <div class="dataverseHeaderCell dataverseHeaderLink">
-                        <h:outputLink value="#{dataverse.dataverseTheme.linkUrl}" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};" target="_blank">
-                            <h:outputText value="#{dataverse.dataverseTheme.tagline}" escape="false"/>
-                        </h:outputLink>
-                    </div>
-                </ui:fragment>
+    <div id="dataverseHeader" class="container bg-muted" 
+            style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'F5F5F5'};"
+            jsf:rendered="#{showDataverseHeader}">
+        <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};; background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'F5F5F5'};"
+                jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
+            <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
+        </div>
+        <div class="dataverseHeaderBlock">
+            <div class="dataverseHeaderCell dataverseHeaderLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
+                <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle.dataverse}"/>
+            </div>
+            <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{!empty dataverse.name}">
+                <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name} #{bundle.dataverse}</a>
+                <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
+                <h:outputText value="#{bundle.unpublished}" styleClass="label label-danger" rendered="#{!dataverse.released}"/>
+            </div>
+            <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{empty dataverse.name}">
+                <h:outputText styleClass="dataverseHeaderDataverseName" value="#{bundle.newDataverse}"/>
+            </div>
+            <div class="dataverseHeaderCell dataverseHeaderTagline" jsf:rendered="#{!empty dataverse.dataverseTheme.tagline and empty dataverse.dataverseTheme.linkUrl}">
+                <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value="#{dataverse.dataverseTheme.tagline}" />
+            </div>
+            <div class="dataverseHeaderCell dataverseHeaderLink" jsf:rendered="#{!empty dataverse.dataverseTheme.tagline and !empty dataverse.dataverseTheme.linkUrl}">
+                <h:outputLink value="#{dataverse.dataverseTheme.linkUrl}" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};" target="_blank">
+                    <h:outputText value="#{dataverse.dataverseTheme.tagline}" escape="false"/>
+                </h:outputLink>
             </div>
         </div>
-    </ui:fragment>
+    </div>
 
-
-    <div id="breadcrumbNavBlock" class="container">
+    <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
         <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
             <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
             <div class="breadcrumbBlock">
-                <div>
-                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
-                    <ui:fragment rendered="#{!status.last}" >
-                        <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
-                        
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
-                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
-                            </a>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?globalId=${breadcrumb.dvObject.globalId}">
-                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
-                            </a>
-                        </ui:fragment>                        
+                <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
+                <ui:fragment rendered="#{!status.last}">
+                    <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset}"/>
+
+                    <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataverse}">                       
+                        <a id="breadcrumbLnk#{status.index}" href="/dataverse/${breadcrumb.dvObject.alias}">
+                            <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                        </a>
                     </ui:fragment>
-                </div>
+                    <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">                       
+                        <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?globalId=${breadcrumb.dvObject.globalId}">
+                            <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                        </a>
+                    </ui:fragment>                        
+                </ui:fragment>
             </div>
         </ui:repeat>                    
-    </div>    
-
+    </div>
 
     <ui:remove>
         <!-- Removing this temporarily until we can fix the performance issues with it;
