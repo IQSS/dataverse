@@ -671,6 +671,13 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
+        if (state.equals(indexableDataset.getDatasetState().DEACCESSIONED)) {
+            String deaccessionNote = datasetVersion.getVersionNote();
+            if (deaccessionNote != null) {
+                solrInputDocument.addField(SearchFields.DATASET_DEACCESSION_REASON, deaccessionNote);
+            }
+        }
+
         docs.add(solrInputDocument);
 
         List<String> filesIndexed = new ArrayList<>();

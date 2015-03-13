@@ -42,6 +42,7 @@ public class SolrSearchResult {
     private String title;
     private String descriptionNoSnippet;
     private List<String> datasetAuthors = new ArrayList<>();
+    private String deaccessionReason;
     private List<Highlight> highlightsAsList = new ArrayList<>();
     private Map<SolrField, Highlight> highlightsMap;
     private Map<String, Highlight> highlightsAsMap;
@@ -347,6 +348,7 @@ public class SolrSearchResult {
                 .add("md5", getFileMd5())
                 .add("unf", getUnf())
                 .add("dataset_citation", datasetCitation)
+                .add("deaccession_reason", this.deaccessionReason)
                 .add("citation", this.citation);
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
@@ -499,6 +501,14 @@ public class SolrSearchResult {
 
     public void setDatasetAuthors(List<String> datasetAuthors) {
         this.datasetAuthors = datasetAuthors;
+    }
+
+    public String getDeaccessionReason() {
+        return deaccessionReason;
+    }
+
+    public void setDeaccessionReason(String deaccessionReason) {
+        this.deaccessionReason = deaccessionReason;
     }
 
     public List<Highlight> getHighlightsAsListOrig() {

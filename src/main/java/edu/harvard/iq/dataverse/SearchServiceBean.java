@@ -371,6 +371,7 @@ public class SearchServiceBean {
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
             String title = (String) solrDocument.getFieldValue(titleSolrField);
             Long datasetVersionId = (Long) solrDocument.getFieldValue(SearchFields.DATASET_VERSION_ID);
+            String deaccessionReason = (String) solrDocument.getFieldValue(SearchFields.DATASET_DEACCESSION_REASON);
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
             /**
@@ -439,6 +440,7 @@ public class SearchServiceBean {
             Map<String, String> parent = new HashMap<>();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
+            solrSearchResult.setDeaccessionReason(deaccessionReason);
             /**
              * @todo start using SearchConstants class here
              */

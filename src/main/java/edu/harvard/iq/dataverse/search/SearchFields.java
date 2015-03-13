@@ -156,6 +156,10 @@ public class SearchFields {
      */
     public static final String DATASET_CITATION = "citation_s";
     /**
+     * @todo Add this to schema.xml with no "_s" and make it indexed=false
+     */
+    public static final String DATASET_DEACCESSION_REASON = "deaccession_reason_s";
+    /**
      * In contrast to PUBLICATION_DATE, this field applies only to datasets for
      * more targeted results.
      */

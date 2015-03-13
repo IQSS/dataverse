@@ -398,6 +398,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
                             }
                         }
                     }
+                    String deaccesssionReason = solrSearchResult.getDeaccessionReason();
+                    if (deaccesssionReason != null) {
+                        solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
+                    }
                 } else if (solrSearchResult.getType().equals("files")) {
                     DataFile dataFile = dataFileService.find(solrSearchResult.getEntityId());
                     if (dataFile != null) {
