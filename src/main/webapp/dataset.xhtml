@@ -542,11 +542,11 @@
 
                                         <!-- TYPE + SIZE + DATE + MD5 -->
                                         <div class="text-muted small">
-                                            <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType} - " rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
-                                            <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']} - " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileSize" value="#{fileMetadata.dataFile.friendlySize} - " rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                            <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+                                            <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                            <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
-                                            <h:outputText id="fileCreatePublishDate" value="#{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
+                                            <h:outputText id="fileCreatePublishDate" value=" - #{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
 
                                             <div class="mD5-block">
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
@@ -563,8 +563,8 @@
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
                                         </div>
                                        
-                                        <div class="fileDescription small" jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
-                                            <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
+                                        <div class="fileDescription" jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
+                                            <h:outputText id="fileDescNonEmpty" styleClass="small" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
                                             <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                                 <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                                     #{bundle.description}
@@ -575,9 +575,9 @@
                                             </ui:fragment>
                                         </div>
 
-                                        <div jsf:rendered="#{!(empty fileMetadata.categories) or (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                        <div class="fileCategories #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <!-- File Categories -->
-                                            <p:commandLink id="fileCategoriesButton" styleClass="btn btn-default" style="margin-right:.5em;"
+                                            <p:commandLink type="button" id="fileCategoriesButton" styleClass="btn btn-default btn-sm"
                                                            actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
                                                            update=":datasetForm:fileCategoriesPopup"
                                                            oncomplete="fileCategoriesPopup.show()"
@@ -585,17 +585,14 @@
                                                 <span class="glyphicon glyphicon-tag"/> #{bundle['file.editCategories']}
                                             </p:commandLink>
                                             <ui:fragment rendered="#{empty fileMetadata.categories and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                                <span class="text-muted">
+                                                <span class="text-muted small">
                                                     You currently have no categories set for this file.
                                                 </span>
-                                                <h:outputText value=" "/>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                                                 <ui:repeat value="#{fileMetadata.categories}" var="cat">
                                                     <h:outputText value="#{cat.name}" styleClass="label label-info"/>
-                                                    <h:outputText value=" "/>
                                                 </ui:repeat>
-                                                <h:outputText value=" "/>
                                             </ui:fragment>
                                         </div>
                                     </p:column>
