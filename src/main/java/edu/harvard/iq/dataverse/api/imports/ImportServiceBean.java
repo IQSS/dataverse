@@ -140,8 +140,8 @@ public class ImportServiceBean {
             importLogger.getLogger().log(Level.SEVERE, msg, e);
             System.out.println(msg);
             e.printStackTrace();
-            throw new ImportException("Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName(), e);
-
+            return Json.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
+   
         }
     }
 
