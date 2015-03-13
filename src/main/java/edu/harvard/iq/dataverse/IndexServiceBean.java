@@ -93,6 +93,11 @@ public class IndexServiceBean {
     private Dataverse rootDataverseCached;
 
     @TransactionAttribute(REQUIRES_NEW)
+    public Future<String> indexDataverseNonAsync(Dataverse dataverse) {
+        return indexDataverse(dataverse);
+    }
+
+    @TransactionAttribute(REQUIRES_NEW)
     @Asynchronous
     public Future<String> indexDataverse(Dataverse dataverse) {
         logger.info("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
@@ -207,6 +212,11 @@ public class IndexServiceBean {
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
 
+    }
+
+    @TransactionAttribute(REQUIRES_NEW)
+    public Future<String> indexDatasetNonAsync(Dataset dataset) {
+        return indexDataset(dataset);
     }
 
     @TransactionAttribute(REQUIRES_NEW)

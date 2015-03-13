@@ -45,7 +45,8 @@ public class SuperUserPage implements java.io.Serializable {
     public void startIndexAll() {
         User user = session.getUser();
         if (user.isSuperuser()) {
-            indexAllFuture = indexAllService.indexAll();
+            boolean async = true;
+            indexAllFuture = indexAllService.indexAll(async);
             indexAllStatus = "Index all started...";
         } else {
             indexAllStatus = "Only a superuser can run index all";

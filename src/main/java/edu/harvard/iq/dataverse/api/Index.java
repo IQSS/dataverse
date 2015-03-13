@@ -23,6 +23,7 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -43,14 +44,25 @@ public class Index extends AbstractApiBean {
     DataFileServiceBean dataFileService;
 
     @GET
-    public Response indexAll() {
+    public Response indexAll(@QueryParam("async") Boolean async) {
         try {
             /**
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<String> indexAllFuture = indexAllService.indexAll();
-            return okResponse("index all has been started");
+            if (async != null) {
+                if (async) {
+                    Future<String> indexAllFuture = indexAllService.indexAll(async);
+                    return okResponse("index all has been started (async)");
+                } else {
+                    // async=false (or async=foo which is a little weird)
+                    Future<String> indexAllFuture = indexAllService.indexAll(async);
+                    return okResponse("index all has been started (non-async)");
+                }
+            } else {
+                Future<String> indexAllFuture = indexAllService.indexAll(true);
+                return okResponse("index all has been started (async, the default)");
+            }
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
