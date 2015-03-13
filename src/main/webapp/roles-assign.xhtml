@@ -27,8 +27,9 @@
                                         required="#{param['DO_ASSIGN_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.requiredMsg']}"
                                         var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                             <p:column>
-                                <h:outputText value="#{roleAssignee.identifier} #{roleAssignee.displayInfo.title}"/> 
+                                <h:outputText value="#{roleAssignee.displayInfo.title}"/> 
                                 <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
+                                <h:outputText value=" #{roleAssignee.identifier}"/> 
                             </p:column>
                             <p:ajax process="@this" event="itemSelect" />
                             <p:ajax process="@this" event="itemUnselect" />

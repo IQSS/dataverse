@@ -6,11 +6,11 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui">
     
-    <div class="form-group clearfix">
-        <label for="accessRadios" class="col-sm-3 control-label">
+    <div class="form-group">
+        <label for="accessRadios">
             #{bundle['dataverse.permissions.Q1']}
         </label>
-        <div class="col-sm-9">
+        <div class="col-sm-offset-1">
             <p:selectOneRadio id="authenticatedUsersContributorRoleRadio" value="#{managePermissionsPage.authenticatedUsersContributorRoleAlias}" layout="grid" columns="1">
                 <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer1']}" itemValue="" />
                 <f:selectItem itemLabel="#{bundle['dataverse.permissions.Q1.answer2']}" itemValue="dvContributor" />
@@ -20,12 +20,11 @@
         </div>
     </div>
 
-    <div class="form-group clearfix">
-        <label for="contributorRadios" class="col-sm-3 control-label">
+    <div class="form-group">
+        <label for="contributorRadios">
             #{bundle['dataverse.permissions.Q2']}
         </label>
-        <div class="col-sm-9">
-            #{bundle['dataverse.permissions.Q2.answer']}
+        <div class="col-sm-offset-1">
             <p:selectOneRadio id="defaultContributorRoleRadio" value="#{managePermissionsPage.defaultContributorRoleAlias}" layout="custom">
                 <f:selectItem itemLabel="#{bundle.editor}" itemValue="editor" />
                 <f:selectItem itemLabel="#{bundle.curator}" itemValue="curator" />

@@ -48,27 +48,31 @@
                                             <p class="help-block clearfix">#{bundle['dataverse.permissions.description']}</p>
                                             <div>
                                                 <div class="form-group">
-                                                    <label for="accessRadios" class="col-sm-3 control-label">
+                                                    <label for="accessRadios">
                                                         #{bundle['dataverse.permissions.Q1']}
                                                     </label>
-                                                    <div class="col-sm-9">
-                                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer1']}" rendered="#{empty managePermissionsPage.authenticatedUsersContributorRoleAlias}" />
-                                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer2']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dvContributor'}" />
-                                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer3']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dsContributor'}" />
-                                                        <h:outputText value="#{bundle['dataverse.permissions.Q1.answer4']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'fullContributor'}" />
+                                                    <div class="col-sm-offset-1">
+                                                        <p class="form-control-static">
+                                                            <h:outputText value="#{bundle['dataverse.permissions.Q1.answer1']}" rendered="#{empty managePermissionsPage.authenticatedUsersContributorRoleAlias}" />
+                                                            <h:outputText value="#{bundle['dataverse.permissions.Q1.answer2']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dvContributor'}" />
+                                                            <h:outputText value="#{bundle['dataverse.permissions.Q1.answer3']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'dsContributor'}" />
+                                                            <h:outputText value="#{bundle['dataverse.permissions.Q1.answer4']}" rendered="#{managePermissionsPage.authenticatedUsersContributorRoleAlias eq 'fullContributor'}" />
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="contributorRadios" class="col-sm-3 control-label">
+                                                    <label for="contributorRadios">
                                                         #{bundle['dataverse.permissions.Q2']}
                                                     </label>
-                                                    <div class="col-sm-9">
-                                                        <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'editor'}">
-                                                            #{bundle.editor} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.editor.description']}</span>
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'curator'}">
-                                                            #{bundle.curator} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
-                                                        </ui:fragment>
+                                                    <div class="col-sm-offset-1">
+                                                        <p class="form-control-static">
+                                                            <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'editor'}">
+                                                                #{bundle.editor} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.editor.description']}</span>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{managePermissionsPage.defaultContributorRoleAlias eq 'curator'}">
+                                                                #{bundle.curator} <span class="text-muted">#{bundle['dataverse.permissions.Q2.answer.curator.description']}</span>
+                                                            </ui:fragment>
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -108,8 +112,9 @@
                                     <div>
                                         <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
                                             <p:column width="50%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
-                                                <h:outputText value="#{roleAssignment.roleAssignment.assigneeIdentifier} #{roleAssignment.assigneeDisplayInfo.title}"/>
+                                                <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
                                                 <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
+                                                <h:outputText value=" #{roleAssignment.roleAssignment.assigneeIdentifier}"/>
                                             </p:column>
                                             <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
                                                 <h:outputText value="#{roleAssignment.roleName}"/>
