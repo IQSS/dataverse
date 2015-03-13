@@ -12,7 +12,7 @@ create table _dvn3_vdcuser as select * from vdcuser where id != 1;
 
 -- groups
 create table _dvn3_usergroup as select * from usergroup;
-create table _dvn3_vdcuser_usergroupe as select * from vdcuser_usergroup;
+create table _dvn3_vdcuser_usergroup as select * from vdcuser_usergroup;
 
 create table _dvn3_study as select * from study
 -- where owner_id in (select id from _dvn3_vdc)
