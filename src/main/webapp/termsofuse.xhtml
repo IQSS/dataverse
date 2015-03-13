@@ -7,18 +7,18 @@
      class="form-group col-sm-10"><!-- # {DataverseUserPage.editMode == 'CREATE' ? 'col-sm-3' : 'col-sm-2'} -->
         
         <label for="position" class="col-sm-3 control-label">
-            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.terms.tip']}">
-                #{bundle['user.terms']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.acccountterms.tip']}">
+                #{bundle['user.acccountterms']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
             </span>
         </label>
         <div class="col-sm-9">
             <textarea class="form-control" rows="4" readonly="readonly">
               <h:outputText value="#{systemConfig.applicationTermsOfUse}"/></textarea>
             <div class="checkbox">
-              <p:selectBooleanCheckbox id="terms" required="true" requiredMessage="#{bundle['user.terms.required']}">
+              <p:selectBooleanCheckbox id="terms" required="true" requiredMessage="#{bundle['user.acccountterms.required']}">
                 <f:validator validatorId="requiredCheckboxValidator"/>
               </p:selectBooleanCheckbox>
-              <h:outputText value=" #{bundle['user.terms.iagree']}"/>
+              <h:outputText value=" #{bundle['user.acccountterms.iagree']}"/>
               <p:message for="terms" display="text" />
             </div>
         </div>
