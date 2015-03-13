@@ -370,7 +370,10 @@ public class JsonParser {
                         filteredValues.add(compoundVal);
                     } else {
                         // save the value for our subject field
-                        subjects.add(cvv);
+                        if (!subjects.contains(cvv)) 
+                        {
+                            subjects.add(cvv);
+                        }
                     }
                 }
 
@@ -492,7 +495,13 @@ public class JsonParser {
                 if (cvv == null) {
                     throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                 }
-                vals.add(cvv);
+                // Only add value to the list if it is not a duplicate 
+                if (strValue.equals("Other")) {
+                    System.out.println("vals = "+vals+", contains: "+vals.contains(cvv));
+                }
+                if (!vals.contains(cvv)) {
+                    vals.add(cvv);
+                }
             }
             return vals;
 
