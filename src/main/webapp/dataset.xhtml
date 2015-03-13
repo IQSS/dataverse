@@ -1667,10 +1667,10 @@
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
-                                <label for="deaccessionOptions">Which version(s) do you want to deaccession? <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                                <label for="versionDeaccessionTable">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                                 <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                              rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
-                                    <p:column selectionMode="multiple" style="width:2%;text-align:center;"/>
+                                    <p:column selectionMode="multiple" class="text-center" style="width:2%;"/>
                                     <p:column>
                                         <h:outputText value="#{bundle['file.deaccessionDialog.version']} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}" />
                                     </p:column>
@@ -1678,9 +1678,9 @@
                             </div>
                         </ui:fragment>
                         <div class="form-group">
-                            <label for="deaccessionOptions"> #{bundle['file.deaccessionDialog.reason.questions']}<span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                            <label for="reasonOptions">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                             <h:selectOneMenu id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}">
-                                <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.header']}" itemValue="0" />
+                                <f:selectItem itemLabel="#{bundle.select}" itemValue="0" noSelectionOption="true" />
                                 <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.identifiable']}" itemValue="1" />
                                 <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beRetracted']}" itemValue="2" />
                                 <f:selectItem itemLabel="#{bundle['file.deaccessionDialog.reason.selectItem.beTransferred']}" itemValue="3" />
@@ -1691,7 +1691,7 @@
                             </h:selectOneMenu>
                         </div>
                         <div class="form-group">
-                            <label class="control-label" for="fileDescription">
+                            <label for="reasonForDeaccession">
                                 #{bundle['file.deaccessionDialog.enterInfo']}
                             </label>
                             <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40"
@@ -1699,31 +1699,35 @@
                             <p:message for="reasonForDeaccession"/>
                         </div>
                         <div class="form-group">
-                            <label class="control-label" ><!--for="forwardURLForDeaccession"-->
+                            <label for="forwardURLForDeaccession">
                                 #{bundle['file.deaccessionDialog.leaveURL']}
                             </label>
                             <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"/>
-                            <!--<p:message for="forwardURLForDeaccession"/>-->
+                            <p:watermark for="forwardURLForDeaccession" value="#{bundle['file.deaccessionDialog.leaveURL.watermark']}" id="watermark" />
                         </div>
-                        <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                            <button type="button" class="btn btn-default" value="Deaccession" onclick="testDeaccessionVersionSelection(true);">#{bundle.deaccession}</button>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() == 1}">
-                            <button type="button" class="btn btn-default" value="Deaccession" onclick="testDeaccessionVersionSelection(false);">#{bundle.deaccession}</button>
-                        </ui:fragment>
-                        <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">#{bundle.cancel}</button>
+                        <div class="button-block">
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.deaccession}" rendered="#{DatasetPage.releasedVersionTabList.size() > 1}" 
+                                           onclick="testDeaccessionVersionSelection(true);"/>
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.deaccession}" rendered="#{DatasetPage.releasedVersionTabList.size() == 1}"
+                                           onclick="testDeaccessionVersionSelection(false);"/>
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.cancel}" onclick="deaccessionBlock.hide()"/>
+                        </div>
                     </p:dialog>
                     <p:dialog id="deaccessionConfirmation" header="Deaccession Dataset" widgetVar="deaccessionConfirmation" modal="true">
-                        <p>#{bundle['file.deaccessionDialog.deaccession.tip']}</p>
-                        <h:commandButton styleClass="btn btn-default" value="#{bundle.yes}" onclick="deaccessionConfirmation.hide();
-                                deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
-                        <button type="button" class="btn btn-default" value="No" onclick="deaccessionConfirmation.hide()">#{bundle.no}</button>
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccession.tip']}</p>
+                        <div class="button-block">
+                            <h:commandButton styleClass="btn btn-default" value="#{bundle.yes}" onclick="deaccessionConfirmation.hide();
+                                    deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
+                            <button type="button" class="btn btn-default" value="No" onclick="deaccessionConfirmation.hide()">#{bundle.no}</button>
+                        </div>
                     </p:dialog>
                     <p:dialog id="deaccessionAllConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionAllConfirmation" modal="true">
-                        <p>#{bundle['file.deaccessionDialog.deaccessionDataset.tip']}</p>
-                        <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionAllConfirmation.hide();
-                                deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
-                        <button type="button" class="btn btn-default" value="No" onclick="deaccessionAllConfirmation.hide()">#{bundle.no}</button>
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccessionDataset.tip']}</p>
+                        <div class="button-block">
+                            <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionAllConfirmation.hide();
+                                    deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
+                            <button type="button" class="btn btn-default" value="No" onclick="deaccessionAllConfirmation.hide()">#{bundle.no}</button>
+                        </div>
                     </p:dialog>
                     <p:confirmDialog id="selectDeaccessionVersion" message="#{bundle['file.deaccessionDialog.dialog.selectVersion.tip']}" header="#{bundle['file.deaccessionDialog.dialog.selectVersion.header']}" widgetVar="selectDeaccessionVersion"> </p:confirmDialog>
                     <p:confirmDialog id="selectDeaccessionReason" message="#{bundle['file.deaccessionDialog.dialog.reason.tip']}" header="#{bundle['file.deaccessionDialog.dialog.reason.header']}" widgetVar="selectDeaccessionReason"> </p:confirmDialog>
