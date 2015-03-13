@@ -425,7 +425,7 @@
                                 </span>
                             </label>
                             <div class="col-sm-10">
-                                <strong><h:outputText value="#{DatasetPage.dataset.owner.name}"/></strong>
+                                <h:outputText styleClass="highlightBold" value="#{DatasetPage.dataset.owner.name} #{bundle.dataverse}"/>
                                 <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
                                 <ui:remove><!-- removed for beta -->
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
@@ -434,14 +434,7 @@
                                 </ui:remove>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <div class="col-sm-12">
-                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
-                            </div>
-                        </div>
-                    </ui:fragment>
-                    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                        <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates}">
+                        <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataverseTemplates and DatasetPage.editMode == 'CREATE'}">
                             <label for="select_DatasetTemplate" class="col-sm-2 control-label">
                                 <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate.title']}">
                                     #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
@@ -462,6 +455,13 @@
                                 </p:commandButton>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
+                            </div>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <ui:include src="metadataFragment.xhtml"/>
                     </ui:fragment>
                     <!-- END Create/Edit editMode -->
@@ -493,13 +493,7 @@
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                 <!-- Upload -->
-                                <!--<p:message for="fileUpload" showDetail="true"/>-->
                                 <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
-                                    <!--<ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                                        <div class="alert alert-info">
-                                            Tip: You can drag and drop your files from your desktop, directly into the upload widget.
-                                        </div>
-                                    </ui:fragment>-->
                                     <script>
                                         function uploadWidgetDropMsg() {
                                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
@@ -517,21 +511,18 @@
                                             uploadWidgetDropMsg();
                                         });
                                     </script>
-                                    <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                    <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
                                                   oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
-
-                                    <ui:fragment rendered="#{!empty DatasetPage.dropBoxKey}">
-                                        <div id="dropboxUploadBlock" class="panel panel-default margin-top">
-                                            <div class="panel-body">
-                                                <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                                                <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
-                                                </p:commandButton>
-                                                <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status"/>
-                                                <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
-                                            </div>
+                                    <!-- Dropbox Upload -->
+                                    <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty DatasetPage.dropBoxKey}">
+                                        <div class="panel-body">
+                                            <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
+                                            <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none"/>
+                                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status"/>
+                                            <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                         </div>
-                                    </ui:fragment>
+                                    </div>
                                     <p:message for="fileUpload" id="uploadMessage" display="text"/>
                                 </ui:fragment>
 

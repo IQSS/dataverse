@@ -68,7 +68,7 @@ body .ui-widget {font-size: inherit;}
 .messagePanel {/*padding-top:1em;*/}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
-.highlightBold {font-weight:bold;}
+.highlightBold, a.highlightBold, .dropdown-menu > li > a.highlightBold {font-weight:bold;}
 
 #ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:1111;}
 #ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
