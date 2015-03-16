@@ -1,12 +1,16 @@
 #!/usr/bin/perl
 
 my $dvobjectoffset = shift @ARGV;
+
+unless ($dvobjectoffset > 0)
+{
+    print STDERR "Usage: ./files_source_ <DVOBJECT DB ID OFFSET>\n";
+    exit 1;
+}
+
 # TODO: 
 # we should probably just preserve the DB ids of all the 
 # objects other than the data files themselves - ?
-# TODO: 
-# currently set to preserve the DB ids of the files; 
-# isn't going to work for the full import. 
 my $dtoffset = 0;
 my $dvoffset = 0;
 my $fmoffset = 0; # file metadatas
@@ -119,9 +123,10 @@ while ( <> )
 	    # same for the datatables and variables. 
 	    # Other things, like filemetadatas, need to be created one 
 	    # per version. 
-
-	    $STUDYFILEMAP{$sfid} = 1; 
-	    $dvobjectoffset++; 
+	    
+	    $newdatafileid = ($dvobjectoffset+$sfid);
+	    $STUDYFILEMAP{$sfid} = $newdatafileid; 
+	    ##$dvobjectoffset++; 
 
 	    unless ( -f $fslocation ) 
 	    {
@@ -149,20 +154,21 @@ while ( <> )
 
 	    # dvobject: 
 
-	    print qq {INSERT INTO dvobject (id, dtype, owner_id, createdate, modificationtime) VALUES ($sfid, 'DataFile', $dsid, '$fmtime', '$fmtime');} . "\n";
+	    print qq {INSERT INTO dvobject (id, dtype, owner_id, createdate, modificationtime) VALUES ($newdatafileid, 'DataFile', $dsid, '$fmtime', '$fmtime');} . "\n";
 
 	    # datafile object:
 
-	    print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($sfid, '$type', '$fsname', $fsize, '$md5', TRUE);} . "\n";
+	    print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($newdatafileid, '$type', '$fsname', $fsize, '$md5', TRUE);} . "\n";
 	}
 	else 
 	{
+	    $newdatafileid = $STUDYFILEMAP{$sfid};
 	    $newfile = 0; 
 	}
 	    
 	# file metadata object:
 	$fmoffset++; 
-	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmoffset, $description, $label, TRUE, 1, $dsvid, $sfid);} . "\n";
+	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmoffset, $description, $label, TRUE, 1, $dsvid, $newdatafileid);} . "\n";
 	##print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmoffset, $description, $label, TRUE, 1, $dsvid, $dvobjectoffset);} . "\n";
 
 	# and the category, if exists:
@@ -177,7 +183,7 @@ while ( <> )
 
 		$fcoffset++; 
 
-		print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($fcoffset, $category, $sfid);} . "\n";
+		print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($fcoffset, $category, $newdatafileid);} . "\n";
 		#print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($fcoffset, $category, $dvobjectoffset);} . "\n";
 
 		$FILECATEGORIES{$category} = $fcoffset; 
@@ -228,12 +234,12 @@ while ( <> )
 
 		if ($recordspercase) 
 		{
-		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $sfid);} . "\n";
+		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $newdatafileid);} . "\n";
 		    #print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $dvobjectoffset);} . "\n";
 		}
 		else
 		{
-		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $sfid);} . "\n";
+		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $newdatafileid);} . "\n";
 		    #print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtoffset, $varquantity, $casequantity, '$unf', '$originalfiletype', $dvobjectoffset);} . "\n";
 		}
 	    }
