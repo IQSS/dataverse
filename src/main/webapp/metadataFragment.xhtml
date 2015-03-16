@@ -29,9 +29,10 @@
                                 </label>
                                 <!-- Primitive datasetFields -->
                                 <div class="col-sm-9" jsf:rendered="#{dsf.datasetFieldType.primitive}">
-                                    <h:outputText value="#{dsf.value}" rendered="#{!dsf.datasetFieldType.allowMultiples}"/>
+                                    <h:outputText value="#{dsf.value}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
+                                                  escape="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
                                     <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                        <h:outputText value="#{loop.first?'':'; '}#{value}"/>
+                                        <h:outputText value="#{loop.first?'':'; '}#{value}" escape="#{dsf.datasetFieldType.fieldType ne 'TEXTBOX'}"/>
                                     </ui:repeat>
                                 </div>
                                 <!-- Compound datasetFields -->
