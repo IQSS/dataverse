@@ -200,17 +200,20 @@ public class ImportServiceBean {
 
             // Check data against validation constraints
             // If we are migrating and dataset contact email is invalid, then set it to NA
+            // in all other cases, stop processing of this file by throwing exception
             Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
             if (!invalidViolations.isEmpty()) {
-                if (importType.equals(ImportType.MIGRATION)) {
-                    for (ConstraintViolation v : invalidViolations) {
-                        DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
-                        if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-                            f.setValue(DatasetField.NA_VALUE);
-                        }
+                for (ConstraintViolation v : invalidViolations) {
+                    DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
+                    if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail) && importType.equals(ImportType.MIGRATION)) {
+                        importLogger.getLogger().info("Dataset Contact email is invalid, setting to NA. Invalid value: "+f.getValue());
+                        f.setValue(DatasetField.NA_VALUE);
+                    } else {
+                        throw new ImportException(" Validation error for value: " + f.getValue() + ", " + f.getValidationMessage());
                     }
                 }
-            }
+            } 
+            
 
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
 
