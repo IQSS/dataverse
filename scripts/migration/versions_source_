@@ -1,14 +1,16 @@
 #!/usr/bin/perl
 
+# TODO: 
+# the script still has the namespaces "1902.1" and "10.7910" hard-coded, 
+# to identifies the "local" studies. 
+
 my $url = shift @ARGV;
 
 use DBI;
 
-my $host = "localhost"; 
 my $username = "xxxxx";
 my $password = 'xxxxx';
 my $database = "xxxxx";
-
 
 my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
 
@@ -17,47 +19,74 @@ unless ( -d "ddi" )
     mkdir "ddi"; 
 }
 
-while ( <> )
+my $sth;
+
+$sth = $dbh->prepare(qq {SELECT s.id, s.authority, s.studyid, v.alias FROM study s, vdc v WHERE s.owner_id = v.id});
+
+$sth->execute();
+
+my $sid; 
+
+$studycounter = 0; 
+$extraversioncounter = 0; 
+$versioncounter = 0; 
+
+while ( @foo = $sth->fetchrow() )
 {
-    chop; 
-    ($dvalias) = $_; #split("\t", $_);
+    $sid = $foo[0];
+    $authority = $foo[1];
+    $studyid = $foo[2];
+    $dvalias = $foo[3];
+    
+    unless ($authority eq "1902.1" || $authority =~/^10\.7910/ ) {
+	next;
+    }
 
     unless ( -d "ddi/$dvalias" )
     {
 	mkdir "ddi/$dvalias"; 
     }
 
-    my $sth;
+    my $sth1; 
 
-    $sth = $dbh->prepare(qq {SELECT s.id FROM study s, vdc v WHERE s.owner_id = v.id AND v.alias = '$dvalias'});
+    $sth1 = $dbh->prepare(qq {SELECT versionnumber,versionstate FROM studyversion v WHERE study_id=$sid}); 
+    $sth1->execute();
 
-    $sth->execute();
+    my $vn; 
 
-    my $sid; 
+    $localcounter = 0; 
 
-    while ( @foo = $sth->fetchrow() )
+    while ( @bar = $sth1->fetchrow() )
     {
-	$sid = $foo[0];
-	
-	my $sth1; 
+	$vn = $bar[0];
+	$vstate = $bar[1];
 
-	$sth1 = $dbh->prepare(qq {SELECT versionnumber FROM studyversion v WHERE study_id=$sid AND NOT (versionstate = 'RELEASED')}); 
-	$sth1->execute();
-
-	my $vn; 
-
-	while ( @bar = $sth1->fetchrow() )
+	if ($vstate eq "RELEASED")
 	{
-	    $vn = $bar[0];
-
+	    print $dvalias . "\t" . $sid . "\t" . $authority . "/" . $studyid . "/export_ddi.xml\n";
+	}
+	else
+	{
 	    print STDERR "executing: wget -O ddi/" . $dvalias . "/" . $sid . "-" . $vn . ".xml '" . $url . "?studyId=" . $sid . "&versionNumber=" . $vn . "'\n";
 	    system "wget -O ddi/" . $dvalias . "/" . $sid . "-" . $vn . ".xml '" . $url . "?studyId=" . $sid . "&versionNumber=" . $vn . "'\n";
+	    $versioncounter++; 
+	    $localcounter++;
 	}
-	$sth1->finish; 
     }
 
-    $sth->finish;
-}
+    $sth1->finish; 
+    $studycounter++; 
+    $extraversioncounter++ if $localcounter;
+
+    unless ($studycounter % 1000) 
+    {
+	print STDERR "\n" . $studycounter . " studies processed.\n";
+	print STDERR $extraversioncounter . " had versions other than released;\n";
+	print STDERR "Total " . $versioncounter . " versions processed.\n";
+    }
+} 
+
+$sth->finish;
 
 $dbh->disconnect; 
 
