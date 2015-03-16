@@ -92,6 +92,17 @@ public class UserNotification implements Serializable {
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
     }
+    
+    @Transient 
+    private Object theObject;
+
+    public Object getTheObject() {
+        return theObject;
+    }
+
+    public void setTheObject(Object theObject) {
+        this.theObject = theObject;
+    }
         
     public boolean isDisplayAsRead() {
         return displayAsRead;

@@ -523,9 +523,11 @@ public class DataversePage implements java.io.Serializable {
         }
 
         try {
-           dataverse = commandEngine.submit(cmd);
+            dataverse = commandEngine.submit(cmd);
             if (session.getUser() instanceof AuthenticatedUser) {
-                userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+                if (create) {
+                    userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+                }
             }
             editMode = null;
           
