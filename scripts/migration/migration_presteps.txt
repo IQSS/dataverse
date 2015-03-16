@@ -35,7 +35,7 @@ create table _dvn3_vdc_usergroup as select * from vdc_usergroup;
 -- run pg_dump to extract temp tables
 ----------------------------------------------
 
-./pg_dump -h localhost -U postgres thedata -t _dvn3_* -f /tmp/dvn3_data.sql
+pg_dump -h localhost -U postgres thedata -t _dvn3_* -f /tmp/dvn3_data.sql
 
 ----------------------------------------------
 -- import temp tables into 4.0 db
