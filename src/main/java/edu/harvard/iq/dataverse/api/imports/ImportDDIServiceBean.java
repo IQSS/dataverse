@@ -1015,9 +1015,8 @@ public class ImportDDIServiceBean {
                     citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("dateOfDeposit", parseDate(xmlr, "depDate")));
 
                 } else if (xmlr.getLocalName().equals("distDate")) {
-                    // TODO: for New Import, we will ignore this, waiting for decision
-                    // about what to do for Harvest & migration (12/15/2014)
-                    // metadata.setDistributionDate( parseDate(xmlr,"distDate") );
+                         citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("distributionDate", parseDate(xmlr, "distDate")));
+
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("distStmt")) {
