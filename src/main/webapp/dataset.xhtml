@@ -256,7 +256,7 @@
                             </div>
 
                             <div id="description" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.descriptionDisplay and !DatasetPage.workingVersion.deaccessioned}">
-                                #{DatasetPage.datasetVersionUI.descriptionDisplay}
+                                <h:outputText value="#{DatasetPage.datasetVersionUI.descriptionDisplay}" escape="false"/>
                             </div>
                             <div id="metadata-panel" class="panel panel-default"
                                  jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned and (!empty DatasetPage.datasetVersionUI.keywordDisplay
