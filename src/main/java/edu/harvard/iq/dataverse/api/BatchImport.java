@@ -85,7 +85,7 @@ public class BatchImport extends AbstractApiBean  {
         try { 
             JsonObjectBuilder status = importService.doImport(u,owner,body, ImportType.NEW);
             return this.okResponse(status);
-        } catch(ImportException e) {
+        } catch(ImportException | IOException e) {
             return this.errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
@@ -120,7 +120,7 @@ public class BatchImport extends AbstractApiBean  {
         }
         try {
              batchService.processFilePath(fileDir, parentIdtf, u,owner, importType);
-          } catch (ImportException e) {
+          } catch (ImportException  | IOException e) {
             e.printStackTrace();
             return this.errorResponse(Response.Status.BAD_REQUEST, "Import Exception, "+ e.getMessage());
         } 

@@ -20,8 +20,6 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
-import edu.harvard.iq.dataverse.api.imports.ImportDDIServiceBean;
-import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -35,8 +33,11 @@ import edu.harvard.iq.dataverse.util.ImportLogger;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Formatter;
@@ -122,7 +123,7 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType) throws ImportException {
+    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType, PrintWriter validationLog) throws ImportException, IOException {
 
         System.out.println("handling file: " + file.getAbsolutePath());
         String ddiXMLToParse;
@@ -133,19 +134,24 @@ public class ImportServiceBean {
             importLogger.getLogger().info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
         } catch (ImportException ex) {
-            importLogger.getLogger().info("Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+            String msg = "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage();
+            importLogger.getLogger().info(msg);
+            if (validationLog!=null) {
+                validationLog.println(msg);
+            }
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
             String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
             importLogger.getLogger().log(Level.SEVERE, msg, e);
             System.out.println(msg);
             e.printStackTrace();
+
             return Json.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
-   
+
         }
     }
 
-    public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException {
+    public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException, IOException {
 
         String status = "";
         Long createdId = null;
@@ -208,8 +214,9 @@ public class ImportServiceBean {
                     if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail) && importType.equals(ImportType.MIGRATION)) {
                         importLogger.getLogger().info("Dataset Contact email is invalid, setting to NA. Invalid value: "+f.getValue());
                         f.setValue(DatasetField.NA_VALUE);
-                    } else {
-                        throw new ImportException(" Validation error for value: " + f.getValue() + ", " + f.getValidationMessage());
+                    } else {   String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();
+                        
+                        throw new ImportException(msg);
                     }
                 }
             } 
