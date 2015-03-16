@@ -54,6 +54,9 @@ public class ShibUtilTest {
         String harvardStage = shibUtil.getDisplayNameFromDiscoFeed("https://stage.fed.huit.harvard.edu/idp/shibboleth", discoFeedExample);
         assertEquals("Harvard Test IdP", harvardStage);
 
+        String minimal = shibUtil.getDisplayNameFromDiscoFeed("https://minimal.com/shibboleth", discoFeedExample);
+        assertEquals(null, minimal);
+
         String unknown = shibUtil.getDisplayNameFromDiscoFeed("https://nosuchdomain.com/idp/shibboleth", discoFeedExample);
         assertEquals(null, unknown);
 

@@ -21,6 +21,8 @@
             }
         ]
     }, {
+        "entityID": "https://minimal.com/shibboleth"
+    }, {
         "entityID": "https://stage.fed.huit.harvard.edu/idp/shibboleth",
         "DisplayNames": [
             {

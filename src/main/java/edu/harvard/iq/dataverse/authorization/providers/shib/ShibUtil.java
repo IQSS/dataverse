@@ -24,10 +24,21 @@ public class ShibUtil {
             JsonElement entityId = provider.get("entityID");
             if (entityId != null) {
                 if (entityId.getAsString().equals(entityIdToFind)) {
-                    JsonArray displayNames = provider.get("DisplayNames").getAsJsonArray();
-                    JsonElement firstDisplayName = displayNames.get(0);
-                    String friendlyName = firstDisplayName.getAsJsonObject().get("value").getAsString();
-                    return friendlyName;
+                    JsonElement displayNamesElement = provider.get("DisplayNames");
+                    if (displayNamesElement != null) {
+                        JsonArray displayNamesArray = displayNamesElement.getAsJsonArray();
+                        JsonElement firstDisplayName = displayNamesArray.get(0);
+                        if (firstDisplayName != null) {
+                            JsonObject friendlyNameObject = firstDisplayName.getAsJsonObject();
+                            if (friendlyNameObject != null) {
+                                JsonElement friendlyNameElement = friendlyNameObject.get("value");
+                                if (friendlyNameElement != null) {
+                                    String friendlyName = friendlyNameElement.getAsString();
+                                    return friendlyName;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
