@@ -5,12 +5,16 @@
  */
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseHeaderFragment;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
+import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
@@ -19,8 +23,13 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -60,9 +69,13 @@ public class BuiltinUserPage implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
     PermissionServiceBean permissionService;
     @EJB
     BuiltinUserServiceBean builtinUserService;
+    @EJB
+    AuthenticationServiceBean authenticationService;
     
     @EJB
     AuthenticationServiceBean authSvc;
@@ -81,7 +94,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     private int activeIndex;
     private String selectTab = "somedata";
     UIInput usernameField;
-
+    
     public EditMode getChangePasswordMode () {
         return EditMode.CHANGE_PASSWORD;
     }
@@ -413,6 +426,29 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public void displayNotification() {
         for (UserNotification userNotification : notificationsList) {
+            switch (userNotification.getType()) {
+                case CREATEDV:
+                    userNotification.setTheObject(dataverseService.find(userNotification.getObjectId()));
+                    break;
+ 
+                case REQUESTFILEACCESS:
+                case GRANTFILEACCESS:
+                case REJECTFILEACCESS:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
+                    break;
+                    
+                case MAPLAYERUPDATED:
+                case CREATEDS:
+                case SUBMITTEDDS:
+                case PUBLISHEDDS:
+                case RETURNEDDS:
+                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+
+                case CREATEACC:
+                    userNotification.setTheObject(userNotification.getUser());
+            }
+
             userNotification.setDisplayAsRead(userNotification.isReadNotification());
             if (userNotification.isReadNotification() == false) {
                 userNotification.setReadNotification(true);
