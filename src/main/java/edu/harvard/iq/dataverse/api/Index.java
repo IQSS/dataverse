@@ -60,8 +60,9 @@ public class Index extends AbstractApiBean {
                     return okResponse("index all has been started (non-async)");
                 }
             } else {
-                Future<String> indexAllFuture = indexAllService.indexAll(true);
-                return okResponse("index all has been started (async, the default)");
+                boolean defaultAsyncParam = false;
+                Future<String> indexAllFuture = indexAllService.indexAll(defaultAsyncParam);
+                return okResponse("index all has been started (async=" + defaultAsyncParam + ", the default)");
             }
         } catch (EJBException ex) {
             Throwable cause = ex;

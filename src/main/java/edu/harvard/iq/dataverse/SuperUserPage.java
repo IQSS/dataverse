@@ -45,7 +45,7 @@ public class SuperUserPage implements java.io.Serializable {
     public void startIndexAll() {
         User user = session.getUser();
         if (user.isSuperuser()) {
-            boolean async = true;
+            boolean async = false;
             indexAllFuture = indexAllService.indexAll(async);
             indexAllStatus = "Index all started...";
         } else {
