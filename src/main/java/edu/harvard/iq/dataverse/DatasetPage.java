@@ -795,7 +795,6 @@ public class DatasetPage implements java.io.Serializable {
                     for (CustomQuestionResponse cqr : this.guestbookResponse.getCustomQuestionResponses()) {
                         if (cqr.getCustomQuestion().equals(cq)) {
                             valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
-                             logger.info(valid + " after CQ empty");
                         }
                     }
                 }
@@ -803,11 +802,10 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (!valid) {
-            logger.info("Guestbook response isn't valid");
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Please complete required fields for download and re-try."));
             return "";
         }
-
+            
         Command cmd;
         try {
             cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
@@ -2478,7 +2476,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         // 3. Guest Book: 
-        if (dataset.getGuestbook() != null) {
+        if (dataset.getGuestbook() != null && dataset.getGuestbook().isEnabled() && dataset.getGuestbook().getDataverse() != null ) {
             return true;
         }
 

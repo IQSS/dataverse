@@ -39,10 +39,10 @@
                                                      and ((DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released))
                                                      or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
                                                      and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
-                                                     and !DatasetPage.locked}">
+                                                     }">
                                 <!-- Edit Button -->
                                 <div class="btn-group pull-right">
-                                    <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle #{DatasetPage.locked ? 'disabled' : ''}" data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
@@ -114,7 +114,7 @@
                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
                                                         and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
-                                    <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledubmittedBtn'] : bundle['dataset.submitBtn']}
+                                    <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
                                 </button>
                                 <!-- End: Submit for Review Button -->
                                 <!-- Publish Button -->
@@ -134,37 +134,37 @@
                                         </p:commandButton>
                                     </ui:fragment>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right" onclick="sendBackToContributor.show()"
+                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="sendBackToContributor.show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.rejectBtn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right" onclick="confirmation.show()"
+                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="confirmation.show()"
                                                    rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
                                                                and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                and DatasetPage.dataset.owner.released}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right" onclick="releaseDraft.show()"
+                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="releaseDraft.show()"
                                                    rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right" onclick="mayNotRelease.show()"
+                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="mayNotRelease.show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and !permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right" onclick="publishParent.show()"
+                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="publishParent.show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
                                                                and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right" rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                                                        and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
                                                                                                        and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)}"
                                                    onclick="maynotPublishParent.show()">
@@ -644,7 +644,7 @@
                                                            styleClass="btn btn-default"
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
                                                            update="@form"
-                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');" >
+                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');" >
                                                 <span class="glyphicon glyphicon-stats"/> #{bundle.explore}
                                             </p:commandLink>
 
@@ -674,7 +674,7 @@
                                                            styleClass="btn btn-default"
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                            update="@form"
-                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                             </p:commandLink>
                                             <!-- Download Dropdown -->
@@ -691,7 +691,7 @@
                                                         <p:commandLink styleClass="highlightBold" rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'bundle')}"
                                                                        update="@form"
-                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                             #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                     </li>
@@ -706,7 +706,7 @@
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'original')}"
                                                                        update="@form"
-                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                             <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                                                                 <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                                                             </h:outputFormat>
@@ -720,7 +720,7 @@
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'tab')}"
                                                                        update="@form"
-                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                             #{bundle['file.downloadBtn.format.tab']}
                                                         </p:commandLink>
                                                     </li>
@@ -733,7 +733,7 @@
                                                             <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'RData')}"
                                                                            update="@form"
-                                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                                           oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                                 #{bundle['file.downloadBtn.format.rdata']}
                                                             </p:commandLink>
                                                         </li>
@@ -746,7 +746,7 @@
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
                                                                        action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'var')}"
                                                                        update="@form"
-                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadFileDialog');">
+                                                                       oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                             #{bundle['file.downloadBtn.format.var']}
                                                         </p:commandLink>
                                                     </li>
@@ -819,7 +819,8 @@
                                      jsf:rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                      and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                      and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                    <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_license()" disabled="#{DatasetPage.locked}">
+                                    <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" 
+                                                   update="@form,:messagePanel" oncomplete="javascript:post_edit_license()" disabled="#{DatasetPage.locked}">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                         <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editLicenseBtn']}
                                     </p:commandLink>
@@ -1858,11 +1859,125 @@
                     </p:confirmDialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
 
-                    <p:dialog id="downloadFileDialog" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
+                    <p:dialog id="downloadPopup" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.downloadDialog.tip']}
                         </p>
-                        <ui:include src="guestbookResponseFragment.xhtml"/>
+                        <p:fragment id="guestbookMessages">
+                            <div class="container messagePanel">
+                                <iqbs:messages collapsible="true" />
+                            </div>
+                        </p:fragment>
+
+                        <div class="form-horizontal">
+                            <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
+                                <label class="col-sm-3 control-label" for="guestbook_tou">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                                </label>
+                                <div class="col-sm-6">
+                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
+                                <label class="col-sm-3 control-label" for="guestbook_toa">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                </label>
+                                <div class="col-sm-6">
+                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
+                                </div>
+                            </div>
+                            <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null and DatasetPage.dataset.guestbook.enabled }" id="guestbookUIFragment">
+                                <p:fragment >
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label" for="guestbookuser_nameText">
+                        #{bundle.name}
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
+                                        </label>
+                                        <div class="col-sm-6">
+                                            <p:inputText id="guestbookuser_nameText" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.nameRequired}" 
+                                                         styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"
+                                                         requiredMessage="#{bundle['requiredField']}"/>
+                                        </div>
+                                        <p:message id="nameMessages"  for="guestbookuser_nameText" display="text"/>
+                                    </div>
+                                </p:fragment>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_email">
+                        #{bundle.email}
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <h:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.emailRequired}"
+                                                     styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"
+                                                     requiredMessage="#{bundle['requiredField']}"/>
+
+                                    </div>
+                                    <p:message id="emailMessages"  for="guestbookuser_email" display="text"/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_institution">
+                        #{bundle.institution}
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <h:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.institutionRequired}"
+                                                     styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"
+                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                    </div>
+                                    <p:message id="institutionMessages"  for="guestbookuser_institution" display="text"/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_position">
+                        #{bundle.position}
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <h:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.positionRequired}"
+                                                     styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"
+                                                     requiredMessage="#{bundle['requiredField']}"/>
+                                    </div>
+                                    <p:message id="positionMessages"  for="guestbookuser_position" display="text"/>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
+                                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
+                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
+                                            <div>
+                                                <label class="control-label">
+                                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
+                                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
+                                                </label>
+                                                <h:inputText id="customQuestionResponse"
+                                                             styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                             required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                                             rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
+                                                             requiredMessage="#{bundle['requiredField']}"/>
+                                                <p:selectOneMenu 
+                                                    styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                    required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                                    rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
+                                                    requiredMessage="#{bundle['requiredField']}">
+                                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
+                                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <p:message id="cqMessages" 
+                                                       for="customQuestionResponse" display="text"/>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                            <p:commandLink styleClass="btn btn-default" value="Validation"
+                                           update="@([id$=Messages])"
+                                           actionListener="#{DatasetPage.saveGuestbookResponse('download')}"
+                                           oncomplete="if (args === undefined) downloadPopup.hide();"
+                                           >
+                                <f:param name="DO_GB_VALIDATION" value="true"/>
+                            </p:commandLink>
+                            
+                        </div>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
                                              action="#{DatasetPage.saveGuestbookResponse('download')}" />
