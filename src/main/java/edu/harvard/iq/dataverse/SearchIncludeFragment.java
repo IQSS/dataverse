@@ -237,6 +237,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         } else {
             this.dataverse = dataverseService.findRootDataverse();
+            dataverseId = this.dataverse.getId();
 //            this.dataverseSubtreeContext = "all";
         }
 
