@@ -14,8 +14,16 @@ public class SolrField {
         this.allowedToBeMultivalued = allowedToBeMultivalued;
         this.facetable = facetable;
         if (allowedToBeMultivalued) {
+            /**
+             * @todo Should we expose this Solr-specific "_ss" fieldname here?
+             * Instead should the field end with "FacetMultiple"?
+             */
             this.nameFacetable = name + "_ss";
         } else {
+            /**
+             * @todo Should we expose this Solr-specific "_s" fieldname here?
+             * Instead should the field end with "FacetSingle"?
+             */
             this.nameFacetable = name + "_s";
         }
     }
@@ -49,7 +57,11 @@ public class SolrField {
         /**
          * @todo: make this configurable from text_en to text_general or
          * non-English languages? We changed it to text_en to improve English
-         * language searching in https://redmine.hmdc.harvard.edu/issues/3859
+         * language searching in https://github.com/IQSS/dataverse/issues/444
+         *
+         * We want to get away from always using "text_en" (especially to
+         * support range queries) in
+         * https://github.com/IQSS/dataverse/issues/370
          */
         STRING("string"), TEXT_EN("text_en"), INTEGER("int"), LONG("long"), DATE("text_en"), EMAIL("text_en");
 

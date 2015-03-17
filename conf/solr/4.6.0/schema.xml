@@ -243,24 +243,69 @@
         unknown fields indexed and/or stored by default --> 
    <!--dynamicField name="*" type="ignored" multiValued="true" /-->
    
+   <!-- Dataverse-specific -->
+   <field name="definitionPointDocId" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="definitionPointDvObjectId" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="discoverableBy" type="string" stored="true" indexed="true" multiValued="true"/>
 
-   <!-- Added for Dataverse 4.0 alpha 1. We use "dvtype" to distinguish between 3 types: dataverses, datasets, and files -->
-   <field name="dvtype" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="dvObjectType" type="string" stored="true" indexed="true" multiValued="false"/>
+
+   <field name="dvName" type="text_en" stored="true" indexed="true" multiValued="false"/>
+   <field name="dvAffiliation" type="text_en" stored="true" indexed="true" multiValued="false"/>
+   <field name="dvDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
+
+   <field name="dvCategory" type="string" stored="true" indexed="true" multiValued="false"/>
+
+   <field name="publicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="dsPublicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
+
+   <field name="dvSubject" type="string" stored="true" indexed="true" multiValued="true"/>
+
+   <field name="publicationStatus" type="string" stored="true" indexed="true" multiValued="true"/>
+
+   <field name="dateFriendly" type="text_en" stored="true" indexed="true" multiValued="false"/>
+
+   <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
+
+   <field name="fileName" type="text_en" stored="true" indexed="true" multiValued="true"/>
+   <field name="fileType" type="text_en" stored="true" indexed="true" multiValued="true"/>
+   <field name="fileNameWithoutExtension" type="text_en" stored="true" indexed="true" multiValued="true"/>
+   <field name="variableName" type="text_en" stored="true" indexed="true" multiValued="true"/>
+   <field name="variableLabel" type="text_en" stored="true" indexed="true" multiValued="true"/>
+
+   <field name="fileDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
+
+   <field name="fileTypeGroupFacet" type="string" stored="true" indexed="true" multiValued="false"/>
+   <field name="fileTypeDisplay" type="string" stored="true" indexed="true" multiValued="false"/>
 
    <!-- Added for Dataverse 4.0 alpha 1: static "parent" fields not copied to "catchall" field https://redmine.hmdc.harvard.edu/issues/3603  -->
    <!-- We index parentid and parentname as a debugging aid in case we want to match on it with an explict query like curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentid%3A42' or curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentname%3Abirds' -->
    <!-- TODO: store parentid as a long instead of a string  -->
-   <field name="parentid" type="string" stored="true" indexed="true" multiValued="false"/>
-   <field name="parentname" type="text_en" stored="true" indexed="true" multiValued="false"/>
+   <field name="parentId" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="parentIdentifier" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="parentName" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="parentCitation" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="citation" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="identifier" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="persistentUrl" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="unf" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="fileSizeInBytes" type="long" stored="true" indexed="false" multiValued="false"/>
+   <field name="fileMd5" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="fileContentType" type="string" stored="true" indexed="false" multiValued="false"/>
+   <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
 
    <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
-   <field name="entityid" type="long" stored="true" indexed="true" multiValued="false"/>
+   <field name="entityId" type="long" stored="true" indexed="false" multiValued="false"/>
+
+   <field name="datasetVersionId" type="long" stored="true" indexed="false" multiValued="false"/>
 
    <!-- Added for Dataverse 4.0 alpha 1 to sort by name  -->
    <!-- https://redmine.hmdc.harvard.edu/issues/3482 -->
    <!-- 'Sorting can be done on the "score" of the document, or on any multiValued="false" indexed="true" field provided that field is either non-tokenized (ie: has no Analyzer) or uses an Analyzer that only produces a single Term (ie: uses the KeywordTokenizer)' http://wiki.apache.org/solr/CommonQueryParameters#sort -->
    <!-- http://stackoverflow.com/questions/13360706/solr-4-0-alphabetical-sorting-trouble/13361226#13361226 -->
-   <field name="name_sort" type="alphaOnlySort" indexed="true" stored="true"/>
+   <field name="nameSort" type="alphaOnlySort" indexed="true" stored="true"/>
+
+   <field name="dateSort" type="date" indexed="true" stored="true"/>
 
    <!-- Added for Dataverse 4.0: release date https://redmine.hmdc.harvard.edu/issues/3592 -->
    <field name="releasedate" type="int" indexed="true" stored="true"/>
@@ -270,11 +315,11 @@
    <copyField source="description" dest="text" maxChars="3000"/>
 
    <!-- Added for Dataverse 4.0 Beta: make variable names and labels searchable in basic search https://redmine.hmdc.harvard.edu/issues/3945 -->
-   <copyField source="variable_name_en" dest="text" maxChars="3000"/>
-   <copyField source="variable_label_en" dest="text" maxChars="3000"/>
+   <copyField source="variableName" dest="text" maxChars="3000"/>
+   <copyField source="variableLabel" dest="text" maxChars="3000"/>
    <!-- Make dataverse subject and affiliation searchable from basic search: https://github.com/IQSS/dataverse/issues/1431 -->
-   <copyField source="dvSubject_en" dest="text" maxChars="3000"/>
-   <copyField source="dvAffiliation_en" dest="text" maxChars="3000"/>
+   <copyField source="dvSubject" dest="text" maxChars="3000"/>
+   <copyField source="dvAffiliation" dest="text" maxChars="3000"/>
 
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="ARCS1" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -509,8 +554,8 @@
    <!-- Dataverse 4.0: we want the "name" field in the "catchall"  -->
    <copyField source="name" dest="text"/>
    <!-- Dataverse 4.0: we want the "filetype_en" and "filename_without_extension_en" field in the "catchall" per https://redmine.hmdc.harvard.edu/issues/3848  -->
-   <copyField source="filetype_en" dest="text"/>
-   <copyField source="filename_without_extension_en" dest="text"/>
+   <copyField source="fileType" dest="text"/>
+   <copyField source="fileNameWithoutExtension" dest="text"/>
    <!-- <copyField source="manu" dest="text"/> -->
    <!-- <copyField source="features" dest="text"/> -->
    <!-- <copyField source="includes" dest="text"/> -->
