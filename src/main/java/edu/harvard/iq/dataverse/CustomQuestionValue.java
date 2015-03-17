@@ -18,6 +18,16 @@ public class CustomQuestionValue implements Serializable {
     @Column( nullable = false )
     @NotBlank(message = "Please enter a response.")
     private String valueString;
+    
+    private int displayOrder;
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
+    }
 
     public CustomQuestion getCustomQuestion() {
         return customQuestion;

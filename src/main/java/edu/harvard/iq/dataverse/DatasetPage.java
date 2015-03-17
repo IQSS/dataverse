@@ -795,7 +795,6 @@ public class DatasetPage implements java.io.Serializable {
                     for (CustomQuestionResponse cqr : this.guestbookResponse.getCustomQuestionResponses()) {
                         if (cqr.getCustomQuestion().equals(cq)) {
                             valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
-                             logger.info(valid + " after CQ empty");
                         }
                     }
                 }
@@ -803,11 +802,10 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (!valid) {
-            logger.info("Guestbook response isn't valid");
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Please complete required fields for download and re-try."));
             return "";
         }
-
+            
         Command cmd;
         try {
             cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
@@ -1080,30 +1078,37 @@ public class DatasetPage implements java.io.Serializable {
 
     private DatasetVersion setDatasetVersionDeaccessionReasonAndURL(DatasetVersion dvIn) {
         int deaccessionReasonCode = getDeaccessionReasonRadio();
-        String deacessionReasonDetail = getDeaccessionReasonText() != null ? getDeaccessionReasonText() : "";
+        String deacessionReasonDetail = getDeaccessionReasonText() != null ? ( getDeaccessionReasonText()).trim() : "";
         switch (deaccessionReasonCode) {
             case 1:
-                dvIn.setVersionNote("There is identifiable data in one or more files. " + deacessionReasonDetail);
+                dvIn.setVersionNote("There is identifiable data in one or more files.");
                 break;
             case 2:
-                dvIn.setVersionNote("The research article has been retracted. " + deacessionReasonDetail);
+                dvIn.setVersionNote("The research article has been retracted.");
                 break;
             case 3:
-                dvIn.setVersionNote("The dataset has been transferred to another repository. " + deacessionReasonDetail);
+                dvIn.setVersionNote("The dataset has been transferred to another repository.");
                 break;
             case 4:
-                dvIn.setVersionNote("IRB request. " + deacessionReasonDetail);
+                dvIn.setVersionNote("IRB request.");
                 break;
             case 5:
-                dvIn.setVersionNote("Legal issue or Data Usage Agreement. " + deacessionReasonDetail);
+                dvIn.setVersionNote("Legal issue or Data Usage Agreement.");
                 break;
             case 6:
-                dvIn.setVersionNote("Not a valid dataset. " + deacessionReasonDetail);
+                dvIn.setVersionNote("Not a valid dataset.");
                 break;
             case 7:
-                dvIn.setVersionNote(deacessionReasonDetail);
                 break;
         }
+        if (!deacessionReasonDetail.isEmpty()){
+            if (!dvIn.getVersionNote().isEmpty()){
+                dvIn.setVersionNote(dvIn.getVersionNote() + " " + deacessionReasonDetail);
+            } else {
+                dvIn.setVersionNote(deacessionReasonDetail);
+            }
+        }
+        
         dvIn.setArchiveNote(getDeaccessionForwardURLFor());
         return dvIn;
     }
@@ -2478,7 +2483,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         // 3. Guest Book: 
-        if (dataset.getGuestbook() != null) {
+        if (dataset.getGuestbook() != null && dataset.getGuestbook().isEnabled() && dataset.getGuestbook().getDataverse() != null ) {
             return true;
         }
 

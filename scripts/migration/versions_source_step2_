@@ -1,0 +1,40 @@
+#!/usr/bin/perl 
+
+
+unless ( -d "/tmp/ddi" )
+{
+    mkdir "/tmp/ddi";
+}
+
+while (<>)
+{
+    chop; 
+    @_ = split ("\t");
+    $alias = $_[0];
+    $studyid = $_[1];
+    $ddifile = $_[2];
+
+    $ddifile = "/nfs/iqss/DVN/data/" . $ddifile; 
+
+    if ( -f $ddifile )
+    {
+	$total += (stat($study))[7];
+	$tmpdir = "/tmp/ddi/" . $alias;
+	unless ( -d $tmpdir )
+	{
+	    mkdir $tmpdir; 
+	}
+
+	$tmpfile = $tmpdir . "/" . $studyid . "\.xml";
+	system "cp $ddifile $tmpfile";
+
+    } 
+    else 
+    {
+	print STDERR "warning: missing ddi file! (" . $ddifile . ")\n";
+    }
+}
+
+print "Total of " . $total . " bytes copied.\n";
+
+
