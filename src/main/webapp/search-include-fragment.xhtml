@@ -80,7 +80,6 @@
                             <!--DATAVERSE TOGGLE-->
                             <div class="clearfix">
                                 <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
-                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -93,7 +92,6 @@
                                 </h:outputLink>
                                 <!--DATAVERSES ONLY-->
                                 <h:outputLink disabled="#{false}" styleClass="facetTypeLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
-                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="dataverses"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -111,7 +109,6 @@
                             <!--DATASETS TOGGLE-->
                             <div class="clearfix">
                                 <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
-                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('datasets')}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -124,7 +121,6 @@
                                 </h:outputLink>
                                 <!--DATASETS ONLY-->
                                 <h:outputLink disabled="#{false}" styleClass="facetTypeLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
-                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="datasets"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -142,7 +138,6 @@
                             <!--FILES TOGGLE-->
                             <div class="clearfix">
                                 <h:outputLink styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
-                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('files')}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -155,7 +150,6 @@
                                 </h:outputLink>
                                 <!--FILES ONLY-->
                                 <h:outputLink disabled="#{false}" styleClass="facetTypeLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
-                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="files"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -179,7 +173,6 @@
                                 <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                                     <h:outputLink rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                                         <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
-                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -193,7 +186,6 @@
                                     <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
                                         <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
                                         <span class="glyphicon glyphicon-remove"></span>
-                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == facetLabel.filterQuery}"/>
@@ -304,7 +296,6 @@
                                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                                     <h:outputLink styleClass="facetLink facetSelected">
                                         <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
-                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>
@@ -337,7 +328,6 @@
                                                 <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="&#171;"/>
-                                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -351,7 +341,6 @@
                                                 <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="&lt; #{bundle.previous}"/>
-                                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -371,7 +360,6 @@
                                                             <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
                                                                 <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
                                                             </span>
-                                                            <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -386,7 +374,6 @@
                                                 <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="#{bundle.next} &gt;"/>
-                                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -400,7 +387,6 @@
                                                 <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="&#187;"/>
-                                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -423,7 +409,6 @@
                                             <li>
                                                 <h:outputLink>
                                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameAZ']}" styleClass="#{SearchIncludeFragment.sortedByNameAsc ? 'highlightBold' : ''}"/>
-                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -437,7 +422,6 @@
                                             <li>
                                                 <h:outputLink>
                                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameZA']}" styleClass="#{SearchIncludeFragment.sortedByNameDesc ? 'highlightBold' : ''}"/>
-                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -451,7 +435,6 @@
                                             <li>
                                                 <h:outputLink>
                                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.newest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateDesc? 'highlightBold' : ''}"/>
-                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -465,7 +448,6 @@
                                             <li>
                                                 <h:outputLink>
                                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.oldest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateAsc? 'highlightBold' : ''}"/>
-                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -480,7 +462,6 @@
                                                 <li>
                                                     <h:outputLink>
                                                         <h:outputText value="#{bundle['dataverse.results.btn.sort.option.relevance']}" styleClass="#{SearchIncludeFragment.sortedByRelevance ? 'highlightBold' : ''}"/>
-                                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -732,7 +713,6 @@
                                         <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&#171;"/>
-                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -746,7 +726,6 @@
                                         <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&lt; #{bundle.previous}"/>
-                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -766,7 +745,6 @@
                                                     <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
                                                         <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
                                                     </span>
-                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -781,7 +759,6 @@
                                         <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="#{bundle.next} &gt;"/>
-                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -795,7 +772,6 @@
                                         <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&#187;"/>
-                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
