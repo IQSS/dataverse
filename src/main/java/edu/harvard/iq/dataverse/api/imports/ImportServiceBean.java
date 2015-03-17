@@ -142,11 +142,11 @@ public class ImportServiceBean {
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
             Throwable causedBy =e.getCause();
-            while (causedBy.getCause()!=null) {
+            while (causedBy != null && causedBy.getCause()!=null) {
                 causedBy = causedBy.getCause();
             }
             String stackLine = "";
-            if (causedBy.getStackTrace().length > 0) {
+            if (causedBy != null && causedBy.getStackTrace() != null && causedBy.getStackTrace().length > 0) {
                 stackLine = causedBy.getStackTrace()[0].toString();
             }
                  String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
@@ -154,7 +154,7 @@ public class ImportServiceBean {
                      msg+= "message: " +e.getMessage(); 
                  }
                  msg += ", caused by: " +causedBy;
-                 if (causedBy.getMessage()!=null) {
+                 if (causedBy != null && causedBy.getMessage()!=null) {
                      msg+=", caused by message: "+ causedBy.getMessage();
                  }
                  msg += " at line: "+ stackLine;
