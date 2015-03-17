@@ -831,14 +831,17 @@
                                             #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                                         </div>
                                         <div id="panelCollapseLiscensingTOU" class="collapse in">
+                                             <p:fragment id="touFragment"> 
                                             <div class="panel-body">
                                                 <div class="form-group">
+                                                  
                                                     <label for="metadata_License" class="col-sm-3 control-label">
                                                         <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.title']}">
                                                             #{bundle['file.dataFilesTab.terms.list.termsOfUse.license']}
                                                         </span>
                                                     </label>
                                                     <div class="col-sm-9">
+                                                        
                                                         <ui:fragment rendered="#{empty DatasetPage.editMode and DatasetPage.workingVersion.license == 'NONE'}">
                                                             <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.license.txt']}" escape="false"/></p>
                                                         </ui:fragment>
@@ -847,7 +850,7 @@
                                                             <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
                                                                 <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.CCO']}" itemValue="CC0" />
                                                                 <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.notCCO']}" itemValue="NONE" />
-                                                                <p:ajax update=":datasetForm" oncomplete="javascript:dataverseuser_page_rebind();" />
+                                                                <p:ajax update="touFragment" oncomplete="javascript:dataverseuser_page_rebind();" />
                                                             </p:selectOneRadio>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
@@ -857,6 +860,7 @@
                                                             </p>
                                                             <div><img src="/resources/images/cc0.png" alt="CC0"/></div>
                                                         </ui:fragment>
+                                                        
                                                     </div>
                                                 </div>
                                                 <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0'}">
@@ -1031,7 +1035,9 @@
                                                     </div>
                                                 </div>
                                                 <!-- END: Additional Information -->
+                                               
                                             </div>
+                                             </p:fragment>
                                         </div>
                                     </div>
 
@@ -1269,6 +1275,7 @@
                                                         </ui:fragment>
                                                     </div>
                                                 </div>
+                                                <ui:fragment rendered="#{!empty DatasetPage.editMode}">
                                                 <div class="form-group" rendered="#{!empty DatasetPage.editMode}">
                                                     <label for="metadata_Guestbook" class="col-sm-3 control-label">
                                                         <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.title']}">
@@ -1280,7 +1287,7 @@
                                                             <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.title']}</p>
                                                             <p>#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable']}</p>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+                                                        <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks and !empty DatasetPage.editMode}">
                                                             <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook}">
                                                                 <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks.title']}</p>
                                                                 <p>#{bundle['file.dataFilesTab.terms.list.guestbook.availableGuestbooks']}</p>
@@ -1311,6 +1318,7 @@
                                                         </ui:fragment>
                                                     </div>
                                                 </div>
+                                                </ui:fragment>
                                             </div>
                                         </div>
                                     </div>
