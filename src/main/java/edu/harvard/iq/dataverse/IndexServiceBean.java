@@ -809,11 +809,8 @@ public class IndexServiceBean {
                 }
                 datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
-                // For the mime type, we are going to index the "friendly" version, e.g., 
-                // "PDF File" instead of "application/pdf", "MS Excel" instead of 
-                // "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (!), etc., 
-                // if available:
-                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, fileMetadata.getDataFile().getFriendlyType());
+                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_FRIENDLY, fileMetadata.getDataFile().getFriendlyType());
+                datafileSolrInputDocument.addField(SearchFields.FILE_CONTENT_TYPE, fileMetadata.getDataFile().getContentType());
                 datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, fileMetadata.getDataFile().getFriendlyType());
                 // For the file type facets, we have a property file that maps mime types 
                 // to facet-friendly names; "application/fits" should become "FITS", etc.:

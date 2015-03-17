@@ -58,7 +58,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String fq7;
     private String fq8;
     private String fq9;
-    private Long dataverseId;
     private String dataverseAlias;
     private Dataverse dataverse;
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
@@ -220,10 +219,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
         List<String> filterQueriesFinal = new ArrayList<>();
         if (dataverseAlias != null) {
             this.dataverse = dataverseService.findByAlias(dataverseAlias);
-            dataverseId = dataverse.getId();
         }
-        if (dataverseId != null) {
-            this.dataverse = dataverseService.find(dataverseId);
+        if (this.dataverse != null) {
             String dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
@@ -237,7 +234,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         } else {
             this.dataverse = dataverseService.findRootDataverse();
-            dataverseId = this.dataverse.getId();
 //            this.dataverseSubtreeContext = "all";
         }
 
@@ -680,14 +676,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void setFq9(String fq9) {
         this.fq9 = fq9;
-    }
-
-    public Long getDataverseId() {
-        return dataverseId;
-    }
-
-    public void setDataverseId(Long dataverseId) {
-        this.dataverseId = dataverseId;
     }
 
     public Dataverse getDataverse() {

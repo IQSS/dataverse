@@ -63,6 +63,7 @@ public class SolrSearchResult {
      */
     private String unf;
     private String filetype;
+    private String fileContentType;
     private Long fileSizeInBytes;
     private String fileMd5;
     private String dataverseAlias;
@@ -160,7 +161,7 @@ public class SolrSearchResult {
     }
 
     public String getFileTypeHighlightSnippet() {
-        Highlight highlight = highlightsAsMap.get(SearchFields.FILE_TYPE_MIME);
+        Highlight highlight = highlightsAsMap.get(SearchFields.FILE_TYPE_FRIENDLY);
         if (highlight != null) {
             String firstSnippet = highlight.getSnippets().get(0);
             if (firstSnippet != null) {
@@ -344,6 +345,7 @@ public class SolrSearchResult {
                  * https://github.com/IQSS/dataverse/issues/1595
                  */
                 .add("file_type", this.filetype)
+                .add("file_content_type", this.fileContentType)
                 .add("size_in_bytes", getFileSizeInBytes())
                 .add("md5", getFileMd5())
                 .add("unf", getUnf())
@@ -576,6 +578,14 @@ public class SolrSearchResult {
 
     public void setFiletype(String filetype) {
         this.filetype = filetype;
+    }
+
+    public String getFileContentType() {
+        return fileContentType;
+    }
+
+    public void setFileContentType(String fileContentType) {
+        this.fileContentType = fileContentType;
     }
 
     public String getUnf() {

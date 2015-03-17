@@ -79,7 +79,7 @@ public class SearchServiceBean {
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
         solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
-        solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
+        solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_FRIENDLY, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DESCRIPTION, "Description");
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NAME, "Variable Name");
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
@@ -374,10 +374,8 @@ public class SearchServiceBean {
             String deaccessionReason = (String) solrDocument.getFieldValue(SearchFields.DATASET_DEACCESSION_REASON);
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
-            /**
-             * @todo Investigate odd variable naming of MIME vs. non-MIME.
-             */
-            String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
+            String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_FRIENDLY);
+            String fileContentType = (String) solrDocument.getFieldValue(SearchFields.FILE_CONTENT_TYPE);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
             List<String> matchedFields = new ArrayList<>();
@@ -501,6 +499,7 @@ public class SearchServiceBean {
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/fileCardImage/" + entityid);
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
+                solrSearchResult.setFileContentType(fileContentType);
                 Object fileSizeInBytesObject = solrDocument.getFieldValue(SearchFields.FILE_SIZE_IN_BYTES);
                 if (fileSizeInBytesObject != null) {
                     try {
