@@ -31,6 +31,7 @@ public class CustomQuestion implements Serializable {
     private List<CustomQuestionResponse> customQuestionResponses;
 
     @OneToMany(mappedBy="customQuestion",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
+    @OrderBy("displayOrder")    
     private List<CustomQuestionValue> customQuestionValues;
     
     private String questionType;

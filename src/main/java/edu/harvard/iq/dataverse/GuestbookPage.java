@@ -258,10 +258,16 @@ public class GuestbookPage implements java.io.Serializable {
             }
             int i = 0;
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
+                int j = 0;
                 cq.setDisplayOrder(i);
+                if (!cq.getCustomQuestionValues().isEmpty()){
+                    for (CustomQuestionValue cqv : cq.getCustomQuestionValues()){
+                        cqv.setDisplayOrder(j);
+                        j++;
+                    }
+                }
                 i++;
-            }
-            
+            }            
         }
            
         Command<Dataverse> cmd;
