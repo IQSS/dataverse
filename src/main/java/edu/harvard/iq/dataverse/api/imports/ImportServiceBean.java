@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -229,13 +230,14 @@ public class ImportServiceBean {
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation v : invalidViolations) {
                     DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
-                    if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail) && importType.equals(ImportType.MIGRATION)) {
-                        importLogger.getLogger().info("Dataset Contact email is invalid, setting to NA. Invalid value: "+f.getValue());
-                        f.setValue(DatasetField.NA_VALUE);
-                    } else {   String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();
-                        
-                        throw new ImportException(msg);
+                    boolean fixed = false;
+                    if (importType.equals(ImportType.MIGRATION)){
+                        fixed = processMigrationValidationError(f);
                     }
+                    if(!fixed){
+                        String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();                       
+                        throw new ImportException(msg); 
+                    }                   
                 }
             } 
             
@@ -281,6 +283,100 @@ public class ImportServiceBean {
         }
         return Json.createObjectBuilder().add("message", status);
     }
+    
+    private boolean processMigrationValidationError(DatasetFieldValue f) {
+        if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+            importLogger.getLogger().info("Dataset Contact email is invalid, setting to NA. Invalid value: " + f.getValue());
+            f.setValue(DatasetField.NA_VALUE);
+            return true;
+        }
+        if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
+            if (f.getValue().equals("PRODUCER URL")) {
+                importLogger.getLogger().info("Producer URL is PRODUCER URL, setting to NA. Invalid value: " + f.getValue());
+                f.setValue(DatasetField.NA_VALUE);
+                return true;
+            }
+        }
+        if (f.getDatasetField().getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.DATE)) {
+            String convertedVal = convertInvalidDateString(f.getValue());
+            if(!(convertedVal == null)) {
+                f.setValue(convertedVal); 
+                return true;
+            }           
+        }
+        return false;
+    }
+    
+    private String convertInvalidDateString(String inString){
+
+        //Trims ? from date entries
+        /*
+        if (inString.contains("?")) {
+            retVal =  inString.substring(0, inString.indexOf("?"));
+            
+        }*/
+        
+        //converts XXXX0000 to XXXX for date purposes
+        if (inString.trim().length() == 8){
+            if (inString.trim().contains("0000")){
+                return inString.trim().substring(0, 3);
+            }
+        }
+        
+        //Convert string months to numeric
+       
+        
+        if (inString.toUpperCase().contains("JANUARY")){
+            return inString.toUpperCase().replace("JANUARY", "").replace(",", "").trim() + "-01";            
+        }
+        
+        if (inString.toUpperCase().contains("FEBRUARY")){
+            return inString.toUpperCase().replace("FEBRUARY", "").replace(",", "").trim() + "-02";            
+        }
+        
+        if (inString.toUpperCase().contains("MARCH")){
+            return inString.toUpperCase().replace("MARCH", "").replace(",", "").trim() + "-03";            
+        }
+        
+        if (inString.toUpperCase().contains("APRIL")){
+            return inString.toUpperCase().replace("APRIL", "").replace(",", "").trim() + "-04";            
+        }
+        
+        if (inString.toUpperCase().contains("MAY")){
+            return inString.toUpperCase().replace("MAY", "").replace(",", "").trim() + "-05";            
+        }
+        
+        if (inString.toUpperCase().contains("JUNE")){
+            return inString.toUpperCase().replace("JUNE", "").replace(",", "").trim() + "-06";            
+        }
+        
+        if (inString.toUpperCase().contains("JULY")){
+            return inString.toUpperCase().replace("JULY", "").replace(",", "").trim() + "-07";            
+        }
+        
+        if (inString.toUpperCase().contains("AUGUST")){
+            return inString.toUpperCase().replace("AUGUST", "").replace(",", "").trim() + "-08";            
+        }
+        
+        if (inString.toUpperCase().contains("SEPTEMBER")){
+            return inString.toUpperCase().replace("SEPTEMBER", "").replace(",", "").trim() + "-09";            
+        }
+        
+        if (inString.toUpperCase().contains("OCTOBER")){
+            return inString.toUpperCase().replace("OCTOBER", "").replace(",", "").trim() + "-10";            
+        }
+        
+        if (inString.toUpperCase().contains("NOVEMBER")){
+            return inString.toUpperCase().replace("NOVEMBER", "").replace(",", "").trim() + "-11";            
+        }
+        
+        if (inString.toUpperCase().contains("DECEMBER")){
+            return inString.toUpperCase().replace("DECEMBER", "").replace(",", "").trim() + "-12";            
+        }
+
+        return null;
+    }
+
 
     private static class MyCustomFormatter extends Formatter {
 
