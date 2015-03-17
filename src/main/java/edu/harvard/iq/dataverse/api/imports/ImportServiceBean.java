@@ -141,9 +141,27 @@ public class ImportServiceBean {
             }
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (Exception e) {
-            String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
-            importLogger.getLogger().log(Level.SEVERE, msg, e);
-            System.out.println(msg);
+            Throwable causedBy =e.getCause();
+            while (causedBy.getCause()!=null) {
+                causedBy = causedBy.getCause();
+            }
+            String stackLine = "";
+            if (causedBy.getStackTrace().length > 0) {
+                stackLine = causedBy.getStackTrace()[0].toString();
+            }
+                 String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
+                 if (e.getMessage()!=null) {
+                     msg+= "message: " +e.getMessage(); 
+                 }
+                 msg += ", caused by: " +causedBy;
+                 if (causedBy.getMessage()!=null) {
+                     msg+=", caused by message: "+ causedBy.getMessage();
+                 }
+                 msg += " at line: "+ stackLine;
+                 
+       
+            
+            validationLog.println(msg);
             e.printStackTrace();
 
             return Json.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
