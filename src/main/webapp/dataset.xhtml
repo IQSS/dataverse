@@ -1977,6 +1977,7 @@
                                     </div>
                                 </div>
                             </ui:fragment>
+                            <ui:remove>
                             <p:commandLink styleClass="btn btn-default" value="Validation"
                                            update="@([id$=Messages])"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('download')}"
@@ -1984,7 +1985,7 @@
                                            >
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
-                            
+                            </ui:remove>
                         </div>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
