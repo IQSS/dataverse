@@ -137,7 +137,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             }
             
             // set the files restriction flag to the same as the latest version's
-            if (dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
+            if (dataFile.getFileMetadata() != null && dataFile.getFileMetadata().getDatasetVersion().equals(theDataset.getLatestVersion())) {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
         }
