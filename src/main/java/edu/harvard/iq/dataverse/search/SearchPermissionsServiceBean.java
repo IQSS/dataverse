@@ -194,6 +194,8 @@ public class SearchPermissionsServiceBean {
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
             } else {
+                String msg = "No-op. Unexpected condition reached: There is no published version and the latest published version is neither " + DatasetVersion.VersionState.DEACCESSIONED + " nor " + DatasetVersion.VersionState.DEACCESSIONED + ". Its state is " + latestVersionState + ".";
+                logger.info(msg);
             }
         } else if (atLeastOnePublishedVersion == true) {
             if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)
@@ -207,9 +209,11 @@ public class SearchPermissionsServiceBean {
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
             } else {
                 String msg = "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
+                logger.info(msg);
             }
         } else {
             String msg = "No-op. Unexpected condition reached: Has a version been published or not?";
+            logger.info(msg);
         }
         return desiredCards;
     }
