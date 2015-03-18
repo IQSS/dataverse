@@ -215,9 +215,9 @@
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
-                                <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
+                                <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                             </div>
                             <div id="citation-block" class="row bg-citation" jsf:rendered="#{!empty DatasetPage.displayCitation}">
                                 <div id="citation" class="col-md-9">

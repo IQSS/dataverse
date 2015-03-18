@@ -84,11 +84,12 @@ tr.ui-state-highlight .ui-icon {
 .margin-bottom {margin-bottom:1em;}
 .margin-bottom-half {margin-bottom:.5em;}
 .no-margin-bottom {margin-bottom:0;}
+.clear-both {clear:both;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
 table.selectManyCheckboxBlock label {font-weight:normal;}
-label.normal-text {font-weight:normal;}
-label.normal-text input {margin-right:4px;}
+.normal-text {font-weight:normal;}
+.normal-text input {margin-right:4px;}
 
 .ui-datatable tbody td.col-dropdown-visible {overflow:visible;}
 
@@ -357,7 +358,8 @@ div[id$='resultsTable'] div.card-title-icon-block span[class^='icon'],
 div[id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {font-size:1.3em;}
 div[id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {margin-top:3px;}
 div[id$='resultsTable'] div.card-preview-icon-block {width:48px; float:left; margin:4px 12px 6px 0;}
-div[id$='resultsTable'] div.card-preview-icon-block a {display:block;line-height:normal;}
+div[id$='resultsTable'] div.card-preview-icon-block a {display:block; height:48px; line-height:48px;}
+div[id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle;}
 div[id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 div[id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
@@ -528,8 +530,8 @@ div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
 div[id$="filesTable"] td.col-file-thumb {width:64px;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
-div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:3em;line-height:1.05;}
-div[id$="filesTable"] td.col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:10px;}
+div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
+div[id$="filesTable"] td.col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
 div[id$="filesTable"] div.fileCategories {padding-bottom:2px;}
 div[id$="filesTable"] div.fileCategories a.ui-commandlink {font-size:12px;}
 div[id$="filesTable"] div.fileCategories span.label, div[id$="filesTable"] div.fileCategories a.ui-commandlink {margin-right:.5em;}
