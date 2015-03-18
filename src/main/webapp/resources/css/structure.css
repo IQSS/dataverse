@@ -541,16 +541,9 @@ div[id$="filesTable"] div.fileCategories span.label:last-of-type {margin-right:0
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 
 
-/*div[id$='versionsTab'] .ui-state-highlight .ui-icon, div[id$='filesTable'] .ui-state-highlight .ui-icon {background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");}
-div[id$='versionsTab'] .ui-state-highlight .ui-commandlink {color:#FFFFFF;}*/
-
-div[id$='detailsBlocks'] {/*min-width:60%; max-height:60%;*/}
-div[id$='detailsBlocks'] .ui-dialog-content {/*overflow-y:scroll;*/}
-div[id$='detailsBlocks'] div.ui-dialog-buttonpane {/*border-top:0;*/}
-
 #version-details-block > div {width:35%; padding:4px 10px; border: 1px solid #DDDDDD;}
 #version-details-block > div:first-of-type {width:30%; border:0;}
-#version-details-block > div:last-of-type {border-leftt-width:0;}
+#version-details-block > div:last-of-type {border-left-width:0;}
 
 div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > thead {display:none;}
 div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody {border:0;}
