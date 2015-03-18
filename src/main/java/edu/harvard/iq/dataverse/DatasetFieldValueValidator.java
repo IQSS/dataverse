@@ -61,19 +61,51 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         
         if (fieldType.equals(FieldType.DATE) && !lengthOnly) {
             boolean valid = false;
+            String testString = value.getValue();
+
             if (!valid) {  
-                valid = isValidDate(value.getValue(), "yyyy-MM-dd");
+                valid = isValidDate(testString, "yyyy-MM-dd");
             }
             if (!valid) {
-                valid = isValidDate(value.getValue(), "yyyy-MM");
+                valid = isValidDate(testString, "yyyy-MM");
             }
+            
+            //If AD must be a 4 digit year
+            if (value.getValue().contains("AD")) {
+                testString =  (testString.substring(0, testString.indexOf("AD"))).trim();            
+            }
+            
             String YYYYformat = "yyyy";
             if (!valid ) {
-                valid = isValidDate(value.getValue(), YYYYformat);
-                if(!StringUtils.isNumeric(value.getValue())){
+                valid = isValidDate(testString, YYYYformat);
+                if(!StringUtils.isNumeric(testString)){
                     valid = false;
                 }
             }
+            
+            //If BC must be numeric
+            if(!valid && value.getValue().contains("BC") ){
+                testString =  (testString.substring(0, testString.indexOf("BC"))).trim(); 
+                if(StringUtils.isNumeric(testString)){
+                    valid = true;
+                }
+            }
+            
+            // Validate Bracket entries
+            // Must start with "[", end with "?]" and not start with "[-"
+            
+            if (!valid && value.getValue().startsWith("[") && value.getValue().endsWith("?]") && !value.getValue().startsWith("[-")) {
+                testString = value.getValue().replace("[", " ").replace("?]", " ").replace("-", " ").replace("BC", " ").replace("AD", " ").trim();
+                if (value.getValue().contains("BC") && StringUtils.isNumeric(testString)) {
+                    valid = true;
+                } else {
+                    valid = isValidDate(testString, YYYYformat);
+                    if (!StringUtils.isNumeric(testString)) {
+                        valid = false;
+                    }
+                }
+            }
+                       
             if (!valid) {
                 // TODO: 
                 // This is a temporary fix for the early beta! 

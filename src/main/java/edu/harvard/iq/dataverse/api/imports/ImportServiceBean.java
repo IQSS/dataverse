@@ -56,6 +56,7 @@ import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.xml.stream.XMLStreamException;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -308,13 +309,6 @@ public class ImportServiceBean {
     }
     
     private String convertInvalidDateString(String inString){
-
-        //Trims ? from date entries
-        /*
-        if (inString.contains("?")) {
-            retVal =  inString.substring(0, inString.indexOf("?"));
-            
-        }*/
         
         //converts XXXX0000 to XXXX for date purposes
         if (inString.trim().length() == 8){
@@ -323,8 +317,30 @@ public class ImportServiceBean {
             }
         }
         
-        //Convert string months to numeric
-       
+        //convert question marks to dashes and add brackets
+        
+        if (inString.contains("?")) {
+            String testval = inString.replace("?", " ").replace("[", " ").replace("]", " ");
+            if (StringUtils.isNumeric(testval.trim())) {
+                switch (testval.trim().length()) {
+                    case 1:
+                        return "[" + testval.trim() + "---?]";
+                    case 2:
+                        return "[" + testval.trim() + "--?]";
+                    case 3:
+                        return "[" + testval.trim() + "-?]";
+                    case 4:
+                        return "[" + testval.trim() + "?]";
+                    case 8:
+                        if(testval.trim().contains("0000")){
+                            return "[" + testval.trim().replace("0000", "") + "?]";
+                        }
+                }
+            }
+        }        
+        
+        //Convert string months to numeric    
+        
         
         if (inString.toUpperCase().contains("JANUARY")){
             return inString.toUpperCase().replace("JANUARY", "").replace(",", "").trim() + "-01";            
