@@ -224,8 +224,6 @@ public class ContainerManagerImpl implements ContainerManager {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalId() + " has already been deaccessioned.");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.ARCHIVED)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalId() + " has been archived and can not be deleted or deaccessioned.");
-                            } else if (datasetVersionState.equals(DatasetVersion.VersionState.IN_REVIEW)) {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalId() + " is in review and can not be deleted or deaccessioned.");
                             } else {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for dataset " + dataset.getGlobalId() + " in state " + datasetVersionState);
                             }

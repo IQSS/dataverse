@@ -61,7 +61,7 @@ public class DatasetVersion implements Serializable {
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
 
-        DRAFT, IN_REVIEW, RELEASED, ARCHIVED, DEACCESSIONED
+        DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
     };
     
     public enum License {
@@ -566,7 +566,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public boolean isWorkingCopy() {
-        return (versionState.equals(VersionState.DRAFT) || versionState.equals(VersionState.IN_REVIEW));
+        return versionState.equals(VersionState.DRAFT);
     }
 
     public boolean isArchived() {

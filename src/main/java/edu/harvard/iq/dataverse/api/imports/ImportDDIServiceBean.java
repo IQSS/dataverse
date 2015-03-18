@@ -855,6 +855,8 @@ public class ImportDDIServiceBean {
                         if (versionState!=null ) {
                             if( versionState.equals("ARCHIVED")) {
                                 versionState="RELEASED";
+                            } else if (versionState.equals("IN_REVIEW")) {
+                                versionState = DatasetVersion.VersionState.DRAFT.toString();
                             }
                             dvDTO.setVersionState(Enum.valueOf(VersionState.class, versionState));  
                         }                     
