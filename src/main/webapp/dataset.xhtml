@@ -108,23 +108,18 @@
                                     </ul>
                                 </div>
                                 <!-- END: Edit Button -->
-                                <!-- Submit for Review Button -->
-                                <button type="button" class="btn btn-default pull-right #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="inreview.show()"
-                                        jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                        and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                        and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
-                                                        and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
-                                    <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
-                                </button>
-                                <!-- End: Submit for Review Button -->
-                                <!-- Publish Button -->
-                                <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
+                                
+                                <!-- Publish/Submit for Review/Return to Author Button Group -->
+                                <div class="btn-group pull-right" role="group" jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')
+                                                         or (DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                            and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
+                                                            and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand'))}">
 
                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime == null
                                                              and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                              and DatasetPage.dataset.owner.released}">
-                                        <button type="button" class="btn btn-default pull-right" onclick="registerDataset()">
+                                        <button type="button" class="btn btn-default" onclick="registerDataset()">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.registerBtn']}
                                         </button>
                                         <p:commandButton value="Direct" id="registerDataset"
@@ -133,45 +128,65 @@
                                                          action="#{DatasetPage.registerDataset()}">
                                         </p:commandButton>
                                     </ui:fragment>
-
-                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="sendBackToContributor.show()"
-                                                   rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview}">
-                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.rejectBtn']}
-                                    </p:commandLink>
-
-                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="confirmation.show()"
+                                    
+                                    <!-- Publish Buttons -->
+                                    <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="confirmation.show()"
                                                    rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
-                                                               and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                               and DatasetPage.dataset.owner.released}">
+                                                               and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
+                                                                and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="releaseDraft.show()"
-                                                   rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released}">
+                                    <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="releaseDraft.show()"
+                                                   rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
+                                                                and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="mayNotRelease.show()"
+                                    <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="mayNotRelease.show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                               and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')
                                                                and !permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" onclick="publishParent.show()"
+                                    <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="publishParent.show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
-                                                               and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))}">
+                                                               and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
+                                                                and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
-                                    <p:commandLink styleClass="btn btn-default pull-right #{DatasetPage.locked ? 'disabled' : ''}" rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
-                                                                                                       and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
-                                                                                                       and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)}"
+                                    <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" 
+                                                   rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                                and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
+                                                                and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
+                                                                and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}"
                                                    onclick="maynotPublishParent.show()">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
-                                </ui:fragment>
-                                <!-- END: Publish/Submit for Review Button -->
+                                    <!-- END: Publish Buttons -->
+                                    
+                                    <!-- Return to Author Button -->
+                                    <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="sendBackToContributor.show()"
+                                                   rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
+                                                                and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
+                                        #{bundle['dataset.rejectBtn']}
+                                    </p:commandLink>
+                                    <!-- END: Return to Author Button -->
+                                    
+                                    <!-- Submit for Review Button -->
+                                    <button type="button" class="btn btn-default #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="inreview.show()"
+                                            jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                            and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
+                                                            and !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
+                                        <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                    </button>
+                                    <!-- End: Submit for Review Button -->
+                                </div>
+                                <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                             </ui:fragment>
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link Button Group -->
@@ -246,6 +261,9 @@
                                         </ul>
                                     </div>
                                 </div>
+                            </div>
+                            <div id="deaccession-warning-block" class="row" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                <p class="help-block"><span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">This study has been deacessioned and is not accessible to the general viewing public. View the deaccessioned study page that displays when users attempt to access the study. Edit the comments or add a Global ID of a new study that replaces this deacessioned study.</span></p>
                             </div>
                             <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                 <p><strong>#{bundle['dataset.deaccession.reason']}</strong> #{DatasetPage.workingVersion.versionNote}</p>
@@ -1361,10 +1379,10 @@
                                 </p:dialog>
                             </p:tab>
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
-                                <p:commandButton value="#{bundle['file.dataFilesTab.versions.showDiffBtn']}" style="margin-bottom:.5em;"
-                                                 onclick="testCheckBoxes();"
+                                <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
                                                  rendered="#{DatasetPage.compareVersionsCount > 2}">
-                                </p:commandButton>
+                                    <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
+                                </p:commandLink>
                                 <p:commandButton value="Direct" id="compareVersions"
                                                  style="display:none"
                                                  update=":datasetForm"
@@ -1372,8 +1390,8 @@
                                                  actionListener="#{DatasetPage.compareVersionDifferences()}">
                                 </p:commandButton>
 
-                                <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
-                                             rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}"  rowKey="#{versionTab}">
+                                <p:dataTable id="versionsTable" styleClass="margin-top-half" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
+                                             rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}" rowKey="#{versionTab}">
                                     <p:column selectionMode="multiple" class="text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/>
                                     <p:column>
                                         <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
@@ -1438,7 +1456,7 @@
                                                        actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
                                                        oncomplete="detailsBlocks.show();post_differences();"
                                                        update=":datasetForm"
-                                                       value="#{bundle['file.dataFilesTab.versions.showDetails.btn']}" style="margin-left:1em;"></p:commandLink>
+                                                       value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}" style="margin-left:1em;"></p:commandLink>
                                     </p:column>
                                     <p:column style="min-width:140px;">
                                         <!-- FIXME Commented this out, as there is no such property at this time. Michael -->
@@ -1452,7 +1470,28 @@
                         </p:tabView>
                     </div>
                     <!-- END View/Tabs infoMode -->
-                    <p:confirmDialog id="compareTwo" message="#{bundle['file.dataFilesTab.versions.showDiff.dialog.header']}" header="#{bundle['file.dataFilesTab.versions.showDiff.dialog.txt']}" widgetVar="compareTwo"/>
+                    
+                    <!-- Create Metadata Tip -->
+                    <div class="alert alert-info margin-top" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">
+                        #{bundle['file.metadataTip']}
+                    </div>
+
+                    <!-- Create/Save Dataset Button Panel -->
+                    <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
+                        <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();" />
+                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
+                        </p:commandButton>
+                        <p:button id="cancelCreate" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{DatasetPage.editMode == 'CREATE'}" />
+                        <p:commandButton value="Direct" id="datasetSave"
+                                         style="display:none"
+                                         update=":datasetForm,:messagePanel"
+                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                         action="#{DatasetPage.save}" />
+                    </div>
+                    <!-- END: Create/Save Dataset Button Panel -->
+                    
+                    <!-- Popups -->
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">
@@ -1547,94 +1586,83 @@
                     <p:confirmDialog id="enterOtherReason" message="#{bundle['file.deaccessionDialog.dialog.textForReason.tip']}" header="#{bundle['file.deaccessionDialog.dialog.textForReason.header']}" widgetVar="enterOtherReason"> </p:confirmDialog>
                     <p:confirmDialog id="reasonTooManyCharacters" message="#{bundle['file.deaccessionDialog.dialog.limitChar.tip']}" header="#{bundle['file.deaccessionDialog.dialog.limitChar.header']}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
                     <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
-                    <ui:fragment id="detailsBlock">
-                        <p:dialog id="detailsBlocks" header="#{bundle['file.showDiffDialog.header']}" widgetVar="detailsBlocks">
-                            <h:outputLabel value="#{bundle['file.showDiffDialog.viewing']} #{DatasetPage.datasetVersionDifference.newVersion.title}" />
-                            <div class="clearfix" style="margin-bottom:1em;">
-                                <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;border-left-width:0;">
-                                    #{bundle['file.showDiffDialog.version']} #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
-                                    #{bundle['file.showDiffDialog.lastUpdated']} #{DatasetPage.datasetVersionDifference.newVersion.lastUpdateTime}
-                                </div>
-                                <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;">
-                                    #{bundle['file.showDiffDialog.version']} #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
-                                    #{bundle['file.showDiffDialog.lastUpdated']} #{DatasetPage.datasetVersionDifference.originalVersion.lastUpdateTime}
-                                </div>
-                                <div class="pull-right text-left" style="width:30%;padding:4px 10px;">
-                                    &#160;
-                                </div>
+                    <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo">
+                        <p class="help-block"><span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
+                        <div class="button-block">
+                             <p:commandButton value="#{bundle.close}" onclick="compareTwo.hide()" type="button" />
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks">
+                        <span id="title">#{DatasetPage.datasetVersionDifference.newVersion.title}</span>
+                        <div id="version-details-block" class=" clearfix margin-bottom-half">
+                            <div class="pull-left">
+                                &#160;
                             </div>
-                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
-                                <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-info">
-                                            <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />
-                                        </div>
-                                        <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
-                                            <p:column styleClass="versionValue">
-                                                <h:outputText value="#{dsfArray[0].datasetFieldType.title}" />
-                                            </p:column>
-                                            <p:column styleClass="versionDetails">
-                                                <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].displayValue}" />
-                                                <h:outputText rendered="#{!dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].compoundDisplayValue}" />
-                                            </p:column>
-                                            <p:column styleClass="versionDetails" >
-                                                <h:outputText rendered="#{dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].displayValue}" />
-                                                <h:outputText rendered="#{!dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].compoundDisplayValue}" />
-                                            </p:column>
-                                        </p:dataTable>
+                            <div class="pull-left">
+                                #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
+                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.originalVersion.lastUpdateTime}
+                            </div>
+                            <div class="pull-left">
+                                #{bundle['file.viewDiffDialog.version']}: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
+                                #{bundle['file.viewDiffDialog.lastUpdated']}: #{DatasetPage.datasetVersionDifference.newVersion.lastUpdateTime}
+                            </div>
+                        </div>
+                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
+                            <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading text-info">
+                                        <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />
                                     </div>
-                                </ui:repeat>
-                            </ui:fragment>
-                            <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
-                                <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                                    <h:outputText id="outputText" value="#{bundle.files}"/>
+                                    <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
+                                        <p:column styleClass="versionValue">
+                                            <h:outputText value="#{dsfArray[0].datasetFieldType.title}" />
+                                        </p:column>
+                                        <p:column styleClass="versionDetails">
+                                            <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].displayValue}" />
+                                            <h:outputText rendered="#{!dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].compoundDisplayValue}" />
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" >
+                                            <h:outputText rendered="#{dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].displayValue}" />
+                                            <h:outputText rendered="#{!dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].compoundDisplayValue}" />
+                                        </p:column>
+                                    </p:dataTable>
                                 </div>
-                                <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
-                                    <p:column styleClass="versionValue">
-                                        <h:outputText value="#{bundle['file.showDiffDialog.fileID']} #{fileDiff.fileId}"/>
-                                    </p:column>
-                                    <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
-                                        <h:outputText value="#{bundle['file.showDiffDialog.fileName']} #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.fileType']} #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.fileSize']} #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.category']} #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.description']} #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
-                                    </p:column>
-                                    <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
-                                        &#160;
-                                    </p:column>
-                                    <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
-                                        <h:outputText value="#{bundle['file.showDiffDialog.fileName']} #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.fileType']} #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.fileSize']} #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.category']} #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
-                                        <h:outputText value="#{bundle['file.showDiffDialog.description']} #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
-                                    </p:column>
-                                    <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
-                                        &#160;
-                                    </p:column>
-                                </p:dataTable>
+                            </ui:repeat>
+                        </ui:fragment>
+                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
+                            <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
+                                <h:outputText id="outputText" value="#{bundle.files}"/>
                             </div>
-                        </p:dialog>
-                    </ui:fragment>
-
-                    <div class="alert alert-info margin-top" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">
-                        #{bundle['file.metadataTip']}
-                    </div>
-
-                    <!-- Create/Save Dataset Button Panel -->
-                    <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();" />
-                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
-                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
-                        </p:commandButton>
-                        <p:button id="cancelCreate" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{DatasetPage.editMode == 'CREATE'}" />
-                        <p:commandButton value="Direct" id="datasetSave"
-                                         style="display:none"
-                                         update=":datasetForm,:messagePanel"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}" />
-                    </div>
+                            <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
+                                <p:column styleClass="versionValue">
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
+                                    &#160;
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileType']}: #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
+                                </p:column>
+                                <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
+                                    &#160;
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                        <div class="button-block margin-bottom">
+                            <p:commandButton value="#{bundle.done}" onclick="detailsBlocks.hide()" type="button" />
+                        </div>
+                    </p:dialog>
 
                     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedOptions']}" widgetVar="fileAdvancedOptions" modal="true">
                         <div class="form-horizontal">
