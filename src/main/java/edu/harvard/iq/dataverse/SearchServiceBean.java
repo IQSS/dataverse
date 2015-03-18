@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.Highlight;
 import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -61,6 +62,8 @@ public class SearchServiceBean {
     @EJB
     SystemConfig systemConfig;
 
+    public static final JsfHelper JH = new JsfHelper();
+
     public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
@@ -85,6 +88,7 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Date");
+        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_IDENTIFIER, localize("advanced.search.datasets.persistentIdentifier"));
         /**
          * @todo Dataverse subject and affiliation should be highlighted but
          * this is commented out right now because the "friendly" names are not
@@ -675,6 +679,16 @@ public class SearchServiceBean {
         solrQueryResponse.setStaticSolrFieldFriendlyNamesBySolrField(staticSolrFieldFriendlyNamesBySolrField);
         solrQueryResponse.setFilterQueriesActual(Arrays.asList(solrQuery.getFilterQueries()));
         return solrQueryResponse;
+    }
+
+    private static String localize(String bundleKey) {
+        try {
+            String value = JH.localize(bundleKey);
+            return value;
+        } catch (Exception e) {
+            // can throw MissingResourceException
+            return "Match";
+        }
     }
 
     public String getCapitalizedName(String name) {
