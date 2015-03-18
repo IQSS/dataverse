@@ -1,5 +1,5 @@
-#metadataBlock	name	dataverseAlias   displayName													
-	customGSD		Graduate School of Design Metadata													
+#metadataBlock	name	dataverseAlias	displayName												
+	customGSD		Graduate School of Design Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	gsdStudentName	Student Name	Full name of the student: Last Name, First Name (example: Smith, Jane). Use the name that the GSD Administrator has on file.	LastName, FirstName	text	0		TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		customGSD
 	gsdStudentProgram	Student's Program of Study	Student's program of study.		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
@@ -54,110 +54,110 @@
 	gsdFacultyName	Eigen, Ed		36											
 	gsdFacultyName	Elkin, Rosetta		37											
 	gsdFacultyName	Ellis, Erle		38											
-	gsdFacultyName	Evans, Teman		39											
-	gsdFacultyName	Flores Dewey, Onesimo		40											
-	gsdFacultyName	Forsyth, Ann		41											
-	gsdFacultyName	Gamble, David		42											
-	gsdFacultyName	Garciavelez Alfaro, Carlos		43											
-	gsdFacultyName	Gelabert-Sanchez, Ana		44											
-	gsdFacultyName	Georgoulias, Andreas		45											
-	gsdFacultyName	Ham, Derek		46											
-	gsdFacultyName	Hansen, Andrea		47											
-	gsdFacultyName	Harabasz, Ewa		48											
-	gsdFacultyName	Hays, K. Michael		49											
-	gsdFacultyName	Herzog, Jacques		50											
-	gsdFacultyName	Hilderbrand, Gary		51											
-	gsdFacultyName	Hoberman, Chuck		52											
-	gsdFacultyName	Hong, Zaneta		53											
-	gsdFacultyName	Hooftman, Eelco		54											
-	gsdFacultyName	Hooper, Michael		55											
-	gsdFacultyName	Howeler, Eric		56											
-	gsdFacultyName	Hoxie, Christopher		57											
-	gsdFacultyName	Hung, Ying-Yu		58											
-	gsdFacultyName	Hunt, John		59											
-	gsdFacultyName	Hutton, Jane		60											
-	gsdFacultyName	Ibanez, Mariana		61											
-	gsdFacultyName	Johnston, Sharon		62											
-	gsdFacultyName	Kayden, Jerold		63											
-	gsdFacultyName	Khamsi, James		64											
-	gsdFacultyName	Kirkwood, Niall		65											
-	gsdFacultyName	Krieger, Alex		66											
-	gsdFacultyName	Kuo, Max		67											
-	gsdFacultyName	La, Grace		68											
-	gsdFacultyName	Leach, Neil		69											
-	gsdFacultyName	Lee, Christopher		70											
-	gsdFacultyName	Lee, Mark		71											
-	gsdFacultyName	Lopez-Pineiro, Sergio		72											
-	gsdFacultyName	Lott, Jonathan		73											
-	gsdFacultyName	Mah, David		74											
-	gsdFacultyName	Malkawi, Ali		75											
-	gsdFacultyName	Manfredi, Michael		76											
-	gsdFacultyName	Marchant, Edward		77											
-	gsdFacultyName	McCafferty, Patrick		78											
-	gsdFacultyName	McIntosh, Alistair		79											
-	gsdFacultyName	Mehrotra, Rahul		80											
-	gsdFacultyName	Menchaca, Alejandra		81											
-	gsdFacultyName	Menges, Achim		82											
-	gsdFacultyName	Michalatos, Panagiotis		83											
-	gsdFacultyName	Moe, Kiel		84											
-	gsdFacultyName	Molinsky, Jennifer		85											
-	gsdFacultyName	Mori, Toshiko		86											
-	gsdFacultyName	Moussavi, Farshid		87											
-	gsdFacultyName	Mulligan, Mark		88											
-	gsdFacultyName	Muro, Carles		89											
-	gsdFacultyName	Naginski, Erika		90											
-	gsdFacultyName	Nakazawa, Paul		91											
-	gsdFacultyName	Nichols, Albert		92											
-	gsdFacultyName	O'Neill-Uzgiris, Kelly Ann		93											
-	gsdFacultyName	Oppenheim, Chad		94											
-	gsdFacultyName	Panzano, Megan		95											
-	gsdFacultyName	Park, Peter		96											
-	gsdFacultyName	Parsons, Katharine		97											
-	gsdFacultyName	Peiser, Richard		98											
-	gsdFacultyName	Petcu, Constantin		99											
-	gsdFacultyName	Petrescu, Doina		100											
-	gsdFacultyName	Pietrusko, Robert		101											
-	gsdFacultyName	Rahm, Philippe		102											
-	gsdFacultyName	Raspall Galli, Carlos Felix		103											
-	gsdFacultyName	Reed, Chris		104											
-	gsdFacultyName	Rein-Cano, Martin		105											
-	gsdFacultyName	Restrepo Ochoa, Camilo		106											
-	gsdFacultyName	Rosenthal, Joyce Klein		107											
-	gsdFacultyName	Rowe, Peter		108											
-	gsdFacultyName	Ryan, Thomas		109											
-	gsdFacultyName	Samuelson, Holly		110											
-	gsdFacultyName	Sennett, Richard		111											
-	gsdFacultyName	Shigematsu, Shohei		112											
-	gsdFacultyName	Silman, Robert		113											
-	gsdFacultyName	Silver, Mitchell		114											
-	gsdFacultyName	Silvetti, Jorge		115											
-	gsdFacultyName	Smith, Christine		116											
-	gsdFacultyName	Snyder, Susan		117											
-	gsdFacultyName	Solano, Laura		118											
-	gsdFacultyName	Spiegelman, Kathy		119											
-	gsdFacultyName	Stilgoe, John		120											
-	gsdFacultyName	Stockard, James		121											
-	gsdFacultyName	Tato, Belinda		122											
-	gsdFacultyName	Thomas, George		123											
-	gsdFacultyName	Thompson, Maryann		124											
-	gsdFacultyName	Torto, Raymond		125											
-	gsdFacultyName	Urbanski, Matthew		126											
-	gsdFacultyName	Valenzuela, Luis		127											
-	gsdFacultyName	Vallejo, Jose Luis		128											
-	gsdFacultyName	Van Valkenburgh, Michael		129											
-	gsdFacultyName	Vecitis, Chad		130											
-	gsdFacultyName	Videcnik, Spela		131											
-	gsdFacultyName	Waldheim, Charles		132											
-	gsdFacultyName	Wang, Bing		133											
-	gsdFacultyName	Weitz, David		134											
-	gsdFacultyName	Wendel, Delia		135											
-	gsdFacultyName	Wickersham, Jay		136											
-	gsdFacultyName	Witt, Andrew		137											
-	gsdFacultyName	Wodiczko, Krzysztof		138											
-	gsdFacultyName	Wood, Robert		139											
-	gsdFacultyName	Wu, Cameron		140											
-	gsdFacultyName	Zickler, Todd		141											
-	gsdCourseName	09691: Doctoral Program Proseminar		1											
+	gsdFacultyName	Etzler, Danielle		39											
+	gsdFacultyName	Evans, Teman		40											
+	gsdFacultyName	Flores Dewey, Onesimo		41											
+	gsdFacultyName	Forsyth, Ann		42											
+	gsdFacultyName	Gamble, David		43											
+	gsdFacultyName	Garciavelez Alfaro, Carlos		44											
+	gsdFacultyName	Gelabert-Sanchez, Ana		45											
+	gsdFacultyName	Georgoulias, Andreas		46											
+	gsdFacultyName	Ham, Derek		47											
+	gsdFacultyName	Hansen, Andrea		48											
+	gsdFacultyName	Harabasz, Ewa		49											
+	gsdFacultyName	Hays, K. Michael		50											
+	gsdFacultyName	Herzog, Jacques		51											
+	gsdFacultyName	Hilderbrand, Gary		52											
+	gsdFacultyName	Hoberman, Chuck		53											
+	gsdFacultyName	Hong, Zaneta		54											
+	gsdFacultyName	Hooftman, Eelco		55											
+	gsdFacultyName	Hooper, Michael		56											
+	gsdFacultyName	Howeler, Eric		57											
+	gsdFacultyName	Hoxie, Christopher		58											
+	gsdFacultyName	Hung, Ying-Yu		59											
+	gsdFacultyName	Hunt, John		60											
+	gsdFacultyName	Hutton, Jane		61											
+	gsdFacultyName	Ibanez, Mariana		62											
+	gsdFacultyName	Johnston, Sharon		63											
+	gsdFacultyName	Kayden, Jerold		64											
+	gsdFacultyName	Khamsi, James		65											
+	gsdFacultyName	Kirkwood, Niall		66											
+	gsdFacultyName	Krieger, Alex		67											
+	gsdFacultyName	Kuo, Max		68											
+	gsdFacultyName	La, Grace		69											
+	gsdFacultyName	Leach, Neil		70											
+	gsdFacultyName	Lee, Christopher		71											
+	gsdFacultyName	Lee, Mark		72											
+	gsdFacultyName	Lopez-Pineiro, Sergio		73											
+	gsdFacultyName	Lott, Jonathan		74											
+	gsdFacultyName	Mah, David		75											
+	gsdFacultyName	Malkawi, Ali		76											
+	gsdFacultyName	Manfredi, Michael		77											
+	gsdFacultyName	Marchant, Edward		78											
+	gsdFacultyName	McCafferty, Patrick		79											
+	gsdFacultyName	McIntosh, Alistair		80											
+	gsdFacultyName	Mehrotra, Rahul		81											
+	gsdFacultyName	Menchaca, Alejandra		82											
+	gsdFacultyName	Menges, Achim		83											
+	gsdFacultyName	Michalatos, Panagiotis		84											
+	gsdFacultyName	Moe, Kiel		85											
+	gsdFacultyName	Molinsky, Jennifer		86											
+	gsdFacultyName	Mori, Toshiko		87											
+	gsdFacultyName	Moussavi, Farshid		88											
+	gsdFacultyName	Mulligan, Mark		89											
+	gsdFacultyName	Muro, Carles		90											
+	gsdFacultyName	Naginski, Erika		91											
+	gsdFacultyName	Nakazawa, Paul		92											
+	gsdFacultyName	Nichols, Albert		93											
+	gsdFacultyName	O'Neill-Uzgiris, Kelly Ann		94											
+	gsdFacultyName	Oppenheim, Chad		95											
+	gsdFacultyName	Panzano, Megan		96											
+	gsdFacultyName	Park, Peter		97											
+	gsdFacultyName	Parsons, Katharine		98											
+	gsdFacultyName	Peiser, Richard		99											
+	gsdFacultyName	Petcu, Constantin		100											
+	gsdFacultyName	Petrescu, Doina		101											
+	gsdFacultyName	Pietrusko, Robert		102											
+	gsdFacultyName	Rahm, Philippe		103											
+	gsdFacultyName	Raspall Galli, Carlos Felix		104											
+	gsdFacultyName	Reed, Chris		105											
+	gsdFacultyName	Rein-Cano, Martin		106											
+	gsdFacultyName	Restrepo Ochoa, Camilo		107											
+	gsdFacultyName	Rosenthal, Joyce Klein		108											
+	gsdFacultyName	Rowe, Peter		109											
+	gsdFacultyName	Ryan, Thomas		110											
+	gsdFacultyName	Samuelson, Holly		111											
+	gsdFacultyName	Sennett, Richard		112											
+	gsdFacultyName	Shigematsu, Shohei		113											
+	gsdFacultyName	Silman, Robert		114											
+	gsdFacultyName	Silver, Mitchell		115											
+	gsdFacultyName	Silvetti, Jorge		116											
+	gsdFacultyName	Smith, Christine		117											
+	gsdFacultyName	Snyder, Susan		118											
+	gsdFacultyName	Solano, Laura		119											
+	gsdFacultyName	Spiegelman, Kathy		120											
+	gsdFacultyName	Stilgoe, John		121											
+	gsdFacultyName	Stockard, James		122											
+	gsdFacultyName	Tato, Belinda		123											
+	gsdFacultyName	Thomas, George		124											
+	gsdFacultyName	Thompson, Maryann		125											
+	gsdFacultyName	Torto, Raymond		126											
+	gsdFacultyName	Urbanski, Matthew		127											
+	gsdFacultyName	Valenzuela, Luis		128											
+	gsdFacultyName	Vallejo, Jose Luis		129											
+	gsdFacultyName	Van Valkenburgh, Michael		130											
+	gsdFacultyName	Vecitis, Chad		131											
+	gsdFacultyName	Videcnik, Spela		132											
+	gsdFacultyName	Waldheim, Charles		133											
+	gsdFacultyName	Wang, Bing		134											
+	gsdFacultyName	Weitz, David		135											
+	gsdFacultyName	Wendel, Delia		136											
+	gsdFacultyName	Wickersham, Jay		137											
+	gsdFacultyName	Witt, Andrew		138											
+	gsdFacultyName	Wodiczko, Krzysztof		139											
+	gsdFacultyName	Wood, Robert		140											
+	gsdFacultyName	Wu, Cameron		141											
+	gsdFacultyName	Zickler, Todd		142											
 	gsdCoordinator	Belanger, Pierre		0											
 	gsdCoordinator	Correa, Felipe		1											
 	gsdCoordinator	Forsyth, Ann		2											
@@ -166,9 +166,11 @@
 	gsdCoordinator	Howeler, Eric		5											
 	gsdCoordinator	Hutton, Jane		6											
 	gsdCoordinator	Ibanez, Mariana		7											
-	gsdCoordinator	La, Grace		8											
-	gsdCoordinator	Moe, Kiel		9											
-	gsdCoordinator	Muro, Carles		10											
+	gsdCoordinator	Idenburg, Florian		8											
+	gsdCoordinator	La, Grace		9											
+	gsdCoordinator	Long, Judith Grant		10											
+	gsdCoordinator	Moe, Kiel		11											
+	gsdCoordinator	Muro, Carles		12											
 	gsdStudentProgram	DDes		0											
 	gsdStudentProgram	MArch I		1											
 	gsdStudentProgram	MArch II		2											

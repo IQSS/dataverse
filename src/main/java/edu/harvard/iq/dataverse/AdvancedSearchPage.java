@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -39,6 +38,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String dvFieldAffiliation;
     private List<String> dvFieldSubject;
     private String dsPublicationDate;
+    private String dsPersistentIdentifier;
     private String fileFieldName;
     private String fileFieldDescription;
     private String fileFieldFiletype;
@@ -99,6 +99,9 @@ public class AdvancedSearchPage implements java.io.Serializable {
         }
         if (StringUtils.isNotBlank(dsPublicationDate)) {
             queryStrings.add(constructQuery(SearchFields.DATASET_PUBLICATION_DATE, dsPublicationDate));
+        }
+        if (StringUtils.isNotBlank(dsPersistentIdentifier)) {
+            queryStrings.add(constructQuery(SearchFields.DATASET_PERSISTENT_IDENTIFIER, dsPersistentIdentifier));
         }
         return constructQuery(queryStrings, true);
 
@@ -295,6 +298,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setDsPublicationDate(String dsPublicationDate) {
         this.dsPublicationDate = dsPublicationDate;
+    }
+
+    public String getDsPersistentIdentifier() {
+        return dsPersistentIdentifier;
+    }
+
+    public void setDsPersistentIdentifier(String dsPersistentIdentifier) {
+        this.dsPersistentIdentifier = dsPersistentIdentifier;
     }
 
     public String getFileFieldName() {

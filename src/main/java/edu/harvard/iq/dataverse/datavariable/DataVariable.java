@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.NotBlank;
 import edu.harvard.iq.dataverse.DataTable;
+import javax.persistence.Column;
 import javax.persistence.OrderBy;
 
 /**
@@ -61,6 +62,7 @@ public class DataVariable implements Serializable {
     /*
      * label: Variable Label
      */
+    @Column(columnDefinition="TEXT")
     private String label;
     
     /*

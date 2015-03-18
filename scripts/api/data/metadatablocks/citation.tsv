@@ -1,5 +1,5 @@
-#metadataBlock	name    dataverseAlias    displayName													
-	citation		Citation Metadata													
+#metadataBlock	name	dataverseAlias	displayName												
+	citation		Citation Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	title	Title	Full title by which the Dataset is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	subtitle	Subtitle	A secondary title used to amplify or state certain limitations on the main title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
@@ -85,7 +85,7 @@
 	subject	Chemistry	D3	3											
 	subject	Earth and Environmental Sciences	D4	4											
 	subject	Engineering	D5	5											
-	subject	Medicine, Health & Life Sciences	D6	6											
+	subject	Medicine, Health and Life Sciences	D6	6											
 	subject	Computer and Information Science	D7	7											
 	subject	Law	D8	8											
 	subject	Mathematical Sciences	D9	9											
@@ -93,7 +93,7 @@
 	subject	Social Sciences	D11	11											
 	subject	Other	D12	12											
 	publicationIDType	ark		0											
-	publicationIDType	arXiv		1											
+	publicationIDType	arXiv		1	arxiv										
 	publicationIDType	bibcode		2											
 	publicationIDType	doi		3											
 	publicationIDType	ean13		4											
