@@ -2116,7 +2116,7 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton value="#{bundle.continue}" onclick="accessPopup.hide()" action="#{DatasetPage.save()}" />
+                                <p:commandButton value="#{bundle.continue}" onclick="accessPopup.hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}" />
                                 <p:commandButton value="#{bundle.cancel}" onclick="accessPopup.hide()" type="button" />
                             </div>
                         </ui:fragment>
