@@ -171,6 +171,7 @@
                                     <f:attribute name="taglineInput" value="#{themeWidgetFragment.taglineInput}"/>
                                 </h:inputHidden>
                                 <div class="col-sm-8">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.theme.tagline.tip']}</p>
                                     <p:inputText id="tagline" styleClass="form-control" binding="#{themeWidgetFragment.taglineInput}" validator="#{themeWidgetFragment.validateTagline}" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
                                     <p:message for="tagline" display="text"/>
                                 </div>
