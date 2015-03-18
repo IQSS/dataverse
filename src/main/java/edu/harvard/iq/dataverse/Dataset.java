@@ -348,13 +348,18 @@ public class Dataset extends DvObjectContainer {
     public Collection<String> getCategoriesByName() {
         Collection<String> ret = getCategoryNames();
         
-        // "Documentation" and "Data" are basic categories that we 
-        // want to be present by default:
+        // "Documentation", "Data" and "Code" are the 3 default categories that we 
+        // present by default:
+        // (TODO: ? - provide these as constants somewhere? -- L.A. beta15)
+        
         if (!ret.contains("Documentation")) {
             ret.add("Documentation");
         }
         if (!ret.contains("Data")) {
             ret.add("Data");
+        }
+        if (!ret.contains("Code")) {
+            ret.add("Code");
         }
         
         return ret;
