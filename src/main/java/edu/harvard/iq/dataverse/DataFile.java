@@ -55,6 +55,7 @@ public class DataFile extends DvObject {
     @Column( nullable = false )
     private String fileSystemName;
     
+    @Column( nullable = false )
     private String md5;
 
     @Column(nullable=true)
