@@ -366,7 +366,7 @@
                     <!-- END Create/Edit editMode -->
 
                     <!-- Edit editMode -->
-                    <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA'}">
+                    <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
                         <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();" />
                         <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
