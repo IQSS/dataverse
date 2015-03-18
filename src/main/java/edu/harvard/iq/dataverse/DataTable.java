@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.URL;
 
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.util.Objects;
+import javax.persistence.Column;
 
 /**
  *
@@ -50,6 +51,7 @@ public class DataTable implements Serializable {
      * unf: the Universal Numeric Signature of the 
      * data table.
      */
+    @Column( nullable = false )
     private String unf;
     
     /*
