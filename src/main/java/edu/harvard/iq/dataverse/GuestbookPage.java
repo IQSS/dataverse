@@ -260,7 +260,7 @@ public class GuestbookPage implements java.io.Serializable {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 int j = 0;
                 cq.setDisplayOrder(i);
-                if (!cq.getCustomQuestionValues().isEmpty()){
+                if (cq.getCustomQuestionValues() != null &&  !cq.getCustomQuestionValues().isEmpty()){
                     for (CustomQuestionValue cqv : cq.getCustomQuestionValues()){
                         cqv.setDisplayOrder(j);
                         j++;
