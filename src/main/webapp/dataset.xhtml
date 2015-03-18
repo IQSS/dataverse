@@ -213,13 +213,13 @@
                             <!-- END: Dataset Versions Button -->
                         </div>
                         <div id="datasetVersionBlock" class="container-fluid">
-                            <div id="title-block" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                            <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                 <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                             </div>
-                            <div id="citation-block" class="row bg-citation" jsf:rendered="#{!empty DatasetPage.displayCitation}">
+                            <div id="citation-block" class="row #{DatasetPage.workingVersion.deaccessioned ? 'bg-danger' : 'bg-citation'}" jsf:rendered="#{!empty DatasetPage.displayCitation}">
                                 <div id="citation" class="col-md-9">
                                     <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
                                     <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
@@ -247,8 +247,7 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div id="deaccession-reason-block" class="bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                            <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                 <p><strong>#{bundle['dataset.deaccession.reason']}</strong> #{DatasetPage.workingVersion.versionNote}</p>
                                 <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
                                     <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
