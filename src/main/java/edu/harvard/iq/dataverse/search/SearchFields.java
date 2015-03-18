@@ -188,6 +188,7 @@ public class SearchFields {
      */
     public static final String DATASET_PUBLICATION_DATE = "dsPublicationDate";
     public static final String DATASET_VERSION_ID = "datasetVersionId";
+    public static final String DATASET_PERSISTENT_IDENTIFIER = "datasetPersistentIdentifier";
 
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";

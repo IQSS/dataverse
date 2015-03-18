@@ -569,6 +569,8 @@
                                             <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
                                             <h:outputText id="fileCreatePublishDate" value=" - #{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
+                                            
+                                            <h:outputText id="fileFakeDownloadCount" value=" - 222 Downloads" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
                                             <div class="mD5-block">
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
@@ -1379,23 +1381,25 @@
                                 </p:dialog>
                             </p:tab>
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
-                                <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
-                                                 rendered="#{DatasetPage.compareVersionsCount > 2}">
-                                    <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
-                                </p:commandLink>
-                                <p:commandButton value="Direct" id="compareVersions"
-                                                 style="display:none"
-                                                 update=":datasetForm"
-                                                 oncomplete="detailsBlocks.show();post_differences();"
-                                                 actionListener="#{DatasetPage.compareVersionDifferences()}">
-                                </p:commandButton>
+                                <div class="text-right margin-bottom">
+                                    <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
+                                                     rendered="#{DatasetPage.compareVersionsCount > 2}">
+                                        <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
+                                    </p:commandLink>
+                                    <p:commandButton value="Direct" id="compareVersions"
+                                                     style="display:none"
+                                                     update=":datasetForm"
+                                                     oncomplete="detailsBlocks.show();post_differences();"
+                                                     actionListener="#{DatasetPage.compareVersionDifferences()}">
+                                    </p:commandButton>
+                                </div>
 
-                                <p:dataTable id="versionsTable" styleClass="margin-top-half" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
+                                <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                                              rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}" rowKey="#{versionTab}">
                                     <p:column selectionMode="multiple" class="text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/>
                                     <p:column>
                                         <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
-                                            <a id="versionLink" href="/dataset.xhtml?globalId=#{versionTab.dataset.globalId}&#38;versionId=#{versionTab.id}" class="ui-commandlink ui-widget" >
+                                            <a id="versionLink" href="/dataset.xhtml?globalId=#{versionTab.dataset.globalId}&#38;versionId=#{versionTab.id}" class="ui-commandlink ui-widget">
                                                 <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
                                                 <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
                                         </ui:fragment>
@@ -1407,24 +1411,24 @@
                                     <p:column>
                                         <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
                                             <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
-                                                <h:outputLabel value="#{bundle['file.dataFilesTab.versions.citationMetadata']} " />
+                                                <h:outputText styleClass="highlightBold" value="#{bundle['file.dataFilesTab.versions.citationMetadata']} " />
                                                 <ui:repeat value="#{versionTab.defaultVersionDifference.summaryDataForNote}" var="summaryNote">
                                                     <h:outputText value=" #{summaryNote[0].datasetFieldType.displayName} (" />
-                                                    <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[1]} #{bundle['file.dataFilesTab.versions.added']}" />
+                                                    <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}" value="#{summaryNote[1]} #{bundle['file.dataFilesTab.versions.added']}" />
                                                     <h:outputText rendered="#{(summaryNote[1]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="#{bundle['file.dataFilesTab.versions.added']}" />
-                                                    <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}"  value=", " />
-                                                    <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[2]} #{bundle['file.dataFilesTab.versions.removed']}" />
-                                                    <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="#{bundle['file.dataFilesTab.versions.removed']}" />
-                                                    <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}"  value=", " />
-                                                    <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[3]} #{bundle['file.dataFilesTab.versions.changed']}" />
-                                                    <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="#{bundle['file.dataFilesTab.versions.changed']}" />
+                                                    <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}" value=", " />
+                                                    <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}" value="#{summaryNote[2]} #{bundle['file.dataFilesTab.versions.removed']}" />
+                                                    <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}" value="#{bundle['file.dataFilesTab.versions.removed']}" />
+                                                    <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}" value=", " />
+                                                    <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}" value="#{summaryNote[3]} #{bundle['file.dataFilesTab.versions.changed']}" />
+                                                    <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}" value="#{bundle['file.dataFilesTab.versions.changed']}" />
                                                     <h:outputText value="); " />
                                                 </ui:repeat>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.blockDataForNote)}">
                                                 <ui:repeat value="#{versionTab.defaultVersionDifference.blockDataForNote}" var="blockNote">
-                                                    <h:outputLabel rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="#{bundle['file.dataFilesTab.versions.additionalCitationMetadata']} " />
-                                                    <h:outputLabel rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " />
+                                                    <h:outputText styleClass="highlightBold" rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="#{bundle['file.dataFilesTab.versions.additionalCitationMetadata']} " />
+                                                    <h:outputText styleClass="highlightBold" rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " />
                                                     <h:outputText value=" (" />
                                                     <h:outputText rendered="#{blockNote[1] > 0}" value="#{blockNote[1]} #{bundle['file.dataFilesTab.versions.added']}" />
                                                     <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}" value=", " />
@@ -1435,7 +1439,7 @@
                                                 </ui:repeat>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
-                                                <h:outputLabel value="#{versionTab.defaultVersionDifference.fileNote}" />
+                                                <h:outputText styleClass="highlightBold" value="#{versionTab.defaultVersionDifference.fileNote}; " />
                                             </ui:fragment>
                                         </ui:fragment>
                                         <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
@@ -1456,14 +1460,13 @@
                                                        actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
                                                        oncomplete="detailsBlocks.show();post_differences();"
                                                        update=":datasetForm"
-                                                       value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}" style="margin-left:1em;"></p:commandLink>
+                                                       value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
                                     </p:column>
-                                    <p:column style="min-width:140px;">
-                                        <!-- FIXME Commented this out, as there is no such property at this time. Michael -->
+                                    <p:column class="col-sm-3">
                                         <h:outputText value="#{versionTab.contributorNames}" />
                                     </p:column>
-                                    <p:column>
-                                        <h:outputText  id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
+                                    <p:column class="col-sm-2">
+                                        <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
                                     </p:column>
                                 </p:dataTable>
                             </p:tab>
@@ -1593,7 +1596,7 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks">
-                        <span id="title">#{DatasetPage.datasetVersionDifference.newVersion.title}</span>
+                        <div id="title" class="margin-bottom-half">#{DatasetPage.datasetVersionDifference.newVersion.title}</div>
                         <div id="version-details-block" class=" clearfix margin-bottom-half">
                             <div class="pull-left">
                                 &#160;

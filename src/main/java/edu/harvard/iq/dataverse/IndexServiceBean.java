@@ -537,6 +537,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.IDENTIFIER, dataset.getGlobalId());
+        solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_IDENTIFIER, dataset.getGlobalId());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
