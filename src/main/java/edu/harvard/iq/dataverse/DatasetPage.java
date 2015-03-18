@@ -879,7 +879,6 @@ public class DatasetPage implements java.io.Serializable {
             // ?
             return null;
         }
-
         if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
             apiToken = authService.findApiTokenByUser(au);
@@ -1162,8 +1161,15 @@ public class DatasetPage implements java.io.Serializable {
         refresh();
     }
 
-    public void refresh() {
+    // some experimental code below - commented out, for now;
+    
+    public void refresh() { // String flashmessage) { 
         logger.fine("refreshing");
+        
+        //if (flashmessage != null) {
+        //    logger.info("flash message: "+flashmessage);
+        //}
+        
         // refresh the working copy of the Dataset and DatasetVersion:
         dataset = datasetService.find(dataset.getId());
 
@@ -2246,6 +2252,21 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
+    public boolean isDesignatedDatasetThumbnail (FileMetadata fileMetadata) {
+        if (fileMetadata != null) {
+            if (fileMetadata.getDataFile() != null) {
+                if (fileMetadata.getDataFile().getId() != null) {
+                    if (fileMetadata.getDataFile().getOwner() != null) {
+                        if (fileMetadata.getDataFile().equals(fileMetadata.getDataFile().getOwner().getThumbnailFile())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     public void setUseAsDatasetThumbnail(boolean useAsThumbnail) {
         if (fileMetadataSelected != null) {
             if (fileMetadataSelected.getDataFile() != null) {
