@@ -294,6 +294,16 @@ public class ImportServiceBean {
     
     private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+            //Try to convert it based on the errors we've seen
+            String convertedVal = convertInvalidEmail(f.getValue());
+            if (!(convertedVal == null)) {
+                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
+                        + " Converted Value:" + convertedVal + "; Invalid value:  '" + f.getValue() + "'";
+                cleanupLog.println(msg);
+                f.setValue(convertedVal);
+                return true;
+            }
+            //if conversion fails set to NA
             String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; Coverted Value: NA; Invalid value: '" + f.getValue() + "'";
             cleanupLog.println(msg);
             f.setValue(DatasetField.NA_VALUE);
@@ -327,12 +337,27 @@ public class ImportServiceBean {
         return false;
     }
     
+    private String convertInvalidEmail(String inString){  
+        //This works on the specific error we've seen where the user has put in a link for the email address
+        //as in '<a href="IFPRI-Data@cgiar.org" > IFPRI-Data@cgiar.org</a>'
+        //this returns the string between the first > and the second <
+        if (inString.indexOf(">", 0) > -1){
+           try {
+               String eMailAddress = inString.substring(inString.indexOf(">", 0) + 1, inString.indexOf("<", inString.indexOf(">", 0)));
+               return eMailAddress.trim();               
+           } catch (Exception e){
+               return null;
+           }          
+        }
+        return null;
+    }
+    
     private String convertInvalidDateString(String inString){
         
         //converts XXXX0000 to XXXX for date purposes
         if (inString.trim().length() == 8){
-            if (inString.trim().contains("0000")){
-                return inString.trim().substring(0, 3);
+            if (inString.trim().endsWith("0000")){
+                return inString.replace("0000", "").trim();
             }
         }
         
