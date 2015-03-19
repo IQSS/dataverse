@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -77,6 +79,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return savedDvObject;
     }
 
+    @TransactionAttribute(REQUIRES_NEW)
     public int clearAllIndexTimes() {
         Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL");
         int numRowsUpdated = clearIndexTimes.executeUpdate();

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -32,6 +33,8 @@ public class IndexAllServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
     SystemConfig systemConfig;
 
     @Asynchronous
@@ -55,6 +58,9 @@ public class IndexAllServiceBean {
             return new AsyncResult<>(status);
         }
 
+        int numRowsAffected = dvObjectService.clearAllIndexTimes();
+        String resultOfClearingIndexTimes = "Number of rows affected by clearAllIndexTimes: " + numRowsAffected + ".";
+
         List<Dataverse> dataverses = dataverseService.findAll();
         int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
@@ -77,7 +83,8 @@ public class IndexAllServiceBean {
         long indexAllTimeEnd = System.currentTimeMillis();
         String timeElapsed = "index all took " + (indexAllTimeEnd - indexAllTimeBegin) + " milliseconds";
         logger.info(timeElapsed);
-        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed " + timeElapsed + "\n";
+        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". " + resultOfClearingIndexTimes + "\n";
+        logger.info(status);
         return new AsyncResult<>(status);
     }
 

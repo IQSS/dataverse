@@ -1,0 +1,4 @@
+#!/bin/sh
+~/.homebrew/bin/psql -c "
+select id, dtype, modificationtime, indextime, permissionmodificationtime, permissionindextime from dvobject;
+" dataverse_db
