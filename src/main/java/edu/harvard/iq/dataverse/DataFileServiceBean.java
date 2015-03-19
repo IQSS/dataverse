@@ -153,6 +153,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
+    public Long findCountGuestbookResponsesByDataFileId(Long dataFileId) {
+        String queryString = "";
+        if (dataFileId != null) {
+            queryString = "select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId + " ";
+        } else {
+            queryString = "select count(o.id) from GuestbookResponse  o ";
+        }
+
+        Query query = em.createNativeQuery(queryString);
+        return (Long) query.getSingleResult();
+    }
+    
     public DataTable findDataTableByFileId(Long fileId) {
         Query query = em.createQuery("select object(o) from DataTable as o where o.dataFile.id =:fileId order by o.id");
         query.setParameter("fileId", fileId);
