@@ -10,6 +10,7 @@ Pre steps (contained in the migration_presteps document):
 -4. Export DDI files from 3.6 for all datasets to be migrated 
 -3.5. (this now includes exporting non-released versions - presteps doc. updated)
 -3. Create copies of tables in 3.6 database for migrated data
+-2.5 (if there is any data that will fail validation, run scrubbing script - this will need to be custom per installation)
 -2. Run pg dump to extract tables copies
 -1. Import copied tables into 4.0 database
 
@@ -18,7 +19,7 @@ Migration:
 
 1. run migrate_users.sql script
 2. run migrate_dataverses.sql script
-3. run custom_field_map.sql script (this must updated to contain the custom field mappings specific to 
+3. run custom_field_map.sql script (this must be updated to contain the custom field mappings specific to 
     the migration source installation.)
 4. run dataset APIs: execute the following HTTP  request on the Dataverse 4.0 application to initiate dataset migration:
     
@@ -58,16 +59,14 @@ in packlist.txt
 e. Unpack the files packaged above in the files directory on 
 the destination server.
 
-6. run migrate_permissions.sql script
-
+7. run migrate_permissions.sql script
+8. run migrate_links.sql script
 __________________________________________________
 
 Still to be migrated:
-- Permissions
-- Groups
-- Linked DVs / DSs
+- Harvested
 - Guestbook / stats
-- Templates
+
 
 __________________________________________________
 
