@@ -232,14 +232,14 @@ public class ImportServiceBean {
             }
 
             // Check data against validation constraints
-            // If we are migrating and dataset contact email is invalid, then set it to NA
-            // in all other cases, stop processing of this file by throwing exception
+            // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
+            // if the fix fails stop processing of this file by throwing exception
             Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation v : invalidViolations) {
                     DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
                     boolean fixed = false;
-                    if (importType.equals(ImportType.MIGRATION)){
+                    if (importType.equals(ImportType.MIGRATION) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)){ 
                         fixed = processMigrationValidationError(f, cleanupLog, fileName);
                     }
                     if(!fixed){
@@ -294,20 +294,32 @@ public class ImportServiceBean {
     
     private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-            cleanupLog.println("Dataset Contact email is invalid, setting to NA. Invalid value: " + f.getValue());
+            String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; Coverted Value: NA; Invalid value: '" + f.getValue() + "'";
+            cleanupLog.println(msg);
             f.setValue(DatasetField.NA_VALUE);
             return true;
         }
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
             if (f.getValue().equals("PRODUCER URL")) {
-                cleanupLog.println("Producer URL is PRODUCER URL, setting to NA. Invalid value: " + f.getValue());
+                String msg = "Data modified - File: " + fileName + "; Field: Producer URL; Converted Value: NA. Invalid value: '" + f.getValue() + "'";
+                cleanupLog.println(msg);
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
             }
         }
         if (f.getDatasetField().getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.DATE)) {
+            if(f.getValue().toUpperCase().equals("YYYY-MM-DD")){
+                String msg = "Data modified - File: " + fileName + "; Field:" +  f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
+                        + " Converted Value: NA; Invalid value: '" + f.getValue() + "'";
+                cleanupLog.println(msg);
+                f.setValue(DatasetField.NA_VALUE);
+                return true;
+            }
             String convertedVal = convertInvalidDateString(f.getValue());
             if(!(convertedVal == null)) {
+                String msg = "Data modified - File: " + fileName + "; Field: " +  f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
+                        + " Converted Value:" + convertedVal + "; Invalid value:  '" + f.getValue() + "'";
+                cleanupLog.println(msg);
                 f.setValue(convertedVal); 
                 return true;
             }           
