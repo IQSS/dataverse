@@ -479,7 +479,7 @@ public class JsonParser {
 
         } else {
             DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-            datasetFieldValue.setValue(json.getString("value", ""));
+            datasetFieldValue.setValue(json.getString("value", "").trim());
             vals.add(datasetFieldValue);
         }
 
