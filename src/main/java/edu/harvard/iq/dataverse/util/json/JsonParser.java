@@ -182,7 +182,7 @@ public class JsonParser {
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
-
+            dsv.setInReview(obj.getBoolean("inReview", false));
             dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
@@ -473,7 +473,7 @@ public class JsonParser {
             for (JsonString val : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
                 datasetFieldValue.setDisplayOrder(vals.size() - 1);
-                datasetFieldValue.setValue(val.getString());
+                datasetFieldValue.setValue(val.getString().trim());
                 vals.add(datasetFieldValue);
             }
 

@@ -866,6 +866,7 @@ public class ImportDDIServiceBean {
                                 versionState="RELEASED";
                             } else if (versionState.equals("IN_REVIEW")) {
                                 versionState = DatasetVersion.VersionState.DRAFT.toString();
+                                dvDTO.setInReview(true);
                             }
                             dvDTO.setVersionState(Enum.valueOf(VersionState.class, versionState));  
                         }                                  

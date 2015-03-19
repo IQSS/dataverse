@@ -36,9 +36,18 @@ public class DatasetVersionDTO {
     String contactForAccess;
     String sizeOfCollection;
     String studyCompletion; 
+    boolean inReview;
     
     Map<String,MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
+
+    public boolean isInReview() {
+        return inReview;
+    }
+
+    public void setInReview(boolean inReview) {
+        this.inReview = inReview;
+    }
 
     public String getTermsOfUse() {
         return termsOfUse;
