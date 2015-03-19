@@ -34,6 +34,7 @@ public class CustomQuestion implements Serializable {
     @OrderBy("displayOrder")    
     private List<CustomQuestionValue> customQuestionValues;
     
+    @Column( nullable = false )
     private String questionType;
     
     @NotBlank(message = "Please enter question text.")
