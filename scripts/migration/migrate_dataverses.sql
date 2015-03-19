@@ -1,12 +1,4 @@
-
------------------------
--- offsets
------------------------
-update _dvn3_vdcnetwork set id = id + (select max(id) from dvobject);
-update _dvn3_vdc set id = id + (select max(id) from _dvn3_vdcnetwork);
-
-
------------------------
+----------------------
 -- subnetworks
 -----------------------
 
