@@ -71,7 +71,7 @@ body .ui-widget {font-size: inherit;}
 .highlightBold, a.highlightBold, .dropdown-menu > li > a.highlightBold {font-weight:bold;}
 tr.ui-state-highlight, .ui-widget-content tr.ui-state-highlight, .ui-widget-header tr.ui-state-highlight {background-color: #ffffcc; background-image: none; color: #333333;}
 tr.ui-state-highlight label, .ui-widget-content tr.ui-state-highlight label, .ui-widget-header tr.ui-state-highlight label {color: #333333;}
-tr.ui-state-highlight a, .ui-widget-content tr.ui-state-highlight a, .ui-widget-header tr.ui-state-highlight a {color: #428bca;}
+tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:not(.btn), .ui-widget-header tr.ui-state-highlight a:not(.btn) {color: #428bca;}
 tr.ui-state-highlight .ui-icon {
     background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");
 }
@@ -304,10 +304,14 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 #dataverse-info-dropdown .dataverse-info-general {float:left; width:300px;}
 
 .button-block {margin-top:1em;}
-.form-group > .button-block, .panel-body > .button-block, td.col-dropdown-visible > .button-block {margin-top:0;}
+.form-group > .button-block, 
+.panel-body > .button-block, 
+td.col-dropdown-visible > .button-block,
+div.ui-datatable-header > .button-block {margin-top:0;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group {margin-right:1em;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
 .button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
+.button-block .btn:last-child {margin-right:0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
