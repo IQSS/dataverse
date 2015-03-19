@@ -42,29 +42,31 @@ public class BatchServiceBean {
         
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         
-        PrintWriter pw = new PrintWriter(new FileWriter( "../logs/validationLog"+  formatter.format(timestamp)+".txt"));
+        PrintWriter validationLog = new PrintWriter(new FileWriter( "../logs/validationLog"+  formatter.format(timestamp)+".txt"));
+       PrintWriter cleanupLog = new PrintWriter(new FileWriter( "../logs/cleanupLog"+  formatter.format(timestamp)+".txt"));
         File dir = new File(fileDir);
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
                 if (!file.isHidden()) {
                     if (file.isDirectory()) {
-                        status.add(handleDirectory(u, file, importType, pw));
+                        status.add(handleDirectory(u, file, importType, validationLog, cleanupLog));
                     } else {
-                        status.add(importService.handleFile(u, owner, file, importType, pw));
+                        status.add(importService.handleFile(u, owner, file, importType, validationLog, cleanupLog));
 
                     }
                 }
             }
         } else {
-            status.add(importService.handleFile(u, owner, dir, importType, pw));
+            status.add(importService.handleFile(u, owner, dir, importType, validationLog, cleanupLog));
 
         }
-        pw.close();
+        validationLog.close();
+        cleanupLog.close();
         importLogger.getLogger().info("END IMPORT");
 
     }
 
-    public JsonArrayBuilder handleDirectory(AuthenticatedUser u, File dir, ImportUtil.ImportType importType, PrintWriter validationLog) throws ImportException{
+    public JsonArrayBuilder handleDirectory(AuthenticatedUser u, File dir, ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog) throws ImportException{
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = dataverseService.findByAlias(dir.getName());
         if (owner == null) {
@@ -78,7 +80,7 @@ public class BatchServiceBean {
         for (File file : dir.listFiles()) {
             if (!file.isHidden()) {
                 try {
-                    JsonObjectBuilder fileStatus = importService.handleFile(u, owner, file, importType, validationLog);
+                    JsonObjectBuilder fileStatus = importService.handleFile(u, owner, file, importType, validationLog, cleanupLog);
                     status.add(fileStatus);
                 } catch (ImportException | IOException e) {
                     status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));

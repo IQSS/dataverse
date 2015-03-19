@@ -82,7 +82,14 @@ public class ImportServiceBean {
     @EJB ImportDDIServiceBean importDDIService;
     @EJB
     ImportLogger importLogger;
-
+/**
+ * This is just a convenience method, for testing migration.  It creates 
+ * a dummy dataverse with the directory name as dataverse name & alias.
+ * @param dir
+ * @param u
+ * @return
+ * @throws ImportException 
+ */
     @TransactionAttribute(REQUIRES_NEW)
     public Dataverse createDataverse(File dir, AuthenticatedUser u) throws ImportException {
         Dataverse d = new Dataverse();
@@ -125,13 +132,13 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType, PrintWriter validationLog) throws ImportException, IOException {
+    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog) throws ImportException, IOException {
 
         System.out.println("handling file: " + file.getAbsolutePath());
         String ddiXMLToParse;
         try {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
-            JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse, importType);
+            JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
             status.add("file", file.getName());
             importLogger.getLogger().info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
@@ -171,7 +178,7 @@ public class ImportServiceBean {
         }
     }
 
-    public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, ImportType importType) throws ImportException, IOException {
+    public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
 
         String status = "";
         Long createdId = null;
@@ -233,7 +240,7 @@ public class ImportServiceBean {
                     DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
                     boolean fixed = false;
                     if (importType.equals(ImportType.MIGRATION)){
-                        fixed = processMigrationValidationError(f);
+                        fixed = processMigrationValidationError(f, cleanupLog, fileName);
                     }
                     if(!fixed){
                         String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();                       
@@ -285,15 +292,15 @@ public class ImportServiceBean {
         return Json.createObjectBuilder().add("message", status);
     }
     
-    private boolean processMigrationValidationError(DatasetFieldValue f) {
+    private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-            importLogger.getLogger().info("Dataset Contact email is invalid, setting to NA. Invalid value: " + f.getValue());
+            cleanupLog.println("Dataset Contact email is invalid, setting to NA. Invalid value: " + f.getValue());
             f.setValue(DatasetField.NA_VALUE);
             return true;
         }
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
             if (f.getValue().equals("PRODUCER URL")) {
-                importLogger.getLogger().info("Producer URL is PRODUCER URL, setting to NA. Invalid value: " + f.getValue());
+                cleanupLog.println("Producer URL is PRODUCER URL, setting to NA. Invalid value: " + f.getValue());
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
             }
