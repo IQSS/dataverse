@@ -2,34 +2,56 @@
 -- On 3.6 database, run the following to create copies of needed tables
 ----------------------------------------------
 
--- ignore the root network
-create table _dvn3_vdcnetwork as select * from vdcnetwork where id != 0;
-
-create table _dvn3_vdc as select * from vdc;
-
+-- users / groups
 -- ignore network admin (assumes id of 1)
 create table _dvn3_vdcuser as select * from vdcuser where id != 1;
-
--- groups
 create table _dvn3_usergroup as select * from usergroup;
 create table _dvn3_vdcuser_usergroup as select * from vdcuser_usergroup;
 
+-- dataverse networks / dataverses
+-- ignore the root network
+create table _dvn3_vdcnetwork as select * from vdcnetwork where id != 0;
+create table _dvn3_vdc as select * from vdc;
+
+-- studies (for reference)
 create table _dvn3_study as select * from study
 -- where owner_id in (select id from _dvn3_vdc)
 ;
-
 
 create table _dvn3_studyversion as select * from studyversion
 -- where study_id in (select id from _dvn3_study)
 ;
 
+-- collections (for reference)
+create table _dvn3_vdccollection as select * from vdccollection;
 
 -- permissions
+create table _dvn3_vdcrole as select * from vdcrole;
+create table _dvn3_vdc_usergroup as select * from vdc_usergroup;
+
+create table _dvn3_study_vdcuser as select * from study_vdcuser;
+create table _dvn3_study_usergroup as select * from study_usergroup;
+
 create table _dvn3_studyfile_vdcuser as select * from studyfile_vdcuser;
 create table _dvn3_studyfile_usergroup as select * from studyfile_usergroup;
 
-create table _dvn3_vdcrole as select * from vdcrole;
-create table _dvn3_vdc_usergroup as select * from vdc_usergroup;
+-- links
+create table _dvn3_coll_studies as select * from coll_studies;
+create table _dvn3_vdc_linked_collections as select * from vdc_linked_collections;
+
+
+
+-- offsets
+update _dvn3_vdcnetwork set id = id + (select max(id) from dvobject);
+update _dvn3_vdc set id = id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdcrole set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdc_usergroup set vdcs_id = vdcs_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdc_linked_collections set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_study set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdccollection set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
+
+--todo: offsets needed for files
+
 
 ----------------------------------------------
 -- run pg_dump to extract temp tables
