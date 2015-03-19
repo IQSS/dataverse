@@ -842,15 +842,24 @@ public class ImportDDIServiceBean {
     DDI's that we are migrating should have one and only one DVN version statement
     */
     private void processVerStmt(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
-        if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
+        if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {        
+             if (!"DVN".equals(xmlr.getAttributeValue(null, "source"))) {
             for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
                 if (event == XMLStreamConstants.START_ELEMENT) {
-                    if (xmlr.getLocalName().equals("verStmt")) {
-                        String source = xmlr.getAttributeValue(null,"source");
-                        System.out.println("found source:"+ source);
-                    } 
                     if (xmlr.getLocalName().equals("version")) {
-                        dvDTO.setReleaseDate(xmlr.getAttributeValue(null, "date"));
+                        addNote("Version Date: "+ xmlr.getAttributeValue(null, "date"),dvDTO); 
+                        addNote("Version Text: "+ parseText(xmlr),dvDTO);
+                    } else if (xmlr.getLocalName().equals("notes")) { processNotes(xmlr, dvDTO); }
+                } else if (event == XMLStreamConstants.END_ELEMENT) {
+                    if (xmlr.getLocalName().equals("verStmt")) return;
+                }
+            }
+        } else {
+            // this is the DVN version info; get version number for StudyVersion object
+            for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+                 if (event == XMLStreamConstants.START_ELEMENT) {
+                    if (xmlr.getLocalName().equals("version")) {
+                        dvDTO.setReleaseDate(xmlr.getAttributeValue(null, "date")); 
                         String versionState =xmlr.getAttributeValue(null,"type");
                         if (versionState!=null ) {
                             if( versionState.equals("ARCHIVED")) {
@@ -859,18 +868,15 @@ public class ImportDDIServiceBean {
                                 versionState = DatasetVersion.VersionState.DRAFT.toString();
                             }
                             dvDTO.setVersionState(Enum.valueOf(VersionState.class, versionState));  
-                        }                     
-                        parseVersionNumber(dvDTO, parseText(xmlr));
-                      
-                         } else if (xmlr.getLocalName().equals("notes")) { processNotes(xmlr, dvDTO); 
-                    }
-                } else if (event == XMLStreamConstants.END_ELEMENT) {
-                    if (xmlr.getLocalName().equals("verStmt")) {
-                        return;
-                    }
+                        }                                  
+                        parseVersionNumber(dvDTO,parseText(xmlr));
+                     }
+                } else if(event == XMLStreamConstants.END_ELEMENT) {
+                    if (xmlr.getLocalName().equals("verStmt")) return;
                 }
-
             }
+        }  
+            
         }
         if (importType.equals(ImportType.NEW)) {
             // If this is a new, Draft version, versionNumber and minor versionNumber are null.
