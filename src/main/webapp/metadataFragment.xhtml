@@ -48,6 +48,28 @@
                                 </div>
                             </div>
                         </ui:repeat>
+                        <ui:fragment rendered="#{block.index == '0'}">
+                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.publicationDate}">
+                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}">
+                                        #{bundle['dataset.metadata.publicationDate']}
+                                    </span>
+                                </label>
+                                <div class="col-sm-9">
+                                    #{DatasetPage.dataset.publicationDate}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentIdentifier.tip']}">
+                                        #{bundle['dataset.metadata.persistentIdentifier']}
+                                    </span>
+                                </label>
+                                <div class="col-sm-9">
+                                    #{DatasetPage.dataset.globalId}
+                                </div>
+                            </div>
+                        </ui:fragment>
                     </div>
                 </div>
             </div>
