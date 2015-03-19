@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -484,6 +485,10 @@ public class Dataset extends DvObjectContainer {
 
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
         return version.getCitation(isOnlineVersion);
+    }
+    
+    public String getPublicationDateFormattedYYYYMMDD(){
+        return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate());
     }
     
     public DataFile getThumbnailFile() {
