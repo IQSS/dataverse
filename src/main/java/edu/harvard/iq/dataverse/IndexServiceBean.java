@@ -97,8 +97,14 @@ public class IndexServiceBean {
         return indexDataverse(dataverse);
     }
 
+    /**
+     * Does the presence of an equivalent non-async method mean that this one is
+     * async? No! We experimented in async but in this ticket we decided to
+     * disable it for 4.0 until we can test it further:
+     * https://github.com/IQSS/dataverse/issues/702
+     */
+//    @Asynchronous
     @TransactionAttribute(REQUIRES_NEW)
-    @Asynchronous
     public Future<String> indexDataverse(Dataverse dataverse) {
         logger.info("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
@@ -219,8 +225,14 @@ public class IndexServiceBean {
         return indexDataset(dataset);
     }
 
+    /**
+     * Does the presence of an equivalent non-async method mean that this one is
+     * async? No! We experimented in async but in this ticket we decided to
+     * disable it for 4.0 until we can test it further:
+     * https://github.com/IQSS/dataverse/issues/702
+     */
+//    @Asynchronous
     @TransactionAttribute(REQUIRES_NEW)
-    @Asynchronous
     public Future<String> indexDataset(Dataset dataset) {
         logger.info("indexing dataset " + dataset.getId());
         /**
