@@ -34,14 +34,8 @@ public class IndexAllServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    /**
-     * @param async To get async or non-async behavior we either call directly
-     * into a method across the EJB boundary that has the @Asynchronous
-     * annotation (for async) or we call into a method that doesn't have the
-     * @Asynchronous annotation (for non-async).
-     */
     @Asynchronous
-    public Future<String> indexAll(boolean async) {
+    public Future<String> indexAll() {
         long indexAllTimeBegin = System.currentTimeMillis();
         String status;
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
@@ -66,11 +60,7 @@ public class IndexAllServiceBean {
         for (Dataverse dataverse : dataverses) {
             dataverseIndexCount++;
             logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size());
-            if (async) {
-                Future<String> result = indexService.indexDataverse(dataverse);
-            } else {
-                Future<String> result = indexService.indexDataverseNonAsync(dataverse);
-            }
+            Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
         }
 
         int datasetIndexCount = 0;
@@ -78,11 +68,7 @@ public class IndexAllServiceBean {
         for (Dataset dataset : datasets) {
             datasetIndexCount++;
             logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size());
-            if (async) {
-                Future<String> result = indexService.indexDataset(dataset);
-            } else {
-                Future<String> result = indexService.indexDatasetNonAsync(dataset);
-            }
+            Future<String> result = indexService.indexDatasetInNewTransaction(dataset);
         }
 //        logger.info("advanced search fields: " + advancedSearchFields);
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);

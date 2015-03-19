@@ -44,26 +44,14 @@ public class Index extends AbstractApiBean {
     DataFileServiceBean dataFileService;
 
     @GET
-    public Response indexAll(@QueryParam("async") Boolean async) {
+    public Response indexAll() {
         try {
             /**
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            if (async != null) {
-                if (async) {
-                    Future<String> indexAllFuture = indexAllService.indexAll(async);
-                    return okResponse("index all has been started (async)");
-                } else {
-                    // async=false (or async=foo which is a little weird)
-                    Future<String> indexAllFuture = indexAllService.indexAll(async);
-                    return okResponse("index all has been started (non-async)");
-                }
-            } else {
-                boolean defaultAsyncParam = false;
-                Future<String> indexAllFuture = indexAllService.indexAll(defaultAsyncParam);
-                return okResponse("index all has been started (async=" + defaultAsyncParam + ", the default)");
-            }
+            Future<String> indexAllFuture = indexAllService.indexAll();
+            return okResponse("A complete re-indexing has begun.");
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

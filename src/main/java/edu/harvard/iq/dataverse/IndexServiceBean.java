@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -93,12 +92,10 @@ public class IndexServiceBean {
     private Dataverse rootDataverseCached;
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDataverseNonAsync(Dataverse dataverse) {
+    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
         return indexDataverse(dataverse);
     }
 
-    @TransactionAttribute(REQUIRES_NEW)
-    @Asynchronous
     public Future<String> indexDataverse(Dataverse dataverse) {
         logger.info("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
@@ -215,12 +212,10 @@ public class IndexServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetNonAsync(Dataset dataset) {
+    public Future<String> indexDatasetInNewTransaction(Dataset dataset) {
         return indexDataset(dataset);
     }
 
-    @TransactionAttribute(REQUIRES_NEW)
-    @Asynchronous
     public Future<String> indexDataset(Dataset dataset) {
         logger.info("indexing dataset " + dataset.getId());
         /**
