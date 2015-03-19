@@ -51,13 +51,6 @@ public class Index extends AbstractApiBean {
              * the API?
              */
             if (async != null) {
-                boolean asyncParamDisabled = true;
-                if (asyncParamDisabled) {
-                    /**
-                     * Disabled in https://github.com/IQSS/dataverse/issues/702
-                     */
-                    return errorResponse(Status.BAD_REQUEST, "async boolean has been disabled");
-                }
                 if (async) {
                     Future<String> indexAllFuture = indexAllService.indexAll(async);
                     return okResponse("index all has been started (async)");
@@ -69,7 +62,7 @@ public class Index extends AbstractApiBean {
             } else {
                 boolean defaultAsyncParam = false;
                 Future<String> indexAllFuture = indexAllService.indexAll(defaultAsyncParam);
-                return okResponse("index all has been started (async=" + defaultAsyncParam + ", the default)... see logs for details");
+                return okResponse("index all has been started (async=" + defaultAsyncParam + ", the default)");
             }
         } catch (EJBException ex) {
             Throwable cause = ex;

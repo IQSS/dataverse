@@ -35,12 +35,6 @@ public class IndexAllServiceBean {
     SystemConfig systemConfig;
 
     /**
-     * Please note that while the indexAll method itself is async, the parameter
-     * documented here effectively does nothing for 4.0. The methods that are
-     * called (indexDataverse and indexDataset) are never run async for 4.0 per
-     * https://github.com/IQSS/dataverse/issues/702 . We'll leave the switching
-     * code in place, however so we can play more with async in the future.
-     *
      * @param async To get async or non-async behavior we either call directly
      * into a method across the EJB boundary that has the @Asynchronous
      * annotation (for async) or we call into a method that doesn't have the
