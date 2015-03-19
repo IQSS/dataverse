@@ -1033,8 +1033,8 @@ public class DatasetVersion implements Serializable {
         }
     }
 
-    public Set<ConstraintViolation> validateRequired() {
-        Set<ConstraintViolation> returnSet = new HashSet();
+    public List<ConstraintViolation> validateRequired() {
+        List<ConstraintViolation> returnListreturnList = new ArrayList();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         for (DatasetField dsf : this.getFlatDatasetFields()) {
@@ -1042,12 +1042,12 @@ public class DatasetVersion implements Serializable {
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
             for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
                 dsf.setValidationMessage(constraintViolation.getMessage());
-                returnSet.add(constraintViolation);
-                break; // currently only support one message, so we can break out of the loop after the first constraint violation
+                returnListreturnList.add(constraintViolation);
+                 break; // currently only support one message, so we can break out of the loop after the first constraint violation
             }
             
         }
-        return returnSet;
+        return returnListreturnList;
     }
     
     public Set<ConstraintViolation> validate() {

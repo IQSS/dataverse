@@ -38,8 +38,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -212,13 +212,13 @@ public class ImportServiceBean {
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
             // Check data against required contraints
-            Set<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
+            List<ConstraintViolation> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
                 if (importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) {
                     // For migration and harvest, add NA for missing required values
                     for (ConstraintViolation v : violations) {
                         DatasetField f = ((DatasetField) v.getRootBean());
-                        f.setSingleValue(DatasetField.NA_VALUE);
+                         f.setSingleValue(DatasetField.NA_VALUE);
                     }
                 } else {
                     // when importing a new dataset, the import will fail
@@ -238,16 +238,16 @@ public class ImportServiceBean {
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation v : invalidViolations) {
                     DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
-                    boolean fixed = false;
-                    if (importType.equals(ImportType.MIGRATION) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)){ 
-                        fixed = processMigrationValidationError(f, cleanupLog, fileName);
+                        boolean fixed = false;
+                        if (importType.equals(ImportType.MIGRATION) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                            fixed = processMigrationValidationError(f, cleanupLog, fileName);
+                        }
+                        if (!fixed) {
+                            String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();
+                            throw new ImportException(msg);
+                        }
                     }
-                    if(!fixed){
-                        String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();                       
-                        throw new ImportException(msg); 
-                    }                   
                 }
-            } 
             
 
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
