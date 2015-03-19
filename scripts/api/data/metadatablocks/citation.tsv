@@ -67,7 +67,7 @@
 	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	63		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
 	series	Series	Information about the Dataset series.		none	64	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	65	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation
-	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		text	66	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
+	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	66	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
 	software	Software	Information about the software used to generate the Dataset.		none	67	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	softwareName	Name	Name of software used to generate the Dataset.		text	68	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	citation
 	softwareVersion	Version	Version of the software used to generate the Dataset.		text	69	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
