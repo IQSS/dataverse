@@ -199,7 +199,7 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
                                     <span class="glyphicon glyphicon-envelope no-text"/>
                                 </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.superuser}"
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" rendered="#{dataverseSession.user.superuser and !DatasetPage.workingVersion.deaccessioned}"
                                                title="#{bundle['dataset.email.datasetLinkBtn.tip']}"
                                                action="#{DatasetPage.updateLinkableDataverses()}"
                                                oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
@@ -211,7 +211,7 @@
                             <!-- END: Email/Link Button Group -->
 
                             <!-- View Dataset Versions Button -->
-                            <div class="btn-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
+                            <div class="btn-group pull-left" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                     View Dataset Versions <span class="caret"></span>
                                 </button>
@@ -226,6 +226,26 @@
                                 </ul>
                             </div>
                             <!-- END: Dataset Versions Button -->
+                            
+                            <!-- Fake Stats -->
+                            <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                                <div class="pull-left text-center" style="background:purple;padding: 7px 13px;">
+                                    <span style="color:white;line-height: 1.42857;"><span class="glyphicon glyphicon-stats"/> Metrics</span>
+                                </div>
+                                <div class="pull-left text-center" style="background:#428bca;padding: 7px 13px;">
+                                    <span data-toggle="tooltip" data-placement="top" title="Views" style="color:white;line-height: 1.42857;">22</span>
+                                </div>
+                                <div class="pull-left text-center" style="background:#5cb85c;padding: 7px 13px;">
+                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" style="color:white;line-height: 1.42857;">22</span>
+                                </div>
+                                <div class="pull-left text-center" style="background:#c55b28;padding: 7px 13px;">
+                                    <span data-toggle="tooltip" data-placement="top" title="Citations" style="color:white;line-height: 1.42857;">22</span>
+                                </div>
+                                <div class="pull-left text-center" style="background:#f0ad4e;padding: 7px 13px;">
+                                    <span data-toggle="tooltip" data-placement="top" title="Shares" style="color:white;line-height: 1.42857;">22</span>
+                                </div>
+                            </div>
+                            <!-- END: Fake Stats -->
                         </div>
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
@@ -235,14 +255,14 @@
                                 <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                             </div>
                             <div id="citation-block" class="row #{DatasetPage.workingVersion.deaccessioned ? 'bg-danger' : 'bg-citation'}" jsf:rendered="#{!empty DatasetPage.displayCitation}">
-                                <div id="citation" class="col-md-9">
+                                <div id="citation" class="#{DatasetPage.workingVersion.deaccessioned ? 'col-md-12' : 'col-md-9'}">
                                     <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
                                     <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                     <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                     <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
-                                    <div id="whycite" class="text-muted small">#{bundle['dataset.cite.whyCite.tip']} <a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></div>
+                                    <div id="whycite" class="text-muted small" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">#{bundle['dataset.cite.whyCite.tip']} <a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></div>
                                 </div>
-                                <div id="citation-download" class="col-md-3 text-right">
+                                <div id="citation-download" class="col-md-3 text-right" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                     <div class="dropdown">
                                         <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
@@ -262,41 +282,41 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="deaccession-warning-block" class="row" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                <p class="help-block"><span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">This study has been deacessioned and is not accessible to the general viewing public. View the deaccessioned study page that displays when users attempt to access the study. Edit the comments or add a Global ID of a new study that replaces this deacessioned study.</span></p>
-                            </div>
                             <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                <p><strong>#{bundle['dataset.deaccession.reason']}</strong> #{DatasetPage.workingVersion.versionNote}</p>
+                                <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
+                                <p>#{DatasetPage.workingVersion.versionNote}</p>
                                 <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
                                     <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
                                 </ui:fragment>
                             </div>
-
-                            <div id="description" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.descriptionDisplay and !DatasetPage.workingVersion.deaccessioned}">
-                                <h:outputText value="#{DatasetPage.datasetVersionUI.descriptionDisplay}" escape="false"/>
-                            </div>
-                            <div id="metadata-panel" class="panel panel-default"
+                            <div id="metadata-panel" class="row panel panel-default"
                                  jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned and (!empty DatasetPage.datasetVersionUI.keywordDisplay
                                                  or !empty DatasetPage.datasetVersionUI.subject.value or !empty DatasetPage.datasetVersionUI.relPublicationCitation
                                                  or !empty DatasetPage.datasetVersionUI.notes.value)}">
                                 <div class="panel-body">
-                                    <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay}">
+                                    <div id="description" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.descriptionDisplay}">
                                         <label class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}">#{bundle['dataset.keywordDisplay.title']}</span>
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.description.get(0).description}">#{bundle['dataset.descriptionDisplay.title']}</span>
                                         </label>
-                                        <div class="col-sm-8 no-padding-left-right">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
+                                        <div class="col-sm-9 no-padding-left-right"><h:outputText value="#{DatasetPage.datasetVersionUI.descriptionDisplay}" escape="false"/></div>
                                     </div>
                                     <div id="subject" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">
                                         <label class="col-sm-3 control-label">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.subject.datasetFieldType.title}</span>
                                         </label>
-                                        <div class="col-sm-8 no-padding-left-right">#{DatasetPage.datasetVersionUI.subject.displayValue}</div>
+                                        <div class="col-sm-9 no-padding-left-right">#{DatasetPage.datasetVersionUI.subject.displayValue}</div>
+                                    </div>
+                                    <div id="keywords" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.keywordDisplay}">
+                                        <label class="col-sm-3 control-label">
+                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}">#{bundle['dataset.keywordDisplay.title']}</span>
+                                        </label>
+                                        <div class="col-sm-9 no-padding-left-right">#{DatasetPage.datasetVersionUI.keywordDisplay}</div>
                                     </div>
                                     <div id="publication" class="form-group" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
                                         <label class="col-sm-3 control-label">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title}</span>
                                         </label>
-                                        <div class="col-sm-8 no-padding-left-right">
+                                        <div class="col-sm-9 no-padding-left-right">
                                             <h:outputText value="#{DatasetPage.datasetVersionUI.relPublicationCitation}" escape="false"/>
                                             <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
                                         </div>
@@ -305,7 +325,7 @@
                                         <label class="col-sm-3 control-label">
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</span>
                                         </label>
-                                        <div class="col-sm-8 no-padding-left-right">
+                                        <div class="col-sm-9 no-padding-left-right">
                                             <h:outputText value="#{DatasetPage.datasetVersionUI.notes.value}" escape="false"/>
                                         </div>
                                     </div>
@@ -656,7 +676,7 @@
                                                            class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore"
                                                            actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
-                                                <span class="glyphicon glyphicon-stats"/> <span class="ladda-label">#{bundle.explore}</span>
+                                                <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
                                             </h:commandLink>
                                             <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
                                                                        and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and DatasetPage.downloadPopupRequired}"
@@ -664,7 +684,7 @@
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
                                                            update="@form"
                                                            oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');" >
-                                                <span class="glyphicon glyphicon-stats"/> #{bundle.explore}
+                                                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
                                             </p:commandLink>
 
                                             <ui:remove><!-- WorldMap Explore | Map Data button group --></ui:remove>

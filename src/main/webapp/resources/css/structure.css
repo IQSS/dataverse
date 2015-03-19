@@ -454,8 +454,8 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #citation-block {margin-bottom:.5em;}
 .bg-citation {background:#ECF6FB;}
 #citation, #citation-download {padding:.5em;}
-#description {display:block; margin-bottom:.5em;}
-#keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
+#metadata-panel label.col-sm-3 {padding-left:0;}
+#description, #keywords, #subject, #note, #publication {}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
 

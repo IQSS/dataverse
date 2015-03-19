@@ -41,22 +41,24 @@
                         </div>
                     </div>
                     <div>
-                        <div id="no-guestbooks-message" jsf:rendered="#{empty manageGuestbooksPage.guestbooks}">
-                            <span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.why.header']}</span>
-                            <ul>
-                                <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.why.reason1']}" escape="false"/></li>
-                                <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.why.reason2']}" escape="false"/></li>
-                            </ul>
-                            <span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.how.header']}</span>
-                            <ul>
-                                <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.how.tip1']}" escape="false"/></li>
-                                <li>
-                                    <h:outputFormat value="#{bundle['dataset.manageGuestbooks.noGuestbooks.how.tip2']}" escape="false">
-                                        <f:param value="#{manageTemplatesPage.dataverse.alias}"/>
-                                    </h:outputFormat>
-                                </li>
-                            </ul>
-                            <p><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.getStarted']}" escape="false"/></p>
+                        <div id="no-guestbooks-message" class="panel panel-default" jsf:rendered="#{empty manageGuestbooksPage.guestbooks}">
+                            <div class="panel-body">
+                                <span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.why.header']}</span>
+                                <ul>
+                                    <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.why.reason1']}" escape="false"/></li>
+                                    <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.why.reason2']}" escape="false"/></li>
+                                </ul>
+                                <span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.how.header']}</span>
+                                <ul>
+                                    <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.how.tip1']}" escape="false"/></li>
+                                    <li>
+                                        <h:outputFormat value="#{bundle['dataset.manageGuestbooks.noGuestbooks.how.tip2']}" escape="false">
+                                            <f:param value="#{manageTemplatesPage.dataverse.alias}"/>
+                                        </h:outputFormat>
+                                    </li>
+                                </ul>
+                                <p><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.getStarted']}" escape="false"/></p>
+                            </div>
                         </div>
                         
                         <p:dataTable id="allGuestbooks" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
