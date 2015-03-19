@@ -73,8 +73,7 @@ public class DatasetVersionUI implements Serializable {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
                 setTitle(dsf);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
-                //setDescription(dsf);
-                //setKeyword(dsf.getCompoundDisplayValue());
+                setDescription(dsf);
                 String descriptionString = "";
                 if(dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null){
                     DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);               
