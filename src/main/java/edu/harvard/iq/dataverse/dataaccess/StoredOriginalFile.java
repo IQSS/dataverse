@@ -106,6 +106,10 @@ public class StoredOriginalFile {
         return null;
     }
 
+    // TODO: 
+    // do what the comment below says - move this code into the file util, 
+    // or something like that!
+    // -- L.A. 4.0 beta15
     // Shouldn't be here; should be part of the DataFileFormatType, or 
     // something like that... 
     
@@ -121,6 +125,8 @@ public class StoredOriginalFile {
             return ".zip";
         } else if (fileType.equalsIgnoreCase("application/x-dvn-tabddi-zip")) {
             return ".zip";
+        } else if (fileType.equalsIgnoreCase("application/x-rlang-transport")) {
+            return ".RData";
         }
 
         return "";
