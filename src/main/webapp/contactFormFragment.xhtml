@@ -10,14 +10,14 @@
         <p:fragment>
             <h:form id="emailForm" class="form-horizontal">
                 <div class="form-group">
-                    <label for="messageTo" class="col-sm-3 control-label">#{bundle['feedback.to']}</label>
+                    <label for="messageTo" class="col-sm-3 control-label">#{bundle['contact.to']}</label>
                     <div class="col-sm-9">
                         <p id="messageTo" class="form-control-static">#{sendFeedbackDialog.getMessageTo()}</p>
                     </div>
                 </div>
                 <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
                     <div class="form-group">
-                        <label for="userEmailStatic" class="col-sm-3 control-label">#{bundle['feedback.from']}</label>
+                        <label for="userEmailStatic" class="col-sm-3 control-label">#{bundle['contact.from']}</label>
                         <div class="col-sm-9">
                             <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
                         </div>
@@ -25,19 +25,19 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
                     <div class="form-group">
-                        <label for="userEmail" class="col-sm-3 control-label">#{bundle['feedback.from']}</label>
+                        <label for="userEmail" class="col-sm-3 control-label">#{bundle['contact.from']}</label>
                         <div class="col-sm-9">
                             <p:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"
-                                         validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['feedback.from.invalid']}" requiredMessage="#{bundle['feedback.from.required']}" required="#{param['DO_VALIDATION']}"/>
+                                         validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['contact.from.invalid']}" requiredMessage="#{bundle['contact.from.required']}" required="#{param['DO_VALIDATION']}"/>
                         <h:message for="userEmail" styleClass="bg-danger text-danger"/>
                         </div>
                     </div>
                 </ui:fragment>
                 <div class="form-group">
-                    <label for="messageSubject" class="col-sm-3 control-label">#{bundle['feedback.subject']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" jsf:rendered="#{sendFeedbackDialog.recipient!=null}"/></label>
+                    <label for="messageSubject" class="col-sm-3 control-label">#{bundle['contact.subject']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" jsf:rendered="#{sendFeedbackDialog.recipient!=null}"/></label>
                     <div class="col-sm-9">
                         <p:inputText id="messageSubject" styleClass="form-control" value="#{sendFeedbackDialog.messageSubject}"
-                                     requiredMessage="#{bundle['feedback.subject.required']}" required="#{param['DO_VALIDATION']}" rendered="#{sendFeedbackDialog.recipient!=null }"/>
+                                     requiredMessage="#{bundle['contact.subject.required']}" required="#{param['DO_VALIDATION']}" rendered="#{sendFeedbackDialog.recipient!=null }"/>
                         <ui:fragment rendered="#{sendFeedbackDialog.recipient==null}">
                             <p id="messageSubject" class="form-control-static">#{sendFeedbackDialog.messageSubject}</p>
                         </ui:fragment>
@@ -45,29 +45,29 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="userMessage" class="col-sm-3 control-label">#{bundle['feedback.msg']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                    <label for="userMessage" class="col-sm-3 control-label">#{bundle['contact.msg']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                     <div class="col-sm-9">
                         <p:inputTextarea  id="userMessage" styleClass="form-control"  value="#{sendFeedbackDialog.userMessage}"
-                            required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['feedback.msg.required']}" rows="10"/>
+                            required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.msg.required']}" rows="10"/>
                         <h:message for="userMessage" styleClass="bg-danger text-danger"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-9">
                         <p>
-                            <h:outputText styleClass="highlightBold" value="#{bundle['feedback.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                            <h:outputText styleClass="highlightBold" value="#{bundle['contact.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                         </p>
                         <h:outputFormat value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
-                        <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['feedback.sum.converterMessage']}"
-                                     required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['feedback.sum.required']}"
-                                     validatorMessage="#{bundle['feedback.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}">
+                        <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
+                                     required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.sum.required']}"
+                                     validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}">
                             <f:convertNumber integerOnly="true" type="number"/>
                         </p:inputText>
                         <h:message for="messageSum" styleClass="bg-danger text-danger"/>
                     </div>
                 </div>
                 <div class="button-block">
-                    <p:commandLink styleClass="btn btn-default" value="#{bundle['feedback.send']}"
+                    <p:commandLink styleClass="btn btn-default" value="#{bundle['contact.send']}"
                                     update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) contactForm.hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
                         <f:param name="DO_VALIDATION" value="true"/>
                     </p:commandLink>

@@ -88,20 +88,20 @@ public class SendFeedbackDialog implements java.io.Serializable {
     
     public String getMessageTo() {
         if (recipient == null) {
-            return JH.localize("feedback.support");
+            return JH.localize("contact.support");
         } else if (recipient.isInstanceofDataverse()) {
-            return  ((Dataverse)recipient).getDisplayName() +" "+ JH.localize("feedback.contact");
+            return  ((Dataverse)recipient).getDisplayName() +" "+ JH.localize("contact.contact");
         } else 
-            return JH.localize("dataset") + " " + JH.localize("feedback.contact");
+            return JH.localize("dataset") + " " + JH.localize("contact.contact");
     }
     
     public String getFormHeader() {
         if (recipient == null) {
-            return JH.localize("feedback.header");
+            return JH.localize("contact.header");
         } else if (recipient.isInstanceofDataverse()) {
-            return   JH.localize("feedback.dataverse.header");
+            return   JH.localize("contact.dataverse.header");
         } else 
-            return JH.localize("feedback.dataset.header");
+            return JH.localize("contact.dataset.header");
     }
 
     public void setUserMessage (String mess) {

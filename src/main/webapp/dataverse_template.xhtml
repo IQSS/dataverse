@@ -42,7 +42,10 @@
                 <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty systemConfig.applicationPrivacyPolicyUrl}">&#160;|&#160; <h:outputLink value="#{systemConfig.applicationPrivacyPolicyUrl}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
             </div>
             <div class="pull-right clearfix">
-                <div class="poweredbylogo pull-left"><span>#{bundle['footer.poweredby']}</span> <h:graphicImage value="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></div>
+                <div class="poweredbylogo pull-left">
+                    <span>#{bundle['footer.poweredby']}</span> 
+                    <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
+                </div>
                 <div class="version pull-right">v. #{dataverseServiceBean.applicationVersion}</div>
             </div>
         </div>

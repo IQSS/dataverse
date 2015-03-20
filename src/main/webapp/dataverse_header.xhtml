@@ -21,8 +21,8 @@
                     <i id="icon-dataverse" class="icon-dataverse"></i>
                     <span class="navbar-brand"> #{bundle.dataverse}</span>
                 </a>
-                <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community" title="#{bundle['header.beta.title']}" target="_blank">
-                    <span class="label label-default beta">#{bundle['header.beta']}</span>
+                <h:outputLink value="#" onclick="upgradeInfo.show()">
+                    <span class="label label-default upgrade">#{bundle['header.upgrade']}</span>
                 </h:outputLink>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
@@ -43,7 +43,7 @@
                         </button>
                     </form>
                     <li>
-                        <h:outputLink value="http://datascience.iq.harvard.edu/blog/dataverse-40-beta" target="_blank">
+                        <h:outputLink value="http://dataverse.org/" target="_blank">
                             #{bundle['header.about']}
                         </h:outputLink>
                     </li>
@@ -65,8 +65,8 @@
                         </ul>
                     </li>
                     <h:form class="navbar-form navbar-left navbar-form-link">
-                       <p:commandLink value="#{bundle['header.feedback']}" oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.feedback']}"/>
+                       <p:commandLink value="#{bundle['header.contact']}" oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.contact']}"/>
                             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                             <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                             <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -236,7 +236,15 @@
     </p:fragment>
   
     <ui:include src="contactFormFragment.xhtml">
-        <ui:param name="formTitle" value="#{bundle['feedback.header']}"/>
-        <ui:param name="formTo" value="#{bundle['feedback.to']}"/>
+        <ui:param name="formTitle" value="#{bundle['contact.header']}"/>
+        <ui:param name="formTo" value="#{bundle['contact.to']}"/>
     </ui:include>
+    <p:dialog id="upgradeInfo" header="#{bundle['header.upgradeInfo.header']}" widgetVar="upgradeInfo" modal="true">
+        <p>#{bundle['header.upgradeInfo.message']}</p>
+        <div class="button-block">
+            <button type="button" onclick="upgradeInfo.hide()" class="btn btn-default" value="#{bundle.close}">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>
 </div>
