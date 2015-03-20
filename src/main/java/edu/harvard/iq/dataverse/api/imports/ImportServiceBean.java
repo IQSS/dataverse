@@ -55,6 +55,9 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.xml.stream.XMLStreamException;
 import org.apache.commons.lang.StringUtils;
 
@@ -235,13 +238,22 @@ public class ImportServiceBean {
             // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
             // if the fix fails stop processing of this file by throwing exception
             Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation v : invalidViolations) {
                     DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
                         boolean fixed = false;
                         if (importType.equals(ImportType.MIGRATION) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
                             fixed = processMigrationValidationError(f, cleanupLog, fileName);
+                        if (fixed) {
+                            Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                            if (!scrubbedViolations.isEmpty()) {
+                                String msg = " Validation error for CONVERTED value: " + f.getValue() + ", " + f.getValidationMessage();
+                                throw new ImportException(msg);
+                            }
                         }
+                    }
                         if (!fixed) {
                             String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();
                             throw new ImportException(msg);
@@ -297,21 +309,21 @@ public class ImportServiceBean {
             //Try to convert it based on the errors we've seen
             String convertedVal = convertInvalidEmail(f.getValue());
             if (!(convertedVal == null)) {
-                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
-                        + " Converted Value:" + convertedVal + "; Invalid value:  '" + f.getValue() + "'";
+                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                     + "Invalid value:  '" + f.getValue() + "'"   + " Converted Value:'" + convertedVal + "'"; 
                 cleanupLog.println(msg);
                 f.setValue(convertedVal);
                 return true;
             }
             //if conversion fails set to NA
-            String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; Coverted Value: NA; Invalid value: '" + f.getValue() + "'";
+            String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; " +  "Invalid value: '" + f.getValue() + "'"  + " Converted Value: 'NA'"; 
             cleanupLog.println(msg);
             f.setValue(DatasetField.NA_VALUE);
             return true;
         }
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
             if (f.getValue().equals("PRODUCER URL")) {
-                String msg = "Data modified - File: " + fileName + "; Field: Producer URL; Converted Value: NA. Invalid value: '" + f.getValue() + "'";
+                String msg = "Data modified - File: " + fileName + "; Field: Producer URL; "  +  "Invalid value: '" + f.getValue() + "'"  + " Converted Value: 'NA'"; 
                 cleanupLog.println(msg);
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
@@ -319,8 +331,8 @@ public class ImportServiceBean {
         }
         if (f.getDatasetField().getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.DATE)) {
             if(f.getValue().toUpperCase().equals("YYYY-MM-DD")){
-                String msg = "Data modified - File: " + fileName + "; Field:" +  f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
-                        + " Converted Value: NA; Invalid value: '" + f.getValue() + "'";
+                String msg = "Data modified - File: " + fileName + "; Field:" +  f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                     +  "Invalid value: '" + f.getValue() + "'"  + " Converted Value: 'NA'"; 
                 cleanupLog.println(msg);
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
@@ -341,9 +353,9 @@ public class ImportServiceBean {
         //This works on the specific error we've seen where the user has put in a link for the email address
         //as in '<a href="IFPRI-Data@cgiar.org" > IFPRI-Data@cgiar.org</a>'
         //this returns the string between the first > and the second <
-        if (inString.indexOf(">", 0) > -1){
+        if (inString.indexOf("<a", 0) > -1){
            try {
-               String eMailAddress = inString.substring(inString.indexOf(">", 0) + 1, inString.indexOf("<", inString.indexOf(">", 0)));
+               String eMailAddress = inString.substring(inString.indexOf(">", 0) + 1, inString.indexOf("</a>", inString.indexOf(">", 0)));
                return eMailAddress.trim();               
            } catch (Exception e){
                return null;
