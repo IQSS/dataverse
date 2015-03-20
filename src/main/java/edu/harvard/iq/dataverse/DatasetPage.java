@@ -998,7 +998,7 @@ public class DatasetPage implements java.io.Serializable {
 
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return  returnToWorkingVersion();
     }
 
     public String submitDataset() {
@@ -1020,7 +1020,7 @@ public class DatasetPage implements java.io.Serializable {
 
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return  returnToWorkingVersion();
     }
     
     public String releaseParentDVAndDataset(){
@@ -1582,22 +1582,23 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
             }
     }
-
-    public String cancel() {
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
-        /*
-         // reset values
+    
+    private String returnToWorkingVersion(){
          dataset = datasetService.find(dataset.getId());
          workingVersion = dataset.getLatestVersion();
          if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
          workingVersion = dataset.getReleasedVersion();
          }
-         ownerId = dataset.getOwner().getId();
          setVersionTabList(resetVersionTabList());
          setReleasedVersionTabList(resetReleasedVersionTabList());
          newFiles.clear();
          editMode = null;
-         */
+         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId="+ workingVersion.getId() +  "&faces-redirect=true";
+        
+    }
+
+    public String cancel() {
+        return  returnToWorkingVersion();
     }
 
     public boolean isDuplicate(FileMetadata fileMetadata) {
