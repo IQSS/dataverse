@@ -202,8 +202,20 @@
                                                update="linkDatasetForm">
                                     <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                   title="Share Dataset"
+                                   oncomplete="shareDialog.show()">
+                                    <span class="glyphicon glyphicon-thumbs-up no-text"/>
+                                </p:commandLink>
                             </div>
-                            <p:confirmDialog message="#{bundle['dataset.email.tip']}" header="#{bundle['dataset.email.datasetContactBtn']}" widgetVar="contact_confirmation"/>
+                            <p:dialog id="shareDialog" header="Share Dataset" widgetVar="shareDialog">
+                                <p class="help-block">{static-placeholder}Share this dataset on the following sites.{static-placeholder}</p>
+                                <div class="button-block">
+                                    <button type="button" onclick="shareDialog.hide()" class="btn btn-default" value="#{bundle.close}">
+                                        #{bundle.close}
+                                    </button>
+                                </div>
+                            </p:dialog>
                             <!-- END: Email/Link Button Group -->
 
                             <!-- View Dataset Versions Button -->
