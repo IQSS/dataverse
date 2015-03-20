@@ -257,12 +257,19 @@ public class RJobRequest {
             //experiment dbgLog.fine(i+"-th \tformatschema="+dv.getFormatSchema());
             dbgLog.fine(i+"-th \tformatcategory="+dv.getFormatCategory());
             
+            // TODO: 
+            // clean this up! -- L.A. 4.0 beta15
+            
             if (!StringUtils.isEmpty(dv.getFormatCategory())) {
                 //if (dv.getFormatSchema().toLowerCase().equals("spss")){
                 if (dv.getDataTable().getOriginalFileFormat().toLowerCase().startsWith("application/x-spss")) {
                     if (dv.getFormatCategory().toLowerCase().equals("date")){
                         // add this var to this map value D
-                        variableFormats.put(getSafeVariableName(dv.getName()), "D");
+                        // (but only if it's a full date format! - partial dates, like "year only" 
+                        // are not going to be treated as dates)
+                        if ("yyyy-MM-dd".equals(dv.getFormat())) {
+                            variableFormats.put(getSafeVariableName(dv.getName()), "D");
+                        }
                     } else if (dv.getFormatCategory().toLowerCase().equals("time")){
                         // add this var to this map
                         if ( dv.getFormatCategory().toLowerCase().startsWith("dtime")){
@@ -281,7 +288,11 @@ public class RJobRequest {
                 //else if (dv.getFormatSchema().toLowerCase().equals("rdata")) {
                 else if (dv.getDataTable().getOriginalFileFormat().toLowerCase().startsWith("application/x-rlang-transport")) { // TODO: double-check that this is what we save for the original format!!
                   if (dv.getFormatCategory().toLowerCase().equals("date")) {
-                    variableFormats.put(getSafeVariableName(dv.getName()), "D");
+                      // (but only if it's a full date format! - partial dates, like "year only" 
+                      // are not going to be treated as dates)
+                      if ("yyyy-MM-dd".equals(dv.getFormat())) {
+                        variableFormats.put(getSafeVariableName(dv.getName()), "D");
+                      }
                   }
                   else if (dv.getFormatCategory().toLowerCase().equals("time")) {
                     // add this var to this map
@@ -306,7 +317,11 @@ public class RJobRequest {
                 else /* if (dv.getFormatSchema().toLowerCase().equals("other")) ?? */{
                   if (dv.getFormatCategory().toLowerCase().equals("date")) {
                     // value = D
-                    variableFormats.put(getSafeVariableName(dv.getName()), "D");
+                    // (but only if it's a full date format! - partial dates, like "year only" 
+                    // are not going to be treated as dates)
+                    if ("yyyy-MM-dd".equals(dv.getFormat())) {
+                        variableFormats.put(getSafeVariableName(dv.getName()), "D");
+                    }
                   }
                 }
                 // TODO: (?)
