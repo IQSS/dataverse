@@ -2030,21 +2030,36 @@
                                     </div>
                                 </div>
                             </ui:fragment>
-                            <ui:remove>
-                            <p:commandLink type="button" styleClass="btn btn-default" value="Validation"
+                        </div>
+                        <div class="button-block">
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                                           rendered="#{DatasetPage.downloadType=='download'}"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('download')}"
                                            update="@([id$=Messages])" oncomplete="if (args === undefined) downloadPopup.hide();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                                           rendered="#{DatasetPage.downloadType=='subset'}"
+                                           actionListener="#{DatasetPage.saveGuestbookResponse('subset')}"
+                                           update="@([id$=Messages])" oncomplete="if (args === undefined)  downloadPopup.hide();  downloadDataSubsetPopup.show()">
+                                <f:param name="DO_GB_VALIDATION" value="true"/>
+                            </p:commandLink>
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                                           rendered="#{DatasetPage.downloadType=='explore'}"
+                                           actionListener="#{DatasetPage.saveGuestbookResponse('explore')}"
+                                           update="@([id$=Messages]) " oncomplete="if (args === undefined) downloadPopup.hide();">
+                                <f:param name="DO_GB_VALIDATION" value="true"/>
+                            </p:commandLink>
+                            <ui:remove>                            
+                                <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
+                                                 action="#{DatasetPage.saveGuestbookResponse('download')}" />
+
+                                <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
+                                                 update="downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
+
+                                <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
+                                                 action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             </ui:remove>
-                        </div>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
-                                             action="#{DatasetPage.saveGuestbookResponse('download')}" />
-                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
-                                             update="downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
-                            <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
-                                             action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
                         </div>
                     </p:dialog>
