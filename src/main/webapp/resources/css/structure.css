@@ -75,6 +75,7 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 tr.ui-state-highlight .ui-icon {
     background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");
 }
+td.col-select-width {width:36px;}
 
 #ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:1111;}
 #ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
@@ -459,7 +460,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 .bg-citation {background:#ECF6FB;}
 #citation, #citation-download {padding:.5em;}
 #metadata-panel label.col-sm-3 {padding-left:0;}
-#description, #keywords, #subject, #note, #publication {}
+.license-CC0-inline {display:inline-block; margin-left:1em;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
 
