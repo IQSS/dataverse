@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.persistence.NoResultException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -664,14 +665,20 @@ public class ImportDDIServiceBean {
             if (map == null) {               
                throw new ImportException("Did not find mapping for template: "+template+", sourceField: "+sourceField);
             }
-            
+            if (map.getTargetDatasetField().endsWith("#IGNORE")) {
+                // if the target field is #IGNORE, that means we don't want to
+                // copy this field from 3.6 to 4.0
+                return;
+            }
            
             // 1. Get datasetFieldType for the targetField
             // 2. find the metadatablock for this field type
             // 3. If this metadatablock doesn't exist in DTO, create it
             // 4. add field to mdatadatablock
-
             DatasetFieldType dsfType = datasetFieldService.findByName(map.getTargetDatasetField());
+            if (dsfType == null) {
+                throw new ImportException("Did not find datasetField for target: " + map.getTargetDatasetField());
+            }
             String metadataBlockName = dsfType.getMetadataBlock().getName();
             MetadataBlockDTO customBlock = dvDTO.getMetadataBlocks().get(metadataBlockName);
             if (customBlock == null) {

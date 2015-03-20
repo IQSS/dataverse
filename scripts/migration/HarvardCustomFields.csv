@@ -1,4 +1,5 @@
-sourcetemplate,sourcedatasetfield,targetdatasetfield
+,,Dataverse 4.0
+Template Name,field_name,field_name
 Alliance for Research on Corporate Sustainability,1Wereanyofthesedatasetsapurchasedbobtainedthroughlicenseddatabasesorcprovidedbyanorganizationunderanondisclosureorotheragreement,ARCS1
 Alliance for Research on Corporate Sustainability,2IfyourespondedYestoQ1haveyouensuredthatsharingthedatadoesnotviolatetermsoftheagreementIfyourespondedNotoQ1pleaseenterNAhere,ARCS2
 Alliance for Research on Corporate Sustainability,3DoanyofthesedatasetsincludeindividualleveldataeithercollectedorpreexistinginthedatasetthatmightmakethemsubjecttoUSorinternationalhumansubjectsconsiderations,ARCS3
@@ -28,8 +29,8 @@ GSD Studio Template,SemesterYear,gsdSemester
 GSD Studio Template,SiteType,gsdSiteType
 GSD Studio Template,StateProvince,state
 GSD Studio Template,StudentName,gsdStudentName
-GSD Studio Template,StudentNameFirstName,
-GSD Studio Template,StudentNameLastName,
+GSD Studio Template,StudentNameFirstName,#IGNORE
+GSD Studio Template,StudentNameLastName,#IGNORE
 GSD Studio Template,StudentsProgramofStudy,gsdStudentProgram
 GSD Studio Template,Tags,gsdTags
 GSD Studio Template,TypesofRepresentationMediumFormat,gsdTypes
@@ -78,8 +79,8 @@ GSD Studio Template Fall 2013-OLD_OLD,SemesterYear,gsdSemester
 GSD Studio Template Fall 2013-OLD_OLD,SiteType,gsdSiteType
 GSD Studio Template Fall 2013-OLD_OLD,StateProvince,state
 GSD Studio Template Fall 2013-OLD_OLD,StudentName,gsdStudentName
-GSD Studio Template Fall 2013-OLD_OLD,StudentNameFirstName,
-GSD Studio Template Fall 2013-OLD_OLD,StudentNameLastName,
+GSD Studio Template Fall 2013-OLD_OLD,StudentNameFirstName,#IGNORE
+GSD Studio Template Fall 2013-OLD_OLD,StudentNameLastName,#IGNORE
 GSD Studio Template Fall 2013-OLD_OLD,StudentsProgramofStudy,gsdStudentProgram
 GSD Studio Template Fall 2013-OLD_OLD,Tags,gsdTags
 GSD Studio Template Fall 2013-OLD_OLD,TypesofRepresentationMediumFormat,gsdTypes
@@ -96,8 +97,8 @@ GSD Studio Template Fall 2013_OLD,SemesterYear,gsdSemester
 GSD Studio Template Fall 2013_OLD,SiteType,gsdSiteType
 GSD Studio Template Fall 2013_OLD,StateProvince,state
 GSD Studio Template Fall 2013_OLD,StudentName,gsdStudentName
-GSD Studio Template Fall 2013_OLD,StudentNameFirstName,
-GSD Studio Template Fall 2013_OLD,StudentNameLastName,
+GSD Studio Template Fall 2013_OLD,StudentNameFirstName,#IGNORE
+GSD Studio Template Fall 2013_OLD,StudentNameLastName,#IGNORE
 GSD Studio Template Fall 2013_OLD,StudentsProgramofStudy,gsdStudentProgram
 GSD Studio Template Fall 2013_OLD,Tags,gsdTags
 GSD Studio Template Fall 2013_OLD,TypesofRepresentationMediumFormat,gsdTypes
@@ -114,8 +115,8 @@ Syllabus Template,SemesterYear,gsdSemester
 Syllabus Template,SiteType,gsdSiteType
 Syllabus Template,StateProvince,state
 Syllabus Template,StudentName,gsdStudentName
-Syllabus Template,StudentNameFirstName,
-Syllabus Template,StudentNameLastName,
+Syllabus Template,StudentNameFirstName,#IGNORE
+Syllabus Template,StudentNameLastName,#IGNORE
 Syllabus Template,StudentsProgramofStudy,gsdStudentProgram
 Syllabus Template,Tags,gsdTags
 Syllabus Template,TypesofRepresentationMediumFormat,gsdTypes
@@ -133,8 +134,8 @@ GSD Studio Template Fall 2013_OLD_Dec12,SemesterYear,gsdSemester
 GSD Studio Template Fall 2013_OLD_Dec12,SiteType,gsdSiteType
 GSD Studio Template Fall 2013_OLD_Dec12,StateProvince,state
 GSD Studio Template Fall 2013_OLD_Dec12,StudentName,gsdStudentName
-GSD Studio Template Fall 2013_OLD_Dec12,StudentNameFirstName,
-GSD Studio Template Fall 2013_OLD_Dec12,StudentNameLastName,
+GSD Studio Template Fall 2013_OLD_Dec12,StudentNameFirstName,#IGNORE
+GSD Studio Template Fall 2013_OLD_Dec12,StudentNameLastName,#IGNORE
 GSD Studio Template Fall 2013_OLD_Dec12,StudentsProgramofStudy,gsdStudentProgram
 GSD Studio Template Fall 2013_OLD_Dec12,Tags,gsdTags
 GSD Studio Template Fall 2013_OLD_Dec12,TypesofRepresentationMediumFormat,gsdTypes
@@ -152,8 +153,8 @@ GSD Studio Template Fall 2013,SemesterYear,gsdSemester
 GSD Studio Template Fall 2013,SiteType,gsdSiteType
 GSD Studio Template Fall 2013,StateProvince,state
 GSD Studio Template Fall 2013,StudentName,gsdStudentName
-GSD Studio Template Fall 2013,StudentNameFirstName,
-GSD Studio Template Fall 2013,StudentNameLastName,
+GSD Studio Template Fall 2013,StudentNameFirstName,#IGNORE
+GSD Studio Template Fall 2013,StudentNameLastName,#IGNORE
 GSD Studio Template Fall 2013,StudentsProgramofStudy,gsdStudentProgram
 GSD Studio Template Fall 2013,Tags,gsdTags
 GSD Studio Template Fall 2013,TypesofRepresentationMediumFormat,gsdTypes
@@ -171,8 +172,8 @@ GSSP Student Data,SemesterYear,gsdSemester
 GSSP Student Data,SiteType,gsdSiteType
 GSSP Student Data,StateProvince,state
 GSSP Student Data,StudentName,gsdStudentName
-GSSP Student Data,StudentNameFirstName,
-GSSP Student Data,StudentNameLastName,
+GSSP Student Data,StudentNameFirstName,#IGNORE
+GSSP Student Data,StudentNameLastName,#IGNORE
 GSSP Student Data,StudentsProgramofStudy,gsdStudentProgram
 GSSP Student Data,Tags,gsdTags
 GSSP Student Data,TypesofRepresentationMediumFormat,gsdTypes
@@ -190,8 +191,8 @@ Student Data,SemesterYear,gsdSemester
 Student Data,SiteType,gsdSiteType
 Student Data,StateProvince,state
 Student Data,StudentName,gsdStudentName
-Student Data,StudentNameFirstName,
-Student Data,StudentNameLastName,
+Student Data,StudentNameFirstName,#IGNORE
+Student Data,StudentNameLastName,#IGNORE
 Student Data,StudentsProgramofStudy,gsdStudentProgram
 Student Data,Tags,gsdTags
 Student Data,TypesofRepresentationMediumFormat,gsdTypes
@@ -231,8 +232,8 @@ GSD 2013 2014,SemesterYear,gsdSemester
 GSD 2013 2014,SiteType,gsdSiteType
 GSD 2013 2014,StateProvince,state
 GSD 2013 2014,StudentName,gsdStudentName
-GSD 2013 2014,StudentNameFirstName,
-GSD 2013 2014,StudentNameLastName,
+GSD 2013 2014,StudentNameFirstName,#IGNORE
+GSD 2013 2014,StudentNameLastName,#IGNORE
 GSD 2013 2014,StudentsProgramofStudy,gsdStudentProgram
 GSD 2013 2014,Tags,gsdTags
 GSD 2013 2014,TypesofRepresentationMediumFormat,gsdTypes
@@ -288,8 +289,8 @@ GSD Fall 2014,SemesterYear,gsdSemester
 GSD Fall 2014,SiteType,gsdSiteType
 GSD Fall 2014,StateProvince,state
 GSD Fall 2014,StudentName,gsdStudentName
-GSD Fall 2014,StudentNameFirstName,
-GSD Fall 2014,StudentNameLastName,
+GSD Fall 2014,StudentNameFirstName,#IGNORE
+GSD Fall 2014,StudentNameLastName,#IGNORE
 GSD Fall 2014,StudentsProgramofStudy,gsdStudentProgram
 GSD Fall 2014,Tags,gsdTags
 GSD Fall 2014,TypesofRepresentationMediumFormat,gsdTypes
@@ -307,8 +308,8 @@ GSD_Fall2014_Platform,SemesterYear,gsdSemester
 GSD_Fall2014_Platform,SiteType,gsdSiteType
 GSD_Fall2014_Platform,StateProvince,state
 GSD_Fall2014_Platform,StudentName,gsdStudentName
-GSD_Fall2014_Platform,StudentNameFirstName,
-GSD_Fall2014_Platform,StudentNameLastName,
+GSD_Fall2014_Platform,StudentNameFirstName,#IGNORE
+GSD_Fall2014_Platform,StudentNameLastName,#IGNORE
 GSD_Fall2014_Platform,StudentsProgramofStudy,gsdStudentProgram
 GSD_Fall2014_Platform,Tags,gsdTags
 GSD_Fall2014_Platform,TypesofRepresentationMediumFormat,gsdTypes
@@ -326,8 +327,8 @@ Syllabus Template,SemesterYear,gsdSemester
 Syllabus Template,SiteType,gsdSiteType
 Syllabus Template,StateProvince,state
 Syllabus Template,StudentName,gsdStudentName
-Syllabus Template,StudentNameFirstName,
-Syllabus Template,StudentNameLastName,
+Syllabus Template,StudentNameFirstName,#IGNORE
+Syllabus Template,StudentNameLastName,#IGNORE
 Syllabus Template,StudentsProgramofStudy,gsdStudentProgram
 Syllabus Template,Tags,gsdTags
 Syllabus Template,TypesofRepresentationMediumFormat,gsdTypes

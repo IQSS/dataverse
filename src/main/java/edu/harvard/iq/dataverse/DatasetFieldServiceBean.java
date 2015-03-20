@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -59,8 +60,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     public DatasetFieldType findByName(String name) {
-        DatasetFieldType dsfType = (DatasetFieldType) em.createQuery(NAME_QUERY).setParameter("fieldName", name).getSingleResult();
-        return dsfType;
+        try {
+            return  (DatasetFieldType) em.createQuery(NAME_QUERY).setParameter("fieldName", name).getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+       
     }
 
     /**
