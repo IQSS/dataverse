@@ -658,20 +658,13 @@ public class ImportDDIServiceBean {
             String template = subject.substring(subject.indexOf(":") + 1, subject.indexOf(";"));
             String sourceField = subject.substring(subject.lastIndexOf(":") + 1);
             String fieldValue = parseText(xmlr);
-            System.out.println("template = " + template + ", sourceField = " + sourceField + ", fieldValue = " + fieldValue);
-
+            
             CustomFieldMap map = customFieldService.findByTemplateField(template.trim(), sourceField.trim());
             
-            if (map == null) {
-                System.out.println("did not find mapping for template: "+template+", sourceField: "+sourceField);
-                return;
-                //TODO - put exception back in when we have all the mapping data
-          //      throw new ImportException("Unsupported Custom Field: " + template + " " + sourceField);
+            if (map == null) {               
+               throw new ImportException("Did not find mapping for template: "+template+", sourceField: "+sourceField);
             }
-            if (map.getTargetDatasetField().equals("country")) {
-                System.out.println("skipping country custom code");
-                return;
-            }
+            
            
             // 1. Get datasetFieldType for the targetField
             // 2. find the metadatablock for this field type
@@ -688,37 +681,51 @@ public class ImportDDIServiceBean {
             }
             if (dsfType.isChild()) {
                 handleChildField(customBlock, dsfType, fieldValue);
-            }
-            if (dsfType.isAllowMultiples()) {
-                List<String> valList = new ArrayList<>();
-                valList.add(fieldValue);
-                if (dsfType.isAllowControlledVocabulary()) {
-                    customBlock.addField(FieldDTO.createMultipleVocabFieldDTO(dsfType.getName(), valList));
-                } else if (dsfType.isPrimitive()) {
-                    customBlock.addField(FieldDTO.createMultiplePrimitiveFieldDTO(dsfType.getName(), valList));
-                } else {
-                    throw new ImportException("Unsupported custom field type: " + dsfType);
-                }
             } else {
-                if (dsfType.isAllowControlledVocabulary()) {
-                    customBlock.addField(FieldDTO.createVocabFieldDTO(dsfType.getName(), fieldValue));
-                } else if (dsfType.isPrimitive()) {
-                    customBlock.addField(FieldDTO.createPrimitiveFieldDTO(dsfType.getName(), fieldValue));
+                if (dsfType.isAllowMultiples()) {
+                    List<String> valList = new ArrayList<>();
+                    valList.add(fieldValue);
+                    if (dsfType.isAllowControlledVocabulary()) {
+                        customBlock.addField(FieldDTO.createMultipleVocabFieldDTO(dsfType.getName(), valList));
+                    } else if (dsfType.isPrimitive()) {
+                        customBlock.addField(FieldDTO.createMultiplePrimitiveFieldDTO(dsfType.getName(), valList));
+                    } else {
+                        throw new ImportException("Unsupported custom field type: " + dsfType);
+                    }
                 } else {
-                    throw new ImportException("Unsupported custom field type: " + dsfType);
+                    if (dsfType.isAllowControlledVocabulary()) {
+                        customBlock.addField(FieldDTO.createVocabFieldDTO(dsfType.getName(), fieldValue));
+                    } else if (dsfType.isPrimitive()) {
+                        customBlock.addField(FieldDTO.createPrimitiveFieldDTO(dsfType.getName(), fieldValue));
+                    } else {
+                        throw new ImportException("Unsupported custom field type: " + dsfType);
+                    }
                 }
             }
         }
     }
     
-    private void handleChildField(MetadataBlockDTO customBlock, DatasetFieldType dsfType, String fieldValue) {
+    private void handleChildField(MetadataBlockDTO customBlock, DatasetFieldType dsfType, String fieldValue) throws ImportException {
         DatasetFieldType parent = dsfType.getParentDatasetFieldType();
-        if (parent.isAllowMultiples())
-        {
-            
-        }   else {
-            
-        }     
+
+        // Create child Field
+        FieldDTO child = null;
+        if (dsfType.isAllowControlledVocabulary()) {
+            child = FieldDTO.createVocabFieldDTO(dsfType.getName(), fieldValue);
+        } else if (dsfType.isPrimitive()) {
+            child = FieldDTO.createPrimitiveFieldDTO(dsfType.getName(), fieldValue);
+        } else {
+            throw new ImportException("Unsupported custom child field type: " + dsfType);
+        }
+        // Create compound field with this child as its only element
+        FieldDTO compound = null;
+        if (parent.isAllowMultiples()) {
+            compound = FieldDTO.createMultipleCompoundFieldDTO(parent.getName(), child);
+        } else {
+            compound = FieldDTO.createCompoundFieldDTO(parent.getName(), child);
+        }
+        customBlock.addField(compound);
+        
     }
    
     private void processSources(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
