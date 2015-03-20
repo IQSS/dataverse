@@ -144,8 +144,10 @@ public class WorldMapRelatedData extends AbstractApiBean {
         try {
             this.mapLayerMetadataService.retrieveMapImageForIcon(mapLayerMetadata);
         } catch (IOException ex) {
-            logger.info("Failed to retrieve image. Error:" + ex);
+            logger.info("IOException. Failed to retrieve image. Error:" + ex);
           //  Logger.getLogger(WorldMapRelatedData.class.getName()).log(Level.SEVERE, null, ex);
+        }catch(Exception e2){
+            logger.info("Failed to retrieve image. Error:" + e2);
         }
         
         return okResponse( "Looks good " + identifier + " " + mapLayerMetadata.getLayerName());

@@ -246,11 +246,32 @@ public class MapLayerMetadataServiceBean {
         logger.info("retrieve url : " + imageUrl);
 
         logger.info("try to open InputStream");
-        InputStream is = url.openStream();
+        InputStream is = null;
         
-        logger.info("try to start OutputStream");
-        OutputStream os = new FileOutputStream(destinationFile);
-
+        try{
+            is = url.openStream();
+        }catch(IOException exio){
+            logger.warning("Error when retrieving map icon image. Exception: " + exio.getMessage());
+            if (is!=null){
+                try { is.close(); } catch (IOException ignore) {}
+            }
+            return false;
+            
+        }
+        
+        OutputStream os = null;
+        
+        try{
+            logger.info("try to start OutputStream");
+            os = new FileOutputStream(destinationFile);
+        } catch (Exception ex){
+            logger.warning("Error when retrieving map icon image. Exception: " + ex.getMessage());
+            if (os!=null){
+                try { os.close(); } catch (IOException ignore) {}
+            }
+            return false;
+        }
+        
         byte[] b = new byte[2048];
         int length;
 
