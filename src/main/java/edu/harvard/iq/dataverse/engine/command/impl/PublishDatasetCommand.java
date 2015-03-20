@@ -144,8 +144,9 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().isFileAccessRequest());
         Dataset savedDataset = ctxt.em().merge(theDataset);
-               
-        ctxt.index().indexDataset(savedDataset);
+
+        boolean doNormalSolrDocCleanUp = true;
+        ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
         /**
          * @todo consider also ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset);
          */

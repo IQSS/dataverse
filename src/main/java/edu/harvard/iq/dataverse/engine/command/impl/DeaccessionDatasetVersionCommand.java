@@ -45,7 +45,8 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
         }       
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
-        ctxt.index().indexDataset(managed.getDataset());
+        boolean doNormalSolrDocCleanUp = true;
+        ctxt.index().indexDataset(managed.getDataset(), doNormalSolrDocCleanUp);
         
         return managed;
     }

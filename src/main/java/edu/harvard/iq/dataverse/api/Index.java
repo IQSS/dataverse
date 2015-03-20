@@ -105,7 +105,8 @@ public class Index extends AbstractApiBean {
             } else if (type.equals("datasets")) {
                 Dataset dataset = datasetService.find(id);
                 if (dataset != null) {
-                    Future<String> indexDatasetFuture = indexService.indexDataset(dataset);
+                    boolean doNormalSolrDocCleanUp = true;
+                    Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
                     return okResponse("starting reindex of dataset " + id);
                 } else {
                     /**
@@ -121,7 +122,8 @@ public class Index extends AbstractApiBean {
                 /**
                  * @todo How can we display the result to the user?
                  */
-                Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile);
+                boolean doNormalSolrDocCleanUp = true;
+                Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
                 return okResponse("started reindexing " + type + "/" + id);
             } else {
                 return errorResponse( Status.BAD_REQUEST, "illegal type: " + type);

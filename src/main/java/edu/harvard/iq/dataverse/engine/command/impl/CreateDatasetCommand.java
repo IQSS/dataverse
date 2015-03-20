@@ -163,7 +163,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         Dataset savedDataset = ctxt.em().merge(theDataset);
          logger.log(Level.INFO,"after db update "  + formatter.format(new Date().getTime()));       
         // set the role to be default contributor role for its dataverse
-        ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getUser(), savedDataset));
+        if (importType.equals(ImportType.NEW)) {
+            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getUser(), savedDataset));
+         }
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         savedDataset = ctxt.em().merge(savedDataset);
@@ -176,7 +178,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             /**
              * @todo Do something with the result. Did it succeed or fail?
              */
-            Future<String> indexDatasetFuture = ctxt.index().indexDataset(savedDataset);
+            boolean doNormalSolrDocCleanUp = true;
+            Future<String> indexDatasetFuture = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
 //            logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
         } catch ( RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);

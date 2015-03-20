@@ -65,7 +65,8 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                           dvIt.remove();
                     }
                 }
-                ctxt.index().indexDataset(doomed);
+                boolean doNormalSolrDocCleanUp = true;
+                ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
             }
             throw new IllegalCommandException("Cannot delete a released version", this);

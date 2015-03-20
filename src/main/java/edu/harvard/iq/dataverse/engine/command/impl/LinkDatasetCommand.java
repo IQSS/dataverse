@@ -40,6 +40,7 @@ public class LinkDatasetCommand extends AbstractVoidCommand {
         datasetLinkingDataverse.setLinkingDataverse(linkingDataverse);
         datasetLinkingDataverse.setLinkCreateTime(new Timestamp(new Date().getTime()));
         ctxt.dsLinking().save(datasetLinkingDataverse);
-        ctxt.index().indexDataset(linkedDataset);
+        boolean doNormalSolrDocCleanUp = true;
+        ctxt.index().indexDataset(linkedDataset, doNormalSolrDocCleanUp);
     }  
 }
