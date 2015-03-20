@@ -25,6 +25,8 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 /**
@@ -255,5 +257,34 @@ public class Admin extends AbstractApiBean {
            actionLogSvc.log(alr);
        }
     }    
-    
+
+    @Path("validate")
+    @GET
+    public Response validate() {
+        String msg = "UNKNOWN";
+        try {
+            beanValidationSvc.validateDatasets();
+            msg = "valid";
+        } catch (Exception ex) {
+            Throwable cause = ex;
+            while (cause != null) {
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> constraintViolation : constraintViolationException.getConstraintViolations()) {
+                        String databaseRow = constraintViolation.getLeafBean().toString();
+                        String field = constraintViolation.getPropertyPath().toString();
+                        String invalidValue = constraintViolation.getInvalidValue().toString();
+                            JsonObjectBuilder violation = Json.createObjectBuilder();
+                            violation.add("entityClassDatabaseTableRowId", databaseRow);
+                            violation.add("field", field);
+                            violation.add("invalidValue", invalidValue);
+                            return okResponse(violation);
+                    }
+                }
+                cause = cause.getCause();
+            }
+        }
+        return okResponse(msg);
+    }
+
 }

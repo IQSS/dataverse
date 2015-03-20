@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -103,7 +104,10 @@ public abstract class AbstractApiBean {
     
     @EJB
     protected ActionLogServiceBean actionLogSvc;
-    
+
+    @EJB
+    protected BeanValidationServiceBean beanValidationSvc;
+
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
     
