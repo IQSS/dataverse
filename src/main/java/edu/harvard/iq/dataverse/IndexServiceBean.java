@@ -213,10 +213,11 @@ public class IndexServiceBean {
 
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDatasetInNewTransaction(Dataset dataset) {
-        return indexDataset(dataset);
+        boolean doNormalSolrDocCleanUp = false;
+        return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
 
-    public Future<String> indexDataset(Dataset dataset) {
+    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         logger.info("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
@@ -268,8 +269,10 @@ public class IndexServiceBean {
             debug.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
         }
         debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
-        IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
-        debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
+        if (doNormalSolrDocCleanUp) {
+            IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
+            debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
+        }
         DatasetVersion latestVersion = dataset.getLatestVersion();
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
@@ -302,15 +305,20 @@ public class IndexServiceBean {
                         .append(indexDraftResult).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-                String deleteDeaccessionedResult = removeDeaccessioned(dataset);
-                results.append("Draft exists, no need for deaccessioned version. Deletion attempted for ")
-                        .append(solrIdDeaccessioned).append(" (and files). Result: ")
-                        .append(deleteDeaccessionedResult).append("\n");
+                if (doNormalSolrDocCleanUp) {
+                    String deleteDeaccessionedResult = removeDeaccessioned(dataset);
+                    results.append("Draft exists, no need for deaccessioned version. Deletion attempted for ")
+                            .append(solrIdDeaccessioned).append(" (and files). Result: ")
+                            .append(deleteDeaccessionedResult).append("\n");
+                }
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
-                String deletePublishedResults = removePublished(dataset);
-                results.append("No published version. Attempting to delete traces of published version from index. Result: ").
-                        append(deletePublishedResults).append("\n");
+                if (doNormalSolrDocCleanUp) {
+                    String deletePublishedResults = removePublished(dataset);
+                    results.append("No published version. Attempting to delete traces of published version from index. Result: ").
+                            append(deletePublishedResults).append("\n");
+                }
+
                 /**
                  * Desired state for existence of cards: {DRAFT=true,
                  * DEACCESSIONED=false, RELEASED=false}
@@ -349,16 +357,20 @@ public class IndexServiceBean {
                 results.append("No draft version. Attempting to index as deaccessioned. Result: ").append(indexDeaccessionedVersionResult).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
-                String deletePublishedResults = removePublished(dataset);
-                results.append("No published version. Attempting to delete traces of published version from index. Result: ").
-                        append(deletePublishedResults).append("\n");
+                if (doNormalSolrDocCleanUp) {
+                    String deletePublishedResults = removePublished(dataset);
+                    results.append("No published version. Attempting to delete traces of published version from index. Result: ").
+                            append(deletePublishedResults).append("\n");
+                }
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
-                List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
-                String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
-                String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
-                results.append("Attempting to delete traces of drafts. Result: ")
-                        .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+                if (doNormalSolrDocCleanUp) {
+                    List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
+                    String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
+                    String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
+                    results.append("Attempting to delete traces of drafts. Result: ")
+                            .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+                }
 
                 /**
                  * Desired state for existence of cards: {DEACCESSIONED=true,
@@ -401,16 +413,21 @@ public class IndexServiceBean {
                 results.append("Attempted to index " + solrIdPublished).append(". Result: ").append(indexReleasedVersionResult).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
-                List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
-                String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
-                String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
-                results.append("The latest version is published. Attempting to delete drafts. Result: ")
-                        .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+                if (doNormalSolrDocCleanUp) {
+                    List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
+                    String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
+                    String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
+                    results.append("The latest version is published. Attempting to delete drafts. Result: ")
+                            .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+                }
 
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-                String deleteDeaccessionedResult = removeDeaccessioned(dataset);
-                results.append("No need for deaccessioned version. Deletion attempted for ")
-                        .append(solrIdDeaccessioned).append(". Result: ").append(deleteDeaccessionedResult);
+                if (doNormalSolrDocCleanUp) {
+                    String deleteDeaccessionedResult = removeDeaccessioned(dataset);
+                    results.append("No need for deaccessioned version. Deletion attempted for ")
+                            .append(solrIdDeaccessioned).append(". Result: ").append(deleteDeaccessionedResult);
+                }
+
                 /**
                  * Desired state for existence of cards: {RELEASED=true,
                  * DRAFT=false, DEACCESSIONED=false}
@@ -451,9 +468,12 @@ public class IndexServiceBean {
                 results.append("There is a published version we will attempt to index. Result: ").append(indexReleasedVersionResult).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
-                String deleteDeaccessionedResult = removeDeaccessioned(dataset);
-                results.append("No need for deaccessioned version. Deletion attempted for ")
-                        .append(solrIdDeaccessioned).append(". Result: ").append(deleteDeaccessionedResult);
+                if (doNormalSolrDocCleanUp) {
+                    String deleteDeaccessionedResult = removeDeaccessioned(dataset);
+                    results.append("No need for deaccessioned version. Deletion attempted for ")
+                            .append(solrIdDeaccessioned).append(". Result: ").append(deleteDeaccessionedResult);
+                }
+
                 /**
                  * Desired state for existence of cards: {DRAFT=true,
                  * RELEASED=true, DEACCESSIONED=false}

@@ -176,7 +176,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             /**
              * @todo Do something with the result. Did it succeed or fail?
              */
-            Future<String> indexDatasetFuture = ctxt.index().indexDataset(savedDataset);
+            boolean doNormalSolrDocCleanUp = true;
+            Future<String> indexDatasetFuture = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
 //            logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
         } catch ( RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
