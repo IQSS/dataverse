@@ -313,25 +313,6 @@ GSD_Fall2014_Platform,StudentNameLastName,#IGNORE
 GSD_Fall2014_Platform,StudentsProgramofStudy,gsdStudentProgram
 GSD_Fall2014_Platform,Tags,gsdTags
 GSD_Fall2014_Platform,TypesofRepresentationMediumFormat,gsdTypes
-Syllabus Template,Accreditation,gsdAccreditation
-Syllabus Template,City,city
-Syllabus Template,CoreStudioCoordinator,gsdCoordinator
-Syllabus Template,CountryNation,country
-Syllabus Template,CourseName,gsdCourseName
-Syllabus Template,DataUploadedBy,depositor
-Syllabus Template,FacultyName,gsdFacultyName
-Syllabus Template,FacultyRecommendation,gsdRecommendation
-Syllabus Template,Notes,notesText
-Syllabus Template,ProgramBrief,gsdProgramBrief
-Syllabus Template,SemesterYear,gsdSemester
-Syllabus Template,SiteType,gsdSiteType
-Syllabus Template,StateProvince,state
-Syllabus Template,StudentName,gsdStudentName
-Syllabus Template,StudentNameFirstName,#IGNORE
-Syllabus Template,StudentNameLastName,#IGNORE
-Syllabus Template,StudentsProgramofStudy,gsdStudentProgram
-Syllabus Template,Tags,gsdTags
-Syllabus Template,TypesofRepresentationMediumFormat,gsdTypes
 Digaai Dataverse Jornais e Revistas,DatadePublicao,datadePublicao
 Digaai Dataverse Jornais e Revistas,LocaldePublicao,localdePublicao
 Digaai Dataverse Jornais e Revistas,Nmero,numero
