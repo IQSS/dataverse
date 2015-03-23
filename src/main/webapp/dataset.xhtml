@@ -546,6 +546,14 @@
                                                 <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                                             </ui:fragment>
+                                            
+                                            <!-- Dataset Thumbnail -->
+                                            <span id="datasetThumbnail" class="bg-info text-info text-center small show"
+                                                  jsf:rendered="#{DatasetPage.editMode == 'FILE' and DatasetPage.isDesignatedDatasetThumbnail(fileMetadata)}"
+                                                  data-toggle="tooltip" data-placement="bottom" title="#{bundle['file.selectedThumbnail.tip']}">
+                                                #{bundle['file.selectedThumbnail']}
+                                            </span>
+                                            
                                             <!-- Restricted File Icon -->
                                             <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')))}">
                                                 <span class="glyphicon glyphicon-lock text-danger"/>
