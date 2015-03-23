@@ -166,6 +166,14 @@
                                                         <!-- Sub Fields -->
                                                         <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
                                                             <div class="form-col-container #{(subdsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'col-sm-12' : 'col-sm-6'}">
+                                                                <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue' and DatasetPage.editMode == 'CREATE' }">
+                                                                    <p class="help-block">
+                                                                        <span class="glyphicon glyphicon-info-sign"/> 
+                                                                        <h:outputFormat value=" #{bundle.htmlAllowedMsg}" escape="false">
+                                                                            <f:param value="#{bundle.htmlAllowedTags}"/>
+                                                                        </h:outputFormat>
+                                                                    </p>
+                                                                </ui:fragment>
                                                                 <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
                                                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{subdsf.datasetFieldType.description}">#{subdsf.datasetFieldType.title}</span>
                                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />

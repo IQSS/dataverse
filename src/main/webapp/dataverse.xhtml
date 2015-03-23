@@ -175,7 +175,12 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.description.tip']}</p>
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/> 
+                                        <h:outputFormat value=" #{bundle.htmlAllowedMsg}" escape="false">
+                                            <f:param value="#{bundle.htmlAllowedTags}"/>
+                                        </h:outputFormat>
+                                    </p>
                                     <p:inputTextarea id="description" tabindex="6" styleClass="form-control" value="#{DataversePage.dataverse.description}"
                                                     rows="6" cols="50"
                                                     autoResize="false">
@@ -454,6 +459,26 @@
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
                             </p:confirmDialog>
                             <!-- END: Email/Link Button Group -->
+                            
+                            <!-- Metrics -->
+                            <div id="metrics-block" class="pull-left">
+                                <div class="pull-left text-center" id="metrics-label">
+                                    <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
+                                </div>
+                                <div class="metrics-count pull-left text-center" id="metrics-views">
+                                    <span data-toggle="tooltip" data-placement="top" title="Views" class="count">00</span>
+                                </div>
+                                <div class="metrics-count pull-left text-center" id="metrics-downloads">
+                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">00</span>
+                                </div>
+                                <div class="metrics-count pull-left text-center" id="metrics-citations">
+                                    <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
+                                </div>
+                                <div class="metrics-count pull-left text-center" id="metrics-shares">
+                                    <span data-toggle="tooltip" data-placement="top" title="Shares" class="count">00</span>
+                                </div>
+                            </div>
+                            <!-- END: Metrics -->
                         </div>
 
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">

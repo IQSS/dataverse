@@ -235,25 +235,25 @@
                             </div>
                             <!-- END: Dataset Versions Button -->
                             
-                            <!-- Fake Stats -->
+                            <!-- Metrics -->
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                <div class="pull-left text-center" style="background:#6f5499;padding: 7px 13px;">
-                                    <span style="color:white;line-height: 1.42857;"><span class="glyphicon glyphicon-stats"/> Metrics</span>
+                                <div class="pull-left text-center" id="metrics-label">
+                                    <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
                                 </div>
-                                <div class="pull-left text-center" style="background:#428bca;padding: 7px 13px;">
-                                    <span data-toggle="tooltip" data-placement="top" title="Views" style="color:white;line-height: 1.42857;">22</span>
+                                <div class="metrics-count pull-left text-center" id="metrics-views">
+                                    <span data-toggle="tooltip" data-placement="top" title="Views" class="count">00</span>
                                 </div>
-                                <div class="pull-left text-center" style="background:#5cb85c;padding: 7px 13px;">
-                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" style="color:white;line-height: 1.42857;">22</span>
+                                <div class="metrics-count pull-left text-center" id="metrics-downloads">
+                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">00</span>
                                 </div>
-                                <div class="pull-left text-center" style="background:#c55b28;padding: 7px 13px;">
-                                    <span data-toggle="tooltip" data-placement="top" title="Citations" style="color:white;line-height: 1.42857;">22</span>
+                                <div class="metrics-count pull-left text-center" id="metrics-citations">
+                                    <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
                                 </div>
-                                <div class="pull-left text-center" style="background:#f0ad4e;padding: 7px 13px;">
-                                    <span data-toggle="tooltip" data-placement="top" title="Shares" style="color:white;line-height: 1.42857;">22</span>
+                                <div class="metrics-count pull-left text-center" id="metrics-shares">
+                                    <span data-toggle="tooltip" data-placement="top" title="Shares" class="count">00</span>
                                 </div>
                             </div>
-                            <!-- END: Fake Stats -->
+                            <!-- END: Metrics -->
                         </div>
                         <div id="datasetVersionBlock" class="container-fluid">
                             <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
