@@ -1,4 +1,39 @@
 ----------------------------------------------
+-- Preparing the DDIs of production studies: 
+----------------------------------------------
+The DDIs of the released (published) studies are already exported and available
+on disk (but do make sure they are all exported properly, and re-run export-all 
+if necessary). The DDIs for the non-released versions need to be re-exported
+using the DVN DDI export servlet. 
+
+1. The following script goes through the list of the studies in the prod. db, 
+and does the following 2 things:
+
+For non-released versions, issues a call to the export servlet and saves the 
+DDI in ddi/<DV alias>/<STUDY ID>-<VERSION NUMBER>.xml
+
+It also generates a "packing list" of the DDI files for the released versions,
+on the standard output. (this will be packed in the next step)
+
+
+./versions_source_ "http://<DVN 3.6 HOSTNAME>/dvn/ddi" > DDI_released_packlist.txt
+
+2. To pack the released DDIs:
+(this step needs to be run on a system that has access to the production filesystem!)
+
+cat DDI_released_packlist.txt | ./versions_source_step2_
+
+This will copy all the published version DDIs, identified in the previous step, 
+into /tmp/ddi, as
+/tmp/ddi/<DV alias>/<STUDY ID>.xml
+
+The contents of /tmp/ddi/* should now be packaged and mixed with the non-released 
+ddis saved in step 1.
+
+
+
+
+----------------------------------------------
 -- On 3.6 database, run the following to create copies of needed tables
 ----------------------------------------------
 
@@ -40,19 +75,6 @@ create table _dvn3_coll_studies as select * from coll_studies;
 create table _dvn3_vdc_linked_collections as select * from vdc_linked_collections;
 
 
-
--- offsets
-update _dvn3_vdcnetwork set id = id + (select max(id) from dvobject);
-update _dvn3_vdc set id = id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdcrole set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdc_usergroup set vdcs_id = vdcs_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdc_linked_collections set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_study set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
-update _dvn3_vdccollection set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
-
---todo: offsets needed for files
-
-
 ----------------------------------------------
 -- run pg_dump to extract temp tables
 ----------------------------------------------
@@ -65,40 +87,20 @@ pg_dump -h localhost -U postgres thedata -t _dvn3_* -f /tmp/dvn3_data.sql
 
 psql -h localhost -U postgres dvndb -f /tmp/dvn3_data.sql
 
-
 ----------------------------------------------
--- Preparing the DDIs of production studies: 
+-- Run offsets on _dvn3_tables in the 4.0 DB
 ----------------------------------------------
-The DDIs of the released (published) studies are already exported and available
-on disk (but do make sure they are all exported properly, and re-run export-all 
-if necessary). The DDIs for the non-released versions need to be re-exported
-using the DVN DDI export servlet. 
 
-1. The following script goes through the list of the studies in the prod. db, 
-and does the following 2 things:
+-- offsets
+update _dvn3_vdcnetwork set id = id + (select max(id) from dvobject);
+update _dvn3_vdc set id = id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdcrole set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdc_usergroup set vdcs_id = vdcs_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdc_linked_collections set vdc_id = vdc_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_study set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
+update _dvn3_vdccollection set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
 
-For non-released versions, issues a call to the export servlet and saves the 
-DDI in ddi/<DV alias>/<STUDY ID>-<VERSION NUMBER>.xml
-
-It also generates a "packing list" of the DDI files for the released versions,
-on the standard output. (this will be packed in the next step)
-
-
-./versions_source_ "http://<DVN 3.6 HOSTNAME>/dvn/ddi" > DDI_released_packlist.txt
-
-2. To pack the released DDIs:
-(this step needs to be run on a system that has access to the production filesystem!)
-
-cat DDI_released_packlist.txt | ./versions_source_step2_
-
-This will copy all the published version DDIs, identified in the previous step, 
-into /tmp/ddi, as
-/tmp/ddi/<DV alias>/<STUDY ID>.xml
-
-The contents of /tmp/ddi/* should now be packaged and mixed with the non-released 
-ddis saved in step 1.
-
-
+--todo: offsets needed for files
 
 
 
