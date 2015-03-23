@@ -55,6 +55,39 @@ Go to your dataset page and click on the "Edit Dataset" button. There you will h
 
 You can also directly select either the Metadata or File tabs found below the dataset summary information to specifically edit either of those parts of your dataset.
 
+License + Terms
+=======================
+
+CC0 License + Dataset Terms of Use 
+---------------------------------------
+
+Starting with Dataverse version 4.0 all new datasets will default to a `CC0 public domain dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_ license. CC0 facilitates reuse and extensibility of research data. Our `Community Norms <http://best-practices.dataverse.org/harvard-policies/community-norms.html>`_ as well as good scientific practices expect that proper credit is given via citation. If you are unable to give your datasets a CC0 license you may enter your own custom Terms of Use for your Datasets.
+
+\* **Legal Disclaimer:** these Community Norms are not a substitute for the CC0 or custom licenses applicable to each dataset. Please be advised that the Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
+
+Setting up Custom Terms of Use for Datasets
+--------------------------------------------
+
+If you are unable to use CC0 for your datasets you are able to set your own custom terms of use. 
+
+Here is an `example of a Data Usage Agreement <http://best-practices.dataverse.org/harvard-policies/sample-dua.html>`_ for datasets that have de-identified human subject data.
+
+Restricted Files + Terms of Access 
+-----------------------------------------------
+
+Guestbook
+--------------
+
+Permissions
+=============================
+
+Dataset-Level 
+---------------
+
+File-Level
+----------------------
+
+
 Publish Dataset
 ====================
 
@@ -89,6 +122,7 @@ Deaccession Your Dataset [not recommended]
 Deaccessioning a dataset or a version of a dataset is a very serious action that should only occur if there is a legal or valid reason for the dataset to no longer be accessible to the public. If you absolutely must deaccession, you can deaccession a version of a dataset or an entire dataset. To deaccession, go to a dataset you’ve already published (or add a new one and publish it), click on Edit Dataset, then Deaccession Dataset. If you have multiple versions of a dataset, you can select here which versions you want to deaccession or choose to deaccession the entire dataset. You must also include a reason as to why this dataset was deaccessioned from a dropdown list of options. There is also a free-text box to add more details as to why this was deaccessioned. If the dataset has moved to a different repository or site you are encouraged to include a URL (preferably persistent) for users to continue to be able to access this dataset in the future.
 
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
+
 
 
 .. |image1| image:: ./img/DatasetDiagram.png

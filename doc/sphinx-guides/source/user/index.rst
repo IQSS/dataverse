@@ -15,6 +15,5 @@ Contents:
   find-use-data
   dataverse-management
   dataset-management
-  permissions-tou
   data-exploration/index
   appendix
