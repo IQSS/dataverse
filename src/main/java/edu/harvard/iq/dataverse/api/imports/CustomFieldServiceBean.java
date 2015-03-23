@@ -5,11 +5,8 @@
  */
 package edu.harvard.iq.dataverse.api.imports;
 
-import edu.harvard.iq.dataverse.util.ImportLogger;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 /**
@@ -19,9 +16,7 @@ import javax.persistence.PersistenceContext;
 @Stateless
 public class CustomFieldServiceBean {
 
-    @EJB
-    ImportLogger importLogger;
-
+   
      @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
      
@@ -29,7 +24,8 @@ public class CustomFieldServiceBean {
         try {
             CustomFieldMap map = (CustomFieldMap) em.createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();
             return map;
-        } catch (NoResultException ex) {
+        } catch (Exception ex) {
+            System.out.println("Exception "+ ex + "template: "+template+" field: "+ field);
             return null;
         }
 

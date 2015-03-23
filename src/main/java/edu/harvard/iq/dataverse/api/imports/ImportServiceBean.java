@@ -30,7 +30,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.ImportLogger;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
@@ -44,6 +43,7 @@ import java.util.Set;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -67,6 +67,7 @@ import org.apache.commons.lang.StringUtils;
  */
 @Stateless
 public class ImportServiceBean {
+    private static final Logger logger = Logger.getLogger(ImportServiceBean.class.getCanonicalName());
 
     @EJB
     protected EjbDataverseEngine engineSvc;
@@ -83,8 +84,7 @@ public class ImportServiceBean {
     SettingsServiceBean settingsService;
     
     @EJB ImportDDIServiceBean importDDIService;
-    @EJB
-    ImportLogger importLogger;
+   
 /**
  * This is just a convenience method, for testing migration.  It creates 
  * a dummy dataverse with the directory name as dataverse name & alias.
@@ -94,12 +94,12 @@ public class ImportServiceBean {
  * @throws ImportException 
  */
     @TransactionAttribute(REQUIRES_NEW)
-    public Dataverse createDataverse(File dir, AuthenticatedUser u) throws ImportException {
+    public Dataverse createDataverse(String dvName, AuthenticatedUser u) throws ImportException {
         Dataverse d = new Dataverse();
         Dataverse root = dataverseService.findByAlias("root");
         d.setOwner(root);
-        d.setAlias(dir.getName());
-        d.setName(dir.getName());
+        d.setAlias(dvName);
+        d.setName(dvName);
         d.setAffiliation("affiliation");
         d.setPermissionRoot(false);
         d.setDescription("description");
@@ -124,7 +124,7 @@ public class ImportServiceBean {
                     }
                 }
             }
-            importLogger.getLogger().log(Level.SEVERE, sb.toString());
+            logger.log(Level.SEVERE, sb.toString());
             System.out.println("Error creating dataverse: " + sb.toString());
             throw new ImportException(sb.toString());
         } catch (Exception e) {
@@ -143,11 +143,11 @@ public class ImportServiceBean {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
             JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
             status.add("file", file.getName());
-            importLogger.getLogger().info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
+            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
         } catch (ImportException ex) {
             String msg = "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage();
-            importLogger.getLogger().info(msg);
+            logger.info(msg);
             if (validationLog!=null) {
                 validationLog.println(msg);
             }
@@ -294,11 +294,10 @@ public class ImportServiceBean {
             }
 
         } catch (JsonParseException ex) {
-
-            importLogger.getLogger().info("Error parsing datasetVersion: " + ex.getMessage());
+            logger.info("Error parsing datasetVersion: " + ex.getMessage());
             throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
         } catch (CommandException ex) {
-            importLogger.getLogger().info("Error excuting Create dataset command: " + ex.getMessage());
+            logger.info("Error excuting Create dataset command: " + ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
         return Json.createObjectBuilder().add("message", status);
