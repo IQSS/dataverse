@@ -65,7 +65,7 @@ body .ui-widget {font-size: inherit;}
 
 .text-icon-inline {font-size:1.3em;line-height:1.1em;margin-right:4px;}
 
-.messagePanel {/*padding-top:1em;*/}
+#messagePanel div.messagePanel {margin-top:1em;}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
 .highlightBold, a.highlightBold, .dropdown-menu > li > a.highlightBold {font-weight:bold;}
@@ -176,7 +176,8 @@ hr {border-color: #ddd;}
 }
 
 /* -------- HEADER -------- */
-#dataverseHeader {margin:0 auto .5em auto;}
+#dataverse-header-block {padding-top:50px;}
+#dataverseHeader {margin:0 auto;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
 #dataverseHeader .dataverseHeaderCell {display:table-cell;}
 #dataverseHeader .dataverseHeaderLogo {text-align:center;}
@@ -189,7 +190,7 @@ hr {border-color: #ddd;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 
 /* -------- BREADCRUMBS -------- */
-#breadcrumbNavBlock {margin-bottom:1em;}
+#breadcrumbNavBlock {margin-top:.5em;}
 #breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
 #breadcrumbNavBlock .breadcrumbActive {font-weight:bold;}
 #breadcrumbNavBlock a[id^='breadcrumbLnkTree'] {cursor: pointer; cursor: hand;}
