@@ -499,6 +499,38 @@ public class Dataset extends DvObjectContainer {
         this.thumbnailFile = thumbnailFile;
     }
     
+    public boolean isHarvested() {
+        // TODO: 
+        // eventually, this will be more complex: 
+        // A dataverse owner will be able to harvest some datasets into 
+        // any dataverse, in addition to any local datasets there. 
+        // -- L.A. 4.0 
+        Dataverse ownerDataverse = this.getOwner();
+        if (ownerDataverse != null) {
+            return ownerDataverse.isHarvested(); 
+        }
+        return false; 
+    }
+    
+    public String getRemoteArchiveURL() {
+        if (isHarvested()) {
+            if (HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/dataset.xhtml?globalId=" + getGlobalId();
+            } else if (HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
+            } else if (HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                // TODO: 
+                // figure out how to redirect them to the ICPSR page specific to 
+                // the study in question. -- L.A. 4.0 beta15
+                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+            } else {
+                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+            }
+        }
+        
+        return null; 
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -524,4 +556,6 @@ public class Dataset extends DvObjectContainer {
     protected boolean isPermissionRoot() {
         return false;
     }
+    
+    
 }

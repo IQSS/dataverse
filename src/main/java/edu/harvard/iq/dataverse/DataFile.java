@@ -517,7 +517,28 @@ public class DataFile extends DvObject {
     }
     
         
+    public boolean isHarvested() {
+        // TODO: 
+        // alternatively, we can determine whether this is a harvested file
+        // by looking at the storage identifier of the physical file; 
+        // if it's something that's not a filesystem path (URL, etc.) - 
+        // then it's a harvested object. 
+        // -- L.A. 4.0 
+        Dataset ownerDataset = this.getOwner();
+        if (ownerDataset != null) {
+            return ownerDataset.isHarvested(); 
+        }
+        return false; 
+    }
     
+    public String getRemoteArchiveURL() {
+        if (isHarvested()) {
+            Dataset ownerDataset = this.getOwner();
+            return ownerDataset.getRemoteArchiveURL();
+        }
+        
+        return null; 
+    }
     
     @Override
     public boolean equals(Object object) {
