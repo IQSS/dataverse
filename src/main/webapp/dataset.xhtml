@@ -438,6 +438,7 @@
                                             uploadWidgetDropMsg();
                                         });
                                     </script>
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['file.selectToAdd.tip']}" escape="false"/></p>
                                     <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
                                                   oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
