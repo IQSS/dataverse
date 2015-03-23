@@ -38,7 +38,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String dvFieldAffiliation;
     private List<String> dvFieldSubject;
     private String dsPublicationDate;
-    private String dsPersistentIdentifier;
+    private String dsPersistentId;
     private String fileFieldName;
     private String fileFieldDescription;
     private String fileFieldFiletype;
@@ -100,8 +100,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
         if (StringUtils.isNotBlank(dsPublicationDate)) {
             queryStrings.add(constructQuery(SearchFields.DATASET_PUBLICATION_DATE, dsPublicationDate));
         }
-        if (StringUtils.isNotBlank(dsPersistentIdentifier)) {
-            queryStrings.add(constructQuery(SearchFields.DATASET_PERSISTENT_IDENTIFIER, dsPersistentIdentifier));
+        if (StringUtils.isNotBlank(dsPersistentId)) {
+            queryStrings.add(constructQuery(SearchFields.DATASET_PERSISTENT_ID, dsPersistentId));
         }
         return constructQuery(queryStrings, true);
 
@@ -300,12 +300,12 @@ public class AdvancedSearchPage implements java.io.Serializable {
         this.dsPublicationDate = dsPublicationDate;
     }
 
-    public String getDsPersistentIdentifier() {
-        return dsPersistentIdentifier;
+    public String getDsPersistentId() {
+        return dsPersistentId;
     }
 
-    public void setDsPersistentIdentifier(String dsPersistentIdentifier) {
-        this.dsPersistentIdentifier = dsPersistentIdentifier;
+    public void setDsPersistentId(String dsPersistentId) {
+        this.dsPersistentId = dsPersistentId;
     }
 
     public String getFileFieldName() {

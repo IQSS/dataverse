@@ -321,8 +321,8 @@
    <copyField source="dvSubject" dest="text" maxChars="3000"/>
    <copyField source="dvAffiliation" dest="text" maxChars="3000"/>
 
-   <field name="datasetPersistentIdentifier" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <copyField source="datasetPersistentIdentifier" dest="text" maxChars="3000"/>
+   <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <copyField source="dsPersistentId" dest="text" maxChars="3000"/>
 
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="ARCS1" type="text_en" multiValued="false" stored="true" indexed="true"/>

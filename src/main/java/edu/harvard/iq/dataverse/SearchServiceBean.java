@@ -90,7 +90,7 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Date");
-        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_IDENTIFIER, localize("advanced.search.datasets.persistentIdentifier"));
+        solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, localize("advanced.search.datasets.persistentId"));
         /**
          * @todo Dataverse subject and affiliation should be highlighted but
          * this is commented out right now because the "friendly" names are not
