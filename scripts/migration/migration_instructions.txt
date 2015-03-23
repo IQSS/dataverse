@@ -23,7 +23,7 @@ Migration:
     the migration source installation.)
 4. run dataset APIs: execute the following HTTP  request on the Dataverse 4.0 application to initiate dataset migration:
     
-    http://dvn-vm6.hmdc.harvard.edu:8080/api/batch/migrate?path=/usr/local/ddi&key=6a1eaa5b-f9c0-4939-9926-1b7180c4825c
+    http://<hostname>/api/batch/migrate?path=<parent directory of DDI files>&key=<Dataverse Admin API Key>
 
     This will return a success message and begin an asynchronous migration job - the status of the job is viewable in the import-log file
     in the Glassfish logs directory.
@@ -61,6 +61,7 @@ the destination server.
 
 7. run migrate_permissions.sql script
 8. run migrate_links.sql script
+
 __________________________________________________
 
 Still to be migrated:
