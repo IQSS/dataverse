@@ -1031,27 +1031,15 @@ public class IndexServiceBean {
     }
 
     private List<String> findSolrDocIdsForDraftFilesToDelete(Dataset datasetWithDraftFilesToDelete) {
-        Long datasetId = datasetWithDraftFilesToDelete.getId();
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setRows(Integer.MAX_VALUE);
-        solrQuery.setQuery(SearchFields.PARENT_ID + ":" + datasetId);
-        solrQuery.addFilterQuery(SearchFields.ID + ":" + "*" + draftSuffix);
         List<String> solrIdsOfFilesToDelete = new ArrayList<>();
-        try {
-            // i.e. rows=2147483647&q=parentid%3A16&fq=id%3A*_draft
-            logger.info("passing this Solr query to find draft files to delete: " + solrQuery);
-            QueryResponse queryResponse = solrServer.query(solrQuery);
-            SolrDocumentList results = queryResponse.getResults();
-            for (SolrDocument solrDocument : results) {
-                String id = (String) solrDocument.getFieldValue(SearchFields.ID);
-                if (id != null) {
-                    solrIdsOfFilesToDelete.add(id);
+        for (DatasetVersion datasetVersion : datasetWithDraftFilesToDelete.getVersions()) {
+            for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
+                DataFile datafile = fileMetadata.getDataFile();
+                if (datafile != null) {
+                    solrIdsOfFilesToDelete.add(solrDocIdentifierFile + datafile.getId() + draftSuffix);
                 }
             }
-        } catch (SolrServerException ex) {
-            logger.info("error in findSolrDocIdsForDraftFilesToDelete method: " + ex.toString());
+
         }
         return solrIdsOfFilesToDelete;
     }
