@@ -100,13 +100,7 @@ public class ImportDDIServiceBean {
         // Read docDescr and studyDesc into DTO objects.
         Map fileMap = mapDDI(xmlToParse, datasetDTO);
         if (!importType.equals(ImportType.MIGRATION)) {
-                  //EMK TODO:  Call methods for reading FileMetadata and related objects from xml, return list of FileMetadata objects.
-                   /*try {
-            
-             Map<String, DataTable> dataTableMap = new DataTableImportDDI().processDataDscr(xmlr);
-             } catch(Exception e) {
-            
-             }*/
+                  // For migration, this filemetadata is copied in a separate SQL step
         }
         return datasetDTO;
     }
@@ -903,20 +897,25 @@ public class ImportDDIServiceBean {
     
       private void processDataAccs(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
-            if (event == XMLStreamConstants.START_ELEMENT) {
-                if (xmlr.getLocalName().equals("setAvail")) processSetAvail(xmlr,dvDTO);
-                else if (xmlr.getLocalName().equals("useStmt")) processUseStmt(xmlr,dvDTO);
-                else if (xmlr.getLocalName().equals("notes")) {
+             if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("setAvail")) {
+                    processSetAvail(xmlr, dvDTO);
+                } else if (xmlr.getLocalName().equals("useStmt")) {
+                    processUseStmt(xmlr, dvDTO);
+                } else if (xmlr.getLocalName().equals("notes")) {
                     String noteType = xmlr.getAttributeValue(null, "type");
                     if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
-                       // Ignore Harvest Terms of Use, not relevant in Dataverse 4.0
-                       // because we are not presenting harvested data for download
+                        if ( LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
+                            dvDTO.setTermsOfUse(parseText(xmlr, "notes"));
+                        }
                     } else {
-                        processNotes( xmlr, dvDTO );
+                        processNotes(xmlr, dvDTO);
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (xmlr.getLocalName().equals("dataAccs")) return;
+                if (xmlr.getLocalName().equals("dataAccs")) {
+                    return;
+                }
             }
         }
     }
