@@ -77,11 +77,27 @@
                     };
                 });
                 
-                // function addAllowedHTMLSample(){
-                    // $('#allowedHTML').html('<h:outputText value="# {bundle.htmlAllowedTags}" />');
-                // };
+                var popoverTemplateHTML = ['<div class="popover">',
+                    '<div class="arrow"></div>',
+                    '<h3 class="popover-title"></h3>',
+                    '<div class="popover-content">',
+                    '</div>',
+                    '</div>'].join('');
                 
-                // addAllowedHTMLSample();
+                var popoverContentHTML = ['<code>',
+                    '<h:outputText value="#{bundle.htmlAllowedTags}" escape="true"/>',
+                    '</code>'].join('');
+            
+                $('body').popover({
+                    selector: 'span.popoverHTML',
+                    title: '<h:outputText value="#{bundle.htmlAllowedTitle}"/>',
+                    trigger: 'click',
+                    content : popoverContentHTML,
+                    template: popoverTemplateHTML,
+                    placement: "bottom",
+                    container: "#content",
+                    html: true
+                });
                 
                 // Rebind bootstrap UI components
                 bind_bsui_components();                
