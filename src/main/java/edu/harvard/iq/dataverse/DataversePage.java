@@ -78,8 +78,8 @@ public class DataversePage implements java.io.Serializable {
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
     private Long ownerId;
-    private DualListModel<DatasetFieldType> facets;
-    private DualListModel<Dataverse> featuredDataverses;
+    private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<DatasetFieldType>(), new ArrayList<DatasetFieldType>());
+    private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<Dataverse>(), new ArrayList<Dataverse>());
     private List<Dataverse> dataversesForLinking;
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
@@ -245,17 +245,18 @@ public class DataversePage implements java.io.Serializable {
             // set defaults - contact e-mail and affiliation from user
             dataverse.getDataverseContacts().add(new DataverseContact(dataverse, session.getUser().getDisplayInfo().getEmailAddress()));
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
-            
+            setupForGeneralInfoEdit();
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         }
         
-        updateDataverseSubjectSelectItems();
-
-        initFacets();
-
+        return null;
+    }
+    
+    public void initFeaturedDataverses() {
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
         featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
+        featuredSource.addAll(linkingService.findLinkedDataverses(dataverse.getId()));
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();
@@ -263,9 +264,7 @@ public class DataversePage implements java.io.Serializable {
             featuredSource.remove(fd);
         }
         featuredDataverses = new DualListModel<>(featuredSource, featuredTarget);
-        refreshAllMetadataBlocks();
-        
-        return null;
+
     }
         
     public void initFacets() {        
@@ -280,7 +279,13 @@ public class DataversePage implements java.io.Serializable {
         }
         facets = new DualListModel<>(facetsSource, facetsTarget);
         facetMetadataBlockId = null;
-    }    
+    }  
+    
+    private void setupForGeneralInfoEdit() {
+        updateDataverseSubjectSelectItems();
+        initFacets();
+        refreshAllMetadataBlocks();
+    }
     
     private Long facetMetadataBlockId;
 
@@ -338,6 +343,7 @@ public class DataversePage implements java.io.Serializable {
     public void edit(EditMode editMode) {
         this.editMode = editMode;
         if (editMode == EditMode.INFO) {
+            setupForGeneralInfoEdit();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
         } else if (editMode == EditMode.SETUP) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse Setup", " - Edit the Metadata Blocks and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list."));
@@ -464,46 +470,50 @@ public class DataversePage implements java.io.Serializable {
     
     public String save(String message) {
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList();
-        List<MetadataBlock> selectedBlocks = new ArrayList();
-        if (dataverse.isMetadataBlockRoot()) {
-            dataverse.getMetadataBlocks().clear();
-        }
-        
-        for (MetadataBlock mdb : this.allMetadataBlocks) {
-            if (dataverse.isMetadataBlockRoot() && (mdb.isSelected() || mdb.isRequired())) {
-                
-                selectedBlocks.add(mdb);
-                for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                    if (dsft.isRequiredDV() && !dsft.isRequired() 
-                            && ((!dsft.isHasParent() &&  dsft.isInclude()) || 
-                            (dsft.isHasParent() &&  dsft.getParentDatasetFieldType().isInclude()))) {
-                        DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();                       
-                        dftil.setDatasetFieldType(dsft);
-                        dftil.setDataverse(dataverse);
-                        dftil.setRequired(true);
-                        dftil.setInclude(true);
-                        listDFTIL.add(dftil);
-                    }
-                    if ( (!dsft.isHasParent() && !dsft.isInclude())  ||
-                            (dsft.isHasParent() &&  !dsft.getParentDatasetFieldType().isInclude())) {
-                        DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();
-                        dftil.setDatasetFieldType(dsft);
-                        dftil.setDataverse(dataverse);
-                        dftil.setRequired(false);
-                        dftil.setInclude(false);
-                        listDFTIL.add(dftil);
+        if (editMode != null && editMode.equals(EditMode.INFO)) {
+
+            List<MetadataBlock> selectedBlocks = new ArrayList();
+            if (dataverse.isMetadataBlockRoot()) {
+                dataverse.getMetadataBlocks().clear();
+            }
+
+            for (MetadataBlock mdb : this.allMetadataBlocks) {
+                if (dataverse.isMetadataBlockRoot() && (mdb.isSelected() || mdb.isRequired())) {
+                    selectedBlocks.add(mdb);
+                    for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+                        if (dsft.isRequiredDV() && !dsft.isRequired()
+                                && ((!dsft.isHasParent() && dsft.isInclude())
+                                || (dsft.isHasParent() && dsft.getParentDatasetFieldType().isInclude()))) {
+                            DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();
+                            dftil.setDatasetFieldType(dsft);
+                            dftil.setDataverse(dataverse);
+                            dftil.setRequired(true);
+                            dftil.setInclude(true);
+                            listDFTIL.add(dftil);
+                        }
+                        if ((!dsft.isHasParent() && !dsft.isInclude())
+                                || (dsft.isHasParent() && !dsft.getParentDatasetFieldType().isInclude())) {
+                            DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();
+                            dftil.setDatasetFieldType(dsft);
+                            dftil.setDataverse(dataverse);
+                            dftil.setRequired(false);
+                            dftil.setInclude(false);
+                            listDFTIL.add(dftil);
+                        }
                     }
                 }
             }
+
+            if (!selectedBlocks.isEmpty()) {
+                dataverse.setMetadataBlocks(selectedBlocks);
+            }
+
+            if (!dataverse.isFacetRoot()) {
+                facets.getTarget().clear();
+            }
+
         }
-        
-        if (!selectedBlocks.isEmpty()) {
-            dataverse.setMetadataBlocks(selectedBlocks);
-        }
-        
-        if(!dataverse.isFacetRoot()){
-            facets.getTarget().clear();
-        }
+
         
         Command<Dataverse> cmd = null;
         //TODO change to Create - for now the page is expecting INFO instead.

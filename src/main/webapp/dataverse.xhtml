@@ -395,20 +395,15 @@
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                 </h:link>
                                             </li>
-                                            <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">                                                   
+                                                  
                                                 <li>
-                                                    <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">
+                                                    <p:commandLink id="browseOpts" actionListener="#{DataversePage.initFeaturedDataverses()}" oncomplete="browseOptsForm.show()"
+                                                                   update="dataverseForm:browseOptsForm">
                                                         <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
                                                     </p:commandLink>
                                                 </li>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{empty DataversePage.featuredDataverses.source and empty DataversePage.featuredDataverses.target}">
-                                                <li>
-                                                    <p:commandLink id="noPub" onclick="noPubDVs.show()">
-                                                        <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
-                                                    </p:commandLink>
-                                                </li>
-                                            </ui:fragment>
+
+
                                             <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null)
                                                                      and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DeleteDataverseCommand')}">
                                                 <li class="divider"></li>
@@ -538,7 +533,8 @@
                    
                     <!-- POPUPS -->
                     <!-- Featured Dataverses Popup -->
-                    <p:dialog header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
+                    <p:dialog id="browseOptsForm" header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
+                        <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
                         <div class="form-group">
                             <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.selectToFeature']}</p>
                             <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"
@@ -550,14 +546,20 @@
                             <p:commandButton value="#{bundle.saveChanges}" action="#{DataversePage.saveFeature()}"/>
                             <p:commandButton value="#{bundle.cancel}" onclick="browseOptsForm.hide()"/>
                         </div>
-                    </p:dialog>
-                    <p:dialog header="#{bundle['dataverse.nopublished']}" widgetVar="noPubDVs">
-                        <p class="text-danger">
+                        </ui:fragment>
+                         <ui:fragment rendered="#{empty DataversePage.featuredDataverses.source and empty DataversePage.featuredDataverses.target}">
+                                                <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.nopublished.tip']}
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.cancel}" onclick="noPubDVs.hide()"/>
+                            <p:commandButton value="#{bundle.cancel}" onclick="browseOptsForm.hide()"/>
                         </div>
+
+                        </ui:fragment>
+                        
+                    </p:dialog>
+                    <p:dialog header="#{bundle['dataverse.nopublished']}" widgetVar="noPubDVs">
+
                     </p:dialog>
 
                     <!-- Publish Confirmation Popup -->
