@@ -124,6 +124,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
         for ( String endpoint : endpointList.split(",") ) {
             String endpointPrefix = canonize(endpoint);
             if ( ! endpointPrefix.isEmpty() ) {
+                endpointPrefix = endpointPrefix + "/"; 
                 logger.log(Level.INFO, "Blocking API endpoint: {0}", endpointPrefix);
                 blockedApiEndpoints.add(endpointPrefix);
             }
@@ -140,14 +141,16 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
         
         HttpServletRequest hsr = (HttpServletRequest) sr;
         String apiEndpoint = canonize(hsr.getRequestURI().substring(hsr.getServletPath().length()));
-        
+        logger.info("@@@@@ considering " + apiEndpoint);
         for ( String prefix : blockedApiEndpoints ) {
             if ( apiEndpoint.startsWith(prefix) ) {
                 getBlockPolicy().doBlock(sr, sr1, fc);
+                logger.info("@@@@@ blocking " + apiEndpoint);
                 return;
             }
         }
         
+        logger.info("@@@@@ allowing " + apiEndpoint);
         fc.doFilter(sr, sr1);
     }
 
