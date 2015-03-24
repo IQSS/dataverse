@@ -198,7 +198,6 @@ public class DataverseServiceBean implements java.io.Serializable {
            
     public boolean isDataverseCardImageAvailable(Dataverse dataverse, User user) {    
         if (dataverse == null) {
-            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+dataverse.getId()+"!");
             return false; 
         }
         
