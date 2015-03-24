@@ -185,19 +185,23 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
         }
           logger.log(Level.INFO,"after index "  + formatter.format(new Date().getTime()));      
-        DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();     
-        String id = getUser().getIdentifier();
-        id = id.startsWith("@") ? id.substring(1) : id;
-        AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
-        datasetVersionDataverseUser.setAuthenticatedUser(au);
-        datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
-        datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate); 
-        if (savedDataset.getLatestVersion().getId() == null){
-            logger.warning("CreateDatasetCommand: savedDataset version id is null");
-        } else {
-            datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());  
-        }       
-        ctxt.em().merge(datasetVersionDataverseUser); 
+        
+        // if we are not migrating, assign the user to this version
+        if (importType==null || importType.equals(ImportType.NEW)) {  
+            DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();     
+            String id = getUser().getIdentifier();
+            id = id.startsWith("@") ? id.substring(1) : id;
+            AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
+            datasetVersionDataverseUser.setAuthenticatedUser(au);
+            datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
+            datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate); 
+            if (savedDataset.getLatestVersion().getId() == null){
+                logger.warning("CreateDatasetCommand: savedDataset version id is null");
+            } else {
+                datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());  
+            }       
+            ctxt.em().merge(datasetVersionDataverseUser); 
+        }
            logger.log(Level.INFO,"after create version user "  + formatter.format(new Date().getTime()));       
         return savedDataset;
     }

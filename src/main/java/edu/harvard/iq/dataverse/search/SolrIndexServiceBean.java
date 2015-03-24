@@ -469,14 +469,22 @@ public class SolrIndexServiceBean {
             Future<String> response = indexService.indexDataverseInNewTransaction(staleOrMissingDataverse);
             countOfIndexedDataverses++;
         }
-        status.append("indexed dataverses: " + countOfIndexedDataverses);
+        status.append("indexed dataverses: " + countOfIndexedDataverses + ", ");
         List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
         int countOfIndexedDatasets = 0;
         for (Dataset staleOrMissingDataset : staleOrMissingDatasets) {
             indexService.indexDatasetInNewTransaction(staleOrMissingDataset);
             countOfIndexedDatasets++;
         }
-        status.append("indexed datasets: " + countOfIndexedDatasets);
+        status.append("indexed datasets: " + countOfIndexedDatasets + ", ");
+        int countOfIndexedPermissions = 0;
+        List<Long> dvObjectsWithStaleOrMissingPermissions = findPermissionsInDatabaseButStaleInOrMissingFromSolr();
+        for (long dvObjectId : dvObjectsWithStaleOrMissingPermissions) {
+            indexPermissionsForOneDvObject(dvObjectId);
+            countOfIndexedPermissions++;
+        }
+        status.append("indexed permissions (DvObject IDs): " + countOfIndexedPermissions);
+        logger.info(status.toString());
         return new AsyncResult<>(status.toString());
     }
 
@@ -488,7 +496,7 @@ public class SolrIndexServiceBean {
      * re-indexed Solr was down when a permission was added. The permission
      * should be added to Solr.
      */
-    public List<Long> findPermissionsMissingFromSolr() throws Exception {
+    public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> indexingRequired = new ArrayList<>();
         long rootDvId = dataverseService.findRootDataverse().getId();
         for (DvObject dvObject : dvObjectService.findAll()) {
@@ -504,13 +512,9 @@ public class SolrIndexServiceBean {
                 if (permissionModificationTime == null) {
                     /**
                      * @todo What should we do here? Permissions should always
-                     * be there. They are assigned at create time. For now,
-                     * we'll throw an exception. Set this to true and figure it
-                     * out!
+                     * be there. They are assigned at create time.
                      */
-                    if (false) {
-                        throw new Exception("Problem finding missing Solr permissions. No permission modification time for dvObject id " + dvObject.getId());
-                    }
+                    logger.info("no permission modification time for dvobject id " + dvObject.getId());
                 } else {
                     if (permissionIndexTime.before(permissionModificationTime)) {
                         indexingRequired.add(dvObject.getId());
