@@ -199,12 +199,7 @@ public class Index extends AbstractApiBean {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
         }
 
-        JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr;
-        try {
-            permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
-        } catch (Exception ex) {
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
-        }
+        JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
         JsonObjectBuilder permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
 
         JsonObjectBuilder data = Json.createObjectBuilder()
@@ -258,7 +253,7 @@ public class Index extends AbstractApiBean {
         return contentInSolrButNotDatabase;
     }
 
-    private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() throws Exception {
+    private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> staleOrMissingPermissions;
         staleOrMissingPermissions = solrIndexService.findPermissionsInDatabaseButStaleInOrMissingFromSolr();
         JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
