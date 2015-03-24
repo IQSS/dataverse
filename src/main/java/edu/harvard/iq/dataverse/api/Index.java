@@ -23,7 +23,6 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -159,6 +158,21 @@ public class Index extends AbstractApiBean {
         }
     }
 
+    /**
+     * Note that this method is best used in a migration scenario because it
+     * skips the normal Solr doc cleanup of deleting drafts and other versions
+     * from Solr.
+     */
+    @GET
+    @Path("missing")
+    public Response indexMissing() {
+        /**
+         * @todo How can we display the result?
+         */
+        Future<String> result = solrIndexService.indexMissing();
+        return okResponse("index missing started, Solr doc cleanup operations will be skipped");
+    }
+
     @GET
     @Path("perms")
     public Response indexAllPermissions() {
@@ -218,8 +232,8 @@ public class Index extends AbstractApiBean {
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
                  */
-                .add("dataverses", jsonStateOrMissingDataverses)
-                .add("datasets", datasetsInDatabaseButNotSolr);
+                .add("dataverses", jsonStateOrMissingDataverses.build().size())
+                .add("datasets", datasetsInDatabaseButNotSolr.build().size());
         return contentInDatabaseButStaleInOrMissingFromSolr;
     }
 
@@ -239,8 +253,8 @@ public class Index extends AbstractApiBean {
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
                  */
-                .add("dataverses", dataversesInSolrButNotDatabase)
-                .add("datasets", datasetsInSolrButNotDatabase);
+                .add("dataverses", dataversesInSolrButNotDatabase.build().size())
+                .add("datasets", datasetsInSolrButNotDatabase.build().size());
         return contentInSolrButNotDatabase;
     }
 
@@ -252,7 +266,7 @@ public class Index extends AbstractApiBean {
             stalePermissionList.add(dvObjectId);
         }
         return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList);
+                .add("dvobjects", stalePermissionList.build().size());
     }
 
     private JsonObjectBuilder getPermissionsInSolrButNotDatabase() {
@@ -262,7 +276,7 @@ public class Index extends AbstractApiBean {
             stalePermissionList.add(dvObjectId);
         }
         return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList);
+                .add("dvobjects", stalePermissionList.build().size());
     }
 
 }

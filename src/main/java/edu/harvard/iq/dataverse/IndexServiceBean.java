@@ -1162,7 +1162,7 @@ public class IndexServiceBean {
      * @return Datasets that should be reindexed either because they have never
      * been indexed or their index time is before their modification time.
      */
-    public List findStaleOrMissingDatasets() {
+    public List<Dataset> findStaleOrMissingDatasets() {
         List<Dataset> staleDatasets = new ArrayList<>();
         for (Dataset dataset : datasetService.findAll()) {
             if (stale(dataset)) {

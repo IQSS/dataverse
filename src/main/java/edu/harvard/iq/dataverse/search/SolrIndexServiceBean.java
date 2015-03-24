@@ -18,7 +18,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -47,6 +50,8 @@ public class SolrIndexServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     DataverseRoleServiceBean rolesSvc;
+    @EJB
+    IndexServiceBean indexService;
 
     /**
      * This non-default mode changes the behavior of the "Data Related To Me"
@@ -455,19 +460,46 @@ public class SolrIndexServiceBean {
         return new IndexResponse("no known problem deleting the following documents from Solr:" + solrIdsToDelete);
     }
 
+    @Asynchronous
+    public Future<String> indexMissing() {
+        StringBuilder status = new StringBuilder();
+        List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
+        int countOfIndexedDataverses = 0;
+        for (Dataverse staleOrMissingDataverse : stateOrMissingDataverses) {
+            Future<String> response = indexService.indexDataverseInNewTransaction(staleOrMissingDataverse);
+            countOfIndexedDataverses++;
+        }
+        status.append("indexed dataverses: " + countOfIndexedDataverses);
+        List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
+        int countOfIndexedDatasets = 0;
+        for (Dataset staleOrMissingDataset : staleOrMissingDatasets) {
+            indexService.indexDatasetInNewTransaction(staleOrMissingDataset);
+            countOfIndexedDatasets++;
+        }
+        status.append("indexed datasets: " + countOfIndexedDatasets);
+        return new AsyncResult<>(status.toString());
+    }
+
     /**
+     * @todo Do we want to report the root dataverse (id 1, often) in
+     * permissionsInDatabaseButMissingFromSolr?
+     *
      * @return A list of dvobject ids that should have their permissions
      * re-indexed Solr was down when a permission was added. The permission
      * should be added to Solr.
      */
     public List<Long> findPermissionsMissingFromSolr() throws Exception {
         List<Long> indexingRequired = new ArrayList<>();
+        long rootDvId = dataverseService.findRootDataverse().getId();
         for (DvObject dvObject : dvObjectService.findAll()) {
 //            logger.info("examining dvObjectId " + dvObject.getId() + "...");
             Timestamp permissionModificationTime = dvObject.getPermissionModificationTime();
             Timestamp permissionIndexTime = dvObject.getPermissionIndexTime();
             if (permissionIndexTime == null) {
-                indexingRequired.add(dvObject.getId());
+                if (dvObject.getId() != rootDvId) {
+                    // we don't index the rootDv
+                    indexingRequired.add(dvObject.getId());
+                }
             } else {
                 if (permissionModificationTime == null) {
                     /**
