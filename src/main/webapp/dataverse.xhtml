@@ -206,7 +206,7 @@
 
                                         <label class="metadata-blocks-default" for="metadataRoot" jsf:rendered="#{DataversePage.dataverse.owner != null}">
                                             <h:selectBooleanCheckbox id="metadataRoot" tabindex="7" styleClass="metadata-blocks-default" 
-                                                                     value="#{DataversePage.inheritMetadataBlockFromParent}" onclick="updateMetadata(this);">                                                
+                                                                     value="#{DataversePage.inheritMetadataBlockFromParent}" onclick="updateMetadata(this);"> 
                                             </h:selectBooleanCheckbox>
                                             <h:outputFormat value="#{bundle['dataverse.metadataElements.from.tip']}">
                                                 <f:param value="#{DataversePage.dataverse.metadataRootDataverseName}"/>
@@ -214,14 +214,14 @@
                                         </label>
                                         
                                         <p:commandButton value="Direct" id="updateMetadataButton"
-                                                         style="display:none"
-                                                         update="@widgetVar(optionBlock)"
+                                                         style="display:none"  
                                                          actionListener="#{DataversePage.editMetadataBlocks(false)}">
+                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks(false)}"/>
                                         </p:commandButton>
                                         <p:commandButton value="Direct" id="cancelMetadataButton"
-                                                         style="display:none" 
-                                                         update="@widgetVar(optionBlock)"
+                                                         style="display:none"                                                          
                                                          actionListener="#{DataversePage.editMetadataBlocks(false)}">
+                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks(false)}"/>
                                         </p:commandButton>
                          
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
