@@ -7,5 +7,5 @@
 #  - :BlockedApiKey - when using the unblock-key policy, pass this key in the unblock-key query param to allow the call to a blocked endpoint
 #  - :BlockedApiEndpoints - comma separated list of blocked api endpoints.
 
-curl -X PUT -d localhost-only http://localhost:8080/api/s/settings/:BlockedApiPolicy
-curl -X PUT -d groups,s,index,datasetfield http://localhost:8080/api/s/settings/:BlockedApiEndpoints
+curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy
+curl -X PUT -d groups,s,index,datasetfield http://localhost:8080/api/admin/settings/:BlockedApiEndpoints

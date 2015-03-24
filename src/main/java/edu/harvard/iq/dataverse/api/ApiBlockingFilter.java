@@ -16,9 +16,11 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.ServletResponseWrapper;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * A web filter to block API administration calls.
@@ -141,17 +143,14 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
         
         HttpServletRequest hsr = (HttpServletRequest) sr;
         String apiEndpoint = canonize(hsr.getRequestURI().substring(hsr.getServletPath().length()));
-        logger.info("@@@@@ considering " + apiEndpoint);
         for ( String prefix : blockedApiEndpoints ) {
             if ( apiEndpoint.startsWith(prefix) ) {
                 getBlockPolicy().doBlock(sr, sr1, fc);
-                logger.info("@@@@@ blocking " + apiEndpoint);
                 return;
             }
         }
-        
-        logger.info("@@@@@ allowing " + apiEndpoint);
         fc.doFilter(sr, sr1);
+        
     }
 
     @Override

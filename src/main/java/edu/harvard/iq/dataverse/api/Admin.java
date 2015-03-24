@@ -34,7 +34,7 @@ import javax.ws.rs.core.Response.Status;
  * @author michael
  */
 @Stateless
-@Path("s")
+@Path("admin")
 public class Admin extends AbstractApiBean {
     
     private static final Logger logger = Logger.getLogger(Admin.class.getName());
