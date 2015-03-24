@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.io.File;
 import java.sql.Timestamp;
@@ -16,7 +17,6 @@ import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -195,8 +195,8 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         return appVersionString; 
     }
-    
-    public boolean isDataverseCardImageAvailable(Long dataverseId, DataverseSession session) {
+        
+    public boolean isDataverseCardImageAvailable(Long dataverseId, User user) {
         Dataverse dataverse = find(dataverseId);
         
         if (dataverse == null) {
@@ -235,7 +235,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 
                 if (releasedVersion != null) {
-                    if (datasetService.isDatasetCardImageAvailable(releasedVersion.getId(), session)) {
+                    if (datasetService.isDatasetCardImageAvailable(releasedVersion.getId(), user)) {
                         return true;
                     }
                 }
