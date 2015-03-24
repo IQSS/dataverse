@@ -272,6 +272,10 @@ public class DataFileServiceBean implements java.io.Serializable {
      * file types, if not yet available)
     */
     public boolean isThumbnailAvailable (DataFile file, User user) {
+        if (file == null) {
+            return false; 
+        } 
+        
         // If thumbnails are not even supported for this class of files, 
         // there's notthing to talk about: 
         
@@ -291,26 +295,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
        return ImageThumbConverter.isThumbnailAvailable(file);      
     }
-    
-    
-    /* 
-        TODO: 
-        rename this method "isCardThumbnailAvailable" 
-        -- L.A. 4.0 beta14
-    */
-    public boolean isPreviewAvailable (Long fileId, User user) {
-        if (fileId == null) {
-            return false; 
-        }
-        
-        DataFile file = find(fileId);
-        
-        if (file == null) {
-            return false; 
-        }
-        
-        return isThumbnailAvailable(file, user); 
-    }
+
     
     // TODO: 
     // Document this.
