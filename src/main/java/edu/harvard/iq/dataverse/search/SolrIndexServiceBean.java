@@ -469,14 +469,28 @@ public class SolrIndexServiceBean {
             Future<String> response = indexService.indexDataverseInNewTransaction(staleOrMissingDataverse);
             countOfIndexedDataverses++;
         }
-        status.append("indexed dataverses: " + countOfIndexedDataverses);
+        status.append("indexed dataverses: " + countOfIndexedDataverses + ", ");
         List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
         int countOfIndexedDatasets = 0;
         for (Dataset staleOrMissingDataset : staleOrMissingDatasets) {
             indexService.indexDatasetInNewTransaction(staleOrMissingDataset);
             countOfIndexedDatasets++;
         }
-        status.append("indexed datasets: " + countOfIndexedDatasets);
+        status.append("indexed datasets: " + countOfIndexedDatasets + ", ");
+        int countOfIndexedPermissions = 0;
+        try {
+            List<Long> dvObjectsWithStaleOrMissingPermissions = findPermissionsInDatabaseButStaleInOrMissingFromSolr();
+            for (long dvObjectId: dvObjectsWithStaleOrMissingPermissions) {
+                indexPermissionsForOneDvObject(dvObjectId);
+                countOfIndexedPermissions++;
+            }
+            status.append("indexed permissions (DvObject IDs): " + countOfIndexedPermissions);
+        } catch (Exception ex) {
+            /**
+             * @todo What should we do with this exception?
+             */
+        }
+        logger.info(status.toString());
         return new AsyncResult<>(status.toString());
     }
 
@@ -488,7 +502,7 @@ public class SolrIndexServiceBean {
      * re-indexed Solr was down when a permission was added. The permission
      * should be added to Solr.
      */
-    public List<Long> findPermissionsMissingFromSolr() throws Exception {
+    public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() throws Exception {
         List<Long> indexingRequired = new ArrayList<>();
         long rootDvId = dataverseService.findRootDataverse().getId();
         for (DvObject dvObject : dvObjectService.findAll()) {

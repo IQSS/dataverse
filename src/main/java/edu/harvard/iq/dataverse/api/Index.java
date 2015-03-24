@@ -199,9 +199,9 @@ public class Index extends AbstractApiBean {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
         }
 
-        JsonObjectBuilder permissionsInDatabaseButMissingFromSolr;
+        JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr;
         try {
-            permissionsInDatabaseButMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
+            permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
         } catch (Exception ex) {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
@@ -210,7 +210,7 @@ public class Index extends AbstractApiBean {
         JsonObjectBuilder data = Json.createObjectBuilder()
                 .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
                 .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
-                .add("permissionsInDatabaseButMissingFromSolr", permissionsInDatabaseButMissingFromSolr)
+                .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
                 .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
 
         return okResponse(data);
@@ -260,7 +260,7 @@ public class Index extends AbstractApiBean {
 
     private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() throws Exception {
         List<Long> staleOrMissingPermissions;
-        staleOrMissingPermissions = solrIndexService.findPermissionsMissingFromSolr();
+        staleOrMissingPermissions = solrIndexService.findPermissionsInDatabaseButStaleInOrMissingFromSolr();
         JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
         for (Long dvObjectId : staleOrMissingPermissions) {
             stalePermissionList.add(dvObjectId);
