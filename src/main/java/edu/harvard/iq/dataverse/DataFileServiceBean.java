@@ -7,8 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.util.Collections;
 import java.util.Date;
@@ -272,7 +271,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * ready to be downloaded. (it will try to generate a thumbnail for supported
      * file types, if not yet available)
     */
-    public boolean isThumbnailAvailable (DataFile file, DataverseSession session) {
+    public boolean isThumbnailAvailable (DataFile file, User user) {
         // If thumbnails are not even supported for this class of files, 
         // there's notthing to talk about: 
         
@@ -282,27 +281,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         // Also, thumbnails are only shown to users who have permission to see 
         // the full-size image file. So before we do anything else, let's
-        // do some authentication and authorization:
-        
-        AuthenticatedUser user = null;
-        
-        if (session != null) {
-            if (session.getUser() != null) {
-                if (session.getUser().isAuthenticated()) {
-                    user = (AuthenticatedUser) session.getUser();
-                } else {
-                    logger.fine("User associated with the session is not an authenticated user. (Guest access will be assumed).");
-                    if (session.getUser() instanceof GuestUser) {
-                        logger.fine("User associated with the session is indeed a guest user.");
-                    }
-                }
-            } else {
-                logger.fine("No user associated with the session.");
-            }
-        } else {
-            logger.fine("Session is null.");
-        } 
-        
+        // do some authentication and authorization:        
         if (!permissionService.userOn(user, file).has(Permission.DownloadFile)) { 
             logger.fine("No permission to download the file.");
             return false; 
@@ -319,7 +298,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         rename this method "isCardThumbnailAvailable" 
         -- L.A. 4.0 beta14
     */
-    public boolean isPreviewAvailable (Long fileId, DataverseSession dataverseSession) {
+    public boolean isPreviewAvailable (Long fileId, User user) {
         if (fileId == null) {
             return false; 
         }
@@ -330,7 +309,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false; 
         }
         
-        return isThumbnailAvailable(file, dataverseSession); 
+        return isThumbnailAvailable(file, user); 
     }
     
     // TODO: 
