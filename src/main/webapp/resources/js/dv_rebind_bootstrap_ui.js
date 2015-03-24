@@ -18,6 +18,9 @@ function bind_bsui_components(){
 
     // Tooltip + popover functionality
     bind_tooltip_popover();
+    
+    // Sharrre
+    sharrre();
 
 }
 
@@ -144,6 +147,72 @@ function post_differences(){
        var dialogScroll = dialogHeight - dialogHeader;
        $('div[id$="detailsBlocks"] .ui-dialog-content').css('height', dialogScroll);
 }
+
+/*
+ * Sharrre
+ */
+function sharrre(){
+    $('#sharrre-count').sharrre({
+        share: {
+            facebook: true,
+            twitter: true,
+            googlePlus: true
+        },
+        template: '{total}',
+        enableHover: false,
+        enableTracking: true
+    });
+    $('#sharrre-widget').sharrre({
+        share: {
+            facebook: true,
+            twitter: true,
+            googlePlus: true
+        },
+        template: '<div id="sharrre-block" class="clearfix">\n\
+                    <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
+                    <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
+                    <a href="#" class="sharrre-google"><span class="socicon socicon-google"/></a>\n\
+                    </div>',
+        enableHover: false,
+        enableTracking: true,
+        render: function(api, options){
+            $(api.element).on('click', '.sharrre-twitter', function() {
+                api.openPopup('twitter');
+            });
+            $(api.element).on('click', '.sharrre-facebook', function() {
+                api.openPopup('facebook');
+            });
+            $(api.element).on('click', '.sharrre-google', function() {
+                api.openPopup('googlePlus');
+            });
+        }
+    });
+}
+
+/*
+ * Custom Popover with HTML code snippet
+ */
+var popoverTemplateHTML = ['<div class="popover">',
+    '<div class="arrow"></div>',
+    '<h3 class="popover-title"></h3>',
+    '<div class="popover-content">',
+    '</div>',
+    '</div>'].join('');
+
+var popoverContentHTML = ['<code>',
+    '<h:outputText value="#{bundle.htmlAllowedTags}" escape="true"/>',
+    '</code>'].join('');
+
+$('body').popover({
+    selector: 'span.popoverHTML',
+    title: '<h:outputText value="#{bundle.htmlAllowedTitle}"/>',
+    trigger: 'click',
+    content : popoverContentHTML,
+    template: popoverTemplateHTML,
+    placement: "bottom",
+    container: "#content",
+    html: true
+});
 
 function handleResizeDialog(dialog) {
         var el = $('div[id$="' + dialog + '"]');

@@ -203,13 +203,16 @@
                                     <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
-                                   title="Share Dataset"
-                                   oncomplete="shareDialog.show()">
+                                   title="#{bundle['dataset.share.datasetShare']}"
+                                   oncomplete="shareDialog.show();sharrre();">
                                     <span class="glyphicon glyphicon-thumbs-up no-text"/>
                                 </p:commandLink>
                             </div>
-                            <p:dialog id="shareDialog" header="Share Dataset" widgetVar="shareDialog">
-                                <p class="help-block">{static-placeholder}Share this dataset on the following sites.{static-placeholder}</p>
+                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog">
+                                <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
+                                
+                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?globalId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+                                
                                 <div class="button-block">
                                     <button type="button" onclick="shareDialog.hide()" class="btn btn-default" value="#{bundle.close}">
                                         #{bundle.close}
@@ -250,7 +253,7 @@
                                     <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-shares">
-                                    <span data-toggle="tooltip" data-placement="top" title="Shares" class="count">00</span>
+                                    <span id="sharrre-count" data-toggle="tooltip" data-placement="top" title="Shares" class="count"/>
                                 </div>
                             </div>
                             <!-- END: Metrics -->
