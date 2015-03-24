@@ -9,8 +9,10 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import javax.ejb.EJB;
@@ -23,6 +25,7 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -171,6 +174,38 @@ public class Index extends AbstractApiBean {
          */
         Future<String> result = solrIndexService.indexMissing();
         return okResponse("index missing started, Solr doc cleanup operations will be skipped");
+    }
+
+    @GET
+    @Path("partial")
+    public Response indexOffset(@QueryParam("startingPoint") int startingPoint, @QueryParam("offset") int offset) {
+        long numObjectToConsider = 100;
+        List<Long> dvObjectsIds = new ArrayList<>();
+        for (long i = 1; i <= numObjectToConsider; i++) {
+            dvObjectsIds.add(i);
+        }
+        List<Long> mine = IndexUtil.findDvObjectIdsToProcessEqualParts(dvObjectsIds, startingPoint, offset);
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        response.add("startingPoint", startingPoint);
+        response.add("offset", offset);
+        response.add("mine", mine.toString());
+        return okResponse(response);
+    }
+
+    @GET
+    @Path("mod")
+    public Response indexOffset(@QueryParam("partitions") long partitions, @QueryParam("which") long which) {
+        long numObjectToConsider = 100;
+        List<Long> dvObjectsIds = new ArrayList<>();
+        for (long i = 1; i <= numObjectToConsider; i++) {
+            dvObjectsIds.add(i);
+        }
+        List<Long> mine = IndexUtil.findDvObjectIdsToProcessMod(dvObjectsIds, partitions, which);
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        response.add("partitions", partitions);
+        response.add("which", which);
+        response.add("mine", mine.toString());
+        return okResponse(response);
     }
 
     @GET

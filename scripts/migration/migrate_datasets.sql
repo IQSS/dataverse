@@ -34,3 +34,21 @@ where d.authority = s.authority
 and d.protocol = s.protocol
 and d.identifier = s.studyid
 and dvobject.id = d.id;
+
+-- migrate data from _dvn3_versioncontributor to datasetversionuser 
+insert into datasetversionuser ( lastupdatedate, authenticateduser_id, datasetversion_id )  (
+select  vc.lastupdatetime, vc.contributor_id,  dv.id
+from _dvn3_versioncontributor vc,
+_dvn3_studyversion sv,
+_dvn3_study s,
+dataset d,
+datasetversion dv,
+authenticateduser au
+where vc.studyversion_id = sv.id
+and sv.study_id = s.id
+and d.authority = s.authority
+and d.protocol = s.protocol
+and d.identifier = s.studyid
+and dv.dataset_id = d.id
+and dv.versionnumber = sv.versionnumber
+and au.id = vc.contributor_id);

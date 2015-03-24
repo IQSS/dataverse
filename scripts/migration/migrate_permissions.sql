@@ -2,6 +2,13 @@
 -- dataverses role assignments
 -----------------------
 
+-- admin (from the vdcnetwork creator)
+insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
+	select 			'@'|| useridentifier, vdc_id, dr.id
+	from _dvn3_vdcnetwork vdcn, authenticateduser, dataverserole dr
+	where vdcn.creator_id = authenticateduser.id
+	and dr.alias='admin';
+
 -- admin (from the vdc creator)
 insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 	select 			'@'|| useridentifier, vdc_id, dr.id

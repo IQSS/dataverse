@@ -57,6 +57,16 @@ public class SearchServiceBean {
      * @todo Can we do without the DatasetFieldServiceBean?
      */
     @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
+    DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB            
+    DataFileServiceBean dataFileService;
+    @EJB
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     GroupServiceBean groupService;
@@ -431,6 +441,7 @@ public class SearchServiceBean {
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
+            solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
             solrSearchResult.setIdentifier(identifier);
             solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
@@ -452,6 +463,7 @@ public class SearchServiceBean {
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataverse/" + identifier);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
+                solrSearchResult.setDisplayImage(dataverseService.isDataverseCardImageAvailable((Dataverse)solrSearchResult.getEntity(), user));
                 /**
                  * @todo Expose this API URL after "dvs" is changed to
                  * "dataverses". Also, is an API token required for published
@@ -463,6 +475,7 @@ public class SearchServiceBean {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
+                solrSearchResult.setDisplayImage(datasetService.isDatasetCardImageAvailable(datasetVersionService.find(datasetVersionId), user));
                 /**
                  * @todo Could use getFieldValues (plural) here.
                  */
@@ -503,6 +516,7 @@ public class SearchServiceBean {
                  */
 //                solrSearchResult.setApiUrl(baseUrl + "/api/meta/datafile/" + entityid);
                 solrSearchResult.setImageUrl(baseUrl + "/api/access/fileCardImage/" + entityid);
+                solrSearchResult.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile)solrSearchResult.getEntity(), user));
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
                 solrSearchResult.setFileContentType(fileContentType);

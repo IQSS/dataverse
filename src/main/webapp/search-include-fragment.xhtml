@@ -501,8 +501,8 @@
                                     </div>
                                     <div class="card-preview-icon-block text-center">
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                             <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}" rendered="#{dataverseServiceBean.isDataverseCardImageAvailable(result.entityId, dataverseSession)}"/>
-                                             <span class="icon-dataverse text-warning" jsf:rendered="#{!dataverseServiceBean.isDataverseCardImageAvailable(result.entityId, dataverseSession)}"/>
+                                            <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}" rendered="#{result.displayImage}"/>
+                                             <span class="icon-dataverse text-warning" jsf:rendered="#{!result.displayImage}"/>
                                         </h:outputLink>
                                     </div>
                                     
@@ -583,8 +583,8 @@
                                     </div>
                                     <div class="card-preview-icon-block text-center">
                                         <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                            <p:graphicImage value="/api/access/dsCardImage/#{result.datasetVersionId}" rendered="#{datasetServiceBean.isDatasetCardImageAvailable(result.datasetVersionId, dataverseSession)}"/>
-                                            <span class="icon-dataset text-info" jsf:rendered="#{!datasetServiceBean.isDatasetCardImageAvailable(result.datasetVersionId, dataverseSession)}"/>
+                                            <p:graphicImage value="/api/access/dsCardImage/#{result.datasetVersionId}" rendered="#{result.displayImage}"/>
+                                            <span class="icon-dataset text-info" jsf:rendered="#{!result.displayImage}"/>
                                         </a>
                                     </div>
 
@@ -635,28 +635,28 @@
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                         
-                                        <span class="glyphicon glyphicon-lock text-danger pull-right" jsf:rendered="#{dataFileServiceBean.find(result.entityId).restricted and (!(permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')))}"/>
-                                        <span class="icon-unlock text-success pull-right" jsf:rendered="#{dataFileServiceBean.find(result.entityId).restricted and permissionServiceBean.on(dataFileServiceBean.find(result.entityId)).has('DownloadFile')}"/>
+                                        <span class="glyphicon glyphicon-lock text-danger pull-right" jsf:rendered="#{enity.restricted and (!(permissionServiceBean.on(entity).has('DownloadFile')))}"/>
+                                        <span class="icon-unlock text-success pull-right" jsf:rendered="#{entity.find(result.entityId).restricted and permissionServiceBean.on(entity).has('DownloadFile')}"/>
                                         <span class="glyphicon glyphicon-link text-muted pull-right" jsf:rendered="#{!result.isInTree}"/>
                                         <span class="icon-file text-muted pull-right"/>
                                     </div>
                                     <ui:remove>
                                     <div>
-                                        <h:outputText value="(thumbnail available)" rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}"/>
-                                        <h:outputText value="(thumbnail not available)" rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}"/>
+                                        <h:outputText value="(thumbnail available)" rendered="#{result.displayImage}"/>
+                                        <h:outputText value="(thumbnail not available)" rendered="#{!result.displayImage}"/>
                                     </div>
                                     <div>
-                                        <h:outputText value="#{dataFileServiceBean.getFileClassById(result.entityId)}"/>
+                                        <h:outputText value="#{dataFileServiceBean.getFileClass(result.entity)}"/>
                                     </div>
                                     </ui:remove>
                                     
                                     <div class="card-preview-icon-block text-center">
                                         <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
-                                                      rendered="#{dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}">
+                                                      rendered="#{result.displayImage}">
                                             <p:graphicImage value="/api/access/fileCardImage/#{result.entityId}" />
                                         </h:outputLink>
-                                        <span class="icon-#{dataFileServiceBean.getFileClassById(result.entityId)} text-muted h1"
-                                           jsf:rendered="#{!dataFileServiceBean.isPreviewAvailable(result.entityId, dataverseSession)}"/>
+                                        <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
+                                              jsf:rendered="#{!result.displayImage}"/>
                                     </div>
 
                                     <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>

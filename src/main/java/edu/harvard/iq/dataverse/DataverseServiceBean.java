@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.io.File;
 import java.sql.Timestamp;
@@ -16,7 +17,6 @@ import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -195,12 +195,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         return appVersionString; 
     }
-    
-    public boolean isDataverseCardImageAvailable(Long dataverseId, DataverseSession session) {
-        Dataverse dataverse = find(dataverseId);
-        
+           
+    public boolean isDataverseCardImageAvailable(Dataverse dataverse, User user) {    
         if (dataverse == null) {
-            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+dataverseId+"!");
+            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+dataverse.getId()+"!");
             return false; 
         }
         
@@ -230,12 +228,12 @@ public class DataverseServiceBean implements java.io.Serializable {
         // file in every dataset below... 
         // -- L.A. 4.0 beta14
         
-        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
+        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverse.getId())) {
             if (dataset != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 
                 if (releasedVersion != null) {
-                    if (datasetService.isDatasetCardImageAvailable(releasedVersion.getId(), session)) {
+                    if (datasetService.isDatasetCardImageAvailable(releasedVersion, user)) {
                         return true;
                     }
                 }

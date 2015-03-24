@@ -429,10 +429,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
-    public boolean isDatasetCardImageAvailable(Long versionId, DataverseSession session) {
-        
-        DatasetVersion datasetVersion = versionService.find(versionId);
-        
+    
+    public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
         if (datasetVersion == null) {
             return false; 
         }
@@ -454,7 +452,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             
-            if (fileService.isThumbnailAvailable(dataFile, session)) {
+            if (fileService.isThumbnailAvailable(dataFile, user)) {
                 return true;
             }
  
