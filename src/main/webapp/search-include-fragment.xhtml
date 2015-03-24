@@ -13,10 +13,8 @@
             <ui:fragment>
                 <h:form>
                     <p:focus/>
-                    <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
-                    <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
-                    <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                    <p:watermark for="formerAutoCompleteSearch" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
+                    <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                    <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
                     <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
                         <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                     </p:commandLink>
