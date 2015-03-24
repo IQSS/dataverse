@@ -22,6 +22,7 @@ public class SolrSearchResult {
 
     private String id;
     private Long entityId;
+    private DvObject entity;
     private String identifier;
     private String type;
     private String htmlUrl;
@@ -29,6 +30,7 @@ public class SolrSearchResult {
     private String downloadUrl;
     private String apiUrl;
     private String imageUrl;
+    private boolean displayImage;
     private String query;
     private String name;
     private String nameSort;
@@ -409,6 +411,14 @@ public class SolrSearchResult {
         this.entityId = entityId;
     }
 
+    public DvObject getEntity() {
+        return entity;
+    }
+
+    public void setEntity(DvObject entity) {
+        this.entity = entity;
+    }
+    
     public String getIdentifier() {
         return identifier;
     }
@@ -464,6 +474,16 @@ public class SolrSearchResult {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+
+    public boolean isDisplayImage() {
+        return displayImage;
+    }
+
+    public void setDisplayImage(boolean displayImage) {
+        this.displayImage = displayImage;
+    }
+    
+    
 
     public String getQuery() {
         return query;
