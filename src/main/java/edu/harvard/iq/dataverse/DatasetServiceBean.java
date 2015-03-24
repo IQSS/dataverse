@@ -429,10 +429,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
-    public boolean isDatasetCardImageAvailable(Long versionId, User user) {
-        
-        DatasetVersion datasetVersion = versionService.find(versionId);
-        
+    
+    public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
         if (datasetVersion == null) {
             return false; 
         }
