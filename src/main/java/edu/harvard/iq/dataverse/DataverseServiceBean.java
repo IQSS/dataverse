@@ -42,7 +42,13 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @EJB
     DatasetServiceBean datasetService;
-    
+
+    @EJB
+    DataverseLinkingServiceBean dataverseLinkingService;
+
+    @EJB
+    DatasetLinkingServiceBean datasetLinkingService;
+
     @Inject
     DataverseSession session;
 
@@ -263,4 +269,21 @@ public class DataverseServiceBean implements java.io.Serializable {
             
         return null;         
     }
+
+    public List<Dataverse> findDataversesThisIdHasLinkedTo(long dataverseId) {
+        return dataverseLinkingService.findLinkedDataverses(dataverseId);
+    }
+
+    public List<Dataverse> findDataversesThatLinkToThisDvId(long dataverseId) {
+        return dataverseLinkingService.findLinkingDataverses(dataverseId);
+    }
+
+    public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
+        return datasetLinkingService.findDatasetsThisDataverseIdHasLinkedTo(dataverseId);
+    }
+
+    public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
+        return datasetLinkingService.findLinkingDataverses(datasetId);
+    }
+
 }  

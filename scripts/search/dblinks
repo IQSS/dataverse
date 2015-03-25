@@ -1,0 +1,5 @@
+#!/bin/bash -x
+~/.homebrew/bin/psql -c "select * from dataverselinkingdataverse order by id;" dataverse_db
+~/.homebrew/bin/psql -c "select * from datasetlinkingdataverse order by id;" dataverse_db
+exit
+~/.homebrew/bin/psql -c "select id, alias from dataverse order by id;" dataverse_db

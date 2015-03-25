@@ -57,6 +57,7 @@ import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
@@ -665,4 +666,45 @@ public class Dataverses extends AbstractApiBean {
         if ( eg == null ) throw new WrappedResponse( notFound("Can't find " + groupIdtf + " in dataverse " + dv.getId()));
         return eg;
     }
+
+    @GET
+    @Path("{identifier}/links")
+    public Response listLinks(@PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
+        try {
+
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            AuthenticatedUser u = findUserOrDie(apiKey);
+            if (!u.isSuperuser()) {
+                return errorResponse(Status.FORBIDDEN, "Not a superuser");
+            }
+
+            List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
+            JsonArrayBuilder dvsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
+            for (Dataverse dataverse : dvsThisDvHasLinkedToList) {
+                dvsThisDvHasLinkedToBuilder.add(dataverse.getAlias() + " (id " + dataverse.getId() + ")");
+            }
+
+            List<Dataverse> dvsThatLinkToThisDvList = dataverseSvc.findDataversesThatLinkToThisDvId(dv.getId());
+            JsonArrayBuilder dvsThatLinkToThisDvBuilder = Json.createArrayBuilder();
+            for (Dataverse dataverse : dvsThatLinkToThisDvList) {
+                dvsThatLinkToThisDvBuilder.add(dataverse.getAlias() + " (id " + dataverse.getId() + ")");
+            }
+
+            List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());
+            JsonArrayBuilder datasetsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
+            for (Dataset dataset : datasetsThisDvHasLinkedToList) {
+                datasetsThisDvHasLinkedToBuilder.add(dataset.getGlobalId() + " (id " + dataset.getId() + ")");
+            }
+
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            response.add("dataverses that the " + dv.getAlias() + " dataverse (id " + dv.getId() + ") has linked to", dvsThisDvHasLinkedToBuilder);
+            response.add("dataverses that link to the " + dv.getAlias() + " dataverse (id " + dv.getId() + ")", dvsThatLinkToThisDvBuilder);
+            response.add("datasets that the " + dv.getAlias() + " dataverse (id " + dv.getId() + ") has linked to", datasetsThisDvHasLinkedToBuilder);
+            return okResponse(response);
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
 }

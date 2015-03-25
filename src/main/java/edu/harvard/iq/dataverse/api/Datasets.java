@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -319,8 +320,33 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
-    
+
+    @GET
+    @Path("{id}/links")
+    public Response getLinks(@PathParam("id") long idSupplied, @QueryParam("key") String apiKey) {
+        try {
+            AuthenticatedUser u = findUserOrDie(apiKey);
+            if (!u.isSuperuser()) {
+                return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
+            }
+            Dataset dataset = datasetService.find(idSupplied);
+            if (dataset == null) {
+                return errorResponse(Response.Status.NOT_FOUND, "dataset not found");
+            }
+            long datasetId = dataset.getId();
+            List<Dataverse> dvsThatLinkToThisDatasetId = dataverseSvc.findDataversesThatLinkToThisDatasetId(datasetId);
+            JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = Json.createArrayBuilder();
+            for (Dataverse dataverse : dvsThatLinkToThisDatasetId) {
+                dataversesThatLinkToThisDatasetIdBuilder.add(dataverse.getAlias() + " (id " + dataverse.getId() + ")");
+            }
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            response.add("dataverses that link to dataset id " + datasetId, dataversesThatLinkToThisDatasetIdBuilder);
+            return okResponse(response);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
         throws WrappedResponse {
         switch (versionId) {

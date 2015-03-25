@@ -12,6 +12,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -24,6 +25,13 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
+    /**
+     * @todo Should this method simply be deleted? It isn't used anywhere and is
+     * throwing exceptions: Syntax error parsing [select object(o.dataverse.id)
+     * from DatasetLinkingDataverse as o where o.linkingDataverse.id
+     * =:linkingDataverseId order by o.id]
+     */
+    @Deprecated
     public List<Dataset> findLinkedDataverses(Long linkingDataverseId) {
         List<Dataset> retList = new ArrayList();
         Query query = em.createQuery("select object(o.dataverse.id) from DatasetLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
@@ -33,6 +41,17 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
             retList.add(convterted.getDataset());
         }
         return retList;
+    }
+
+    public List<Dataset> findDatasetsThisDataverseIdHasLinkedTo(Long dataverseId) {
+        List<Dataset> datasets = new ArrayList<>();
+        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId", DatasetLinkingDataverse.class);
+        typedQuery.setParameter("dataverseId", dataverseId);
+        List<DatasetLinkingDataverse> datasetLinkingDataverses = typedQuery.getResultList();
+        for (DatasetLinkingDataverse datasetLinkingDataverse : datasetLinkingDataverses) {
+            datasets.add(datasetLinkingDataverse.getDataset());
+        }
+        return datasets;
     }
 
     public List<Dataverse> findLinkingDataverses(Long datasetId) {
