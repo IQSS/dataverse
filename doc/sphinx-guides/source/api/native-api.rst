@@ -240,60 +240,60 @@ Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the gr
 
 Admin 
 ~~~~~~~~~~~~~~~~
-This is a "secure" part of the api, dealing with setup. Future releases will only allow accessing this from a whilelisted IP address, or localhost.
+This is the administrative part of the API. It is probably a good idea to block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details.
 
 List all settings::
 
-  GET http://$SERVER/api/s/settings
+  GET http://$SERVER/api/admin/settings
 
 Sets setting ``name`` to the body of the request::
 
-  PUT http://$SERVER/api/s/settings/$name
+  PUT http://$SERVER/api/admin/settings/$name
 
 Get the setting under ``name``::
 
-  GET http://$SERVER/api/s/settings/$name
+  GET http://$SERVER/api/admin/settings/$name
 
 Delete the setting under ``name``::
 
-  DELETE http://$SERVER/api/s/settings/$name
+  DELETE http://$SERVER/api/admin/settings/$name
 
 List the authentication provider factories. The alias field of these is used while configuring the providers themselves. ::
 
-  GET http://$SERVER/api/s/authenticationProviderFactories
+  GET http://$SERVER/api/admin/authenticationProviderFactories
 
 List all the authentication providers in the system (both enabled and disabled)::
 
-  GET http://$SERVER/api/s/authenticationProviders
+  GET http://$SERVER/api/admin/authenticationProviders
 
 Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's ``GET`` counterpart. ::
 
-  POST http://$SERVER/api/s/authenticationProviders 
+  POST http://$SERVER/api/admin/authenticationProviders 
 
 Show data about an authentication provider::
 
-  GET http://$SERVER/api/s/authenticationProviders/$id
+  GET http://$SERVER/api/admin/authenticationProviders/$id
 
 Enable or disable an authentication provider (denoted by ``id``)::
 
-  POST http://$SERVER/api/s/authenticationProviders/$id/:enabled
+  POST http://$SERVER/api/admin/authenticationProviders/$id/:enabled
 
 The body of the request should be either ``true`` or ``false``. Content type has to be ``application/json``, like so::
 
-  curl -H "Content-type: application/json"  -X POST -d"false" http://localhost:8080/api/s/authenticationProviders/echo-dignified/:enabled
+  curl -H "Content-type: application/json"  -X POST -d"false" http://localhost:8080/api/admin/authenticationProviders/echo-dignified/:enabled
 
 Deletes an authentication provider from the system. The command succeeds even if there is no such provider, as the postcondition holds: there is no provider by that id after the command returns. ::
 
-  DELETE http://$SERVER/api/s/authenticationProviders/$id/
+  DELETE http://$SERVER/api/admin/authenticationProviders/$id/
 
 List all global roles in the system. ::
 
-    GET http://$SERVER/api/s/roles
+    GET http://$SERVER/api/admin/roles
 
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
-    POST http://$SERVER/api/s/roles
+    POST http://$SERVER/api/admin/roles
 
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` is passed. ::
 
-    POST http://$SERVER/api/s/superuser/$identifier
+    POST http://$SERVER/api/admin/superuser/$identifier
