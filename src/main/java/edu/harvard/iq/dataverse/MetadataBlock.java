@@ -83,7 +83,7 @@ public class MetadataBlock implements Serializable {
         return "citation".equals(name);
     }
     
-    @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToOne
     @JoinColumn(name="dataverse_id", unique=false, nullable=true, insertable=true, updatable=true)
     private Dataverse dataverse;
 
