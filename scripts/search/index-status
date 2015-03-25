@@ -1,2 +1,2 @@
 #!/bin/sh
-curl -s http://localhost:8080/api/index/status | jq .
+curl -s http://localhost:8080/api/admin/index/status | jq .

@@ -8,4 +8,4 @@
 #  - :BlockedApiEndpoints - comma separated list of blocked api endpoints.
 
 curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy
-curl -X PUT -d groups,admin,index http://localhost:8080/api/admin/settings/:BlockedApiEndpoints
+curl -X PUT -d groups,admin http://localhost:8080/api/admin/settings/:BlockedApiEndpoints
