@@ -15,5 +15,6 @@ Contents:
   prerequisites
   optionalpkg
   installation-main
+  r-rapache-tworavens
 
 
