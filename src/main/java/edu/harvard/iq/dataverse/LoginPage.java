@@ -210,11 +210,6 @@ public class LoginPage implements java.io.Serializable {
         this.filledCredentials = filledCredentials;
     }
 
-    public boolean isShibEnabled() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
-    }
-    
     public boolean isMultipleProvidersAvailable() {
         return authSvc.getAuthenticationProviderIds().size()>1;
     }
