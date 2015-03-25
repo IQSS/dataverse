@@ -16,11 +16,9 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.ServletResponseWrapper;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * A web filter to block API administration calls.
@@ -33,6 +31,16 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     interface BlockPolicy {
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException;
     }
+    
+    /**
+     * A policy that allows all requests.
+     */
+    private static final BlockPolicy allow = new BlockPolicy(){
+        @Override
+        public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
+            fc.doFilter(sr, sr1);
+        }
+    };
     
     /**
      * A policy that drops blocked requests.
@@ -115,6 +123,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     @Override
     public void init(FilterConfig fc) throws ServletException {
         updateBlockedPoints();
+        policies.put("allow", allow);
         policies.put("drop", drop);
         policies.put("localhost-only", localhostOnly);
         policies.put("unblock-key", unblockKey);
@@ -166,7 +175,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
         } else {
             logger.log(Level.WARNING, "Undefined block policy {0}. Available policies are {1}",
                     new Object[]{blockPolicyName, policies.keySet()});
-            return drop;
+            return allow;
         }
     }
     
