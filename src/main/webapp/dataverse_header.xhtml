@@ -22,9 +22,12 @@
                     <i id="icon-dataverse" class="icon-dataverse"></i>
                     <span class="navbar-brand"> #{bundle.dataverse}</span>
                 </a>
-                <h:outputLink value="#" onclick="upgradeInfo.show()">
-                    <span class="label label-default upgrade">#{settingsServiceBean.get(':StatusMessageHeader')}</span>
+                <h:outputLink value="#" onclick="statusInfo.show()" rendered="#{!empty settingsServiceBean.get(':StatusMessageText')}">
+                    <span class="label label-default status">#{!empty settingsServiceBean.get(':StatusMessageHeader') ? settingsServiceBean.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
                 </h:outputLink>
+                <ui:fragment rendered="#{empty settingsServiceBean.get(':StatusMessageText') and !empty settingsServiceBean.get(':StatusMessageHeader')}">
+                    <span class="label label-default status">#{settingsServiceBean.get(':StatusMessageHeader')}</span>
+                </ui:fragment>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
                 <ul class="nav navbar-nav navbar-right">
@@ -239,10 +242,10 @@
         <ui:param name="formTitle" value="#{bundle['contact.header']}"/>
         <ui:param name="formTo" value="#{bundle['contact.to']}"/>
     </ui:include>
-    <p:dialog id="upgradeInfo" header="#{settingsServiceBean.get(':StatusMessageHeader')}" widgetVar="upgradeInfo" modal="true">
-        <p>#{settingsServiceBean.get(':StatusMessageText')}</p>
+    <p:dialog id="statusInfo" header="#{settingsServiceBean.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
+        <p><h:outputText value="#{settingsServiceBean.get(':StatusMessageText')}" escape="false"/></p>
         <div class="button-block">
-            <button type="button" onclick="upgradeInfo.hide()" class="btn btn-default" value="#{bundle.close}">
+            <button type="button" onclick="statusInfo.hide()" class="btn btn-default" value="#{bundle.close}">
                 #{bundle.close}
             </button>
         </div>
