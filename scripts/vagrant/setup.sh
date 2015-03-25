@@ -23,7 +23,7 @@ useradd $GLASSFISH_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
 GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-4.6.0.tgz"
-WELD_PATCH="$DOWNLOAD_DIR/weld-osgi-bundle-2.2.9.Final.jar"
+WELD_PATCH="$DOWNLOAD_DIR/weld-osgi-bundle-2.2.10.Final-glassfish4.jar"
 if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $GLASSFISH_ZIP or $SOLR_TGZ! Running download script...."
     cd $DOWNLOAD_DIR && ./download.sh && cd
