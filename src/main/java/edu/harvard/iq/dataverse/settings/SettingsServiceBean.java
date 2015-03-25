@@ -118,7 +118,11 @@ public class SettingsServiceBean {
         /* zip download size limit */
         ZipDonwloadLimit,
         /* zip upload number of files limit */
-        ZipUploadFilesLimit;
+        ZipUploadFilesLimit,
+        /* status message that will appear on the home page */
+        StatusMessageHeader,
+        /* full text of status message, to appear in popup */
+        StatusMessageText;
         
         @Override
         public String toString() {

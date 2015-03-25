@@ -23,7 +23,7 @@
                     <span class="navbar-brand"> #{bundle.dataverse}</span>
                 </a>
                 <h:outputLink value="#" onclick="upgradeInfo.show()">
-                    <span class="label label-default upgrade">#{bundle['header.upgrade']}</span>
+                    <span class="label label-default upgrade">#{settingsServiceBean.get(':StatusMessageHeader')}</span>
                 </h:outputLink>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
@@ -239,8 +239,8 @@
         <ui:param name="formTitle" value="#{bundle['contact.header']}"/>
         <ui:param name="formTo" value="#{bundle['contact.to']}"/>
     </ui:include>
-    <p:dialog id="upgradeInfo" header="#{bundle['header.upgradeInfo.header']}" widgetVar="upgradeInfo" modal="true">
-        <p>#{bundle['header.upgradeInfo.message']}</p>
+    <p:dialog id="upgradeInfo" header="#{settingsServiceBean.get(':StatusMessageHeader')}" widgetVar="upgradeInfo" modal="true">
+        <p>#{settingsServiceBean.get(':StatusMessageText')}</p>
         <div class="button-block">
             <button type="button" onclick="upgradeInfo.hide()" class="btn btn-default" value="#{bundle.close}">
                 #{bundle.close}

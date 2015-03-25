@@ -2,6 +2,10 @@
 SERVER=http://localhost:8080/api
 
 echo "Setting up Harvard-specific settings"
+echo "- Application Status header"
+curl -s -X PUT -d 'Upgrade in progress...' $SERVER/admin/settings/:StatusMessageHeader
+echo "- Application Status message"
+curl -s -X PUT -d 'Dataverse is currently being upgraded. You can see the features, bug fixes, and other upgrades for this release in the <a href="http://roadmap.datascience.iq.harvard.edu/milestones/milestone-roadmap/dataverse/" title="Dataverse Roadmap" target="_blank">Dataverse Roadmap</a>.' $SERVER/admin/settings/:StatusMessageText 
 echo  "- Harvard Privacy Policy"
 curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html $SERVER/admin/settings/:ApplicationPrivacyPolicyUrl
 curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
