@@ -1,12 +1,12 @@
 #!/bin/bash
 diff <(curl -s "http://localhost:8080/api/search?q=*" | jq .data.count_in_response) scripts/search/tests/expected/anon3
 
-diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$FINCHKEY" | jq .data) scripts/search/tests/expected/finch3
+diff <(curl -s "http://localhost:8080/api/admin/index/test?q=*&key=$FINCHKEY" | jq .data) scripts/search/tests/expected/finch3
 
-diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$SPRUCEKEY" | jq .data) scripts/search/tests/expected/spruce2
+diff <(curl -s "http://localhost:8080/api/admin/index/test?q=*&key=$SPRUCEKEY" | jq .data) scripts/search/tests/expected/spruce2
 
-diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$SPARROWKEY" | jq .data) scripts/search/tests/expected/anontest3
+diff <(curl -s "http://localhost:8080/api/admin/index/test?q=*&key=$SPARROWKEY" | jq .data) scripts/search/tests/expected/anontest3
 
-diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$WRENKEY" | jq .data) scripts/search/tests/expected/anontest3
+diff <(curl -s "http://localhost:8080/api/admin/index/test?q=*&key=$WRENKEY" | jq .data) scripts/search/tests/expected/anontest3
 
-diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$CHESTNUTKEY" | jq .data) scripts/search/tests/expected/anontest3
+diff <(curl -s "http://localhost:8080/api/admin/index/test?q=*&key=$CHESTNUTKEY" | jq .data) scripts/search/tests/expected/anontest3
