@@ -244,10 +244,12 @@
                                     <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-views">
-                                    <span data-toggle="tooltip" data-placement="top" title="Views" class="count">00</span>
+                                    <span data-toggle="tooltip" data-placement="top" title="Views" class="count">010</span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-downloads">
-                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">00</span>
+                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">
+                                        #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}
+                                    </span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-citations">
                                     <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
@@ -608,7 +610,7 @@
 
                                             <h:outputText id="fileCreatePublishDate" value=" - #{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
                                             
-                                            <h:outputText id="fileDownloadCount" value=" - #{dataFileServiceBean.findCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)} Downloads" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                            <h:outputText id="fileDownloadCount" value=" - #{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)} Downloads" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
                                             <div class="mD5-block">
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
@@ -2028,7 +2030,8 @@
                                                              required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
                                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
                                                              requiredMessage="#{bundle['requiredField']}"/>
-                                                <p:selectOneMenu 
+                                                <p:message id="cqMessages" for="customQuestionResponse" display="text"/>                                                 
+                                                <p:selectOneMenu id="customQuestionResponseSelect"
                                                     styleClass="form-control" value="#{customQuestionResponse.response}"
                                                     required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
                                                     rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
@@ -2037,8 +2040,7 @@
                                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
                                                 </p:selectOneMenu>
                                             </div>
-                                            <p:message id="cqMessages" 
-                                                       for="customQuestionResponse" display="text"/>
+                                                <p:message id="cqSelectMessages" for="customQuestionResponseSelect" display="text"/>   
                                         </ui:repeat>
                                     </div>
                                 </div>
