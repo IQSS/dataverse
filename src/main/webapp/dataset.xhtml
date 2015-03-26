@@ -724,18 +724,21 @@
 
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                            <ui:remove></ui:remove>
+                                           
+                                            <p:commandLink rendered="#{ DatasetPage.isFileDownloadButtonViewable(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) }"
                                                            type="button" styleClass="btn btn-default"
                                                            action="#{DatasetPage.startFileDownload(fileMetadata, '')}">
                                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                                            </p:commandLink>
+                                            </p:commandLink> 
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                            <p:commandLink rendered="#{ DatasetPage.isFileDownloadButtonViewable(fileMetadata) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired }"
                                                            type="button" styleClass="btn btn-default"
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                            update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                             </p:commandLink>
+                                           
                                             <!-- Download Dropdown -->
                                             <div class="btn-group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
