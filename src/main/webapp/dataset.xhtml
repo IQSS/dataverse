@@ -740,7 +740,7 @@
                                             </p:commandLink>
                                            
                                             <!-- Download Dropdown -->
-                                            <div class="btn-group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <div class="btn-group" jsf:rendered="#{ DatasetPage.isFileDownloadButtonViewable(fileMetadata) and fileMetadata.dataFile.tabularData }">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
                                                 </button>
