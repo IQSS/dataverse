@@ -7,8 +7,8 @@ package edu.harvard.iq.dataverse.search;
  * Note that there are many fields in Solr that are *not* here because their
  * values come from the database. For example "authorName" comes from the
  * database. We update the Solr schema.xml file by merging the output of `curl
- * http://localhost:8080/api/config/solr/schema` into the file in the source
- * tree when a metadata block update warrants it.
+ * http://localhost:8080/api/admin/index/solr/schema` into the file in the
+ * source tree when a metadata block update warrants it.
  *
  * Generally speaking, we want the search fields to be readable. This is a
  * challenge for long field names but a power user should be able to type

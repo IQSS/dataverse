@@ -324,7 +324,7 @@
    <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <copyField source="dsPersistentId" dest="text" maxChars="3000"/>
 
-   <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
+   <!-- Dynamic Dataverse fields from http://localhost:8080/api/admin/index/solr/schema -->
    <field name="ARCS1" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="ARCS2" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="ARCS3" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -593,7 +593,7 @@
    <!-- <copyField source="*_ss" dest="text" maxChars="3000"/> -->
    <!-- <copyField source="*_i" dest="text" maxChars="3000"/> -->
 
-   <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
+   <!-- Dataverse copyField from http://localhost:8080/api/admin/index/solr/schema -->
    <copyField source="ARCS1" dest="text" maxChars="3000"/>
    <copyField source="ARCS2" dest="text" maxChars="3000"/>
    <copyField source="ARCS3" dest="text" maxChars="3000"/>
