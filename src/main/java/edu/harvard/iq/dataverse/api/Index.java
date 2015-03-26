@@ -3,22 +3,39 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.SearchServiceBean;
+import edu.harvard.iq.dataverse.SolrField;
+import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.SolrSearchResult;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.SortBy;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -32,6 +49,8 @@ import javax.ws.rs.core.Response.Status;
 @Path("admin/index")
 public class Index extends AbstractApiBean {
 
+    private static final Logger logger = Logger.getLogger(Index.class.getCanonicalName());
+
     @EJB
     IndexServiceBean indexService;
     @EJB
@@ -44,16 +63,77 @@ public class Index extends AbstractApiBean {
     DatasetServiceBean datasetService;
     @EJB
     DataFileServiceBean dataFileService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
+    SolrIndexServiceBean SolrIndexService;
+    @EJB
+    SearchServiceBean searchService;
+    @EJB
+    DatasetFieldServiceBean datasetFieldService;
 
     @GET
-    public Response indexAll() {
+    public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
         try {
+            long numPartitions = 1;
+            if (numPartitionsSelected != null) {
+                if (numPartitionsSelected < 1) {
+                    return errorResponse(Status.BAD_REQUEST, "numPartitions must be 1 or higher but was " + numPartitionsSelected);
+                } else {
+                    numPartitions = numPartitionsSelected;
+                }
+            }
+            List<Long> availablePartitionIds = new ArrayList<>();
+            for (long i = 0; i < numPartitions; i++) {
+                availablePartitionIds.add(i);
+            }
+
+            Response invalidParitionIdSelection = errorResponse(Status.BAD_REQUEST, "You specified " + numPartitions + " partition(s) and your selected partitionId was " + partitionIdToProcess + " but you must select from these availableParitionIds: " + availablePartitionIds);
+            if (partitionIdToProcess != null) {
+                long selected = partitionIdToProcess;
+                if (!availablePartitionIds.contains(selected)) {
+                    return invalidParitionIdSelection;
+                }
+            } else if (numPartitionsSelected == null) {
+                /**
+                 * The user has not specified a partitionId and hasn't specified
+                 * the number of partitions. Run "index all", the whole thing.
+                 */
+                partitionIdToProcess = 0l;
+            } else {
+                return invalidParitionIdSelection;
+
+            }
+
+            JsonObjectBuilder args = Json.createObjectBuilder();
+            args.add("numPartitions", numPartitions);
+            args.add("partitionIdToProcess", partitionIdToProcess);
+            JsonArrayBuilder availablePartitionIdsBuilder = Json.createArrayBuilder();
+            for (long i : availablePartitionIds) {
+                availablePartitionIdsBuilder.add(i);
+            }
+
+            JsonObjectBuilder preview = indexAllService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess);
+            if (previewOnly) {
+                preview.add("args", args);
+                preview.add("availablePartitionIds", availablePartitionIdsBuilder);
+                return okResponse(preview);
+            }
+
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            response.add("availablePartitionIds", availablePartitionIdsBuilder);
+            response.add("args", args);
             /**
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<String> indexAllFuture = indexAllService.indexAll();
-            return okResponse("A complete re-indexing has begun.");
+            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionIdToProcess, previewOnly);
+            JsonObject workloadPreview = preview.build().getJsonObject("previewOfPartitionWorkload");
+            int dataverseCount = workloadPreview.getInt("dataverseCount");
+            int datasetCount = workloadPreview.getInt("datasetCount");
+            String status = "indexAllOrSubset has begun of " + dataverseCount + " dataverses and " + datasetCount + " datasets.";
+            response.add("message", status);
+            return okResponse(response);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -83,7 +163,7 @@ public class Index extends AbstractApiBean {
             if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
                 return okResponse("indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway");
             } else {
-                return errorResponse( Status.INTERNAL_SERVER_ERROR, sb.toString() );
+                return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
             }
         }
     }
@@ -128,7 +208,7 @@ public class Index extends AbstractApiBean {
                 Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
                 return okResponse("started reindexing " + type + "/" + id);
             } else {
-                return errorResponse( Status.BAD_REQUEST, "illegal type: " + type);
+                return errorResponse(Status.BAD_REQUEST, "illegal type: " + type);
             }
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -157,7 +237,7 @@ public class Index extends AbstractApiBean {
                     }
                 }
             }
-            return errorResponse( Status.INTERNAL_SERVER_ERROR, sb.toString() );
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
         }
     }
 
@@ -176,25 +256,12 @@ public class Index extends AbstractApiBean {
         return okResponse("index missing started, Solr doc cleanup operations will be skipped");
     }
 
-    @GET
-    @Path("partial")
-    public Response indexOffset(@QueryParam("startingPoint") int startingPoint, @QueryParam("offset") int offset) {
-        long numObjectToConsider = 100;
-        List<Long> dvObjectsIds = new ArrayList<>();
-        for (long i = 1; i <= numObjectToConsider; i++) {
-            dvObjectsIds.add(i);
-        }
-        List<Long> mine = IndexUtil.findDvObjectIdsToProcessEqualParts(dvObjectsIds, startingPoint, offset);
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("startingPoint", startingPoint);
-        response.add("offset", offset);
-        response.add("mine", mine.toString());
-        return okResponse(response);
-    }
-
+    /**
+     * This is just a demo of the modular math logic we use for indexAll.
+     */
     @GET
     @Path("mod")
-    public Response indexOffset(@QueryParam("partitions") long partitions, @QueryParam("which") long which) {
+    public Response indexMod(@QueryParam("partitions") long partitions, @QueryParam("which") long which) {
         long numObjectToConsider = 100;
         List<Long> dvObjectsIds = new ArrayList<>();
         for (long i = 1; i <= numObjectToConsider; i++) {
@@ -307,6 +374,177 @@ public class Index extends AbstractApiBean {
         }
         return Json.createObjectBuilder()
                 .add("dvobjects", stalePermissionList.build().size());
+    }
+
+    /**
+     * We use the output of this method to generate our Solr schema.xml
+     *
+     * @todo Someday we do want to have this return a Response rather than a
+     * String per https://github.com/IQSS/dataverse/issues/298 but not yet while
+     * we are trying to ship Dataverse 4.0.
+     */
+    @GET
+    @Path("solr/schema")
+    public String getSolrSchema() {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
+            String nameSearchable = datasetField.getSolrField().getNameSearchable();
+            SolrField.SolrType solrType = datasetField.getSolrField().getSolrType();
+            String type = solrType.getType();
+            if (solrType.equals(SolrField.SolrType.EMAIL)) {
+                /**
+                 * @todo should we also remove all "email" field types (e.g.
+                 * datasetContact) from schema.xml? We are explicitly not
+                 * indexing them for
+                 * https://github.com/IQSS/dataverse/issues/759
+                 *
+                 * "The list of potential collaborators should be searchable"
+                 * according to https://github.com/IQSS/dataverse/issues/747 but
+                 * it's not clear yet if this means a Solr or database search.
+                 * For now we'll keep schema.xml as it is to avoid people having
+                 * to update it. If anything, we can remove the email field type
+                 * when we do a big schema.xml update for
+                 * https://github.com/IQSS/dataverse/issues/754
+                 */
+                logger.info("email type detected (" + nameSearchable + ") See also https://github.com/IQSS/dataverse/issues/759");
+            }
+            String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
+            // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
+            sb.append("   <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
+        }
+
+        List<String> listOfStaticFields = new ArrayList();
+        Object searchFieldsObject = new SearchFields();
+        Field[] staticSearchFields = searchFieldsObject.getClass().getDeclaredFields();
+        for (Field fieldObject : staticSearchFields) {
+            String name = fieldObject.getName();
+            String staticSearchField = null;
+            try {
+                staticSearchField = (String) fieldObject.get(searchFieldsObject);
+            } catch (IllegalArgumentException ex) {
+            } catch (IllegalAccessException ex) {
+            }
+
+            /**
+             * @todo: if you search for "pdf" should you get all pdfs? do we
+             * need a copyField source="filetypemime_s" to the catchall?
+             */
+            if (listOfStaticFields.contains(staticSearchField)) {
+                return error("static search field defined twice: " + staticSearchField);
+            }
+            listOfStaticFields.add(staticSearchField);
+        }
+
+        sb.append("---\n");
+
+        for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
+            String nameSearchable = datasetField.getSolrField().getNameSearchable();
+            String nameFacetable = datasetField.getSolrField().getNameFacetable();
+
+            if (listOfStaticFields.contains(nameSearchable)) {
+                if (nameSearchable.equals(SearchFields.DATASET_DESCRIPTION)) {
+                    // Skip, expected conflct.
+                } else {
+                    return error("searchable dataset metadata field conflict detected with static field: " + nameSearchable);
+                }
+            }
+
+            if (listOfStaticFields.contains(nameFacetable)) {
+                if (nameFacetable.equals(SearchFields.SUBJECT)) {
+                    // Skip, expected conflct.
+                } else {
+                    return error("facetable dataset metadata field conflict detected with static field: " + nameFacetable);
+                }
+            }
+
+            // <copyField source="*_i" dest="text" maxChars="3000"/>
+            sb.append("   <copyField source=\"" + nameSearchable + "\" dest=\"text\" maxChars=\"3000\"/>\n");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * This method is for integration tests of search.
+     */
+    @GET
+    @Path("test")
+    public Response searchDebug(
+            @QueryParam("key") String apiToken,
+            @QueryParam("q") String query,
+            @QueryParam("fq") final List<String> filterQueries) {
+
+        User user = findUserByApiToken(apiToken);
+        if (user == null) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+        }
+
+        Dataverse subtreeScope = dataverseService.findRootDataverse();
+
+        String sortField = SearchFields.ID;
+        String sortOrder = SortBy.ASCENDING;
+        int paginationStart = 0;
+        boolean dataRelatedToMe = false;
+        int numResultsPerPage = Integer.MAX_VALUE;
+        SolrQueryResponse solrQueryResponse;
+        try {
+            solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+        } catch (SearchException ex) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
+        }
+
+        JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
+        List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
+        for (SolrSearchResult solrSearchResult : solrSearchResults) {
+            itemsArrayBuilder.add(solrSearchResult.getType() + ":" + solrSearchResult.getNameSort());
+        }
+
+        return okResponse(itemsArrayBuilder);
+    }
+
+    /**
+     * This method is for integration tests of search.
+     */
+    @GET
+    @Path("permsDebug")
+    public Response searchPermsDebug(
+            @QueryParam("key") String apiToken,
+            @QueryParam("id") Long dvObjectId) {
+
+        User user = findUserByApiToken(apiToken);
+        if (user == null) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+        }
+
+        List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectId);
+
+        JsonObjectBuilder data = Json.createObjectBuilder();
+
+        JsonArrayBuilder permissionsData = Json.createArrayBuilder();
+
+        for (DvObjectSolrDoc solrDoc : solrDocs) {
+            JsonObjectBuilder dataDoc = Json.createObjectBuilder();
+            dataDoc.add(SearchFields.ID, solrDoc.getSolrId());
+            dataDoc.add(SearchFields.NAME_SORT, solrDoc.getNameOrTitle());
+            JsonArrayBuilder perms = Json.createArrayBuilder();
+            for (String perm : solrDoc.getPermissions()) {
+                perms.add(perm);
+            }
+            permissionsData.add(dataDoc);
+        }
+        data.add("perms", permissionsData);
+
+        DvObject dvObject = dvObjectService.findDvObject(dvObjectId);
+        Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
+        JsonArrayBuilder roleAssignmentsData = Json.createArrayBuilder();
+        for (RoleAssignment roleAssignment : roleAssignments) {
+            roleAssignmentsData.add(roleAssignment.getRole() + " has been granted to " + roleAssignment.getAssigneeIdentifier() + " on " + roleAssignment.getDefinitionPoint());
+        }
+        data.add("roleAssignments", roleAssignmentsData);
+
+        return okResponse(data);
     }
 
 }

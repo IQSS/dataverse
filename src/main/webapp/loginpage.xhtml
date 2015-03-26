@@ -81,7 +81,7 @@
                             </div>
                         </h:form>
                     </div>
-                    <div class="col-md-7" jsf:rendered="#{LoginPage.shibEnabled}">
+                    <div class="col-md-7" jsf:rendered="#{systemConfig.shibEnabled == true}">
                         <div class="panel panel-default highlight">
                             <div class="panel-body">
                                 <h2 style="margin-top:0;">#{bundle['login.institution']}</h2>

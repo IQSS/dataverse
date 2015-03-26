@@ -96,6 +96,20 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     /**
+     * For docs, see the equivalent method on the DataverseServiceBean.
+     */
+    public List<Dataset> findAllOrSubset(long numPartitions, long partitionId) {
+        if (numPartitions < 1) {
+            long saneNumPartitions = 1;
+            numPartitions = saneNumPartitions;
+        }
+        TypedQuery<Dataset> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataset AS o WHERE MOD( o.id, :numPartitions) = :partitionId ORDER BY o.id", Dataset.class);
+        typedQuery.setParameter("numPartitions", numPartitions);
+        typedQuery.setParameter("partitionId", partitionId);
+        return typedQuery.getResultList();
+    }
+
+    /**
      * @todo write this method for real. Don't just iterate through every single
      * dataset! See https://redmine.hmdc.harvard.edu/issues/3988
      */

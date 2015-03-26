@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -s "http://localhost:8080/api/admin/index?numPartitions=$1&partitionIdToProcess=$2&previewOnly=$3"

@@ -763,8 +763,7 @@ public class Shib implements java.io.Serializable {
     }
 
     public boolean isDebug() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
+        return systemConfig.isDebugEnabled();
     }
 
     public boolean isInit() {

@@ -209,7 +209,7 @@
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog">
-                                <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
+                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
                                 
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?globalId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
                                 
@@ -637,7 +637,7 @@
                                             </ui:fragment>
                                         </div>
 
-                                        <div class="fileCategories #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                        <div class="file-categories-tags #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags) or (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <!-- File Categories -->
                                             <p:commandLink type="button" id="fileCategoriesButton" styleClass="btn btn-default btn-sm"
                                                            actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
@@ -653,7 +653,12 @@
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                                                 <ui:repeat value="#{fileMetadata.categories}" var="cat">
-                                                    <h:outputText value="#{cat.name}" styleClass="label label-info"/>
+                                                    <h:outputText value="#{cat.name}" styleClass="label label-success"/>
+                                                </ui:repeat>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{!(empty fileMetadata.dataFile.tags)}">
+                                                <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
+                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
                                                 </ui:repeat>
                                             </ui:fragment>
                                         </div>

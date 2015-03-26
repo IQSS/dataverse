@@ -75,6 +75,30 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createQuery("select object(o) from Dataverse as o order by o.name").getResultList();
     }
 
+    /**
+     * @param numPartitions The number of partitions you intend to split the
+     * indexing job into. Perhaps you have three Glassfish servers and you'd
+     * like each one to operate on a subset of dataverses.
+     *
+     * @param partitionId Maybe "partitionId" is the wrong term but it's what we
+     * call in the (text) UI. If you've specified three partitions the three
+     * partitionIds are 0, 1, and 2. We do `dataverseId % numPartitions =
+     * partitionId` to figure out which partition the dataverseId falls into.
+     *
+     * @return All dataverses if you say numPartitions=1 and partitionId=0.
+     * Otherwise, a subset of dataverses.
+     */
+    public List<Dataverse> findAllOrSubset(long numPartitions, long partitionId) {
+        if (numPartitions < 1) {
+            long saneNumPartitions = 1;
+            numPartitions = saneNumPartitions;
+        }
+        TypedQuery<Dataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataverse AS o WHERE MOD( o.id, :numPartitions) = :partitionId ORDER BY o.id", Dataverse.class);
+        typedQuery.setParameter("numPartitions", numPartitions);
+        typedQuery.setParameter("partitionId", partitionId);
+        return typedQuery.getResultList();
+    }
+
     public List<Dataverse> findByOwnerId(Long ownerId) {
         Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name");
         query.setParameter("ownerId", ownerId);
@@ -92,7 +116,6 @@ public class DataverseServiceBean implements java.io.Serializable {
      * NoResultException which is a RuntimeException?
      */
     public Dataverse findRootDataverse() {
-        System.out.println("finding Root Dataverse");
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
     }
     

@@ -214,14 +214,16 @@
                                         </label>
                                         
                                         <p:commandButton value="Direct" id="updateMetadataButton"
-                                                         style="display:none"  
+                                                         style="display:none" 
+                                                         update="@widgetVar(optionBlock)"
+                                                         process="@this"
                                                          actionListener="#{DataversePage.editMetadataBlocks(false)}">
-                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks(false)}"/>
                                         </p:commandButton>
-                                        <p:commandButton value="Direct" id="cancelMetadataButton"
-                                                         style="display:none"                                                          
-                                                         actionListener="#{DataversePage.editMetadataBlocks(false)}">
-                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks(false)}"/>
+                                        <p:commandButton value="Direct" id="resetToInherit"
+                                                         style="display:none" 
+                                                         update="@widgetVar(optionBlock)"
+                                                         process="@this"
+                                                         actionListener="#{DataversePage.editMetadataBlocks(true)}">
                                         </p:commandButton>
                          
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
@@ -240,17 +242,19 @@
                                                     
                                                     <h:outputText value="#{mdb.displayName} #{mdb.required ? bundle['dataverse.field.required']: ''}"
                                                                   styleClass="#{DataversePage.inheritMetadataBlockFromParent ? 'text-muted' : ''}"/>
-                                                    <ui:remove>
-                                                    <p:commandLink id="showDSFTRequired" style="margin-left:1em;" rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock and !DataversePage.inheritMetadataBlockFromParent}"
-                                                                   actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
-                                                        <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" />
-                                                        <h:outputText value="#{bundle['dataverse.field.set.tip']}" />
-                                                    </p:commandLink>
-                                                    </ui:remove>
-                                                    <p:commandLink id="showDSFT" style="margin-left:1em;" rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock and !DataversePage.inheritMetadataBlockFromParent}"
+                                                    <p:commandLink id="showDSFT" style="margin-left:1em;" 
+                                                                   update="@widgetVar(optionBlock)"
+                                                                   process="@this"
+                                                                   rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock and !DataversePage.inheritMetadataBlockFromParent}"
                                                                     actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
-                                                         <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" />
                                                          <h:outputText value="#{bundle['dataverse.field.set.tip']}" />
+                                                     </p:commandLink>
+                                                     <p:commandLink id="viewDSFT" style="margin-left:1em;" 
+                                                                    update="@widgetVar(optionBlock)"
+                                                                    process="@this"
+                                                                    rendered="#{!mdb.showDatasetFieldTypes and (!mdb.selected or DataversePage.inheritMetadataBlockFromParent)   and !DataversePage.openMetadataBlock}"
+                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id, false)}">
+                                                         <h:outputText value="#{bundle['dataverse.field.set.view']}" />
                                                      </p:commandLink>
                                                 </label> 
                                             </div>
@@ -264,7 +268,7 @@
                                                                     <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
-                                                                                                     disabled="#{!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required) }">
+                                                                                                     disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or DataversePage.editInputLevel == false }">
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id})" listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"/>
                                                                             </p:selectBooleanCheckbox>
                                                                             <div class="checkbox child-field" jsf:rendered="#{dsft.hasParent}">
@@ -274,7 +278,7 @@
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}"
+                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}"
                                                                                               rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}">
                                                                                 <f:selectItems value="#{dsft.optionSelectItems}"/>
                                                                                 <p:ajax update="@widgetVar(OptButton#{dsft.id})"/>
@@ -290,7 +294,7 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{(mdb.selected or mdb.required)}">
+                                                <p:commandLink id="hideDSFT" styleClass="btn btn-default" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes}">
                                                     <h:outputText value="#{bundle.done}" />
                                                     <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" />
                                                 </p:commandLink>
@@ -554,12 +558,7 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle.cancel}" onclick="browseOptsForm.hide()"/>
                         </div>
-
-                        </ui:fragment>
-                        
-                    </p:dialog>
-                    <p:dialog header="#{bundle['dataverse.nopublished']}" widgetVar="noPubDVs">
-
+                        </ui:fragment>                       
                     </p:dialog>
 
                     <!-- Publish Confirmation Popup -->
@@ -658,7 +657,7 @@
                         <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.resetModifications.text']}
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.continue}" onclick="resetModifications.hide()" update="@widgetVar(optionBlock)" actionListener="#{DataversePage.editMetadataBlocks(true)}"/>
+                        <p:commandButton value="#{bundle.continue}" onclick="check();resetModifications.hide()" />
                         <p:commandButton value="#{bundle.cancel}" onclick="uncheck();resetModifications.hide()" />
                     </div>
                 </p:dialog>
@@ -723,6 +722,10 @@
                             resetModifications.show();
                         }
 
+                    }
+                    
+                    function check() {
+                        $('button[id$="resetToInherit"]').trigger('click');
                     }
                     
                     function uncheck() {

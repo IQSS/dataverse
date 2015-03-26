@@ -680,6 +680,15 @@
                                         <br/>
                                     </ui:fragment>
                                     
+                                    <div class="file-categories-tags" jsf:rendered="#{(!empty result.entity.fileMetadata.categories) or (!empty result.entity.tags)}">
+                                        <ui:repeat value="#{result.entity.tags}" var="tag">
+                                           <h:outputText value="#{tag.typeLabel}" styleClass="label label-success"/>
+                                        </ui:repeat>
+                                        <ui:repeat value="#{result.entity.fileMetadata.categories}" var="cat">
+                                            <h:outputText value="#{cat.name}" styleClass="label label-info"/>
+                                        </ui:repeat>
+                                    </div>
+                                    
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
                                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">

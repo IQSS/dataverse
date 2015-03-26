@@ -195,4 +195,14 @@ public class SystemConfig {
         return appPrivacyPolicyUrl;
     }
 
+    public boolean isShibEnabled() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
+    }
+
+    public boolean isDebugEnabled() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
+    }
+
 }
