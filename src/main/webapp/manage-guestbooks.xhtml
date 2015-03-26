@@ -88,12 +88,12 @@
                                                action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
                                                update="@form,:messagePanel"
                                                oncomplete="bind_tooltip_popover();"/>
-                                <p:commandLink styleClass="btn btn-default btn-sm"
-                                               rendered="#{guestbook.responseCount > 0}"
-                                               value="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}"
-                                               action="#{manageGuestbooksPage.viewSelectedGuestbookResponses(guestbook)}"
-                                               oncomplete="viewGuestbookCollectedData.show();bind_tooltip_popover();"
-                                               update=":manageGuestbooksForm"/>
+                                <h:outputLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                               rendered="#{guestbook.responseCount > 0}"                                                
+                                               value="/guestbook-responses.xhtml?dataverseId=#{manageGuestbooksPage.dataverse.id}&#38;guestbookId=#{guestbook.id}"                                                                                              
+                                               >
+                                    <span >#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData']}</span>
+                                    </h:outputLink>
                                 <div class="btn-group" role="group">
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
@@ -179,46 +179,6 @@
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="viewGuestbookCollectedData" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData.dialog.header']}" widgetVar="viewGuestbookCollectedData">
-                        <div class="form-horizontal">
-                            <div class="form-group">
-                                <label for="guestbookNameStatic" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
-                                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
-                                    </span>
-                                </label>
-                                <div class="col-sm-7">
-                                    <p class="form-control-static">
-                                        #{manageGuestbooksPage.selectedGuestbook.name}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="guestbookCollectedDataStatic" class="col-sm-3 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
-                                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
-                                </span>
-                            </label>
-                            <div class="col-sm-7">
-                                <ui:repeat value="#{manageGuestbooksPage.responses}" var="response">
-                                    <p class="form-control-static">
-                                        <h:outputText value="#{response.dataset.releasedVersion.title}"/>
-                                    </p>
-                                    <p class="form-control-static">
-                                        <h:outputText value="#{response.dataFile.displayName}: #{response.name}, #{response.institution}, #{response.position}, #{response.responseTime}"/>
-                                    </p>
-                                    <ui:fragment rendered="#{response.customQuestionResponses.size() > 0}">
-                                        <ui:repeat value="#{response.customQuestionResponses}" var="customQResponse">
-                                            <p class="form-control-static">
-                                                <h:outputText value="#{customQResponse.customQuestion.questionString}: #{customQResponse.response}"/>
-                                            </p>
-                                        </ui:repeat>
-                                    </ui:fragment>
-                                </ui:repeat>
                             </div>
                         </div>
                     </p:dialog>
