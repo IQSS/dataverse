@@ -93,8 +93,6 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 .normal-text {font-weight:normal;}
 .normal-text input {margin-right:4px;}
 
-.ui-datatable tbody td.col-dropdown-visible {overflow:visible;}
-
 hr {border-color: #ddd;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
@@ -308,12 +306,12 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .button-block {margin-top:1em;}
 .form-group > .button-block, 
 .panel-body > .button-block, 
-td.col-dropdown-visible > .button-block,
+td.col-file-action > .button-block,
 div.ui-datatable-header > .button-block {margin-top:0;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group {margin-right:1em;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
 .button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
-.button-block .btn:last-child {margin-right:0;}
+.button-block .btn:last-child, .button-block .btn-group:last-child {margin-right:0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
@@ -357,7 +355,7 @@ input.search-input {margin-right:1em; padding:4px; display: inline-block; vertic
 
 span.search-term-match {font-weight: bold;}
 div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div > span.label {vertical-align:text-bottom; line-height: normal; margin-left:.5em;}
-div[id$='resultsTable'] div.file-categories-tags span.label:first-of-type {margin-left:0;}
+div[id$='resultsTable'] div.file-tags-block span.label:first-of-type {margin-left:0;}
 div[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;padding:4px;}
 div[id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 div[id$='resultsTable'] div.card-title-icon-block span[class^='icon'],
@@ -553,14 +551,16 @@ div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
-div[id$="filesTable"] td.col-file-thumb {width:64px;}
+div[id$="filesTable"] td.col-file-thumb {width:64px; border-right:0;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
-div[id$="filesTable"] div.file-categories-tags {padding-bottom:2px;}
-div[id$="filesTable"] div.file-categories-tags a.ui-commandlink {font-size:12px;}
-div[id$="filesTable"] div.file-categories-tags span.label, div[id$="filesTable"] div.file-categories-tags a.ui-commandlink {margin-right:.5em;}
-div[id$="filesTable"] div.file-categories-tags span.label:last-of-type {margin-right:0;}
+div[id$="filesTable"] td.col-file-metadata {padding-left:0; border-left:0; border-right:0;}
+div[id$="filesTable"] td.col-file-action {width: 380px; border-left:0; overflow:visible;}
+div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
+div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
+div[id$="filesTable"] div.file-tags-block span.label, div[id$="filesTable"] div.file-tags-block a.ui-commandlink {margin-right:.5em;}
+div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:0;}
 
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 

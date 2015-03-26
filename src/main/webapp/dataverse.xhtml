@@ -399,15 +399,12 @@
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                 </h:link>
                                             </li>
-                                                  
-                                                <li>
-                                                    <p:commandLink id="browseOpts" actionListener="#{DataversePage.initFeaturedDataverses()}" oncomplete="browseOptsForm.show()"
-                                                                   update="dataverseForm:browseOptsForm">
-                                                        <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
-                                                    </p:commandLink>
-                                                </li>
-
-
+                                            <li>
+                                                <p:commandLink id="browseOpts" actionListener="#{DataversePage.initFeaturedDataverses()}" oncomplete="browseOptsForm.show()"
+                                                               update="dataverseForm:browseOptsForm">
+                                                    <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
+                                                </p:commandLink>
+                                            </li>
                                             <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null)
                                                                      and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DeleteDataverseCommand')}">
                                                 <li class="divider"></li>
@@ -435,7 +432,7 @@
                             </ui:fragment>
 
                             <!-- END: Edit/Publish Button Group -->
-                            <!-- Email/Link Button Group -->
+                            <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" role="group">
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
                                                update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">   
@@ -454,10 +451,26 @@
                                                update=":linkDataverseForm">
                                     <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                   title="#{bundle['dataverse.share.dataverseShare']}"
+                                   oncomplete="shareDialog.show();sharrre();">
+                                    <span class="glyphicon glyphicon-thumbs-up no-text"/>
+                                </p:commandLink>
                             </div>
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
                             </p:confirmDialog>
-                            <!-- END: Email/Link Button Group -->
+                            <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog">
+                                <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.share.dataverseShare.tip']}</p>
+                                
+                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse.xhtml?alias=#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
+                                
+                                <div class="button-block">
+                                    <button type="button" onclick="shareDialog.hide()" class="btn btn-default" value="#{bundle.close}">
+                                        #{bundle.close}
+                                    </button>
+                                </div>
+                            </p:dialog>
+                            <!-- END: Email/Link/Share Button Group -->
                             
                             <!-- Metrics -->
                             <div id="metrics-block" class="pull-left">
@@ -474,7 +487,7 @@
                                     <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-shares">
-                                    <span data-toggle="tooltip" data-placement="top" title="Shares" class="count">00</span>
+                                    <span id="sharrre-count" data-toggle="tooltip" data-placement="top" title="Shares" class="count"/>
                                 </div>
                             </div>
                             <!-- END: Metrics -->
@@ -497,24 +510,24 @@
                                         <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
                                             <div class="item">
                                                 <div style="vertical-align:middle;">
-                                                <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
+                                                    <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
+                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                            <i class="icon-dataverse"></i>
+                                                        </a>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
+                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                            <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
+                                                        </a>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
+                                                        <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
+                                                            <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
+                                                        </a>
+                                                    </ui:fragment>
                                                     <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                        <i class="icon-dataverse"></i>
+                                                        <h:outputText value="#{dv.name} #{bundle.dataverse}"/>
                                                     </a>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
-                                                    <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
-                                                    </a>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                                                    <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{dv.name} #{bundle.dataverse}"/>
-                                                    </a>
-                                                </ui:fragment>
-                                                <a href="/dataverse/#{dv.alias}" title="#{dv.name} #{bundle.dataverse}">
-                                                    <h:outputText value="#{dv.name} #{bundle.dataverse}"/>
-                                                </a>
                                                 </div>
                                             </div>
                                         </ui:repeat>
