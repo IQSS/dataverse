@@ -269,68 +269,73 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
        
-        if (fileMetadata.getDataFile().getId() == null){
+        if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
             return false;
         } 
         
-        // Has this check already been done? 
-        // 
-        if (this.fileDownloadPermissionMap.containsKey(fileMetadata.getId())){
+        // --------------------------------------------------------------------        
+        // Grab the fileMetadata.id and restriction flag                
+        // --------------------------------------------------------------------
+        Long fid = fileMetadata.getId();
+        boolean isRestrictedFile = fileMetadata.isRestricted();
+        
+        
+        // --------------------------------------------------------------------
+        // Has this check already been done? Check the DatasetPage hash
+        // --------------------------------------------------------------------
+        if (this.fileDownloadPermissionMap.containsKey(fid)){
             // Yes, return previous answer
-            return this.fileDownloadPermissionMap.get(fileMetadata.getId());
+            return this.fileDownloadPermissionMap.get(fid);
         }
         
         // (1) Is the file Released and Unrestricted ?        
         //
-        if ((this.workingVersion.isReleased())&&(!(fileMetadata.isRestricted()))){
+        if ((this.workingVersion.isReleased())&&(!(isRestrictedFile))){
             // Yes, save answer and return true
-            this.fileDownloadPermissionMap.put(fileMetadata.getId(), true);
+            this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
         
         // (2) Is user authenticated?
         // No?  Then no button...
-        //
+        // --------------------------------------------------------------------
         if (!(this.session.getUser().isAuthenticated())){
-            this.fileDownloadPermissionMap.put(fileMetadata.getId(), false);
+            this.fileDownloadPermissionMap.put(fid, false);
             return false;
         }
         
-        // (3) Authenticated User has ViewUnpublishedDataset Permission and File is Unrestricted 
+        // For an unrestrictd file, check Dataset Permissions
         //
-        if ((this.doesSessionUserHaveDataSetPermission(Permission.ViewUnpublishedDataset))&&(!(fileMetadata.isRestricted()))){
-            // Yes, save answer and return true
-            this.fileDownloadPermissionMap.put(fileMetadata.getId(), true);
-            return true;
-        }
+        if (!(isRestrictedFile)){
+        
+            // (3) Authenticated User has ViewUnpublishedDataset Permission and File is Unrestricted 
+            //
+            if (this.doesSessionUserHaveDataSetPermission(Permission.ViewUnpublishedDataset)){
+                // Yes, save answer and return true
+                this.fileDownloadPermissionMap.put(fid, true);
+                return true;
+            }
 
-        // (4) User has EditDataset Permission and File is Unrestricted 
-        //
-        if ((this.doesSessionUserHaveDataSetPermission(Permission.EditDataset))&&(!(fileMetadata.isRestricted()))){
-            // Yes, save answer and return true
-            this.fileDownloadPermissionMap.put(fileMetadata.getId(), true);
-            return true;
+            // (4) User has EditDataset Permission and File is Unrestricted 
+            //
+            if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
+                // Yes, save answer and return true
+                this.fileDownloadPermissionMap.put(fid, true);
+                return true;
+            }
+        }else{
+            // Restricted, make the call to the Permissions Service
+            // (5) Check the Download DataFile permission
+            //
+            if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
+                this.fileDownloadPermissionMap.put(fid, true);
+                return true;
+            }
         }
         
-        // (5) Is this a superuser?
+        // (6) No download....
         //
-        /*
-        if ((this.session.getUser().isSuperuser())){
-            this.fileDownloadPermissionMap.put(fileMetadata.getId(), true);
-            return true;
-        }
-        */
-        
-        // (6) Check the Download DataFile permission
-        //
-        if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
-            this.fileDownloadPermissionMap.put(fileMetadata.getId(), true);
-            return true;
-        }
-        
-        // (7) No download....
-        //
-        this.fileDownloadPermissionMap.put(fileMetadata.getId(), false);
+        this.fileDownloadPermissionMap.put(fid, false);
        
         return false;
     }
