@@ -19,6 +19,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -46,14 +47,67 @@ public class Index extends AbstractApiBean {
     DataFileServiceBean dataFileService;
 
     @GET
-    public Response indexAll() {
+    public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
         try {
+            long numPartitions = 1;
+            if (numPartitionsSelected != null) {
+                if (numPartitionsSelected < 1) {
+                    return errorResponse(Status.BAD_REQUEST, "numPartitions must be 1 or higher but was " + numPartitionsSelected);
+                } else {
+                    numPartitions = numPartitionsSelected;
+                }
+            }
+            List<Long> availablePartitionIds = new ArrayList<>();
+            for (long i = 0; i < numPartitions; i++) {
+                availablePartitionIds.add(i);
+            }
+
+            Response invalidParitionIdSelection = errorResponse(Status.BAD_REQUEST, "You specified " + numPartitions + " partition(s) and your selected partitionId was " + partitionIdToProcess + " but you must select from these availableParitionIds: " + availablePartitionIds);
+            if (partitionIdToProcess != null) {
+                long selected = partitionIdToProcess;
+                if (!availablePartitionIds.contains(selected)) {
+                    return invalidParitionIdSelection;
+                }
+            } else if (numPartitionsSelected == null) {
+                /**
+                 * The user has not specified a partitionId and hasn't specified
+                 * the number of partitions. Run "index all", the whole thing.
+                 */
+                partitionIdToProcess = 0l;
+            } else {
+                return invalidParitionIdSelection;
+
+            }
+
+            JsonObjectBuilder args = Json.createObjectBuilder();
+            args.add("numPartitions", numPartitions);
+            args.add("partitionIdToProcess", partitionIdToProcess);
+            JsonArrayBuilder availablePartitionIdsBuilder = Json.createArrayBuilder();
+            for (long i : availablePartitionIds) {
+                availablePartitionIdsBuilder.add(i);
+            }
+
+            JsonObjectBuilder preview = indexAllService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess);
+            if (previewOnly) {
+                preview.add("args", args);
+                preview.add("availablePartitionIds", availablePartitionIdsBuilder);
+                return okResponse(preview);
+            }
+
+            JsonObjectBuilder response = Json.createObjectBuilder();
+            response.add("availablePartitionIds", availablePartitionIdsBuilder);
+            response.add("args", args);
             /**
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<String> indexAllFuture = indexAllService.indexAll();
-            return okResponse("A complete re-indexing has begun.");
+            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionIdToProcess, previewOnly);
+            JsonObject workloadPreview = preview.build().getJsonObject("previewOfPartitionWorkload");
+            int dataverseCount = workloadPreview.getInt("dataverseCount");
+            int datasetCount = workloadPreview.getInt("datasetCount");
+            String status = "indexAllOrSubset has begun of " + dataverseCount + " dataverses and " + datasetCount + " datasets.";
+            response.add("message", status);
+            return okResponse(response);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -176,25 +230,12 @@ public class Index extends AbstractApiBean {
         return okResponse("index missing started, Solr doc cleanup operations will be skipped");
     }
 
-    @GET
-    @Path("partial")
-    public Response indexOffset(@QueryParam("startingPoint") int startingPoint, @QueryParam("offset") int offset) {
-        long numObjectToConsider = 100;
-        List<Long> dvObjectsIds = new ArrayList<>();
-        for (long i = 1; i <= numObjectToConsider; i++) {
-            dvObjectsIds.add(i);
-        }
-        List<Long> mine = IndexUtil.findDvObjectIdsToProcessEqualParts(dvObjectsIds, startingPoint, offset);
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("startingPoint", startingPoint);
-        response.add("offset", offset);
-        response.add("mine", mine.toString());
-        return okResponse(response);
-    }
-
+    /**
+     * This is just a demo of the modular math logic we use for indexAll.
+     */
     @GET
     @Path("mod")
-    public Response indexOffset(@QueryParam("partitions") long partitions, @QueryParam("which") long which) {
+    public Response indexMod(@QueryParam("partitions") long partitions, @QueryParam("which") long which) {
         long numObjectToConsider = 100;
         List<Long> dvObjectsIds = new ArrayList<>();
         for (long i = 1; i <= numObjectToConsider; i++) {
