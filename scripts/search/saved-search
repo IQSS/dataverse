@@ -1,0 +1,11 @@
+#!/bin/bash
+. scripts/search/export-keys
+# 2015-03-26 11:48:50.43
+curl -s http://localhost:8080/api/admin/index/savedsearch?key=$ADMINKEY | jq .
+if [ ! -z "$1" ]; then
+    curl -s http://localhost:8080/api/dataverses/$1/links?key=$ADMINKEY | jq .
+fi
+if [ ! -z "$2" ]; then
+    curl -s http://localhost:8080/api/datasets/$2/links?key=$ADMINKEY | jq .
+fi
+scripts/search/dbsavedsearch
