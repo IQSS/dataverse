@@ -357,6 +357,7 @@ input.search-input {margin-right:1em; padding:4px; display: inline-block; vertic
 
 span.search-term-match {font-weight: bold;}
 div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div > span.label {vertical-align:text-bottom; line-height: normal; margin-left:.5em;}
+div[id$='resultsTable'] div.file-categories-tags span.label:first-of-type {margin-left:0;}
 div[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;padding:4px;}
 div[id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 div[id$='resultsTable'] div.card-title-icon-block span[class^='icon'],
@@ -475,6 +476,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #citation-block {margin-bottom:.5em;}
 .bg-citation {background:#ECF6FB;}
 #citation, #citation-download {padding:.5em;}
+#citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 #metadata-panel label.col-sm-3 {padding-left:0;}
 .license-CC0-inline {display:inline-block; margin-left:1em;}
 
@@ -555,10 +557,10 @@ div[id$="filesTable"] td.col-file-thumb {width:64px;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
-div[id$="filesTable"] div.fileCategories {padding-bottom:2px;}
-div[id$="filesTable"] div.fileCategories a.ui-commandlink {font-size:12px;}
-div[id$="filesTable"] div.fileCategories span.label, div[id$="filesTable"] div.fileCategories a.ui-commandlink {margin-right:.5em;}
-div[id$="filesTable"] div.fileCategories span.label:last-of-type {margin-right:0;}
+div[id$="filesTable"] div.file-categories-tags {padding-bottom:2px;}
+div[id$="filesTable"] div.file-categories-tags a.ui-commandlink {font-size:12px;}
+div[id$="filesTable"] div.file-categories-tags span.label, div[id$="filesTable"] div.file-categories-tags a.ui-commandlink {margin-right:.5em;}
+div[id$="filesTable"] div.file-categories-tags span.label:last-of-type {margin-right:0;}
 
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 
