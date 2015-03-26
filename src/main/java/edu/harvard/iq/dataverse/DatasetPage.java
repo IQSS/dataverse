@@ -168,6 +168,10 @@ public class DatasetPage implements java.io.Serializable {
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
+    
+    // Used to store results of permissions checks
+    private Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
+    private Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
 
     public Dataverse getLinkingDataverse() {
         return linkingDataverse;
@@ -253,7 +257,127 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isNoDVsRemaining() {
         return noDVsRemaining;
     }
+    
+    /**
+     * Convenience method for "Download File" button display logic
+     * 
+     * @param fileMetadata
+     * @return boolean
+     */
+    public boolean isFileDownloadButtonViewable(FileMetadata fileMetadata){
+        if (fileMetadata == null){
+            return false;
+        }
+       
+        if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
+            return false;
+        } 
+        
+        // --------------------------------------------------------------------        
+        // Grab the fileMetadata.id and restriction flag                
+        // --------------------------------------------------------------------
+        Long fid = fileMetadata.getId();
+        boolean isRestrictedFile = fileMetadata.isRestricted();
+        
+        
+        // --------------------------------------------------------------------
+        // Has this check already been done? Check the DatasetPage hash
+        // --------------------------------------------------------------------
+        if (this.fileDownloadPermissionMap.containsKey(fid)){
+            // Yes, return previous answer
+            return this.fileDownloadPermissionMap.get(fid);
+        }
+        
+        // (1) Is the file Released and Unrestricted ?        
+        //
+        if ((this.workingVersion.isReleased())&&(!(isRestrictedFile))){
+            // Yes, save answer and return true
+            this.fileDownloadPermissionMap.put(fid, true);
+            return true;
+        }
+        
+        // (2) Is user authenticated?
+        // No?  Then no button...
+        // --------------------------------------------------------------------
+        if (!(this.session.getUser().isAuthenticated())){
+            this.fileDownloadPermissionMap.put(fid, false);
+            return false;
+        }
+        
+        // For an unrestrictd file, check Dataset Permissions
+        //
+        if (!(isRestrictedFile)){
+        
+            // (3) Authenticated User has ViewUnpublishedDataset Permission and File is Unrestricted 
+            //
+            if (this.doesSessionUserHaveDataSetPermission(Permission.ViewUnpublishedDataset)){
+                // Yes, save answer and return true
+                this.fileDownloadPermissionMap.put(fid, true);
+                return true;
+            }
 
+            // (4) User has EditDataset Permission and File is Unrestricted 
+            //
+            if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
+                // Yes, save answer and return true
+                this.fileDownloadPermissionMap.put(fid, true);
+                return true;
+            }
+        }else{
+            // Restricted, make the call to the Permissions Service
+            // (5) Check the Download DataFile permission
+            //
+            if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
+                this.fileDownloadPermissionMap.put(fid, true);
+                return true;
+            }
+        }
+        
+        // (6) No download....
+        //
+        this.fileDownloadPermissionMap.put(fid, false);
+       
+        return false;
+    }
+
+    /**
+     * Check Dataset related permissions
+     * 
+     * @param permissionToCheck
+     * @return 
+     */
+    public boolean doesSessionUserHaveDataSetPermission(Permission permissionToCheck){
+        if (permissionToCheck == null){
+            return false;
+        }
+               
+        String permName = permissionToCheck.getHumanName();
+       
+        // Make sure this is a Dataset related Permission
+        //
+        if (!permName.toLowerCase().contains("dataset")){
+            throw new IllegalArgumentException("The permission must be for a Dataset");        
+        }
+        
+        
+        // Has this check already been done? 
+        // 
+        if (this.datasetPermissionMap.containsKey(permName)){
+            // Yes, return previous answer
+            return this.datasetPermissionMap.get(permName);
+        }
+        
+        // Check the permission
+        //
+        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), this.dataset).has(permissionToCheck);
+
+        // Save the permission
+        this.datasetPermissionMap.put(permName, hasPermission);
+        
+        // return true/false
+        return hasPermission;
+    }
+    
     public void setNoDVsRemaining(boolean noDVsRemaining) {
         this.noDVsRemaining = noDVsRemaining;
     }
@@ -602,7 +726,6 @@ public class DatasetPage implements java.io.Serializable {
         if (!(this.permissionService.userOn(this.session.getUser(), fm.getDataFile().getOwner()).has(Permission.EditDataset))) { 
             return false;
         }
-        
 
         // Looks good
         //
@@ -662,8 +785,11 @@ public class DatasetPage implements java.io.Serializable {
 
     }// A DataFile may have a related MapLayerMetadata object
 
+    
     public String init() {
+        //System.out.println("_YE_OLDE_QUERY_COUNTER_");
         String nonNullDefaultIfKeyNotFound = "";
+        
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);

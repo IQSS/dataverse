@@ -515,8 +515,12 @@ div.ui-radiobutton {margin:0; vertical-align:text-bottom;}
 div.radio.no-padding-left label {padding-left:0;}
 
 /* Primefaces vs Bootstrap checkbox fix */
-.ui-chkbox .ui-chkbox-box {margin: 4px 0 0 0; vertical-align:top;}
+.ui-chkbox .ui-chkbox-box {margin:0; vertical-align:top;}
+.ui-chkbox.ui-widget .ui-chkbox-box.ui-widget {margin-top:4px;}
+.ui-selectmanycheckbox.ui-widget td > .ui-chkbox.ui-widget .ui-chkbox-box.ui-widget, .ui-selectcheckboxmenu-item > .ui-chkbox.ui-widget .ui-chkbox-box.ui-widget {margin-top:0;}
+.ui-selectcheckboxmenu-header > .ui-chkbox.ui-widget .ui-chkbox-box.ui-widget {margin-top:2px;}
 .ui-chkbox .ui-chkbox-label {display:inline; vertical-align:text-top;}
+.chkbox-label-margin {margin-top:3px;} 
 
 .ui-selectcheckboxmenu.form-control {height:auto;padding:0;}
 .ui-selectcheckboxmenu .ui-selectcheckboxmenu-trigger {width:30px; padding:6px; border-radius:0 4px 4px 0;}

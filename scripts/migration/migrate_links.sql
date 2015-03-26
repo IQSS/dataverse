@@ -22,7 +22,7 @@ and c.parentcollection_id is null;
 insert into datasetlinkingdataverse (linkingdataverse_id, dataset_id, linkcreatetime)
 select vdc_id, ds.id, now()
 from _dvn3_vdc_linked_collections link, _dvn3_coll_studies contents, _dvn3_vdccollection c, _dvn3_study s, dataset ds
-where dv.linked_collection_id=c.id
+where link.linked_collection_id=c.id
 and c.parentcollection_id is not null
 and c.type='static'
 and c.id = contents.vdc_collection_id

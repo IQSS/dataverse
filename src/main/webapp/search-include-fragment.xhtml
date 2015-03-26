@@ -89,7 +89,7 @@
                                     <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
                                 </h:outputLink>
                                 <!--DATAVERSES ONLY-->
-                                <h:outputLink disabled="#{false}" styleClass="facetTypeLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
+                                <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="dataverses"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -118,7 +118,7 @@
                                     <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}"/>
                                 </h:outputLink>
                                 <!--DATASETS ONLY-->
-                                <h:outputLink disabled="#{false}" styleClass="facetTypeLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
+                                <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="datasets"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -147,7 +147,7 @@
                                     <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}"/>
                                 </h:outputLink>
                                 <!--FILES ONLY-->
-                                <h:outputLink disabled="#{false}" styleClass="facetTypeLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
+                                <h:outputLink disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <f:param name="types" value="files"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
