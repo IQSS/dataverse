@@ -370,11 +370,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
                      * encountered, no more information is available." and
                      * server.log has a stacktrace with the NPE.
                      */
-                    while (testDV.getOwner() != null){
+                    while (testDV.getOwner() != null) {
                         dvTree.add(testDV.getOwner());
                         testDV = testDV.getOwner();
                     }
-                    if (dvTree.contains(dataverse)){
+                    if (dvTree.contains(dataverse)) {
                         solrSearchResult.setIsInTree(true);
                     }
                     /**
@@ -408,7 +408,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataFile, solrSearchResult.getReleaseOrCreateDate()));
                     }
                     Long datasetId = Long.parseLong(solrSearchResult.getParent().get("id"));
-                    Dataset parentDS = datasetService.find(datasetId);                    
+                    Dataset parentDS = datasetService.find(datasetId);
                     Dataverse parentDataverse = parentDS.getOwner();
                     solrSearchResult.setIsInTree(false);
                     List<Dataverse> dvTree = new ArrayList();
