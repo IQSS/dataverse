@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -37,6 +38,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
     @Inject
     DataverseSession session;
 
@@ -891,8 +894,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isDebug() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
+        return systemConfig.isDebugEnabled();
     }
 
     /**

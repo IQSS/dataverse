@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -50,6 +51,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     PermissionServiceBean permissionService;
+
+    @EJB
+    SystemConfig systemConfig;
 
     @Inject
     DataverseSession dataverseSession;
@@ -232,9 +236,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
 
     public boolean isDebugShibboleth() {
-        // curl -X PUT -d yes http://localhost:8080/api/s/settings/:Debug
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
+        return systemConfig.isDebugEnabled();
     }
 
     public List<String> getGroups(User user) {
