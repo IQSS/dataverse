@@ -137,7 +137,7 @@ public class Index extends AbstractApiBean {
             if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
                 return okResponse("indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway");
             } else {
-                return errorResponse( Status.INTERNAL_SERVER_ERROR, sb.toString() );
+                return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
             }
         }
     }
@@ -182,7 +182,7 @@ public class Index extends AbstractApiBean {
                 Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
                 return okResponse("started reindexing " + type + "/" + id);
             } else {
-                return errorResponse( Status.BAD_REQUEST, "illegal type: " + type);
+                return errorResponse(Status.BAD_REQUEST, "illegal type: " + type);
             }
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -211,7 +211,7 @@ public class Index extends AbstractApiBean {
                     }
                 }
             }
-            return errorResponse( Status.INTERNAL_SERVER_ERROR, sb.toString() );
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
         }
     }
 
