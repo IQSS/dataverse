@@ -55,7 +55,7 @@ R is used both by the Dataverse application, directly, and the TwoRavens compani
 
 Two distinct interfaces are used to access R: Dataverse uses Rserve; and TwoRavens sends jobs to R running under rApache using Rook interface. 
 
-We provide a shell script (conf/R/r-setup.sh in the Dataverse source tree) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
+We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
 
 The script will attempt to download the packages from CRAN (or a mirror), so the system must have access to the internet. On a server fully firewalled from the world, packages can be installed from downloaded sources. This is left as an exercise for the reader. Consult the script for insight. 
 
@@ -80,19 +80,36 @@ it is visible from the outside at
 
 We'll assume ``/var/www/html/dataexplore`` in the examples below. 
 
-c. chown the directory 
-----------------------
-to user apache
+c. run the installer
+--------------------
 
-d. Edit the file /var/www/html/dataexplore/app_ddi.js 
------------------------------------------------------
+a scripted, interactive installer is provided at the top level of the TwoRavens 
+distribution. Run it as 
+
+   ``./install.pl``
+
+
+Appendix
+++++++++
+
+Explained below are the steps needed to manually configure TwoRavens to run under rApache (these are performed by the ``install.pl`` script above).  Provided for reference. 
+
+I. Configure the TwoRavens web (Javascript) application.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Edit the file ``/var/www/html/dataexplore/app_ddi.js``.
+
 find and edit the following 3 lines:
 
-set the production toggle to true at the top of the script;
+set the production toggle to true at the top of the script:
+
+var production=true;
+
+Then change
 
 ``hostname="localhost:8080";``
 
-change this to the hostname of the dataverse app.
+to the hostname of the dataverse app.
 
 and
 
@@ -102,17 +119,16 @@ to
 
 ``"https://<rapacheserver>:<rapacheport>/custom/";``
 
-
-3. Configure rApache:
-+++++++++++++++++++++
+II. Configure the R applications to run under rApache
++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 rApache is a loadable httpd module that provides a link between Apache and R. 
 When you installed the rApache rpm, under 0., it placed the module in the Apache library directory and added a configuration entry to the config file (``/etc/httpd/conf/httpd.conf``). 
 
 Now we need to configure rApache to serve several R "mini-apps", from the R sources provided with the TwoRavens app. 
 
-a. Edit the following files 
----------------------------
+a. Edit the following files:
+----------------------------
 in dataexplore/rook:
 
 ``rookdata.R, rookzelig.R, rooksubset.R, rooktransform.R, rookselector.R, rooksource.R ``
@@ -133,10 +149,14 @@ to
 
 (or your dataexplore directory, if different from the above)
 
-c. Edit the following line in dataexplore/rook/rookutils.R: 
+c. Edit the following lines in dataexplore/rook/rookutils.R: 
 -----------------------------------------------------------
 
 ``url <- paste("https://dataverse-internal.iq.harvard.edu/custom/preprocess_dir/preprocessSubset_",sessionid,".txt",sep="")``
+
+and 
+
+``imageVector[[qicount]]<<-paste("https://dataverse-internal.iq.harvard.edu/custom/pic_dir/", mysessionid,"_",mymodelcount,qicount,".png", sep = "")``
 
 and change the URL to reflect the correct location of your rApache instance - make sure that the protocol and the port number are correct too, not just the host name!
 
@@ -175,8 +195,13 @@ e. Create the following directories and chown them user apache:
    mkdir --parents /var/www/html/custom/preprocess_dir
    chown -R apache.apache /var/www/html/custom
 
-f. restart httpd
+f. chown the directory 
+----------------------
+to user apache
+
+g. restart httpd
 ----------------
 
 ``service httpd restart``
+
 
