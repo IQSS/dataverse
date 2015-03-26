@@ -1,5 +1,5 @@
-#metadataBlock	name    dataverseAlias    displayName													
-	customARCS		Alliance for Research on Corporate Sustainability Metadata													
+#metadataBlock	name	dataverseAlias	displayName												
+	customARCS		Alliance for Research on Corporate Sustainability Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	ARCS1	1) Were any of these data sets a) purchased, b) obtained through licensed databases, or c) provided by an organization under a nondisclosure or other agreement?	Licensed agreement of deposited data.		text	0		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customARCS
 	ARCS2	2) If you responded Yes to Q1, have you ensured that sharing the data does not violate terms of the agreement? If you responded No to Q1, please enter N/A here.	Data sharing does not violate terms.		text	1		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customARCS
@@ -15,7 +15,7 @@
 	ARCS3	No		0											
 	ARCS3	Yes		1											
 	ARCS4	NA		0											
-	ARCS4	No 		1											
+	ARCS4	No		1											
 	ARCS4	Yes		2											
 	ARCS5	No		0											
 	ARCS5	Yes		1											

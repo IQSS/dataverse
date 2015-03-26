@@ -1,5 +1,5 @@
-#metadataBlock	name	dataverseAlias   displayName													
-	customPSRI		Political Science Replication Initiative Metadata													
+#metadataBlock	name	dataverseAlias	displayName												
+	customPSRI		Political Science Replication Initiative Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	PSRI1	Are the original data publicly available?	Select from the list of options.		text	0		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
 	PSRI2	Is the original code available?	Select from the list of options.		text	1		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
@@ -17,6 +17,7 @@
 	PSRI1	Yes		1											
 	PSRI2	No		0											
 	PSRI2	Yes		1											
+	PSRI2	NA		2											
 	PSRI5	No		0											
 	PSRI5	Yes		1											
 	PSRI6	No		0											
@@ -25,6 +26,7 @@
 	PSRI7	Yes		1											
 	PSRI8	No		0											
 	PSRI8	Yes		1											
+	PSRI8	NA													
 	PSRI9	NA		0											
 	PSRI9	No		1											
 	PSRI9	Yes		2											
