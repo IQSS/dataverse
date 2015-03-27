@@ -560,10 +560,10 @@
                                             </span>
                                             
                                             <!-- Restricted File Icon -->
-                                            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')))}">
+                                            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(DatasetPage.isFileDownloadButtonViewable(fileMetadata)) )}">
                                                 <span class="glyphicon glyphicon-lock text-danger"/>
                                             </div>
-                                            <div class="file-icon-restricted-block" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.restricted and permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')}">
+                                            <div class="file-icon-restricted-block" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.restricted and DatasetPage.isFileDownloadButtonViewable(fileMetadata) }">
                                                 <span class="icon-unlock text-success"/>
                                             </div>
                                         </div>
