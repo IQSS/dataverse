@@ -40,8 +40,8 @@ and analysis tool developed by the `Center for Geographic Analysis <http://gis.h
 Astronomy (FITS)
 --------------------
 
-Metadata found in the header section of Flexible Image Transport System (FITS) files is automatically extracted by Dataverse, 
-aggregated and added to the Astronomy Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
+Metadata found in the header section of Flexible Image Transport System (FITS) files are automatically extracted by Dataverse, 
+aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
 and browsable (facets) at the Dataset-level.
 
 
