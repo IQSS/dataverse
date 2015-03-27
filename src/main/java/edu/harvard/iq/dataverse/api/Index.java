@@ -25,9 +25,6 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
-import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
-import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
-import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,8 +69,6 @@ public class Index extends AbstractApiBean {
     SolrIndexServiceBean SolrIndexService;
     @EJB
     SearchServiceBean searchService;
-    @EJB
-    SavedSearchServiceBean savedSearchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
@@ -550,27 +545,6 @@ public class Index extends AbstractApiBean {
         data.add("roleAssignments", roleAssignmentsData);
 
         return okResponse(data);
-    }
-
-    @GET
-    @Path("savedsearch")
-    public Response searchPermsDebug() {
-        JsonArrayBuilder savedSearchesBuilder = Json.createArrayBuilder();
-        List<SavedSearch> savedSearches = savedSearchService.findAll();
-        for (SavedSearch savedSearch : savedSearches) {
-            JsonObjectBuilder thisSavedSearch = Json.createObjectBuilder();
-            long savedSearchId = savedSearch.getId();
-            JsonArrayBuilder fqBuilder = Json.createArrayBuilder();
-            for (SavedSearchFilterQuery fq : savedSearch.getSavedFilterQuerys()) {
-                fqBuilder.add(fq.getFilterQuery());
-            }
-            thisSavedSearch.add("fq", fqBuilder);
-            thisSavedSearch.add("id", savedSearchId);
-            savedSearchesBuilder.add(thisSavedSearch);
-        }
-        JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("saved searches", savedSearchesBuilder);
-        return okResponse(response);
     }
 
 }

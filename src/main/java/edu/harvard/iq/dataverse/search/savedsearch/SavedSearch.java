@@ -32,7 +32,7 @@ public class SavedSearch implements Serializable {
      * https://wiki.apache.org/solr/CommonQueryParameters#fq
      */
     @OneToMany(mappedBy = "savedSearch", cascade = CascadeType.ALL)
-    private List<SavedSearchFilterQuery> savedSearchFilterQuerys;
+    private List<SavedSearchFilterQuery> savedSearchFilterQueries;
 
     /**
      * Saved searches are associated with a Dataverse, not a user.
@@ -56,12 +56,20 @@ public class SavedSearch implements Serializable {
         this.query = query;
     }
 
-    public List<SavedSearchFilterQuery> getSavedFilterQuerys() {
-        return savedSearchFilterQuerys;
+    public Dataverse getDefinitionPoint() {
+        return definitionPoint;
     }
 
-    public void setSavedFilterQuerys(List<SavedSearchFilterQuery> savedFilterQuerys) {
-        this.savedSearchFilterQuerys = savedFilterQuerys;
+    public void setDefinitionPoint(Dataverse definitionPoint) {
+        this.definitionPoint = definitionPoint;
+    }
+
+    public List<SavedSearchFilterQuery> getSavedSearchFilterQueries() {
+        return savedSearchFilterQueries;
+    }
+
+    public void setSavedSearchFilterQueries(List<SavedSearchFilterQuery> savedSearchFilterQueries) {
+        this.savedSearchFilterQueries = savedSearchFilterQueries;
     }
 
 }
