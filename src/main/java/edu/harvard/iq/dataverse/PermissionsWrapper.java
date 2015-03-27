@@ -64,21 +64,21 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand;
     }
 
-    public boolean canManageDataversePermissions(User u, Dataverse dv) {
-        return permissionService.userOn(u, dv).has(Permission.ManageDataversePermissions);
-    }
 
-    public boolean CanIssueUpdateDataverseCommand(DvObject dvo) {
+    public boolean canIssueUpdateDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, UpdateDataverseCommand.class);
     }
 
-    public boolean CanIssuePublishDataverseCommand(DvObject dvo) {
+    public boolean canIssuePublishDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, PublishDataverseCommand.class);
     }
 
-    public boolean CanIssueDeleteDataverseCommand(DvObject dvo) {
+    public boolean canIssueDeleteDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
     }
+    
+    
+    
 
     public boolean canManagePermissions(DvObject dvo) {
         User u = session.getUser();
@@ -86,7 +86,11 @@ public class PermissionsWrapper implements java.io.Serializable {
                 ? canManageDataversePermissions(u, (Dataverse) dvo)
                 : canManageDatasetPermissions(u, (Dataset) dvo);
     }
-
+    
+    public boolean canManageDataversePermissions(User u, Dataverse dv) {
+        return permissionService.userOn(u, dv).has(Permission.ManageDataversePermissions);
+    }
+    
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
         return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
     }

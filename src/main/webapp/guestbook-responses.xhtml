@@ -21,71 +21,42 @@
 
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
-                    <ui:remove>
-                        Left datatable in just in case we want to use it to display responses
-                        <div>
-
-                            <p:dataTable id="allGuestbooks" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
-                                         rendered="#{!empty manageGuestbooksPage.guestbooks}">
-                                <p:column width="29%" sortBy="name" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
-                                    <h:outputText value="#{guestbook.name}" />
-                                </p:column>
-                                <p:column width="14%" sortBy="createDate" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
-                                    <h:outputText value="#{guestbook.createDate}" />
-                                </p:column>
-                                <p:column width="9%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
-                                    <h:outputText value="#{guestbook.usageCount}" />
-                                </p:column>
-                                <p:column width="13%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataset.manageGuestbooks.tab.header.responses']}">
-                                    <h:outputText value="#{guestbook.responseCount}" />
-                                </p:column>
-
-                            </p:dataTable>
-                        </div>
-                    </ui:remove>
-
-
-
-                    #{bundle['dataset.manageGuestbooks.tab.action.btn.viewCollectedData.dialog.header']}
-                    <div class="form-horizontal">
-                        <div class="form-group">
-                            <label for="guestbookNameStatic" class="col-sm-3 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
-                                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
-                                </span>
+                    <div class="row">
+                        <div class="form-group clearfix">
+                            <label for="guestbookNameStatic" class="col-sm-2 control-label">
+                                <span>#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}</span>
                             </label>
-                            <div class="col-sm-7">
-                                <p class="form-control-static">
-                                    #{guestbookResponsesPage.guestbook.name}
-                                </p>
+                            <div class="col-sm-9">
+                                #{guestbookResponsesPage.guestbook.name}
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="guestbookCollectedDataStatic" class="col-sm-3 control-label">
-                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
-                                #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
-                            </span>
-                        </label>
-                        <div class="col-sm-7">
-                            <ui:repeat value="#{guestbookResponsesPage.responses}" var="response">
-                                <p class="form-control-static">
-                                    <h:outputText value="#{response.dataset.releasedVersion.title}"/>
-                                </p>
-                                <p class="form-control-static">
-                                    <h:outputText value="#{response.dataFile.displayName}: #{response.name}, #{response.institution}, #{response.position}, #{response.responseTime.month+1}/#{response.responseTime.date}/#{response.responseTime.year+1900}, #{response.downloadtype}"/>
-                                </p>
-                                <ui:fragment rendered="#{response.customQuestionResponses.size() > 0}">
-                                    <ui:repeat value="#{response.customQuestionResponses}" var="customQResponse">
-                                        <p class="form-control-static">
-                                            <h:outputText value="#{customQResponse.customQuestion.questionString}: #{customQResponse.response}"/>
-                                        </p>
-                                    </ui:repeat>
-                                </ui:fragment>
-                            </ui:repeat>
-                        </div>
-                    </div>
-
+                    <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responses}" var="response">
+                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
+                            <h:outputText value="#{response.dataset.releasedVersion.title}"/>
+                        </p:column>
+                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.date']}">
+                            #{response.responseTime.month+1}/#{response.responseTime.date}/#{response.responseTime.year+1900}
+                        </p:column>
+                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.type']}">
+                            #{response.downloadtype}
+                        </p:column>
+                        <p:column sortBy="name" headerText="#{bundle['dataset.guestbooksResponses.file']}">
+                            #{response.dataFile.displayName}
+                        </p:column>
+                        <p:column sortBy="name" headerText="User">
+                            <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
+                            <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
+                            <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
+                        </p:column>
+                        
+                        <p:columns value="#{response.customQuestionResponses}" var="customQResponse"
+                                    sortBy="name" headerText="#{customQResponse.customQuestion.questionString}"
+                                    rendered="#{response.customQuestionResponses.size() > 0}">
+                            #{customQResponse.response}
+                        </p:columns>
+                        
+                    </p:dataTable>
                 </h:form>
             </ui:define>
         </ui:composition>

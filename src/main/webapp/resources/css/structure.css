@@ -33,6 +33,8 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .dropdown.accountName .logout a:hover, #navbarFixed .dropdown.accountName .logout a:focus {background-color: #E8E8E8; background-image: linear-gradient(to bottom, #F5F5F5 0px, #E8E8E8 100%); background-repeat: repeat-x; color: #262626; outline: 0; text-decoration: none;}
 
 #footer {margin-top:3em; padding-bottom:4em;}
+#footer span.socicon-twitter {color:#55acee; font-size:20px; vertical-align: top;}
+#footer span.socicon-github {color:#000; font-size:20px; vertical-align: top;}
 #footer .poweredbylogo span {color:#808080;font-size:.85em;margin-right:.3em;}
 #footer .version {margin-top:24px;font-size:.85em;color:#808080;}
 
@@ -280,8 +282,8 @@ div[id$='notifications'].ui-tabs-panel span.text-muted.small {margin-left:1em;}
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget tr, 
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget td {border:0;}
-
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal div.form-group {vertical-align: middle;}
+.form-horizontal .text-left .control-label {text-align:left;}
 
 input.metadata-blocks-default[type="checkbox"], input.facets-blocks-default[type="checkbox"] {margin: 4px 6px 0 0;}
 div.checkbox input.metadata-blocks-default[type="checkbox"] {margin-left:-20px;}
@@ -306,7 +308,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .button-block {margin-top:1em;}
 .form-group > .button-block, 
 .panel-body > .button-block, 
-td.col-file-action > .button-block,
+td.col-file-action > .button-block, td.col-manage-action > .button-block,
 div.ui-datatable-header > .button-block {margin-top:0;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group {margin-right:1em;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 

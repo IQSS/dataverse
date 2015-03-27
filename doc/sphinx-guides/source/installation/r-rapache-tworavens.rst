@@ -54,7 +54,7 @@ R is used both by the Dataverse application, directly, and the TwoRavens compani
 
 Two distinct interfaces are used to access R: Dataverse uses Rserve; and TwoRavens sends jobs to R running under rApache using Rook interface. 
 
-We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
+We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree; you will need the other 3 files in that directory as well - `https://github.com/IQSS/dataverse/conf/R/r-setup.sh <https://github.com/IQSS/dataverseconf/R/r-setup.sh>`__) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
 
 The script will attempt to download the packages from CRAN (or a mirror) and GitHub, so the system must have access to the internet. On a server fully firewalled from the world, packages can be installed from downloaded sources. This is left as an exercise for the reader. Consult the script for insight. 
 
@@ -83,13 +83,27 @@ c. run the installer
 --------------------
 
 a scripted, interactive installer is provided at the top level of the TwoRavens 
-distribution. Run it as 
+distribution (`https://github.com/IQSS/TwoRavens/blob/master/install.pl <https://github.com/IQSS/TwoRavens/blob/master/install.pl>`__). Run it as 
 
    ``./install.pl``
 
+The installer will ask you to provide the following:
+
+===================  =============================  ===========  
+Setting              default                        Comment
+===================  =============================  ===========  
+TwoRavens directory  ``/var/www/html/dataexplore``  File directory where TwoRavens is installed.
+Apache config dir.   ``/etc/httpd``                 rApache config file for TwoRavens will be placed under ``conf.d/`` there.
+Apache web dir.      ``/var/www/html``
+Apache host address  local hostname             
+Apache host port     ``443``
+Apache web protocol  ``https``                      http or https (https recommended)
+Dataverse URL                                       URL of the Dataverse from which TwoRavens will be receiving metadata and data files. For example, ``https://thedata.harvard.edu``.
+===================  =============================  =========== 
+
+
 This should be it!
 
-(TODO: describe the settings the user will be asked to provide by the installer script)
 
 Appendix
 ++++++++

@@ -517,7 +517,12 @@ public class Dataset extends DvObjectContainer {
             if (HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/dataset.xhtml?globalId=" + getGlobalId();
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
+                String rootArchiveUrl = this.getOwner().getHarvestingDataverseConfig().getHarvestingUrl();
+                int c = rootArchiveUrl.indexOf("/OAIHandler");
+                if (c > 0) {
+                    rootArchiveUrl = rootArchiveUrl.substring(0, c);
+                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
+                }
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 // TODO: 
                 // figure out how to redirect them to the ICPSR page specific to 
@@ -529,6 +534,14 @@ public class Dataset extends DvObjectContainer {
         }
         
         return null; 
+    }
+    
+    public String getHarvestingDescription() {
+        if (isHarvested()) {
+            return this.getOwner().getHarvestingDataverseConfig().getArchiveDescription();
+        }
+        
+        return null;
     }
     
     @Override
