@@ -125,11 +125,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         return "";
     }
     
-    public void viewSelectedGuestbookResponses(Guestbook selectedGuestbook){
-        this.selectedGuestbook = selectedGuestbook;
-        guestbookPage.setGuestbook(selectedGuestbook);
-        setResponses(guestbookResponseService.findAllByGuestbookId(selectedGuestbook.getId()));       
-    }
 
     private void saveDataverse(String successMessage, String failureMessage) {
         if (successMessage.isEmpty()) {
@@ -155,14 +150,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         this.guestbooks = guestbooks;
     }
     
-    
-    public List<GuestbookResponse> getResponses() {
-        return responses;
-    }
 
-    public void setResponses(List<GuestbookResponse> responses) {
-        this.responses = responses;
-    }
 
     public Dataverse getDataverse() {
         return dataverse;

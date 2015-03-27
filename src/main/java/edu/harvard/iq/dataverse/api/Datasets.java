@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -345,6 +346,40 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+    @GET
+    @Path("filesFromLatestPublishedVersion")
+    public Response listFilesFromLatestPublishedVersion(@QueryParam("globalId") String globalId) {
+        if (globalId == null || globalId.isEmpty()) {
+            return errorResponse(Response.Status.NOT_FOUND, "The globalId provided was null or empty.");
+        }
+        Dataset dataset = null;
+        try {
+            dataset = datasetService.findByGlobalId(globalId);
+        } catch (Exception ex) {
+            String msg = ex.getLocalizedMessage();
+            if (msg != null) {
+                return errorResponse(Response.Status.NOT_FOUND, "Unable to look up dataset: " + msg);
+            } else {
+                return errorResponse(Response.Status.NOT_FOUND, "Unable to look up dataset: " + ex);
+            }
+        }
+        if (dataset == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "Dataset not found");
+        }
+        DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        if (releasedVersion == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "No released version found.");
+        }
+        JsonArrayBuilder fileListBuilder = Json.createArrayBuilder();
+        for (FileMetadata fileMetadata : releasedVersion.getFileMetadatas()) {
+            JsonObjectBuilder fileBuilder = Json.createObjectBuilder();
+            fileBuilder.add("id", fileMetadata.getId());
+            fileBuilder.add("filename", fileMetadata.getLabel());
+            fileListBuilder.add(fileBuilder);
+        }
+        return okResponse(fileListBuilder);
     }
 
     private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )

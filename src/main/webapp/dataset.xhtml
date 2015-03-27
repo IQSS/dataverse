@@ -185,7 +185,7 @@
                             </div>
                             <!-- END: Publish/Submit for Review/Return to Author Button Group -->
                             <!-- END: Edit/Publish Button Group -->
-                            <!-- Email/Link Button Group -->
+                            <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
                                 <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">                                     
@@ -219,7 +219,7 @@
                                     </button>
                                 </div>
                             </p:dialog>
-                            <!-- END: Email/Link Button Group -->
+                            <!-- END: Email/Link/Share Button Group -->
 
                             <!-- View Dataset Versions Button -->
                             <div class="btn-group pull-left" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1 or (DatasetPage.releasedVersionTabList.size() == 1 and DatasetPage.dataset.latestVersion.draft and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
@@ -247,13 +247,15 @@
                                     <span data-toggle="tooltip" data-placement="top" title="Views" class="count">00</span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-downloads">
-                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">00</span>
+                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">
+                                        #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}
+                                    </span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-citations">
                                     <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
                                 </div>
                                 <div class="metrics-count pull-left text-center" id="metrics-shares">
-                                    <span id="sharrre-count" data-toggle="tooltip" data-placement="top" title="Shares" class="count"/>
+                                    <span id="sharrre-count" data-toggle="tooltip" data-placement="top" title="Shares" class="count">&#160;</span>
                                 </div>
                             </div>
                             <!-- END: Metrics -->
@@ -526,7 +528,7 @@
                                             </p:commandLink>
                                         </div>                                           
                                     </f:facet>
-                                    <p:column class="text-center" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
+                                    <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                     <p:column class="text-center" rendered="#{empty DatasetPage.editMode}">
                                         <p:selectBooleanCheckbox styleClass="metadata-blocks-default"
                                                                  valueChangeListener="#{DatasetPage.updateDownloadSelected}">
@@ -534,7 +536,7 @@
                                             <p:ajax update=":#{p:component('filesTable')}" process="@this"/>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
-                                    <p:column class="text-center col-file-thumb">
+                                    <p:column class="col-file-thumb text-center">
                                         <div class="thumbnail-block">
                                             <!-- Thumbnail Preview -->
                                             <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user)}"
@@ -589,7 +591,7 @@
                                             <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"><small>Preview</small></a>
                                         </ui:fragment>
                                     </p:column>
-                                    <p:column class="col-sm-6">
+                                    <p:column class="col-file-metadata">
                                         <h:outputText id="fileNameOutput" value="#{fileMetadata.label}" style="display:block;font-weight:bold;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
                                         <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
@@ -608,7 +610,7 @@
 
                                             <h:outputText id="fileCreatePublishDate" value=" - #{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
                                             
-                                            <h:outputText id="fileDownloadCount" value=" - #{dataFileServiceBean.findCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)} Downloads" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                            <h:outputText id="fileDownloadCount" value=" - #{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)} Downloads" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
                                             <div class="mD5-block">
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
@@ -637,49 +639,52 @@
                                             </ui:fragment>
                                         </div>
 
-                                        <div class="file-categories-tags #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags) or (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <!-- File Categories -->
-                                            <p:commandLink type="button" id="fileCategoriesButton" styleClass="btn btn-default btn-sm"
-                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
-                                                           update=":datasetForm:fileCategoriesPopup"
-                                                           oncomplete="fileCategoriesPopup.show()"
-                                                           rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                                <span class="glyphicon glyphicon-tag"/> #{bundle['file.editCategories']}
-                                            </p:commandLink>
-                                            <ui:fragment rendered="#{empty fileMetadata.categories and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                                <span class="text-muted small">
-                                                    You currently have no categories set for this file.
-                                                </span>
-                                            </ui:fragment>
+                                        <div class="file-tags-block #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags) or (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                                                 <ui:repeat value="#{fileMetadata.categories}" var="cat">
-                                                    <h:outputText value="#{cat.name}" styleClass="label label-success"/>
+                                                    <h:outputText value="#{cat.name}" styleClass="label label-default"/>
                                                 </ui:repeat>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(empty fileMetadata.dataFile.tags)}">
                                                 <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
-                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-default"/>
                                                 </ui:repeat>
                                             </ui:fragment>
                                         </div>
                                     </p:column>
 
-                                    <p:column class="col-sm-5 col-dropdown-visible text-right" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                        <ui:fragment rendered="#{((!(empty fileMetadata.dataFile.id)) and fileMetadata.dataFile.image)
-                                                                 or fileMetadata.dataFile.tabularData
-                                                                 or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
-                                                                 or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}">
+                                    <p:column class="col-file-action text-right" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                        <div class="button-block">
+                                            <p:commandLink id="fileCategoriesButton"
+                                                           type="button" styleClass="btn btn-default btn-sm"
+                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                           update=":datasetForm:fileTagsPopup"
+                                                           oncomplete="fileTagsPopup.show();bind_bsui_components();">
+                                                <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
+                                            </p:commandLink>
+                                           
+                                            <p:commandLink id="fileSetThumbnailBtn"
+                                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}"
+                                                           type="button" styleClass="btn btn-default"
+                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                           update=":datasetForm:fileAdvancedOptions"
+                                                           oncomplete="fileSetThumbnail.show()">
+                                                <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
+                                            </p:commandLink>
+
                                             <p:commandLink id="advancedIngestOptionsButton"
+                                                           rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
+                                                                     or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
                                                            type="button" styleClass="btn btn-default"
                                                            actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
                                                            update=":datasetForm:fileAdvancedOptions"
                                                            oncomplete="fileAdvancedOptions.show()">
                                                 <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedOptions']}
                                             </p:commandLink>
-                                        </ui:fragment>
+                                        </div>
                                     </p:column>
 
-                                    <p:column class="col-sm-5 col-dropdown-visible text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                    <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                         <!-- Ingest in progress... -->
                                         <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                             #{bundle['file.ingestInproGress']}
@@ -726,20 +731,23 @@
 
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                            <ui:remove></ui:remove>
+                                           
+                                            <p:commandLink rendered="#{ DatasetPage.isFileDownloadButtonViewable(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) }"
                                                            type="button" styleClass="btn btn-default"
                                                            action="#{DatasetPage.startFileDownload(fileMetadata, '')}">
                                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                                            </p:commandLink>
+                                            </p:commandLink> 
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                            <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                            <p:commandLink rendered="#{ DatasetPage.isFileDownloadButtonViewable(fileMetadata) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired }"
                                                            type="button" styleClass="btn btn-default"
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata)}"
                                                            update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
                                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                             </p:commandLink>
+                                           
                                             <!-- Download Dropdown -->
-                                            <div class="btn-group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and fileMetadata.dataFile.tabularData and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}">
+                                            <div class="btn-group" jsf:rendered="#{ DatasetPage.isFileDownloadButtonViewable(fileMetadata) and fileMetadata.dataFile.tabularData }">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
                                                 </button>
@@ -843,13 +851,18 @@
                                                 </ul>
                                             </div>
                                             <!-- Request Access -->
-                                            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+<!--
+ <p:commandLink type="button" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+
+-->
+                                            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(DatasetPage.isFileDownloadButtonViewable(fileMetadata))}"
+                                           
                                                            actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}"
                                                            update="filesTable"
                                                            disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                                                 <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
                                             </p:commandLink>
-                                            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
+                                            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(DatasetPage.isFileDownloadButtonViewable(fileMetadata))}"
                                                            onclick="accessSignUpLogIn_popup.show()">
                                                 <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
                                             </p:commandLink>
@@ -1436,7 +1449,7 @@
 
                                 <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                                              rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}" rowKey="#{versionTab}">
-                                    <p:column selectionMode="multiple" class="text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/>
+                                    <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/>
                                     <p:column>
                                         <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                                             <a id="versionLink" href="/dataset.xhtml?globalId=#{versionTab.dataset.globalId}&#38;versionId=#{versionTab.id}" class="ui-commandlink ui-widget">
@@ -1565,7 +1578,7 @@
                             <label for="versionDeaccessionTable">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                             <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                          rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
-                                <p:column selectionMode="multiple" class="text-center" style="width:2%;"/>
+                                <p:column selectionMode="multiple" class="col-select-width text-center"/>
                                 <p:column>
                                     <h:outputText value="#{bundle['file.deaccessionDialog.version']} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}" />
                                 </p:column>
@@ -1709,23 +1722,6 @@
 
                     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedOptions']}" widgetVar="fileAdvancedOptions" modal="true">
                         <div class="form-horizontal">
-                            <div class="form-group" jsf:rendered="#{DatasetPage.fileMetadataSelected.dataFile.tabularData}">
-                                <label for="tabularDataTags" class="col-sm-4 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.tabularDataTags.title']}">
-                                        #{bundle['file.tabularDataTags']}
-                                    </span>
-                                </label>
-                                <div class="col-sm-8">
-                                    <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
-                                    <p:selectCheckboxMenu id="tabularDataTags" styleClass="form-control"
-                                                          value="#{DatasetPage.selectedTags}" label="#{bundle['file.addTags']}"
-                                                          filter="false">
-                                        <f:selectItems value="#{DatasetPage.tabFileTags}" />
-                                    </p:selectCheckboxMenu>
-                                    <p:message for="tabularDataTags" display="text" />
-                                </div>
-                            </div>
-
                             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
                             <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssSavFile(DatasetPage.fileMetadataSelected.dataFile)}">
                                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
@@ -1893,19 +1889,6 @@
                                 </div>
                             </div>
 
-                            <!-- Assign this to be the "dataset thumbnail" (only applies to image files, for now) -->
-                            <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected.dataFile.id) and DatasetPage.fileMetadataSelected.dataFile.image}">
-                                <label for="datasetThumbnailImage" class="col-sm-4 control-label">
-                                    #{bundle['file.datasetThumbnail']}
-                                </label>
-                                <div class="col-sm-8">
-                                    <p class="help-block">#{bundle['file.datasetThumbnail.tip']}</p>
-                                    <p:selectBooleanCheckbox id="datasetThumbnailImage"
-                                                             itemLabel="#{bundle['file.useThisIamge']}" value="#{DatasetPage.useAsDatasetThumbnail}"/>
-                                    <p:message for="datasetThumbnailImage" display="text" />
-                                </div>
-                            </div>
-
                             <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
                             <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssPorFile(DatasetPage.fileMetadataSelected.dataFile)}">
                                 <label for="labelsFileUpload" class="col-sm-4 control-label">
@@ -1922,6 +1905,76 @@
                         <div class="button-block">
                             <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()" update=":datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
                             <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
+                        </div>
+                    </p:dialog>
+
+                    <p:dialog id="fileSetThumbnail" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileSetThumbnail" modal="true">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label for="datasetThumbnailImage" class="col-sm-4 control-label">
+                                    #{bundle['file.datasetThumbnail']}
+                                </label>
+                                <div class="col-sm-8">
+                                    <p class="help-block">#{bundle['file.datasetThumbnail.tip']}</p>
+                                    <p:selectBooleanCheckbox id="datasetThumbnailImage"
+                                                             itemLabel="#{bundle['file.useThisIamge']}" value="#{DatasetPage.useAsDatasetThumbnail}"/>
+                                    <p:message for="datasetThumbnailImage" display="text" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="fileSetThumbnail.hide()" update=":datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
+                            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="fileSetThumbnail.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
+                        </div>
+                    </p:dialog>
+
+                    <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
+                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
+                        <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
+                            <div class="form-group">
+                                <label for="fileTagsMenu" class="col-sm-3 control-label">
+                                    #{bundle['file.editTagsDialog.select']}
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
+                                                          value="#{DatasetPage.fileMetadataSelected.categoriesByName}" label="#{bundle.select}">
+                                        <f:selectItems value="#{DatasetPage.fileMetadataSelected.datasetVersion.dataset.categoriesByName}"/>
+                                    </p:selectCheckboxMenu>
+                                    <p:message for="fileTagsMenu" display="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fileTagAddNew" class="col-sm-3 control-label">
+                                    #{bundle['file.editTagsDialog.add']}
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:inputText id="fileTagAddNew" styleClass="form-control"
+                                                 type="text" value="#{DatasetPage.newCategoryName}"
+                                                 placeholder="#{bundle['file.editTagsDialog.newName']}"
+                                                 onkeypress="if (event.keyCode == 13) {return false;}" />
+                                    <p:message for="fileTagAddNew" display="text" />
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{DatasetPage.fileMetadataSelected.dataFile.tabularData}">
+                                <label for="tabularDataTags" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.tabularDataTags.title']}">
+                                        #{bundle['file.tabularDataTags']}
+                                    </span>
+                                </label>
+                                <div class="col-sm-8">
+                                    <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
+                                    <p:selectCheckboxMenu id="tabularDataTags" styleClass="form-control"
+                                                          value="#{DatasetPage.selectedTags}" label="#{bundle.select}"
+                                                          filter="false">
+                                        <f:selectItems value="#{DatasetPage.tabFileTags}" />
+                                    </p:selectCheckboxMenu>
+                                    <p:message for="tabularDataTags" display="text" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileTagsPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.addFileCategory()}"/>
+                            <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="fileTagsPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                         </div>
                     </p:dialog>
 
@@ -2032,7 +2085,8 @@
                                                              required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
                                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
                                                              requiredMessage="#{bundle['requiredField']}"/>
-                                                <p:selectOneMenu 
+                                                <p:message id="cqMessages" for="customQuestionResponse" display="text"/>                                                 
+                                                <p:selectOneMenu id="customQuestionResponseSelect"
                                                     styleClass="form-control" value="#{customQuestionResponse.response}"
                                                     required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
                                                     rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
@@ -2041,8 +2095,7 @@
                                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
                                                 </p:selectOneMenu>
                                             </div>
-                                            <p:message id="cqMessages" 
-                                                       for="customQuestionResponse" display="text"/>
+                                                <p:message id="cqSelectMessages" for="customQuestionResponseSelect" display="text"/>   
                                         </ui:repeat>
                                     </div>
                                 </div>
@@ -2085,44 +2138,6 @@
                               rendered="#{empty DatasetPage.editMode}" modal="true">
                         <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
                             <ui:include src="/subset/gui_subset.xhtml"/>
-                        </div>
-                    </p:dialog>
-
-                    <p:dialog id="fileCategoriesPopup" styleClass="smallPopUp" header="#{bundle['file.editCategoriesDialog.header']}" widgetVar="fileCategoriesPopup" modal="true">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editCategoriesDialog.tip']}</p>
-                        <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
-                            <div class="form-group">
-                                <label for="fileCategoriesMenu" class="col-sm-3 control-label">
-                                    #{bundle['file.editCategoriesDialog.select']}
-                                </label>
-                                <div class="col-sm-6">
-                                    <div class="ui-inputfield form-control select-scroll-block">
-                                        <p:selectManyCheckbox id="fileCategoriesMenu" value="#{DatasetPage.fileMetadataSelected.categoriesByName}"
-                                                              layout="pageDirection">
-                                            <f:selectItems value="#{DatasetPage.fileMetadataSelected.datasetVersion.dataset.categoriesByName}"/>
-                                        </p:selectManyCheckbox>
-                                    </div>
-                                    <p:message for="fileCategoriesMenu" display="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="fileCategoryAddNew" class="col-sm-3 control-label">
-                                    #{bundle['file.editCategoriesDialog.add']}
-                                </label>
-                                <div class="col-sm-6">
-                                    <p:inputText id="fileCategoryAddNew" styleClass="form-control"
-                                                 type="text" value="#{DatasetPage.newCategoryName}"
-                                                 placeholder="#{bundle['file.editCategoriesDialog.newName']}"
-                                                 onkeypress="if (event.keyCode == 13) {
-                                                             return false;
-                                                         }" />
-                                    <p:message for="fileCategoryAddNew" display="text" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="button-block">
-                            <p:commandButton id="fileCategoriesPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileCategoriesPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.addFileCategory()}"/>
-                            <p:commandButton id="fileCategoriesPopupCancelButton" value="#{bundle.cancel}" onclick="fileCategoriesPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
                         </div>
                     </p:dialog>
 

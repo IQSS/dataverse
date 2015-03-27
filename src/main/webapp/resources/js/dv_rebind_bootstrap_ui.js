@@ -152,16 +152,6 @@ function post_differences(){
  * Sharrre
  */
 function sharrre(){
-    $('#sharrre-count').sharrre({
-        share: {
-            facebook: true,
-            twitter: true,
-            googlePlus: true
-        },
-        template: '{total}',
-        enableHover: false,
-        enableTracking: true
-    });
     $('#sharrre-widget').sharrre({
         share: {
             facebook: true,
@@ -169,6 +159,7 @@ function sharrre(){
             googlePlus: true
         },
         template: '<div id="sharrre-block" class="clearfix">\n\
+                    <input type="hidden" id="sharrre-total" name="sharrre-total" value="{total}"/> \n\
                     <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
                     <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
                     <a href="#" class="sharrre-google"><span class="socicon socicon-google"/></a>\n\
@@ -185,6 +176,9 @@ function sharrre(){
             $(api.element).on('click', '.sharrre-google', function() {
                 api.openPopup('googlePlus');
             });
+            
+            var sharrrecount = $('#sharrre-total').val();
+            $('#sharrre-count').text(sharrrecount);
         }
     });
 }

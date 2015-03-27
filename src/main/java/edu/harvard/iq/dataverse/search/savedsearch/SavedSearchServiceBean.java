@@ -55,4 +55,13 @@ public class SavedSearchServiceBean {
         return wasDeleted;
     }
 
+    public SavedSearch save(SavedSearch savedSearch) {
+        if (savedSearch.getId() == null) {
+            em.persist(savedSearch);
+            return savedSearch;
+        } else {
+            return em.merge(savedSearch);
+        }
+    }
+
 }

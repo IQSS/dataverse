@@ -28,15 +28,16 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
         
     }
     
-    public static boolean isEmailValid(String value, ConstraintValidatorContext context){
-            boolean isValid= EmailValidator.getInstance().isValid(value.trim());        
-            if (!isValid) {
-                context.buildConstraintViolationWithTemplate( value + " is not a valid email address.").addConstraintViolation();
-                return false;
-            }
-        
-        
+    public static boolean isEmailValid(String value, ConstraintValidatorContext context) {
+        if (value == null) {
+            //we'll let someone else decide if it's required
+            return true;
+        }
+        boolean isValid = EmailValidator.getInstance().isValid(value.trim());
+        if (!isValid) {
+            context.buildConstraintViolationWithTemplate(value + " is not a valid email address.").addConstraintViolation();
+            return false;
+        }
         return true;
-        
     }
 }

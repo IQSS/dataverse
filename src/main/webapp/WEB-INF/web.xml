@@ -21,10 +21,12 @@
     <welcome-file-list>
         <welcome-file>dataverse.xhtml</welcome-file>
     </welcome-file-list>
+    <!--
     <context-param>
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
         <param-value>false</param-value>
     </context-param>      
+    -->
     <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>bootstrap</param-value>

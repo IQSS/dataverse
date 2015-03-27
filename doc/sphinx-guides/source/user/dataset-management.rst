@@ -8,22 +8,41 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 Supported Metadata
 ====================
 
-A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata, 3) File level metadata (varies depending on the type of data file).
+A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata, 3) File level 
+metadata (varies depending on the type of data file - see File Handling and Uploading section below for more details). 
 
 File Handling and Uploading
 ====================
 
-All file formats are supported, up to a few GB per file. For certain file formats, we provide additional features:
+All file formats are supported, up to a few GB per file but some files types are supported by additional functionality, 
+including downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
+through data visualization and analysis.
 
 Tabular
 --------------------
 
+Tabular files of recognized formats (Stata, SPSS, RData, Excel, CSV) can be further explored and manipulated through 
+`TwoRavens <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_ (a statistical data exploration application integrated with Dataverse) by performing various statistical analyses and downloading subsets of variables.
+To perform various statistical analyses on the data (including summary statistics) click on the "Explore" button, found next to 
+each relevant tabular file and this will take you to the `TwoRavens <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_ application in a new window. To download subsets of variables click on the "Download" button found next
+to a relevant tabular file and select "Data Subset" in the dropdown menu, which will open a new window that is powered by 
+TwoRavens for you to create your subset. For more information on `TwoRavens <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_ please read their `documentation <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_. Furthermore,
+within the "Download" button for tabular data you will find additional options including downloading: in the original file format,
+RDATA Format, Variable Metadata, Data Subset (as described earlier) and Data File Citation (currently in either RIS format or EndNote XML).
+
 Geospatial
 --------------------
 
+Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through our integration
+with `WorldMap <http://guides.dataverse.org/en/latest/user/data-exploration/worldmap.html>`_, a geospatial data visualization
+and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University.
 
 Astronomy (FITS)
 --------------------
+
+Metadata found in the header section of Flexible Image Transport System (FITS) files are automatically extracted by Dataverse, 
+aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
+and browsable (facets) at the Dataset-level.
 
 
 New Dataset

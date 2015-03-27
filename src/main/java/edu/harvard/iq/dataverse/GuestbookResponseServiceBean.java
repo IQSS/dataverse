@@ -16,6 +16,7 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -25,6 +26,7 @@ import javax.persistence.Query;
  * @author skraffmiller
  */
 @Stateless
+@Named
 public class GuestbookResponseServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -354,5 +356,18 @@ public class GuestbookResponseServiceBean {
     public void save(GuestbookResponse guestbookResponse) {
         em.persist(guestbookResponse);
     }
+    
+    
+    public Long getCountGuestbookResponsesByDataFileId(Long dataFileId) {
+        // datafile id is null, will return 0
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);
+        return (Long) query.getSingleResult();
+    }
+    
+    public Long getCountGuestbookResponsesByDatasetId(Long datasetId) {
+        // dataset id is null, will return 0        
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+        return (Long) query.getSingleResult();
+    }    
 
 }

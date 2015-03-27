@@ -4,16 +4,9 @@
 
 -- admin (from the vdcnetwork creator)
 insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
-	select 			'@'|| useridentifier, vdc_id, dr.id
+	select 			'@'|| useridentifier, vdcn.id, dr.id
 	from _dvn3_vdcnetwork vdcn, authenticateduser, dataverserole dr
 	where vdcn.creator_id = authenticateduser.id
-	and dr.alias='admin';
-
--- admin (from the vdc creator)
-insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
-	select 			'@'|| useridentifier, vdc_id, dr.id
-	from _dvn3_vdc, authenticateduser, dataverserole dr
-	where vdc.creator_id = authenticateduser.id
 	and dr.alias='admin';
 
 -- admin
@@ -55,7 +48,7 @@ insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 -- contributor (from the study creator)
 insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 	select 			'@'|| useridentifier, ds.id, dr.id
-	from _dvn3_study s, authenticateduser, dataverserole dr, datset ds
+	from _dvn3_study s, authenticateduser, dataverserole dr, dataset ds
 	where s.creator_id = authenticateduser.id
         and ds.authority = s.authority
         and ds.protocol = s.protocol
@@ -65,8 +58,9 @@ insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 -- member
 insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 	select 			'@'|| useridentifier, ds.id, dr.id
-	from _dvn3_study_vdcuser, _dvn3_study s, authenticateduser, dataverserole dr, datset ds
+	from _dvn3_study_vdcuser, _dvn3_study s, authenticateduser, dataverserole dr, dataset ds
 	where _dvn3_study_vdcuser.allowedusers_id = authenticateduser.id
+        and _dvn3_study_vdcuser.studies_id = s.id
         and ds.authority = s.authority
         and ds.protocol = s.protocol
         and ds.identifier = s.studyid 
@@ -77,6 +71,7 @@ insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 	select 			'&'|| groupalias, ds.id, dr.id
 	from _dvn3_study_usergroup, _dvn3_study s, explicitgroup, dataverserole dr, dataset ds
 	where _dvn3_study_usergroup.allowedgroups_id = explicitgroup.id
+        and _dvn3_study_usergroup.studies_id = s.id
         and ds.authority = s.authority
         and ds.protocol = s.protocol
         and ds.identifier = s.studyid 
