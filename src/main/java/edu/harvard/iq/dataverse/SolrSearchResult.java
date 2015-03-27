@@ -683,6 +683,13 @@ public class SolrSearchResult {
              */
             String badString = "null";
             if (!identifier.contains(badString)) {
+                if (entity != null && entity instanceof Dataset) {
+                    if (((Dataset)entity).isHarvested()) {
+                        if (((Dataset)entity).getRemoteArchiveURL() != null) {
+                            return ((Dataset)entity).getRemoteArchiveURL();
+                        }
+                    }
+                }
                 return "/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId;
             } else {
                 logger.info("Dataset identifier/globalId contains \"" + badString + "\" perhaps due to https://github.com/IQSS/dataverse/issues/1147 . Fix data in database and reindex. Returning failsafe URL: " + failSafeUrl);

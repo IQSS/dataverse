@@ -488,7 +488,7 @@
                                             <h:outputText value="#{result.name} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                             <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
-                                        </h:outputLink>
+                                        </h:outputLink>                                      
                                         <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
                                         <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
@@ -621,6 +621,11 @@
                                                 </div>
                                             </ui:repeat>
                                         </ui:repeat>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{result.entity.harvested}">
+                                        <div>
+                                            <h:outputText value="#{result.entity.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
+                                        </div>
                                     </ui:fragment>
                                 </ui:fragment>
                                 <!--FILE CARDS-->
