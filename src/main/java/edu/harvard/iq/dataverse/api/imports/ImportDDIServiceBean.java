@@ -188,6 +188,13 @@ public class ImportDDIServiceBean {
                 
             }
         }
+         if (importType.equals(ImportType.HARVEST)) {
+            datasetDTO.getDatasetVersion().setVersionState(VersionState.RELEASED);
+            if (datasetDTO.getDatasetVersion().getVersionNumber()==null) {
+                datasetDTO.getDatasetVersion().setVersionNumber(new Long(1));
+                datasetDTO.getDatasetVersion().setMinorVersionNumber("0");
+            }
+         }
         
 
     }
@@ -890,8 +897,6 @@ public class ImportDDIServiceBean {
         if (importType.equals(ImportType.NEW)) {
             // If this is a new, Draft version, versionNumber and minor versionNumber are null.
             dvDTO.setVersionState(VersionState.DRAFT);
-        } else if (importType.equals(ImportType.HARVEST)) {
-            dvDTO.setVersionState(VersionState.RELEASED);
         } 
     }
     
