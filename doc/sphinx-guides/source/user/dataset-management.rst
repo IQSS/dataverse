@@ -34,11 +34,15 @@ Geospatial
 --------------------
 
 Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through our integration
-with `WorldMap <http://guides.dataverse.org/en/latest/user/data-exploration/worldmap.html>`_ (a geospatial data visualization
-and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University).
+with `WorldMap <http://guides.dataverse.org/en/latest/user/data-exploration/worldmap.html>`_, a geospatial data visualization
+and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University.
 
 Astronomy (FITS)
 --------------------
+
+Metadata found in the header section of Flexible Image Transport System (FITS) files is automatically extracted by Dataverse, 
+aggregated and added to the Astronomy Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
+and browsable (facets) at the Dataset-level.
 
 
 New Dataset
