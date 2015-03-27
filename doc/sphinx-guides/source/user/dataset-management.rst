@@ -15,7 +15,7 @@ File Handling and Uploading
 ====================
 
 All file formats are supported, up to a few GB per file but some files types are supported by additional functionality, 
-including downloading in different formats, file-level metadata preservation, file-level data citation, and exploration 
+including downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
 through data visualization and analysis.
 
 Tabular
@@ -33,6 +33,9 @@ RDATA Format, Variable Metadata, Data Subset (as described earlier) and Data Fil
 Geospatial
 --------------------
 
+Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through our integration
+with `WorldMap <http://guides.dataverse.org/en/latest/user/data-exploration/worldmap.html>`_ (a geospatial data visualization
+and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University).
 
 Astronomy (FITS)
 --------------------
