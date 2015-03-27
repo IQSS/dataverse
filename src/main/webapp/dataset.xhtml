@@ -1357,7 +1357,7 @@
                     </p:confirmDialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
 
-                    <p:dialog id="downloadPopup" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
+                                        <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.downloadDialog.tip']}
                         </p>
@@ -1385,7 +1385,7 @@
                                 </div>
                             </div>
                             <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null and DatasetPage.dataset.guestbook.enabled }" id="guestbookUIFragment">
-                                <p:fragment >
+                                <p:fragment>
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label" for="guestbookuser_nameText">
                         #{bundle.name}
@@ -1396,7 +1396,7 @@
                                                          styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"
                                                          requiredMessage="#{bundle['requiredField']}"/>
                                         </div>
-                                        <p:message id="nameMessages"  for="guestbookuser_nameText" display="text"/>
+                                        <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                                     </div>
                                 </p:fragment>
                                 <div class="form-group">
@@ -1410,7 +1410,7 @@
                                                      requiredMessage="#{bundle['requiredField']}"/>
 
                                     </div>
-                                    <p:message id="emailMessages"  for="guestbookuser_email" display="text"/>
+                                    <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_institution">
@@ -1422,7 +1422,7 @@
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"
                                                      requiredMessage="#{bundle['requiredField']}"/>
                                     </div>
-                                    <p:message id="institutionMessages"  for="guestbookuser_institution" display="text"/>
+                                    <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_position">
@@ -1434,7 +1434,7 @@
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"
                                                      requiredMessage="#{bundle['requiredField']}"/>
                                     </div>
-                                    <p:message id="positionMessages"  for="guestbookuser_position" display="text"/>
+                                    <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
                                     <label class="col-sm-3 control-label" for="guestbookuser_questions">
@@ -1442,7 +1442,7 @@
                                     </label>
                                     <div class="col-sm-6">
                                         <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
-                                            <div>
+                                            <div class="text-left">
                                                 <label class="control-label">
                                                     <h:outputText value="#{customQuestionResponse.customQuestion.questionString}"/>
                                                     <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
@@ -1462,7 +1462,7 @@
                                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
                                                 </p:selectOneMenu>
                                             </div>
-                                                <p:message id="cqSelectMessages" for="customQuestionResponseSelect" display="text"/>   
+                                            <p:message id="cqSelectMessages" for="customQuestionResponseSelect" display="text"/>
                                         </ui:repeat>
                                     </div>
                                 </div>
@@ -1497,7 +1497,7 @@
                                 <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
                                                  action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             </ui:remove>
-                            <p:commandButton value="#{bundle.cancel}" onclick="downloadPopup.hide()" type="button" />
+                            <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.cancel}" onclick="downloadPopup.hide()" />
                         </div>
                     </p:dialog>
 
