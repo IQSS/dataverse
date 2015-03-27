@@ -21,6 +21,9 @@ function bind_bsui_components(){
     
     // Sharrre
     sharrre();
+    
+    // Custom Popover with HTML code snippet -- from dataverse_template
+    popoverHTML();
 
 }
 
@@ -183,30 +186,7 @@ function sharrre(){
     });
 }
 
-/*
- * Custom Popover with HTML code snippet
- */
-var popoverTemplateHTML = ['<div class="popover">',
-    '<div class="arrow"></div>',
-    '<h3 class="popover-title"></h3>',
-    '<div class="popover-content">',
-    '</div>',
-    '</div>'].join('');
 
-var popoverContentHTML = ['<code>',
-    '<h:outputText value="#{bundle.htmlAllowedTags}" escape="true"/>',
-    '</code>'].join('');
-
-$('body').popover({
-    selector: 'span.popoverHTML',
-    title: '<h:outputText value="#{bundle.htmlAllowedTitle}"/>',
-    trigger: 'click',
-    content : popoverContentHTML,
-    template: popoverTemplateHTML,
-    placement: "bottom",
-    container: "#content",
-    html: true
-});
 
 function handleResizeDialog(dialog) {
         var el = $('div[id$="' + dialog + '"]');
