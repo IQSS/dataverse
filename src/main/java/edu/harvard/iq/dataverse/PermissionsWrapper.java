@@ -43,24 +43,25 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
 
         if (commandMap.containsKey(dvo.getId())) {
-            Map<Class<? extends Command>,  Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
+            Map<Class<? extends Command>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {
                 return addCommandtoDvoCommandMap(dvo, command, dvoCommandMap);
             }
-            
+
         } else {
             Map newDvoCommandMap = new HashMap();
             commandMap.put(dvo.getId(), newDvoCommandMap);
             return addCommandtoDvoCommandMap(dvo, command, newDvoCommandMap);
         }
     }
-    
-    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command>  command, Map<Class<? extends Command>,  Boolean> dvoCommandMap) {                boolean canIssueCommand;
-                canIssueCommand = permissionService.on(dvo).canIssue(command);
-                dvoCommandMap.put(command, canIssueCommand);
-                return canIssueCommand;
+
+    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command> command, Map<Class<? extends Command>, Boolean> dvoCommandMap) {
+        boolean canIssueCommand;
+        canIssueCommand = permissionService.on(dvo).canIssue(command);
+        dvoCommandMap.put(command, canIssueCommand);
+        return canIssueCommand;
     }
 
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
@@ -70,18 +71,15 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean CanIssueUpdateDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, UpdateDataverseCommand.class);
     }
-    
+
     public boolean CanIssuePublishDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, PublishDataverseCommand.class);
     }
-    
+
     public boolean CanIssueDeleteataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
-    }       
+    }
 
-    
-    
-    
     public boolean canManagePermissions(DvObject dvo) {
         User u = session.getUser();
         return dvo instanceof Dataverse
@@ -91,6 +89,6 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
         return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
-    }    
-    
+    }
+
 }
