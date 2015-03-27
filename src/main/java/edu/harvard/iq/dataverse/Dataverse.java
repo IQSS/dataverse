@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -148,6 +149,8 @@ public class Dataverse extends DvObjectContainer {
     inverseJoinColumns = @JoinColumn(name = "controlledvocabularyvalue_id"))
     private Set<ControlledVocabularyValue> dataverseSubjects;
     
+    
+    
     public Set<ControlledVocabularyValue> getDataverseSubjects() {
         return dataverseSubjects;
     }
@@ -163,6 +166,17 @@ public class Dataverse extends DvObjectContainer {
     @ManyToOne
     @JoinColumn(nullable = true)
     private Template defaultTemplate;  
+    
+    @OneToMany(mappedBy = "definitionPoint")
+    private List<SavedSearch> savedSearches;
+
+    public List<SavedSearch> getSavedSearches() {
+        return savedSearches;
+    }
+
+    public void setSavedSearches(List<SavedSearch> savedSearches) {
+        this.savedSearches = savedSearches;
+    }
     
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<Template> templates; 

@@ -446,10 +446,18 @@
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
                                                rendered="#{dataverseSession.user.superuser and DataversePage.dataverse.owner != null}"                                                          
                                                title="#{bundle['dataverse.link.btn.tip']}"
-                                               action="#{DataversePage.updateLinkableDataverses()}"                                                          
+                                               action="#{DataversePage.setupLinkingPopup('link')}"                                                          
                                                oncomplete="PF('linkDataverseForm').show()"
                                                update=":linkDataverseForm">
                                     <span class="glyphicon glyphicon-link no-text"/>
+                                </p:commandLink>
+                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                               rendered="#{dataverseSession.user.superuser}"                                                          
+                                               title="#{bundle['dataverse.link.btn.tip']}"
+                                               action="#{DataversePage.setupLinkingPopup('savedSearch')}"                                                          
+                                               oncomplete="PF('linkDataverseForm').show()"
+                                               update=":linkDataverseForm">
+                                    <span class="glyphicon glyphicon-link">Link Search</span>
                                 </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
@@ -615,9 +623,33 @@
                 </ui:fragment>
                
                 <!-- Link Dataverse Popup -->
+
+                <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{bundle['dataverse.link']}" widgetVar="linkDataverseForm" style="min-width:500px;">
+                    <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
+                        <ui:fragment rendered="#{!empty SearchIncludeFragment.query}">
+                            <label class="col-sm-4 control-label">
+                                 #{bundle['dataverse.savedsearch.searchquery']}
+                                 </label>
+                                #{SearchIncludeFragment.query}
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!empty SearchIncludeFragment.filterQueriesDebug}">
+                            <br></br>
+                                <label class="col-sm-4 control-label">
+                                 #{bundle['dataverse.savedsearch.filterQueries']} 
+                                 </label>
+                            <ui:repeat value="#{SearchIncludeFragment.filterQueriesDebug}" var="fq" >
+                                <h:outputText value="#{fq}"/><br/>
+                            </ui:repeat>                                                              
+                        </ui:fragment>
+                    </ui:fragment>
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
+                        <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.dataverse.choose']}</p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
+                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.savedsearch.dataverse.choose']}</p>
+                        </ui:fragment>
                         <div class="form-group">
                             <label class="col-sm-4 control-label">
                                 <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
@@ -625,13 +657,36 @@
                                 </h:outputFormat>
                             </label>
                             <div class="col-sm-7">
+
+
                                 <h:selectOneMenu styleClass="form-control" value="#{DataversePage.linkingDataverseId}">
                                     <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
                                 </h:selectOneMenu>
+                                <ui:remove>
+                                 <p:autoComplete id="dvName"
+                                                value="#{DataversePage.dataversesForLinking}"
+                                                queryDelay="1000"
+                                                var="u"
+                                                itemLabel="#{u.id}"
+                                                itemValue="#{u.id}">
+                                    <f:facet name="itemtip">
+                                        <div>
+                                            <strong>#{u.id}</strong><br/>
+                                            <em>#{u.affiliation}</em>
+                                            
+                                        </div>
+                                    </f:facet>
+                                </p:autoComplete>
+                                </ui:remove>
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
+                            <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
+                                <p:commandButton value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
+                            </ui:fragment>
+                            <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
+                                <p:commandButton value="#{bundle['dataverse.savedsearch.save']}" action="#{DataversePage.saveSavedSearch}" />
+                            </ui:fragment>
                             <p:commandButton value="#{bundle.cancel}" onclick="linkDataverseForm.hide()"/>
                         </div>
                     </h:form>
@@ -663,7 +718,7 @@
                         </div>
                     </ui:fragment>
                 </p:dialog>
-               
+                
                 <!-- Metadata Resest Modifications Popup -->
                 <p:dialog id="resetModifications" header="#{bundle['dataverse.resetModifications']}" widgetVar="resetModifications" modal="true" closable="false">
                     <p class="text-danger">

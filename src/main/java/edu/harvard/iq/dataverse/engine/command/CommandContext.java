@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.persistence.EntityManager;
 
@@ -66,6 +67,8 @@ public interface CommandContext {
     public DataFileServiceBean files(); 
     
     public TemplateServiceBean templates();
+    
+    public SavedSearchServiceBean savedSearches();
     
     public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
                

@@ -19,6 +19,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.EnumSet;
 import javax.ejb.EJBException;
@@ -75,6 +76,9 @@ public class EjbDataverseEngine {
 
     @EJB
     TemplateServiceBean templateService;
+    
+    @EJB
+    SavedSearchServiceBean savedSearchService;
 
     @EJB
     DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels;
@@ -249,6 +253,11 @@ public class EjbDataverseEngine {
                 @Override
                 public TemplateServiceBean templates() {
                     return templateService;
+                }
+                
+                @Override
+                public SavedSearchServiceBean savedSearches() {
+                    return savedSearchService;
                 }
 
                 @Override
