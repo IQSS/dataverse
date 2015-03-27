@@ -388,14 +388,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                             if (datasetVersion.isDeaccessioned()) {
                                 solrSearchResult.setDeaccessionedState(true);
                             }
-                            try {
-                                String citation = datasetVersion.getCitation(true);
-                                if (citation != null) {
-                                    solrSearchResult.setCitation(citation);
-                                }
-                            } catch (Exception ex) {
-                                logger.info("Caught exception trying to call datasetVersion.getCitation() on " + datasetVersion.getId() + ". This will be fixed in https://github.com/IQSS/dataverse/issues/1153");
-                            }
+                           
                         }
                     }
                     String deaccesssionReason = solrSearchResult.getDeaccessionReason();
