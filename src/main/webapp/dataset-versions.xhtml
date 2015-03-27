@@ -1,4 +1,5 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
      xmlns:h="http://java.sun.com/jsf/html"
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -6,6 +7,7 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
+<!-- VERSIONS -->
     <div class="text-right margin-bottom">
         <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
                          rendered="#{DatasetPage.compareVersionsCount > 2}">
@@ -94,4 +96,6 @@
             <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
         </p:column>
     </p:dataTable>
-</div>
+<!-- / VERSIONS -->
+
+</ui:composition>

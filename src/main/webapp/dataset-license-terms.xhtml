@@ -1,4 +1,4 @@
-<div xmlns="http://www.w3.org/1999/xhtml"
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
      xmlns:h="http://java.sun.com/jsf/html"
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -6,6 +6,7 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
+<!-- LICENSE + TERMS -->
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                         and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
@@ -513,6 +514,8 @@
            </div>
        </div>
     </div>
+    <!-- / LICENSE + TERMS -->
+
     <!-- View Guest Book -->
     <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook">
        <div class="form-horizontal">
@@ -552,4 +555,4 @@
        </div>
     </p:dialog>
     <!-- / View Guest Book -->
-</div>
+</ui:composition>
