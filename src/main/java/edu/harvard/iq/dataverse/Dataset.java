@@ -314,12 +314,16 @@ public class Dataset extends DvObjectContainer {
     }
 
     public Date getMostRecentMajorVersionReleaseDate() {
-        for (DatasetVersion version : this.getVersions()) {
+        if (this.isHarvested()) {
+            return getVersions().get(0).getReleaseTime();
+        } else {
+            for (DatasetVersion version : this.getVersions()) {
             if (version.isReleased() && version.getMinorVersionNumber().equals(new Long(0))) {
-                return version.getReleaseTime();
+                    return version.getReleaseTime();
+                }
             }
+            return null;
         }
-        return null;
     }
 
     public DatasetVersion getReleasedVersion() {
@@ -438,16 +442,25 @@ public class Dataset extends DvObjectContainer {
         return studyDir;
     }
 
+   
     public String getNextMajorVersionString() {
+        // Never need to get the next major version for harvested studies.
+        if (isHarvested()) {
+            throw new IllegalStateException();
+        }
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {
-                return Integer.toString(dv.getVersionNumber().intValue() + 1) + ".0";
+                    return Integer.toString(dv.getVersionNumber().intValue() + 1) + ".0";
+                }
             }
-        }
         return "1.0";
     }
 
     public String getNextMinorVersionString() {
+    // Never need to get the next minor version for harvested studies.
+        if (isHarvested()) {
+            throw new IllegalStateException();
+        }
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {
                 return Integer.toString(dv.getVersionNumber().intValue()) + "."

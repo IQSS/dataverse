@@ -170,7 +170,7 @@ public class JsonParser {
             }
 
             dsv.setDeaccessionLink(obj.getString("deaccessionLink", null));
-            dsv.setVersionNumber((long) obj.getInt("versionNumber", -1));
+            dsv.setVersionNumber(Long.getLong(obj.getString("versionNumber", null)));
             dsv.setMinorVersionNumber(parseLong(obj.getString("minorVersionNumber", null)));
             // if the existing datasetversion doesn not have an id
             // use the id from the json object.

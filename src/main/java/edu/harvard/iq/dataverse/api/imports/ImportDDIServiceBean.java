@@ -190,10 +190,7 @@ public class ImportDDIServiceBean {
         }
          if (importType.equals(ImportType.HARVEST)) {
             datasetDTO.getDatasetVersion().setVersionState(VersionState.RELEASED);
-            if (datasetDTO.getDatasetVersion().getVersionNumber()==null) {
-                datasetDTO.getDatasetVersion().setVersionNumber(new Long(1));
-                datasetDTO.getDatasetVersion().setMinorVersionNumber("0");
-            }
+       
          }
         
 

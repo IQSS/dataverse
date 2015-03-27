@@ -806,7 +806,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
 
-            if (dataset == null) {
+            if (dataset == null || dataset.isHarvested()) {
                 return "/404.xhtml";
             }
             // now get the correct version
