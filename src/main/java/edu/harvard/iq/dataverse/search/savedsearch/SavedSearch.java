@@ -40,6 +40,30 @@ public class SavedSearch implements Serializable {
     @JoinColumn(nullable = false)
     private Dataverse definitionPoint;
 
+    /**
+     * This default constructor is only here to prevent this error at
+     * deployment:
+     *
+     * Exception Description: The instance creation method
+     * [edu.harvard.iq.dataverse.search.savedsearch.SavedSearch.<Default Constructor>],
+     * with no parameters, does not exist, or is not accessible
+     *
+     * Don't use it.
+     */
+    @Deprecated
+    public SavedSearch() {
+    }
+
+    public SavedSearch(String query, Dataverse definitionPoint) {
+        this.query = query;
+        this.definitionPoint = definitionPoint;
+    }
+
+    @Override
+    public String toString() {
+        return "SavedSearch{" + "id=" + id + ", query=" + query + ", savedSearchFilterQueries=" + savedSearchFilterQueries + ", definitionPoint=" + definitionPoint + '}';
+    }
+
     public Long getId() {
         return id;
     }

@@ -24,6 +24,30 @@ public class SavedSearchFilterQuery implements Serializable {
     @JoinColumn(nullable = false)
     private SavedSearch savedSearch;
 
+    /**
+     * This default constructor is only here to prevent this error at
+     * deployment:
+     *
+     * The instance creation method
+     * [edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery.<Default Constructor>],
+     * with no parameters, does not exist, or is not accessible.
+     *
+     * Don't use it.
+     */
+    @Deprecated
+    public SavedSearchFilterQuery() {
+    }
+
+    public SavedSearchFilterQuery(String filterQuery, SavedSearch savedSearch) {
+        this.filterQuery = filterQuery;
+        this.savedSearch = savedSearch;
+    }
+
+    @Override
+    public String toString() {
+        return "SavedSearchFilterQuery{" + "id=" + id + ", filterQuery=" + filterQuery + '}';
+    }
+
     public Long getId() {
         return id;
     }
