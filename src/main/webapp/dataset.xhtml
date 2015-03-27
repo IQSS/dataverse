@@ -700,14 +700,14 @@
 
                                             <!-- TwoRavens explore option -->
                                             <h:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-                                                                       and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and !DatasetPage.downloadPopupRequired}"
+                                                                       and DatasetPage.isFileDownloadButtonViewable(fileMetadata) and !DatasetPage.downloadPopupRequired}"
                                                            type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" 
                                                            actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
                                                 <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
                                             </h:commandLink>
                                             <p:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
-                                                                       and (permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile')) and DatasetPage.downloadPopupRequired}"
+                                                                       and DatasetPage.isFileDownloadButtonViewable(fileMetadata)  and DatasetPage.downloadPopupRequired}"
                                                            type="button" styleClass="btn btn-default"
                                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
                                                            update="@form"
@@ -851,10 +851,6 @@
                                                 </ul>
                                             </div>
                                             <!-- Request Access -->
-<!--
- <p:commandLink type="button" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(permissionServiceBean.on(fileMetadata.dataFile).has('DownloadFile'))}"
-
--->
                                             <p:commandLink type="button" styleClass="btn btn-default" rendered="#{dataverseSession.user.authenticated and DatasetPage.dataset.fileAccessRequest and !(DatasetPage.isFileDownloadButtonViewable(fileMetadata))}"
                                            
                                                            actionListener="#{DatasetPage.requestAccess(fileMetadata.dataFile)}"
