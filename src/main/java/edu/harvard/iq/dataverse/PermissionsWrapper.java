@@ -87,7 +87,13 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
     }
     
-      
+    public boolean canIssueCreateDataverseCommand(DvObject dvo) {
+        return canIssueCommand(dvo, CreateDataverseCommand.class);
+    }
+    
+    public boolean canIssueCreateDatasetCommand(DvObject dvo){
+        return canIssueCommand(dvo, CreateDataverseCommand.class);
+    }
 
     public boolean canManagePermissions(DvObject dvo) {
         if (dvo==null || (dvo.getId()==null) ){

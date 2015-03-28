@@ -20,6 +20,7 @@
                 <h:form>
                     <!-- this remote command is called once the page finishes its initial load,
                     in order to display the images for the card -->
+                    <ui:remove></ui:remove>
                     <p:remoteCommand  name="postLoad"
                                       process="@this"
                                       update=":resultsTable"
@@ -58,19 +59,18 @@
                     </f:facet>
                 </p:confirmDialog>  
             </ui:fragment>
-
-            <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
-                                     or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
-                <h:form id="shareForm">
+            <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
+                                     or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
+            <h:form id="shareForm">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
-                            <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') }">
+                            <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
                                 <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
                             </ui:fragment>
-                            <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand') }">
+                            <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
                                 <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a></li>
                             </ui:fragment>
                         </ul>
