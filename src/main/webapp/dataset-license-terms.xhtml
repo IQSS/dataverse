@@ -9,7 +9,7 @@
 <!-- LICENSE + TERMS -->
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
-                        and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
+                        and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
        <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" 
                       update="@form,:messagePanel" oncomplete="javascript:post_edit_license()" disabled="#{DatasetPage.locked}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -447,13 +447,13 @@
                        <div class="col-sm-9">
                            <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook 
-                                                        and ((!dataverseSession.user.authenticated or !permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))
-                                                        or ((dataverseSession.user.authenticated and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand') 
+                                                        and ((!dataverseSession.user.authenticated or !permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset))
+                                                        or ((dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
                                                            and !empty DatasetPage.dataset.dataverseContext.availableGuestbooks)))}">
                                    <p>#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.tip']}</p>
                                </ui:fragment>
                                <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook 
-                                                 and (dataverseSession.user.authenticated and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))
+                                                 and (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset))
                                                  and empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
                                    <p>
                                        <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.admin.tip']}">
