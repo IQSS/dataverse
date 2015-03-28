@@ -649,9 +649,8 @@
                                             <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
-
-                                        <span class="glyphicon glyphicon-lock text-danger pull-right" jsf:rendered="#{entity.restricted and (!(permissionServiceBean.on(entity).has('DownloadFile')))}"/>
-                                        <span class="icon-unlock text-success pull-right" jsf:rendered="#{entity.find(result.entityId).restricted and permissionServiceBean.on(entity).has('DownloadFile')}"/>
+                                        <span class="glyphicon glyphicon-lock text-danger pull-right" jsf:rendered="#{result.entity.restricted and !permissionServiceBean.on(result.entity).has('DownloadFile')}"/>
+                                        <span class="icon-unlock text-success pull-right" jsf:rendered="#{result.entity.restricted and permissionServiceBean.on(result.entity).has('DownloadFile')}"/>
                                         <span class="glyphicon glyphicon-link text-muted pull-right" jsf:rendered="#{!result.isInTree}"/>
                                         <span class="icon-file text-muted pull-right"/>
                                     </div>
