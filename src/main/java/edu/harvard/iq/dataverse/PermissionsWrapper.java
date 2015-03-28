@@ -38,7 +38,10 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @param commandName
      */
     private boolean canIssueCommand(DvObject dvo, Class<? extends Command> command) {
-        if ((dvo == null) || (command == null)) {
+        if ((dvo==null) || (dvo.getId()==null)){
+            return false;
+        }
+        if (command==null){
             return false;
         }
 
@@ -58,6 +61,13 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
 
     private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command> command, Map<Class<? extends Command>, Boolean> dvoCommandMap) {
+        if ( dvo==null || (dvo.getId()==null) ){
+            return false;
+        }
+        if (command==null){
+            return false;
+        }
+        
         boolean canIssueCommand;
         canIssueCommand = permissionService.on(dvo).canIssue(command);
         dvoCommandMap.put(command, canIssueCommand);
@@ -77,10 +87,13 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
     }
     
-    
-    
+      
 
     public boolean canManagePermissions(DvObject dvo) {
+        if (dvo==null || (dvo.getId()==null) ){
+            return false;
+        }
+        
         User u = session.getUser();
         return dvo instanceof Dataverse
                 ? canManageDataversePermissions(u, (Dataverse) dvo)
@@ -88,10 +101,22 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
     
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
+        if ( dv==null || (dv.getId()==null)){
+            return false;
+        }
+        if (u==null){            
+            return false;
+        }
         return permissionService.userOn(u, dv).has(Permission.ManageDataversePermissions);
     }
     
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
+        if ( ds==null || (ds.getId()==null)){
+            return false;
+        }
+        if (u==null){            
+            return false;
+        }
         return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
     }
 
