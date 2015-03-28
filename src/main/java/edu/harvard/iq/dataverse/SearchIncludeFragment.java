@@ -388,7 +388,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                             if (datasetVersion.isDeaccessioned()) {
                                 solrSearchResult.setDeaccessionedState(true);
                             }
-                           
+
                         }
                     }
                     String deaccesssionReason = solrSearchResult.getDeaccessionReason();
@@ -1083,5 +1083,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
 
         return "";
+    }
+
+    public void setDisplayCardValues() {
+        for (SolrSearchResult result : searchResultsList) {
+            if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse){
+                result.setDisplayImage(dataverseService.isDataverseCardImageAvailable((Dataverse) result.getEntity(), session.getUser()));
+            } else if (result.getType().equals("datasets") && result.getEntity() instanceof Dataset) {
+                result.setDisplayImage(datasetService.isDatasetCardImageAvailable(datasetVersionService.find(result.getDatasetVersionId()), session.getUser()));
+            } else if (result.getType().equals("files") && result.getEntity() instanceof DataFile) {
+                result.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile) result.getEntity(), session.getUser()));
+            }
+        }
     }
 }
