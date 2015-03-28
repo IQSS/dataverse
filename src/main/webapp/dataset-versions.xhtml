@@ -30,7 +30,7 @@
                     <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
                     <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
             </ui:fragment>
-            <ui:fragment rendered="#{versionTab.deaccessioned and  !(permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))}">
+            <ui:fragment rendered="#{versionTab.deaccessioned and  !(permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset))}">
                 <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
                 <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
             </ui:fragment>
