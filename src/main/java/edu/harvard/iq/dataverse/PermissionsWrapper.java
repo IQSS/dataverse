@@ -74,6 +74,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand;
     }
 
+    /* Dataverse Commands */
 
     public boolean canIssueUpdateDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, UpdateDataverseCommand.class);
@@ -91,10 +92,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, CreateDataverseCommand.class);
     }
     
-    public boolean canIssueCreateDatasetCommand(DvObject dvo){
-        return canIssueCommand(dvo, CreateDataverseCommand.class);
-    }
-
+    
     public boolean canManagePermissions(DvObject dvo) {
         if (dvo==null || (dvo.getId()==null) ){
             return false;
@@ -125,5 +123,29 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
     }
+
+    
+    /* Dataset Commands */
+    // CREATE DATASET
+    public boolean canIssueCreateDatasetCommand(DvObject dvo){
+        return canIssueCommand(dvo, CreateDataverseCommand.class);
+    }
+
+    // UPDATE DATASET
+    public boolean canIssueUpdateDatasetCommand(DvObject dvo){
+        return canIssueCommand(dvo, UpdateDatasetCommand.class);
+    }
+
+    // DELETE DATASET
+    public boolean canIssueDeleteDatasetCommand(DvObject dvo){
+        return canIssueCommand(dvo, DeleteDatasetCommand.class);
+    }
+    
+    // PLUBLISH DATASET
+    public boolean canIssuePublishDatasetCommand(DvObject dvo){
+        return canIssueCommand(dvo, PublishDatasetCommand.class);
+    }
+    
+    
 
 }
