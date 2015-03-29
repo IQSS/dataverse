@@ -24,7 +24,7 @@ public class ActionLogRecord implements java.io.Serializable {
     }
     
     public enum ActionType {
-        /** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout *//** login, logout */
+        /** login, logout */
         SessionManagement,
         
         /** Command execution */
@@ -192,10 +192,7 @@ public class ActionLogRecord implements java.io.Serializable {
         if (!Objects.equals(this.actionSubType, other.actionSubType)) {
             return false;
         }
-        if (!Objects.equals(this.info, other.info)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.info, other.info);
     }
     
     

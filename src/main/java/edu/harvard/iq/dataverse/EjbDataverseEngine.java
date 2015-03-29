@@ -119,7 +119,7 @@ public class EjbDataverseEngine {
 
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
-        ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
+        final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
         
         try {
             logRec.setUserIdentifier( aCommand.getUser().getIdentifier() );
