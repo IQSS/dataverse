@@ -3,6 +3,8 @@ Native API
 
 Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some API calls do not require authentication. Calls that do require authentication take an extra query parameter, ``key``, which should contain the API key of the user issuing the command.
 
+.. warning:: Dataverse 4.0's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address//api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
+
 .. contents::
 
 Endpoints

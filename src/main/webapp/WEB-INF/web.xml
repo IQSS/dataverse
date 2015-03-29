@@ -1,45 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
- http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0"> 
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <display-name>Dataverse</display-name>
-    
     <!-- Error page -->
     <error-page>
         <error-code>404</error-code>
         <location>/404.xhtml</location>
     </error-page>
-
     <error-page>
         <error-code>500</error-code>
         <location>/500.xhtml</location>
     </error-page>
-
     <!-- Welcome page -->
     <welcome-file-list>
         <welcome-file>dataverse.xhtml</welcome-file>
     </welcome-file-list>
-    
     <context-param>
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
         <param-value>false</param-value>
-    </context-param>      
-   
+    </context-param>
     <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>bootstrap</param-value>
-    </context-param>    
-    
+    </context-param>
     <context-param>
         <param-name>
             javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
         </param-name>
         <param-value>true</param-value>
-    </context-param>         
- 
+    </context-param>
     <!-- JSF mapping -->
+    <filter>
+        <filter-name>Router</filter-name>
+        <filter-class>edu.harvard.iq.dataverse.api.ApiRouter</filter-class>
+    </filter>
+    <filter>
+        <filter-name>Blocker</filter-name>
+        <filter-class>edu.harvard.iq.dataverse.api.ApiBlockingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>Router</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>Blocker</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
@@ -50,7 +55,6 @@
         <servlet-class>org.primefaces.push.PushServlet</servlet-class>
         <async-supported>true</async-supported>
     </servlet>
- 
     <!-- Map these files with JSF -->
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
@@ -77,30 +81,27 @@
             1440
         </session-timeout>
     </session-config>
-	
-	
     <!-- web fonts -->
     <mime-mapping>
         <extension>eot</extension>
         <mime-type>application/vnd.ms-fontobject</mime-type>
     </mime-mapping>
-    <mime-mapping>  
-        <extension>otf</extension>  
-        <mime-type>font/opentype</mime-type>  
-    </mime-mapping>      
-    <mime-mapping>  
-        <extension>ttf</extension>  
-        <mime-type>application/x-font-ttf</mime-type>  
-    </mime-mapping>      
-    <mime-mapping>  
-        <extension>woff</extension>  
-        <mime-type>application/x-font-woff</mime-type>  
+    <mime-mapping>
+        <extension>otf</extension>
+        <mime-type>font/opentype</mime-type>
     </mime-mapping>
-    <mime-mapping>  
-        <extension>svg</extension>  
-        <mime-type>image/svg+xml</mime-type>  
+    <mime-mapping>
+        <extension>ttf</extension>
+        <mime-type>application/x-font-ttf</mime-type>
     </mime-mapping>
-
+    <mime-mapping>
+        <extension>woff</extension>
+        <mime-type>application/x-font-woff</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>svg</extension>
+        <mime-type>image/svg+xml</mime-type>
+    </mime-mapping>
     <!-- BEGIN Data Deposit API (SWORD v2) -->
     <!-- See also SwordConfigurationImpl for how deprecation warnings are configured -->
     <context-param>
@@ -119,7 +120,6 @@
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ServiceDocumentServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/service-document/*</url-pattern>
     </servlet-mapping>
-
     <context-param>
         <param-name>collection-deposit-impl</param-name>
         <param-value>edu.harvard.iq.dataverse.api.datadeposit.CollectionDepositManagerImpl</param-value>
@@ -140,7 +140,6 @@
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2CollectionServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/collection/*</url-pattern>
     </servlet-mapping>
-
     <context-param>
         <param-name>media-resource-impl</param-name>
         <param-value>edu.harvard.iq.dataverse.api.datadeposit.MediaResourceManagerImpl</param-value>
@@ -157,7 +156,6 @@
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2MediaResourceServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit-media/*</url-pattern>
     </servlet-mapping>
-
     <context-param>
         <param-name>statement-impl</param-name>
         <param-value>edu.harvard.iq.dataverse.api.datadeposit.StatementManagerImpl</param-value>
@@ -174,7 +172,6 @@
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2StatementServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/statement/*</url-pattern>
     </servlet-mapping>
-
     <context-param>
         <param-name>container-impl</param-name>
         <param-value>edu.harvard.iq.dataverse.api.datadeposit.ContainerManagerImpl</param-value>
@@ -191,7 +188,5 @@
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ContainerServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit/*</url-pattern>
     </servlet-mapping>
-
     <!-- END Data Deposit API (SWORD v2) -->
-
 </web-app>

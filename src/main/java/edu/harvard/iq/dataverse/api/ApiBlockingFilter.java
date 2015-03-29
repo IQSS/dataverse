@@ -16,7 +16,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
  * A web filter to block API administration calls.
  * @author michael
  */
-@WebFilter( urlPatterns={"/api/*"} )
 public class ApiBlockingFilter implements javax.servlet.Filter {
     private static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
             
@@ -145,6 +143,8 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
 
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
+        
+        logger.info("API blocker-start");
         String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
         if ( ! endpointList.equals(lastEndpointList) ) {
             updateBlockedPoints();
@@ -159,6 +159,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
             }
         }
         fc.doFilter(sr, sr1);
+        logger.info("API blocker-end");
         
     }
 
