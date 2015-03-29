@@ -1,8 +1,0 @@
-{
-    "alias":"boss",
-    "name":"The role that has it all",
-    "description":"Someone that can do anything.",
-    "permissions":[
-        "ALL"
-    ]
-}
