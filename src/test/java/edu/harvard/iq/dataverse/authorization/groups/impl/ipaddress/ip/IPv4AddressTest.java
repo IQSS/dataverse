@@ -72,11 +72,5 @@ public class IPv4AddressTest {
         }
     }
     
-    @Test
-    public void testBitOffset() {
-        for ( int i=0; i<64; i++ ) {
-            System.out.println("0x1<<" + i + "=\t" + (1l<<i));
-        }
-    }
     
 }
