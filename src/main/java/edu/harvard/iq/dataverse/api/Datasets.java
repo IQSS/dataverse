@@ -152,7 +152,7 @@ public class Datasets extends AbstractApiBean {
         try {
             final User u = findUserOrDie(apiKey);
             final Dataset ds = datasetService.find(datasetId);
-            if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
+            if (ds == null) return notFound( "dataset " + datasetId + " not found");
             Command<DatasetVersion> cmd = handleVersion( versionId, new DsVersionHandler<Command<DatasetVersion>>(){
 
                 @Override
@@ -176,9 +176,13 @@ public class Datasets extends AbstractApiBean {
                 }
             });
             DatasetVersion dsv = execCommand(cmd, versionId);
-            return (dsv == null || dsv.getId() == null)
-                    ? errorResponse(Response.Status.NOT_FOUND, "Dataset version not found")
-                    : okResponse(json(dsv));
+            
+            if (dsv == null || dsv.getId() == null) {
+                return notFound("Dataset version not found");
+            }
+            
+            return okResponse(json(dsv));
+            
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -352,9 +356,9 @@ public class Datasets extends AbstractApiBean {
     @Path("filesFromLatestPublishedVersion")
     public Response listFilesFromLatestPublishedVersion(@QueryParam("globalId") String globalId) {
         if (globalId == null || globalId.isEmpty()) {
-            return errorResponse(Response.Status.NOT_FOUND, "The globalId provided was null or empty.");
+            return errorResponse(Response.Status.BAD_REQUEST, "The globalId provided was null or empty.");
         }
-        Dataset dataset = null;
+        Dataset dataset;
         try {
             dataset = datasetService.findByGlobalId(globalId);
         } catch (Exception ex) {

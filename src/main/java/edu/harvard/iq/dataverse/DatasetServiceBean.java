@@ -97,6 +97,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
+     * @see DataverseServiceBean#findAllOrSubset(long, long) 
      */
     public List<Dataset> findAllOrSubset(long numPartitions, long partitionId) {
         if (numPartitions < 1) {
@@ -109,10 +110,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         return typedQuery.getResultList();
     }
 
-    /**
-     * @todo write this method for real. Don't just iterate through every single
-     * dataset! See https://redmine.hmdc.harvard.edu/issues/3988
-     */
     public Dataset findByGlobalId(String globalId) {
 
         String protocol = "";
