@@ -264,7 +264,7 @@ public class DatasetPage implements java.io.Serializable {
      * @param fileMetadata
      * @return boolean
      */
-    public boolean isFileDownloadButtonViewable(FileMetadata fileMetadata){
+    public boolean canDownloadFile(FileMetadata fileMetadata){
         if (fileMetadata == null){
             return false;
         }
