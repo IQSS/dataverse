@@ -722,6 +722,12 @@
                                             </ui:repeat>
                                         </ui:repeat>
                                     </div>
+                                    
+                                    <ui:fragment rendered="#{result.entity.harvested}">
+                                        <div>
+                                            <h:outputText value="#{result.entity.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
+                                        </div>
+                                    </ui:fragment>
                                 </ui:fragment>
                             </p:column>
                         </p:dataTable>

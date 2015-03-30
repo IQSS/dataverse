@@ -685,9 +685,11 @@ public class SolrSearchResult {
             if (!identifier.contains(badString)) {
                 if (entity != null && entity instanceof Dataset) {
                     if (((Dataset)entity).isHarvested()) {
-                        if (((Dataset)entity).getRemoteArchiveURL() != null) {
-                            return ((Dataset)entity).getRemoteArchiveURL();
+                        String remoteArchiveUrl = ((Dataset)entity).getRemoteArchiveURL();
+                        if (remoteArchiveUrl != null) {
+                            return remoteArchiveUrl;
                         }
+                        return null; 
                     }
                 }
                 return "/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId;
@@ -702,6 +704,13 @@ public class SolrSearchResult {
     }
 
     public String getFileUrl() {
+        if (entity != null && entity instanceof DataFile && ((DataFile) entity).isHarvested()) {
+            String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
+            if (remoteArchiveUrl != null) {
+                return remoteArchiveUrl;
+            }
+            return null; 
+        }
         String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);
         if (parentDatasetGlobalId != null) {
             return "/dataset.xhtml?globalId=" + parentDatasetGlobalId + "&versionId=" + datasetVersionId;
