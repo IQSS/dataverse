@@ -22,6 +22,13 @@
         <param-name>primefaces.THEME</param-name>
         <param-value>bootstrap</param-value>
     </context-param>
+
+    <!-- example of a hard-coded PrimePush configuration: -->
+    <!-- context-param -->
+        <!-- param-name>primefaces.PUSH_SERVER_URL</param-name -->
+        <!-- param-value>http://${dataverse.fqdn}:8081</param-value -->
+    <!-- /context-param -->
+    
     <context-param>
         <param-name>
             javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL

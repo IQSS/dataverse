@@ -31,11 +31,11 @@
             <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <a id="versionLink" href="/dataset.xhtml?globalId=#{versionTab.dataset.globalId}&#38;versionId=#{versionTab.id}" class="ui-commandlink ui-widget">
                     <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
-                    <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
+                    <h:outputText rendered="#{( versionTab.released or versionTab.deaccessioned ) and versionTab.versionNumber!=null}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
             </ui:fragment>
             <ui:fragment rendered="#{versionTab.deaccessioned and  !(permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset))}">
                 <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
-                <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                <h:outputText rendered="#{(versionTab.released or versionTab.deaccessioned) and versionTab.versionNumber!=null }" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
             </ui:fragment>
         </p:column><!-- end: version number column -->
         <!-- start: description column -->        

@@ -540,6 +540,15 @@ public class DataFile extends DvObject {
         return null; 
     }
     
+    public String getHarvestingDescription() {
+        if (isHarvested()) {
+            Dataset ownerDataset = this.getOwner();
+            return ownerDataset.getHarvestingDescription();
+        }
+        
+        return null;
+    }
+    
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof DataFile)) {
