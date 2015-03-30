@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
@@ -40,11 +41,12 @@ public class BuiltinUser implements Serializable {
     @NotBlank(message = "Please enter a username.")
     @Size(min=2, max=60, message ="Username must be between 2 and 60 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, and '_'.")
-    @Column( unique = true )
+    @Column(nullable = false, unique=true)  
     private String userName;
 
     @NotBlank(message = "Please enter a valid email address.")
     @ValidateEmail(message = "Please enter a valid email address.")
+    @Column(nullable = false, unique=true)    
     private String email;
 
     @NotBlank(message = "Please enter your first name.")
