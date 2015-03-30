@@ -723,16 +723,17 @@
                                                     <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
                                                 </h:outputLink>
                                                 <!-- WorldMap Map Data -->
-                                                <h:outputLink pt:role="button" rendered="#{true}" 
+                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata)}" 
                                                               type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
-                                                </h:outputLink><!-- DatasetPage.canUserSeeMapDataButton(fileMetadata) -->
+                                                </h:outputLink>
                                                 <!-- Fake Map Data -->
-                                                <h:outputLink pt:role="button" rendered="#{true}" 
+                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}" 
                                                               type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']} Fake
-                                                </h:outputLink><!-- DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata) -->
+                                                </h:outputLink>
                                             </div>
+
 
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
