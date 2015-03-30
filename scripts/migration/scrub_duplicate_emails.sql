@@ -105,7 +105,7 @@ group by email
 having count(*) > 1
 )
 and u2.id in (
-select min(id) from vdcuser
+select min(id) from vdcuser  -- also may need to run with max(id) or some other combinations!
 group by email
 having count(*) > 1
 )
@@ -128,8 +128,6 @@ select min(id) from vdcuser
 group by email
 having count(*) > 1
 );
---
---
 
 update guestbookresponse ref set vdcuser_id = u2.id
 from vdcuser u1, vdcuser u2
