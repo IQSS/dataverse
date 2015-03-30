@@ -709,6 +709,13 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }  
         
+        
+        // Is this dataset published?
+        //
+        if (!this.dataset.isReleased()){
+            return false;
+        }
+        
         // (1) Is there an authenticated user?
         if (!(this.session.getUser().isAuthenticated())){
             return false;
