@@ -7,10 +7,11 @@ Assumptions:
 
 
 Pre steps (contained in the migration_presteps document):
--6. Export DDI files from 3.6 for all datasets to be migrated 
+-7. Make a copt of the production db, and point an app server to it
+-6. (if there is any data that will fail validation, run scrubbing script - this will need to be custom per installation)
+-5. Export DDI files from 3.6 copy for all datasets to be migrated 
     (this now includes exporting non-released versions - presteps doc. updated)
--5. Create copies of tables in 3.6 database for migrated data
--4. (if there is any data that will fail validation, run scrubbing script - this will need to be custom per installation)
+-4. Create copies of tables in 3.6 database for migrated data
 -3. Run pg dump to extract tables copies
 -2. Import copied tables into 4.0 database
 -1. Run offsets on _dvn3_tables in the 4.0 DB
@@ -28,7 +29,7 @@ Migration:
     This will return a success message and begin an asynchronous migration job - the status of the job is viewable in the import-log file
     in the Glassfish logs directory.
 
-5. * run post dataset scrubbing
+5. run migrate_datasets.sql script (post migration scrubbing)
 6. run files script: 
 
 a. On the *destination* (4.0) server, step 1
@@ -65,7 +66,6 @@ the destination server.
 __________________________________________________
 
 Still to be migrated:
-- Harvested
 - Guestbook / stats
 
 
@@ -78,16 +78,4 @@ Not being migrated (verify?):
 -- Study locks
 -- VDCNetworkStats (generated data)
 
-__________________________________________________
-
-Other notes:
-- subnetworks are all migrated as published, using create user and date also as the release user and date
-- subnetworks use the same contact e-mails as the Dataverse 4.0 root
-- subnetwork short description is NOT migrated
-- dataverse type is set to "UNCATEGORIZED"
-- Order of dataverse contacts for dataverses is not maintained
-- IP groups are not currently migrated
-- only groups that had explicit users are copied
-- Groups were system wide in 3.6, so are migrated as belonging to the root dataverse, but it may make sense to manually move some groups to child dataverses
-- request access only exists in study, so this value is copied to dataset and all dataset versions.
 
