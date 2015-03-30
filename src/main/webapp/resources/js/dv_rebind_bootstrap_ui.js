@@ -182,7 +182,7 @@ function sharrre(){
             });
             
             var sharrrecount = $('#sharrre-total').val();
-            $('#sharrre-count').text(sharrrecount);
+            $('#sharrre-count').text(sharrrecount + ' Shares');
         }
     });
 }

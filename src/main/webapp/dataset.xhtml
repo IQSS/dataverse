@@ -239,6 +239,7 @@
                             <!-- END: Dataset Versions Button -->
                             
                             <!-- Metrics -->
+                            <ui:remove>
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <div class="pull-left text-center" id="metrics-label">
                                     <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
@@ -258,6 +259,88 @@
                                     <span id="sharrre-count" data-toggle="tooltip" data-placement="top" title="Shares" class="count">&#160;</span>
                                 </div>
                             </div>
+                            </ui:remove>
+                            <div id="metricsTest" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                                <div id="container" class="clearfix" style="width:320px;background:none;">
+                                    <div class="pull-left text-center" id="metrics-label" style="color:#fff;">
+                                        <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
+                                    </div>
+                                    <!-- ONE -->
+                                    <span class="small" data-toggle="collapse" data-target="#demo1" 
+                                          style="display:block;background:#428bca;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
+                                    <div id="demo1" class="collapse width" style="background:#428bca;color:#fff;float:left;">
+                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
+                                            Views - Coming soon...
+                                        </div>
+                                    </div>
+                                    <!-- TWO -->
+                                    <span class="small" data-toggle="collapse" data-target="#demo2" 
+                                          style="display:block;background:#5cb85c;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
+                                    <div id="demo2" class="collapse width" style="background:#5cb85c;color:#fff;float:left;">
+                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
+                                            #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} Downloads
+                                        </div>
+                                    </div>
+                                    <!-- THREE -->
+                                    <span class="small" data-toggle="collapse" data-target="#demo3" 
+                                          style="display:block;background:#c55b28;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
+                                    <div id="demo3" class="collapse width" style="background:#c55b28;color:#fff;float:left;">
+                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
+                                            Citations - Coming soon...
+                                        </div>
+                                    </div>
+                                    <!-- FOUR -->
+                                    <span class="small" data-toggle="collapse" data-target="#demo4" 
+                                          style="display:block;background:#f0ad4e;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
+                                    <div id="demo4" class="collapse width" style="background:#f0ad4e;color:#fff;float:left;">
+                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
+                                            <span id="sharrre-count">&#160;</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <style type="text/css">
+                                #metricsTest {
+
+                                }
+                                #metricsTest .collapse {
+                                    display: none;
+                                    visibility: hidden;
+                                }
+                                #metricsTest .collapse.in {
+                                    display: block;
+                                    visibility: visible;
+                                }
+                                #metricsTest .collapsing {
+                                    position: relative;
+                                    height: 0;
+                                    overflow: hidden;
+                                    -webkit-transition-property: height, visibility;
+                                    transition-property: height, visibility;
+                                    -webkit-transition-duration: 0.35s;
+                                    transition-duration: 0.35s;
+                                    -webkit-transition-timing-function: ease;
+                                    transition-timing-function: ease;
+                                }
+                                #metricsTest .collapsing.width {
+                                    -webkit-transition-property: width, visibility;
+                                    transition-property: width, visibility;
+                                    width: 0;
+                                    height: auto;
+                                }
+                            </style>
+
+                            <script type="text/javascript">
+                                $(document).ready(function() {
+                                    $('span[data-toggle="collapse"]').mouseover(function(){
+                                        $(this).click();
+                                    });
+                                    $('span[data-toggle="collapse"]').mouseout(function(){
+                                        $(this).click();
+                                    });
+                                });
+                            </script>
                             <!-- END: Metrics -->
                         </div>
                         <div id="datasetVersionBlock" class="container-fluid">

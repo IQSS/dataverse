@@ -471,28 +471,8 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
-                            
-                            <!-- Metrics -->
-                            <div id="metrics-block" class="pull-left">
-                                <div class="pull-left text-center" id="metrics-label">
-                                    <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
-                                </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-views">
-                                    <span data-toggle="tooltip" data-placement="top" title="Views" class="count">00</span>
-                                </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-downloads">
-                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">00</span>
-                                </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-citations">
-                                    <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
-                                </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-shares">
-                                    <span id="sharrre-count" data-toggle="tooltip" data-placement="top" title="Shares" class="count">&#160;</span>
-                                </div>
-                            </div>
-                            <!-- END: Metrics -->
                         </div>
-
+                        
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
                             <ui:fragment rendered="#{!empty DataversePage.dataverse.description}">
                                 <div id="dataverseDesc" style="margin-bottom:1em;">
