@@ -25,8 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
@@ -73,8 +72,7 @@ public class Datasets extends AbstractApiBean {
         
         try {
             User u = findUserOrDie(apiKey);
-            Dataset ds = datasetService.find(id);
-            if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
+            Dataset ds = findDatasetOrDie(id);
             
             Dataset retrieved = execCommand(new GetDatasetCommand(u, ds), "Getting dataset");
             DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(u, ds), "Getting latest dataset version");
@@ -92,12 +90,7 @@ public class Datasets extends AbstractApiBean {
 	public Response deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
 		
 		try {
-            User u = findUserOrDie(apiKey);
-            if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-
-            Dataset ds = datasetService.find(id);
-            if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
-			execCommand( new DeleteDatasetCommand(ds, u), "Delete dataset " + id);
+			execCommand( new DeleteDatasetCommand(findDatasetOrDie(id), findUserOrDie(apiKey)), "Delete dataset " + id);
 			return okResponse("Dataset " + id + " deleted");
 			
 		} catch (WrappedResponse ex) {
@@ -111,12 +104,7 @@ public class Datasets extends AbstractApiBean {
 	public Response destroyDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
 		
 		try {
-            User u = findUserOrDie(apiKey);
-            if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-
-            Dataset ds = datasetService.find(id);
-            if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
-			execCommand( new DestroyDatasetCommand(ds, u), "Destroy dataset " + id);
+			execCommand( new DestroyDatasetCommand(findDatasetOrDie(id), findUserOrDie(apiKey)), "Destroy dataset " + id);
 			return okResponse("Dataset " + id + " destroyed");
 			
 		} catch (WrappedResponse ex) {
@@ -131,9 +119,8 @@ public class Datasets extends AbstractApiBean {
 		
         try {
             User u = findUserOrDie(apiKey);
-
-            Dataset ds = datasetService.find(id);
-            if (ds == null) return notFound("dataset not found");
+            Dataset ds = findDatasetOrDie(id);
+            
             List<DatasetVersion> retrieved = execCommand(new ListVersionsCommand(u, ds), "Listing Dataset versions");
             JsonArrayBuilder bld = Json.createArrayBuilder();
             for ( DatasetVersion dsv : retrieved ) {
@@ -151,37 +138,31 @@ public class Datasets extends AbstractApiBean {
 		
         try {
             final User u = findUserOrDie(apiKey);
-            final Dataset ds = datasetService.find(datasetId);
-            if (ds == null) return notFound( "dataset " + datasetId + " not found");
-            Command<DatasetVersion> cmd = handleVersion( versionId, new DsVersionHandler<Command<DatasetVersion>>(){
-
-                @Override
-                public Command<DatasetVersion> handleLatest() {
-                    return new GetLatestAccessibleDatasetVersionCommand(u, ds);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleDraft() {
-                    return new GetDraftDatasetVersionCommand(u, ds);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                    return new GetSpecificPublishedDatasetVersionCommand(u, ds, major, minor);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleLatestPublished() {
-                    return new GetLatestPublishedDatasetVersionCommand(u, ds);
-                }
-            });
-            DatasetVersion dsv = execCommand(cmd, versionId);
+            final Dataset ds = findDatasetOrDie(datasetId);
+            
+            DatasetVersion dsv = getDatasetVersion(u, versionId, ds);
             
             if (dsv == null || dsv.getId() == null) {
                 return notFound("Dataset version not found");
             }
             
             return okResponse(json(dsv));
+            
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+	
+    @GET
+	@Path("{id}/versions/{versionId}/files")
+    public Response getVersionFiles( @PathParam("id") Long datasetId, @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ) {
+		
+        try {
+            
+            return okResponse( jsonFileMetadatas(
+                                            getDatasetVersion(findUserOrDie(apiKey), 
+                                                                versionId, 
+                                                                findDatasetOrDie(datasetId)).getFileMetadatas()));
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -194,12 +175,9 @@ public class Datasets extends AbstractApiBean {
 		
         try {
             User u = findUserOrDie(apiKey);
-            Dataset ds = datasetService.find(datasetId);
-            if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
+            Dataset ds = findDatasetOrDie(datasetId);
             DatasetVersion dsv = getDatasetVersion( u, versionId, ds );
-            return (dsv==null)
-                    ? errorResponse(Response.Status.NOT_FOUND, "dataset version not found")
-                    : okResponse( JsonPrinter.jsonByBlocks(dsv.getDatasetFields())  );
+            return okResponse( jsonByBlocks(dsv.getDatasetFields())  );
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -216,14 +194,13 @@ public class Datasets extends AbstractApiBean {
 		
         try {
             User u = findUserOrDie(apiKey);
-            final Dataset ds = datasetService.find(datasetId);
-            if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
+            final Dataset ds = findDatasetOrDie(datasetId);
+
             DatasetVersion dsv = getDatasetVersion(u, versionNumber, ds);
-            if ( dsv == null ) return errorResponse(Response.Status.NOT_FOUND, "dataset version not found");
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
                 if ( p.getKey().getName().equals(blockName) ) {
-                    return okResponse( JsonPrinter.json(p.getKey(), p.getValue()) );
+                    return okResponse( json(p.getKey(), p.getValue()) );
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
@@ -237,9 +214,9 @@ public class Datasets extends AbstractApiBean {
     @DELETE
 	@Path("{id}/versions/{versionId}")
 	public Response deleteDraftVersion( @PathParam("id") Long id,  @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ){
-        if ( ! ":draft".equals(versionId) ) 
+        if ( ! ":draft".equals(versionId) ) {
             return errorResponse( Response.Status.BAD_REQUEST, "Only the :draft version can be deleted");
-        
+        }
         
         try {
             User u = findUserOrDie(apiKey);
@@ -256,8 +233,9 @@ public class Datasets extends AbstractApiBean {
 	@Path("{id}/versions/{versionId}")
 	public Response updateDraftVersion( String jsonBody, @PathParam("id") Long id,  @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ){
         
-        if ( ! ":draft".equals(versionId) ) 
+        if ( ! ":draft".equals(versionId) ) {
             return errorResponse( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
+        }
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             User u = findUserOrDie(apiKey);
@@ -297,7 +275,10 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/actions/:publish") 
     public Response publishDataset( @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("key") String apiKey ) {
         try {
-            if ( type == null ) return errorResponse( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+            if ( type == null ) {
+                return errorResponse( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+            }
+            
             type = type.toLowerCase();
             boolean isMinor;
             switch ( type ) {
@@ -334,10 +315,8 @@ public class Datasets extends AbstractApiBean {
             if (!u.isSuperuser()) {
                 return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
             }
-            Dataset dataset = datasetService.find(idSupplied);
-            if (dataset == null) {
-                return errorResponse(Response.Status.NOT_FOUND, "dataset not found");
-            }
+            Dataset dataset = findDatasetOrDie(idSupplied);
+
             long datasetId = dataset.getId();
             List<Dataverse> dvsThatLinkToThisDatasetId = dataverseSvc.findDataversesThatLinkToThisDatasetId(datasetId);
             JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = Json.createArrayBuilder();
@@ -409,7 +388,7 @@ public class Datasets extends AbstractApiBean {
     }
     
     private DatasetVersion getDatasetVersion( final User u, String versionNumber, final Dataset ds ) throws WrappedResponse {
-        return execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
+        DatasetVersion dsv = execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
 
                 @Override
                 public Command<DatasetVersion> handleLatest() {
@@ -431,6 +410,17 @@ public class Datasets extends AbstractApiBean {
                     return new GetLatestPublishedDatasetVersionCommand(u, ds);
                 }
             }), "Accessing dataset version");
+        if ( dsv == null || dsv.getId() == null ) {
+            throw new WrappedResponse( notFound("Dataset version " + versionNumber + " not found") );
+        }
+        return dsv;
     }
     
+    Dataset findDatasetOrDie( Long id ) throws WrappedResponse {
+        Dataset dataset = datasetService.find(id);
+        if (dataset == null) {
+            throw new WrappedResponse( notFound("dataset " + id + " not found") );
+        }   
+        return dataset;
+    }
 }
