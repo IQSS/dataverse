@@ -715,24 +715,27 @@
                                                 <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
                                             </p:commandLink>
 
-                                            <ui:remove><!-- WorldMap Explore | Map Data button group --></ui:remove>
-                                            <div class="btn-group" role="group" jsf:rendered="#{!(empty fileMetadata.dataFile.id) and DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) or DatasetPage.canUserSeeMapDataButton(fileMetadata)}">
+                                            <!-- WorldMap Explore | Map Data button group -->
+                                            <div class="btn-group" role="group" jsf:rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) or DatasetPage.canUserSeeMapDataButton(fileMetadata) or DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}">
                                                 <!-- WorldMap Explore -->
                                                 <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
                                                               type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
                                                     <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
                                                 </h:outputLink>
                                                 <!-- WorldMap Map Data -->
-                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata)}"
+                                                <h:outputLink pt:role="button" rendered="#{true}" 
                                                               type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
-                                                </h:outputLink>
+                                                </h:outputLink><!-- DatasetPage.canUserSeeMapDataButton(fileMetadata) -->
+                                                <!-- Fake Map Data -->
+                                                <h:outputLink pt:role="button" rendered="#{true}" 
+                                                              type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+                                                    <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']} Fake
+                                                </h:outputLink><!-- DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata) -->
                                             </div>
 
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                                            <ui:remove></ui:remove>
-                                           
                                             <p:commandLink rendered="#{ DatasetPage.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) }"
                                                            type="button" styleClass="btn btn-default"
                                                            action="#{DatasetPage.startFileDownload(fileMetadata, '')}">
