@@ -46,16 +46,10 @@
                         </p:column>
                         <p:column sortBy="name" headerText="User">
                             <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
-                            <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
-                            <h:outputText value="#{response.name} (#{response.institution}), #{response.position}"/>
                         </p:column>
-                        
-                        <p:columns value="#{response.customQuestionResponses}" var="customQResponse"
-                                    sortBy="name" headerText="#{customQResponse.customQuestion.questionString}"
-                                    rendered="#{response.customQuestionResponses.size() > 0}">
-                            #{customQResponse.response}
-                        </p:columns>
-                        
+                        <p:column headerText="Custom Questions"  >
+                            <ui:repeat value="#{response.customQuestionResponses}" var="customQResponse"><b>#{customQResponse.customQuestion.questionString}: </b>#{customQResponse.response} <br></br></ui:repeat>
+                        </p:column>                        
                     </p:dataTable>
                 </h:form>
             </ui:define>

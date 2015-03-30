@@ -32,6 +32,10 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     private Map<Long, Map<Class<? extends Command>, Boolean>> commandMap = new HashMap<>();
 
+    // Map to track whether a DvObject has "Permission.DownloadFile" 
+    //
+    private Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
+
     /**
      * Check if the current Dataset can Issue Commands
      *
@@ -124,8 +128,47 @@ public class PermissionsWrapper implements java.io.Serializable {
         return permissionService.userOn(u, ds).has(Permission.ManageDatasetPermissions);
     }
 
+    /**
+     *  Does this dvoObject have "Permission.DownloadFile"?
+     * @param dvo
+     * @return 
+     */
+    public boolean hasDownloadFilePermission(DvObject dvo){
+        
+        if ((dvo==null)||(dvo.getId() == null)){
+            return false;
+        }
+        
+        // Has this check already been done? Check the hash
+        //
+        if (this.fileDownloadPermissionMap.containsKey(dvo.getId())){
+            // Yes, return previous answer
+            return this.fileDownloadPermissionMap.get(dvo.getId());
+        }
+
+        // Check permissions
+        //
+        if (this.permissionService.on(dvo).has(Permission.DownloadFile)){
+
+            // Yes, has permission, store result
+            //
+            this.fileDownloadPermissionMap.put(dvo.getId(), true);
+            return true;
+        }else {
+        
+            // No permission, store result
+            //
+            this.fileDownloadPermissionMap.put(dvo.getId(), false);
+            return false;
+        }
+    }
     
-    /* Dataset Commands */
+
+    
+    /* -----------------------------------
+        Dataset Commands 
+     ----------------------------------- */
+    
     // CREATE DATASET
     public boolean canIssueCreateDatasetCommand(DvObject dvo){
         return canIssueCommand(dvo, CreateDataverseCommand.class);

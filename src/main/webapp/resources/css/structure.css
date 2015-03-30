@@ -275,7 +275,9 @@ ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a
 }
 
 /* -------- USER -------- */
-div[id$='notifications'].ui-tabs-panel div.notification-item {border-bottom:1px solid #DDDDDD; padding:5px;}
+div[id$='notifications'].ui-tabs-panel div.table-container {display:table;}
+div[id$='notifications'].ui-tabs-panel div.notification-item {display:table-row;}
+div[id$='notifications'].ui-tabs-panel div.notification-item-cell {display:table-cell; border-bottom:1px solid #DDDDDD; padding:5px;}
 div[id$='notifications'].ui-tabs-panel span.text-muted.small {margin-left:1em;}
 
 /* -------- DATAVERSE -------- */

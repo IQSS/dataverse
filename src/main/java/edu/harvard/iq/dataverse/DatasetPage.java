@@ -264,7 +264,7 @@ public class DatasetPage implements java.io.Serializable {
      * @param fileMetadata
      * @return boolean
      */
-    public boolean isFileDownloadButtonViewable(FileMetadata fileMetadata){
+    public boolean canDownloadFile(FileMetadata fileMetadata){
         if (fileMetadata == null){
             return false;
         }
@@ -693,6 +693,41 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     
+    public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
+        
+        if (fm==null){
+            return false;
+        }  
+                
+        // Is this dataset published?  Yes, don't need reminder
+        //
+        if (this.dataset.isReleased()){
+            return false;
+        }
+        
+        // (1) Is there an authenticated user?
+        if (!(this.session.getUser().isAuthenticated())){
+            return false;
+        }
+        
+        //  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
+        //
+        //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
+        //
+        if (!(this.isShapefileType(fm))){
+            return false;
+        }
+
+        // (3) If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
+        if (!(this.permissionService.userOn(this.session.getUser(), fm.getDataFile().getOwner()).has(Permission.EditDataset))) { 
+            return false;
+        }
+
+        // Looks good
+        //
+        return true;
+    }
+    
      /**
      * Should there be a Map Data Button for this file?
      * 
@@ -708,6 +743,12 @@ public class DatasetPage implements java.io.Serializable {
         if (fm==null){
             return false;
         }  
+                
+        // Is this dataset published?
+        //
+        if (!this.dataset.isReleased()){
+            return false;
+        }
         
         // (1) Is there an authenticated user?
         if (!(this.session.getUser().isAuthenticated())){
@@ -787,7 +828,7 @@ public class DatasetPage implements java.io.Serializable {
 
     
     public String init() {
-        //System.out.println("_YE_OLDE_QUERY_COUNTER_");
+        // System.out.println("_YE_OLDE_QUERY_COUNTER_");
         String nonNullDefaultIfKeyNotFound = "";
         
         guestbookResponse = new GuestbookResponse();

@@ -111,6 +111,10 @@ Show a version of the dataset. The Dataset also include any metadata blocks the 
   
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
 
+Lists all the file metadata, for the given dataset and version::
+
+  GET http://$SERVER/api/datasets/$id/versions/$versionId/files?key=$apiKey
+
 Lists all the metadata blocks and their content, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata?key=$apiKey

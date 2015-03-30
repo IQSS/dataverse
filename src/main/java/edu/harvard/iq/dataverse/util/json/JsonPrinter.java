@@ -210,14 +210,18 @@ public class JsonPrinter {
                 
 		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
         
-        JsonArrayBuilder filesArr = Json.createArrayBuilder();
-        for ( FileMetadata fmd : dsv.getFileMetadatas() ) {
-            filesArr.add(json(fmd));
-        }
-        bld.add( "files", filesArr );
+        bld.add( "files", jsonFileMetadatas(dsv.getFileMetadatas()) );
 		
 		return bld;
 	}
+    
+    public static JsonArrayBuilder jsonFileMetadatas( Collection<FileMetadata> fmds ) {
+        JsonArrayBuilder filesArr = Json.createArrayBuilder();
+        for ( FileMetadata fmd : fmds ) {
+            filesArr.add(json(fmd));
+        }
+        return filesArr;
+    }
     
     public static JsonObjectBuilder json( DatasetDistributor dist ) {
         return jsonObjectBuilder()
