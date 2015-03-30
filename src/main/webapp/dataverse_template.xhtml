@@ -58,6 +58,18 @@
                 <!-- DO NOTHING -->
             </f:facet>
         </p:ajaxStatus>
+        <ui:include src="contactFormFragment.xhtml">
+            <ui:param name="formTitle" value="#{bundle['contact.header']}"/>
+            <ui:param name="formTo" value="#{bundle['contact.to']}"/>
+        </ui:include>
+        <p:dialog id="statusInfo" header="#{settingsServiceBean.get(':StatusMessageHeader')}" widgetVar="statusInfo" modal="true">
+            <p><h:outputText value="#{settingsServiceBean.get(':StatusMessageText')}" escape="false"/></p>
+            <div class="button-block">
+                <button type="button" onclick="statusInfo.hide()" class="btn btn-default" value="#{bundle.close}">
+                    #{bundle.close}
+                </button>
+            </div>
+        </p:dialog>
         <h:outputScript library="bs" name="js/bootstrap.min.js" />
         <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
         <h:outputScript library="js" name="ie-compat.js" />
