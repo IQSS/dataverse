@@ -169,6 +169,7 @@ function sharrre(){
                     </div>',
         enableHover: false,
         enableTracking: true,
+        urlCurl: '',
         render: function(api, options){
             $(api.element).on('click', '.sharrre-twitter', function() {
                 api.openPopup('twitter');
