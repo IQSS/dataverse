@@ -344,7 +344,9 @@ public class ImportDDIServiceBean {
                              replicationForFound = true;*/
                             HashSet<FieldDTO> set = new HashSet<>();
                             addToSet(set, DatasetFieldConstant.publicationCitation, parseText(xmlr, "relMat"));
-                            publications.add(set);
+                            if (!set.isEmpty()) {
+                                publications.add(set);
+                            }
                             if (publications.size()>0)
                                 getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.publication, publications));
                         }
@@ -450,7 +452,9 @@ public class ImportDDIServiceBean {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set,"dsDescriptionDate", xmlr.getAttributeValue(null, "date"));
                     addToSet(set,"dsDescriptionValue",  parseText(xmlr, "abstract"));
-                    descriptions.add(set);
+                    if (!set.isEmpty()) {
+                        descriptions.add(set);
+                    }
                     
                 } else if (xmlr.getLocalName().equals("sumDscr")) processSumDscr(xmlr, dvDTO);
             
@@ -476,13 +480,18 @@ public class ImportDDIServiceBean {
                     addToSet(set,"keywordVocabulary", xmlr.getAttributeValue(null, "vocab"));     
                     addToSet(set, "keywordVocabularyURI", xmlr.getAttributeValue(null, "vocabURI") );
                     addToSet(set,"keywordValue", parseText(xmlr));
-                    keywords.add(set);
+                    if (!set.isEmpty()) {
+                        keywords.add(set);
+                    }
                 } else if (xmlr.getLocalName().equals("topcClas")) {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set,"topicClassVocab", xmlr.getAttributeValue(null, "vocab"));         
                     addToSet(set,"topicClassVocabURI", xmlr.getAttributeValue(null, "vocabURI") );
-                    addToSet(set,"topicClassValue",parseText(xmlr));
-                    topicClasses.add(set);
+                    addToSet(set,"topicClassValue",parseText(xmlr)); 
+                    if (!set.isEmpty()) {
+                        topicClasses.add(set);
+                    }
+                    
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("subject")) {
@@ -737,17 +746,30 @@ public class ImportDDIServiceBean {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 // citation dataSources
+                String parsedText;
                 if (xmlr.getLocalName().equals("dataSrc")) {
-                    citation.addField(FieldDTO.createMultiplePrimitiveFieldDTO("dataSources", Arrays.asList(parseText( xmlr, "dataSrc" ))));
+                    parsedText = parseText( xmlr, "dataSrc" );
+                    if (!parsedText.isEmpty()) {
+                        citation.addField(FieldDTO.createMultiplePrimitiveFieldDTO("dataSources", Arrays.asList(parsedText)));
+                    }
                     // citation originOfSources
                 } else if (xmlr.getLocalName().equals("srcOrig")) {
-                    citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("originOfSources", parseText( xmlr, "srcOrig" )));
+                     parsedText = parseText( xmlr, "srcOrig" );
+                    if (!parsedText.isEmpty()) {
+                   citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("originOfSources", parseText( xmlr, "srcOrig" )));
+                    }
                      // citation characteristicOfSources
                 } else if (xmlr.getLocalName().equals("srcChar")) {
-                    citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("characteristicOfSources", parseText( xmlr, "srcChar" )));
+                    parsedText = parseText( xmlr, "srcChar" );
+                    if (!parsedText.isEmpty()) {
+                        citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("characteristicOfSources", parseText( xmlr, "srcChar" )));
+                    }
                      // citation accessToSources
                 } else if (xmlr.getLocalName().equals("srcDocu")) {
-                    citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("accessToSources", parseText( xmlr, "srcDocu" )));
+                    parsedText = parseText( xmlr, "srcDocu" );
+                    if (!parsedText.isEmpty()) {                    
+                        citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("accessToSources", parseText( xmlr, "srcDocu" )));
+                    }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("sources")) return;
@@ -1064,23 +1086,26 @@ public class ImportDDIServiceBean {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("producer")) {
                     HashSet<FieldDTO> set = new HashSet<>();
-                    set.add(FieldDTO.createPrimitiveFieldDTO("producerAbbreviation", xmlr.getAttributeValue(null, "abbr")));
-                    set.add(FieldDTO.createPrimitiveFieldDTO("producerAffiliation", xmlr.getAttributeValue(null, "affiliation")));
+                    addToSet(set,"producerAbbreviation", xmlr.getAttributeValue(null, "abbr"));
+                    addToSet(set,"producerAffiliation", xmlr.getAttributeValue(null, "affiliation"));
                     
                     Map<String, String> prodDetails = parseCompoundText(xmlr, "producer");
-                    set.add(FieldDTO.createPrimitiveFieldDTO("producerName", prodDetails.get("name")));
-                    set.add(FieldDTO.createPrimitiveFieldDTO("producerURL", prodDetails.get("url") ));
-                    set.add(FieldDTO.createPrimitiveFieldDTO("producerLogoURL", prodDetails.get("logo")));
-                    producers.add(set);
+                    addToSet(set,"producerName", prodDetails.get("name"));
+                    addToSet(set,"producerURL", prodDetails.get("url" ));
+                    addToSet(set,"producerLogoURL", prodDetails.get("logo"));
+                    if (!set.isEmpty())
+                        producers.add(set);
                 } else if (xmlr.getLocalName().equals("prodDate")) {
                     citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("productionDate", parseDate(xmlr, "prodDate")));
                 } else if (xmlr.getLocalName().equals("prodPlac")) {
                     citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("productionPlace", parseDate(xmlr, "prodPlac")));
                 } else if (xmlr.getLocalName().equals("software")) {
                     HashSet<FieldDTO> set = new HashSet<>();
-                    set.add(FieldDTO.createPrimitiveFieldDTO("softwareVersion", xmlr.getAttributeValue(null, "version")));
-                    set.add(FieldDTO.createPrimitiveFieldDTO("softwareName", xmlr.getAttributeValue(null, "version")));
-                    software.add(set);
+                    addToSet(set,"softwareVersion", xmlr.getAttributeValue(null, "version"));
+                    addToSet(set,"softwareName", xmlr.getAttributeValue(null, "version"));
+                    if (!set.isEmpty()) {
+                        software.add(set);
+                    }
 
                     //TODO: ask Gustavo "fundAg"?TO
                 } else if (xmlr.getLocalName().equals("fundAg")) {
@@ -1088,9 +1113,11 @@ public class ImportDDIServiceBean {
                     //    metadata.setFundingAgency( parseText(xmlr) );
                 } else if (xmlr.getLocalName().equals("grantNo")) {
                     HashSet<FieldDTO> set = new HashSet<>();
-                    set.add(FieldDTO.createPrimitiveFieldDTO("grantNumberAgency", xmlr.getAttributeValue(null, "agency")));
-                    set.add(FieldDTO.createPrimitiveFieldDTO("grantNumberValue", parseText(xmlr)));
-                    grants.add(set);
+                    addToSet(set,"grantNumberAgency", xmlr.getAttributeValue(null, "agency"));
+                    addToSet(set,"grantNumberValue", parseText(xmlr));
+                    if (!set.isEmpty()){
+                        grants.add(set);
+                    }
 
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -1132,11 +1159,11 @@ public class ImportDDIServiceBean {
                         parseStudyIdDOI( parseText(xmlr), datasetDTO );
                     } else {
                         HashSet<FieldDTO> set = new HashSet<>();
-                        FieldDTO agencyValue = FieldDTO.createPrimitiveFieldDTO("otherIdAgency", xmlr.getAttributeValue(null, "agency"));
-                        FieldDTO otherIdValue = FieldDTO.createPrimitiveFieldDTO("otherIdValue", parseText(xmlr));
-                        set.add(agencyValue);
-                        set.add(otherIdValue);
-                        otherIds.add(set);
+                        addToSet(set,"otherIdAgency", xmlr.getAttributeValue(null, "agency"));
+                        addToSet(set,"otherIdValue", parseText(xmlr));
+                        if(!set.isEmpty()){
+                            otherIds.add(set);
+                        }
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -1156,9 +1183,11 @@ public class ImportDDIServiceBean {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("AuthEnty")) {
                     HashSet<FieldDTO> set = new HashSet<>();
-                    set.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", xmlr.getAttributeValue(null, "affiliation")));
-                    set.add(FieldDTO.createPrimitiveFieldDTO("authorName", parseText(xmlr)));
-                    authors.add(set);
+                    addToSet(set,"authorAffiliation", xmlr.getAttributeValue(null, "affiliation"));
+                    addToSet(set,"authorName", parseText(xmlr));
+                    if (!set.isEmpty()) {
+                        authors.add(set);
+                    }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("rspStmt")) {
@@ -1425,7 +1454,8 @@ public class ImportDDIServiceBean {
       
     
     private void addToSet(HashSet<FieldDTO> set, String typeName, String value ) {
-        if (value!=null) {
+        if (value!=null && !value.trim().isEmpty()) {
+            System.out.println("adding "+typeName+", value = "+value+".");
             set.add(FieldDTO.createPrimitiveFieldDTO(typeName, value));
         }
     }
