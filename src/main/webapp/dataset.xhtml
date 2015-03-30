@@ -1490,13 +1490,13 @@
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
                             <ui:remove>                            
-                                <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
+                                <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
                                                  action="#{DatasetPage.saveGuestbookResponse('download')}" />
 
-                                <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
+                                <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
                                                  update="downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
 
-                                <p:commandButton value="#{bundle.acceptTerms}" oncomplete="downloadPopup.hide()" 
+                                <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" 
                                                  action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             </ui:remove>
                             <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.cancel}" onclick="downloadPopup.hide()" />
