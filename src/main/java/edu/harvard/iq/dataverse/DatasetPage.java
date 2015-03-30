@@ -290,11 +290,12 @@ public class DatasetPage implements java.io.Serializable {
         
         // (1) Is the file Released and Unrestricted ?        
         //
-        if ((this.workingVersion.isReleased())&&(!(isRestrictedFile))){
+        if ((fileMetadata.getDataFile().isReleased())&&(!(isRestrictedFile))){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
+        
         
         // (2) Is user authenticated?
         // No?  Then no button...
@@ -323,9 +324,15 @@ public class DatasetPage implements java.io.Serializable {
                 this.fileDownloadPermissionMap.put(fid, true);
                 return true;
             }
+                        
+            // (5) File is released and File is unrestricted
+            if (fileMetadata.getDataFile().isReleased()){
+                return true;
+            }
+            
         }else{
             // Restricted, make the call to the Permissions Service
-            // (5) Check the Download DataFile permission
+            // (6) Check the Download DataFile permission
             //
             if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
                 this.fileDownloadPermissionMap.put(fid, true);
@@ -333,7 +340,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-        // (6) No download....
+        // (7) No download....
         //
         this.fileDownloadPermissionMap.put(fid, false);
        
@@ -639,12 +646,6 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        // The shapefile must be public.  RP 12/2015
-        //
-        if (!(fm.getDataFile().isReleased())) {
-            return false;
-        }
-
         return fm.getDataFile().isShapefileType();
     }
 
@@ -680,7 +681,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     /**
-     * Using a DataFile id, retreive an associated MapLayerMetadata object
+     * Using a DataFile id, retrieve an associated MapLayerMetadata object
      *
      * The MapLayerMetadata objects have been fetched at page inception by
      * "loadMapLayerMetadataLookup()"
@@ -692,34 +693,62 @@ public class DatasetPage implements java.io.Serializable {
         return this.mapLayerMetadataLookup.get(df.getId());
     }
 
+    private void msg(String s){
+        //System.out.println(s);
+    }
     
+    /**
+     *  See table in: https://github.com/IQSS/dataverse/issues/1618
+     * 
+     *  Can the user see a reminder to publish button?
+     * 
+     *   (1) Logged in user
+     *   (2) Is geospatial file?
+     *   (3) File has NOT been released
+     *   (4) No existing Map
+     *   (5) Can Edit Dataset
+     *   
+     * @param FileMetadata fm
+     * @return boolean
+     */
     public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
-        
+        msg("-- canSeeMapButtonReminderToPublish -- " + fm.getLabel());
         if (fm==null){
+            msg("FileMetadata is null");
+
             return false;
-        }  
-                
-        // Is this dataset published?  Yes, don't need reminder
-        //
-        if (this.dataset.isReleased()){
-            return false;
-        }
+        }       
         
         // (1) Is there an authenticated user?
+        //
         if (!(this.session.getUser().isAuthenticated())){
-            return false;
-        }
-        
-        //  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
-        //
-        //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
-        //
-        if (!(this.isShapefileType(fm))){
+            msg("Not authenticated");
             return false;
         }
 
-        // (3) If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
-        if (!(this.permissionService.userOn(this.session.getUser(), fm.getDataFile().getOwner()).has(Permission.EditDataset))) { 
+        // (2) Is this file a Shapefile 
+        //  TODO: or a Tabular file tagged as Geospatial?
+        //
+        if (!(this.isShapefileType(fm))){
+              msg("Not a shapefile");
+              return false;
+        }
+
+        // (3) Is this DataFile released?  Yes, don't need reminder
+        //
+        if (fm.getDataFile().isReleased()){
+            msg("already published");
+            return false;
+        }
+        
+        // (4) Does a map already exist?  Yes, don't need reminder
+        //
+        if (this.hasMapLayerMetadata(fm)){
+            return false;
+        }
+
+        // (5) If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
+        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
             return false;
         }
 
@@ -730,11 +759,13 @@ public class DatasetPage implements java.io.Serializable {
     
      /**
      * Should there be a Map Data Button for this file?
-     * 
+     *  see table in: https://github.com/IQSS/dataverse/issues/1618
      *  (1) Is the user logged in?
      *  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
      *  (3) Does the logged in user have permission to edit the Dataset to which this FileMetadata belongs?
-     * 
+     *  (4) Any of these conditions:
+     *        9a) File Published 
+     *        (b) Draft: File Previously published  
      * @param fm FileMetadata
      * @return boolean
      */
@@ -743,38 +774,39 @@ public class DatasetPage implements java.io.Serializable {
         if (fm==null){
             return false;
         }  
-                
-        // Is this dataset published?
-        //
-        if (!this.dataset.isReleased()){
-            return false;
-        }
+        
         
         // (1) Is there an authenticated user?
         if (!(this.session.getUser().isAuthenticated())){
             return false;
         }
-        
+
         //  (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
-        //
         //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
         //
         if (!(this.isShapefileType(fm))){
             return false;
         }
 
-        // (3) If so, can the logged in user edit the Dataset to which this FileMetadata belongs?
-        if (!(this.permissionService.userOn(this.session.getUser(), fm.getDataFile().getOwner()).has(Permission.EditDataset))) { 
+        //  (3) Does the user have Edit Dataset permissions?
+        //
+        if (!this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
             return false;
         }
-
-        // Looks good
+             
+        //  (4) Is File released?
         //
-        return true;
+        if (fm.getDataFile().isReleased()){
+            return true;
+        }
+        
+        // Nope
+        return false;
     }
     
     /**
      * Should there be a Explore WorldMap Button for this file?
+     *   See table in: https://github.com/IQSS/dataverse/issues/1618
      * 
      *  (1) Does the file have MapLayerMetadata?
      *  (2) Is there DownloadFile permission for this file?
@@ -787,20 +819,26 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         
-        // (1) Does the file have MapLayerMetadata?
+        /* -----------------------------------------------------
+           Does a Map Exist?
+         ----------------------------------------------------- */
         if (!(this.hasMapLayerMetadata(fm))){
+            // Nope: no button
             return false;
         }
-         
-        // (2) Is there DownloadFile permission for this file?
-        //
-        if (!(this.permissionService.on(fm.getDataFile()).has(Permission.DownloadFile))){
-                return false;
+                
+        
+        /* -----------------------------------------------------
+            Does user have DownloadFile permission for this file?
+             Yes: User can view button!
+         ----------------------------------------------------- */                    
+        if (this.canDownloadFile(fm)){
+            return true;
         }
-              
-        // Looks good
+                      
+        // Nope: Can't see button
         //
-        return true;
+        return false;
     }
 
     /**
