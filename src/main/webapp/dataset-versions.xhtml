@@ -23,7 +23,10 @@
 
     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                  rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}" rowKey="#{versionTab}">
-        <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/>
+        <!-- start: checkbox column -->
+        <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/><!-- end: checkbox column -->
+
+        <!-- start: version number column -->
         <p:column>
             <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <a id="versionLink" href="/dataset.xhtml?globalId=#{versionTab.dataset.globalId}&#38;versionId=#{versionTab.id}" class="ui-commandlink ui-widget">
@@ -34,7 +37,8 @@
                 <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
                 <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
             </ui:fragment>
-        </p:column>
+        </p:column><!-- end: version number column -->
+        <!-- start: description column -->        
         <p:column>
             <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
@@ -88,13 +92,17 @@
                            oncomplete="detailsBlocks.show();post_differences();"
                            update=":datasetForm"
                            value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
-        </p:column>
+        </p:column><!-- end: description column -->        
+        
+        <!-- contributor column -->    
         <p:column class="col-sm-3">
             <h:outputText value="#{versionTab.contributorNames}" />
-        </p:column>
+        </p:column><!-- end: contributor column -->    
+
+        <!-- date column -->    
         <p:column class="col-sm-2">
             <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
-        </p:column>
+        </p:column><!-- end: date column -->
     </p:dataTable>
 <!-- / VERSIONS -->
 
