@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -11,6 +12,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
 
 /**
  * Updates a {@link DatasetVersion}, as long as that version is in a "draft" state.
@@ -44,6 +48,28 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         
         DatasetVersion edit = ds.getEditVersion();
         edit.setDatasetFields( newVersion.getDatasetFields() );
+   
+        edit.setDatasetFields(edit.initDatasetFields());
+
+        Set<ConstraintViolation> constraintViolations = edit.validate();
+        if (!constraintViolations.isEmpty()) {
+            String validationFailedString = "Validation failed:";
+            for (ConstraintViolation constraintViolation : constraintViolations) {
+                validationFailedString += " " + constraintViolation.getMessage();
+            }
+            throw new IllegalCommandException(validationFailedString, this);
+        }
+
+        Iterator<DatasetField> dsfIt = edit.getDatasetFields().iterator();
+        while (dsfIt.hasNext()) {
+            if (dsfIt.next().removeBlankDatasetFieldValues()) {
+                dsfIt.remove();
+            }
+        }
+        
+        
+        
+        
         Timestamp now = new Timestamp(new Date().getTime());
         edit.setLastUpdateTime(now);
         ds.setModificationTime(now);

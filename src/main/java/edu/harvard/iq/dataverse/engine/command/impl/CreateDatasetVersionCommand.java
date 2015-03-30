@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
@@ -13,7 +14,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.validation.ConstraintViolation;
 
 /**
@@ -44,7 +47,9 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
-         Set<ConstraintViolation> constraintViolations = newVersion.validate();
+          newVersion.setDatasetFields(newVersion.initDatasetFields());
+     
+        Set<ConstraintViolation> constraintViolations = newVersion.validate();
         if (!constraintViolations.isEmpty()) {
             String validationFailedString = "Validation failed:";
             for (ConstraintViolation constraintViolation : constraintViolations) {
@@ -52,6 +57,20 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
             }
             throw new IllegalCommandException(validationFailedString, this);
         }
+        
+        Iterator<DatasetField> dsfIt = newVersion.getDatasetFields().iterator();
+        while (dsfIt.hasNext()) {
+            if (dsfIt.next().removeBlankDatasetFieldValues()) {
+                dsfIt.remove();
+            }
+        }
+        Iterator<DatasetField> dsfItSort = newVersion.getDatasetFields().iterator();
+        while (dsfItSort.hasNext()) {
+            dsfItSort.next().setValueDisplayOrder();
+        }
+        
+        
+        
         Timestamp now = new Timestamp(new Date().getTime());
         newVersion.setCreateTime(now);
         newVersion.setLastUpdateTime(now);
