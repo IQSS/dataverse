@@ -67,21 +67,14 @@ There are two options for Widgets, a Dataverse Search box widget and a Dataverse
 
 Adding Widgets to an OpenScholar Website
 
-.. _featured-dataverses:
 
-Featured Dataverses
-======================================================
-
-Featured Dataverses is a way to display sub dataverses in your dataverse that you want to feature for people to easily see when they visit your dataverse. 
-
-Click on Featured Dataverses and a pop up will appear. Select which sub dataverses you would like to have appear. 
-
-Note: Featured Dataverses can only be used with published dataverses.
 
 .. _dataverse-permissions:
 
 Permissions 
 =======================================================
+When you access a dataverse's permissions page, you will see there are three sections: Permissions, Users/Groups, and Roles. 
+
 
 .. _dataset-templates: 
 
@@ -126,6 +119,17 @@ After creating a guestbook, you will notice there are several options for a gues
 
 .. |image1| image:: ./img/Dataverse-Diagram.png
 
+
+.. _featured-dataverses:
+
+Featured Dataverses
+======================================================
+
+Featured Dataverses is a way to display sub dataverses in your dataverse that you want to feature for people to easily see when they visit your dataverse. 
+
+Click on Featured Dataverses and a pop up will appear. Select which sub dataverses you would like to have appear. 
+
+Note: Featured Dataverses can only be used with published dataverses.
 
 
 Publish Your Dataverse
