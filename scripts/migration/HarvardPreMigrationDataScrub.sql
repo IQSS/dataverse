@@ -22,9 +22,11 @@ insert into studyfieldvalue (strvalue, metadata_id, studyfield_id, displayorder)
 
 --Added for datasets with multiple failues 3/30
 select m.id, m.TimePeriodCoveredStart, v.study_id from  metadata m, studyversion v   where  v.study_id = 88283 and m.id = v.metadata_id and TimePeriodCoveredStart = '198x';
+select m.id, m.TimePeriodCoveredStart, v.study_id from  metadata m, studyversion v   where  v.study_id = 121855 and m.id = v.metadata_id and  TimePeriodCoveredStart = '[17820000]';
 select m.id, m.ProductionDate, v.study_id from  metadata m, studyversion v   where  v.study_id = 121855 and m.id = v.metadata_id and  ProductionDate = '[17820000]';
 select m.id, m.dateofdeposit, v.study_id from  metadata m, studyversion v   where  v.study_id = 74738 and m.id = v.metadata_id and  dateofdeposit = '\';
 
 update metadata set TimePeriodCoveredStart = '198?' from studyversion v   where  v.study_id = 88283 and metadata.id = v.metadata_id and TimePeriodCoveredStart = '198x';
-update metadata set ProductionDate = '1782' from studyversion v where  v.study_id = 121855 and metadata.id = v.metadata_id and ProductionDate = '[17820000]'
-update metadata set dateofdeposit = '' from studyversion v where  v.study_id = 74738 and metadata.id = v.metadata_id and ProductionDate = '\'
+update metadata set ProductionDate = '1782' from studyversion v where  v.study_id = 121855 and metadata.id = v.metadata_id and ProductionDate = '[17820000]';
+update metadata set TimePeriodCoveredStart = '1782' from studyversion v where  v.study_id = 121855 and metadata.id = v.metadata_id and TimePeriodCoveredStart = '[17820000]';
+update metadata set dateofdeposit = '' from studyversion v where  v.study_id = 74738 and metadata.id = v.metadata_id and ProductionDate = '\';
