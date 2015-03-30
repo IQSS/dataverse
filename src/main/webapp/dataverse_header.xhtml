@@ -19,8 +19,7 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a href="/">
-                        <i id="icon-dataverse" class="icon-dataverse"></i>
-                        <span class="navbar-brand"> #{bundle.dataverse}</span>
+                        <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
                     </a>
                     <h:outputLink value="#" onclick="statusInfo.show()" rendered="#{!empty settingsServiceBean.get(':StatusMessageText')}">
                         <span class="label label-default status">#{!empty settingsServiceBean.get(':StatusMessageHeader') ? settingsServiceBean.get(':StatusMessageHeader') : bundle['header.status.header']}</span>
