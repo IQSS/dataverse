@@ -52,7 +52,6 @@ select min(id) from vdcuser
 group by email
 having count(*) > 1
 )
-order by u1.email
 )
 
 */
