@@ -91,101 +91,106 @@
                             </ui:fragment>
                         </p:tab>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
-                            <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
-                                <div class="notification-item #{item.displayAsRead ? '' : 'bg-warning'}">
-                                     <ui:fragment rendered="#{item.theObject == null}">
-                                         <h:outputText value="#{bundle['notification.generic.objectDeleted']}" ></h:outputText>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.theObject != null}">
-                                    <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                        <i class="icon-dataverse text-icon-inline text-muted"></i>                                        
-                                        <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
-                                            <f:param value="#{dataverseServiceBean.applicationVersion}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'CREATEDV'}">
-                                        <i class="icon-dataverse text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.createDataverse']}" escape="false">
-                                            <f:param value="#{item.theObject.getAlias()}"/>
-                                            <f:param value="#{item.theObject.getDisplayName()}"/>
-                                            <f:param value="#{item.theObject.getOwner().getAlias()}"/>
-                                            <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'CREATEDS'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.createDataset']}" escape="false">
-                                            <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.wasSubmittedForReview']}" escape="false">
-                                            <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.wasReturnedByReviewer']}" escape="false">
-                                            <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
-                                        </h:outputFormat>                                      
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.wasPublished']}" escape="false">
-                                            <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
-                                        </h:outputFormat>  
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
-                                            <f:param value="#{item.theObject.id}"/>
-                                            <f:param value="#{item.theObject.displayName}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
-                                            <f:param value="#{item.theObject.id}"/>
-                                            <f:param value="#{item.theObject.displayName}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
-                                            <f:param value="#{item.theObject.id}"/>
-                                            <f:param value="#{item.theObject.displayName}"/>
-                                        </h:outputFormat>
-                                    </ui:fragment>                                    
-                                    <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
-                                        <i class="icon-dataset text-icon-inline text-muted"></i>
-                                        <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
-                                            <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
-                                            <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
-                                        </h:outputFormat>  
-                                    </ui:fragment>
-                                    </ui:fragment>
-                                    <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
-                                    
-                                    <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip pull-right"
-                                                   action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}"
-                                                   oncomplete="bind_bsui_components();">
-                                        <span class="glyphicon glyphicon-remove"></span>
-                                    </p:commandLink>
-                                </div>
-                            </ui:repeat>
+                            <div class="table-container">
+                                <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
+                                    <div class="notification-item #{item.displayAsRead ? '' : 'bg-warning'}">
+                                        <div class="notification-item-cell">
+                                            <ui:fragment rendered="#{item.theObject == null}">
+                                                 <h:outputText value="#{bundle['notification.generic.objectDeleted']}" />
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{item.theObject != null}">
+                                                <ui:fragment rendered="#{item.type == 'CREATEACC'}">
+                                                    <i class="icon-dataverse text-icon-inline text-muted"></i>                                        
+                                                    <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
+                                                        <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'CREATEDV'}">
+                                                    <i class="icon-dataverse text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.createDataverse']}" escape="false">
+                                                        <f:param value="#{item.theObject.getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'CREATEDS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.createDataset']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.wasSubmittedForReview']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.wasReturnedByReviewer']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>                                      
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.wasPublished']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'REQUESTFILEACCESS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.requestFileAccess']}" escape="false">
+                                                        <f:param value="#{item.theObject.id}"/>
+                                                        <f:param value="#{item.theObject.displayName}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
+                                                        <f:param value="#{item.theObject.id}"/>
+                                                        <f:param value="#{item.theObject.displayName}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
+                                                        <f:param value="#{item.theObject.id}"/>
+                                                        <f:param value="#{item.theObject.displayName}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>                                    
+                                                <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                </ui:fragment>
+                                            </ui:fragment>
+                                            <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
+                                        </div>
+                                        <div class="notification-item-cell">
+                                            <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip"
+                                                           action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}"
+                                                           oncomplete="bind_bsui_components();">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </p:commandLink>
+                                        </div>
+                                    </div>
+                                </ui:repeat>
+                            </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="Account Information">
                             <div jsf:rendered="#{empty DataverseUserPage.builtinUser}">
