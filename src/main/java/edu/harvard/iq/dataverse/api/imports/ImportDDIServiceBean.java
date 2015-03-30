@@ -1455,7 +1455,6 @@ public class ImportDDIServiceBean {
     
     private void addToSet(HashSet<FieldDTO> set, String typeName, String value ) {
         if (value!=null && !value.trim().isEmpty()) {
-            System.out.println("adding "+typeName+", value = "+value+".");
             set.add(FieldDTO.createPrimitiveFieldDTO(typeName, value));
         }
     }
