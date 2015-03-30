@@ -49,12 +49,9 @@ public class AuthenticatedUser implements User, Serializable {
 
     private String name;
 
-    /**
-     * @todo add uniqueness constraint per
-     * https://github.com/IQSS/dataverse/issues/845
-     * @NotNull
-     * @Column(nullable = false, unique=true)
-     */
+
+    @NotNull
+    @Column(nullable = false, unique=true)
     private String email;
     private String affiliation;
     private String position;
