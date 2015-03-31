@@ -24,8 +24,8 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
-                    <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
-                    <f:viewParam name="globalId" value="#{DatasetPage.globalId}"/>
+                    <f:viewParam name="version" value="#{DatasetPage.version}"/>
+                    <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
                     <f:viewAction action="#{DatasetPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                 </f:metadata>
@@ -211,7 +211,7 @@
                             <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
                                 
-                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?globalId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>                                
                                 
                                 <div class="button-block">
                                     <button type="button" onclick="shareDialog.hide()" class="btn btn-default" value="#{bundle.close}">
@@ -228,11 +228,18 @@
                                 </button>
                                 <ul class="dropdown-menu" role="menu">
                                     <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
-                                        <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
-                                            <a id="viewVersionLink" href="/dataset.xhtml?globalId=#{versionLinks.dataset.globalId}&#38;versionId=#{versionLinks.id}" class="ui-commandlink ui-widget">
-                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" />
-                                                <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
-                                        </li>
+                                            <ui:fragment rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}">
+                                                <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
+                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionState}" class="ui-commandlink ui-widget">
+                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
+                                            </li>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{versionLinks.released or versionLinks.deaccessioned}">                                                
+                                              <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">  
+                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" class="ui-commandlink ui-widget">
+                                                    <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
+                                             </li>
+                                            </ui:fragment>                                                                               
                                     </ui:repeat>
                                 </ul>
                             </div>

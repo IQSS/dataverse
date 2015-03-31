@@ -208,10 +208,10 @@ public class DOIEZIdServiceBean  {
         DOISHOULDER = "doi:" + datasetIn.getAuthority();
         
         if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset.xhtml?globalId=" + DOISHOULDER 
+           targetUrl ="http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER 
                     + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
         } else{
-           targetUrl = inetAddress + "/dataset.xhtml?globalId=" + DOISHOULDER 
+           targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER 
                 + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
         }            
         metadata.put("_target", targetUrl);

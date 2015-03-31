@@ -156,6 +156,8 @@ public class DatasetPage implements java.io.Serializable {
     private Template defaultTemplate;
     private Template selectedTemplate;
     private String globalId;
+    private String persistentId;
+    private String version;
     private String protocol = "";
     private String authority = "";
     private String separator = "";
@@ -419,12 +421,23 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getGlobalId() {
-        return globalId;
+        return persistentId;
+    }
+        
+    public String getPersistentId() {
+        return persistentId;
     }
 
-    public void setGlobalId(String globalId) {
-        this.globalId = globalId;
+    public void setPersistentId(String persistentId) {
+        this.persistentId = persistentId;
     }
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }    
 
     public String getShowVersionList() {
         return showVersionList;
@@ -865,21 +878,20 @@ public class DatasetPage implements java.io.Serializable {
     }// A DataFile may have a related MapLayerMetadata object
 
     
-    public String init() {
-        // System.out.println("_YE_OLDE_QUERY_COUNTER_");
+   public String init() {
         String nonNullDefaultIfKeyNotFound = "";
         
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        if (dataset.getId() != null || globalId != null) { // view mode for a dataset     
+        if (dataset.getId() != null || persistentId != null) { // view mode for a dataset     
             if (dataset.getId() != null) {
                 dataset = datasetService.find(dataset.getId());
             }
-            if (globalId != null) {
+            if (persistentId != null) {
                 try {
-                    dataset = datasetService.findByGlobalId(globalId);
+                    dataset = datasetService.findByGlobalId(persistentId);
                 } catch (EJBException e) {
                     dataset = null;
                 }
@@ -889,7 +901,7 @@ public class DatasetPage implements java.io.Serializable {
                 return "/404.xhtml";
             }
             // now get the correct version
-            if (versionId == null) {
+            if (version == null || version.isEmpty()) {
                 // If we don't have a version ID, we will get the latest published version; if not published, then go ahead and get the latest
                 // @todo: handle case where all versions are deaccessioned, except one draft:
                 //  currently not possible to get into this state, but should return latest deaccessioned view
@@ -898,7 +910,11 @@ public class DatasetPage implements java.io.Serializable {
                     workingVersion = dataset.getLatestVersion();
                 }
             } else {
-                workingVersion = datasetVersionService.find(versionId);
+                if(version.toUpperCase().equals("DRAFT")){
+                    workingVersion = dataset.getEditVersion();
+                } else {
+                    workingVersion = datasetVersionService.findByFriendlyVersionNumber(dataset.getId(), version);  
+                }
             }
 
             if (workingVersion == null) {

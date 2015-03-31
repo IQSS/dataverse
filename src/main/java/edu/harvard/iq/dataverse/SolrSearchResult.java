@@ -80,8 +80,9 @@ public class SolrSearchResult {
     private boolean draftState;
     private boolean deaccessionedState;
     private long datasetVersionId;
+    private String versionNumberFriendly;
     //Determine if the search result is owned by any of the dvs in the tree of the DV displayed
-    private boolean isInTree; 
+    private boolean isInTree;
 
     public boolean isIsInTree() {
         return isInTree;
@@ -96,6 +97,7 @@ public class SolrSearchResult {
 //    public void setStatePublished(boolean statePublished) {
 //        this.statePublished = statePublished;
 //    }
+
     public boolean isUnpublishedState() {
         return unpublishedState;
     }
@@ -390,7 +392,7 @@ public class SolrSearchResult {
     private String getDateTimePublished() {
         String datePublished = null;
         if (draftState == false) {
-            datePublished = releaseOrCreateDate==null ? null: Util.getDateTimeFormat().format(releaseOrCreateDate);
+            datePublished = releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
         }
         return datePublished;
     }
@@ -418,7 +420,7 @@ public class SolrSearchResult {
     public void setEntity(DvObject entity) {
         this.entity = entity;
     }
-    
+
     public String getIdentifier() {
         return identifier;
     }
@@ -482,8 +484,6 @@ public class SolrSearchResult {
     public void setDisplayImage(boolean displayImage) {
         this.displayImage = displayImage;
     }
-    
-    
 
     public String getQuery() {
         return query;
@@ -672,6 +672,14 @@ public class SolrSearchResult {
         this.datasetVersionId = datasetVersionId;
     }
 
+    public String getVersionNumberFriendly() {
+        return versionNumberFriendly;
+    }
+
+    public void setVersionNumberFriendly(String versionNumberFriendly) {
+        this.versionNumberFriendly = versionNumberFriendly;
+    }
+
     public String getDatasetUrl() {
         String failSafeUrl = "/dataset.xhtml?id=" + entityId + "&versionId=" + datasetVersionId;
         if (identifier != null) {
@@ -684,15 +692,18 @@ public class SolrSearchResult {
             String badString = "null";
             if (!identifier.contains(badString)) {
                 if (entity != null && entity instanceof Dataset) {
-                    if (((Dataset)entity).isHarvested()) {
-                        String remoteArchiveUrl = ((Dataset)entity).getRemoteArchiveURL();
+                    if (((Dataset) entity).isHarvested()) {
+                        String remoteArchiveUrl = ((Dataset) entity).getRemoteArchiveURL();
                         if (remoteArchiveUrl != null) {
                             return remoteArchiveUrl;
                         }
-                        return null; 
+                        return null;
                     }
                 }
-                return "/dataset.xhtml?globalId=" + identifier + "&versionId=" + datasetVersionId;
+                if (isDraftState()) {
+                    return "/dataset.xhtml?persistentId=" + identifier + "&version=DRAFT";
+                }
+                return "/dataset.xhtml?persistentId=" + identifier + "&version=" + versionNumberFriendly;
             } else {
                 logger.info("Dataset identifier/globalId contains \"" + badString + "\" perhaps due to https://github.com/IQSS/dataverse/issues/1147 . Fix data in database and reindex. Returning failsafe URL: " + failSafeUrl);
                 return failSafeUrl;
@@ -709,11 +720,11 @@ public class SolrSearchResult {
             if (remoteArchiveUrl != null) {
                 return remoteArchiveUrl;
             }
-            return null; 
+            return null;
         }
         String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);
         if (parentDatasetGlobalId != null) {
-            return "/dataset.xhtml?globalId=" + parentDatasetGlobalId + "&versionId=" + datasetVersionId;
+            return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId + "&version=" + versionNumberFriendly;
         } else {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
         }
