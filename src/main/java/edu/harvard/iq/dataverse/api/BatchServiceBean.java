@@ -53,9 +53,17 @@ public class BatchServiceBean {
             for (File file : dir.listFiles()) {
                 if (!file.isHidden()) {
                     if (file.isDirectory()) {
-                        status.add(handleDirectory(u, file, importType, validationLog, cleanupLog, createDV));
+                        try {
+                            status.add(handleDirectory(u, file, importType, validationLog, cleanupLog, createDV));
+                        } catch (ImportException e) {
+                            logger.log(Level.SEVERE, "Exception in handleDirectory() for "+ file.getName(),e);
+                        }
                     } else {
-                        status.add(importService.handleFile(u, owner, file, importType, validationLog, cleanupLog));
+                        try {
+                            status.add(importService.handleFile(u, owner, file, importType, validationLog, cleanupLog));
+                        } catch(ImportException e) {
+                             logger.log(Level.SEVERE, "Exception in handleFile() for "+ file.getName(),e);
+                        }
 
                     }
                 }
