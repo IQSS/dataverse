@@ -192,7 +192,7 @@
                             </a>
                         </ui:fragment>
                         <ui:fragment rendered="#{breadcrumb.dvObject.instanceofDataset}">                       
-                            <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?globalId=${breadcrumb.dvObject.globalId}">
+                            <a id="breadcrumbLnk#{status.index}" href="/dataset.xhtml?persistentId=${breadcrumb.dvObject.globalId}">
                                 <h:outputText value="#{breadcrumb.breadcrumbText}"/>
                             </a>
                         </ui:fragment>                        
