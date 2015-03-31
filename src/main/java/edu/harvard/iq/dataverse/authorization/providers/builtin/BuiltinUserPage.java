@@ -261,13 +261,23 @@ public class BuiltinUserPage implements java.io.Serializable {
         String userEmail = (String) value;
         boolean userEmailFound = false;
         BuiltinUser user = builtinUserService.findByEmail(userEmail);
+        AuthenticatedUser aUser = authenticationService.getAuthenticatedUserByEmail(userEmail);
+        System.out.print("user " + user);
+                System.out.print("auser " + aUser);
+               System.out.print("built in " +  builtinUser);
         if (editMode == EditMode.CREATE) {
-            if (user != null) {
+            if (user != null || aUser != null) {
                 userEmailFound = true;
             }
         } else {
-            if (user != null && !user.getId().equals(builtinUser.getId())) {
-                userEmailFound = true;
+            //In edit mode...
+            if (user != null || aUser != null){
+                 userEmailFound = true;               
+            }
+            //if there's a match on edit make sure that the email belongs to the 
+            // user doing the editing by checking ids
+            if ((user != null && user.getId().equals(builtinUser.getId())) || (aUser!=null && aUser.getId().equals(builtinUser.getId()))){
+                userEmailFound = false;
             }
         }
         if (userEmailFound) {
