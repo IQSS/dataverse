@@ -626,6 +626,10 @@ public class DatasetPage implements java.io.Serializable {
         resetVersionUI();
     }
 
+    
+    
+    /*
+    // Original
     private void updateDatasetFieldInputLevels() {
         Long dvIdForInputLevel = ownerId;
 
@@ -640,7 +644,69 @@ public class DatasetPage implements java.io.Serializable {
                 dsf.setInclude(true);
             }
         }
-    }
+    }*/
+
+    /***
+     *
+     * Note: Updated to retrieve DataverseFieldTypeInputLevel objects in single query
+     *
+     */    
+     private void updateDatasetFieldInputLevels() {
+         Long dvIdForInputLevel = ownerId;
+        
+         if (!dataverseService.find(ownerId).isMetadataBlockRoot()) {
+             dvIdForInputLevel = dataverseService.find(ownerId).getMetadataRootId();
+         }        
+        
+        /* ---------------------------------------------------------
+            Map to hold DatasetFields  
+            Format:  {  DatasetFieldType.id : DatasetField }
+         --------------------------------------------------------- */
+        // Initialize Map
+        Map<Long, DatasetField> mapDatasetFields = new HashMap<>();   
+
+        // Populate Map
+         for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
+            if (dsf.getDatasetFieldType().getId() != null){
+                mapDatasetFields.put(dsf.getDatasetFieldType().getId(), dsf);
+            }
+        }      
+        
+        /* ---------------------------------------------------------
+            Retrieve List of DataverseFieldTypeInputLevel objects
+            Use the DatasetFieldType id's which are the Map's keys
+         --------------------------------------------------------- */
+        List<Long> idList = new ArrayList<Long>(mapDatasetFields.keySet());
+        List<DataverseFieldTypeInputLevel> dsFieldTypeInputLevels = dataverseFieldTypeInputLevelService.findByDataverseIdAndDatasetFieldTypeIdList(dvIdForInputLevel, idList);
+        
+        /* ---------------------------------------------------------
+            Iterate through List of DataverseFieldTypeInputLevel objects
+            Call "setInclude" on its related DatasetField object
+         --------------------------------------------------------- */
+        for (DataverseFieldTypeInputLevel oneDSFieldTypeInputLevel : dsFieldTypeInputLevels){
+            
+            if (oneDSFieldTypeInputLevel != null) {
+                // Is the DatasetField in the hash?    hash format: {  DatasetFieldType.id : DatasetField }
+                DatasetField dsf = mapDatasetFields.get(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());  
+                if (dsf != null){
+                    // Yes, call "setInclude"
+                    dsf.setInclude(oneDSFieldTypeInputLevel.isInclude());
+                    // remove from hash                
+                    mapDatasetFields.remove(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());    
+                }
+            }
+        }  // end: updateDatasetFieldInputLevels
+        
+        /* ---------------------------------------------------------
+            Iterate through any DatasetField objects remaining in the hash
+            Call "setInclude(true) on each one
+         --------------------------------------------------------- */
+        for ( DatasetField dsf  : mapDatasetFields.values()) {
+               if (dsf != null){
+                   dsf.setInclude(true);
+               }
+        }
+     }
 
     public void handleChange() {
         System.out.print("handle change");
@@ -879,6 +945,7 @@ public class DatasetPage implements java.io.Serializable {
 
     
    public String init() {
+        //System.out.println("_YE_OLDE_QUERY_COUNTER_");
         String nonNullDefaultIfKeyNotFound = "";
         
         guestbookResponse = new GuestbookResponse();
