@@ -102,6 +102,9 @@ Permissions
 
 Dataset-Level 
 ---------------
+Dataset permissions are located under the Edit button on a dataset page. The dataset permissions page has two sections: Users/Groups and Roles.
+
+To give someone access to view your unpublished dataset or edit your published or unpublished dataset, click on the Assign Roles to Users/Groups button in the Users/Groups section. 
 
 File-Level
 ----------------------
