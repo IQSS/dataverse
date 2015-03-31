@@ -221,29 +221,6 @@ Return data about the block whose ``identifier`` is passed. ``identifier`` can e
   GET http://$SERVER/api/metadatablocks/$identifier
 
 
-Groups
-~~~~~~
-
-IpGroups
-^^^^^^^^
-
-List all the ip groups::
-
-  GET http://$SERVER/api/groups/ip
-
-Adds a new ip group. POST data should specify the group in JSON format. Examples are available at ``data/ipGroup1.json``. ::
-
-  POST http://$SERVER/api/groups/ip
-
-Returns a the group in a JSON format. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
-
-  GET http://$SERVER/api/groups/ip/$groupIdtf
-
-Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it. ::
-
-  DELETE http://$SERVER/api/groups/ip/$groupIdtf
-
-
 Admin 
 ~~~~~~~~~~~~~~~~
 This is the administrative part of the API. It is probably a good idea to block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details.
@@ -303,3 +280,23 @@ Creates a global role in the Dataverse installation. The data POSTed are assumed
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
+
+IpGroups
+^^^^^^^^
+
+List all the ip groups::
+
+  GET http://$SERVER/api/admin/groups/ip
+
+Adds a new ip group. POST data should specify the group in JSON format. Examples are available at ``data/ipGroup1.json``. ::
+
+  POST http://$SERVER/api/admin/groups/ip
+
+Returns a the group in a JSON format. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. ::
+
+  GET http://$SERVER/api/admin/groups/ip/$groupIdtf
+
+Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it. ::
+
+  DELETE http://$SERVER/api/admin/groups/ip/$groupIdtf
+

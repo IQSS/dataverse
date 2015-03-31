@@ -26,7 +26,7 @@ import javax.ws.rs.QueryParam;
  *
  * @author michael
  */
-@Path("groups")
+@Path("admin/groups")
 @Stateless
 public class Groups extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Groups.class.getName());

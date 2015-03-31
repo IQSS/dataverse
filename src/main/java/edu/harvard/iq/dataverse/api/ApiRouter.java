@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * Routes API calls that don't have a version number to the latest API version
+ * 
  * @author michael
  */
 public class ApiRouter implements javax.servlet.Filter {
