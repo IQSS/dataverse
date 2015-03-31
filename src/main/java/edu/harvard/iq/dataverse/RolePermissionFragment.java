@@ -311,7 +311,7 @@ public class RolePermissionFragment implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
             } catch (CommandException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());
-                Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "Saving role failed", ex);
             }
         }
     }
