@@ -24,6 +24,9 @@ function bind_bsui_components(){
     
     // Custom Popover with HTML code snippet -- from dataverse_template
     popoverHTML();
+    
+    //Metrics
+    metricsTabs();
 
 }
 
@@ -182,12 +185,24 @@ function sharrre(){
             });
             
             var sharrrecount = $('#sharrre-total').val();
-            $('#sharrre-count').text(sharrrecount + ' Shares');
+            $('#sharrre-count').html(sharrrecount + ' Shares');
         }
     });
 }
 
-
+/*
+ * Metrics Tabs
+ */
+function metricsTabs() {
+    $('#metrics-tabs a[data-toggle="tab"]').on('shown', function (e) {
+        e.target // activated tab
+        e.relatedTarget // previous tab
+    })
+    $('#metrics-tabs a[data-toggle="tab"]').mouseover(function(){
+        $(this).click();
+    });
+    $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
+}
 
 function handleResizeDialog(dialog) {
         var el = $('div[id$="' + dialog + '"]');
