@@ -200,7 +200,7 @@ span.glyphicon[data-toggle='tooltip'] {cursor: default;}
         
 #breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
 
-#breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em 0 .8em; color:#B3B3B3;}
+#breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em; color:#B3B3B3;}
 
 #breadcrumbNavBlock div.dropdown-menu {padding-right:.5em; min-width:280px;}
 
