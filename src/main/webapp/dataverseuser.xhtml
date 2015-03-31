@@ -399,7 +399,9 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                                    <p:inputText id="email" tabindex="6" styleClass="form-control" value="#{DataverseUserPage.builtinUser.email}" />
+                                                    <p:inputText id="email" tabindex="6" styleClass="form-control" 
+                                                                 validator="#{DataverseUserPage.validateUserEmail}"
+                                                                 value="#{DataverseUserPage.builtinUser.email}" />
                                                     <p:message for="email" display="text" />
                                                 </p:panelGrid>
                                             </div>

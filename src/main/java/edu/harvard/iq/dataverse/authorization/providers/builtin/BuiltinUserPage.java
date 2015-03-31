@@ -256,6 +256,27 @@ public class BuiltinUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
+    
+    public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
+        String userEmail = (String) value;
+        boolean userEmailFound = false;
+        BuiltinUser user = builtinUserService.findByEmail(userEmail);
+        if (editMode == EditMode.CREATE) {
+            if (user != null) {
+                userEmailFound = true;
+            }
+        } else {
+            if (user != null && !user.getId().equals(builtinUser.getId())) {
+                userEmailFound = true;
+            }
+        }
+        if (userEmailFound) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, JH.localize("user.email.taken"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+    
 
     public void validateUserNameEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
