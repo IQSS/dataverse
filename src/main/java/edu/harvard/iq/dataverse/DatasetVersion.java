@@ -547,6 +547,14 @@ public class DatasetVersion implements Serializable {
     public void setMinorVersionNumber(Long minorVersionNumber) {
         this.minorVersionNumber = minorVersionNumber;
     }
+    
+    public String getFriendlyVersionNumber(){
+        if (this.isDraft()) {
+            return "DRAFT";
+        } else {
+            return versionNumber.toString() + "." + minorVersionNumber.toString();                    
+        }
+    }
 
     public VersionState getVersionState() {
         return versionState;

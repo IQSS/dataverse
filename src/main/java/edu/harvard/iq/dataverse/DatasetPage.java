@@ -1293,7 +1293,7 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.deaccessionFailure"));
         }
         JsfHelper.addSuccessMessage(JH.localize("datasetVersion.message.deaccessionSuccess"));
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return returnToDatasetOnly();
     }
 
     private DatasetVersion setDatasetVersionDeaccessionReasonAndURL(DatasetVersion dvIn) {
@@ -1361,7 +1361,7 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Only authenticated users can release Datasets.");
         }
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return returnToDatasetOnly();
     }
 
     public String registerDataset() {
@@ -1375,7 +1375,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetRegistered", "Your dataset is now registered.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return returnToDatasetOnly();
     }
 
     public void refresh(ActionEvent e) {
@@ -1443,7 +1443,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
         }
 
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return returnToDatasetOnly();
     }
 
     private List<FileMetadata> selectedFiles; // = new ArrayList<>();
@@ -1481,7 +1481,7 @@ public class DatasetPage implements java.io.Serializable {
             //return "";
 
         }
-        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
+        return returnToWorkingVersion();
     }
 
     List<FileMetadata> previouslyRestrictedFiles = null;
@@ -1786,7 +1786,7 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
-        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
+        return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT" + "&faces-redirect=true";
     }
     
     private void populateDatasetUpdateFailureMessage(){
@@ -1813,9 +1813,14 @@ public class DatasetPage implements java.io.Serializable {
          setVersionTabList(resetVersionTabList());
          setReleasedVersionTabList(resetReleasedVersionTabList());
          newFiles.clear();
-         editMode = null;
-         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId="+ workingVersion.getId() +  "&faces-redirect=true";
-        
+         editMode = null;         
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version="+ workingVersion.getFriendlyVersionNumber() +  "&faces-redirect=true";       
+    }
+    
+    private String returnToDatasetOnly(){
+         dataset = datasetService.find(dataset.getId());
+         editMode = null;         
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
     }
 
     public String cancel() {
