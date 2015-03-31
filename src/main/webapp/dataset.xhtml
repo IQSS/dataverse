@@ -1025,7 +1025,7 @@
                     <p:dialog id="deaccessionAllConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionAllConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccessionDataset.tip']}</p>
                         <div class="button-block">
-                            <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionAllConfirmation.hide();
+                            <h:commandButton styleClass="btn btn-default" value="Yes" onclick="deaccessionAllConfirmation.hide();
                                     deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
                             <button type="button" class="btn btn-default" value="No" onclick="deaccessionAllConfirmation.hide()">#{bundle.no}</button>
                         </div>
