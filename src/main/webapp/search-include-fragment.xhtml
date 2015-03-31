@@ -507,12 +507,12 @@
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
 
                                         <span class="glyphicon glyphicon-link text-warning pull-right" jsf:rendered="#{!result.isInTree}"/>
-                                        <span class="icon-dataverse text-warning pull-right"/>
+                                        <span class="icon-dataverse text-brand pull-right"/>
                                     </div>
                                     <div class="card-preview-icon-block text-center">
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}" rendered="#{result.displayImage}"/>
-                                            <span class="icon-dataverse text-warning" jsf:rendered="#{!result.displayImage}"/>
+                                            <span class="icon-dataverse text-brand" jsf:rendered="#{!result.displayImage}"/>
                                         </h:outputLink>
                                     </div>
 
@@ -605,7 +605,7 @@
                                         <h:outputText value="#{result.parent.get('name')} #{bundle.dataverse}"/>
                                     </h:outputLink>
 
-                                    <h:outputText value="#{result.citation}" escape="false" styleClass="resultDatasetCitationBlock bg-citation"/>
+                                    <h:outputText value="#{result.citation}" escape="false" styleClass="resultDatasetCitationBlock #{result.deaccessionedState ? 'bg-danger' : 'bg-citation'}"/>
 
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">

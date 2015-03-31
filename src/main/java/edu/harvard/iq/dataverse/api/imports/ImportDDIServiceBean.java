@@ -756,19 +756,19 @@ public class ImportDDIServiceBean {
                 } else if (xmlr.getLocalName().equals("srcOrig")) {
                      parsedText = parseText( xmlr, "srcOrig" );
                     if (!parsedText.isEmpty()) {
-                   citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("originOfSources", parseText( xmlr, "srcOrig" )));
+                   citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("originOfSources", parsedText));
                     }
                      // citation characteristicOfSources
                 } else if (xmlr.getLocalName().equals("srcChar")) {
                     parsedText = parseText( xmlr, "srcChar" );
                     if (!parsedText.isEmpty()) {
-                        citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("characteristicOfSources", parseText( xmlr, "srcChar" )));
+                        citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("characteristicOfSources", parsedText));
                     }
                      // citation accessToSources
                 } else if (xmlr.getLocalName().equals("srcDocu")) {
                     parsedText = parseText( xmlr, "srcDocu" );
                     if (!parsedText.isEmpty()) {                    
-                        citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("accessToSources", parseText( xmlr, "srcDocu" )));
+                        citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("accessToSources", parsedText));
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
