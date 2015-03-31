@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
+import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -21,7 +21,7 @@ import java.util.Date;
  * @author skraffmiller
  */
 @RequiredPermissions(Permission.PublishDataverse)
-public class LinkDataverseCommand extends AbstractVoidCommand {
+public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDataverse> {
     
     private final Dataverse linkedDataverse;
     private final Dataverse linkingDataverse;
@@ -33,12 +33,13 @@ public class LinkDataverseCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    public DataverseLinkingDataverse execute(CommandContext ctxt) throws CommandException {
         DataverseLinkingDataverse dataverseLinkingDataverse = new DataverseLinkingDataverse();
         dataverseLinkingDataverse.setDataverse(linkedDataverse);
         dataverseLinkingDataverse.setLinkingDataverse(linkingDataverse);
         dataverseLinkingDataverse.setLinkCreateTime(new Timestamp(new Date().getTime()));
         ctxt.dvLinking().save(dataverseLinkingDataverse);
         ctxt.index().indexDataverse(linkedDataverse);
+        return dataverseLinkingDataverse;
     }   
 }

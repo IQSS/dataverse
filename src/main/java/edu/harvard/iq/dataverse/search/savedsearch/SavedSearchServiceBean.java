@@ -1,8 +1,31 @@
 package edu.harvard.iq.dataverse.search.savedsearch;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
+import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.SearchServiceBean;
+import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.SolrSearchResult;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
+import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SortBy;
 import java.util.List;
+import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -12,6 +35,21 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class SavedSearchServiceBean {
+
+    private static final Logger logger = Logger.getLogger(SavedSearchServiceBean.class.getCanonicalName());
+
+    @EJB
+    SearchServiceBean searchService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
+    DatasetLinkingServiceBean datasetLinkingService;
+    @EJB
+    DataverseLinkingServiceBean dataverseLinkingService;
+    @EJB
+    EjbDataverseEngine commandEngine;
+
+    private final String resultString = "result";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -27,11 +65,18 @@ public class SavedSearchServiceBean {
     }
 
     public List<SavedSearch> findAll() {
-        TypedQuery<SavedSearch> typedQuery = em.createQuery("SELECT OBJECT(o) FROM SavedSearch AS o", SavedSearch.class);
+        TypedQuery<SavedSearch> typedQuery = em.createQuery("SELECT OBJECT(o) FROM SavedSearch AS o ORDER BY o.id", SavedSearch.class);
         return typedQuery.getResultList();
     }
 
     public SavedSearch add(SavedSearch toPersist) {
+        /**
+         * @todo Don't let anyone persist the same saved search twice. What does
+         * "same" mean. For the first cut we'll check for a String match of both
+         * query and filterQueries.
+         *
+         * @todo Don't allow wildcard queries.
+         */
         SavedSearch persisted = null;
         try {
             persisted = em.merge(toPersist);
@@ -61,6 +106,168 @@ public class SavedSearchServiceBean {
             return savedSearch;
         } else {
             return em.merge(savedSearch);
+        }
+    }
+
+    public JsonObjectBuilder makeLinksForAllSavedSearches(boolean debugFlag) throws SearchException, CommandException {
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        List<SavedSearch> allSavedSearches = findAll();
+        JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
+        for (SavedSearch savedSearch : allSavedSearches) {
+            JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
+            SolrQueryResponse queryResponse = findHits(savedSearch);
+            for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
+
+                JsonObjectBuilder hitInfo = Json.createObjectBuilder();
+                hitInfo.add("name", solrSearchResult.getNameSort());
+                hitInfo.add("dvObjectId", solrSearchResult.getEntityId());
+
+                DvObject dvObjectThatDefinitionPointWillLinkTo = dvObjectService.findDvObject(solrSearchResult.getEntityId());
+                if (dvObjectThatDefinitionPointWillLinkTo == null) {
+                    hitInfo.add(resultString, "Could not find DvObject with id " + solrSearchResult.getEntityId());
+                    infoPerHit.add(hitInfo);
+                    break;
+                }
+                if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
+                    Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
+                    if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                        hitInfo.add(resultString, "Skipping because dataverse id " + dataverseToLinkTo.getId() + " would link to itself.");
+                    } else if (alreadyLinkedToTheDataverse(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                        hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataverse " + dataverseToLinkTo.getId() + ".");
+                    } else if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                        hitInfo.add(resultString, "Skipping because " + dataverseToLinkTo + " is already part of the subtree for " + savedSearch.getDefinitionPoint());
+                    } else {
+                        DataverseLinkingDataverse link = commandEngine.submit(new LinkDataverseCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), dataverseToLinkTo));
+                        hitInfo.add(resultString, "Persisted DataverseLinkingDataverse id " + link.getId() + " link of " + dataverseToLinkTo + " to " + savedSearch.getDefinitionPoint());
+                    }
+                } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
+                    Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
+                    if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                        hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + ".");
+                    } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                        // already there from normal search/browse
+                        hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is a direct child of dataverse id " + savedSearch.getDefinitionPoint().getAlias());
+                    } else {
+                        DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                        hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
+                    }
+                } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
+                    Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo.getOwner();
+                    if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                        hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
+                    } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                        hitInfo.add(resultString, "Skipping because we don't want to link dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + " to its parent (" + savedSearch.getDefinitionPoint().getAlias() + ")");
+                    } else {
+                        DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                        hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " (owner of file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + ") to " + link.getLinkingDataverse());
+                    }
+                } else {
+                    hitInfo.add(resultString, "Unexpected DvObject type.");
+                }
+                infoPerHit.add(hitInfo);
+            }
+
+            JsonObjectBuilder info = getInfo(savedSearch, infoPerHit);
+            if (debugFlag) {
+                info.add("debug", getDebugInfo(savedSearch));
+            }
+            savedSearchArrayBuilder.add(info);
+        }
+        response.add("hits by saved search", savedSearchArrayBuilder);
+        return response;
+    }
+
+    /**
+     * @todo Implement this!
+     */
+    public JsonObjectBuilder makeLinksNowForSingleSavedSearch(SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
+        return Json.createObjectBuilder().add("FIXME", "Implement this!");
+    }
+
+    private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
+//        AuthenticatedUser creatorOfSavedSearch = savedSearch.getCreator();
+//        Dataverse definitionPoint = savedSearch.getDefinitionPoint();
+//        String query = savedSearch.getQuery();
+//        List<String> filterQueries = new ArrayList<>();
+//        List<SavedSearchFilterQuery> savedSearchFilterQuerys = savedSearch.getSavedSearchFilterQueries();
+//        for (SavedSearchFilterQuery filterQueryToAdd : savedSearchFilterQuerys) {
+//            filterQueries.add(filterQueryToAdd.getFilterQuery());
+//        }
+        String sortField = SearchFields.RELEVANCE;
+        String sortOrder = SortBy.DESCENDING;
+        SortBy sortBy = new SortBy(sortField, sortOrder);
+        int paginationStart = 0;
+        boolean dataRelatedToMe = false;
+        int numResultsPerPage = Integer.MAX_VALUE;
+        SolrQueryResponse solrQueryResponse = searchService.search(
+                savedSearch.getCreator(),
+                savedSearch.getDefinitionPoint(),
+                savedSearch.getQuery(),
+                savedSearch.getFilterQueriesAsStrings(),
+                sortBy.getField(),
+                sortBy.getOrder(),
+                paginationStart,
+                dataRelatedToMe,
+                numResultsPerPage
+        );
+        return solrQueryResponse;
+    }
+
+    private JsonObjectBuilder getInfo(SavedSearch savedSearch, JsonArrayBuilder infoPerHit) {
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        info.add("definitionPointAlias", savedSearch.getDefinitionPoint().getAlias());
+        info.add("savedSearchId", savedSearch.getId());
+        info.add("hitInfo", infoPerHit);
+        return info;
+    }
+
+    private JsonObjectBuilder getDebugInfo(SavedSearch savedSearch) {
+        JsonObjectBuilder debug = Json.createObjectBuilder();
+        debug.add("creatorId", savedSearch.getCreator().getId());
+        debug.add("query", savedSearch.getQuery());
+        debug.add("filterQueries", getFilterQueries(savedSearch));
+        return debug;
+    }
+
+    private JsonArrayBuilder getFilterQueries(SavedSearch savedSearch) {
+        JsonArrayBuilder filterQueriesArrayBuilder = Json.createArrayBuilder();
+        for (String filterQueryToAdd : savedSearch.getFilterQueriesAsStrings()) {
+            filterQueriesArrayBuilder.add(filterQueryToAdd);
+        }
+        return filterQueriesArrayBuilder;
+    }
+
+    private boolean alreadyLinkedToTheDataverse(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
+        return dataverseLinkingService.alreadyLinked(definitionPoint, dataverseToLinkTo);
+    }
+
+    private boolean alreadyLinkedToTheDataset(Dataverse definitionPoint, Dataset linkToThisDataset) {
+        return datasetLinkingService.alreadyLinked(definitionPoint, linkToThisDataset);
+    }
+
+    private static boolean wouldResultInLinkingToItself(Dataverse savedSearchDefinitionPoint, Dataverse dataverseToLinkTo) {
+        return savedSearchDefinitionPoint.equals(dataverseToLinkTo);
+    }
+
+    private boolean wouldResultInLinkingDatasetToItsOwner(Dataverse savedSearchDefinitionPoint, Dataset datasetToLinkTo) {
+        /**
+         * @todo "You don't want to link a dataset if its owner is the linkingDV
+         * or the if its owner is already linked." --sekmiller
+         */
+        return datasetToLinkTo.getOwner().equals(savedSearchDefinitionPoint);
+    }
+
+    private boolean dataverseToLinkToIsAlreadyPartOfTheSubtree(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
+        Dataverse directChild = dataverseToLinkTo;
+        if (directChild.getOwner().equals(definitionPoint)) {
+            return true;
+        } else {
+            /**
+             * @todo what about grandchildren and great grandchildren and great
+             * great granchildren and...?
+             */
+            logger.fine("what about grandchildren?");
+            return false;
         }
     }
 

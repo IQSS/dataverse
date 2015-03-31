@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -s http://localhost:8080/api/admin/savedsearches -X POST -H 'Content-type:application/json' --upload-file scripts/search/data/savedSearchMaliBasicHealth.json | jq .

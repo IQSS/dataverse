@@ -1,0 +1,5 @@
+#!/bin/sh
+. scripts/search/export-keys
+scripts/search/populate-psi-dvs
+scripts/search/create-psi-dvs > /tmp/psi-dvs1
+echo "Done"

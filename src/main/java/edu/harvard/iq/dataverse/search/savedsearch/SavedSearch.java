@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.search.savedsearch;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,7 +26,7 @@ public class SavedSearch implements Serializable {
      *
      * https://wiki.apache.org/solr/CommonQueryParameters#q
      */
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String query;
 
     /**
@@ -40,6 +42,17 @@ public class SavedSearch implements Serializable {
     @JoinColumn(nullable = false)
     private Dataverse definitionPoint;
 
+    @JoinColumn(nullable = false)
+    private AuthenticatedUser creator;
+
+    public List<String> getFilterQueriesAsStrings() {
+        List<String> filterQueries = new ArrayList<>();
+        for (SavedSearchFilterQuery filterQueryToAdd : getSavedSearchFilterQueries()) {
+            filterQueries.add(filterQueryToAdd.getFilterQuery());
+        }
+        return filterQueries;
+    }
+
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
@@ -54,9 +67,10 @@ public class SavedSearch implements Serializable {
     public SavedSearch() {
     }
 
-    public SavedSearch(String query, Dataverse definitionPoint) {
+    public SavedSearch(String query, Dataverse definitionPoint, AuthenticatedUser creator) {
         this.query = query;
         this.definitionPoint = definitionPoint;
+        this.creator = creator;
     }
 
     @Override
@@ -86,6 +100,14 @@ public class SavedSearch implements Serializable {
 
     public void setDefinitionPoint(Dataverse definitionPoint) {
         this.definitionPoint = definitionPoint;
+    }
+
+    public AuthenticatedUser getCreator() {
+        return creator;
+    }
+
+    public void setCreator(AuthenticatedUser creator) {
+        this.creator = creator;
     }
 
     public List<SavedSearchFilterQuery> getSavedSearchFilterQueries() {

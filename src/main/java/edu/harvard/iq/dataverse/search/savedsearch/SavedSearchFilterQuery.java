@@ -17,7 +17,7 @@ public class SavedSearchFilterQuery implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String filterQuery;
 
     @ManyToOne(cascade = CascadeType.PERSIST)

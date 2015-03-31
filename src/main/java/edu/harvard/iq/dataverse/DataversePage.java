@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -11,8 +12,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.List;
@@ -79,6 +82,8 @@ public class DataversePage implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueServiceBean;
+    @EJB
+    SavedSearchServiceBean savedSearchService;
     @Inject
     SearchIncludeFragment searchIncludeFragment;
 
@@ -708,10 +713,18 @@ public class DataversePage implements java.io.Serializable {
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
+        /**
+         * @todo Use a non-deprecated constructor
+         */
         SavedSearch savedSearch = new SavedSearch();
         savedSearch.setDefinitionPoint(linkingDataverse);
         savedSearch.setQuery(searchIncludeFragment.getQuery());
         savedSearch.setSavedSearchFilterQueries(new ArrayList());
+        User user = session.getUser();
+        if (user.isAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) user;
+            savedSearch.setCreator(au);
+        }
         for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
             if (filterQuery != null && !filterQuery.isEmpty()) {
                 SavedSearchFilterQuery ssfq = new SavedSearchFilterQuery();

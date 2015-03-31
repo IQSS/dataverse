@@ -59,4 +59,11 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
             em.merge(dataverseLinkingDataverse);
         }
     }
+
+    public boolean alreadyLinked(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
+        TypedQuery<DataverseLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataverse.id = :dataverseToLinkTo", DataverseLinkingDataverse.class);
+        typedQuery.setParameter("dataverseId", definitionPoint.getId());
+        typedQuery.setParameter("dataverseToLinkTo", dataverseToLinkTo.getId());
+        return !typedQuery.getResultList().isEmpty();
+    }
 }
