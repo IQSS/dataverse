@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1286,7 +1287,7 @@ public class DatasetPage implements java.io.Serializable {
 
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return  returnToWorkingVersion();
+        return  returnToLatestVersion();
     }
 
     public String submitDataset() {
@@ -1308,7 +1309,7 @@ public class DatasetPage implements java.io.Serializable {
 
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "Your dataset has been submitted for review.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        return  returnToWorkingVersion();
+        return  returnToLatestVersion();
     }
     
     public String releaseParentDVAndDataset(){
@@ -1389,7 +1390,7 @@ public class DatasetPage implements java.io.Serializable {
                 break;
         }
         if (!deacessionReasonDetail.isEmpty()){
-            if (!dvIn.getVersionNote().isEmpty()){
+            if (!StringUtil.isEmpty(dvIn.getVersionNote())){
                 dvIn.setVersionNote(dvIn.getVersionNote() + " " + deacessionReasonDetail);
             } else {
                 dvIn.setVersionNote(deacessionReasonDetail);
@@ -1548,7 +1549,7 @@ public class DatasetPage implements java.io.Serializable {
             //return "";
 
         }
-        return returnToWorkingVersion();
+        return returnToLatestVersion();
     }
 
     List<FileMetadata> previouslyRestrictedFiles = null;
@@ -1853,7 +1854,7 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
-        return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT" + "&faces-redirect=true";
+        return returnToDraftVersion();
     }
     
     private void populateDatasetUpdateFailureMessage(){
@@ -1871,7 +1872,7 @@ public class DatasetPage implements java.io.Serializable {
             }
     }
     
-    private String returnToWorkingVersion(){
+    private String returnToLatestVersion(){
          dataset = datasetService.find(dataset.getId());
          workingVersion = dataset.getLatestVersion();
          if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
@@ -1889,9 +1890,13 @@ public class DatasetPage implements java.io.Serializable {
          editMode = null;         
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
     }
+    
+    private String returnToDraftVersion(){      
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT" + "&faces-redirect=true";    
+    }
 
     public String cancel() {
-        return  returnToWorkingVersion();
+        return  returnToLatestVersion();
     }
 
     public boolean isDuplicate(FileMetadata fileMetadata) {
