@@ -234,18 +234,18 @@
                             <!-- Metrics -->
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <div class="pull-left text-center" id="metrics-label">
-                                    <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> Metrics</span>
+                                    <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}</span>
                                 </div>
                                 <div class="pull-left">
                                     <div id="metrics-content" class="tab-content">
                                         <div id="metrics-views" class="metrics-views tab-pane fade small text-center">
-                                            Views <em>Coming soon...</em>
+                                            #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
-                                            #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} Downloads
+                                            #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} #{bundle['metrics.downloads']}
                                         </div>
                                         <div id="metrics-citations" class="metrics-citations tab-pane fade small text-center">
-                                            Citations <em>Coming soon...</em>
+                                            #{bundle['metrics.citations']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-shares" class="metrics-shares tab-pane fade small text-center">
                                             <span id="sharrre-count">&#160;</span>
