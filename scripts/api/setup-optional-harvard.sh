@@ -12,10 +12,10 @@ curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
 curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled
 echo "- Setting up the Harvard Shibboleth institutional group"
-curl -s -X POST -H 'Content-type:application/json' --upload-file data/shibGroupHarvard.json "$SERVER/groups/shib?key=$adminKey"
+curl -s -X POST -H 'Content-type:application/json' --upload-file data/shibGroupHarvard.json "$SERVER/admin/groups/shib?key=$adminKey"
 echo
 echo "- Setting up the MIT Shibboleth institutional group"
-curl -s -X POST -H 'Content-type:application/json' --upload-file data/shibGroupMit.json "$SERVER/groups/shib?key=$adminKey"
+curl -s -X POST -H 'Content-type:application/json' --upload-file data/shibGroupMit.json "$SERVER/admin/groups/shib?key=$adminKey"
 echo
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/customMRA.tsv -H "Content-type: text/tab-separated-values"
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/customGSD.tsv -H "Content-type: text/tab-separated-values"

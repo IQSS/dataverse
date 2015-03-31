@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
@@ -21,7 +20,6 @@ import javax.json.JsonString;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 /**
  *
  * @author michael
@@ -118,12 +116,7 @@ public class Groups extends AbstractApiBean {
 
     @POST
     @Path("shib")
-    public Response createShibGroup(JsonObject shibGroupInput, @QueryParam("key") String apiKey) {
-        try {
-            findSuperUserKeyorDie(apiKey);
-        } catch (Exception ex) {
-            return errorResponse(Response.Status.BAD_REQUEST, "Problem with API token: " + ex.getMessage());
-        }
+    public Response createShibGroup(JsonObject shibGroupInput) {
         String expectedNameKey = "name";
         JsonString name = shibGroupInput.getJsonString(expectedNameKey);
         if (name == null) {
@@ -150,12 +143,7 @@ public class Groups extends AbstractApiBean {
 
     @DELETE
     @Path("shib/{primaryKey}")
-    public Response deleteShibGroup(@PathParam("primaryKey") String id, @QueryParam("key") String apiKey) {
-        try {
-            findSuperUserKeyorDie(apiKey);
-        } catch (Exception ex) {
-            return errorResponse(Response.Status.BAD_REQUEST, "Problem with API token: " + ex.getMessage());
-        }
+    public Response deleteShibGroup( @PathParam("primaryKey") String id ) {
         ShibGroup doomed = shibGroupPrv.get(id);
         if (doomed != null) {
             boolean deleted;
@@ -171,19 +159,6 @@ public class Groups extends AbstractApiBean {
             }
         } else {
             return errorResponse(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
-        }
-    }
-
-    private void findSuperUserKeyorDie(String apiKey) throws Exception {
-        AuthenticatedUser authenticatedUser = findUserByApiToken(apiKey);
-        if (authenticatedUser != null) {
-            if (authenticatedUser.isSuperuser()) {
-                return;
-            } else {
-                throw new Exception("User " + authenticatedUser.getIdentifier() + " has insufficient permission.");
-            }
-        } else {
-            throw new Exception("Could not find user from API token.");
         }
     }
     
