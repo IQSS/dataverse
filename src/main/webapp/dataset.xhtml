@@ -112,20 +112,6 @@
                                                      or (DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)
                                                         and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
-
-                                <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime == null
-                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                         and DatasetPage.dataset.owner.released}">
-                                    <button type="button" class="btn btn-default" onclick="registerDataset()">
-                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.registerBtn']}
-                                    </button>
-                                    <p:commandButton value="Direct" id="registerDataset"
-                                                     style="display:none"
-                                                     update="@form"
-                                                     action="#{DatasetPage.registerDataset()}">
-                                    </p:commandButton>
-                                </ui:fragment>
-
                                 <!-- Publish Buttons -->
                                 <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="confirmation.show()"
                                                rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
@@ -248,18 +234,18 @@
                             <!-- Metrics -->
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <div class="pull-left text-center" id="metrics-label">
-                                    <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> Metrics</span>
+                                    <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}</span>
                                 </div>
                                 <div class="pull-left">
                                     <div id="metrics-content" class="tab-content">
                                         <div id="metrics-views" class="metrics-views tab-pane fade small text-center">
-                                            Views <em>Coming soon...</em>
+                                            #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
-                                            #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} Downloads
+                                            #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} #{bundle['metrics.downloads']}
                                         </div>
                                         <div id="metrics-citations" class="metrics-citations tab-pane fade small text-center">
-                                            Citations <em>Coming soon...</em>
+                                            #{bundle['metrics.citations']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-shares" class="metrics-shares tab-pane fade small text-center">
                                             <span id="sharrre-count">&#160;</span>
@@ -1025,7 +1011,7 @@
                     <p:dialog id="deaccessionAllConfirmation" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionAllConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.deaccessionDataset.tip']}</p>
                         <div class="button-block">
-                            <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionAllConfirmation.hide();
+                            <h:commandButton styleClass="btn btn-default" value="Yes" onclick="deaccessionAllConfirmation.hide();
                                     deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
                             <button type="button" class="btn btn-default" value="No" onclick="deaccessionAllConfirmation.hide()">#{bundle.no}</button>
                         </div>
