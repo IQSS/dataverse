@@ -112,20 +112,6 @@
                                                      or (DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)
                                                         and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
-
-                                <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime == null
-                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                         and DatasetPage.dataset.owner.released}">
-                                    <button type="button" class="btn btn-default" onclick="registerDataset()">
-                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.registerBtn']}
-                                    </button>
-                                    <p:commandButton value="Direct" id="registerDataset"
-                                                     style="display:none"
-                                                     update="@form"
-                                                     action="#{DatasetPage.registerDataset()}">
-                                    </p:commandButton>
-                                </ui:fragment>
-
                                 <!-- Publish Buttons -->
                                 <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="confirmation.show()"
                                                rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
