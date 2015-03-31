@@ -25,7 +25,10 @@ import javax.persistence.NamedQuery;
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseId",
             query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId"),
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId",
-            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id = :datasetFieldTypeId")
+            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id = :datasetFieldTypeId"),
+    @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList",
+            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id in :datasetFieldIdList")
+ 
 })
 @Entity
 public class DataverseFieldTypeInputLevel implements Serializable {

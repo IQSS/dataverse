@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.LruCache;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -39,7 +40,50 @@ public class DataverseFieldTypeInputLevelServiceBean {
 
         return res;
     }
+    
+    private void msg(String s){
+        //System.out.println(s);
+    }
+    
+    /**
+     * Find a list of DataverseFieldTypeInputLevel objects
+     *  Search criteria: 
+     *      - Dataverse Id, 
+     *      - list of DatasetField Ids
+     * 
+     * @param dataverseId
+     * @param datasetFieldIdList
+     * @return List of DataverseFieldTypeInputLevel
+     */
+    public List<DataverseFieldTypeInputLevel> findByDataverseIdAndDatasetFieldTypeIdList( Long dataverseId, List<Long> datasetFieldIdList){
+        msg("---- findByDataverseIdAndDatasetFieldTypeIdList ----");
+        if (datasetFieldIdList==null || datasetFieldIdList.size()==0){
+            return null;
+        }
+        if (dataverseId == null){                    
+            return null;
+        }
+       
+        Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class);
 
+        query.setParameter("datasetFieldIdList", datasetFieldIdList);
+        query.setParameter("dataverseId", dataverseId);
+        
+   
+        try{
+            return query.getResultList();
+            /*List res = query.getResultList();
+            msg("Number of results: " + res.size());
+            return res;*/
+        } catch ( NoResultException nre ) {  
+            return null;
+        }    
+    }
+            //     
+    
+    //    Query query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset");// order by o.name");
+    //    query.setParameter("dataset", dataset);
+    
     public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long datasetFieldTypeId) {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId", DataverseFieldTypeInputLevel.class);
         query.setParameter("dataverseId", dataverseId);
