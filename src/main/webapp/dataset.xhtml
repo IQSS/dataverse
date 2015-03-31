@@ -750,11 +750,12 @@
                                                               type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
                                                 </h:outputLink>
-                                                <!-- Fake Map Data -->
-                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}" 
-                                                              type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                                                    <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']} Fake
-                                                </h:outputLink>
+                                                <!-- Unpublished Map Data -->
+                                                <ui:fragment rendered="#{DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}">
+                                                    <button type="button" class="btn btn-default" onclick="mapData_popup.show()">
+                                                        <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
+                                                    </button>
+                                                </ui:fragment>
                                             </div>
 
 
@@ -1531,6 +1532,17 @@
                               rendered="#{empty DatasetPage.editMode}" modal="true">
                         <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
                             <ui:include src="/subset/gui_subset.xhtml"/>
+                        </div>
+                    </p:dialog>
+                    
+                    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup">
+                        <p class="help-block">
+                            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
+                        </p>
+                        <div class="button-block">
+                            <button type="button" class="btn btn-default" onclick="mapData_popup.hide()">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 
