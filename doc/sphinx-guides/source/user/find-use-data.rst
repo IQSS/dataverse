@@ -55,7 +55,7 @@ Saved Search
 Using Data
 =============
 
-View Dataverses & Datasets
+View Dataverses + Datasets
 ------------------------------
 
 After performing a search and finding the dataverse or dataset you are looking for, click on the name of the dataverse or dataset or on the thumbnail image to be taken to the page for that dataverse or dataset. Once on a dataverse page, you can view the dataverses, datasets, and files within that dataverse.
