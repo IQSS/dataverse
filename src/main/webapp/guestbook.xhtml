@@ -12,7 +12,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{GuestbookPage.editMode == 'CREATE' ? 'Create Dataset Guestbook' : GuestbookPage.guestbook.name} - #{GuestbookPage.guestbook.dataverse.name} Dataverse"/>
+            <ui:param name="pageTitle" value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name} - #{GuestbookPage.guestbook.dataverse.name} Dataverse"/>
             <ui:param name="dataverse" value="#{GuestbookPage.guestbook.dataverse}"/>
             <ui:param name="guestbook" value="#{GuestbookPage.guestbook}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
@@ -23,7 +23,7 @@
                     <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
                     <f:viewParam name="editMode" value="#{GuestbookPage.editMode}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, 'Dataset Guestbook')}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
                 </f:metadata>
 
                 <h:form id="guestbookForm">

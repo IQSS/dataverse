@@ -14,7 +14,7 @@
         <f:metadata>
             <f:viewParam name="id" value="#{managePermissionsPage.dvObject.id}"/>
             <f:viewAction action="#{managePermissionsPage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(managePermissionsPage.dvObject, bundle['dataverse.permissions.title'])}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(managePermissionsPage.dvObject, (managePermissionsPage.dvObject.instanceofDataverse ? bundle['dataverse.permissions.title'] : bundle['dataverse.permissions.dataset.title']))}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataverse.permissions.title']} - #{managePermissionsPage.dvObject.displayName}"/>
@@ -94,18 +94,17 @@
                                             <iqbs:messages collapsible="true" rendered="#{managePermissionsPage.renderAssignmentMessages}"/>
                                         </div>
                                     </p:fragment>
-                                    <div class="button-block">
-                                        <p:commandLink id="userGroupsAdd"
-                                                       styleClass="btn btn-default pull-right"
+                                    <div class="button-block pull-right">
+                                        <p:commandLink type="button" id="createGroup" styleClass="btn btn-default"
+                                                       actionListener="#{managePermissionsPage.initExplicitGroupDialog}"
+                                                       update="explicitGroupNewDialog" oncomplete="explicitGroupForm.show();bind_bsui_components();">
+                                            <span class="glyphicon glyphicon-plus-sign"/> #{bundle['dataverse.permissions.usersOrGroups.createGroupBtn']}
+                                        </p:commandLink>
+                                        <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
                                                        oncomplete="userGroupsForm.show();bind_bsui_components();">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
-                                        </p:commandLink>
-                                        <p:commandLink id="createGroup" styleClass="btn btn-default pull-right"
-                                                       actionListener="#{managePermissionsPage.initExplicitGroupDialog}"
-                                                       update="explicitGroupNewDialog" oncomplete="explicitGroupForm.show();bind_bsui_components();">
-                                            <span class="glyphicon glyphicon-plus-sign"/> #{bundle['dataverse.permissions.usersOrGroups.createGroupBtn']}
                                         </p:commandLink>
                                     </div>
                                     <p class="help-block clearfix">#{bundle['dataverse.permissions.usersOrGroups.description']}</p>
