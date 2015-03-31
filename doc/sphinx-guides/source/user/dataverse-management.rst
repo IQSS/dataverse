@@ -131,6 +131,9 @@ Click on Featured Dataverses and a pop up will appear. Select which sub datavers
 
 Note: Featured Dataverses can only be used with published dataverses.
 
+Linked Dataverses + Linked Datasets
+======================================================
+
 
 Publish Your Dataverse
 =================================================================
