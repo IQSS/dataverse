@@ -485,6 +485,14 @@ public class SearchServiceBean {
                     }
                 }
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
+                DatasetVersion dsv = datasetVersionService.find(datasetVersionId);
+                if(!dsv.isDraft()){
+                    solrSearchResult.setVersionNumberFriendly(dsv.getVersionNumber().toString() + "." +  dsv.getMinorVersionNumber().toString());
+                } else {
+                    solrSearchResult.setVersionNumberFriendly("DRAFT");
+                }
+                    
+
                 solrSearchResult.setCitation(citation);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
@@ -503,7 +511,7 @@ public class SearchServiceBean {
                     parentGlobalId = (String) parentGlobalIdObject;
                     parent.put(SolrSearchResult.PARENT_IDENTIFIER, parentGlobalId);
                 }
-                solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + parentGlobalId);
+                solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?persistentId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
                 /**
                  * @todo We are not yet setting the API URL for files because
@@ -528,6 +536,13 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
+                                solrSearchResult.setDatasetVersionId(datasetVersionId);
+                DatasetVersion dsv = datasetVersionService.find(datasetVersionId);
+                if(!dsv.isDraft()){
+                    solrSearchResult.setVersionNumberFriendly(dsv.getVersionNumber().toString() + "." +  dsv.getMinorVersionNumber().toString());
+                } else {
+                    solrSearchResult.setVersionNumberFriendly("DRAFT");
+                }
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
             }
             /**

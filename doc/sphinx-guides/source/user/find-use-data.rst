@@ -49,12 +49,13 @@ Browsing Dataverse
 
 In Dataverse, browsing happens when a user hasn't entered a search term or query into the basic search bar. Browsing is the default for a user when they are on the Dataverse homepage or a specific dataverse's page. When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest.
 
-
+Saved Search
+--------------------
 
 Using Data
 =============
 
-View Dataverses & Datasets
+View Dataverses + Datasets
 ------------------------------
 
 After performing a search and finding the dataverse or dataset you are looking for, click on the name of the dataverse or dataset or on the thumbnail image to be taken to the page for that dataverse or dataset. Once on a dataverse page, you can view the dataverses, datasets, and files within that dataverse.

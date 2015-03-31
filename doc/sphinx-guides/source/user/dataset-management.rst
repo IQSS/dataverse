@@ -1,4 +1,4 @@
-Dataset & File Management
+Dataset + File Management
 +++++++++++++++++++++++++++++
 
 A dataset in Dataverse is a container for your data, documentation, code, and the metadata describing this Dataset.
@@ -11,7 +11,7 @@ Supported Metadata
 A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata, 3) File level 
 metadata (varies depending on the type of data file - see File Handling and Uploading section below for more details). 
 
-File Handling and Uploading
+File Handling + Uploading
 ====================
 
 All file formats are supported, up to a few GB per file but some files types are supported by additional functionality, 
@@ -102,6 +102,9 @@ Permissions
 
 Dataset-Level 
 ---------------
+Dataset permissions are located under the Edit button on a dataset page. The dataset permissions page has two sections: Users/Groups and Roles.
+
+To give someone access to view your unpublished dataset or edit your published or unpublished dataset, click on the Assign Roles to Users/Groups button in the Users/Groups section. 
 
 File-Level
 ----------------------

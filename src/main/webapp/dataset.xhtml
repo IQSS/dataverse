@@ -24,8 +24,8 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
-                    <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
-                    <f:viewParam name="globalId" value="#{DatasetPage.globalId}"/>
+                    <f:viewParam name="version" value="#{DatasetPage.version}"/>
+                    <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
                     <f:viewAction action="#{DatasetPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
                 </f:metadata>
@@ -211,7 +211,7 @@
                             <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
                                 
-                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?globalId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
+                                <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>                                
                                 
                                 <div class="button-block">
                                     <button type="button" onclick="shareDialog.hide()" class="btn btn-default" value="#{bundle.close}">
@@ -228,119 +228,59 @@
                                 </button>
                                 <ul class="dropdown-menu" role="menu">
                                     <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
-                                        <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
-                                            <a id="viewVersionLink" href="/dataset.xhtml?globalId=#{versionLinks.dataset.globalId}&#38;versionId=#{versionLinks.id}" class="ui-commandlink ui-widget">
-                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" />
-                                                <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
-                                        </li>
+                                            <ui:fragment rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}">
+                                                <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
+                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionState}" class="ui-commandlink ui-widget">
+                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
+                                            </li>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{versionLinks.released or versionLinks.deaccessioned}">                                                
+                                              <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">  
+                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" class="ui-commandlink ui-widget">
+                                                    <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
+                                             </li>
+                                            </ui:fragment>                                                                               
                                     </ui:repeat>
                                 </ul>
                             </div>
                             <!-- END: Dataset Versions Button -->
                             
                             <!-- Metrics -->
-                            <ui:remove>
                             <div id="metrics-block" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                 <div class="pull-left text-center" id="metrics-label">
-                                    <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
+                                    <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> Metrics</span>
                                 </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-views">
-                                    <span data-toggle="tooltip" data-placement="top" title="Views" class="count">00</span>
-                                </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-downloads">
-                                    <span data-toggle="tooltip" data-placement="top" title="Downloads" class="count">
-                                        #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}
-                                    </span>
-                                </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-citations">
-                                    <span data-toggle="tooltip" data-placement="top" title="Citations" class="count">00</span>
-                                </div>
-                                <div class="metrics-count pull-left text-center" id="metrics-shares">
-                                    <span id="sharrre-count" data-toggle="tooltip" data-placement="top" title="Shares" class="count">&#160;</span>
-                                </div>
-                            </div>
-                            </ui:remove>
-                            <div id="metricsTest" class="pull-left" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                <div id="container" class="clearfix" style="width:320px;background:none;">
-                                    <div class="pull-left text-center" id="metrics-label" style="color:#fff;">
-                                        <span class="metrics-label-text"><span class="glyphicon glyphicon-stats"/> Metrics</span>
-                                    </div>
-                                    <!-- ONE -->
-                                    <span class="small" data-toggle="collapse" data-target="#demo1" 
-                                          style="display:block;background:#428bca;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
-                                    <div id="demo1" class="collapse width" style="background:#428bca;color:#fff;float:left;">
-                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
-                                            Views - Coming soon...
+                                <div class="pull-left">
+                                    <div id="metrics-content" class="tab-content">
+                                        <div id="metrics-views" class="metrics-views tab-pane fade small text-center">
+                                            Views <em>Coming soon...</em>
                                         </div>
-                                    </div>
-                                    <!-- TWO -->
-                                    <span class="small" data-toggle="collapse" data-target="#demo2" 
-                                          style="display:block;background:#5cb85c;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
-                                    <div id="demo2" class="collapse width" style="background:#5cb85c;color:#fff;float:left;">
-                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
+                                        <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
                                             #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} Downloads
                                         </div>
-                                    </div>
-                                    <!-- THREE -->
-                                    <span class="small" data-toggle="collapse" data-target="#demo3" 
-                                          style="display:block;background:#c55b28;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
-                                    <div id="demo3" class="collapse width" style="background:#c55b28;color:#fff;float:left;">
-                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
-                                            Citations - Coming soon...
+                                        <div id="metrics-citations" class="metrics-citations tab-pane fade small text-center">
+                                            Citations <em>Coming soon...</em>
                                         </div>
-                                    </div>
-                                    <!-- FOUR -->
-                                    <span class="small" data-toggle="collapse" data-target="#demo4" 
-                                          style="display:block;background:#f0ad4e;float:left;padding: 8.5px 0;width:13px;text-align:center;color:#fff;">&#160;</span>
-                                    <div id="demo4" class="collapse width" style="background:#f0ad4e;color:#fff;float:left;">
-                                        <div class="small text-center" style="padding: 8.5px 13px 8.5px 0; width:170px;">
+                                        <div id="metrics-shares" class="metrics-shares tab-pane fade small text-center">
                                             <span id="sharrre-count">&#160;</span>
                                         </div>
                                     </div>
+                                    <div id="metrics-tabs">
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-views" class="metrics-views" data-toggle="tab">&#160;</a>
+                                        </div>
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-downloads" class="metrics-downloads first" data-toggle="tab">&#160;</a>
+                                        </div>
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-citations" class="metrics-citations" data-toggle="tab">&#160;</a>
+                                        </div>
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-shares" class="metrics-shares" data-toggle="tab">&#160;</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <style type="text/css">
-                                #metricsTest {
-
-                                }
-                                #metricsTest .collapse {
-                                    display: none;
-                                    visibility: hidden;
-                                }
-                                #metricsTest .collapse.in {
-                                    display: block;
-                                    visibility: visible;
-                                }
-                                #metricsTest .collapsing {
-                                    position: relative;
-                                    height: 0;
-                                    overflow: hidden;
-                                    -webkit-transition-property: height, visibility;
-                                    transition-property: height, visibility;
-                                    -webkit-transition-duration: 0.35s;
-                                    transition-duration: 0.35s;
-                                    -webkit-transition-timing-function: ease;
-                                    transition-timing-function: ease;
-                                }
-                                #metricsTest .collapsing.width {
-                                    -webkit-transition-property: width, visibility;
-                                    transition-property: width, visibility;
-                                    width: 0;
-                                    height: auto;
-                                }
-                            </style>
-
-                            <script type="text/javascript">
-                                $(document).ready(function() {
-                                    $('span[data-toggle="collapse"]').mouseover(function(){
-                                        $(this).click();
-                                    });
-                                    $('span[data-toggle="collapse"]').mouseout(function(){
-                                        $(this).click();
-                                    });
-                                });
-                            </script>
                             <!-- END: Metrics -->
                         </div>
                         <div id="datasetVersionBlock" class="container-fluid">
@@ -810,11 +750,12 @@
                                                               type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
                                                 </h:outputLink>
-                                                <!-- Fake Map Data -->
-                                                <h:outputLink pt:role="button" rendered="#{DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}" 
-                                                              type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                                                    <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']} Fake
-                                                </h:outputLink>
+                                                <!-- Unpublished Map Data -->
+                                                <ui:fragment rendered="#{DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}">
+                                                    <button type="button" class="btn btn-default" onclick="mapData_popup.show()">
+                                                        <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
+                                                    </button>
+                                                </ui:fragment>
                                             </div>
 
 
@@ -1591,6 +1532,17 @@
                               rendered="#{empty DatasetPage.editMode}" modal="true">
                         <div class="form-inline clearfix" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
                             <ui:include src="/subset/gui_subset.xhtml"/>
+                        </div>
+                    </p:dialog>
+                    
+                    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup">
+                        <p class="help-block">
+                            <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
+                        </p>
+                        <div class="button-block">
+                            <button type="button" class="btn btn-default" onclick="mapData_popup.hide()">
+                                #{bundle.close}
+                            </button>
                         </div>
                     </p:dialog>
 

@@ -528,7 +528,7 @@ public class Dataset extends DvObjectContainer {
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/dataset.xhtml?globalId=" + getGlobalId();
+                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId();
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 String rootArchiveUrl = this.getOwner().getHarvestingDataverseConfig().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
