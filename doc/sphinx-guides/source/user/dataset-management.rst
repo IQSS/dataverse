@@ -1,4 +1,4 @@
-Dataset & File Management
+Dataset + File Management
 +++++++++++++++++++++++++++++
 
 A dataset in Dataverse is a container for your data, documentation, code, and the metadata describing this Dataset.
@@ -11,7 +11,7 @@ Supported Metadata
 A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata, 3) File level 
 metadata (varies depending on the type of data file - see File Handling and Uploading section below for more details). 
 
-File Handling and Uploading
+File Handling + Uploading
 ====================
 
 All file formats are supported, up to a few GB per file but some files types are supported by additional functionality, 
