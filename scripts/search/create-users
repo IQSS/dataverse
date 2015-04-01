@@ -9,7 +9,7 @@ mkdir -p $OUTDIR
 create () {
   pass=`cat $1 | jq .userName | tr -d \"`
   echo $pass
-  resp=$(curl -s -H "Content-type:application/json" -X POST -d @$1 "$SERVER/users?password=$pass&key=$BURRITO")
+  resp=$(curl -s -H "Content-type:application/json" -X POST -d @$1 "$SERVER/builtin-users?password=$pass&key=$BURRITO")
   echo $resp | jq . > $OUTDIR/$1
 }
 
