@@ -429,8 +429,10 @@
    <field name="gsdTags" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="journalArticleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="journalIssue" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="journalVolume" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="journalPubDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="journalVolume" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="journalVolumeIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="keywordValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="keywordVocabulary" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -699,7 +701,9 @@
    <copyField source="gsdTypes" dest="text" maxChars="3000"/>
    <copyField source="journalArticleType" dest="text" maxChars="3000"/>
    <copyField source="journalIssue" dest="text" maxChars="3000"/>
+   <copyField source="journalPubDate" dest="text" maxChars="3000"/>
    <copyField source="journalVolume" dest="text" maxChars="3000"/>
+   <copyField source="journalVolumeIssue" dest="text" maxChars="3000"/>
    <copyField source="keyword" dest="text" maxChars="3000"/>
    <copyField source="keywordValue" dest="text" maxChars="3000"/>
    <copyField source="keywordVocabulary" dest="text" maxChars="3000"/>
