@@ -216,13 +216,13 @@
                                         <p:commandButton value="Direct" id="updateMetadataButton"
                                                          style="display:none" 
                                                          update="@widgetVar(optionBlock)"
-                                                         process="@this"
+                                                         process="@this @widgetVar(optionBlock)"
                                                          actionListener="#{DataversePage.editMetadataBlocks(false)}">
                                         </p:commandButton>
                                         <p:commandButton value="Direct" id="resetToInherit"
                                                          style="display:none" 
                                                          update="@widgetVar(optionBlock)"
-                                                         process="@this"
+                                                         process="@this @widgetVar(optionBlock)"
                                                          actionListener="#{DataversePage.editMetadataBlocks(true)}">
                                         </p:commandButton>
                          
@@ -769,9 +769,10 @@
                         $('button[id$="resetToInherit"]').trigger('click');
                     }
                     
-                    function uncheck() {
-                        $('button[id$="cancelMetadataButton"]').trigger('click');
+                     function uncheck() {
+                         $('input:checkbox[id$="metadataRoot"]').prop('checked', false);                                                   
                     }
+                    
                     //]]>
                 </script>
 
