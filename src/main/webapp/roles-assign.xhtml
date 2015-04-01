@@ -5,7 +5,7 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <p:dialog id="userGroupDialog" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="userGroupsForm" modal="true">
+    <p:dialog id="userGroupDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.header']}" widgetVar="userGroupsForm" modal="true">
         <p:fragment id="assignRoleMessages">
             <div class="container messagePanel">
                 <iqbs:messages collapsible="true" />
@@ -43,20 +43,22 @@
                     <label for="assignRoleRadios" class="col-sm-2 control-label">
                         #{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                     </label>
-                    <div class="col-sm-9">
-                        <p:fragment id="availableRoles">
-                            <p:selectOneRadio id="assignRoleRadios" layout="pageDirection"
-                                              value="#{managePermissionsPage.selectedRoleId}"
-                                              required="#{param['DO_ASSIGN_VALIDATION']}"
-                                              requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.requiredMsg']}">
-                                <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{role.name}"/>
-                                <p:ajax update="roleDetails" process="@this"/>
-                            </p:selectOneRadio>
-                            <p:message for="assignRoleRadios" display="text"/>
-                        </p:fragment>
-                        <p:fragment id="roleDetails">
-                            <div id="assignRolePermissionLabels" class="form-group">
-                                <div class="col-sm-12 bg-muted">
+                    <div class="col-sm-9 form-group">
+                        <div class="col-sm-5">
+                            <p:fragment id="availableRoles">
+                                <p:selectOneRadio id="assignRoleRadios" layout="pageDirection"
+                                                  value="#{managePermissionsPage.selectedRoleId}"
+                                                  required="#{param['DO_ASSIGN_VALIDATION']}"
+                                                  requiredMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.requiredMsg']}">
+                                    <f:selectItems value="#{managePermissionsPage.availableRoles}" var="role" itemValue="#{role.id}" itemLabel="#{role.name}"/>
+                                    <p:ajax update="roleDetails" process="@this"/>
+                                </p:selectOneRadio>
+                                <p:message for="assignRoleRadios" display="text"/>
+                            </p:fragment>
+                        </div>
+                        <div class="col-sm-6 bg-muted">
+                            <p:fragment id="roleDetails">
+                                <div id="assignRolePermissionLabels">
                                     <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>
                                     <span class="highlightBold">#{managePermissionsPage.assignedRole.name}</span>
                                     <div class="margin-bottom">
@@ -65,8 +67,8 @@
                                         </ui:repeat>
                                     </div>
                                 </div>
-                            </div>
-                        </p:fragment>
+                            </p:fragment>
+                        </div>
                     </div>
                 </div>
             </div>

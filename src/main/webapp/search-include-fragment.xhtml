@@ -832,7 +832,7 @@
             </ui:fragment>
         </div>
     </div>
-    <p:dialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup">                                           
+    <p:dialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">                                           
         <p class="help-block">
             <span class="glyphicon glyphicon-warning-sign text-danger"/>
             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">

@@ -207,13 +207,17 @@
                     <!-- Explicit Group Edit Popup -->
                     <ui:include src="explicitGroup-new-dialog.xhtml"/>
                     
-                    <p:confirmDialog message="#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}"
-                                     header="#{bundle['dataverse.permissions.usersOrGroups.removeBtn']}" widgetVar="confirmation">
-                        <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" 
-                                         action="#{managePermissionsPage.removeRoleAssignment()}" 
-                                         update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
-                    </p:confirmDialog>
+                    <p:dialog header="#{bundle['dataverse.permissions.usersOrGroups.removeBtn']}" widgetVar="confirmation" modal="true">
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}</span>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" 
+                                             action="#{managePermissionsPage.removeRoleAssignment()}" 
+                                             update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
+                        </div>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>

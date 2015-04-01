@@ -319,7 +319,7 @@ form.btn-form {display:inline-block;}
 .button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
 .button-block .btn:last-child, .button-block .btn-group:last-child, 
 .button-block form.btn-form:last-child .btn-group {margin-right:0;}
-.button-block.pull-right .btn:first-child {margin-right:0;}
+.button-block.pull-right .btn:last-child {margin-right:0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
