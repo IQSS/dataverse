@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -113,6 +114,13 @@ public class SystemConfig {
         }
         hostUrl = "https://" + hostName;
         return hostUrl;
+    }
+    
+    /**
+     * URL Tracking: 
+     */
+    public String getPageURLWithQueryString() {
+        return PrettyContext.getCurrentInstance().getRequestURL().toURL() + PrettyContext.getCurrentInstance().getRequestQueryString().toQueryString();
     }
 
     /**

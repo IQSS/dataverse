@@ -42,6 +42,7 @@ public class HarvestingDataverseConfig implements Serializable {
     public static final String HARVEST_STYLE_VDC="vdc";
     public static final String HARVEST_STYLE_ICPSR="icpsr";
     public static final String HARVEST_STYLE_DEFAULT="default";
+    public static final String HARVEST_STYLE_NESSTAR="nesstar";
 
     public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE="dataverse";
     public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET="dataset";

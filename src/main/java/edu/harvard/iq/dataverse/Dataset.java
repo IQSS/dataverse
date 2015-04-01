@@ -541,6 +541,26 @@ public class Dataset extends DvObjectContainer {
                 // figure out how to redirect them to the ICPSR page specific to 
                 // the study in question. -- L.A. 4.0 beta15
                 return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+            } else if (HarvestingDataverseConfig.HARVEST_STYLE_NESSTAR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                String nServerURL = this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+                // chop any trailing slashes in the server URL - or they will result
+                // in multiple slashes in the final URL pointing to the study 
+                // on server of origin; Nesstar doesn't like it, apparently. 
+                nServerURL = nServerURL.replaceAll("/*$", "");
+
+                String nServerURLencoded = nServerURL;
+
+                nServerURLencoded.replace(":", "%3A");
+                nServerURLencoded.replace("/", "%2F");
+
+                String NesstarWebviewPage = nServerURL + 
+                        "/webview/?mode=documentation&submode=abstract&studydoc=" + 
+                        nServerURLencoded+"%2Fobj%2FfStudy%2F" + 
+                        identifier +
+                        "&top=yes"; 
+
+                
+                return NesstarWebviewPage;
             } else {
                 return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
             }

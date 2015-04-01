@@ -130,8 +130,20 @@
           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-          ga('create', 'UA-3745567-10', 'harvard.edu');
-          ga('send', 'pageview');
+          ga('create', 'UA-3745567-8', 'harvard.edu');
+          ga('send', 'pageview', {
+            'hitType': 'social',
+            'socialNetwork': 'facebook',
+            'socialAction': 'send',
+            'socialTarget': '#{systemConfig.dataverseSiteUrl}',
+            'page': '#{systemConfig.pageURLWithQueryString}'
+          }, {
+            'hitType': 'social',
+            'socialNetwork': 'twitter',
+            'socialAction': 'tweet',
+            'socialTarget': '#{systemConfig.dataverseSiteUrl}',
+            'page': '#{systemConfig.pageURLWithQueryString}'
+          });
 	</script>
     </h:body>
 </html>

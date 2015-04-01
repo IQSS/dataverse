@@ -154,9 +154,9 @@ public class SavedSearchServiceBean {
                 Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
                 if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + ".");
-                } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                } else if (datasetToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     // already there from normal search/browse
-                    hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is a direct child of dataverse id " + savedSearch.getDefinitionPoint().getAlias());
+                    hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is already part of the subtree for " + savedSearch.getDefinitionPoint().getAlias());
                 } else {
                     DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
@@ -164,9 +164,9 @@ public class SavedSearchServiceBean {
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
                 Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo.getOwner();
                 if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
-                } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                    hitInfo.add(resultString, "Skipping because we don't want to link dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + " to its parent (" + savedSearch.getDefinitionPoint().getAlias() + ")");
+                    hitInfo.add(resultString, "Skipping because " + savedSearch.getDefinitionPoint() + " already links to dataset " + datasetToLinkTo + " that contains file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
+                } else if (datasetToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because " + datasetToLinkTo + " that contains file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + " is already part of the subtree for " + savedSearch.getDefinitionPoint() + ".");
                 } else {
                     DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " (owner of file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + ") to " + link.getLinkingDataverse());
@@ -187,14 +187,6 @@ public class SavedSearchServiceBean {
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
-//        AuthenticatedUser creatorOfSavedSearch = savedSearch.getCreator();
-//        Dataverse definitionPoint = savedSearch.getDefinitionPoint();
-//        String query = savedSearch.getQuery();
-//        List<String> filterQueries = new ArrayList<>();
-//        List<SavedSearchFilterQuery> savedSearchFilterQuerys = savedSearch.getSavedSearchFilterQueries();
-//        for (SavedSearchFilterQuery filterQueryToAdd : savedSearchFilterQuerys) {
-//            filterQueries.add(filterQueryToAdd.getFilterQuery());
-//        }
         String sortField = SearchFields.RELEVANCE;
         String sortOrder = SortBy.DESCENDING;
         SortBy sortBy = new SortBy(sortField, sortOrder);
@@ -251,17 +243,15 @@ public class SavedSearchServiceBean {
         return savedSearchDefinitionPoint.equals(dataverseToLinkTo);
     }
 
-    /**
-     * @todo should the similar logic to
-     * dataverseToLinkToIsAlreadyPartOfTheSubtree be applied here? Probably!
-     * Check if the dataset is already naturally part of the subtree.
-     */
-    private boolean wouldResultInLinkingDatasetToItsOwner(Dataverse savedSearchDefinitionPoint, Dataset datasetToLinkTo) {
-        /**
-         * @todo "You don't want to link a dataset if its owner is the linkingDV
-         * or the if its owner is already linked." --sekmiller
-         */
-        return datasetToLinkTo.getOwner().equals(savedSearchDefinitionPoint);
+    private boolean datasetToLinkToIsAlreadyPartOfTheSubtree(Dataverse definitionPoint, Dataset datasetWeMayLinkTo) {
+        Dataverse ancestor = datasetWeMayLinkTo.getOwner();
+        while (ancestor != null) {
+            if (ancestor.equals(definitionPoint)) {
+                return true;
+            }
+            ancestor = ancestor.getOwner();
+        }
+        return false;
     }
 
     private boolean dataverseToLinkToIsAlreadyPartOfTheSubtree(Dataverse definitionPoint, Dataverse dataverseWeMayLinkTo) {
