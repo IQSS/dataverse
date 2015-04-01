@@ -251,6 +251,11 @@ public class SavedSearchServiceBean {
         return savedSearchDefinitionPoint.equals(dataverseToLinkTo);
     }
 
+    /**
+     * @todo should the similar logic to
+     * dataverseToLinkToIsAlreadyPartOfTheSubtree be applied here? Probably!
+     * Check if the dataset is already naturally part of the subtree.
+     */
     private boolean wouldResultInLinkingDatasetToItsOwner(Dataverse savedSearchDefinitionPoint, Dataset datasetToLinkTo) {
         /**
          * @todo "You don't want to link a dataset if its owner is the linkingDV
@@ -259,18 +264,19 @@ public class SavedSearchServiceBean {
         return datasetToLinkTo.getOwner().equals(savedSearchDefinitionPoint);
     }
 
-    private boolean dataverseToLinkToIsAlreadyPartOfTheSubtree(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
-        Dataverse directChild = dataverseToLinkTo;
-        if (directChild.getOwner().equals(definitionPoint)) {
-            return true;
-        } else {
-            /**
-             * @todo what about grandchildren and great grandchildren and great
-             * great granchildren and...?
-             */
-            logger.fine("what about grandchildren?");
-            return false;
+    private boolean dataverseToLinkToIsAlreadyPartOfTheSubtree(Dataverse definitionPoint, Dataverse dataverseWeMayLinkTo) {
+        StringBuilder sb = new StringBuilder();
+        while (dataverseWeMayLinkTo != null) {
+            String alias = dataverseWeMayLinkTo.getAlias();
+            logger.fine("definitionPoint " + definitionPoint.getAlias() + " may link to " + alias);
+            sb.append(alias + " ");
+            dataverseWeMayLinkTo = dataverseWeMayLinkTo.getOwner();
+            if (dataverseWeMayLinkTo.equals(definitionPoint)) {
+                return true;
+            }
         }
+        logger.fine("dataverse aliases seen on the way to root: " + sb);
+        return false;
     }
 
 }
