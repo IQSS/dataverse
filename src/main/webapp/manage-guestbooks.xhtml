@@ -34,7 +34,7 @@
                         </ui:fragment>
 
                         <div class="pull-right">
-                            <h:outputLink styleClass="btn btn-default"
+                            <h:outputLink type="button" styleClass="btn btn-default"
                                           value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CREATE">
                                 <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['dataset.manageGuestbooks.createBtn']}"/>
                             </h:outputLink>
@@ -127,11 +127,16 @@
                         </p:dataTable>
                     </div>
 
-                    <p:confirmDialog message="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.tip']}" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation">
-                        <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@all" />
-                        <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
-                    </p:confirmDialog>
-                    <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook">
+                    <p:dialog header="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.tip']}</span>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton type="button" value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@all" />
+                            <p:commandButton type="button" value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" />
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
                         <div class="text-right">
                             <h:outputLink styleClass="btn btn-default"
                                           rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
@@ -181,6 +186,9 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton type="button" value="#{bundle.close}" onclick="viewGuestbook.hide()" />
                         </div>
                     </p:dialog>
                 </h:form>
