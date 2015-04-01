@@ -349,6 +349,13 @@ public class ImportServiceBean {
     }
     
     private String convertInvalidEmail(String inString){  
+        //First we'll see if the invalid email is a comma delimited list of email addresses
+        //if so we'll return the first one - maybe try to get them all at some point?
+        if (inString.contains(",")){
+            String[] addresses = inString.split("\\,"); 
+            return addresses[0];
+        }        
+
         //This works on the specific error we've seen where the user has put in a link for the email address
         //as in '<a href="IFPRI-Data@cgiar.org" > IFPRI-Data@cgiar.org</a>'
         //this returns the string between the first > and the second <
