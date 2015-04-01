@@ -517,42 +517,47 @@
     <!-- / LICENSE + TERMS -->
 
     <!-- View Guest Book -->
-    <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook">
-       <div class="form-horizontal">
-           <div class="form-group">
-               <label class="col-sm-4 control-label">
-                   <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
+    <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}">
                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
-                   </span>
-               </label>
-               <div class="col-sm-8">
-                   <p class="form-control-static">
-                       #{DatasetPage.selectedGuestbook.name}
-                   </p>
-               </div>
-           </div>
-           <div class="form-group">
-               <label class="col-sm-4 control-label">
-                   <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
+                    </span>
+                </label>
+                <div class="col-sm-8">
+                    <p class="form-control-static">
+                     #{DatasetPage.selectedGuestbook.name}
+                    </p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4 control-label">
+                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}">
                        #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
-                   </span>
-               </label>
-               <div class="col-sm-8">
-                   <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString}">
-                       <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}" escape="false"/>
-                   </div>
-                   <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString}">
-                       <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}" escape="false"/>
-                   </div>
-                   <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString}">
-                       <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}" escape="false"/>
-                   </div>
-                   <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString}">
-                       <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}" escape="false"/>
-                   </div>
-               </div>
-           </div>
-       </div>
+                    </span>
+                </label>
+                <div class="col-sm-8">
+                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredAccountInformationString}">
+                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredAccountInformationString}" escape="false"/>
+                    </div>
+                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalAccountInformationString}">
+                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalAccountInformationString}" escape="false"/>
+                    </div>
+                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.requiredCustomQuestionsString}">
+                        <h:outputText value="#{DatasetPage.selectedGuestbook.requiredCustomQuestionsString}" escape="false"/>
+                    </div>
+                    <div class="form-control-static" jsf:rendered="#{!empty DatasetPage.selectedGuestbook.optionalCustomQuestionsString}">
+                        <h:outputText value="#{DatasetPage.selectedGuestbook.optionalCustomQuestionsString}" escape="false"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="button-block">
+            <button type="button" onclick="viewGuestbook.hide()" class="btn btn-default" value="#{bundle.close}">
+                #{bundle.close}
+            </button>
+        </div>
     </p:dialog>
     <!-- / View Guest Book -->
 </ui:composition>
