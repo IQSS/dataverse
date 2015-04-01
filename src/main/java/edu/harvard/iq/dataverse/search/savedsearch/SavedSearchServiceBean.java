@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -153,10 +154,12 @@ public class SavedSearchServiceBean {
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
                 Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
                 if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + ".");
+                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint() + " already links to dataset " + datasetToLinkTo + ".");
                 } else if (datasetToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     // already there from normal search/browse
                     hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is already part of the subtree for " + savedSearch.getDefinitionPoint().getAlias());
+                } else if (datasetAncestorAlreadyLinked(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                    hitInfo.add(resultString, "FIXME: implement this?");
                 } else {
                     DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
@@ -260,12 +263,20 @@ public class SavedSearchServiceBean {
             String alias = dataverseWeMayLinkTo.getAlias();
             logger.fine("definitionPoint " + definitionPoint.getAlias() + " may link to " + alias);
             sb.append(alias + " ");
-            dataverseWeMayLinkTo = dataverseWeMayLinkTo.getOwner();
             if (dataverseWeMayLinkTo.equals(definitionPoint)) {
                 return true;
             }
+            dataverseWeMayLinkTo = dataverseWeMayLinkTo.getOwner();
         }
         logger.fine("dataverse aliases seen on the way to root: " + sb);
+        return false;
+    }
+
+    /**
+     * @todo Should we implement this? If so, also do the check at the files
+     * level if there is a match on a file.
+     */
+    private boolean datasetAncestorAlreadyLinked(Dataverse definitionPoint, Dataset datasetToLinkTo) {
         return false;
     }
 
