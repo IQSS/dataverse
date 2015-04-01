@@ -1,10 +1,10 @@
 {
   "type": "dataverse",
-  "name": "Child of Mail Health"
+  "name": "Child of Mali Health"
 }
 {
   "type": "dataverse",
-  "name": "Grandchild Of Mail Health"
+  "name": "Grandchild of Mali Health"
 }
 {
   "type": "file",
@@ -12,7 +12,7 @@
 }
 {
   "type": "dataset",
-  "name": "Mail health dataset 1"
+  "name": "Mali health dataset 1"
 }
 {
   "type": "dataset",

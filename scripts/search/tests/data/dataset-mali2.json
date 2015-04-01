@@ -1,0 +1,71 @@
+{
+  "datasetVersion": {
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "value": "Women in Mali dataset 1",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "title"
+          },
+          {
+            "value": [
+              {
+                "authorName": {
+                  "value": "Admin, PSI",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                },
+                "authorAffiliation": {
+                  "value": "PSI",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [
+                { "datasetContactEmail" : {
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "datasetContactEmail",
+                    "value" : "psiadmin@mailinator.com"
+                }
+            }],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "datasetContact"
+          },
+          {
+            "value": [ {
+               "dsDescriptionValue":{
+                "value":   "Sample dataset about women in Mali used for saved search testing.",
+                "multiple":false,
+               "typeClass": "primitive",
+               "typeName": "dsDescriptionValue"
+            }}],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "dsDescription"
+          },
+          {
+            "value": [
+              "Social Sciences"
+            ],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          }
+        ],
+        "displayName": "Citation Metadata"
+      }
+    }
+  }
+}

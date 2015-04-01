@@ -691,25 +691,25 @@ public class Dataverses extends AbstractApiBean {
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder dvsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThisDvHasLinkedToList) {
-                dvsThisDvHasLinkedToBuilder.add(dataverse.getAlias() + " (id " + dataverse.getId() + ")");
+                dvsThisDvHasLinkedToBuilder.add(dataverse.getAlias());
             }
 
             List<Dataverse> dvsThatLinkToThisDvList = dataverseSvc.findDataversesThatLinkToThisDvId(dv.getId());
             JsonArrayBuilder dvsThatLinkToThisDvBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDvList) {
-                dvsThatLinkToThisDvBuilder.add(dataverse.getAlias() + " (id " + dataverse.getId() + ")");
+                dvsThatLinkToThisDvBuilder.add(dataverse.getAlias());
             }
 
             List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder datasetsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataset dataset : datasetsThisDvHasLinkedToList) {
-                datasetsThisDvHasLinkedToBuilder.add(dataset.getGlobalId() + " (id " + dataset.getId() + ")");
+                datasetsThisDvHasLinkedToBuilder.add(dataset.getLatestVersion().getTitle());
             }
 
             JsonObjectBuilder response = Json.createObjectBuilder();
-            response.add("dataverses that the " + dv.getAlias() + " dataverse (id " + dv.getId() + ") has linked to", dvsThisDvHasLinkedToBuilder);
-            response.add("dataverses that link to the " + dv.getAlias() + " dataverse (id " + dv.getId() + ")", dvsThatLinkToThisDvBuilder);
-            response.add("datasets that the " + dv.getAlias() + " dataverse (id " + dv.getId() + ") has linked to", datasetsThisDvHasLinkedToBuilder);
+            response.add("dataverses that the " + dv.getAlias() + " dataverse has linked to", dvsThisDvHasLinkedToBuilder);
+            response.add("dataverses that link to the " + dv.getAlias(), dvsThatLinkToThisDvBuilder);
+            response.add("datasets that the " + dv.getAlias() + " has linked to", datasetsThisDvHasLinkedToBuilder);
             return okResponse(response);
 
         } catch (WrappedResponse wr) {
