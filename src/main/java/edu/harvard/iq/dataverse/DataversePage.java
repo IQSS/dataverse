@@ -182,26 +182,30 @@ public class DataversePage implements java.io.Serializable {
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();
         linkingDVSelectItems = new ArrayList();
-        List<Dataverse> testingDataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
+        
+        //Since only a super user function add all dvs
+        dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
         
         //for linking - make sure the link hasn't occurred and its not int the tree
         if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
-        for (Dataverse testDV : testingDataverses) {
-            Dataverse rootDV = dataverseService.findRootDataverse();
-            if (!testDV.equals(rootDV) && !testDV.equals(dataverse)
-                    && (testDV.getOwner() != null && !testDV.getOwner().equals(dataverse))
-                    && (dataverse.getOwner() != null && !dataverse.getOwner().equals(testDV)) // && testDV.isReleased() remove released as requirement for linking dv
-                    ) {
-                dataversesForLinking.add(testDV);
+        
+            dataversesForLinking.remove(dataverseService.findRootDataverse());
+            dataversesForLinking.remove(dataverse);
+            
+            if (dataverse.getOwner() != null ){
+               Dataverse testDV = dataverse;
+               while(testDV.getOwner() != null){
+                   dataversesForLinking.remove(testDV.getOwner());
+                   testDV = testDV.getOwner();
+               }                
             }
-        }
-
+            
             for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
                 dataversesForLinking.remove(removeLinked);
             }
         } else{
             //for saved search add all
-            dataversesForLinking.addAll(testingDataverses);
+
         }
 
         for (Dataverse selectDV : dataversesForLinking) {

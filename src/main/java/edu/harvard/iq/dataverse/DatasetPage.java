@@ -211,18 +211,16 @@ public class DatasetPage implements java.io.Serializable {
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();
         linkingDVSelectItems = new ArrayList();
-        List<Dataverse> testingDataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
-        if (testingDataverses.isEmpty()) {
+        
+        //Since this is a super user we are getting all dataverses
+        dataversesForLinking = dataverseService.findAll();
+        if (dataversesForLinking.isEmpty()) {
             setNoDVsAtAll(true);
             return;
         }
-        for (Dataverse testDV : testingDataverses) {
-            //allow linking to root dv
-            //&& testDV.isReleased() remove released as requirement for linking dv
-            if (!testDV.equals(dataset.getOwner())) {
-                dataversesForLinking.add(testDV);
-            }
-        }
+        
+        dataversesForLinking.remove(dataset.getOwner());
+        
         for (Dataverse removeLinked : dsLinkingService.findLinkingDataverses(dataset.getId())) {
             dataversesForLinking.remove(removeLinked);
         }

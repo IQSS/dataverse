@@ -113,8 +113,8 @@
                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)
                                                         and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
                                 <!-- Publish Buttons -->
-                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="confirmation.show()"
-                                               rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.globalIdCreateTime != null
+                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="publishConfirm.show()"
+                                               rendered="#{!DatasetPage.dataset.released
                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
@@ -1623,7 +1623,7 @@
                     </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="confirmation">
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -1633,8 +1633,8 @@
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
+                            <p:commandButton value="#{bundle.continue}" onclick="publishConfirm.hide()" action="#{DatasetPage.releaseDataset}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="publishConfirm.hide()" type="button" />
                         </div>
                     </p:dialog>
 
