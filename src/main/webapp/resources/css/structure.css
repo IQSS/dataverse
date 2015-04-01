@@ -88,6 +88,7 @@ td.col-select-width {width:36px;}
 .margin-bottom {margin-bottom:1em;}
 .margin-bottom-half {margin-bottom:.5em;}
 .no-margin-bottom {margin-bottom:0;}
+.padding-12 {padding: 12px;}
 .clear-both {clear:both;}
 
 table.selectManyCheckboxBlock input {margin-right:4px;}
@@ -318,6 +319,7 @@ form.btn-form {display:inline-block;}
 .button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
 .button-block .btn:last-child, .button-block .btn-group:last-child, 
 .button-block form.btn-form:last-child .btn-group {margin-right:0;}
+.button-block.pull-right .btn:first-child {margin-right:0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
@@ -355,7 +357,7 @@ input.search-input {margin-right:1em; padding:4px; display: inline-block; vertic
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
 /*#resultsCountPaginatorBlock {overflow:hidden;}*/
-#resultsCountPaginatorBlock div.results-count {width:25%; padding: 6px 12px; margin-top: 1px; font-weight:bold;}
+#resultsCountPaginatorBlock div.results-count {width:25%; padding: 6px 12px 6px 0; margin-top: 1px; font-weight:bold;}
 #resultsCountPaginatorBlock div.results-sort-pagination {width:70%; text-align:right;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
