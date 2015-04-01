@@ -135,16 +135,20 @@ Deletes the draft version of dataset ``$id``. Only the draft version can be dele
 
     DELETE http://$SERVER/api/datasets/$id/versions/:draft?key=$apiKey
 
-Users
+Builtin Users
 ~~~~~
 
-This endopint deals with users of the built-in authentication provider. Note that users may come from different authentication services as well, such as Shibboleth.
+This endopint deals with users of the built-in authentication provider. Note that users may come from other authentication services as well, such as Shibboleth.
 For this service to work, the setting ``BuiltinUsers.KEY`` has to be set, and its value passed as ``key`` to
 each of the calls.
 
 Generates a new user. Data about the user are posted via JSON. *Note that the password is passed as a parameter in the query*. ::
 
-  POST http://$SERVER/api/users?password=$password&key=$key
+  POST http://$SERVER/api/bulitin-users?password=$password&key=$key
+
+Gets the API token of the user, given the password. ::
+
+  GET http://$SERVER/api/bulitin-users/$username/api-token?password=$password
 
 Roles
 ~~~~~

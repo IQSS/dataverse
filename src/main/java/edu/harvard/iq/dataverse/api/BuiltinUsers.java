@@ -31,7 +31,7 @@ import javax.ws.rs.core.Response.Status;
  *
  * @author michael
  */
-@Path("users")
+@Path("builtin-users")
 public class BuiltinUsers extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
@@ -58,7 +58,24 @@ public class BuiltinUsers extends AbstractApiBean {
 
         return okResponse(bld);
     }
-
+    
+    @GET
+    @Path("{username}/api-token")
+    public Response getApiToken( @PathParam("username") String username, @QueryParam("password") String password ) {
+        BuiltinUser u = builtinUserSvc.findByUserName( username );
+        if ( u == null ) return badRequest("Bad username or password");
+        
+        boolean passwordOk = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
+                                            .check(password, u.getEncryptedPassword() );
+        if ( ! passwordOk ) return badRequest("Bad username or password");
+        
+        AuthenticatedUser authUser = authSvc.lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, u.getUserName());
+        
+        ApiToken t = authSvc.findApiTokenByUser(authUser);
+        
+        return (t != null ) ? okResponse(t.getTokenString()) : notFound("User " + username + " does not have an API token");
+    }
+    
     /**
      * Created this new API command because the save method could not be run
      * from the RestAssured API. RestAssured doesn't allow a Post request to

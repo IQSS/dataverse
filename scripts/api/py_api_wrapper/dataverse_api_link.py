@@ -55,8 +55,8 @@ class DataverseAPILink:
     #
     API_READ_SPECS = (    
     # USERS
-       [ 'list_users', 'List Users', '/api/users', False, 0]\
-    ,  ['get_user_data', 'Get metadata for a specific user', '/api/users/%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1]\
+       [ 'list_users', 'List Users', '/api/builtin-users', False, 0]\
+    ,  ['get_user_data', 'Get metadata for a specific user', '/api/builtin-users/%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1]\
     
     # ROLES
     ,  ['list_roles', 'List Roles', '/api/roles', False, 0]\
@@ -87,15 +87,15 @@ class DataverseAPILink:
         #[ 'create_dataverse', 'Create Dataverse', '/api/dataverses/%s' % SingleAPISpec.URL_PLACEHOLDER, True, 1, True]\
         
         # Create a User
-        #   curl -H "Content-type:application/json" -X POST -d @data/userPete.json "http://localhost:8080/api/users?password=pete"
+        #   curl -H "Content-type:application/json" -X POST -d @data/userPete.json "http://localhost:8080/api/builtin-users?password=pete"
         #
-        #[ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
+        #[ 'create_user', 'Create User', '/api/builtin-users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
         #,
     )
                 
     API_DELETE_SPECS = (
         # Dataset
-        [ 'delete_dataset', 'Delete Dataset', '/api/users/%s' % SingleAPISpec.URL_PLACEHOLDER, True, True]\
+        [ 'delete_dataset', 'Delete Dataset', '/api/builtin-users/%s' % SingleAPISpec.URL_PLACEHOLDER, True, True]\
         #DELETE http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
     )
     
@@ -204,9 +204,9 @@ class DataverseAPILink:
         if not type(dv_params) is dict:
             msgx('dv_params is None')
 
-        #    [ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
+        #    [ 'create_user', 'Create User', '/api/builtin-users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
         
-        url_str = self.get_server_name() + '/api/users?password=%s' % (new_password)
+        url_str = self.get_server_name() + '/api/builtin-users?password=%s' % (new_password)
         headers = {'content-type': 'application/json'}    
         return self.make_api_call(url_str, self.HTTP_POST, params=dv_params, headers=headers)
     

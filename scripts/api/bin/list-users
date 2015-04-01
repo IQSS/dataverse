@@ -1,2 +1,2 @@
-curl http://localhost:8080/api/users
+curl http://localhost:8080/api/builtin-users
 echo

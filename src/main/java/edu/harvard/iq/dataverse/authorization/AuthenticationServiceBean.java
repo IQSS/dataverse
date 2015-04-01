@@ -170,7 +170,7 @@ public class AuthenticationServiceBean {
         if (pk==null){
             return null;
         }
-        return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
+        return em.find(AuthenticatedUser.class, pk);
     }
 
     /**
@@ -285,17 +285,14 @@ public class AuthenticationServiceBean {
         if (au == null) {
             return null;
         }
-        ApiToken apiToken = null;
-        TypedQuery<ApiToken> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiToken AS o WHERE o.authenticatedUser = :user", ApiToken.class);
+        TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
         try {
-            apiToken = typedQuery.getSingleResult();
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             logger.log(Level.INFO, "When looking up API token for {0} caught {1}", new Object[]{au, ex});
-            apiToken = null;
+            return null;
         }
-        
-        return apiToken;
     }
     
     

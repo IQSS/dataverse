@@ -6,5 +6,5 @@ def msgx(s): dashes('\/'); msg(s); dashes('\/'); sys.exit(0)
 
 """
 
-curl -H "Content-type:application/json" -X POST -d user_params.json "http://dvn-build.hmdc.harvard.edu/api/users?password=linus"
+curl -H "Content-type:application/json" -X POST -d user_params.json "http://dvn-build.hmdc.harvard.edu/api/builtin-users?password=linus"
 """
