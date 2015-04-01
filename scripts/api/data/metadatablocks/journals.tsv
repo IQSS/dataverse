@@ -1,9 +1,11 @@
-#metadataBlock	name	dataverseAlias   displayName													
-	journal		Journal Metadata													
+#metadataBlock	name	dataverseAlias	displayName												
+	journal		Journal Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	journalVolume	Volume	The journal volume which this dataset is associated with (e.g., Volume 4).		text	0		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		journal
-	journalIssue	Issue	The journal issue number which this dataset is associated with (e.g., Number 2, Autumn).		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		journal
-	journalArticleType	Type of Article	Indicates what kind of article this is, for example, a research article, a commentary, a book or product review, a case report, a calendar, etc (based on JATS). 		text	2		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		journal
+	journalVolumeIssue	Journal	Indicates the volume, issue and date of a journal, which this Dataset is associated with.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		journal
+	journalVolume	Volume	The journal volume which this Dataset is associated with (e.g., Volume 4).		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
+	journalIssue	Issue	The journal issue number which this Dataset is associated with (e.g., Number 2, Autumn).		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
+	journalPubDate	Publication Date	The publication date for this journal volume/issue, which this Dataset is associated with (e.g., 1999).	YYYY or YYYY-MM or YYYY-MM-DD	date	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	journalVolumeIssue	journal
+	journalArticleType	Type of Article	Indicates what kind of article this is, for example, a research article, a commentary, a book or product review, a case report, a calendar, etc (based on JATS). 		text	4		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		journal
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	journalArticleType	abstract		0											
 	journalArticleType	addendum		1											
