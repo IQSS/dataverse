@@ -1,6 +1,6 @@
-<div
-    xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:p="http://primefaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     
@@ -75,7 +75,8 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandLink styleClass="btn btn-default" value="#{bundle['dataverse.permissions.explicitGroupEditDialog.createGroup']}"
+                <p:commandLink type="button" styleClass="btn btn-default" 
+                               value="#{bundle['dataverse.permissions.explicitGroupEditDialog.createGroup']}"
                                update="explicitGroupNewDialogContent @([id$=Messages])"
                                actionListener="#{managePermissionsPage.saveExplicitGroup}" 
                                oncomplete="if (args &amp;&amp; !args.validationFailed) explicitGroupForm.hide();">
@@ -85,4 +86,4 @@
             </div>
         </p:fragment>
     </p:dialog>
-</div>
+</ui:composition>

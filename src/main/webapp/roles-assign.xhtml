@@ -1,5 +1,4 @@
-<div
-    xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
@@ -73,7 +72,7 @@
                 </div>
             </div>
             <div class="button-block">
-                <p:commandLink styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.saveChanges}"
                                update="assignRoleContent assignedRoles @([id$=Messages])"
                                actionListener="#{managePermissionsPage.assignRole}" 
                                oncomplete="if (args &amp;&amp; !args.validationFailed) userGroupsForm.hide();">
@@ -83,4 +82,4 @@
             </div>
         </p:fragment>
     </p:dialog>
-</div>
+</ui:composition>
