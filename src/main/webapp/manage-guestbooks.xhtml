@@ -13,7 +13,7 @@
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{manageGuestbooksPage.dataverseId}"/>
             <f:viewAction action="#{manageGuestbooksPage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageGuestbooksPage.dataverse, 'Dataset Guestbook')}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageGuestbooksPage.dataverse, bundle['dataset.manageGuestbooks.pageTitle'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.manageGuestbooks.pageTitle']}"/>
