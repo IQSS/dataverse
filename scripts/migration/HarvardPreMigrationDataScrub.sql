@@ -29,4 +29,4 @@ select m.id, m.dateofdeposit, v.study_id from  metadata m, studyversion v   wher
 update metadata set TimePeriodCoveredStart = '198?' from studyversion v   where  v.study_id = 88283 and metadata.id = v.metadata_id and TimePeriodCoveredStart = '198x';
 update metadata set ProductionDate = '1782' from studyversion v where  v.study_id = 121855 and metadata.id = v.metadata_id and ProductionDate = '[17820000]';
 update metadata set TimePeriodCoveredStart = '1782' from studyversion v where  v.study_id = 121855 and metadata.id = v.metadata_id and TimePeriodCoveredStart = '[17820000]';
-update metadata set dateofdeposit = '' from studyversion v where  v.study_id = 74738 and metadata.id = v.metadata_id and ProductionDate = '\';
+update metadata set dateofdeposit = '' from studyversion v where  v.study_id = 74738 and metadata.id = v.metadata_id and dateofdeposit = '\';
