@@ -195,8 +195,7 @@ public abstract class AbstractApiBean {
         return metadataBlockSvc.findById(id);
     }
     protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
-        return isNumeric(idtf) ? findMetadataBlock(Long.parseLong(idtf))
-                : metadataBlockSvc.findByName(idtf);
+        return metadataBlockSvc.findByName(idtf);
     }
     
     protected DatasetFieldType findDatasetFieldType(String idtf) throws NumberFormatException {
