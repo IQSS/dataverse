@@ -76,4 +76,11 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
         }
     }
 
+    public boolean alreadyLinked(Dataverse dataverse, Dataset dataset) {
+        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataset.id = :datasetId", DatasetLinkingDataverse.class);
+        typedQuery.setParameter("dataverseId", dataverse.getId());
+        typedQuery.setParameter("datasetId", dataset.getId());
+        return !typedQuery.getResultList().isEmpty();
+    }
+
 }

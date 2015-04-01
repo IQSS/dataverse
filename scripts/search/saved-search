@@ -1,0 +1,15 @@
+#!/bin/bash
+. scripts/search/export-keys
+# 2015-03-26 11:48:50.43
+curl -s http://localhost:8080/api/admin/savedsearches/list?key=$ADMINKEY | jq .
+if [ ! -z "$1" ]; then
+    curl -s http://localhost:8080/api/dataverses/$1/links?key=$ADMINKEY | jq .
+fi
+if [ ! -z "$2" ]; then
+    curl -s http://localhost:8080/api/datasets/$2/links?key=$ADMINKEY | jq .
+fi
+exit
+curl -s http://localhost:8080/api/admin/savedsearches -X POST -H 'Content-type:application/json' --upload-file scripts/search/data/savedSearchBasic.json | jq .
+curl -s http://localhost:8080/api/admin/savedsearches -X POST -H 'Content-type:application/json' --upload-file scripts/search/data/savedSearchAdvanced.json | jq .
+# curl -s -X DELETE http://localhost:8080/api/admin/savedsearches/999
+scripts/search/dbsavedsearch

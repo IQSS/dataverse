@@ -19,6 +19,7 @@ scripts/search/populate-users > /dev/null
 scripts/search/create-users > /dev/null
 scripts/search/tests/grant-authusers-add-on-root
 scripts/search/tests/create-all-and-test
+scripts/search/tests/create-saved-search-and-test
 
 exit
 # FIXME: clean up these old test and make them pass

@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
+import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -22,7 +22,7 @@ import java.util.Date;
  * @author skraffmiller
  */
 @RequiredPermissions(Permission.PublishDataverse)
-public class LinkDatasetCommand extends AbstractVoidCommand {
+public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse> {
     
     private final Dataset linkedDataset;
     private final Dataverse linkingDataverse;
@@ -34,13 +34,15 @@ public class LinkDatasetCommand extends AbstractVoidCommand {
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    public DatasetLinkingDataverse execute(CommandContext ctxt) throws CommandException {
         DatasetLinkingDataverse datasetLinkingDataverse = new DatasetLinkingDataverse();
         datasetLinkingDataverse.setDataset(linkedDataset);
         datasetLinkingDataverse.setLinkingDataverse(linkingDataverse);
         datasetLinkingDataverse.setLinkCreateTime(new Timestamp(new Date().getTime()));
         ctxt.dsLinking().save(datasetLinkingDataverse);
+        ctxt.em().flush();
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(linkedDataset, doNormalSolrDocCleanUp);
+        return datasetLinkingDataverse;
     }  
 }

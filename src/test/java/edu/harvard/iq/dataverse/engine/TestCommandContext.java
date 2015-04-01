@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.persistence.EntityManager;
 
@@ -79,6 +80,11 @@ public class TestCommandContext implements CommandContext {
         
         @Override
 	public TemplateServiceBean templates() {
+		return null;
+	}
+        
+        @Override
+	public SavedSearchServiceBean savedSearches() {
 		return null;
 	}
         

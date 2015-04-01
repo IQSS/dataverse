@@ -1,0 +1,6 @@
+#!/bin/bash -x
+~/.homebrew/bin/psql -c "select * from savedsearch order by id;" dataverse_db
+~/.homebrew/bin/psql -c "select * from savedsearchfilterquery order by id;" dataverse_db
+exit
+~/.homebrew/bin/psql -c "drop table savedsearch cascade;" dataverse_db
+~/.homebrew/bin/psql -c "drop table savedsearchfilterquery cascade;" dataverse_db

@@ -3,13 +3,19 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.List;
@@ -46,6 +52,11 @@ public class DataversePage implements java.io.Serializable {
 
         CREATE, INFO, PERMISSIONS, SETUP, THEME
     }
+    
+    public enum LinkMode {
+
+        SAVEDSEARCH,  LINKDATAVERSE
+    }
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -71,12 +82,18 @@ public class DataversePage implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueServiceBean;
+    @EJB
+    SavedSearchServiceBean savedSearchService;
+    @Inject
+    SearchIncludeFragment searchIncludeFragment;
 
     @EJB
     DataverseLinkingServiceBean linkingService;
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
+    private LinkMode linkMode;
+
     private Long ownerId;
     private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<DatasetFieldType>(), new ArrayList<DatasetFieldType>());
     private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<Dataverse>(), new ArrayList<Dataverse>());
@@ -142,22 +159,49 @@ public class DataversePage implements java.io.Serializable {
         setDataverseSubjectControlledVocabularyValues(controlledVocabularyValueServiceBean.findByDatasetFieldTypeId(subjectDatasetField.getId()));
 
     }
+    
+    
+    public LinkMode getLinkMode() {
+        return linkMode;
+    }
+
+    public void setLinkMode(LinkMode linkMode) {
+        this.linkMode = linkMode;
+    }
+    
+    
+    public void setupLinkingPopup (String popupSetting){
+        if (popupSetting.equals("link")){
+            setLinkMode(LinkMode.LINKDATAVERSE);           
+        } else {
+            setLinkMode(LinkMode.SAVEDSEARCH); 
+        }
+        updateLinkableDataverses();
+    }
 
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList();
         linkingDVSelectItems = new ArrayList();
         List<Dataverse> testingDataverses = permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
+        
+        //for linking - make sure the link hasn't occurred and its not int the tree
+        if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
         for (Dataverse testDV : testingDataverses) {
             Dataverse rootDV = dataverseService.findRootDataverse();
             if (!testDV.equals(rootDV) && !testDV.equals(dataverse)
-                    && !testDV.getOwner().equals(dataverse)
-                    && !dataverse.getOwner().equals(testDV) // && testDV.isReleased() remove released as requirement for linking dv
+                    && (testDV.getOwner() != null && !testDV.getOwner().equals(dataverse))
+                    && (dataverse.getOwner() != null && !dataverse.getOwner().equals(testDV)) // && testDV.isReleased() remove released as requirement for linking dv
                     ) {
                 dataversesForLinking.add(testDV);
             }
         }
-        for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
-            dataversesForLinking.remove(removeLinked);
+
+            for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
+                dataversesForLinking.remove(removeLinked);
+            }
+        } else{
+            //for saved search add all
+            dataversesForLinking.addAll(testingDataverses);
         }
 
         for (Dataverse selectDV : dataversesForLinking) {
@@ -652,6 +696,51 @@ public class DataversePage implements java.io.Serializable {
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataverse to yours: " + ex;
+            logger.severe(msg);
+            /**
+             * @todo how do we get this message to show up in the GUI?
+             */
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotLinked", msg);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            //return "";
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+        }
+    }
+    
+    public String saveSavedSearch() {
+        if (linkingDataverseId == null) {
+            JsfHelper.addSuccessMessage("You must select a linking dataverse.");
+            return "";
+        }
+        linkingDataverse = dataverseService.find(linkingDataverseId);
+        /**
+         * @todo Use a non-deprecated constructor
+         */
+        SavedSearch savedSearch = new SavedSearch();
+        savedSearch.setDefinitionPoint(linkingDataverse);
+        savedSearch.setQuery(searchIncludeFragment.getQuery());
+        savedSearch.setSavedSearchFilterQueries(new ArrayList());
+        User user = session.getUser();
+        if (user.isAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) user;
+            savedSearch.setCreator(au);
+        }
+        for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
+            if (filterQuery != null && !filterQuery.isEmpty()) {
+                SavedSearchFilterQuery ssfq = new SavedSearchFilterQuery();
+                ssfq.setSavedSearch(savedSearch);
+                ssfq.setFilterQuery(filterQuery);
+                savedSearch.getSavedSearchFilterQueries().add(ssfq);
+            }
+        }
+        CreateSavedSearchCommand cmd = new CreateSavedSearchCommand(session.getUser(), linkingDataverse, savedSearch);
+        try {
+            commandEngine.submit(cmd);
+            JsfHelper.addSuccessMessage("This search is now linked to " + linkingDataverse.getDisplayName());
+            //return "";
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+        } catch (CommandException ex) {
+            String msg = "There was a problem linking this search to yours: " + ex;
             logger.severe(msg);
             /**
              * @todo how do we get this message to show up in the GUI?

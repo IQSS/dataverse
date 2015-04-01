@@ -1,0 +1,6 @@
+#!/bin/bash -x
+~/.homebrew/bin/psql -c "delete from savedsearchfilterquery;" dataverse_db
+~/.homebrew/bin/psql -c "delete from savedsearch cascade;" dataverse_db
+exit
+~/.homebrew/bin/psql -c "drop table savedsearch cascade;" dataverse_db
+~/.homebrew/bin/psql -c "drop table savedsearchfilterquery cascade;" dataverse_db
