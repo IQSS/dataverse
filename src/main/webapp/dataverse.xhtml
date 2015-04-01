@@ -434,7 +434,7 @@
                             <!-- END: Edit/Publish Button Group -->
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" role="group">
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
+                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"
                                                update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">   
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>                                     
@@ -443,7 +443,7 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
                                         <span class="glyphicon glyphicon-envelope no-text"/>
                                 </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip" 
                                                rendered="#{dataverseSession.user.superuser and DataversePage.dataverse.owner != null}"                                                          
                                                title="#{bundle['dataverse.link.btn.tip']}"
                                                action="#{DataversePage.setupLinkingPopup('link')}"                                                          
@@ -451,18 +451,10 @@
                                                update=":linkDataverseForm">
                                     <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
-                                               rendered="#{dataverseSession.user.superuser}"                                                          
-                                               title="#{bundle['dataverse.link.btn.tip']}"
-                                               action="#{DataversePage.setupLinkingPopup('savedSearch')}"                                                          
-                                               oncomplete="PF('linkDataverseForm').show()"
-                                               update=":linkDataverseForm">
-                                    <span class="glyphicon glyphicon-link">Link Search</span>
-                                </p:commandLink>
-                                <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
                                    oncomplete="shareDialog.show();sharrre();">
-                                    <span class="glyphicon glyphicon-thumbs-up no-text"/>
+                                    <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
                             <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
@@ -605,30 +597,13 @@
                 <!-- Link Dataverse Popup -->
 
                 <!-- Link Dataverse Popup -->
-                <p:dialog id="linkDataverseForm" header="#{bundle['dataverse.link']}" widgetVar="linkDataverseForm" style="min-width:500px;">
-                    <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                        <ui:fragment rendered="#{!empty SearchIncludeFragment.query}">
-                            <label class="col-sm-4 control-label">
-                                 #{bundle['dataverse.savedsearch.searchquery']}
-                                 </label>
-                                #{SearchIncludeFragment.query}
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!empty SearchIncludeFragment.filterQueriesDebug}">
-                            <br></br>
-                                <label class="col-sm-4 control-label">
-                                 #{bundle['dataverse.savedsearch.filterQueries']} 
-                                 </label>
-                            <ui:repeat value="#{SearchIncludeFragment.filterQueriesDebug}" var="fq" >
-                                <h:outputText value="#{fq}"/><br/>
-                            </ui:repeat>                                                              
-                        </ui:fragment>
-                    </ui:fragment>
+                <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
                         <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.dataverse.choose']}</p>
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.link.dataverse.choose']}</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.savedsearch.dataverse.choose']}</p>
+                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.savedsearch.dataverse.choose']}</p>
                         </ui:fragment>
                         <div class="form-group">
                             <label class="col-sm-4 control-label">
@@ -637,13 +612,11 @@
                                 </h:outputFormat>
                             </label>
                             <div class="col-sm-7">
-
-
                                 <h:selectOneMenu styleClass="form-control" value="#{DataversePage.linkingDataverseId}">
                                     <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
                                 </h:selectOneMenu>
                                 <ui:remove>
-                                 <p:autoComplete id="dvName"
+                                <p:autoComplete id="dvName"
                                                 value="#{DataversePage.dataversesForLinking}"
                                                 queryDelay="1000"
                                                 var="u"
@@ -660,13 +633,33 @@
                                 </ui:remove>
                             </div>
                         </div>
+                        <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
+                            <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.query}">
+                                <label class="col-sm-4 control-label">
+                                     #{bundle['dataverse.savedsearch.searchquery']}
+                                </label>
+                                <div class="col-sm-7">
+                                    <p class="form-control-static">
+                                        #{SearchIncludeFragment.query}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.filterQueriesDebug}">
+                                <label class="col-sm-4 control-label">
+                                     #{bundle['dataverse.savedsearch.filterQueries']}
+                                </label>
+                                <div class="col-sm-7">
+                                    <ui:repeat value="#{SearchIncludeFragment.filterQueriesDebug}" var="fq">
+                                        <p class="form-control-static"><h:outputText value="#{fq}"/></p>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </ui:fragment>
                         <div class="button-block">
-                            <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
-                                <p:commandButton value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}" />
-                            </ui:fragment>
-                            <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                                <p:commandButton value="#{bundle['dataverse.savedsearch.save']}" action="#{DataversePage.saveSavedSearch}" />
-                            </ui:fragment>
+                            <p:commandButton value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}"
+                                              rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}"/>
+                            <p:commandButton value="#{bundle['dataverse.savedsearch.save']}" action="#{DataversePage.saveSavedSearch}"
+                                             rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}"/>
                             <p:commandButton value="#{bundle.cancel}" onclick="linkDataverseForm.hide()"/>
                         </div>
                     </h:form>

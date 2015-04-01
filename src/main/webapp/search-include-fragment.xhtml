@@ -16,7 +16,7 @@
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm" rendered="#{showSearch == true}">
         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="text-left,text-right">
-            <ui:fragment>
+            <p:column>
                 <h:form>
                     <!-- this remote command is called once the page finishes its initial load,
                     in order to display the images for the card -->
@@ -38,45 +38,56 @@
                         <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
                     </h:outputLink>
                 </h:form>
-            </ui:fragment>
-
-            <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
-            <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
-                                     or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
-
-                <div class="pull-right">
-                    <button type="button" class="btn btn-default" onclick="addData_popup.show()">
-                        <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
-                    </button>
-                </div>
-                <p:confirmDialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" styleClass="text-left" widgetVar="addData_popup">                                           
-                    <f:facet name="message">
-                        <p>
-                            <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
-                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
-                            </h:outputFormat>
-                        </p>
-                    </f:facet>
-                </p:confirmDialog>  
-            </ui:fragment>
-            <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
-                                     or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
-            <h:form id="shareForm">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']} <span class="caret"></span>
+            </p:column>
+            <p:column>
+                <div class="button-block pull-right">
+                    <!-- SAVE SEARCH -->
+                    <p:commandLink type="button" styleClass="btn btn-default"
+                                   rendered="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search'}"
+                                   action="#{DataversePage.setupLinkingPopup('savedSearch')}"
+                                   oncomplete="PF('linkDataverseForm').show()"
+                                   update=":linkDataverseForm">
+                        <span class="glyphicon glyphicon-link"/> #{bundle['dataverse.savedsearch.link']}
+                    </p:commandLink>
+                    <!-- END: SAVE SEARCH -->
+                    <!-- ADD DATA -->
+                    <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
+                    <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
+                                             or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
+                        <button type="button" class="btn btn-default" onclick="addData_popup.show()">
+                            <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                         </button>
-                        <ul class="dropdown-menu pull-right text-left" role="menu">
-                            <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
-                                <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
-                                <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a></li>
-                            </ui:fragment>
-                        </ul>
-                    </div>
-                </h:form>
-            </ui:fragment>
+                        <p:confirmDialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" styleClass="text-left" widgetVar="addData_popup">                                           
+                            <f:facet name="message">
+                                <p>
+                                    <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
+                                        <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                                    </h:outputFormat>
+                                </p>
+                            </f:facet>
+                        </p:confirmDialog>  
+                    </ui:fragment>
+                    <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
+                                             or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
+                        <h:form id="shareForm" class="btn-form">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                    <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
+                                        <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
+                                        <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a></li>
+                                    </ui:fragment>
+                                </ul>
+                            </div>
+                        </h:form>
+                    </ui:fragment>
+                    <!-- END: ADD DATA -->
+                </div>
+            </p:column>
         </p:panelGrid>
     </p:panel>
     <!-- Search Results -->
