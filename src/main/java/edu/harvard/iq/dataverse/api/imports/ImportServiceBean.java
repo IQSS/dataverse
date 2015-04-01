@@ -243,23 +243,31 @@ public class ImportServiceBean {
             if (!invalidViolations.isEmpty()) {
                 for (ConstraintViolation v : invalidViolations) {
                     DatasetFieldValue f = ((DatasetFieldValue) v.getRootBean());
-                        boolean fixed = false;
-                        if (importType.equals(ImportType.MIGRATION) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
-                            fixed = processMigrationValidationError(f, cleanupLog, fileName);
+                    boolean fixed = false;
+                    if ((importType.equals(ImportType.MIGRATION) || importType.equals(ImportType.HARVEST)) && settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
+                        fixed = processMigrationValidationError(f, cleanupLog, fileName);
                         if (fixed) {
                             Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
                             if (!scrubbedViolations.isEmpty()) {
                                 String msg = " Validation error for CONVERTED value: " + f.getValue() + ", " + f.getValidationMessage();
                                 throw new ImportException(msg);
                             }
+                        } else {
+                            if (importType.equals(ImportType.HARVEST)) {
+                                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                        + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                                cleanupLog.println(msg);
+                                f.setValue(DatasetField.NA_VALUE);
+                                fixed = true;
+                            }
                         }
                     }
-                        if (!fixed) {
-                            String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();
-                            throw new ImportException(msg);
-                        }
+                    if (!fixed) {
+                        String msg = " Validation error for value: " + f.getValue() + ", " + f.getValidationMessage();
+                        throw new ImportException(msg);
                     }
                 }
+            }
             
 
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId());
