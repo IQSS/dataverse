@@ -114,74 +114,76 @@ public class SavedSearchServiceBean {
         List<SavedSearch> allSavedSearches = findAll();
         JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
         for (SavedSearch savedSearch : allSavedSearches) {
-            JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
-            SolrQueryResponse queryResponse = findHits(savedSearch);
-            for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
-
-                JsonObjectBuilder hitInfo = Json.createObjectBuilder();
-                hitInfo.add("name", solrSearchResult.getNameSort());
-                hitInfo.add("dvObjectId", solrSearchResult.getEntityId());
-
-                DvObject dvObjectThatDefinitionPointWillLinkTo = dvObjectService.findDvObject(solrSearchResult.getEntityId());
-                if (dvObjectThatDefinitionPointWillLinkTo == null) {
-                    hitInfo.add(resultString, "Could not find DvObject with id " + solrSearchResult.getEntityId());
-                    infoPerHit.add(hitInfo);
-                    break;
-                }
-                if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
-                    Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
-                    if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
-                        hitInfo.add(resultString, "Skipping because dataverse id " + dataverseToLinkTo.getId() + " would link to itself.");
-                    } else if (alreadyLinkedToTheDataverse(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
-                        hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataverse " + dataverseToLinkTo.getId() + ".");
-                    } else if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
-                        hitInfo.add(resultString, "Skipping because " + dataverseToLinkTo + " is already part of the subtree for " + savedSearch.getDefinitionPoint());
-                    } else {
-                        DataverseLinkingDataverse link = commandEngine.submit(new LinkDataverseCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), dataverseToLinkTo));
-                        hitInfo.add(resultString, "Persisted DataverseLinkingDataverse id " + link.getId() + " link of " + dataverseToLinkTo + " to " + savedSearch.getDefinitionPoint());
-                    }
-                } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
-                    Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
-                    if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                        hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + ".");
-                    } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                        // already there from normal search/browse
-                        hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is a direct child of dataverse id " + savedSearch.getDefinitionPoint().getAlias());
-                    } else {
-                        DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
-                        hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
-                    }
-                } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
-                    Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo.getOwner();
-                    if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                        hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
-                    } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                        hitInfo.add(resultString, "Skipping because we don't want to link dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + " to its parent (" + savedSearch.getDefinitionPoint().getAlias() + ")");
-                    } else {
-                        DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
-                        hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " (owner of file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + ") to " + link.getLinkingDataverse());
-                    }
-                } else {
-                    hitInfo.add(resultString, "Unexpected DvObject type.");
-                }
-                infoPerHit.add(hitInfo);
-            }
-
-            JsonObjectBuilder info = getInfo(savedSearch, infoPerHit);
-            if (debugFlag) {
-                info.add("debug", getDebugInfo(savedSearch));
-            }
-            savedSearchArrayBuilder.add(info);
+            JsonObjectBuilder perSavedSearchResponse = makeLinksForSingleSavedSearch(savedSearch, debugFlag);
+            savedSearchArrayBuilder.add(perSavedSearchResponse);
         }
         response.add("hits by saved search", savedSearchArrayBuilder);
         return response;
     }
 
-    /**
-     * @todo Implement this!
-     */
-    public JsonObjectBuilder makeLinksNowForSingleSavedSearch(SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
-        return Json.createObjectBuilder().add("FIXME", "Implement this!");
+    public JsonObjectBuilder makeLinksForSingleSavedSearch(SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
+        SolrQueryResponse queryResponse = findHits(savedSearch);
+        for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
+
+            JsonObjectBuilder hitInfo = Json.createObjectBuilder();
+            hitInfo.add("name", solrSearchResult.getNameSort());
+            hitInfo.add("dvObjectId", solrSearchResult.getEntityId());
+
+            DvObject dvObjectThatDefinitionPointWillLinkTo = dvObjectService.findDvObject(solrSearchResult.getEntityId());
+            if (dvObjectThatDefinitionPointWillLinkTo == null) {
+                hitInfo.add(resultString, "Could not find DvObject with id " + solrSearchResult.getEntityId());
+                infoPerHit.add(hitInfo);
+                break;
+            }
+            if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
+                Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
+                if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because dataverse id " + dataverseToLinkTo.getId() + " would link to itself.");
+                } else if (alreadyLinkedToTheDataverse(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataverse " + dataverseToLinkTo.getId() + ".");
+                } else if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because " + dataverseToLinkTo + " is already part of the subtree for " + savedSearch.getDefinitionPoint());
+                } else {
+                    DataverseLinkingDataverse link = commandEngine.submit(new LinkDataverseCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), dataverseToLinkTo));
+                    hitInfo.add(resultString, "Persisted DataverseLinkingDataverse id " + link.getId() + " link of " + dataverseToLinkTo + " to " + savedSearch.getDefinitionPoint());
+                }
+            } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
+                Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
+                if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + ".");
+                } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                    // already there from normal search/browse
+                    hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is a direct child of dataverse id " + savedSearch.getDefinitionPoint().getAlias());
+                } else {
+                    DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                    hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
+                }
+            } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
+                Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo.getOwner();
+                if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
+                } else if (wouldResultInLinkingDatasetToItsOwner(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because we don't want to link dataset " + datasetToLinkTo.getId() + " that contains file id" + dvObjectThatDefinitionPointWillLinkTo.getId() + " to its parent (" + savedSearch.getDefinitionPoint().getAlias() + ")");
+                } else {
+                    DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                    hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " (owner of file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + ") to " + link.getLinkingDataverse());
+                }
+            } else {
+                hitInfo.add(resultString, "Unexpected DvObject type.");
+            }
+            infoPerHit.add(hitInfo);
+        }
+
+        JsonObjectBuilder info = getInfo(savedSearch, infoPerHit);
+        if (debugFlag) {
+            info.add("debug", getDebugInfo(savedSearch));
+        }
+        savedSearchArrayBuilder.add(info);
+        response.add("hits for saved search id " + savedSearch.getId(), savedSearchArrayBuilder);
+        return response;
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {

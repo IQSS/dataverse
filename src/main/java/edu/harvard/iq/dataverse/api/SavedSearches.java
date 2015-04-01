@@ -189,13 +189,32 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @PUT
-    @Path("update")
-    public Response makeLinks(@QueryParam("debug") boolean debug) {
+    @Path("makelinks/all")
+    public Response makeLinksForAllSavedSearches(@QueryParam("debug") boolean debug) {
         JsonObjectBuilder makeLinksResponse;
         try {
             makeLinksResponse = savedSearchSvc.makeLinksForAllSavedSearches(debug);
             return okResponse(makeLinksResponse);
-        } catch (SearchException | CommandException ex) {
+        } catch (CommandException ex) {
+            return errorResponse(BAD_REQUEST, ex.getLocalizedMessage());
+        } catch (SearchException ex) {
+            return errorResponse(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
+        }
+    }
+
+    @PUT
+    @Path("makelinks/{id}")
+    public Response makeLinksForSingleSavedSearch(@PathParam("id") long savedSearchIdToLookUp, @QueryParam("debug") boolean debug) {
+        SavedSearch savedSearchToMakeLinksFor = savedSearchSvc.find(savedSearchIdToLookUp);
+        if (savedSearchToMakeLinksFor == null) {
+            return errorResponse(BAD_REQUEST, "Count not find saved search id " + savedSearchIdToLookUp);
+        }
+        try {
+            JsonObjectBuilder response = savedSearchSvc.makeLinksForSingleSavedSearch(savedSearchToMakeLinksFor, debug);
+            return okResponse(response);
+        } catch (CommandException ex) {
+            return errorResponse(BAD_REQUEST, ex.getLocalizedMessage());
+        } catch (SearchException ex) {
             return errorResponse(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }

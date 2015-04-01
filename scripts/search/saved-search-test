@@ -1,0 +1,2 @@
+#!/bin/bash
+diff -u scripts/search/tests/expected/saved-search <(curl -s "http://localhost:8080/api/search?key=$ADMINKEY&sort=name&subtree=psimalihealth&q=*" | jq '.data.items[] | {name,type}')

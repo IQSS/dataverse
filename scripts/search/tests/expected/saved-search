@@ -1,0 +1,20 @@
+{
+  "type": "dataverse",
+  "name": "Child of Mail Health"
+}
+{
+  "type": "dataverse",
+  "name": "Grandchild Of Mail Health"
+}
+{
+  "type": "file",
+  "name": "health.txt"
+}
+{
+  "type": "dataset",
+  "name": "Mail health dataset 1"
+}
+{
+  "type": "dataset",
+  "name": "Women in Mali dataset 1"
+}

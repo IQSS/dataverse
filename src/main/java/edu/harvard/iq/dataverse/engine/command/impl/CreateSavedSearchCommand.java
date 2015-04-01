@@ -40,7 +40,7 @@ public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
         SavedSearch persistedSavedSearch = ctxt.savedSearches().save(savedSearchToCreate);
         if (persistedSavedSearch != null) {
             try {
-                JsonObjectBuilder result = ctxt.savedSearches().makeLinksNowForSingleSavedSearch(persistedSavedSearch, true);
+                JsonObjectBuilder result = ctxt.savedSearches().makeLinksForSingleSavedSearch(persistedSavedSearch, true);
                 logger.info("result from attempt to make links from saved search: " + result.build().toString());
             } catch (SearchException ex) {
                 logger.info(ex.getLocalizedMessage());
