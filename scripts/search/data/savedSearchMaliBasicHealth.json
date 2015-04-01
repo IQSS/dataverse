@@ -1,9 +1,9 @@
 {
-  "definitionPointId": 28,
+  "definitionPointId": 22,
   "query": "health",
   "filterQueries": [
     "dvObjectType:(dataverses OR datasets OR files)",
-    "subtreePaths:\"/13/27\""
+    "subtreePaths:\"/13/21\""
   ],
   "creatorId": 1
 }

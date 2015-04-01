@@ -1,18 +1,24 @@
 #!/bin/sh
+. scripts/search/export-keys
 DIR='scripts/search/data/in/dv-psi'
 USERDIR=/tmp/searchusers
-PSIKEY=`cat $USERDIR/5 | jq .data.apiToken | tr -d \"`
-curl -s -H "Content-type:application/json" -X POST -d @$DIR/1 "http://localhost:8080/api/dataverses/root?key=$PSIKEY"
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/1 "http://localhost:8080/api/dataverses/root?key=$PSIADMINKEY"
 echo
 
 PARENT=psi
 for i in {2..9}; do
-  curl -s -H "Content-type:application/json" -X POST -d @$DIR/$i "http://localhost:8080/api/dataverses/$PARENT?key=$PSIKEY"
+  curl -s -H "Content-type:application/json" -X POST -d @$DIR/$i "http://localhost:8080/api/dataverses/$PARENT?key=$PSIADMINKEY"
   echo
 done
 
-curl -s -H "Content-type:application/json" -X POST -d @$DIR/10 "http://localhost:8080/api/dataverses/psimali?key=$PSIKEY"
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/10 "http://localhost:8080/api/dataverses/psimali?key=$PSIADMINKEY"
 echo
 
-curl -s -H "Content-type:application/json" -X POST -d @$DIR/11 "http://localhost:8080/api/dataverses/psimali?key=$PSIKEY"
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/11 "http://localhost:8080/api/dataverses/psimali?key=$PSIADMINKEY"
+echo
+
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/12 "http://localhost:8080/api/dataverses/psimalihealth?key=$PSIADMINKEY"
+echo
+
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/13 "http://localhost:8080/api/dataverses/psimalihealthchild?key=$PSIADMINKEY"
 echo

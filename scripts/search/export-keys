@@ -7,3 +7,4 @@ export SPARROWKEY=`cat $SEARCH_USER_DIR/2 | jq .data.apiToken | tr -d \"`
 export WRENKEY=`cat $SEARCH_USER_DIR/3 | jq .data.apiToken | tr -d \"`
 export SPRUCEKEY=`cat $SEARCH_USER_DIR/4 | jq .data.apiToken | tr -d \"`
 export CHESTNUTKEY=`cat $SEARCH_USER_DIR/5 | jq .data.apiToken | tr -d \"`
+export PSIADMINKEY=`cat $SEARCH_USER_DIR/6 | jq .data.apiToken | tr -d \"`
