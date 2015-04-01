@@ -131,7 +131,12 @@
           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
           ga('create', 'UA-3745567-10', 'harvard.edu');
-          ga('send', 'pageview');
+          ga('send', 'pageview', 'social', {
+            'socialNetwork': 'facebook',
+            'socialAction': 'like',
+            'socialTarget': '#{systemConfig.dataverseSiteUrl}',
+            'page': '#{systemConfig.pageURLWithQueryString}'
+          });
 	</script>
     </h:body>
 </html>
