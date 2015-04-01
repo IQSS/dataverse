@@ -191,8 +191,11 @@ public abstract class AbstractApiBean {
         throw new WrappedResponse( errorResponse( Response.Status.BAD_REQUEST,errorMessage) );
     }
     
+    protected MetadataBlock findMetadataBlock(Long id)  {
+        return metadataBlockSvc.findById(id);
+    }
     protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
-        return isNumeric(idtf) ? metadataBlockSvc.findById(Long.parseLong(idtf))
+        return isNumeric(idtf) ? findMetadataBlock(Long.parseLong(idtf))
                 : metadataBlockSvc.findByName(idtf);
     }
     

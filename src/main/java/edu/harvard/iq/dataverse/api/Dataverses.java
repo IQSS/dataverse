@@ -56,12 +56,16 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -258,12 +262,18 @@ public class Dataverses extends AbstractApiBean {
     public Response setMetadataBlocks( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String blockIds ) {
         
         List<MetadataBlock> blocks = new LinkedList<>();
-        for ( JsonString blockId : Util.asJsonArray(blockIds).getValuesAs(JsonString.class) ) {
-            MetadataBlock blk = findMetadataBlock(blockId.getString());
-            if ( blk == null ) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Can't find metadata block '"+ blockId + "'");
+        try {
+            for ( JsonValue blockId : Util.asJsonArray(blockIds).getValuesAs(JsonValue.class) ) {
+                MetadataBlock blk = (blockId.getValueType()==ValueType.NUMBER)
+                                        ? findMetadataBlock( ((JsonNumber)blockId).longValue() )
+                                        : findMetadataBlock( ((JsonString)blockId).getString() );
+                if ( blk == null ) {
+                    return errorResponse(Response.Status.BAD_REQUEST, "Can't find metadata block '"+ blockId + "'");
+                }
+                blocks.add( blk );
             }
-            blocks.add( blk );
+        } catch( Exception e ) {
+            return errorResponse(Response.Status.BAD_REQUEST, e.getMessage());
         }
         
         try {
@@ -276,6 +286,46 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+ 
+    @GET
+    @Path("{identifier}/metadatablocks/:isRoot")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey  ) {
+        
+        try {
+            User u = findUserOrDie(apiKey);
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if ( permissionSvc.on(dataverse).user(u).has(Permission.EditDataverse) ) {
+                return okResponseWithValue( dataverse.isMetadataBlockRoot() );
+            } else {
+                return errorResponse( Status.FORBIDDEN, "Not authorized" );
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{identifier}/metadatablocks/:isRoot")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.WILDCARD)
+    public Response setMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String body  ) {
+        
+        if ( ! Util.isBoolean(body) ) {
+            return errorResponse(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Try 'true' or 'false'");
+        }
+        boolean root = Util.isTrue(body);
+        
+        try {
+            User u = findUserOrDie(apiKey);
+    		Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            execute(new UpdateDataverseMetadataBlocksCommand.SetRoot(u, dataverse, root));
+            return okResponseWithValue("Dataverse " + dataverse.getName() + " is now a metadata root");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
     }
     
     @POST
@@ -306,46 +356,6 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }    
-    
-    @GET
-    @Path("{identifier}/metadatablocks/:isRoot")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey  ) {
-        
-        try {
-            User u = findUserOrDie(apiKey);
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            if ( permissionSvc.on(dataverse).user(u).has(Permission.EditDataverse) ) {
-                return okResponseWithValue( dataverse.isMetadataBlockRoot() );
-            } else {
-                return errorResponse( Status.FORBIDDEN, "Not authorized" );
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-    
-    @POST
-    @Path("{identifier}/metadatablocks/:isRoot")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String body  ) {
-        
-        if ( ! Util.isBoolean(body) ) {
-            return errorResponse(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Try 'true' or 'false'");
-        }
-        boolean root = Util.isTrue(body);
-        
-        try {
-            User u = findUserOrDie(apiKey);
-    		Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            execute(new UpdateDataverseMetadataBlocksCommand.SetRoot(u, dataverse, root));
-            return okResponseWithValue("Dataverse " + dataverse.getName() + " is now a metadata root");
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-
-    }
-    
     
 	@GET
 	@Path("{identifier}/contents")

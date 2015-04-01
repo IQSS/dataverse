@@ -8,7 +8,10 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Commands for setting the metadata blocks a dataverse uses.
@@ -54,7 +57,9 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
         @Override
         protected void executeImpl(CommandContext ctxt) throws CommandException {
             ctxt.engine().submit( new UpdateDataverseMetadataBlocksCommand.SetRoot(getUser(), updatedDv, true) );
-            updatedDv.setMetadataBlocks(blocks);
+            
+            // We filter the list through a set, so that all blocks are distinct.
+            updatedDv.setMetadataBlocks(new LinkedList<>(new HashSet<>(blocks)));
             ctxt.em().merge(updatedDv);
         }
     }
