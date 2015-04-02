@@ -84,16 +84,21 @@ public class DataverseServiceBean implements java.io.Serializable {
      * call in the (text) UI. If you've specified three partitions the three
      * partitionIds are 0, 1, and 2. We do `dataverseId % numPartitions =
      * partitionId` to figure out which partition the dataverseId falls into.
+     * 
+     * @param skipIndexed If true, will skip any dvObjects that have a indexTime set 
      *
      * @return All dataverses if you say numPartitions=1 and partitionId=0.
      * Otherwise, a subset of dataverses.
      */
-    public List<Dataverse> findAllOrSubset(long numPartitions, long partitionId) {
+    public List<Dataverse> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
             long saneNumPartitions = 1;
             numPartitions = saneNumPartitions;
         }
-        TypedQuery<Dataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataverse AS o WHERE MOD( o.id, :numPartitions) = :partitionId ORDER BY o.id", Dataverse.class);
+        String skipClause = skipIndexed ? "AND o.indextime is null" : "";
+        TypedQuery<Dataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataverse AS o WHERE MOD( o.id, :numPartitions) = :partitionId " +
+                skipClause +
+                " ORDER BY o.id", Dataverse.class);
         typedQuery.setParameter("numPartitions", numPartitions);
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
