@@ -151,7 +151,6 @@ public class SettingsServiceBean {
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
-        System.out.println("getting key, name = "+name);
         Setting s = em.find( Setting.class, name );
         return (s!=null) ? s.getContent() : null;
     }

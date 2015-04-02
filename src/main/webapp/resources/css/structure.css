@@ -315,6 +315,7 @@ td.col-file-action > .button-block, td.col-manage-action > .button-block,
 div.ui-datatable-header > .button-block {margin-top:0;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group {margin-right:1em;}
+.button-block div.btn-group div.btn-group {margin-right:0;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
 .button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
 .button-block .btn:last-child, .button-block .btn-group:last-child, 

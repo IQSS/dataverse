@@ -704,7 +704,16 @@ public class DataversePage implements java.io.Serializable {
 
         linkingDataverse = dataverseService.find(linkingDataverseId);
 
-        SavedSearch savedSearchOfCurrentDataverse = createSavedOfCurrentDataverse(savedSearchCreator);
+        LinkDataverseCommand cmd = new LinkDataverseCommand(session.getUser(), linkingDataverse, dataverse);
+        try {
+            DataverseLinkingDataverse linkedDataverse = commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            String msg = "Unable to link " + dataverse.getDisplayName() + " to " + linkingDataverse.getDisplayName() + ". An internal error occurred.";
+            logger.severe(msg + " " + ex);
+            JsfHelper.addErrorMessage(msg);
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+        }
+
         SavedSearch savedSearchOfChildren = createSavedSearchForChildren(savedSearchCreator);
 
         boolean createLinksAndIndexRightNow = false;
@@ -712,7 +721,6 @@ public class DataversePage implements java.io.Serializable {
             try {
                 // create links (does indexing) right now (might be expensive)
                 boolean debug = false;
-                savedSearchService.makeLinksForSingleSavedSearch(savedSearchOfCurrentDataverse, debug);
                 savedSearchService.makeLinksForSingleSavedSearch(savedSearchOfChildren, debug);
                 JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName());
                 return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
@@ -725,11 +733,12 @@ public class DataversePage implements java.io.Serializable {
             }
         } else {
             // defer: please wait for the next timer/cron job
-            JsfHelper.addSuccessMessage(linkingDataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
+            JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
     }
 
+    @Deprecated
     private SavedSearch createSavedOfCurrentDataverse(AuthenticatedUser savedSearchCreator) {
         /**
          * Please note that we are relying on the fact that the Solr ID of a
