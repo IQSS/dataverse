@@ -104,7 +104,8 @@ public class MailServiceBean implements java.io.Serializable {
                     logger.warning("Failed to send mail to " + to + " (SMTPSendFailedException)");
                 }
             } else {
-                logger.warning("Skipping sending mail to " + to + ", because the \"no-reply\" address not set.");
+              // commenting out the warning so as not to clutter the log of installations that haven't set up mail  
+              //  logger.warning("Skipping sending mail to " + to + ", because the \"no-reply\" address not set.");
             }
         } catch (AddressException ae) {
             logger.warning("Failed to send mail to " + to);
