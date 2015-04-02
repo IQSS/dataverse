@@ -443,24 +443,28 @@
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DataversePage.dataverse}"/>
                                         <span class="glyphicon glyphicon-envelope no-text"/>
                                 </p:commandLink>
-                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip" 
-                                               rendered="#{dataverseSession.user.superuser and DataversePage.dataverse.owner != null}"                                                          
-                                               title="#{bundle['dataverse.link.btn.tip']}"
-                                               action="#{DataversePage.setupLinkingPopup('link')}"                                                          
-                                               oncomplete="PF('linkDataverseForm').show()"
-                                               update=":linkDataverseForm">
-                                    <span class="glyphicon glyphicon-link no-text"/>
-                                </p:commandLink>
-                                <!-- SAVE SEARCH -->
-                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                               rendered="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search'}"
-                                               title="#{bundle['dataverse.savedsearch.link']}"
-                                               action="#{DataversePage.setupLinkingPopup('savedSearch')}"
-                                               oncomplete="PF('linkDataverseForm').show()"
-                                               update=":linkDataverseForm">
-                                    <span class="glyphicon glyphicon-link"/> 2
-                                </p:commandLink>
-                                <!-- END: SAVE SEARCH -->
+                                <div class="btn-group" jsf:rendered="#{dataverseSession.user.superuser and (SearchIncludeFragment.mode == 'search' or DataversePage.dataverse.owner != null)}">
+                                    <button type="button" class="btn btn-default dropdown-toggle bootstrap-button-tooltip" data-toggle="dropdown" aria-expanded="false"
+                                            title="#{bundle['dataverse.link.btn.tip']}">
+                                        <span class="glyphicon glyphicon-link no-text"/> <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                        <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
+                                            <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"                                                          
+                                                           oncomplete="PF('linkDataverseForm').show()"
+                                                           update=":linkDataverseForm">
+                                                #{bundle['dataverse.link']}
+                                            </p:commandLink>
+                                        </li>
+                                        <li class="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
+                                            <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
+                                                           oncomplete="PF('linkDataverseForm').show()"
+                                                           update=":linkDataverseForm">
+                                                #{bundle['dataverse.savedsearch.link']}
+                                            </p:commandLink>
+                                        </li>
+                                    </ul>
+                                </div>
                                 <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
                                    oncomplete="shareDialog.show();sharrre();">
