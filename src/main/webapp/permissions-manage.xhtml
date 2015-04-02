@@ -212,10 +212,10 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissions.usersOrGroups.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.continue}" onclick="confirmation.hide()" 
+                            <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()" 
                                              action="#{managePermissionsPage.removeRoleAssignment()}" 
                                              update=":#{p:component('configureSettings')} assignedRoles @([id$=Messages])" />
-                            <p:commandButton type="button" value="#{bundle.cancel}" onclick="confirmation.hide()" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="confirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
                 </h:form>
