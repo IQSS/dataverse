@@ -110,12 +110,16 @@
 
         <!-- contributor column -->    
         <p:column class="col-sm-3">
-            <h:outputText value="#{versionTab.contributorNames}" />
+            <ui:fragment rendered="#{versionTab.contributorNames != null}">
+                <h:outputText value="#{versionTab.contributorNames}" />
+            </ui:fragment>
         </p:column><!-- end: contributor column -->    
 
         <!-- date column -->    
         <p:column class="col-sm-2">
-            <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
+            <ui:fragment rendered="#{versionTab.versionDate != null}">
+                <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
+            </ui:fragment>
         </p:column><!-- end: date column -->
     </p:dataTable>
 <!-- / VERSIONS -->
