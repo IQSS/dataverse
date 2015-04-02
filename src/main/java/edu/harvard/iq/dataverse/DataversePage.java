@@ -717,19 +717,23 @@ public class DataversePage implements java.io.Serializable {
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
-        /**
-         * @todo Use a non-deprecated constructor
-         */
-        SavedSearch savedSearch = new SavedSearch();
-        savedSearch.setDefinitionPoint(linkingDataverse);
-        savedSearch.setQuery(searchIncludeFragment.getQuery());
-        savedSearch.setSavedSearchFilterQueries(new ArrayList());
+
         User user = session.getUser();
-        if (user.isAuthenticated()) {
-            AuthenticatedUser au = (AuthenticatedUser) user;
-            savedSearch.setCreator(au);
+        if (!user.isAuthenticated()) {
+            String msg = "Only authenticated users can save a search.";
+            logger.severe(msg);
+            JsfHelper.addErrorMessage(msg);
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
+
+        AuthenticatedUser savedSearchCreator = (AuthenticatedUser) user;
+        SavedSearch savedSearch = new SavedSearch(searchIncludeFragment.getQuery(), linkingDataverse, savedSearchCreator);
+        savedSearch.setSavedSearchFilterQueries(new ArrayList());
         for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
+            /**
+             * @todo Why are there null's here anyway? Turn on debug and figure
+             * this out.
+             */
             if (filterQuery != null && !filterQuery.isEmpty()) {
                 SavedSearchFilterQuery ssfq = new SavedSearchFilterQuery();
                 ssfq.setSavedSearch(savedSearch);
