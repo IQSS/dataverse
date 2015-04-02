@@ -1,5 +1,6 @@
 #!/bin/sh
-OUTPUT=`cat /dev/null | curl -s --insecure -X POST -H 'In-Progress: false' --data-binary @- https://admin:admin@localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/trees`
+. scripts/search/export-keys
+OUTPUT=`cat /dev/null | curl -s --insecure -u $SPRUCEKEY: -X POST -H 'In-Progress: false' --data-binary @- https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/trees`
 echo $OUTPUT
 echo
 echo $OUTPUT | xmllint -format -
