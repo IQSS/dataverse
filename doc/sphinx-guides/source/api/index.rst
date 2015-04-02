@@ -6,10 +6,10 @@
 API Guide
 =========
 
-We strongly encourage anyone interested in building tools to
-interoperate with the Dataverse Network to utilize our open source
-APIs. Please visit http://datascience.iq.harvard.edu/collaborations for
-examples of external apps that have been built to work with our APIs.
+We encourage anyone interested in building tools to
+interoperate with the Dataverse to utilize our 
+APIs. In 4.0, we require to get a token, by simply registering for a Dataverse account, before using our APIs 
+(We are considering making some of the APIs completley public in the future - no token required - if you use it only a few times).
 
 Rather than using a production installation of Dataverse, API users are
 welcome to use http://apitest.dataverse.org for testing.
