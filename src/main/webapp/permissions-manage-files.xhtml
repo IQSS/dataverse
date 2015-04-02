@@ -252,7 +252,7 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn.confirmation']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.continue}" onclick="confirmation.hide()"
+                            <p:commandButton value="#{bundle.continue}" onclick="confirmation.hide()"
                                              action="#{manageFilePermissionsPage.removeRoleAssignments()}"
                                              process="@this"
                                              update=":#{p:component('userGroups')} :#{p:component('restrictedFiles')} @([id$=Messages])"
