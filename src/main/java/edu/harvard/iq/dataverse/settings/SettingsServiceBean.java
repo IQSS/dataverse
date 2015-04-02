@@ -122,7 +122,9 @@ public class SettingsServiceBean {
         /* status message that will appear on the home page */
         StatusMessageHeader,
         /* full text of status message, to appear in popup */
-        StatusMessageText;
+        StatusMessageText,
+        /* return email address for system emails such as notifications */
+        SystemEmail;
         
         @Override
         public String toString() {
@@ -149,6 +151,7 @@ public class SettingsServiceBean {
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
+        System.out.println("getting key, name = "+name);
         Setting s = em.find( Setting.class, name );
         return (s!=null) ? s.getContent() : null;
     }

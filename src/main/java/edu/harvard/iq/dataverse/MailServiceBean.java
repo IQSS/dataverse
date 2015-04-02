@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import com.sun.mail.smtp.SMTPSendFailedException;
 import com.sun.mail.smtp.SMTPSenderFailedException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -43,6 +45,8 @@ public class MailServiceBean implements java.io.Serializable {
     DatasetVersionServiceBean versionService; 
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    SettingsServiceBean settingsService;
     
     private static final Logger logger = Logger.getLogger(MailServiceBean.class.getCanonicalName());
     
@@ -78,14 +82,14 @@ public class MailServiceBean implements java.io.Serializable {
     @Resource(name = "mail/notifyMailSession")
     private Session session;
 
-    public void sendDoNotReplyMail(String to, String subject, String messageText) {
+    public boolean sendSystemEmail(String to, String subject, String messageText) {
+        boolean sent = false;
         try {
-            System.out.print(to);
-            Message msg = new MimeMessage(session);
-            logger.fine("will be using address "+getNoReplyAddress());
-            InternetAddress noReplyAddress = getNoReplyAddress();
-            if (noReplyAddress != null) {
-                msg.setFrom(noReplyAddress);
+             Message msg = new MimeMessage(session);
+
+            InternetAddress systemAddress = getSystemAddress();
+            if (systemAddress != null) {
+                msg.setFrom(systemAddress);
                 msg.setSentDate(new Date());
                 msg.setRecipients(Message.RecipientType.TO,
                         InternetAddress.parse(to, false));
@@ -93,57 +97,35 @@ public class MailServiceBean implements java.io.Serializable {
                 msg.setText(messageText + "\n\nPlease do not reply to this email.\nThank you,\nThe Dataverse Network Project");
                 try {
                     Transport.send(msg);
+                    sent = true;
                 } catch (SMTPSendFailedException ssfe) {
-                    if (ssfe.getNextException() instanceof SMTPSenderFailedException) {
-                        // try again, with the "mailinator" address:
-                        logger.warning("Failed to send mail from "+noReplyAddress+"; will try again, from invalid.email.address@mailinator.com");
-                        msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
-                        Transport.send(msg);
-                    } else {
-                        logger.warning("Failed to send mail to "+to+" (SMTPSendFailedException)");
-                    }
+                    logger.warning("Failed to send mail to " + to + " (SMTPSendFailedException)");
                 }
             } else {
-                logger.warning("Skipping sending mail to "+to+", because the \"no-reply\" address could not be obtained."); 
+                logger.warning("Skipping sending mail to " + to + ", because the \"no-reply\" address not set.");
             }
         } catch (AddressException ae) {
-            logger.warning("Failed to send mail to "+to);
+            logger.warning("Failed to send mail to " + to);
             ae.printStackTrace(System.out);
         } catch (MessagingException me) {
-            logger.warning("Failed to send mail to "+to);
+            logger.warning("Failed to send mail to " + to);
             me.printStackTrace(System.out);
         }
+        return sent;
     }
     
-    private InternetAddress getNoReplyAddress() {
-        // We want this "fake" address to have our legit domain name - 
-        // otherwise the mail server will likely reject relaying:
-        
-        String fqdn = systemConfig.getDataverseServer();
-        String address = "";
-        InternetAddress iAddress = null;
-        
-        if (fqdn != null) {
-            try {
-                iAddress = new InternetAddress("do-not-reply@" + fqdn);
-            } catch (AddressException ae) {
-                iAddress = null;
-            }
-        }
-        
-        if (iAddress == null) {
-            // 
-            // there may be relaying issues with this "mailinator" address 
-            // - if the destination address is also outside our own domain. 
-            // but it's probably better than nothing - so we'll try this:
-            try {
-                iAddress = new InternetAddress("invalid.email.address@mailinator.com");
-            } catch (AddressException ae) {
-                iAddress = null;
-            }
-        }
-        
-        return iAddress;
+    private InternetAddress getSystemAddress() {
+       String systemEmail =  settingsService.getValueForKey(Key.SystemEmail);
+      
+       if (systemEmail!=null) {
+           try { 
+            return new InternetAddress(systemEmail);
+           } catch(AddressException e) {
+               return null;
+           }
+       }
+       return null;
+     
     }
 
     //@Resource(name="mail/notifyMailSession")
@@ -159,7 +141,7 @@ public class MailServiceBean implements java.io.Serializable {
             } else {
                 // set fake from address; instead, add it as part of the message
                 //msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
-                msg.setFrom(getNoReplyAddress());
+                msg.setFrom(getSystemAddress());
                 messageText = "From: " + from + "\n\n" + messageText;
             }
             msg.setSentDate(new Date());
@@ -214,7 +196,7 @@ public class MailServiceBean implements java.io.Serializable {
                             + " created. Remember to release your Root dataverse.";
                 }
                 String subject = "Dataverse: Your dataverse has been created";
-                sendDoNotReplyMail(emailAddress, subject, messageText);
+                sendSystemEmail(emailAddress, subject, messageText);
                 
             } else {
                 logger.warning("Skipping create dataverse notification, because no valid dataverse id was supplied");
@@ -259,7 +241,7 @@ public class MailServiceBean implements java.io.Serializable {
                                     + " created in the " + ownerDataverseName + " Dataverse. Remember to release your dataset.";
                         }
                         String subject = "Dataverse: Your dataset has been created";
-                        sendDoNotReplyMail(emailAddress, subject, messageText);
+                        sendSystemEmail(emailAddress, subject, messageText);
                     } else {
                         logger.warning("Skipping create dataset notification, because the owner dataverse is NULL (?!)");
                     }
@@ -284,7 +266,7 @@ public class MailServiceBean implements java.io.Serializable {
                     + "to leave feedback.";
 
             String subject = "Dataverse: Your account has been created.";
-            sendDoNotReplyMail(emailAddress, subject, messageText);
+            sendSystemEmail(emailAddress, subject, messageText);
 
         } else {
             logger.warning("Skipping create account notification, because email address is null");
@@ -313,7 +295,7 @@ public class MailServiceBean implements java.io.Serializable {
 
                     messageText = "Hello, \nWorldMap layer data has been added to the dataset named '" + datasetName + ".";
                     String subject = "Dataverse: WorldMap layer added to dataset";
-                    sendDoNotReplyMail(emailAddress, subject, messageText);
+                    sendSystemEmail(emailAddress, subject, messageText);
 
                 } else {
                     logger.warning("Skipping Map Layer Updated notification, because no valid dataset was found!");
