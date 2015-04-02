@@ -135,8 +135,8 @@
                             </ul>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
-                            <p:commandButton type="button" value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" />
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
 

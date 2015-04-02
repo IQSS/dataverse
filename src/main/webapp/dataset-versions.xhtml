@@ -8,6 +8,19 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 <!-- VERSIONS -->
+   <script type="text/javascript">
+       /* Version tab: Retrieve data after page load */
+        $(document).ready(function () {
+            preload_message = "(Loading versions...)";
+            $('#datasetForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
+            postLoadVersionTablList();
+       });
+   </script>   
+   <!-- Retrieve version differences after the page load --> 
+   <p:remoteCommand  name="postLoadVersionTablList"
+           process="@this"
+           update=":#{p:component('versionsTable')}"
+           actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
     <div class="text-right margin-bottom">
         <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
                          rendered="#{DatasetPage.compareVersionsCount > 2}">
@@ -71,7 +84,7 @@
                     </ui:repeat>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
-                    <h:outputText styleClass="highlightBold" value="#{versionTab.defaultVersionDifference.fileNote}; " />
+                    <h:outputText styleClass="highlightBold" value="#{versionTab.defaultVersionDifference.fileNote}; " /> hello!
                 </ui:fragment>
             </ui:fragment>
             <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
@@ -94,7 +107,7 @@
                            update=":datasetForm"
                            value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
         </p:column><!-- end: description column -->        
-        
+
         <!-- contributor column -->    
         <p:column class="col-sm-3">
             <h:outputText value="#{versionTab.contributorNames}" />

@@ -1,7 +1,7 @@
 #!/bin/sh
 . scripts/search/export-keys
 . scripts/search/assumptions
-OUTPUT=`cat /dev/null | curl -s --insecure -X POST -H 'In-Progress: false' --data-binary @- "https://spruce:spruce@localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit/study/$FIRST_SPRUCE_DOI"`
+OUTPUT=`cat /dev/null | curl -s --insecure -u $SPRUCEKEY: -X POST -H 'In-Progress: false' --data-binary @- "https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit/study/$FIRST_SPRUCE_DOI"`
 echo $OUTPUT
 echo
 echo $OUTPUT | xmllint -format -

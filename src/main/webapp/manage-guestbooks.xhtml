@@ -132,8 +132,8 @@
                             <span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton type="button" value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@all" />
-                            <p:commandButton type="button" value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" />
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@all" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
