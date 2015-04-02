@@ -98,13 +98,16 @@ public class DatasetServiceBean implements java.io.Serializable {
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
      * @see DataverseServiceBean#findAllOrSubset(long, long) 
-     */
-    public List<Dataset> findAllOrSubset(long numPartitions, long partitionId) {
+     */     
+    public List<Dataset> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
             long saneNumPartitions = 1;
             numPartitions = saneNumPartitions;
         }
-        TypedQuery<Dataset> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataset AS o WHERE MOD( o.id, :numPartitions) = :partitionId ORDER BY o.id", Dataset.class);
+        String skipClause = skipIndexed ? "AND o.indextime is null" : "";
+        TypedQuery<Dataset> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataset AS o WHERE MOD( o.id, :numPartitions) = :partitionId " +
+                skipClause +
+                "ORDER BY o.id", Dataset.class);
         typedQuery.setParameter("numPartitions", numPartitions);
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
