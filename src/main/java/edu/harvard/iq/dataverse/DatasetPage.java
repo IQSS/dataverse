@@ -172,6 +172,11 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     
+    // Version tab lists
+    private List<DatasetVersion> versionTabList = new ArrayList();
+    private List<DatasetVersion> versionTabListForPostLoad = new ArrayList();
+
+    
     // Used to store results of permissions checks
     private Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     private Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
@@ -995,7 +1000,7 @@ public class DatasetPage implements java.io.Serializable {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
             updateDatasetFieldInputLevels();
             displayCitation = dataset.getCitation(true, workingVersion);
-            //setVersionTabList(resetVersionTabList());  // move to postLoadSetVersionTabList
+            setVersionTabList(resetVersionTabList());  
             setReleasedVersionTabList(resetReleasedVersionTabList());
 
             // populate MapLayerMetadata
@@ -1877,7 +1882,7 @@ public class DatasetPage implements java.io.Serializable {
          if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
          workingVersion = dataset.getReleasedVersion();
          }
-         //setVersionTabList(resetVersionTabList());  // move to postLoadSetVersionTabList
+         setVersionTabList(resetVersionTabList()); 
          setReleasedVersionTabList(resetReleasedVersionTabList());
          newFiles.clear();
          editMode = null;         
@@ -2105,12 +2110,20 @@ public class DatasetPage implements java.io.Serializable {
         return datasetVersionUI;
     }
 
-    private List<DatasetVersion> versionTabList = new ArrayList();
-
+    
     public List<DatasetVersion> getVersionTabList() {
         return versionTabList;
     }
+    
+    public List<DatasetVersion> getVersionTabListForPostLoad(){
+        return this.versionTabListForPostLoad;
+    }
 
+    public void setVersionTabListForPostLoad(List<DatasetVersion> versionTabListForPostLoad) {
+        
+        this.versionTabListForPostLoad = versionTabListForPostLoad;
+    }
+    
     public Integer getCompareVersionsCount() {
         Integer retVal = 0;
         for (DatasetVersion dvTest : dataset.getVersions()) {
@@ -2129,14 +2142,13 @@ public class DatasetPage implements java.io.Serializable {
     */
     public void postLoadSetVersionTabList(){
         
-        this.versionTabList = this.resetVersionTabList();
-        
+        this.setVersionTabListForPostLoad(this.getVersionTabList());
+        //this.versionTabList = this.resetVersionTabList();        
     }
 
     /**
-     * Moved this functionality to postLoadSetVersionTabList
      * 
-     * RP 4/2/2015
+     * 
      * @param versionTabList 
      */
     public void setVersionTabList(List<DatasetVersion> versionTabList) {

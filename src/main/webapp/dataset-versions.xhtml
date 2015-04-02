@@ -13,11 +13,11 @@
         $(document).ready(function () {
             preload_message = "(Loading versions...)";
             $('#datasetForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
-            postLoadVersionTablList();
+            postLoadVersionTabList();
        });
    </script>   
    <!-- Retrieve version differences after the page load --> 
-   <p:remoteCommand  name="postLoadVersionTablList"
+   <p:remoteCommand  name="postLoadVersionTabList"
            process="@this"
            update=":#{p:component('versionsTable')}"
            actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
@@ -34,7 +34,7 @@
         </p:commandButton>
     </div>
 
-    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
+    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabListForPostLoad}" var="versionTab" widgetVar="versionsTable"
                  rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}" rowKey="#{versionTab}">
         <!-- start: checkbox column -->
         <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.compareVersionsCount > 2}"/><!-- end: checkbox column -->
@@ -101,7 +101,7 @@
                     #{bundle['file.dataFilesTab.versions.description.deaccessionedReason']} #{versionTab.versionNote} <ui:fragment rendered="#{!empty versionTab.archiveNote}">#{bundle['file.dataFilesTab.versions.description.beAccessedAt']} <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a></ui:fragment>
                 </ui:fragment>
             </ui:fragment>
-            <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
+            <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabListForPostLoad.size() > (rowNum + 1)}"
                            actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
                            oncomplete="detailsBlocks.show();post_differences();"
                            update=":datasetForm"
