@@ -291,6 +291,10 @@ public abstract class AbstractApiBean {
         return errorResponse(Status.NOT_FOUND, msg);
     }
     
+    protected Response badRequest( String msg ) {
+        return errorResponse( Status.BAD_REQUEST, msg );
+    }
+    
     protected Response badApiKey( String apiKey ) {
         return errorResponse(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key '" + apiKey +"'" : "Please provide a key query parameter (?key=XXX)");
     }

@@ -39,7 +39,7 @@ curl -X PUT -d localhost-only $SERVER/admin/settings/:BlockedApiPolicy
 echo
 
 echo "Setting up the admin user (and as superuser)"
-adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/users?password=admin&key=burrito")
+adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/builtin-users?password=admin&key=burrito")
 echo $adminResp
 curl -X POST "$SERVER/admin/superuser/admin"
 echo

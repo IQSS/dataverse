@@ -22,7 +22,7 @@ def check_dv():
 
 def load_users_from_api_file(fname):
     """
-    Given the JSON results of the list users command (/api/users):
+    Given the JSON results of the list users command (/api/builtin-users):
         (a) Iterate through the list
         (b) Check if a user exists (by id)
         (c) If the user is not found, create the user

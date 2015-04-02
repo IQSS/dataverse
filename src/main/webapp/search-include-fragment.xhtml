@@ -15,7 +15,7 @@
 
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm" rendered="#{showSearch == true}">
-        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="text-left,text-right">
+        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="text-left,text-right col-manage-action">
             <p:column>
                 <h:form>
                     <!-- this remote command is called once the page finishes its initial load,
@@ -41,15 +41,6 @@
             </p:column>
             <p:column>
                 <div class="button-block pull-right">
-                    <!-- SAVE SEARCH -->
-                    <p:commandLink type="button" styleClass="btn btn-default"
-                                   rendered="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search'}"
-                                   action="#{DataversePage.setupLinkingPopup('savedSearch')}"
-                                   oncomplete="PF('linkDataverseForm').show()"
-                                   update=":linkDataverseForm">
-                        <span class="glyphicon glyphicon-link"/> #{bundle['dataverse.savedsearch.link']}
-                    </p:commandLink>
-                    <!-- END: SAVE SEARCH -->
                     <!-- ADD DATA -->
                     <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
                     <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
@@ -57,15 +48,6 @@
                         <button type="button" class="btn btn-default" onclick="addData_popup.show()">
                             <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                         </button>
-                        <p:confirmDialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" styleClass="text-left" widgetVar="addData_popup">                                           
-                            <f:facet name="message">
-                                <p>
-                                    <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
-                                        <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
-                                    </h:outputFormat>
-                                </p>
-                            </f:facet>
-                        </p:confirmDialog>  
                     </ui:fragment>
                     <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
                                              or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse))}">
@@ -506,7 +488,7 @@
                             <p:column styleClass="#{result.type == 'dataverses' ? 'dataverseResult' : (result.type == 'datasets' ? 'datasetResult' : '')}">
                                 <!--DATAVERSE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
-                                    <div class="title-icon-block">
+                                    <div class="card-title-icon-block">
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.name} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
@@ -590,7 +572,7 @@
                                 </ui:fragment>
                                 <!--DATASET CARDS-->
                                 <ui:fragment rendered="#{result.type == 'datasets'}">
-                                    <div class="title-icon-block">
+                                    <div class="card-title-icon-block">
                                         <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
@@ -830,16 +812,28 @@
                 </div>
             </ui:fragment>
             <ui:fragment rendered="#{SearchIncludeFragment.solrIsDown}">
-                <p>
-                    <h:outputText value="#{bundle['dataverse.results.solrIsDown']}" style="font-weight:bolder; font-size: xx-large"/>
-                </p>
-                <p>
-                    <h:outputText value="#{SearchIncludeFragment.searchException.message}" style="font-weight:bolder; font-size: xx-large"/>
-                </p>
-                <p>
-                    <h:outputText value="#{SearchIncludeFragment.searchException.cause.message}" style="font-weight:bolder; font-size: xx-large"/>
-                </p>
+                <div class="bg-danger padding-12 margin-bottom">
+                    <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
+
+                    <h:outputText value="#{SearchIncludeFragment.searchException.message}" styleClass="text-danger highlightBold"/>
+
+                    <h:outputText value=" - #{bundle['dataverse.results.solrIsDown']}" styleClass="text-danger"/>
+                </div>
+                <pre><h:outputText value="#{SearchIncludeFragment.searchException.cause.message}"/></pre>
             </ui:fragment>
         </div>
     </div>
+    <p:dialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">                                           
+        <p class="help-block">
+            <span class="glyphicon glyphicon-warning-sign text-danger"/>
+            <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false">
+                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+            </h:outputFormat>
+        </p>
+        <div class="button-block">
+            <button type="button" onclick="addData_popup.hide()" class="btn btn-default" value="#{bundle.close}">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>
 </ui:composition>

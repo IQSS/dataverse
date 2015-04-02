@@ -666,7 +666,7 @@
                                         <div class="button-block">
                                             <p:commandLink id="fileCategoriesButton"
                                                            type="button" styleClass="btn btn-default btn-sm"
-                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                           actionListener="#{DatasetPage.setFileMetadataSelectedForTagsPopup(fileMetadata)}"
                                                            update=":datasetForm:fileTagsPopup"
                                                            oncomplete="fileTagsPopup.show();bind_bsui_components();">
                                                 <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
@@ -675,8 +675,8 @@
                                             <p:commandLink id="fileSetThumbnailBtn"
                                                            rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}"
                                                            type="button" styleClass="btn btn-default"
-                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
-                                                           update=":datasetForm:fileAdvancedOptions"
+                                                           actionListener="#{DatasetPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
+                                                           update=":datasetForm:fileSetThumbnail"
                                                            oncomplete="fileSetThumbnail.show()">
                                                 <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
                                             </p:commandLink>
@@ -685,7 +685,7 @@
                                                            rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
                                                                      or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
                                                            type="button" styleClass="btn btn-default"
-                                                           actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata)}"
+                                                           actionListener="#{DatasetPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
                                                            update=":datasetForm:fileAdvancedOptions"
                                                            oncomplete="fileAdvancedOptions.show()">
                                                 <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedOptions']}
@@ -1103,7 +1103,7 @@
                     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedOptions']}" widgetVar="fileAdvancedOptions" modal="true">
                         <div class="form-horizontal">
                             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
-                            <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssSavFile(DatasetPage.fileMetadataSelected.dataFile)}">
+                            <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup) and (empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssSavFile(DatasetPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
                                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.spss-savEncoding.title']}">
                                         #{bundle['file.spss-savEncoding']}
@@ -1270,7 +1270,7 @@
                             </div>
 
                             <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
-                            <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected) and (empty DatasetPage.fileMetadataSelected.id) and dataFileServiceBean.isSpssPorFile(DatasetPage.fileMetadataSelected.dataFile)}">
+                            <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup) and (empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssPorFile(DatasetPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
                                 <label for="labelsFileUpload" class="col-sm-4 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.spss-porExtraLabels.title']}">
                                         #{bundle['file.spss-porExtraLabels']}
@@ -1284,7 +1284,7 @@
                         </div>
                         <div class="button-block">
                             <p:commandButton id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="fileAdvancedOptions.hide()" update=":datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
-                            <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
+                            <p:commandButton id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="fileAdvancedOptions.hide()" actionListener="#{DatasetPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>
                         </div>
                     </p:dialog>
 
@@ -1303,22 +1303,22 @@
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="fileSetThumbnail.hide()" update=":datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.saveAdvancedOptions()}"/>
-                            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="fileSetThumbnail.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
+                            <p:commandButton id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="fileSetThumbnail.hide()" update=":datasetForm:tabView:filesTable,:messagePanel" actionListener="#{DatasetPage.saveAsDesignatedThumbnail()}"/>
+                            <p:commandButton id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="fileSetThumbnail.hide()" actionListener="#{DatasetPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
                         </div>
                     </p:dialog>
 
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
-                        <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelected)}">
+                        <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelectedForTagsPopup)}">
                             <div class="form-group">
                                 <label for="fileTagsMenu" class="col-sm-3 control-label">
                                     #{bundle['file.editTagsDialog.select']}
                                 </label>
                                 <div class="col-sm-8">
                                     <p:selectCheckboxMenu id="fileTagsMenu" styleClass="form-control"
-                                                          value="#{DatasetPage.fileMetadataSelected.categoriesByName}" label="#{bundle.select}">
-                                        <f:selectItems value="#{DatasetPage.fileMetadataSelected.datasetVersion.dataset.categoriesByName}"/>
+                                                          value="#{DatasetPage.fileMetadataSelectedForTagsPopup.categoriesByName}" label="#{bundle.select}">
+                                        <f:selectItems value="#{DatasetPage.fileMetadataSelectedForTagsPopup.datasetVersion.dataset.categoriesByName}"/>
                                     </p:selectCheckboxMenu>
                                     <p:message for="fileTagsMenu" display="text" />
                                 </div>
@@ -1335,7 +1335,7 @@
                                     <p:message for="fileTagAddNew" display="text" />
                                 </div>
                             </div>
-                            <div class="form-group" jsf:rendered="#{DatasetPage.fileMetadataSelected.dataFile.tabularData}">
+                            <div class="form-group" jsf:rendered="#{DatasetPage.fileMetadataSelectedForTagsPopup.dataFile.tabularData}">
                                 <label for="tabularDataTags" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.tabularDataTags.title']}">
                                         #{bundle['file.tabularDataTags']}
@@ -1353,8 +1353,8 @@
                             </div>
                         </div>
                         <div class="button-block">
-                            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileTagsPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.addFileCategory()}"/>
-                            <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="fileTagsPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelected()}"/>
+                            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileTagsPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.saveFileTagsAndCategories()}"/>
+                            <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="fileTagsPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
 

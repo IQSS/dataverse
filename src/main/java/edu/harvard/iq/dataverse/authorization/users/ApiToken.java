@@ -15,7 +15,8 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @NamedQueries({
-    @NamedQuery( name="ApiToken.findByTokenString", query="SELECT t FROM ApiToken t WHERE t.tokenString=:tokenString" )
+    @NamedQuery( name="ApiToken.findByTokenString", query="SELECT t FROM ApiToken t WHERE t.tokenString = :tokenString" ),
+    @NamedQuery( name="ApiToken.findByUser",        query="SELECT t FROM ApiToken t WHERE t.authenticatedUser = :user")
 })
 public class ApiToken implements Serializable {
 

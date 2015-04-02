@@ -75,6 +75,7 @@ Permissions
 =======================================================
 When you access a dataverse's permissions page, you will see there are three sections: Permissions, Users/Groups, and Roles. 
 
+|image2|
 
 .. _dataset-templates: 
 
@@ -117,9 +118,6 @@ After creating a guestbook, you will notice there are several options for a gues
 - Once someone has downloaded a file in a dataset where a guestbook has been assigned, an option to download collected data will appear. 
 
 
-.. |image1| image:: ./img/Dataverse-Diagram.png
-
-
 .. _featured-dataverses:
 
 Featured Dataverses
@@ -143,7 +141,8 @@ hand side of the page. A pop-up will appear to confirm that you are ready to act
 is made public, it can no longer be unpublished.
 
 
-
+.. |image1| image:: ./img/Dataverse-Diagram.png
+.. |image2| image:: ./img/dvperms1.png
 
 
 
