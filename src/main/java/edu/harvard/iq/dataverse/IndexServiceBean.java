@@ -709,14 +709,14 @@ public class IndexServiceBean {
         List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
-            boolean checkForDuplicateMetadata = false; 
-            if (datasetVersion.isDraft() && dataset.isReleased()) {
-                checkForDuplicateMetadata = true; 
+            boolean checkForDuplicateMetadata = false;
+            if (datasetVersion.isDraft() && dataset.isReleased() && dataset.getReleasedVersion() != null) {
+                checkForDuplicateMetadata = true;
                 logger.fine("We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
 
             for (FileMetadata fileMetadata : fileMetadatas) {
-                boolean indexThisMetadata = true; 
+                boolean indexThisMetadata = true;
                 if (checkForDuplicateMetadata) {
                     logger.fine("Checking if this file metadata is a duplicate.");
                     for (FileMetadata releasedFileMetadata : dataset.getReleasedVersion().getFileMetadatas()) {
@@ -732,149 +732,149 @@ public class IndexServiceBean {
                     }
                 }
                 if (indexThisMetadata) {
-                SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
-                Long fileEntityId = fileMetadata.getDataFile().getId();
-                datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
-                datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
-                datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
-                datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
+                    SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
+                    Long fileEntityId = fileMetadata.getDataFile().getId();
+                    datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
+                    datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
+                    datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
+                    datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
 
-                String filenameCompleteFinal = "";
-                if (fileMetadata != null) {
-                    String filenameComplete = fileMetadata.getLabel();
-                    if (filenameComplete != null) {
-                        String filenameWithoutExtension = "";
-                        // String extension = "";
-                        int i = filenameComplete.lastIndexOf('.');
-                        if (i > 0) {
-                            // extension = filenameComplete.substring(i + 1);
-                            try {
-                                filenameWithoutExtension = filenameComplete.substring(0, i);
-                                datafileSolrInputDocument.addField(SearchFields.FILENAME_WITHOUT_EXTENSION, filenameWithoutExtension);
-                                datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameWithoutExtension);
-                            } catch (IndexOutOfBoundsException ex) {
-                                filenameWithoutExtension = "";
+                    String filenameCompleteFinal = "";
+                    if (fileMetadata != null) {
+                        String filenameComplete = fileMetadata.getLabel();
+                        if (filenameComplete != null) {
+                            String filenameWithoutExtension = "";
+                            // String extension = "";
+                            int i = filenameComplete.lastIndexOf('.');
+                            if (i > 0) {
+                                // extension = filenameComplete.substring(i + 1);
+                                try {
+                                    filenameWithoutExtension = filenameComplete.substring(0, i);
+                                    datafileSolrInputDocument.addField(SearchFields.FILENAME_WITHOUT_EXTENSION, filenameWithoutExtension);
+                                    datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameWithoutExtension);
+                                } catch (IndexOutOfBoundsException ex) {
+                                    filenameWithoutExtension = "";
+                                }
+                            } else {
+                                logger.info("problem with filename '" + filenameComplete + "': no extension? empty string as filename?");
+                                filenameWithoutExtension = filenameComplete;
+                            }
+                            filenameCompleteFinal = filenameComplete;
+                        }
+                    }
+                    datafileSolrInputDocument.addField(SearchFields.NAME, filenameCompleteFinal);
+                    datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
+                    datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
+
+                    datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+
+                    /**
+                     * for rules on sorting files see
+                     * https://docs.google.com/a/harvard.edu/document/d/1DWsEqT8KfheKZmMB3n_VhJpl9nIxiUjai_AIQPAjiyA/edit?usp=sharing
+                     * via https://redmine.hmdc.harvard.edu/issues/3701
+                     */
+                    Date fileSortByDate = new Date();
+                    DataFile datafile = fileMetadata.getDataFile();
+                    if (datafile != null) {
+                        boolean fileHasBeenReleased = datafile.isReleased();
+                        if (fileHasBeenReleased) {
+                            logger.info("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            Timestamp filePublicationTimestamp = datafile.getPublicationDate();
+                            if (filePublicationTimestamp != null) {
+                                fileSortByDate = filePublicationTimestamp;
+                            } else {
+                                String msg = "filePublicationTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
+                                logger.info(msg);
                             }
                         } else {
-                            logger.info("problem with filename '" + filenameComplete + "': no extension? empty string as filename?");
-                            filenameWithoutExtension = filenameComplete;
+                            logger.info("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            Timestamp fileCreateTimestamp = datafile.getCreateDate();
+                            if (fileCreateTimestamp != null) {
+                                fileSortByDate = fileCreateTimestamp;
+                            } else {
+                                String msg = "fileCreateTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
+                                logger.info(msg);
+                            }
                         }
-                        filenameCompleteFinal = filenameComplete;
                     }
-                }
-                datafileSolrInputDocument.addField(SearchFields.NAME, filenameCompleteFinal);
-                datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
-                datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
-
-                datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
-
-                /**
-                 * for rules on sorting files see
-                 * https://docs.google.com/a/harvard.edu/document/d/1DWsEqT8KfheKZmMB3n_VhJpl9nIxiUjai_AIQPAjiyA/edit?usp=sharing
-                 * via https://redmine.hmdc.harvard.edu/issues/3701
-                 */
-                Date fileSortByDate = new Date();
-                DataFile datafile = fileMetadata.getDataFile();
-                if (datafile != null) {
-                    boolean fileHasBeenReleased = datafile.isReleased();
-                    if (fileHasBeenReleased) {
-                        logger.info("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
-                        Timestamp filePublicationTimestamp = datafile.getPublicationDate();
-                        if (filePublicationTimestamp != null) {
-                            fileSortByDate = filePublicationTimestamp;
+                    if (fileSortByDate == null) {
+                        if (datasetSortByDate != null) {
+                            logger.info("fileSortByDate was null, assigning datasetSortByDate");
+                            fileSortByDate = datasetSortByDate;
                         } else {
-                            String msg = "filePublicationTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
-                            logger.info(msg);
-                        }
-                    } else {
-                        logger.info("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
-                        Timestamp fileCreateTimestamp = datafile.getCreateDate();
-                        if (fileCreateTimestamp != null) {
-                            fileSortByDate = fileCreateTimestamp;
-                        } else {
-                            String msg = "fileCreateTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
-                            logger.info(msg);
+                            logger.info("fileSortByDate and datasetSortByDate were null, assigning 'now'");
+                            fileSortByDate = new Date();
                         }
                     }
-                }
-                if (fileSortByDate == null) {
-                    if (datasetSortByDate != null) {
-                        logger.info("fileSortByDate was null, assigning datasetSortByDate");
-                        fileSortByDate = datasetSortByDate;
-                    } else {
-                        logger.info("fileSortByDate and datasetSortByDate were null, assigning 'now'");
-                        fileSortByDate = new Date();
+                    datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
+                    datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(fileSortByDate));
+
+                    if (majorVersionReleaseDate == null) {
+                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
                     }
-                }
-                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
-                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(fileSortByDate));
 
-                if (majorVersionReleaseDate == null) {
-                    datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
-                }
-
-                String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
-                if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
-                    fileSolrDocId = solrDocIdentifierFile + fileEntityId;
-                    datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+                    String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
+                    if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
+                        fileSolrDocId = solrDocIdentifierFile + fileEntityId;
+                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
 //                    datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-                    addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
-                } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
-                    fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
-                    datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-                }
-                datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
+                        addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
+                    } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
+                        fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
+                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
+                    }
+                    datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
-                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_FRIENDLY, fileMetadata.getDataFile().getFriendlyType());
-                datafileSolrInputDocument.addField(SearchFields.FILE_CONTENT_TYPE, fileMetadata.getDataFile().getContentType());
-                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, fileMetadata.getDataFile().getFriendlyType());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_FRIENDLY, fileMetadata.getDataFile().getFriendlyType());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_CONTENT_TYPE, fileMetadata.getDataFile().getContentType());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, fileMetadata.getDataFile().getFriendlyType());
                 // For the file type facets, we have a property file that maps mime types 
-                // to facet-friendly names; "application/fits" should become "FITS", etc.:
-                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
-                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
-                datafileSolrInputDocument.addField(SearchFields.FILE_SIZE_IN_BYTES, fileMetadata.getDataFile().getFilesize());
-                datafileSolrInputDocument.addField(SearchFields.FILE_MD5, fileMetadata.getDataFile().getmd5());
-                datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
-                datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
-                datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());
-                datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+                    // to facet-friendly names; "application/fits" should become "FITS", etc.:
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
+                    datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
+                    datafileSolrInputDocument.addField(SearchFields.FILE_SIZE_IN_BYTES, fileMetadata.getDataFile().getFilesize());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_MD5, fileMetadata.getDataFile().getmd5());
+                    datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
+                    datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
+                    datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());
+                    datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
-                // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
-                datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
-                datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId());
-                datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation());
+                    // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation());
 
-                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
 
                 // If this is a tabular data file -- i.e., if there are data
-                // variables associated with this file, we index the variable 
-                // names and labels: 
-                if (fileMetadata.getDataFile().isTabularData()) {
-                    List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
-                    for (DataVariable var : variables) {
+                    // variables associated with this file, we index the variable 
+                    // names and labels: 
+                    if (fileMetadata.getDataFile().isTabularData()) {
+                        List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
+                        for (DataVariable var : variables) {
                         // Hard-coded search fields, for now: 
-                        // TODO: eventually: review, decide how datavariables should
-                        // be handled for indexing purposes. (should it be a fixed
-                        // setup, defined in the code? should it be flexible? unlikely
-                        // that this needs to be domain-specific... since these data
-                        // variables are quite specific to tabular data, which in turn
-                        // is something social science-specific...
-                        // anyway -- needs to be reviewed. -- L.A. 4.0alpha1 
+                            // TODO: eventually: review, decide how datavariables should
+                            // be handled for indexing purposes. (should it be a fixed
+                            // setup, defined in the code? should it be flexible? unlikely
+                            // that this needs to be domain-specific... since these data
+                            // variables are quite specific to tabular data, which in turn
+                            // is something social science-specific...
+                            // anyway -- needs to be reviewed. -- L.A. 4.0alpha1 
 
-                        if (var.getName() != null && !var.getName().equals("")) {
-                            datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
-                        }
-                        if (var.getLabel() != null && !var.getLabel().equals("")) {
-                            datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
+                            if (var.getName() != null && !var.getName().equals("")) {
+                                datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
+                            }
+                            if (var.getLabel() != null && !var.getLabel().equals("")) {
+                                datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
+                            }
                         }
                     }
-                }
 
-                if (indexableDataset.isFilesShouldBeIndexed()) {
-                    filesIndexed.add(fileSolrDocId);
-                    docs.add(datafileSolrInputDocument);
+                    if (indexableDataset.isFilesShouldBeIndexed()) {
+                        filesIndexed.add(fileSolrDocId);
+                        docs.add(datafileSolrInputDocument);
+                    }
                 }
-            }
             }
         }
 
