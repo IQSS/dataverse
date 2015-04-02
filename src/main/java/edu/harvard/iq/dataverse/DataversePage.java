@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -27,6 +28,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -691,26 +693,66 @@ public class DataversePage implements java.io.Serializable {
             JsfHelper.addSuccessMessage("You must select a linking dataverse.");
             return "";
         }
-        linkingDataverse = dataverseService.find(linkingDataverseId);
-        LinkDataverseCommand cmd = new LinkDataverseCommand(session.getUser(), linkingDataverse, dataverse);
-        try {
-            commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage("This dataverse is now linked to " + linkingDataverse.getDisplayName());
-            //return "";
-            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
-        } catch (CommandException ex) {
-            String msg = "There was a problem linking this dataverse to yours: " + ex;
+
+        AuthenticatedUser savedSearchCreator = getAuthenticatedUser();
+        if (savedSearchCreator == null) {
+            String msg = "Only authenticated users can link a dataverse.";
             logger.severe(msg);
-            /**
-             * @todo how do we get this message to show up in the GUI?
-             */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotLinked", msg);
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            //return "";
+            JsfHelper.addErrorMessage(msg);
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+        }
+
+        linkingDataverse = dataverseService.find(linkingDataverseId);
+
+        SavedSearch savedSearchOfCurrentDataverse = createSavedOfCurrentDataverse(savedSearchCreator);
+        SavedSearch savedSearchOfChildren = createSavedSearchForChildren(savedSearchCreator);
+
+        boolean createLinksAndIndexRightNow = false;
+        if (createLinksAndIndexRightNow) {
+            try {
+                // create links (does indexing) right now (might be expensive)
+                boolean debug = false;
+                savedSearchService.makeLinksForSingleSavedSearch(savedSearchOfCurrentDataverse, debug);
+                savedSearchService.makeLinksForSingleSavedSearch(savedSearchOfChildren, debug);
+                JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName());
+                return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+            } catch (SearchException | CommandException ex) {
+                // error: solr is down, etc. can't link children right now
+                String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
+                logger.severe(msg + " " + ex);
+                JsfHelper.addErrorMessage(msg);
+                return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+            }
+        } else {
+            // defer: please wait for the next timer/cron job
+            JsfHelper.addSuccessMessage(linkingDataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
     }
-    
+
+    private SavedSearch createSavedOfCurrentDataverse(AuthenticatedUser savedSearchCreator) {
+        /**
+         * Please note that we are relying on the fact that the Solr ID of a
+         * dataverse never changes, unlike datasets and files, which will change
+         * from "dataset_10_draft" to "dataset_10" when published, for example.
+         */
+        String queryForCurrentDataverse = SearchFields.ID + ":" + IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId();
+        SavedSearch savedSearchToPersist = new SavedSearch(queryForCurrentDataverse, linkingDataverse, savedSearchCreator);
+        SavedSearch savedSearchCreated = savedSearchService.add(savedSearchToPersist);
+        return savedSearchCreated;
+    }
+
+    private SavedSearch createSavedSearchForChildren(AuthenticatedUser savedSearchCreator) {
+        String wildcardQuery = "*";
+        SavedSearch savedSearchToPersist = new SavedSearch(wildcardQuery, linkingDataverse, savedSearchCreator);
+        String dataversePath = dataverseService.determineDataversePath(dataverse);
+        String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+        SavedSearchFilterQuery filterDownToSubtreeFilterQuery = new SavedSearchFilterQuery(filterDownToSubtree, savedSearchToPersist);
+        savedSearchToPersist.setSavedSearchFilterQueries(Arrays.asList(filterDownToSubtreeFilterQuery));
+        SavedSearch savedSearchCreated = savedSearchService.add(savedSearchToPersist);
+        return savedSearchCreated;
+    }
+
     public String saveSavedSearch() {
         if (linkingDataverseId == null) {
             JsfHelper.addSuccessMessage("You must select a linking dataverse.");
@@ -718,15 +760,14 @@ public class DataversePage implements java.io.Serializable {
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
 
-        User user = session.getUser();
-        if (!user.isAuthenticated()) {
+        AuthenticatedUser savedSearchCreator = getAuthenticatedUser();
+        if (savedSearchCreator == null) {
             String msg = "Only authenticated users can save a search.";
             logger.severe(msg);
             JsfHelper.addErrorMessage(msg);
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
 
-        AuthenticatedUser savedSearchCreator = (AuthenticatedUser) user;
         SavedSearch savedSearch = new SavedSearch(searchIncludeFragment.getQuery(), linkingDataverse, savedSearchCreator);
         savedSearch.setSavedSearchFilterQueries(new ArrayList());
         for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
@@ -757,6 +798,15 @@ public class DataversePage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, message);
             //return "";
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
+        }
+    }
+
+    private AuthenticatedUser getAuthenticatedUser() {
+        User user = session.getUser();
+        if (user.isAuthenticated()) {
+            return (AuthenticatedUser) user;
+        } else {
+            return null;
         }
     }
 

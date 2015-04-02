@@ -656,7 +656,7 @@
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(empty fileMetadata.dataFile.tags)}">
                                                 <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
-                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-default"/>
+                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
                                                 </ui:repeat>
                                             </ui:fragment>
                                         </div>
@@ -688,7 +688,7 @@
                                                            actionListener="#{DatasetPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
                                                            update=":datasetForm:fileAdvancedOptions"
                                                            oncomplete="fileAdvancedOptions.show()">
-                                                <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedOptions']}
+                                                <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedIngestOptions']}
                                             </p:commandLink>
                                         </div>
                                     </p:column>
@@ -1100,17 +1100,16 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedOptions']}" widgetVar="fileAdvancedOptions" modal="true">
+                    <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
                         <div class="form-horizontal">
                             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
                             <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup) and (empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssSavFile(DatasetPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
                                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.spss-savEncoding.title']}">
-                                        #{bundle['file.spss-savEncoding']}
-                                    </span>
+                                    #{bundle['file.spss-savEncoding']}
                                 </label>
                                 <div class="col-sm-8">
-                                    <h:outputText id="selectedEncoding" value="Current selection: #{DatasetPage.ingestLanguageEncoding}"/>
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.spss-savEncoding.title']}</p>
+                                    <p class="form-control-static"><h:outputText id="selectedEncoding" value="#{bundle['file.spss-savEncoding.current']} #{DatasetPage.ingestLanguageEncoding}"/></p>
                                     <p:tieredMenu id="spssSavEncodingLanguage" styleClass="form-control">
                                         <p:submenu label="Select Language Encoding...">
                                             <p:submenu label="West European">
@@ -1272,13 +1271,12 @@
                             <!-- ODUM-style extra variable labels for SPSS-POR files (this option is only available during ingest) -->
                             <div class="form-group" jsf:rendered="#{!(empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup) and (empty DatasetPage.fileMetadataSelectedForIngestOptionsPopup.id) and dataFileServiceBean.isSpssPorFile(DatasetPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
                                 <label for="labelsFileUpload" class="col-sm-4 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.spss-porExtraLabels.title']}">
-                                        #{bundle['file.spss-porExtraLabels']}
-                                    </span>
+                                    #{bundle['file.spss-porExtraLabels']}
                                 </label>
                                 <div class="col-sm-8">
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.spss-porExtraLabels.title']}</p>
                                     <p:growl id="messageForLabelsFileUpload" showDetail="true" />
-                                    <p:fileUpload  id="labelsFileUpload" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{DatasetPage.handleLabelsFileUpload}"/>
+                                    <p:fileUpload id="labelsFileUpload" label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{DatasetPage.handleLabelsFileUpload}"/>
                                 </div>
                             </div>
                         </div>
