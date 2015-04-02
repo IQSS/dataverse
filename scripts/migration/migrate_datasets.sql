@@ -52,3 +52,13 @@ and d.identifier = s.studyid
 and dv.dataset_id = d.id
 and dv.versionnumber = sv.versionnumber
 and au.id = vc.contributor_id);
+
+-- modify versionstate for older versions of deaccessioned studies
+update datasetversion
+set versionstate = 'DEACCESSIONED'
+where id in (
+select dv1.id from datasetversion dv1, datasetversion dv2
+where dv1.dataset_id = dv2.dataset_id 
+and dv1.versionnumber < dv2.versionnumber
+and dv2.versionstate  = 'DEACCESSIONED');
+
