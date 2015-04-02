@@ -471,9 +471,7 @@
                                     <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
-                            <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
-                            </p:confirmDialog>
-                            <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog">
+                            <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.share.dataverseShare.tip']}</p>
                                 
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse.xhtml?alias=#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
@@ -569,7 +567,7 @@
                     </p:dialog>
 
                     <!-- Publish Confirmation Popup -->
-                    <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="confirmation">
+                    <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="confirmation" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.tip']}
                         </p>
@@ -579,7 +577,7 @@
                         </div>
                     </p:dialog>
                    
-                    <p:dialog header="#{bundle['dataverse.publish.failed']}" widgetVar="mayNotRelease">
+                    <p:dialog header="#{bundle['dataverse.publish.failed']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.failed.tip']}
                         </p>
@@ -588,7 +586,7 @@
                         </div>
                     </p:dialog>
                    
-                    <p:dialog header="#{bundle['dataverse.delete']}" widgetVar="deleteConfirmation">
+                    <p:dialog header="#{bundle['dataverse.delete']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.delete.tip']}
                         </p>
@@ -608,8 +606,6 @@
                     </ui:include>
                 </ui:fragment>
                
-                <!-- Link Dataverse Popup -->
-
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">

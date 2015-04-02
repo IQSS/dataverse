@@ -194,7 +194,7 @@
                                     <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
-                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog">
+                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
                                 
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>                                
@@ -928,21 +928,21 @@
                     <!-- END: Create/Save Dataset Button Panel -->
                     
                     <!-- Popups -->
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation">
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation">
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDraftDialog.tip']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="deleteVersionConfirmation.hide()" action="#{DatasetPage.deleteDatasetVersion()}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="deleteVersionConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation">
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.released}">
                             <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
@@ -1022,13 +1022,13 @@
                     <p:confirmDialog id="enterOtherReason" message="#{bundle['file.deaccessionDialog.dialog.textForReason.tip']}" header="#{bundle['file.deaccessionDialog.dialog.textForReason.header']}" widgetVar="enterOtherReason"> </p:confirmDialog>
                     <p:confirmDialog id="reasonTooManyCharacters" message="#{bundle['file.deaccessionDialog.dialog.limitChar.tip']}" header="#{bundle['file.deaccessionDialog.dialog.limitChar.header']}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
                     <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
-                    <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo">
+                    <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
                         <div class="button-block">
                              <p:commandButton value="#{bundle.close}" onclick="compareTwo.hide()" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks">
+                    <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks" modal="true">
                         <div id="title" class="margin-bottom-half">#{DatasetPage.datasetVersionDifference.newVersion.title}</div>
                         <div id="version-details-block" class=" clearfix margin-bottom-half">
                             <div class="pull-left">
@@ -1357,18 +1357,20 @@
                     </p:dialog>
 
                     <!-- Request Access Sign Up/Log In Button -->
-                    <p:confirmDialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup">
-                        <f:facet name="message">
-                            <p>
-                                <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                                    <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
-                                </h:outputFormat>
-                            </p>
-                        </f:facet>
-                    </p:confirmDialog>
+                    <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-info-sign"/>&#160;
+                            <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
+                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="accessSignUpLogIn_popup.hide()"/>
+                        </div>
+                    </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
 
-                                        <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
+                    <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.downloadDialog.tip']}
                         </p>
@@ -1381,7 +1383,7 @@
                         <div class="form-horizontal">
                             <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
                                 <label class="col-sm-3 control-label" for="guestbook_tou">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                 </label>
                                 <div class="col-sm-6">
                                     <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
@@ -1389,7 +1391,7 @@
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
                                 <label class="col-sm-3 control-label" for="guestbook_toa">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                 </label>
                                 <div class="col-sm-6">
                                     <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
@@ -1399,7 +1401,7 @@
                                 <p:fragment>
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label" for="guestbookuser_nameText">
-                        #{bundle.name}
+                                            #{bundle.name}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
                                         </label>
                                         <div class="col-sm-6">
@@ -1412,7 +1414,7 @@
                                 </p:fragment>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_email">
-                        #{bundle.email}
+                                        #{bundle.email}
                                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />
                                     </label>
                                     <div class="col-sm-6">
@@ -1425,7 +1427,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_institution">
-                        #{bundle.institution}
+                                        #{bundle.institution}
                                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />
                                     </label>
                                     <div class="col-sm-6">
@@ -1437,7 +1439,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_position">
-                        #{bundle.position}
+                                        #{bundle.position}
                                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />
                                     </label>
                                     <div class="col-sm-6">
@@ -1449,7 +1451,7 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
                                     <label class="col-sm-3 control-label" for="guestbookuser_questions">
-                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
+                                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
                                     </label>
                                     <div class="col-sm-6">
                                         <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
@@ -1465,10 +1467,10 @@
                                                              requiredMessage="#{bundle['requiredField']}"/>
                                                 <p:message id="cqMessages" for="customQuestionResponse" display="text"/>                                                 
                                                 <p:selectOneMenu id="customQuestionResponseSelect"
-                                                    styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                    required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
-                                                    rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
-                                                    requiredMessage="#{bundle['requiredField']}">
+                                                                 styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                                 required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
+                                                                 requiredMessage="#{bundle['requiredField']}">
                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
                                                 </p:selectOneMenu>
@@ -1519,7 +1521,7 @@
                         </div>
                     </p:dialog>
                     
-                    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup">
+                    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true">
                         <p class="help-block">
                             <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
                         </p>
@@ -1530,7 +1532,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" style="min-width:500px;">
+                    <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
                             <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
                                 <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
@@ -1610,7 +1612,7 @@
                         </ui:fragment>
                     </p:dialog>
 
-                    <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview">
+                    <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
                         </p>
@@ -1621,7 +1623,7 @@
                     </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm">
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -1636,7 +1638,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishParent">                                      
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishParent" modal="true">                                      
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -1658,7 +1660,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft">
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                         </p>
@@ -1683,7 +1685,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
+                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
@@ -1696,7 +1698,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="maynotPublishParent">
+                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="maynotPublishParent" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
@@ -1711,7 +1713,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
+                    <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
                         </p>
