@@ -690,11 +690,11 @@
                                     </ui:fragment>
 
                                     <div class="file-tags-block" jsf:rendered="#{(!empty result.entity.fileMetadata.categories) or (!empty result.entity.tags)}">
-                                        <ui:repeat value="#{result.entity.tags}" var="tag">
-                                            <h:outputText value="#{tag.typeLabel}" styleClass="label label-default"/>
-                                        </ui:repeat>
                                         <ui:repeat value="#{result.entity.fileMetadata.categories}" var="cat">
                                             <h:outputText value="#{cat.name}" styleClass="label label-default"/>
+                                        </ui:repeat>
+                                        <ui:repeat value="#{result.entity.tags}" var="tag">
+                                            <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
                                         </ui:repeat>
                                     </div>
 
