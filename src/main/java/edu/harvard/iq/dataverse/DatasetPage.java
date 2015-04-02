@@ -944,7 +944,7 @@ public class DatasetPage implements java.io.Serializable {
 
     
    public String init() {
-        //System.out.println("_YE_OLDE_QUERY_COUNTER_");
+        //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         
         guestbookResponse = new GuestbookResponse();
@@ -995,7 +995,7 @@ public class DatasetPage implements java.io.Serializable {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
             updateDatasetFieldInputLevels();
             displayCitation = dataset.getCitation(true, workingVersion);
-            setVersionTabList(resetVersionTabList());
+            //setVersionTabList(resetVersionTabList());  // move to postLoadSetVersionTabList
             setReleasedVersionTabList(resetReleasedVersionTabList());
 
             // populate MapLayerMetadata
@@ -1185,6 +1185,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void resetVersionUI() {
+        
         datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
         if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
@@ -1876,7 +1877,7 @@ public class DatasetPage implements java.io.Serializable {
          if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
          workingVersion = dataset.getReleasedVersion();
          }
-         setVersionTabList(resetVersionTabList());
+         //setVersionTabList(resetVersionTabList());  // move to postLoadSetVersionTabList
          setReleasedVersionTabList(resetReleasedVersionTabList());
          newFiles.clear();
          editMode = null;         
@@ -2119,8 +2120,27 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retVal;
     }
+    
+    /**
+     * To improve performance, Version Differences
+     * are retrieved/calculated after the page load
+     * 
+     * See: dataset-versions.xhtml, remoteCommand 'postLoadVersionTablList'
+    */
+    public void postLoadSetVersionTabList(){
+        
+        this.versionTabList = this.resetVersionTabList();
+        
+    }
 
+    /**
+     * Moved this functionality to postLoadSetVersionTabList
+     * 
+     * RP 4/2/2015
+     * @param versionTabList 
+     */
     public void setVersionTabList(List<DatasetVersion> versionTabList) {
+        
         this.versionTabList = versionTabList;
     }
 
@@ -2290,8 +2310,12 @@ public class DatasetPage implements java.io.Serializable {
             setDatasetVersionDifference(new DatasetVersionDifference(newVersion, originalVersion));
         }
     }
+    
+    
+    
 
     private List<DatasetVersion> resetVersionTabList() {
+        //if (true)return null;
         List<DatasetVersion> retList = new ArrayList();
 
         if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {

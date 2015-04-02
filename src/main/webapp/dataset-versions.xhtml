@@ -8,6 +8,16 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 <!-- VERSIONS -->
+   <script type="text/javascript">
+       $(document).ready(function () {
+           postLoadVersionTablList();
+       });
+   </script>   
+   <!-- Retrieve version differences after the page load --> 
+   <p:remoteCommand  name="postLoadVersionTablList"
+           process="@this"
+           update=":#{p:component('versionsTable')}"
+           actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
     <div class="text-right margin-bottom">
         <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
                          rendered="#{DatasetPage.compareVersionsCount > 2}">
