@@ -95,7 +95,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             long saneNumPartitions = 1;
             numPartitions = saneNumPartitions;
         }
-        String skipClause = skipIndexed ? "AND o.indextime is null" : "";
+        String skipClause = skipIndexed ? "AND o.indexTime is null" : "";
         TypedQuery<Dataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM Dataverse AS o WHERE MOD( o.id, :numPartitions) = :partitionId " +
                 skipClause +
                 " ORDER BY o.id", Dataverse.class);
