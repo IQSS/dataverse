@@ -193,7 +193,7 @@
                 </p:fragment>
                 <div class="button-block">
                     <p:commandButton value="#{bundle.saveChanges}" update=":#{p:component('messagePanel')}, :themeWidgetsForm" action="#{themeWidgetFragment.save()}"/>
-                    <p:commandButton type="button" action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
+                    <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="themeCancel" value="#{bundle.cancel}"/>
                 </div>
             </p:tab>
             <p:tab id="widgetsTab" title="#{bundle['dataverse.widgets.title']}">
@@ -217,7 +217,7 @@
                     <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?alias=#{themeWidgetFragment.editDv.alias}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
                 </div>
                 <div class="button-block">
-                    <p:commandButton type="button" action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
+                    <p:commandButton action="#{themeWidgetFragment.cancel()}" immediate="true" id="widgetsDone" value="#{bundle.done}"/>
                 </div>
             </p:tab>
         </p:tabView>
