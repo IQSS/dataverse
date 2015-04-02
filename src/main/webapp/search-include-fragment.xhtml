@@ -627,11 +627,9 @@
                                             </ui:repeat>
                                         </ui:repeat>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{result.entity.harvested}">
-                                        <div>
-                                            <h:outputText value="#{result.entity.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
-                                        </div>
-                                    </ui:fragment>
+                                    <div jsf:rendered="#{result.entity.harvested}" class="text-muted small margin-top-half">
+                                        <span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{result.entity.harvestingDescription}"/>
+                                    </div>
                                 </ui:fragment>
                                 <!--FILE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'files'}">
