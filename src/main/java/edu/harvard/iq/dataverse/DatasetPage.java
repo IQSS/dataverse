@@ -2472,8 +2472,7 @@ public class DatasetPage implements java.io.Serializable {
 
         fileMetadataSelected = fm;
         logger.fine("set the file for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
-        alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
-    }           
+    }
 
     public FileMetadata getFileMetadataSelected() {
         if (fileMetadataSelected != null) {
@@ -2487,11 +2486,118 @@ public class DatasetPage implements java.io.Serializable {
     public void clearFileMetadataSelected() {
         fileMetadataSelected = null;
     }
-    /* Items for the "Advanced Options" popup. 
-     * 
-     * Tabular File Tags: 
+    
+    public boolean isDesignatedDatasetThumbnail (FileMetadata fileMetadata) {
+        if (fileMetadata != null) {
+            if (fileMetadata.getDataFile() != null) {
+                if (fileMetadata.getDataFile().getId() != null) {
+                    if (fileMetadata.getDataFile().getOwner() != null) {
+                        if (fileMetadata.getDataFile().equals(fileMetadata.getDataFile().getOwner().getThumbnailFile())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    /* 
+     * Items for the "Designated this image as the Dataset thumbnail: 
      */
+    
+    private FileMetadata fileMetadataSelectedForThumbnailPopup = null; 
 
+    public void  setFileMetadataSelectedForThumbnailPopup(FileMetadata fm){
+       fileMetadataSelectedForThumbnailPopup = fm; 
+       alreadyDesignatedAsDatasetThumbnail = getUseAsDatasetThumbnail();
+
+    }
+    
+    public FileMetadata getFileMetadataSelectedForThumbnailPopup() {
+        return fileMetadataSelectedForThumbnailPopup;
+    }
+    
+    public void clearFileMetadataSelectedForThumbnailPopup() {
+        fileMetadataSelectedForThumbnailPopup = null;
+    }
+    
+    private boolean alreadyDesignatedAsDatasetThumbnail = false; 
+    
+    public boolean getUseAsDatasetThumbnail() {
+
+        if (fileMetadataSelectedForThumbnailPopup != null) {
+            if (fileMetadataSelectedForThumbnailPopup.getDataFile() != null) {
+                if (fileMetadataSelectedForThumbnailPopup.getDataFile().getId() != null) {
+                    if (fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner() != null) {
+                        if (fileMetadataSelectedForThumbnailPopup.getDataFile().equals(fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner().getThumbnailFile())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    
+    
+    public void setUseAsDatasetThumbnail(boolean useAsThumbnail) {
+        if (fileMetadataSelectedForThumbnailPopup != null) {
+            if (fileMetadataSelectedForThumbnailPopup.getDataFile() != null) {
+                if (fileMetadataSelectedForThumbnailPopup.getDataFile().getId() != null) { // ?
+                    if (fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner() != null) {
+                        if (useAsThumbnail) {
+                            fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner().setThumbnailFile(fileMetadataSelectedForThumbnailPopup.getDataFile());
+                        } else if (getUseAsDatasetThumbnail()) {
+                            fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner().setThumbnailFile(null);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void saveAsDesignatedThumbnail() {
+        // We don't need to do anything specific to save this setting, because
+        // the setUseAsDatasetThumbnail() method, above, has already updated the
+        // file object appropriately. 
+        // However, once the "save" button is pressed, we want to show a success message, if this is 
+        // a new image has been designated as such:
+        if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
+            String successMessage = JH.localize("file.assignedDataverseImage.success");
+            logger.info(successMessage);
+            successMessage = successMessage.replace("{0}", fileMetadataSelectedForThumbnailPopup.getLabel());
+            JsfHelper.addFlashMessage(successMessage);
+        }
+        
+        // And reset the selected fileMetadata:
+        
+        fileMetadataSelectedForThumbnailPopup = null;
+    }
+    
+    /* 
+     * Items for the "Tags (Categories)" popup.
+     *
+     */
+    private FileMetadata fileMetadataSelectedForTagsPopup = null; 
+
+    public void  setFileMetadataSelectedForTagsPopup(FileMetadata fm){
+       fileMetadataSelectedForTagsPopup = fm; 
+    }
+    
+    public FileMetadata getFileMetadataSelectedForTagsPopup() {
+        return fileMetadataSelectedForTagsPopup;
+    }
+    
+    public void clearFileMetadataSelectedForTagsPopup() {
+        fileMetadataSelectedForTagsPopup = null;
+    }
+    
+    /*
+     * 1. Tabular File Tags: 
+     */
+    
     private List<String> tabFileTags = null;
 
     public List<String> getTabFileTags() {
@@ -2512,15 +2618,15 @@ public class DatasetPage implements java.io.Serializable {
         selectedTags = null;
         selectedTags = new String[0];
 
-        if (fileMetadataSelected != null) {
-            if (fileMetadataSelected.getDataFile() != null
-                    && fileMetadataSelected.getDataFile().getTags() != null
-                    && fileMetadataSelected.getDataFile().getTags().size() > 0) {
+        if (fileMetadataSelectedForTagsPopup != null) {
+            if (fileMetadataSelectedForTagsPopup.getDataFile() != null
+                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null
+                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags().size() > 0) {
 
-                selectedTags = new String[fileMetadataSelected.getDataFile().getTags().size()];
+                selectedTags = new String[fileMetadataSelectedForTagsPopup.getDataFile().getTags().size()];
 
-                for (int i = 0; i < fileMetadataSelected.getDataFile().getTags().size(); i++) {
-                    selectedTags[i] = fileMetadataSelected.getDataFile().getTags().get(i).getTypeLabel();
+                for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
+                    selectedTags[i] = fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel();
                 }
             }
         }
@@ -2531,55 +2637,93 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTags = selectedTags;
     }
 
-    private boolean alreadyDesignatedAsDatasetThumbnail = false; 
+    /*
+     * "File Tags" (aka "File Categories"): 
+    */
     
-    public boolean getUseAsDatasetThumbnail() {
+    private String newCategoryName = null;
 
-        if (fileMetadataSelected != null) {
-            if (fileMetadataSelected.getDataFile() != null) {
-                if (fileMetadataSelected.getDataFile().getId() != null) {
-                    if (fileMetadataSelected.getDataFile().getOwner() != null) {
-                        if (fileMetadataSelected.getDataFile().equals(fileMetadataSelected.getDataFile().getOwner().getThumbnailFile())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+    public String getNewCategoryName() {
+        return newCategoryName;
     }
 
-    public boolean isDesignatedDatasetThumbnail (FileMetadata fileMetadata) {
-        if (fileMetadata != null) {
-            if (fileMetadata.getDataFile() != null) {
-                if (fileMetadata.getDataFile().getId() != null) {
-                    if (fileMetadata.getDataFile().getOwner() != null) {
-                        if (fileMetadata.getDataFile().equals(fileMetadata.getDataFile().getOwner().getThumbnailFile())) {
-                            return true;
-                        }
+    public void setNewCategoryName(String newCategoryName) {
+        this.newCategoryName = newCategoryName;
+    }
+
+    /* This method handles saving both "tabular file tags" and 
+     * "file categories" (which are also considered "tags" in 4.0)
+    */
+    public void saveFileTagsAndCategories() {
+        // 1. File categories:
+        // we don't need to do anything for the file categories that the user
+        // selected from the pull down list; that was done directly from the 
+        // page with the FileMetadata.setCategoriesByName() method. 
+        // So here we only need to take care of the new, custom category
+        // name, if entered: 
+        
+        logger.fine("New category name: " + newCategoryName);
+
+        if (fileMetadataSelectedForTagsPopup != null && newCategoryName != null) {
+            logger.fine("Adding new category, for file " + fileMetadataSelectedForTagsPopup.getLabel());
+            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
+        } else {
+            logger.fine("No FileMetadata selected, or no category specified!");
+        }
+        newCategoryName = null;
+        
+        // 2. Tabular DataFile Tags: 
+
+        if (selectedTags != null) {
+        
+            if (fileMetadataSelectedForTagsPopup != null && fileMetadataSelectedForTagsPopup.getDataFile() != null) {
+                fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
+                for (int i = 0; i < selectedTags.length; i++) {
+                    
+                    DataFileTag tag = new DataFileTag();
+                    try {
+                        tag.setTypeByLabel(selectedTags[i]);
+                        tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
+                        fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
+                        
+                    } catch (IllegalArgumentException iax) {
+                        // ignore 
                     }
                 }
+                
+                // success message: 
+                String successMessage = JH.localize("file.assignedTabFileTags.success");
+                logger.fine(successMessage);
+                successMessage = successMessage.replace("{0}", fileMetadataSelectedForTagsPopup.getLabel());
+                JsfHelper.addFlashMessage(successMessage);
             }
+            // reset:
+            selectedTags = null;
         }
-        return false;
+        
+        fileMetadataSelectedForTagsPopup = null;
+
     }
     
-    public void setUseAsDatasetThumbnail(boolean useAsThumbnail) {
-        if (fileMetadataSelected != null) {
-            if (fileMetadataSelected.getDataFile() != null) {
-                if (fileMetadataSelected.getDataFile().getId() != null) { // ?
-                    if (fileMetadataSelected.getDataFile().getOwner() != null) {
-                        if (useAsThumbnail) {
-                            fileMetadataSelected.getDataFile().getOwner().setThumbnailFile(fileMetadataSelected.getDataFile());
-                        } else if (getUseAsDatasetThumbnail()) {
-                            fileMetadataSelected.getDataFile().getOwner().setThumbnailFile(null);
-                        }
-                    }
-                }
-            }
-        }
-    }
+    
+    /* 
+     * Items for the "Advanced (Ingest) Options" popup. 
+     * 
+     */
+    private FileMetadata fileMetadataSelectedForIngestOptionsPopup = null; 
 
+    public void  setFileMetadataSelectedForIngestOptionsPopup(FileMetadata fm){
+       fileMetadataSelectedForIngestOptionsPopup = fm; 
+    }
+    
+    public FileMetadata getFileMetadataSelectedForIngestOptionsPopup() {
+        return fileMetadataSelectedForIngestOptionsPopup;
+    }
+    
+    public void clearFileMetadataSelectedForIngestOptionsPopup() {
+        fileMetadataSelectedForIngestOptionsPopup = null;
+    }
+    
     private String ingestLanguageEncoding = null;
 
     public String getIngestLanguageEncoding() {
@@ -2662,56 +2806,17 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void saveAdvancedOptions() {
-        // DataFile Tags: 
-
-        if (selectedTags != null) {
-        
-            if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
-                fileMetadataSelected.getDataFile().setTags(null);
-                for (int i = 0; i < selectedTags.length; i++) {
-                    
-                    DataFileTag tag = new DataFileTag();
-                    try {
-                        tag.setTypeByLabel(selectedTags[i]);
-                        tag.setDataFile(fileMetadataSelected.getDataFile());
-                        fileMetadataSelected.getDataFile().addTag(tag);
-                        
-                    } catch (IllegalArgumentException iax) {
-                        // ignore 
-                    }
-                }
-                
-                // success message: 
-                String successMessage = JH.localize("file.assignedTabFileTags.success");
-                logger.fine(successMessage);
-                successMessage = successMessage.replace("{0}", fileMetadataSelected.getLabel());
-                JsfHelper.addFlashMessage(successMessage);
-            }
-            // reset:
-            selectedTags = null;
-        }
-
-        // Use-as-the-thumbnail assignment (do nothing?)
-        // (it's already attached to the selected datafile)
-        // ...except we want to show a success message, if a new image has 
-        // been designated as such:
-        if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
-            String successMessage = JH.localize("file.assignedDataverseImage.success");
-            logger.info(successMessage);
-            successMessage = successMessage.replace("{0}", fileMetadataSelected.getLabel());
-            JsfHelper.addFlashMessage(successMessage);
-        }
         
         // Language encoding for SPSS SAV (and, possibly, other tabular ingests:) 
         if (ingestLanguageEncoding != null) {
-            if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
-                if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
+            if (fileMetadataSelectedForIngestOptionsPopup != null && fileMetadataSelectedForIngestOptionsPopup.getDataFile() != null) {
+                if (fileMetadataSelectedForIngestOptionsPopup.getDataFile().getIngestRequest() == null) {
                     IngestRequest ingestRequest = new IngestRequest();
-                    ingestRequest.setDataFile(fileMetadataSelected.getDataFile());
-                    fileMetadataSelected.getDataFile().setIngestRequest(ingestRequest);
+                    ingestRequest.setDataFile(fileMetadataSelectedForIngestOptionsPopup.getDataFile());
+                    fileMetadataSelectedForIngestOptionsPopup.getDataFile().setIngestRequest(ingestRequest);
 
                 }
-                fileMetadataSelected.getDataFile().getIngestRequest().setTextEncoding(ingestLanguageEncoding);
+                fileMetadataSelectedForIngestOptionsPopup.getDataFile().getIngestRequest().setTextEncoding(ingestLanguageEncoding);
             }
         }
         ingestLanguageEncoding = null;
@@ -2722,18 +2827,18 @@ public class DatasetPage implements java.io.Serializable {
         // hit cancel and bail out, until they actually click 'save' in the 
         // "advanced options" popup) -- L.A. 4.0 beta 11
         if (savedLabelsTempFile != null) {
-            if (fileMetadataSelected != null && fileMetadataSelected.getDataFile() != null) {
-                if (fileMetadataSelected.getDataFile().getIngestRequest() == null) {
+            if (fileMetadataSelectedForIngestOptionsPopup != null && fileMetadataSelectedForIngestOptionsPopup.getDataFile() != null) {
+                if (fileMetadataSelectedForIngestOptionsPopup.getDataFile().getIngestRequest() == null) {
                     IngestRequest ingestRequest = new IngestRequest();
-                    ingestRequest.setDataFile(fileMetadataSelected.getDataFile());
-                    fileMetadataSelected.getDataFile().setIngestRequest(ingestRequest);
+                    ingestRequest.setDataFile(fileMetadataSelectedForIngestOptionsPopup.getDataFile());
+                    fileMetadataSelectedForIngestOptionsPopup.getDataFile().setIngestRequest(ingestRequest);
                 }
-                fileMetadataSelected.getDataFile().getIngestRequest().setLabelsFile(savedLabelsTempFile);
+                fileMetadataSelectedForIngestOptionsPopup.getDataFile().getIngestRequest().setLabelsFile(savedLabelsTempFile);
             }
         }
         savedLabelsTempFile = null;
 
-        fileMetadataSelected = null;
+        fileMetadataSelectedForIngestOptionsPopup = null;
     }
 
     public String getFileDateToDisplay(FileMetadata fileMetadata) {
@@ -2760,29 +2865,7 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
 
-    private String newCategoryName = null;
-
-    public String getNewCategoryName() {
-        return newCategoryName;
-    }
-
-    public void setNewCategoryName(String newCategoryName) {
-        this.newCategoryName = newCategoryName;
-    }
-
-    public void addFileCategory() {
-        logger.fine("New category name: " + newCategoryName);
-
-        if (fileMetadataSelected != null && newCategoryName != null) {
-            logger.fine("Adding new category, for file " + fileMetadataSelected.getLabel());
-            fileMetadataSelected.addCategoryByName(newCategoryName);
-        } else {
-            logger.fine("No FileMetadata selected, or no category specified!");
-        }
-        newCategoryName = null;
-        fileMetadataSelected = null;
-
-    }
+    
 
     public boolean isDownloadPopupRequired() {
         // Each of these conditions is sufficient reason to have to 
