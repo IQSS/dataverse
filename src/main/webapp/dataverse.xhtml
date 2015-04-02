@@ -451,6 +451,16 @@
                                                update=":linkDataverseForm">
                                     <span class="glyphicon glyphicon-link no-text"/>
                                 </p:commandLink>
+                                <!-- SAVE SEARCH -->
+                                <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                               rendered="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search'}"
+                                               title="#{bundle['dataverse.savedsearch.link']}"
+                                               action="#{DataversePage.setupLinkingPopup('savedSearch')}"
+                                               oncomplete="PF('linkDataverseForm').show()"
+                                               update=":linkDataverseForm">
+                                    <span class="glyphicon glyphicon-link"/> 2
+                                </p:commandLink>
+                                <!-- END: SAVE SEARCH -->
                                 <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                    title="#{bundle['dataverse.share.dataverseShare']}"
                                    oncomplete="shareDialog.show();sharrre();">

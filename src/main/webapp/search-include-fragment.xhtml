@@ -41,15 +41,6 @@
             </p:column>
             <p:column>
                 <div class="button-block pull-right">
-                    <!-- SAVE SEARCH -->
-                    <p:commandLink type="button" styleClass="btn btn-default"
-                                   rendered="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search'}"
-                                   action="#{DataversePage.setupLinkingPopup('savedSearch')}"
-                                   oncomplete="PF('linkDataverseForm').show()"
-                                   update=":linkDataverseForm">
-                        <span class="glyphicon glyphicon-link"/> #{bundle['dataverse.savedsearch.link']}
-                    </p:commandLink>
-                    <!-- END: SAVE SEARCH -->
                     <!-- ADD DATA -->
                     <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
                     <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
