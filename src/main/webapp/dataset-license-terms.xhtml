@@ -52,7 +52,7 @@
                                </ui:fragment>
                            </div>
                        </div>
-                       <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
+                       <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0'}">
                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
