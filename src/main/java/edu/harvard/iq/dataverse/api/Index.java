@@ -74,6 +74,16 @@ public class Index extends AbstractApiBean {
 
     @GET
     public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
+        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, false, previewOnly); 
+    }
+    
+    @GET
+    @Path("continue")
+    public Response indexAllOrSubsetContinue(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
+        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, true, previewOnly); 
+    }
+    
+    private Response indexAllOrSubset(Long numPartitionsSelected, Long partitionIdToProcess, boolean skipIndexed, boolean previewOnly) {          
         try {
             long numPartitions = 1;
             if (numPartitionsSelected != null) {
@@ -113,7 +123,7 @@ public class Index extends AbstractApiBean {
                 availablePartitionIdsBuilder.add(i);
             }
 
-            JsonObjectBuilder preview = indexAllService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess);
+            JsonObjectBuilder preview = indexAllService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess, skipIndexed);
             if (previewOnly) {
                 preview.add("args", args);
                 preview.add("availablePartitionIds", availablePartitionIdsBuilder);
@@ -127,7 +137,7 @@ public class Index extends AbstractApiBean {
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionIdToProcess, previewOnly);
+            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionIdToProcess, skipIndexed, previewOnly);
             JsonObject workloadPreview = preview.build().getJsonObject("previewOfPartitionWorkload");
             int dataverseCount = workloadPreview.getInt("dataverseCount");
             int datasetCount = workloadPreview.getInt("datasetCount");
@@ -167,7 +177,7 @@ public class Index extends AbstractApiBean {
             }
         }
     }
-
+    
     @GET
     @Path("{type}/{id}")
     public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
