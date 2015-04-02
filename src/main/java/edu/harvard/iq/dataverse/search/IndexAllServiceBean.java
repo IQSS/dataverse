@@ -41,25 +41,25 @@ public class IndexAllServiceBean {
     SystemConfig systemConfig;
 
     @Asynchronous
-    public Future<JsonObjectBuilder> indexAllOrSubset(long numPartitions, long partitionId, boolean previewOnly) {
+    public Future<JsonObjectBuilder> indexAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed, boolean previewOnly) {
         JsonObjectBuilder response = Json.createObjectBuilder();
-        Future<String> responseFromIndexAllOrSubset = indexAllOrSubset(numPartitions, partitionId);
+        Future<String> responseFromIndexAllOrSubset = indexAllOrSubset(numPartitions, partitionId, skipIndexed);
         String status = "indexAllOrSubset has begun";
         response.add("responseFromIndexAllOrSubset", status);
         return new AsyncResult<>(response);
     }
 
-    public JsonObjectBuilder indexAllOrSubsetPreview(long numPartitions, long partitionId) {
+    public JsonObjectBuilder indexAllOrSubsetPreview(long numPartitions, long partitionId, boolean skipIndexed) {
         JsonObjectBuilder response = Json.createObjectBuilder();
         JsonObjectBuilder previewOfWorkload = Json.createObjectBuilder();
         JsonObjectBuilder dvContainerIds = Json.createObjectBuilder();
         JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
-        List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId);
+        List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Dataverse dataverse : dataverses) {
             dataverseIds.add(dataverse.getId());
         }
         JsonArrayBuilder datasetIds = Json.createArrayBuilder();
-        List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId);
+        List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Dataset dataset : datasets) {
             datasetIds.add(dataset.getId());
         }
@@ -73,7 +73,7 @@ public class IndexAllServiceBean {
         return response;
     }
 
-    public Future<String> indexAllOrSubset(long numPartitions, long partitionId) {
+    public Future<String> indexAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         long indexAllTimeBegin = System.currentTimeMillis();
         String status;
 
@@ -102,7 +102,7 @@ public class IndexAllServiceBean {
             resultOfClearingIndexTimes = "Solr index was not cleared before indexing.";
         }
 
-        List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId);
+        List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
             dataverseIndexCount++;
@@ -111,7 +111,7 @@ public class IndexAllServiceBean {
         }
 
         int datasetIndexCount = 0;
-        List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId);
+        List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Dataset dataset : datasets) {
             datasetIndexCount++;
             logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size());
