@@ -1,6 +1,5 @@
 #!/bin/bash
-USERNAME=admin
-PASSWORD=$USERNAME
+. scripts/search/export-keys
 if [ -z "$1" ]; then
   HOSTNAME=localhost:8181
 else
@@ -8,5 +7,6 @@ else
 fi
 URL=https://$HOSTNAME/dvn/api/data-deposit/v1/swordv2/service-document
 echo Retrieving service document from $URL >&2
-curl -s --insecure -u $USERNAME:$PASSWORD $URL \
-| xmllint -format -
+OUTPUT=`curl -s --insecure -u $ADMINKEY: $URL`
+echo $OUTPUT
+echo $OUTPUT | xmllint -format -

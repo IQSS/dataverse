@@ -3,7 +3,7 @@ SWORD API
 
 SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Java, R, Ruby, and PHP.
 
-Introduced in Dataverse Network (DVN) `3.6 <https://github.com/IQSS/dvn/blob/develop/doc/sphinx/source/dataverse-api-main.rst#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs will continue to work (with deprecation warnings). Due to architectural changes in Dataverse 4.0, a few minor backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
+Introduced in Dataverse Network (DVN) `3.6 <https://github.com/IQSS/dvn/blob/develop/doc/sphinx/source/dataverse-api-main.rst#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs will continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
 
 Dataverse implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc. For a quick introduction to SWORD, the two minute video at http://cottagelabs.com/news/intro-to-sword-2 is recommended.
 
@@ -22,7 +22,9 @@ Dataverse implements most of SWORDv2_, which is specified at http://swordapp.git
 Backward incompatible changes
 -----------------------------
 
-Differences in Dataverse 4.0 have lead to a few minor backward incompatible changes in the Dataverse implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
+For better security, usernames and passwords are no longer accepted. The use of an API token is required.
+
+In addition, differences in Dataverse 4.0 have lead to a few minor backward incompatible changes in the Dataverse implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
 
 - Newly required fields when creating/editing datasets for compliance with the `Joint Declaration for Data Citation principles <http://thedata.org/blog/joint-declaration-data-citation-principles-and-dataverse>`_.
 
@@ -37,7 +39,7 @@ Differences in Dataverse 4.0 have lead to a few minor backward incompatible chan
 New features as of v1.1
 -----------------------
 
-- An API token can be used in place of a username and password. In the ``curl`` examples below, you will see ``curl -u $USERNAME:$PASSWORD`` but you can pass an API token for ``$USERNAME`` and nothing (or a random value) for ``$PASSWORD`` to authenticate. For example, if your API token is ``54b143b5-d001-4254-afc0-a1c0f6a5b5a7`` you can use ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:`` or ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:foobar`` to authenticate.
+- Dataverse 4.0 supports API tokens and they must be used rather that a username and password. In the ``curl`` examples below, you will see ``curl -u $API_TOKEN:`` showing that you should send your API token as the username and nothing as the password. For example, ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``.
 
 - Dataverses can be published via SWORD
 
@@ -68,12 +70,12 @@ Retrieve SWORD service document
 
 The service document enumerates the dataverses ("collections" from a SWORD perspective) the user can deposit data into. The "collectionPolicy" element for each dataverse contains the Terms of Use.
 
-``curl -u $USERNAME:$PASSWORD https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/service-document``
+``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/service-document``
 
 Create a dataset with an Atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``curl -u $USERNAME:$PASSWORD --data-binary "@path/to/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+``curl -u $API_TOKEN: --data-binary "@path/to/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
 
 Example Atom entry (XML)::
 
@@ -158,64 +160,64 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
 List datasets in a dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``curl -u $USERNAME:$PASSWORD https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
 
 Add files to a dataset with a zip file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``curl -u $USERNAME:$PASSWORD --data-binary @path/to/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345``
+``curl -u $API_TOKEN: --data-binary @path/to/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345``
 
 Display a dataset atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Contains data citation (bibliographicCitation), alternate URI (persistent URI of study), edit URI, edit media URI, statement URI.
 
-``curl -u $USERNAME:$PASSWORD https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
 
 Display a dataset statement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Contains title, author, feed of file entries, latestVersionState, locked boolean, updated timestamp.
 
-``curl -u $USERNAME:$PASSWORD https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:TEST/12345``
+``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:TEST/12345``
 
 Delete a file by database id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``curl -u $USERNAME:$PASSWORD -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/123``
+``curl -u $API_TOKEN: -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/123``
 
 Replacing metadata for a dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Please note that **ALL** metadata (title, author, etc.) will be replaced, including fields that can not be expressed with "dcterms" fields.
 
-``curl -u $USERNAME:$PASSWORD --upload-file "path/to/atom-entry-study2.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+``curl -u $API_TOKEN: --upload-file "path/to/atom-entry-study2.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
 
 Delete a dataset
 ~~~~~~~~~~~~~~~~
 
-``curl -u $USERNAME:$PASSWORD -i -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+``curl -u $API_TOKEN: -i -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
 
 Determine if a dataverse has been published
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Look for a `dataverseHasBeenReleased` boolean.
 
-``curl -u $USERNAME:$PASSWORD https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
 
 Publish a dataverse
 ~~~~~~~~~~~~~~~~~~~
 
 The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header.
 
-``cat /dev/null | curl -u $USERNAME:$PASSWORD -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/$DATAVERSE_ALIAS``
+``cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/$DATAVERSE_ALIAS``
 
 Publish a dataset
 ~~~~~~~~~~~~~~~~~
 
 The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header.
 
-``cat /dev/null | curl -u $USERNAME:$PASSWORD -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+``cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
 
 .. _known-issues:
 

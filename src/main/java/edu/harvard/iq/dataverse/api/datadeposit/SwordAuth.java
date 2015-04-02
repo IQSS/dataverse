@@ -2,17 +2,12 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -26,63 +21,38 @@ public class SwordAuth extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(SwordAuth.class.getCanonicalName());
 
     @EJB
-    BuiltinUserServiceBean dataverseUserService;
-    @EJB
     PermissionServiceBean permissionService;
     @EJB
     DataverseRoleServiceBean roleService;
     @EJB
     UserServiceBean userService;
-    @EJB
-    AuthenticationServiceBean authSvc;
 
-    /**
-     * @todo How can Shibboleth users use the Data Deposit API?
-     */
     public AuthenticatedUser auth(AuthCredentials authCredentials) throws SwordAuthException, SwordServerException {
 
         if (authCredentials == null) {
-            // in DVN 3.x at least, it seems this was never reached... eaten somewhere by way of ServiceDocumentServletDefault -> ServiceDocumentAPI -> SwordAPIEndpoint
-            logger.info("no credentials provided");
-            throw new SwordAuthException();
+            /**
+             * in DVN 3.x at least, it seems this was never reached... eaten
+             * somewhere by way of ServiceDocumentServletDefault ->
+             * ServiceDocumentAPI -> SwordAPIEndpoint
+             */
+            String msg = "No credentials provided.";
+            throw new SwordAuthException(msg);
         }
 
         String username = authCredentials.getUsername();
         if (username == null) {
-            logger.info("no username provided");
-            throw new SwordAuthException();
+            String msg = "No API token/key (formerly username) provided.";
+            logger.info(msg);
+            throw new SwordAuthException(msg);
         }
 
         AuthenticatedUser authenticatedUserFromToken = findUserByApiToken(username);
-        if (authenticatedUserFromToken != null) {
+        if (authenticatedUserFromToken == null) {
+            String msg = "User not found based on API token.";
+            logger.info(msg);
+            throw new SwordAuthException(msg);
+        } else {
             return authenticatedUserFromToken;
-        }
-
-        String password = authCredentials.getPassword();
-        if (password == null) {
-            logger.info("no password provided");
-            throw new SwordAuthException();
-        }
-
-        AuthenticationRequest authReq = new AuthenticationRequest();
-        /**
-         * @todo get away from hard-coding "Username" here. It's KEY_USERNAME in
-         * BuiltinAuthenticationProvider
-         */
-        authReq.putCredential("Username", username);
-        /**
-         * @todo get away from hard-coding "Password" here. It's KEY_PASSWORD in
-         * BuiltinAuthenticationProvider
-         */
-        authReq.putCredential("Password", password);
-        try {
-            String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
-            AuthenticatedUser au = authSvc.authenticate(credentialsAuthProviderId, authReq);
-            logger.info("Successful login. getUserIdentifier: " + au.getUserIdentifier() + "  getIdentifier: " + au.getIdentifier());
-            return au;
-        } catch (AuthenticationFailedException ex) {
-            logger.info("Exception caught: " + ex);
-            throw new SwordAuthException();
         }
     }
 
