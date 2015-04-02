@@ -3,9 +3,9 @@
 # You should see no output from this script. Silence is golden.
 # If you start creating dataverses and datasets, you should expect to see output.
 # we plan to support API keys/tokens in https://github.com/IQSS/dataverse/issues/1299
-diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nosuchuser' | jq .data.total_count) scripts/search/tests/expected/anon
+diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nosuchuser' | jq .message) scripts/search/tests/expected/nosuchuser
 
-diff <(curl -s 'http://localhost:8080/api/search?q=*' | jq .data.total_count) scripts/search/tests/expected/anon
+diff <(curl -s 'http://localhost:8080/api/search?q=*' | jq .message) scripts/search/tests/expected/anon
 
 diff <(curl -s "http://localhost:8080/api/admin/index/test?q=*&key=$FINCHKEY" | jq .data) scripts/search/tests/expected/finch1
 

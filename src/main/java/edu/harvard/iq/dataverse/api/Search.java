@@ -3,18 +3,15 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -24,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
@@ -70,6 +66,14 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls
     ) {
+
+        User user;
+        try {
+            user = getUser(key);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
         if (query != null) {
 
             // sanity checking on user-supplied arguments
@@ -98,7 +102,6 @@ public class Search extends AbstractApiBean {
 
             // users can't change these (yet anyway)
             boolean dataRelatedToMe = getDataRelatedToMe();
-            User user = getUser(key);
 
             SolrQueryResponse solrQueryResponse;
             try {
@@ -184,7 +187,7 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private User getUser(String key) {
+    private User getUser(String key) throws WrappedResponse {
         /**
          * @todo support searching as non-guest:
          * https://github.com/IQSS/dataverse/issues/1299
@@ -193,16 +196,16 @@ public class Search extends AbstractApiBean {
          * see permission documents (all Solr documents, really) and we get a
          * NPE when trying to determine the DvObject type if their query matches
          * a permission document.
+         *
+         * @todo Check back on https://github.com/IQSS/dataverse/issues/1838 for
+         * when/if the Search API is opened up to not require a key.
          */
+        AuthenticatedUser authenticatedUser = findUserOrDie(key);
         if (nonPublicSearchAllowed()) {
-            if (key != null) {
-                AuthenticatedUser au = findUserByApiToken(key);
-                if (au != null) {
-                    return au;
-                }
-            }
+            return authenticatedUser;
+        } else {
+            return new GuestUser();
         }
-        return new GuestUser();
     }
 
     public boolean nonPublicSearchAllowed() {
