@@ -48,7 +48,7 @@
                                 </div>
                             </div>
                         </ui:repeat>
-                        <ui:fragment rendered="#{block.index == '0'}">
+                        <ui:fragment rendered="#{block.index == '0' and DatasetPage.dataset.id != null}">
                             <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.publicationDate}">
                                 <label for="metadata_publicationDate" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}">
@@ -59,7 +59,7 @@
                                     #{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}
                                 </div>
                             </div>
-                            <div class="form-group" jsf:rendered="#{DatasetPage.dataset.id != null}">
+                            <div class="form-group" >
                                 <label for="metadata_publicationDate" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}">
                                         #{bundle['dataset.metadata.persistentId']}
