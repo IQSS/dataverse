@@ -20,9 +20,11 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -37,6 +39,7 @@ import javax.validation.ValidatorFactory;
  * @author skraffmiller
  */
 @Entity
+@Table(indexes = {@Index(columnList="dataset_id")} )
 public class DatasetVersion implements Serializable {
 
     /**

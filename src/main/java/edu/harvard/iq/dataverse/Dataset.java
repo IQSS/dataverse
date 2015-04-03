@@ -11,12 +11,14 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.validator.constraints.NotBlank;
@@ -30,6 +32,7 @@ import org.hibernate.validator.constraints.NotBlank;
                      query="SELECT d FROM Dataset d WHERE d.identifier=:identifier")
 )
 @Entity
+@Table(indexes = {@Index(columnList="guestbook_id"), @Index(columnList="thumbnailfile_id")} )
 public class Dataset extends DvObjectContainer {
 
     private static final long serialVersionUID = 1L;
