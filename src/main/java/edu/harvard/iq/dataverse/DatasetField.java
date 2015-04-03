@@ -25,6 +25,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
@@ -189,7 +191,8 @@ public class DatasetField implements Serializable {
         this.datasetFieldValues = datasetFieldValues;
     }
 
-    @OneToMany(cascade = {CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    @JoinTable(indexes = {@Index(columnList="datasetfield_id"),@Index(columnList="controlledvocabularyvalues_id")})
     private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
