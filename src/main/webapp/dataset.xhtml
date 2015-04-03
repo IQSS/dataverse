@@ -958,7 +958,7 @@
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
                         <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                            <label for="versionDeaccessionTable">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                            <label for="versionDeaccessionTable">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                             <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                          rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
                                 <p:column selectionMode="multiple" class="col-select-width text-center"/>
