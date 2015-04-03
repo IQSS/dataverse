@@ -242,13 +242,15 @@
                                             #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
-                                            #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} #{bundle['metrics.downloads']}
+                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                            </h:outputFormat>
                                         </div>
                                         <div id="metrics-citations" class="metrics-citations tab-pane fade small text-center">
                                             #{bundle['metrics.citations']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-shares" class="metrics-shares tab-pane fade small text-center">
-                                            <span id="sharrre-count">&#160;</span>
+                                            <span id="sharrre-count">&#160;#{bundle['metrics.shares']}</span>
                                         </div>
                                     </div>
                                     <div id="metrics-tabs">
@@ -619,7 +621,9 @@
 
                                             <h:outputText id="fileCreatePublishDate" value=" - #{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
                                             
-                                            <h:outputText id="fileDownloadCount" value=" - #{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)} Downloads" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                            <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
+                                            </h:outputFormat>
 
                                             <div class="mD5-block">
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>

@@ -105,8 +105,10 @@
                                     <f:param name="page" value="1"/>
 
                                     <i class="icon-dataverse text-icon-inline"></i>
-
-                                    <h:outputText value="#{bundle['dataverse.results.types.dataverses']} (#{SearchIncludeFragment.facetCountDataverses})" styleClass="facetTypeDataverse"/>
+                                    
+                                    <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
+                                        <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
+                                    </h:outputFormat>
                                 </h:outputLink>
                             </div>
                             <!--DATASETS TOGGLE-->
@@ -135,7 +137,9 @@
 
                                     <i class="icon-dataset text-icon-inline"></i>
 
-                                    <h:outputText value="#{bundle['dataverse.results.types.datasets']} (#{SearchIncludeFragment.facetCountDatasets})" styleClass="facetTypeDataset"/>
+                                    <h:outputFormat styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
+                                        <f:param value="#{SearchIncludeFragment.facetCountDatasets}"/>
+                                    </h:outputFormat>
                                 </h:outputLink>
                             </div>
                             <!--FILES TOGGLE-->
@@ -164,7 +168,9 @@
 
                                     <i class="icon-file text-icon-inline"></i>
 
-                                    <h:outputText value="#{bundle['dataverse.results.types.files']} (#{SearchIncludeFragment.facetCountFiles})" styleClass="facetTypeFile"/>
+                                    <h:outputFormat styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
+                                        <f:param value="#{SearchIncludeFragment.facetCountFiles}"/>
+                                    </h:outputFormat>
                                 </h:outputLink>
                             </div>
                         </h:form>
@@ -175,7 +181,9 @@
                                 <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
                                 <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                                     <h:outputLink rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
-                                        <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
+                                        <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                                            <f:param value="#{facetLabel.count}"/>
+                                        </h:outputFormat>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -187,7 +195,9 @@
                                     </h:outputLink>
 
                                     <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
-                                        <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
+                                        <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                                            <f:param value="#{facetLabel.count}"/>
+                                        </h:outputFormat>
                                         <span class="glyphicon glyphicon-remove"></span>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -315,8 +325,9 @@
                             <div id="resultsCountPaginatorBlock" class="clearfix">
                                 <!-- RESULTS COUNT -->
                                 <div class="results-count pull-left">
-                                    <h:outputText value="#{SearchIncludeFragment.paginationGuiStart} #{bundle['dataverse.results.count.to']} #{SearchIncludeFragment.paginationGuiEnd} #{bundle['dataverse.results.count.of']} "/>
-                                    <h:outputFormat value="#{SearchIncludeFragment.searchResultsCount} #{bundle['dataverse.results.count.result']}">
+                                    <h:outputFormat value="#{bundle['dataverse.results.count.toofresults']}">
+                                        <f:param value="#{SearchIncludeFragment.paginationGuiStart}"/>
+                                        <f:param value="#{SearchIncludeFragment.paginationGuiEnd}"/>
                                         <f:param value="#{SearchIncludeFragment.searchResultsCount}"/>
                                     </h:outputFormat>
                                 </div>
@@ -359,7 +370,9 @@
                                                            varStatus="pageStatus">
                                                     <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
                                                         <h:outputLink>
-                                                            <h:outputText value="#{pageStatus.index}"/>
+                                                            <h:outputText value="#{pageStatus.index}">
+                                                                <f:convertNumber pattern="###,###" />
+                                                            </h:outputText>
                                                             <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
                                                                 <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
                                                             </span>
