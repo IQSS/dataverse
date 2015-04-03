@@ -25,6 +25,8 @@ import org.hibernate.validator.constraints.URL;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.util.Objects;
 import javax.persistence.Column;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 /**
  *
@@ -36,6 +38,7 @@ import javax.persistence.Column;
  */
 
 @Entity
+@Table(indexes = {@Index(columnList="datafile_id")})
 public class DataTable implements Serializable {
     
     /** Creates a new instance of DataTable */
