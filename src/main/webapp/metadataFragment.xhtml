@@ -59,7 +59,7 @@
                                     #{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" jsf:rendered="#{DatasetPage.dataset.id != null}">
                                 <label for="metadata_publicationDate" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}">
                                         #{bundle['dataset.metadata.persistentId']}
