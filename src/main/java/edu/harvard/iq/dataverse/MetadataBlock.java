@@ -84,17 +84,17 @@ public class MetadataBlock implements Serializable {
     }
     
     @OneToOne
-    @JoinColumn(name="dataverse_id", unique=false, nullable=true, insertable=true, updatable=true)
-    private Dataverse dataverse;
+    @JoinColumn(name="owner_id", unique=false, nullable=true, insertable=true, updatable=true)
+    private Dataverse owner;
 
-    public Dataverse getDataverse() {
-        return dataverse;
+    public Dataverse getOwner() {
+        return owner;
     }
 
-    public void setDataverse(Dataverse dataverse) {
-        this.dataverse = dataverse;
+    public void setOwner(Dataverse owner) {
+        this.owner = owner;
     }
-    
+ 
     @Transient
     private boolean empty;
 
