@@ -20,6 +20,28 @@
                 </div>
                 <div id="panelCollapse#{block.index}" class="collapse #{block.first?'in':''}">
                     <div class="panel-body">
+                        <ui:fragment rendered="#{block.index == '0' and DatasetPage.dataset.id != null}">
+                            <div class="form-group">
+                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}">
+                                        #{bundle['dataset.metadata.persistentId']}
+                                    </span>
+                                </label>
+                                <div class="col-sm-9">
+                                    #{DatasetPage.dataset.globalId}
+                                </div>
+                            </div>
+                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.publicationDate}">
+                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}">
+                                        #{bundle['dataset.metadata.publicationDate']}
+                                    </span>
+                                </label>
+                                <div class="col-sm-9">
+                                    #{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}
+                                </div>
+                            </div>
+                        </ui:fragment>
                         <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                             <div class="form-group">
                                 <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
@@ -48,28 +70,6 @@
                                 </div>
                             </div>
                         </ui:repeat>
-                        <ui:fragment rendered="#{block.index == '0' and DatasetPage.dataset.id != null}">
-                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.publicationDate}">
-                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}">
-                                        #{bundle['dataset.metadata.publicationDate']}
-                                    </span>
-                                </label>
-                                <div class="col-sm-9">
-                                    #{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}
-                                </div>
-                            </div>
-                            <div class="form-group" >
-                                <label for="metadata_publicationDate" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}">
-                                        #{bundle['dataset.metadata.persistentId']}
-                                    </span>
-                                </label>
-                                <div class="col-sm-9">
-                                    #{DatasetPage.dataset.globalId}
-                                </div>
-                            </div>
-                        </ui:fragment>
                     </div>
                 </div>
             </div>
