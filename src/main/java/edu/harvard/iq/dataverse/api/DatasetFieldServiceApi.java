@@ -297,7 +297,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         MetadataBlock mdb = new MetadataBlock();
         mdb.setName(values[1]);
         if (!values[2].isEmpty()){
-            mdb.setDataverse(dataverseService.findByAlias(values[2])); 
+            mdb.setOwner(dataverseService.findByAlias(values[2])); 
         }
         mdb.setDisplayName(values[3]);
 
