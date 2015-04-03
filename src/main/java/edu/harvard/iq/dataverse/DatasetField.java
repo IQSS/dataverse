@@ -9,7 +9,6 @@ package edu.harvard.iq.dataverse;
  *
  * @author skraffmiller
  */
-import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,15 +23,19 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import org.apache.commons.lang.StringUtils;
 
 @Entity
 @ValidateDatasetFieldType
+@Table(indexes = {@Index(columnList="datasetfieldtype_id"),@Index(columnList="datasetversion_id"),
+    @Index(columnList="parentdatasetfieldcompoundvalue_id"),@Index(columnList="template_id")})
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;
     
