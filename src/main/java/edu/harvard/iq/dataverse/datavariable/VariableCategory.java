@@ -17,6 +17,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import edu.harvard.iq.dataverse.util.AlphaNumericComparator;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 /**
  *
@@ -28,6 +30,7 @@ import edu.harvard.iq.dataverse.util.AlphaNumericComparator;
  * 
  */
 @Entity
+@Table(indexes = {@Index(columnList="datavariable_id")})
 public class VariableCategory  implements Comparable, Serializable {
     /*
      * Simple constructor: 
