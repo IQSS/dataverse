@@ -922,8 +922,10 @@
                         <p:commandButton value="Direct" id="datasetSave"
                                          style="display:none"
                                          update=":datasetForm,:messagePanel"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}" />
+                                         oncomplete="javascript:bind_bsui_components();"
+                                         action="#{DatasetPage.save}">
+                            <f:ajax onerror="window.scrollTo(0, 0);" />
+                        </p:commandButton>
                     </div>
                     <!-- END: Create/Save Dataset Button Panel -->
                     
@@ -948,7 +950,8 @@
                             <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" update=":#{p:component('filesTable')},:messagePanel" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.deleteFiles()}" />
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteFileConfirmation.hide()" oncomplete="window.scrollTo(0, 0);"
+                                              update=":#{p:component('filesTable')},:messagePanel" action="#{DatasetPage.deleteFiles()}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>

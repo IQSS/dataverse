@@ -78,7 +78,9 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
                         <h:commandButton styleClass="btn btn-default" type="submit" action="#{TemplatePage.save()}" 
-                                         value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : bundle.saveChanges}" />
+                                         value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : bundle.saveChanges}">
+                            <f:ajax onerror="window.scrollTo(0, 0);" />
+                        </h:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
