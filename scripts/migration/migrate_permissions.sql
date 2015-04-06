@@ -1,3 +1,14 @@
+-- reference query for duplicate roles in vdc_role
+/*
+delete from _dvn3_vdcrole where id in 
+( 
+select max(id) from _dvn3_vdcrole
+group by vdcuser_id, vdc_id, role_id
+having count(*) >1
+order by max(id)
+)
+*/
+
 -----------------------
 -- dataverses role assignments
 -----------------------
