@@ -56,7 +56,7 @@
                                         </p:commandLink>
                                     </li>
                                     <li>
-                                        <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_license()">
+                                        <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_terms()">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                         </p:commandLink>
@@ -900,7 +900,7 @@
                                 <ui:include src="metadataFragment.xhtml"/>
                             </p:tab>
                             
-                            <p:tab id="licenseTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
+                            <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
                                    rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
                                 <ui:include src="dataset-license-terms.xhtml"></ui:include>
                             </p:tab>

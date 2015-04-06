@@ -490,7 +490,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #citation, #citation-download {padding:.5em;}
 #citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 #metadata-panel label.col-sm-3 {padding-left:0;}
-.license-CC0-inline {display:inline-block; margin-left:1em;}
+.waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
 

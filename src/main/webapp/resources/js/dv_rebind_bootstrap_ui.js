@@ -141,10 +141,10 @@ function post_edit_metadata(){
 }
 
 /*
- * Called after "Edit License and Terms"
+ * Called after "Edit Terms"
  */
 
-function post_edit_license(){
+function post_edit_terms(){
    bind_bsui_components();
 }
 
