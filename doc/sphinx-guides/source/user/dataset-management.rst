@@ -79,13 +79,13 @@ to specifically edit any of those parts of your dataset.
 
 .. _license-terms:
 
-License + Terms
+Terms
 =======================
 
 CC0 Public Domain Dedication Waiver + Dataset Terms of Use 
 ---------------------------------------------------------------
 
-For Dataset Licenses, starting with Dataverse version 4.0, all new datasets will default to a `CC0 public domain dedication 
+Starting with Dataverse version 4.0, all new datasets will default to a `CC0 public domain dedication 
 <https://creativecommons.org/publicdomain/zero/1.0/>`_ waiver. CC0 facilitates reuse and extensibility of research data. 
 Our `Community Norms <http://best-practices.dataverse.org/harvard-policies/community-norms.html>`_ as well as good scientific
 practices expect that proper credit is given via citation. If you are unable to give your datasets a CC0 waiver you may enter 
