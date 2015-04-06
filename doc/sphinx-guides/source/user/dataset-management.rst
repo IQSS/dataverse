@@ -37,7 +37,7 @@ Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further
 with `WorldMap <http://guides.dataverse.org/en/latest/user/data-exploration/worldmap.html>`_, a geospatial data visualization
 and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University. Once you publish 
 your dataset with your shape files, users will be able to use the "Map Data" button to visualize and manipulate these files in the `WorldMap <http://worldmap.harvard.edu/>`_ interface.
-Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`_ platform, worldmap.harvard.edu. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
+Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`_ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
 
 Astronomy (FITS)
 --------------------
