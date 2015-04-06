@@ -48,10 +48,12 @@
                                         <p:fragment id="userGroups">
                                             <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}"
                                                          rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
-                                                <p:column width="50%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
+                                                <p:column width="35%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
                                                     <h:outputText value="#{access.key.displayInfo.title}"/>
                                                     <h:outputText value=" (#{access.key.displayInfo.affiliation})" rendered="#{!empty access.key.displayInfo.affiliation}"/>
-                                                    <h:outputText value=" #{access.key.identifier}"/>
+                                                </p:column>
+                                                <p:column width="15%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.id']}">
+                                                    <h:outputText value="#{access.key.identifier}"/>
                                                 </p:column>
                                                 <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
                                                     <p:commandLink type="button" id="viewUserGroups"
@@ -78,10 +80,12 @@
                                             </p:dataTable>
                                             <p:dataTable id="userGroupsAccess" var="ra" value="#{manageFilePermissionsPage.roleAssigneeMap.entrySet().toArray()}"
                                                          emptyMessage="#{bundle['dataverse.permissionsFiles.usersOrGroups.invalidMsg']}">
-                                                <p:column width="50%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
+                                                <p:column width="35%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
                                                     <h:outputText value="#{ra.key.displayInfo.title}"/>
                                                     <h:outputText value=" (#{ra.key.displayInfo.affiliation})" rendered="#{!empty ra.key.displayInfo.affiliation}"/>
-                                                    <h:outputText value=" #{ra.key.identifier}"/>
+                                                </p:column>
+                                                <p:column width="15%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.id']}">
+                                                    <h:outputText value="#{ra.key.identifier}"/>
                                                 </p:column>
                                                 <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
                                                     <p:commandLink id="viewUserGroups"
@@ -207,7 +211,9 @@
                                             <p:column>
                                                 <h:outputText value="#{roleAssignee.displayInfo.title}"/> 
                                                 <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
-                                                <h:outputText value=" #{roleAssignee.identifier}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{roleAssignee.identifier}"/>
                                             </p:column>
                                             <p:ajax process="@this" event="itemSelect" />
                                             <p:ajax process="@this" event="itemUnselect" />

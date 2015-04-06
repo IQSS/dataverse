@@ -110,10 +110,12 @@
                                     <p class="help-block clearfix">#{bundle['dataverse.permissions.usersOrGroups.description']}</p>
                                     <div>
                                         <p:dataTable id="assignedRoles" var="roleAssignment" value="#{managePermissionsPage.roleAssignments}">
-                                            <p:column width="50%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
+                                            <p:column width="35%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.userOrGroup']}">
                                                 <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
                                                 <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
-                                                <h:outputText value=" #{roleAssignment.roleAssignment.assigneeIdentifier}"/>
+                                            </p:column>
+                                            <p:column width="15%" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.id']}">
+                                                <h:outputText value="#{roleAssignment.roleAssignment.assigneeIdentifier}"/>
                                             </p:column>
                                             <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']}">
                                                 <h:outputText value="#{roleAssignment.roleName}"/>

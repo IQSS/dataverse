@@ -18,6 +18,9 @@ function bind_bsui_components(){
 
     // Tooltip + popover functionality
     bind_tooltip_popover();
+
+    // Disabled
+    disabledLinks();
     
     // Sharrre
     sharrre();
@@ -44,7 +47,15 @@ function bind_tooltip_popover(){
 }
 
 function toggle_dropdown(){
-    $('.btn-group.open').removeClass('open');;
+    $('.btn-group.open').removeClass('open');
+}
+
+function disabledLinks(){
+    $('ul.pagination li').on('click', 'a', function (e) {
+        if ($(this).parent().hasClass('disabled')){
+            e.preventDefault();
+        }
+    });
 }
 
 /*
@@ -197,7 +208,7 @@ function metricsTabs() {
     $('#metrics-tabs a[data-toggle="tab"]').on('shown', function (e) {
         e.target // activated tab
         e.relatedTarget // previous tab
-    })
+    });
     $('#metrics-tabs a[data-toggle="tab"]').mouseover(function(){
         $(this).click();
     });

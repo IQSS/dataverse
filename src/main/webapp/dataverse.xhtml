@@ -452,14 +452,16 @@
                                         <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
                                             <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"                                                          
                                                            oncomplete="PF('linkDataverseForm').show()"
-                                                           update=":linkDataverseForm">
+                                                           update=":linkDataverseForm"
+                                                           disabled="#{DataversePage.dataverse.owner == null}">
                                                 #{bundle['dataverse.link']}
                                             </p:commandLink>
                                         </li>
-                                        <li class="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
+                                        <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
                                             <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
                                                            oncomplete="PF('linkDataverseForm').show()"
-                                                           update=":linkDataverseForm">
+                                                           update=":linkDataverseForm"
+                                                           disabled="#{SearchIncludeFragment.mode != 'search'}">
                                                 #{bundle['dataverse.savedsearch.link']}
                                             </p:commandLink>
                                         </li>

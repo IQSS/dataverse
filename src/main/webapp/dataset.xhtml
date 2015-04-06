@@ -214,18 +214,18 @@
                                 </button>
                                 <ul class="dropdown-menu" role="menu">
                                     <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
-                                            <ui:fragment rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}">
-                                                <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
-                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionState}" class="ui-commandlink ui-widget">
-                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
-                                            </li>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{versionLinks.released or versionLinks.deaccessioned}">                                                
-                                              <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">  
-                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" class="ui-commandlink ui-widget">
-                                                    <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
-                                             </li>
-                                            </ui:fragment>                                                                               
+                                        <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
+                                            <h:outputLink styleClass="ui-commandlink ui-widget" value="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionState}"
+                                                          rendered="#{!(DatasetPage.workingVersion == versionLinks) and !(versionLinks.released or versionLinks.deaccessioned)}">
+                                                    <h:outputText value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></h:outputLink>
+                                            <h:outputText styleClass="ui-commandlink ui-widget ui-state-disabled #{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" value="#{versionLinks.versionState}"
+                                                          rendered="#{(DatasetPage.workingVersion == versionLinks) and !(versionLinks.released or versionLinks.deaccessioned)}"/>
+                                            <h:outputLink styleClass="ui-commandlink ui-widget" value="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}"
+                                                          rendered="#{!(DatasetPage.workingVersion == versionLinks) and (versionLinks.released or versionLinks.deaccessioned)}">
+                                                    <h:outputText value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></h:outputLink>
+                                            <h:outputText styleClass="ui-commandlink ui-widget ui-state-disabled #{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}"
+                                                          rendered="#{(DatasetPage.workingVersion == versionLinks) and !(versionLinks.draft)}"/>
+                                        </li>
                                     </ui:repeat>
                                 </ul>
                             </div>
