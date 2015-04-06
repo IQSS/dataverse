@@ -540,10 +540,12 @@ public class Dataset extends DvObjectContainer {
                     return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
                 }
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                // TODO: 
-                // figure out how to redirect them to the ICPSR page specific to 
-                // the study in question. -- L.A. 4.0 beta15
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+                // For the ICPSR, it turns out that the best thing to do is to 
+                // rely on DOI to send the user to the right landing page for 
+                // the study: 
+                //String icpsrId = identifier;
+                //return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
+                return "http://doi.org/"+authority+"/"+identifier;
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_NESSTAR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 String nServerURL = this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result
