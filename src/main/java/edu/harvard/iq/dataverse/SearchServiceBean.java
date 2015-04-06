@@ -498,7 +498,8 @@ public class SearchServiceBean {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
                 } else {
-                    solrSearchResult.setTitle("NULL: NO TITLE INDEXED OR PROBLEM FINDING TITLE DATASETFIELD");
+                    logger.info("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
+                    solrSearchResult.setTitle("");
                 }
                 List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
                 if (authors != null) {

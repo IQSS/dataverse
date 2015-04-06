@@ -11,6 +11,7 @@ package edu.harvard.iq.dataverse;
  */
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -282,6 +283,12 @@ public class DatasetField implements Serializable {
                 }
             }
         }
+        return returnList;
+    }
+
+    public List<String> getValuesWithoutNaValues() {
+        List<String> returnList = getValues();
+        returnList.removeAll(Arrays.asList(NA_VALUE));
         return returnList;
     }
     
