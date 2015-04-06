@@ -35,7 +35,8 @@ Geospatial
 
 Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through our integration
 with `WorldMap <http://guides.dataverse.org/en/latest/user/data-exploration/worldmap.html>`_, a geospatial data visualization
-and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University.
+and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University. Once you publish 
+your dataset with your shape files, users will be able to use the "Map Data" button to visualize and manipulate these files in the WorldMap interface.
 
 Astronomy (FITS)
 --------------------
