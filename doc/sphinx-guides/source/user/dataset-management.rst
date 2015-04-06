@@ -69,7 +69,7 @@ you will have the following options:
 
 - Files (Upload or Edit Data): to add or edit files in this dataset.
 - Metadata: to add/edit metadata including additional metadata than was not previously available during Dataset Creation.
-- License + Terms: to view or modify the License, Terms of Use, Terms of Access and Guestbook of this dataset.
+- Terms: to view or modify the License, Terms of Use, Terms of Access and Guestbook of this dataset.
 - Permissions: to view or modify the permissions and roles of this dataset and for individual files within.
 - Delete Dataset (only available before your Dataset is published)
 - Deaccession Dataset (only when your Dataset is published, see below)
