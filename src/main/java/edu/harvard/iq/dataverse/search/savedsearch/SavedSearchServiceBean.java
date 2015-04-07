@@ -165,15 +165,7 @@ public class SavedSearchServiceBean {
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
-                Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo.getOwner();
-                if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                    hitInfo.add(resultString, "Skipping because " + savedSearch.getDefinitionPoint() + " already links to dataset " + datasetToLinkTo + " that contains file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
-                } else if (datasetToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
-                    hitInfo.add(resultString, "Skipping because " + datasetToLinkTo + " that contains file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + " is already part of the subtree for " + savedSearch.getDefinitionPoint() + ".");
-                } else {
-                    DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
-                    hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " (owner of file id " + dvObjectThatDefinitionPointWillLinkTo.getId() + ") to " + link.getLinkingDataverse());
-                }
+                hitInfo.add(resultString, "Skipping because the search matched a file. The matched file id was " + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
             } else {
                 hitInfo.add(resultString, "Unexpected DvObject type.");
             }

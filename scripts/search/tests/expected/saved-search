@@ -7,14 +7,6 @@
   "name": "Grandchild of Mali Health"
 }
 {
-  "type": "file",
-  "name": "health.txt"
-}
-{
   "type": "dataset",
   "name": "Mali health dataset 1"
-}
-{
-  "type": "dataset",
-  "name": "Women in Mali dataset 1"
 }

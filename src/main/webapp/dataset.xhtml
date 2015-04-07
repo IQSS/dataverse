@@ -405,7 +405,13 @@
                         </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                        <ui:include src="metadataFragment.xhtml"/>
+                        <ui:include src="metadataFragment.xhtml">
+                            <ui:param name="datasetPage" value="true"/>
+                            <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
+                            <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
+                            <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/>
+                            <ui:param name="globalId" value="#{DatasetPage.dataset.globalId}"/>
+                        </ui:include>
                     </ui:fragment>
                     <!-- END Create/Edit editMode -->
 
@@ -897,7 +903,13 @@
                                     </p:commandLink>
                                 </div>
                                 
-                                <ui:include src="metadataFragment.xhtml"/>
+                                <ui:include src="metadataFragment.xhtml">
+                                    <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
+                                    <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
+                                    <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
+                                    <ui:param name="globalId" value="#{DatasetPage.dataset.globalId}"/>
+                                </ui:include>
                             </p:tab>
                             
                             <p:tab id="licenseTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}"

@@ -8,11 +8,16 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 Supported Metadata
 ====================
 
-A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata, 3) File level 
-metadata (varies depending on the type of data file - see File Handling and Uploading section below for more details). 
+A dataset contains three levels of metadata: 
+
+#. **Citation Metadata**: any metadata that would be needed for generating a data citation and other general metadata that could be applied to any dataset;
+#. **Domain specific Metadata**: with specific support currently for Social Science, Life Science, Geospatial, and Astronomy datasets; and
+#. **File-level Metadata**: varies depending on the type of data file - see *File Handling and Uploading* section below for more details). 
+
+For more details about what Citation and Domain specific metadata is supported please see our `Appendix <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.
 
 File Handling + Uploading
-====================
+===============================
 
 All file formats are supported, up to a few GB per file but some files types are supported by additional functionality, 
 including downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
@@ -28,7 +33,7 @@ each relevant tabular file and this will take you to the `TwoRavens <http://guid
 to a relevant tabular file and select "Data Subset" in the dropdown menu, which will open a new window that is powered by 
 TwoRavens for you to create your subset. For more information on `TwoRavens <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_ please read their `documentation <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_. Furthermore,
 within the "Download" button for tabular data you will find additional options including downloading: in the original file format,
-RDATA Format, Variable Metadata, Data Subset (as described earlier) and Data File Citation (currently in either RIS format or EndNote XML).
+RDATA Format, Variable Metadata (`DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file), Data Subset (as described earlier) and Data File Citation (currently in either RIS format or EndNote XML).
 
 Geospatial
 --------------------
@@ -43,25 +48,25 @@ Please note: In order to map your data file, a copy will be sent to Harvard's `W
 Astronomy (FITS)
 --------------------
 
-Metadata found in the header section of Flexible Image Transport System (FITS) files are automatically extracted by Dataverse, 
+Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by Dataverse, 
 aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
 and browsable (facets) at the Dataset-level.
 
 
-New Dataset
-====================
+Adding a New Dataset
+============================
 
-#. Navigate to the dataverse in which you want to add a dataset (or in the "root" dataverse). 
+#. Navigate to the dataverse in which you want to add a dataset. 
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
 #. To quickly get started, enter at minimum all the required fields with an asterisk to get a Data Citation with a DOI (e.g., the Dataset Title, Author, 
-   Description, etc)
+   Description, Contact Email and Subject).
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop,
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
-   description for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
+   description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Add Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
 
 
 Edit Dataset
