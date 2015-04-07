@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -72,6 +71,11 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             DatasetVersion dsv = doomed.getOwner().getEditVersion();
             for (FileMetadata fmd : dsv.getFileMetadatas()) {
                 if (doomed.getId() != null && doomed.equals(fmd.getDataFile())) {
+                    // first create draft, if it's new
+                    if (dsv.getId() == null) {
+                        ctxt.engine().submit(new UpdateDatasetCommand(dsv.getDataset(), user));
+                    }
+                    
                     FileMetadata doomedAndMerged = ctxt.em().merge(fmd);
                     ctxt.em().remove(doomedAndMerged);
                     String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
