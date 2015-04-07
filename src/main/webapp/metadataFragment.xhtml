@@ -9,10 +9,8 @@
 
     <!-- View Mode -->
 
-    <div class="panel-group" jsf:rendered="${((empty DatasetPage.editMode) and (empty TemplatePage.editMode)) or ManageTemplatesPage.selectedTemplate != null}">
-        <ui:repeat value="#{(!empty DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()) 
-                            ? DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray() 
-                            : TemplatePage.template.metadataBlocksForView.entrySet().toArray() }" 
+  <div class="panel-group" jsf:rendered="${empty editMode  or managePage}">
+        <ui:repeat value="#{metadataBlocks}"  
                    var="metadataBlockVal" varStatus="block">
             <div class="panel panel-default">
                 <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
@@ -20,7 +18,7 @@
                 </div>
                 <div id="panelCollapse#{block.index}" class="collapse #{block.first?'in':''}">
                     <div class="panel-body">
-                        <ui:fragment rendered="#{block.index == '0' and DatasetPage.dataset.id != null}">
+                        <ui:fragment rendered="#{block.index == '0' and datasetPage}">
                             <div class="form-group">
                                 <label for="metadata_publicationDate" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}">
@@ -28,17 +26,17 @@
                                     </span>
                                 </label>
                                 <div class="col-sm-9">
-                                    #{DatasetPage.dataset.globalId}
+                                    #{globalId}
                                 </div>
                             </div>
-                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.publicationDate}">
+                            <div class="form-group" jsf:rendered="#{!empty publicationDate}">
                                 <label for="metadata_publicationDate" class="col-sm-3 control-label">
                                     <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.metadata.publicationDate.tip']}">
                                         #{bundle['dataset.metadata.publicationDate']}
                                     </span>
                                 </label>
                                 <div class="col-sm-9">
-                                    #{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}
+                                    #{publicationDate}
                                 </div>
                             </div>
                         </ui:fragment>
@@ -77,21 +75,23 @@
     </div>
 
     <!-- Edit Mode -->
-    <ui:fragment rendered="${(!empty DatasetPage.editMode) or (!empty TemplatePage.editMode)}">
+    <ui:fragment rendered="${(!empty editMode)}">
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
-            <ui:repeat value="#{(!empty DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()) ? 
-                                DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForEdit.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
-                <div class="panel panel-default" jsf:rendered="#{(DatasetPage.editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty() or metadataBlockVal.key.isHasRequired() ) or (!empty TemplatePage.editMode) }">
+            <ui:repeat value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
+                <div class="panel panel-default" jsf:rendered="#{(editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty() 
+                                                                 or metadataBlockVal.key.isHasRequired()) 
+                                                                 or (!datasetPage) }">                
+
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
                         #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
                     </div>
-                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || DatasetPage.editMode == 'CREATE'?'in':''}">
+                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE'?'in':''}">
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
-                                <ui:fragment rendered="#{((DatasetPage.editMode == 'METADATA' 
+                                <ui:fragment rendered="#{((editMode == 'METADATA' 
                                                          or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required or dsf.datasetFieldType.hasRequiredChildren) and dsf.include)
-                                                         or (!empty TemplatePage.editMode and dsf.include)}">
+                                                         or (!datasetPage and dsf.include)}">
 
                                     <div class="form-group">
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
@@ -166,7 +166,7 @@
                                                         <!-- Sub Fields -->
                                                         <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
                                                             <div class="form-col-container #{(subdsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'col-sm-12' : 'col-sm-6'}">
-                                                                <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue' and DatasetPage.editMode == 'CREATE' }">
+                                                                <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue' and editMode == 'CREATE' }">
                                                                     <p class="help-block">
                                                                         <span class="glyphicon glyphicon-info-sign"/> 
                                                                         <h:outputFormat value=" #{bundle.htmlAllowedMsg}" escape="false">

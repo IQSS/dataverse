@@ -317,7 +317,7 @@ public class MailServiceBean implements java.io.Serializable {
         if (emailAddress != null){
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
-               String messageText = getMessageTextBasedOnNotification(notification);
+               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
                String subjectText = getSubjectTextBasedOnNotification(notification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText);
@@ -359,15 +359,16 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
    
-    private String getMessageTextBasedOnNotification(UserNotification userNotification){       
+    private String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){       
         
         String messageText = ResourceBundle.getBundle("Bundle").getString("notification.email.greeting");
         DatasetVersion version = null;
+        Dataset dataset = null;
         String datasetName = "";
         String pattern ="";
         switch (userNotification.getType()) {
             case CREATEDV:
-                Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
+                Dataverse dataverse = (Dataverse) targetObject;
                 String ownerDataverseName = getOwnerDataverseName(dataverse);
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataverse");
                 if (ownerDataverseName != null) {
@@ -378,44 +379,44 @@ public class MailServiceBean implements java.io.Serializable {
                 }
                 return messageText;
             case REQUESTFILEACCESS:
-                version = versionService.find(userNotification.getObjectId());
+                dataset = (Dataset) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.requestFileAccess");
-                messageText += MessageFormat.format(pattern, version.getTitle());
+                messageText += MessageFormat.format(pattern, dataset.getDisplayName());
                 return messageText;
             case GRANTFILEACCESS:
-                version = versionService.find(userNotification.getObjectId());
+                dataset = (Dataset) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.grantFileAccess");
-                messageText += MessageFormat.format(pattern, version.getTitle());
+                messageText += MessageFormat.format(pattern, dataset.getDisplayName());
                 return messageText;
             case REJECTFILEACCESS:
-                version = versionService.find(userNotification.getObjectId());
+                dataset = (Dataset) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.rejectFileAccess");
-                messageText += MessageFormat.format(pattern, version.getTitle());
+                messageText += MessageFormat.format(pattern, dataset.getDisplayName());
                 return messageText;
             case CREATEDS:
-                version = versionService.find(userNotification.getObjectId());
+                version =  (DatasetVersion) targetObject;
                 datasetName = version.getTitle();
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataset");
                 String[] paramArray = {datasetName, version.getDataset().getOwner().getDisplayName()};
                 messageText += MessageFormat.format(pattern, paramArray);
                 return messageText;
             case MAPLAYERUPDATED:
-                version = versionService.find(userNotification.getObjectId());
+                version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.worldMap.added");
                 messageText += MessageFormat.format(pattern, version.getTitle());
                 return messageText;                   
             case SUBMITTEDDS:
-                version = versionService.find(userNotification.getObjectId());
+                version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasSubmittedForReview");
                 messageText += MessageFormat.format(pattern, version.getTitle(), version.getDataset().getOwner().getDisplayName());
                 return messageText;
             case PUBLISHEDDS:
-                version = versionService.find(userNotification.getObjectId());
+                version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasPublished");
                 messageText += MessageFormat.format(pattern, version.getTitle(), version.getDataset().getOwner().getDisplayName());
                 return messageText;
             case RETURNEDDS:
-                version = versionService.find(userNotification.getObjectId());
+                version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
                 messageText += MessageFormat.format(pattern, version.getTitle(), version.getDataset().getOwner().getDisplayName());
                 return messageText;
