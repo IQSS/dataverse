@@ -53,8 +53,8 @@ aggregated and displayed in the Astronomy Domain-Specific Metadata of the Datase
 and browsable (facets) at the Dataset-level.
 
 
-New Dataset
-====================
+Adding a New Dataset
+============================
 
 #. Navigate to the dataverse in which you want to add a dataset. 
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
