@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -65,24 +66,19 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         if (doomed.isReleased() && !destroy) {
             logger.fine("Delete command called on a released (published) DataFile "+doomed.getId());
             /*
-             If the file has been released but also previously published handle here.
              In this case we're only removing the link to the current version
              we're not deleting the underlying data file
-             */
-            if (ctxt.files().isPreviouslyPublished(doomed.getId())) {
-                //if previously published leave physical file alone for prior versions
-                FileMetadata fmr = doomed.getFileMetadatas().get(0);
-                for (FileMetadata testfmd : doomed.getFileMetadatas()) {
-                    if (testfmd.getDatasetVersion().getId() > fmr.getDatasetVersion().getId()) {
-                        fmr = testfmd;
-                    }
-                }
-                FileMetadata doomedAndMerged = ctxt.em().merge(fmr);
-                ctxt.em().remove(doomedAndMerged);
-                String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
-                return;
-            }
-            throw new IllegalCommandException("Cannot delete a released file", this);
+             */    
+            DatasetVersion dsv = doomed.getOwner().getEditVersion();
+            for (FileMetadata fmd : dsv.getFileMetadatas()) {
+                if (doomed.getId() != null && doomed.equals(fmd.getDataFile())) {
+                    FileMetadata doomedAndMerged = ctxt.em().merge(fmd);
+                    ctxt.em().remove(doomedAndMerged);
+                    String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+                    return;
+                }                    
+            } 
+            throw new CommandException("Could not find the file to be deleted in the draft version of the dataset", this);
         }
 
         // We need to delete a bunch of files from the file system;

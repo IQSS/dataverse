@@ -322,6 +322,7 @@ form.btn-form {display:inline-block;}
 .button-block .btn:last-child, .button-block .btn-group:last-child, 
 .button-block form.btn-form:last-child .btn-group {margin-right:0;}
 .button-block.pull-right .btn:last-child {margin-right:0;}
+.button-block ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled {display: block; padding: 3px 20px; color: #777; background: none; opacity:1.0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
@@ -489,7 +490,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #citation, #citation-download {padding:.5em;}
 #citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 #metadata-panel label.col-sm-3 {padding-left:0;}
-.license-CC0-inline {display:inline-block; margin-left:1em;}
+.waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
 
