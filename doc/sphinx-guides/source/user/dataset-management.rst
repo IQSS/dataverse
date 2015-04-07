@@ -8,13 +8,16 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 Supported Metadata
 ====================
 
-A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata with specific support for Social Science, Life Science, Geospatial, and Astronomy datasets 3) File level 
-metadata (varies depending on the type of data file - see File Handling and Uploading section below for more details). 
+A dataset contains three levels of metadata: 
+
+#. **Citation Metadata**: any metadata that would be needed for generating a data citation and other general metadata that could be applied to any dataset;
+#. **Domain specific Metadata**: with specific support currently for Social Science, Life Science, Geospatial, and Astronomy datasets; and
+#. **File-level Metadata**: varies depending on the type of data file - see *File Handling and Uploading* section below for more details). 
 
 For more details about what Citation and Domain specific metadata is supported please see our `Appendix <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.
 
 File Handling + Uploading
-====================
+===============================
 
 All file formats are supported, up to a few GB per file but some files types are supported by additional functionality, 
 including downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
