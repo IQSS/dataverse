@@ -8,8 +8,10 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 Supported Metadata
 ====================
 
-A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata, 3) File level 
+A dataset contains three levels of metadata: 1) Citation Metadata, 2) Domain specific metadata with specific support for Social Science, Life Science, Geospatial, and Astronomy datasets 3) File level 
 metadata (varies depending on the type of data file - see File Handling and Uploading section below for more details). 
+
+For more details about what Citation and Domain specific metadata is supported please see our `Appendix <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.
 
 File Handling + Uploading
 ====================
@@ -28,7 +30,7 @@ each relevant tabular file and this will take you to the `TwoRavens <http://guid
 to a relevant tabular file and select "Data Subset" in the dropdown menu, which will open a new window that is powered by 
 TwoRavens for you to create your subset. For more information on `TwoRavens <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_ please read their `documentation <http://guides.dataverse.org/en/latest/user/data-exploration/tworavens.html>`_. Furthermore,
 within the "Download" button for tabular data you will find additional options including downloading: in the original file format,
-RDATA Format, Variable Metadata, Data Subset (as described earlier) and Data File Citation (currently in either RIS format or EndNote XML).
+RDATA Format, Variable Metadata (`DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file), Data Subset (as described earlier) and Data File Citation (currently in either RIS format or EndNote XML).
 
 Geospatial
 --------------------
