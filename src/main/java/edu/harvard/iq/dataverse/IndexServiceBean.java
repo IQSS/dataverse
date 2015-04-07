@@ -669,7 +669,7 @@ public class IndexServiceBean {
                         if (dsfType.isControlledVocabulary()) {
                             for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
                                 if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
-                                    break;
+                                    continue;
                                 }
                                 solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
                                 if (dsfType.getSolrField().isFacetable()) {
