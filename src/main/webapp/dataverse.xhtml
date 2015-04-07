@@ -268,8 +268,9 @@
                                                                     <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
+                                                                                                      onchange="#{DataversePage.updateInclude(mdb.id, dsft.id)}"                                                 
                                                                                                      disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or DataversePage.editInputLevel == false }">
-                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})" listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"/>
+                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id}), @widgetVar(optionBlock)" />
                                                                             </p:selectBooleanCheckbox>
                                                                             <div class="checkbox child-field" jsf:rendered="#{dsft.hasParent}">
                                                                                 <label>

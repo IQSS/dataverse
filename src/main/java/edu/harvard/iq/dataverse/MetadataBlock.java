@@ -14,6 +14,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
 /**
@@ -53,6 +54,7 @@ public class MetadataBlock implements Serializable {
     }
     
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("displayOrder")
     private List<DatasetFieldType> datasetFieldTypes;
     public List<DatasetFieldType> getDatasetFieldTypes() {
         return datasetFieldTypes;
