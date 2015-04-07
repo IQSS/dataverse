@@ -703,7 +703,7 @@ public class SolrSearchResult {
                 if (isDraftState()) {
                     return "/dataset.xhtml?persistentId=" + identifier + "&version=DRAFT";
                 }
-                return "/dataset.xhtml?persistentId=" + identifier + "&version=" + versionNumberFriendly;
+                return "/dataset.xhtml?persistentId=" + identifier;
             } else {
                 logger.info("Dataset identifier/globalId contains \"" + badString + "\" perhaps due to https://github.com/IQSS/dataverse/issues/1147 . Fix data in database and reindex. Returning failsafe URL: " + failSafeUrl);
                 return failSafeUrl;
