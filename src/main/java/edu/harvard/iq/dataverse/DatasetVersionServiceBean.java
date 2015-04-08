@@ -64,6 +64,25 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             this.checkVersion();
         }
         
+        
+        public String getDifferentVersionMessage(){
+            if (this.wasSpecificVersionRequested && !this.didSpecificVersionMatch){
+                String userMsg;
+                if (isVersionAskingForDraft(this.requestedVersion)){
+                    userMsg = "The \"DRAFT\" version was not found.";
+                }else{
+                    userMsg = "Version \"" + this.requestedVersion + "\" was not found.";
+                }
+                if (isVersionAskingForDraft(this.getReturnedVersion())){
+                    userMsg += "  This is the \"DRAFT\" version.";
+                }else{
+                    userMsg += "  This is version \"" + this.getReturnedVersion() + "\".";                    
+                }
+                return userMsg;
+            }
+            return null;
+        }
+        
         private void checkVersion(){
             if (chosenVersion==null){   // this shouldn't happen
                 return;
@@ -83,15 +102,15 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             
         }
         
-        public boolean didUserRequestSpecificVersion(){
-            return this.wasSpecificVersionRequested;
+        public boolean wasRequestedVersionRetrieved(){
+            if (this.wasSpecificVersionRequested && !this.didSpecificVersionMatch){
+                return false;
+            }
+            return true;
         }
         
-        public boolean didSpecificVersionMatch(){
-            return this.didSpecificVersionMatch;
-        }
         
-        public DatasetVersion getChosenVersion(){
+        public DatasetVersion getDatasetVersion(){
             return this.chosenVersion;
         }
         

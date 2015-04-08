@@ -777,7 +777,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void msg(String s){
-        //System.out.println(s);
+        System.out.println(s);
     }
     
     /**
@@ -972,7 +972,7 @@ public class DatasetPage implements java.io.Serializable {
                return "/404.xhtml";
             }
 
-           this.workingVersion = retrieveDatasetVersionResponse.getChosenVersion();
+           this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
            this.dataset = this.workingVersion.getDataset();
            
            // end: Set the workingVersion and Dataset
@@ -997,6 +997,10 @@ public class DatasetPage implements java.io.Serializable {
                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
            }
          
+           if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()){
+              //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
+              JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//JH.localize("dataset.message.metadataSuccess"));
+           }
 
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
