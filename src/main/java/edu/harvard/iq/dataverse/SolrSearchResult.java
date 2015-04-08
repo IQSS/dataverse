@@ -724,7 +724,7 @@ public class SolrSearchResult {
         }
         String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);
         if (parentDatasetGlobalId != null) {
-            return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId + "&version=" + versionNumberFriendly;
+            return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
         } else {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
         }
