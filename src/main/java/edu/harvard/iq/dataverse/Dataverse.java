@@ -221,29 +221,26 @@ public class Dataverse extends DvObjectContainer {
             return  retList;
     }
     
-    public List<Guestbook> getAvailableGuestbooks(){
-        
+    public List<Guestbook> getAvailableGuestbooks() {
+        //get all guestbooks
         List<Guestbook> retList = new ArrayList();
         Dataverse testDV = this;
         List<Guestbook> allGbs = new ArrayList();
         if (!this.guestbookRoot){
                     while (testDV.getOwner() != null){   
           
-           allGbs.addAll(testDV.getOwner().getGuestbooks());
-           
-           if(!testDV.getOwner().guestbookRoot){               
-               break;
-           }           
-           testDV = testDV.getOwner();
+                allGbs.addAll(testDV.getOwner().getGuestbooks());
+                if (testDV.getOwner().isGuestbookRoot()) {
+                    break;
+                }
+                testDV = testDV.getOwner();
+            }
         }
-            
-        }
-        
-        allGbs.addAll(this.getGuestbooks());
 
-        
-        for (Guestbook gbt: allGbs){
-            if(gbt.isEnabled()){
+        allGbs.addAll(this.getGuestbooks());
+        //then only display them if they are enabled
+        for (Guestbook gbt : allGbs) {
+            if (gbt.isEnabled()) {
                 retList.add(gbt);
             }
         }

@@ -97,8 +97,7 @@
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open"></span>
                                         </p:commandLink>
-                                        <h:outputLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
-                                                      rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
+                                        <h:outputLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"                                                     
                                                       value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}&#38;editMode=CLONE&#38;sourceId=#{guestbook.id}"
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.copy']}">
                                             <span class="glyphicon glyphicon-duplicate"></span>

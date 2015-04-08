@@ -145,9 +145,9 @@ public class Guestbook implements Serializable {
         return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
     }
         
-    public Guestbook copyGuestbook(Guestbook source) {
+    public Guestbook copyGuestbook(Guestbook source, Dataverse dataverse) {
         Guestbook newGuestbook = new Guestbook();
-        newGuestbook.setDataverse(source.getDataverse());
+        newGuestbook.setDataverse(dataverse);
         newGuestbook.setEmailRequired(source.isEmailRequired());
         newGuestbook.setNameRequired(source.isNameRequired());
         newGuestbook.setPositionRequired(source.isPositionRequired());
