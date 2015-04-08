@@ -69,7 +69,9 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
              we're not deleting the underlying data file
              */    
             DatasetVersion dsv = doomed.getOwner().getEditVersion();
+            System.out.println("Attempting to delete file with id: " + doomed.getId());
             for (FileMetadata fmd : dsv.getFileMetadatas()) {
+                System.out.println("Iterating through version filemetadats, found - id: " + fmd.getDataFile().getId());
                 if (doomed.getId() != null && doomed.equals(fmd.getDataFile())) {
                     dsv.getFileMetadatas().remove(fmd);
                     ctxt.engine().submit(new UpdateDatasetCommand(dsv.getDataset(), user));
