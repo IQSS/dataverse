@@ -1061,12 +1061,11 @@ public class DatasetVersion implements Serializable {
         if (this.isReleased()) {
             return versionNumber + "." + minorVersionNumber;
         } else if (this.isDraft()){
-            return VersionState.DRAFT.name();
+            return VersionState.DRAFT.toString();
         } else if (this.isDeaccessioned()){
             return versionNumber + "." + minorVersionNumber;
         } else{
-            return versionNumber + "." + minorVersionNumber;
-            
+            return versionNumber + "." + minorVersionNumber;            
         }
         //     return VersionState.DEACCESSIONED.name();
        // } else {

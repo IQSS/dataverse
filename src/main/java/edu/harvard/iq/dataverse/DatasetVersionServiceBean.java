@@ -62,8 +62,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             if (datasetVersion == null){
                 throw new IllegalArgumentException("datasetVersion cannot be null");
             }
-            System.out.println("RetrieveDatasetVersionResponse: datasetVersion: " + datasetVersion.getSemanticVersion() + " requestedVersion: " + requestedVersion);
-            System.out.println("chosenVersion id: " + datasetVersion.getId() + "  getFriendlyVersionNumber: " + datasetVersion.getFriendlyVersionNumber());
+            //System.out.println("RetrieveDatasetVersionResponse: datasetVersion: " + datasetVersion.getSemanticVersion() + " requestedVersion: " + requestedVersion);
+            //System.out.println("chosenVersion id: " + datasetVersion.getId() + "  getFriendlyVersionNumber: " + datasetVersion.getFriendlyVersionNumber());
             this.datasetVersionForResponse = datasetVersion;
             
             this.actualVersion = datasetVersion.getSemanticVersion();
@@ -97,7 +97,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             if (actualVersion==null){   // this shouldn't happen
                 return;
             }
-            System.out.println("check version. requested: " + this.requestedVersion + " returned: " + actualVersion);
+            //System.out.println("check version. requested: " + this.requestedVersion + " returned: " + actualVersion);
             // This may often be the case if version is not specified
             //
             if (requestedVersion == null || requestedVersion.equals("")){
