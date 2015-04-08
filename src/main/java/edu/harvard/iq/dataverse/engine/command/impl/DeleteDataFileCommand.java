@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
@@ -67,17 +68,26 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             /*
              In this case we're only removing the link to the current version
              we're not deleting the underlying data file
-             */    
-            DatasetVersion dsv = doomed.getOwner().getEditVersion();
-            System.out.println("Attempting to delete file with id: " + doomed.getId());
-            for (FileMetadata fmd : dsv.getFileMetadatas()) {
-                System.out.println("Iterating through version filemetadats, found - id: " + fmd.getDataFile().getId());
+             */
+            
+            // First, verify that we are in a draft version; ig not throw a Command Exception
+            // todo: review code to see how to make this create a draft when caled on a released version
+            DatasetVersion dsv = doomed.getOwner().getLatestVersion();
+            if (!dsv.isDraft()) {
+                throw new CommandException("Cannot delete files from a released version. Please create a draft version of this dataset.", this);               
+            }
+            
+            for (Iterator<FileMetadata> it = dsv.getFileMetadatas().iterator(); it.hasNext();) {
+                FileMetadata fmd = it.next();
                 if (doomed.getId() != null && doomed.equals(fmd.getDataFile())) {
-                    dsv.getFileMetadatas().remove(fmd);
+                    /* commented out, because not yet working as expected (see todo, above)
+                    it.remove();
                     ctxt.engine().submit(new UpdateDatasetCommand(dsv.getDataset(), user));
-                    
-                    //String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
-                    return;
+                    */
+                    FileMetadata doomedAndMerged = ctxt.em().merge(fmd);
+                    ctxt.em().remove(doomedAndMerged);
+                    String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+                    return;                    
                 }                    
             } 
             throw new CommandException("Could not find the file to be deleted in the draft version of the dataset", this);
