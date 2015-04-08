@@ -1060,9 +1060,18 @@ public class DatasetVersion implements Serializable {
          */
         if (this.isReleased()) {
             return versionNumber + "." + minorVersionNumber;
-        } else {
-            return "DRAFT";
+        } else if (this.isDraft()){
+            return VersionState.DRAFT.name();
+        } else if (this.isDeaccessioned()){
+            return versionNumber + "." + minorVersionNumber;
+        } else{
+            return versionNumber + "." + minorVersionNumber;
+            
         }
+        //     return VersionState.DEACCESSIONED.name();
+       // } else {
+       //     return "-unkwn semantic version-";
+       // }
     }
 
     public List<ConstraintViolation> validateRequired() {
