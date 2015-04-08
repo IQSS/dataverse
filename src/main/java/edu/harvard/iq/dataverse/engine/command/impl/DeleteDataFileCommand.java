@@ -54,7 +54,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         if (destroy) {
             //todo: clean this logic up!
             //for now, if called as destroy, will check for superuser acess
-            if ( doomed.getOwner().isReleased() && (!(user instanceof AuthenticatedUser) || !((AuthenticatedUser) user).isSuperuser() ) ) {      
+            if ( doomed.getOwner().isReleased() && (!(user instanceof AuthenticatedUser) || !user.isSuperuser() ) ) {      
                 throw new PermissionException("Destroy can only be called by superusers.",
                     this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
             }            
@@ -63,7 +63,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         
         // if destroy, we skip this and fully delete
         if (doomed.isReleased() && !destroy) {
-            logger.fine("Delete command called on a released (published) DataFile "+doomed.getId());
+            logger.log(Level.FINE, "Delete command called on a released (published) DataFile {0}", doomed.getId());
             /*
              In this case we're only removing the link to the current version
              we're not deleting the underlying data file
@@ -90,9 +90,9 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         // fails, we throw an exception and abort the command without
         // trying to remove the object from the database:
         
-        logger.fine("Delete command called on an unpublished DataFile "+doomed.getId());
+        logger.log(Level.FINE, "Delete command called on an unpublished DataFile {0}", doomed.getId());
         String fileSystemName = doomed.getFileSystemName();
-        logger.fine("Storage identifier for the file: "+fileSystemName);
+        logger.log(Level.FINE, "Storage identifier for the file: {0}", fileSystemName);
         
         DataAccessObject dataAccess = null; 
         
@@ -110,7 +110,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 throw new CommandExecutionException("Error deleting physical file object while deleting DataFile " + doomed.getId() + " from the database.", ex, this);
             }
 
-            logger.fine("Successfully deleted physical storage object (file) for the DataFile " + doomed.getId());
+            logger.log(Level.FINE, "Successfully deleted physical storage object (file) for the DataFile {0}", doomed.getId());
             
             // Destroy the dataAccess object - we will need to purge the 
             // DataFile from the database (below), so we don't want to have any
@@ -146,7 +146,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             List<String> failures = new ArrayList<>();
             for (Path deadFile : victims) {
                 try {
-                    logger.fine("Deleting cached file "+deadFile.toString());
+                    logger.log(Level.FINE, "Deleting cached file {0}", deadFile.toString());
                     Files.delete(deadFile);
                 } catch (IOException ex) {
                     failures.add(deadFile.toString());
@@ -155,7 +155,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
             if (!failures.isEmpty()) {
                 String failedFiles = StringUtils.join(failures, ",");
-                Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting physical file(s) " + failedFiles + " while deleting DataFile " + doomed.getName());
+                Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting physical file(s) {0} while deleting DataFile {1}", new Object[]{failedFiles, doomed.getName()});
             }
 
             DataFile doomedAndMerged = ctxt.em().merge(doomed);
