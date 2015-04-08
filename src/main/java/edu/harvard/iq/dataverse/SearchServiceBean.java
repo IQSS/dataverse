@@ -530,13 +530,6 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
                 solrSearchResult.setUnf((String) solrDocument.getFieldValue(SearchFields.UNF));
-                                solrSearchResult.setDatasetVersionId(datasetVersionId);
-                DatasetVersion dsv = datasetVersionService.find(datasetVersionId);
-                if(!dsv.isDraft()){
-                    solrSearchResult.setVersionNumberFriendly(dsv.getVersionNumber().toString() + "." +  dsv.getMinorVersionNumber().toString());
-                } else {
-                    solrSearchResult.setVersionNumberFriendly("DRAFT");
-                }
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
             }
             /**
