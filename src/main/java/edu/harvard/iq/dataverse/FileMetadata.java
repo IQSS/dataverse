@@ -12,9 +12,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -24,6 +27,7 @@ import javax.validation.constraints.Pattern;
  *
  * @author skraffmiller
  */
+@Table(indexes = {@Index(columnList="datafile_id"), @Index(columnList="datasetversion_id")} )
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -81,12 +85,12 @@ public class FileMetadata implements Serializable {
         this.restricted = restricted;
     }
     
-    
 
     /* 
      * File Categories to which this version of the DataFile belongs: 
      */
     @ManyToMany (cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     private List<DataFileCategory> fileCategories;
     
     public List<DataFileCategory> getCategories() {

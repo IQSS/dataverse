@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,20 +12,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import java.util.List;
-import java.util.Set;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.persistence.Column;
+import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -43,7 +35,7 @@ public class Guestbook implements Serializable {
      /**
      * Holds value of the Dataverse
      */
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable=true)
     private Dataverse dataverse;
     

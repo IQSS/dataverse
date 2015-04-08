@@ -56,28 +56,30 @@
                                         </p:commandLink>
                                     </li>
                                     <li>
-                                        <p:commandLink id="editLicenseTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_license()">
+                                        <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:post_edit_terms()">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                         </p:commandLink>
-                                    </li>
-                                    <li class="dropdown-submenu">
-                                        <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                    <h:outputText value="Dataset" />
-                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                </h:link>
-                                            </li>
-                                            <li>
-                                                <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                                    <h:outputText value="File" />
-                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                </h:link>
-                                            </li>
-                                        </ul>
-                                    </li>
+                                    </li>                                   
+                                    <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
+                                        <li class="dropdown-submenu">
+                                            <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                        <h:outputText value="Dataset" />
+                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                    </h:link>
+                                                </li>
+                                                <li>
+                                                    <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
+                                                        <h:outputText value="File" />
+                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                    </h:link>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
@@ -94,7 +96,7 @@
                                             </p:commandLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
                                             <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">
@@ -194,7 +196,7 @@
                                     <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
-                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog">
+                            <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.share.datasetShare.tip']}</p>
                                 
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>                                
@@ -214,18 +216,18 @@
                                 </button>
                                 <ul class="dropdown-menu" role="menu">
                                     <ui:repeat value="#{DatasetPage.versionTabList}" var="versionLinks">
-                                            <ui:fragment rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}">
-                                                <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
-                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionState}" class="ui-commandlink ui-widget">
-                                                <h:outputText rendered="#{!(versionLinks.released or versionLinks.deaccessioned)}" value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
-                                            </li>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{versionLinks.released or versionLinks.deaccessioned}">                                                
-                                              <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">  
-                                                <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" class="ui-commandlink ui-widget">
-                                                    <h:outputText rendered="#{versionLinks.released or versionLinks.deaccessioned}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></a>
-                                             </li>
-                                            </ui:fragment>                                                                               
+                                        <li class="#{DatasetPage.workingVersion == versionLinks ? 'disabled' : ''}">
+                                            <h:outputLink styleClass="ui-commandlink ui-widget" value="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionState}"
+                                                          rendered="#{!(DatasetPage.workingVersion == versionLinks) and !(versionLinks.released or versionLinks.deaccessioned)}">
+                                                    <h:outputText value="#{versionLinks.versionState}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></h:outputLink>
+                                            <h:outputText styleClass="ui-commandlink ui-widget ui-state-disabled #{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" value="#{versionLinks.versionState}"
+                                                          rendered="#{(DatasetPage.workingVersion == versionLinks) and !(versionLinks.released or versionLinks.deaccessioned)}"/>
+                                            <h:outputLink styleClass="ui-commandlink ui-widget" value="/dataset.xhtml?persistentId=#{versionLinks.dataset.globalId}&#38;version=#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}"
+                                                          rendered="#{!(DatasetPage.workingVersion == versionLinks) and (versionLinks.released or versionLinks.deaccessioned)}">
+                                                    <h:outputText value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}" styleClass="#{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" /></h:outputLink>
+                                            <h:outputText styleClass="ui-commandlink ui-widget ui-state-disabled #{DatasetPage.workingVersion == versionLinks ? 'highlightBold' : ''}" value="#{versionLinks.versionNumber}.#{versionLinks.minorVersionNumber}"
+                                                          rendered="#{(DatasetPage.workingVersion == versionLinks) and !(versionLinks.draft)}"/>
+                                        </li>
                                     </ui:repeat>
                                 </ul>
                             </div>
@@ -242,13 +244,15 @@
                                             #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
-                                            #{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)} #{bundle['metrics.downloads']}
+                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                            </h:outputFormat>
                                         </div>
                                         <div id="metrics-citations" class="metrics-citations tab-pane fade small text-center">
                                             #{bundle['metrics.citations']} <em>#{bundle['metrics.comingsoon']}</em>
                                         </div>
                                         <div id="metrics-shares" class="metrics-shares tab-pane fade small text-center">
-                                            <span id="sharrre-count">&#160;</span>
+                                            <span id="sharrre-count">&#160;#{bundle['metrics.shares']}</span>
                                         </div>
                                     </div>
                                     <div id="metrics-tabs">
@@ -403,7 +407,13 @@
                         </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                        <ui:include src="metadataFragment.xhtml"/>
+                        <ui:include src="metadataFragment.xhtml">
+                            <ui:param name="datasetPage" value="true"/>
+                            <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
+                            <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
+                            <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/>
+                            <ui:param name="globalId" value="#{DatasetPage.dataset.globalId}"/>
+                        </ui:include>
                     </ui:fragment>
                     <!-- END Create/Edit editMode -->
 
@@ -619,7 +629,9 @@
 
                                             <h:outputText id="fileCreatePublishDate" value=" - #{DatasetPage.getFileDateToDisplay(fileMetadata)}" rendered="#{!(empty fileMetadata.id)}"/>
                                             
-                                            <h:outputText id="fileDownloadCount" value=" - #{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)} Downloads" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                            <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                                <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
+                                            </h:outputFormat>
 
                                             <div class="mD5-block">
                                                 <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
@@ -893,10 +905,16 @@
                                     </p:commandLink>
                                 </div>
                                 
-                                <ui:include src="metadataFragment.xhtml"/>
+                                <ui:include src="metadataFragment.xhtml">
+                                    <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
+                                    <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
+                                    <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
+                                    <ui:param name="globalId" value="#{DatasetPage.dataset.globalId}"/>
+                                </ui:include>
                             </p:tab>
                             
-                            <p:tab id="licenseTermsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
+                            <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
                                    rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
                                 <ui:include src="dataset-license-terms.xhtml"></ui:include>
                             </p:tab>
@@ -928,34 +946,35 @@
                     <!-- END: Create/Save Dataset Button Panel -->
                     
                     <!-- Popups -->
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation">
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="deleteConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation">
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDraftDialog.tip']}</p>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.continue}" onclick="deleteVersionConfirmation.hide()" action="#{DatasetPage.deleteDatasetVersion()}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="deleteVersionConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation">
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.released}">
                             <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" update=":#{p:component('filesTable')},:messagePanel" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.deleteFiles()}" />
+                            <p:commandButton value="#{bundle.continue}" onclick="deleteFileConfirmation.hide()" oncomplete="window.scrollTo(0, 0);"
+                                              update=":#{p:component('filesTable')},:messagePanel" action="#{DatasetPage.deleteFiles()}" />
                             <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
                         <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                            <label for="versionDeaccessionTable">#{bundle['file.deaccessionDialog.reason.question2']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                            <label for="versionDeaccessionTable">#{bundle['file.deaccessionDialog.reason.question1']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                             <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                          rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
                                 <p:column selectionMode="multiple" class="col-select-width text-center"/>
@@ -1022,13 +1041,13 @@
                     <p:confirmDialog id="enterOtherReason" message="#{bundle['file.deaccessionDialog.dialog.textForReason.tip']}" header="#{bundle['file.deaccessionDialog.dialog.textForReason.header']}" widgetVar="enterOtherReason"> </p:confirmDialog>
                     <p:confirmDialog id="reasonTooManyCharacters" message="#{bundle['file.deaccessionDialog.dialog.limitChar.tip']}" header="#{bundle['file.deaccessionDialog.dialog.limitChar.header']}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
                     <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
-                    <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo">
+                    <p:dialog id="compareTwo" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="compareTwo" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-warning-sign text-danger"/> <span class="text-danger">#{bundle['file.viewDiffDialog.dialog.warning']}</span></p>
                         <div class="button-block">
                              <p:commandButton value="#{bundle.close}" onclick="compareTwo.hide()" type="button" />
                         </div>
                     </p:dialog>
-                    <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks">
+                    <p:dialog id="detailsBlocks" styleClass="largePopUp" header="#{bundle['file.viewDiffDialog.header']}" widgetVar="detailsBlocks" modal="true">
                         <div id="title" class="margin-bottom-half">#{DatasetPage.datasetVersionDifference.newVersion.title}</div>
                         <div id="version-details-block" class=" clearfix margin-bottom-half">
                             <div class="pull-left">
@@ -1357,18 +1376,20 @@
                     </p:dialog>
 
                     <!-- Request Access Sign Up/Log In Button -->
-                    <p:confirmDialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup">
-                        <f:facet name="message">
-                            <p>
-                                <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                                    <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
-                                </h:outputFormat>
-                            </p>
-                        </f:facet>
-                    </p:confirmDialog>
+                    <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-info-sign"/>&#160;
+                            <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
+                                <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.close}" onclick="accessSignUpLogIn_popup.hide()"/>
+                        </div>
+                    </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
 
-                                        <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup">
+                    <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.downloadDialog.tip']}
                         </p>
@@ -1381,7 +1402,7 @@
                         <div class="form-horizontal">
                             <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
                                 <label class="col-sm-3 control-label" for="guestbook_tou">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                 </label>
                                 <div class="col-sm-6">
                                     <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
@@ -1389,7 +1410,7 @@
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
                                 <label class="col-sm-3 control-label" for="guestbook_toa">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                 </label>
                                 <div class="col-sm-6">
                                     <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
@@ -1399,7 +1420,7 @@
                                 <p:fragment>
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label" for="guestbookuser_nameText">
-                        #{bundle.name}
+                                            #{bundle.name}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
                                         </label>
                                         <div class="col-sm-6">
@@ -1412,7 +1433,7 @@
                                 </p:fragment>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_email">
-                        #{bundle.email}
+                                        #{bundle.email}
                                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />
                                     </label>
                                     <div class="col-sm-6">
@@ -1425,7 +1446,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_institution">
-                        #{bundle.institution}
+                                        #{bundle.institution}
                                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />
                                     </label>
                                     <div class="col-sm-6">
@@ -1437,7 +1458,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_position">
-                        #{bundle.position}
+                                        #{bundle.position}
                                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />
                                     </label>
                                     <div class="col-sm-6">
@@ -1449,7 +1470,7 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
                                     <label class="col-sm-3 control-label" for="guestbookuser_questions">
-                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
+                                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
                                     </label>
                                     <div class="col-sm-6">
                                         <ui:repeat value="#{DatasetPage.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
@@ -1465,10 +1486,10 @@
                                                              requiredMessage="#{bundle['requiredField']}"/>
                                                 <p:message id="cqMessages" for="customQuestionResponse" display="text"/>                                                 
                                                 <p:selectOneMenu id="customQuestionResponseSelect"
-                                                    styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                    required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
-                                                    rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
-                                                    requiredMessage="#{bundle['requiredField']}">
+                                                                 styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                                 required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
+                                                                 requiredMessage="#{bundle['requiredField']}">
                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
                                                 </p:selectOneMenu>
@@ -1519,7 +1540,7 @@
                         </div>
                     </p:dialog>
                     
-                    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup">
+                    <p:dialog header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true">
                         <p class="help-block">
                             <span class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
                         </p>
@@ -1530,7 +1551,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" style="min-width:500px;">
+                    <p:dialog id="linkDatasetForm" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() > 0}">
                             <ui:fragment rendered="#{DatasetPage.dataversesForLinking.size() == 1}">
                                 <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
@@ -1610,7 +1631,7 @@
                         </ui:fragment>
                     </p:dialog>
 
-                    <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview">
+                    <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
                         </p>
@@ -1621,7 +1642,7 @@
                     </p:dialog>
 
                     <!-- Publish/Submit for Review Dialogs -->
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm">
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -1636,7 +1657,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishParent">                                      
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="publishParent" modal="true">                                      
                         <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
                             <p class="text-danger">
                                 <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.unregistered.tip']}
@@ -1658,7 +1679,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft">
+                    <p:dialog header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                         </p>
@@ -1683,7 +1704,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease">
+                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
@@ -1696,7 +1717,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="maynotPublishParent">
+                    <p:dialog header="#{bundle['dataset.mayNotBePublished']}" widgetVar="maynotPublishParent" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
@@ -1711,7 +1732,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor">
+                    <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
                         </p>

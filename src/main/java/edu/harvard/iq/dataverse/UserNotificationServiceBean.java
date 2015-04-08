@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -23,6 +24,8 @@ import javax.persistence.Query;
 @Stateless
 @Named
 public class UserNotificationServiceBean {
+    @EJB
+    MailServiceBean mailService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -69,5 +72,9 @@ public class UserNotificationServiceBean {
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
         save(userNotification);
+        if (mailService.sendNotificationEmail(userNotification)){
+            userNotification.setEmailed(true);
+            save(userNotification);
+        }
     }
 }

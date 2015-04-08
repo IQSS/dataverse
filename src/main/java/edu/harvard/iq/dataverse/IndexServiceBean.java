@@ -150,9 +150,11 @@ public class IndexServiceBean {
         }
         for (ControlledVocabularyValue dataverseSubject : dataverse.getDataverseSubjects()) {
             String subject = dataverseSubject.getStrValue();
-            solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, subject);
-            // collapse into shared "subject" field used as a facet
-            solrInputDocument.addField(SearchFields.SUBJECT, subject);
+            if (!subject.equals(DatasetField.NA_VALUE)) {
+                solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, subject);
+                // collapse into shared "subject" field used as a facet
+                solrInputDocument.addField(SearchFields.SUBJECT, subject);
+            }
         }
         // checking for NPE is important so we can create the root dataverse
         if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
@@ -654,7 +656,7 @@ public class IndexServiceBean {
                              * multiple value lives in the getSolrField() method
                              * of DatasetField.java
                              */
-                            solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValues());
+                            solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValuesWithoutNaValues());
                         } else if (dsf.getDatasetFieldType().getName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
                             List<String> possibleTitles = dsf.getValues();
@@ -666,6 +668,9 @@ public class IndexServiceBean {
                         }
                         if (dsfType.isControlledVocabulary()) {
                             for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
+                                if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
+                                    continue;
+                                }
                                 solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
                                 if (dsfType.getSolrField().isFacetable()) {
                                     solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
@@ -674,16 +679,16 @@ public class IndexServiceBean {
                         } else {
                             if (dsfType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)) {
                                 // strip HTML
-                                List<String> htmlFreeText = StringUtil.htmlArray2textArray(dsf.getValues());
+                                List<String> htmlFreeText = StringUtil.htmlArray2textArray(dsf.getValuesWithoutNaValues());
                                 solrInputDocument.addField(solrFieldSearchable, htmlFreeText);
                                 if (dsfType.getSolrField().isFacetable()) {
                                     solrInputDocument.addField(solrFieldFacetable, htmlFreeText);
                                 }
                             } else {
                                 // do not strip HTML
-                                solrInputDocument.addField(solrFieldSearchable, dsf.getValues());
+                                solrInputDocument.addField(solrFieldSearchable, dsf.getValuesWithoutNaValues());
                                 if (dsfType.getSolrField().isFacetable()) {
-                                    solrInputDocument.addField(solrFieldFacetable, dsf.getValues());
+                                    solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
                                 }
                             }
                         }

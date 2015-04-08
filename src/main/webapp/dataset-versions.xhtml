@@ -84,7 +84,7 @@
                     </ui:repeat>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
-                    <h:outputText styleClass="highlightBold" value="#{versionTab.defaultVersionDifference.fileNote}; " /> hello!
+                    <h:outputText styleClass="highlightBold" value="#{versionTab.defaultVersionDifference.fileNote}; " /> 
                 </ui:fragment>
             </ui:fragment>
             <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
@@ -110,14 +110,14 @@
 
         <!-- contributor column -->    
         <p:column class="col-sm-3">
-            <ui:fragment rendered="#{versionTab.contributorNames != null}">
+            <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
                 <h:outputText value="#{versionTab.contributorNames}" />
             </ui:fragment>
         </p:column><!-- end: contributor column -->    
 
         <!-- date column -->    
         <p:column class="col-sm-2">
-            <ui:fragment rendered="#{versionTab.versionDate != null}">
+            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.versionDate) }"-->
                 <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
             </ui:fragment>
         </p:column><!-- end: date column -->

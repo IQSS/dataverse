@@ -13,8 +13,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -23,6 +25,7 @@ import javax.persistence.TemporalType;
  * @author Leonid Andreev
  */
 @Entity
+@Table(indexes = {@Index(columnList="datafile_id")})
 public class IngestReport implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

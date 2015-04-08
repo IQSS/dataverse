@@ -13,8 +13,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 /**
@@ -23,6 +25,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @ValidateDatasetFieldType
+@Table(indexes = {@Index(columnList="datasetfield_id")})
 public class DatasetFieldValue implements Serializable {
     private static final long serialVersionUID = 1L;
     

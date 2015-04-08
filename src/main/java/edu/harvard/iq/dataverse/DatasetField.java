@@ -9,9 +9,9 @@ package edu.harvard.iq.dataverse;
  *
  * @author skraffmiller
  */
-import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,15 +24,21 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import org.apache.commons.lang.StringUtils;
 
 @Entity
 @ValidateDatasetFieldType
+@Table(indexes = {@Index(columnList="datasetfieldtype_id"),@Index(columnList="datasetversion_id"),
+    @Index(columnList="parentdatasetfieldcompoundvalue_id"),@Index(columnList="template_id")})
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -186,7 +192,8 @@ public class DatasetField implements Serializable {
         this.datasetFieldValues = datasetFieldValues;
     }
 
-    @OneToMany(cascade = {CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    @JoinTable(indexes = {@Index(columnList="datasetfield_id"),@Index(columnList="controlledvocabularyvalues_id")})
     private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
@@ -276,6 +283,12 @@ public class DatasetField implements Serializable {
                 }
             }
         }
+        return returnList;
+    }
+
+    public List<String> getValuesWithoutNaValues() {
+        List<String> returnList = getValues();
+        returnList.removeAll(Arrays.asList(NA_VALUE));
         return returnList;
     }
     

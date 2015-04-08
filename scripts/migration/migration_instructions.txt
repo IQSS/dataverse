@@ -60,7 +60,7 @@ in packlist.txt
 e. Unpack the files packaged above in the files directory on 
 the destination server.
 
-7. run migrate_permissions.sql script
+7. run migrate_permissions.sql script (may need to delete some duplicates)
 8. run migrate_links.sql script
 
 __________________________________________________

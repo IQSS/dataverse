@@ -777,7 +777,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void msg(String s){
-        //System.out.println(s);
+        System.out.println(s);
     }
     
     /**
@@ -795,9 +795,7 @@ public class DatasetPage implements java.io.Serializable {
      * @return boolean
      */
     public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
-        msg("-- canSeeMapButtonReminderToPublish -- " + fm.getLabel());
         if (fm==null){
-            msg("FileMetadata is null");
 
             return false;
         }       
@@ -805,7 +803,6 @@ public class DatasetPage implements java.io.Serializable {
         // (1) Is there an authenticated user?
         //
         if (!(this.session.getUser().isAuthenticated())){
-            msg("Not authenticated");
             return false;
         }
 
@@ -813,14 +810,12 @@ public class DatasetPage implements java.io.Serializable {
         //  TODO: or a Tabular file tagged as Geospatial?
         //
         if (!(this.isShapefileType(fm))){
-              msg("Not a shapefile");
               return false;
         }
 
         // (3) Is this DataFile released?  Yes, don't need reminder
         //
         if (fm.getDataFile().isReleased()){
-            msg("already published");
             return false;
         }
         
@@ -957,42 +952,55 @@ public class DatasetPage implements java.io.Serializable {
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         if (dataset.getId() != null || persistentId != null) { // view mode for a dataset     
-            if (dataset.getId() != null) {
-                dataset = datasetService.find(dataset.getId());
-            }
-            if (persistentId != null) {
-                try {
-                    dataset = datasetService.findByGlobalId(persistentId);
-                } catch (EJBException e) {
-                    dataset = null;
-                }
+          
+            
+           DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
+           
+           // ---------------------------------------
+           // Set the workingVersion and Dataset
+           // ---------------------------------------
+           if (dataset.getId() != null) {
+
+               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);                     
+               
+           }else if (persistentId != null) {
+               // Set Working Version and Dataset by PersistentID
+               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);                     
+           }
+           
+           if (retrieveDatasetVersionResponse == null){
+               return "/404.xhtml";
             }
 
-            if (dataset == null || dataset.isHarvested()) {
-                return "/404.xhtml";
-            }
-            // now get the correct version
-            if (version == null || version.isEmpty()) {
-                // If we don't have a version ID, we will get the latest published version; if not published, then go ahead and get the latest
-                // @todo: handle case where all versions are deaccessioned, except one draft:
-                //  currently not possible to get into this state, but should return latest deaccessioned view
-                workingVersion = dataset.getReleasedVersion();
-                if (workingVersion == null) {
-                    workingVersion = dataset.getLatestVersion();
-                }
-            } else {
-                if(version.toUpperCase().equals("DRAFT")){
-                    workingVersion = dataset.getEditVersion();
-                } else {
-                    workingVersion = datasetVersionService.findByFriendlyVersionNumber(dataset.getId(), version);  
-                }
-            }
+           this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+           this.dataset = this.workingVersion.getDataset();
+           
+           // end: Set the workingVersion and Dataset
+           // ---------------------------------------
+           
+           
+           // Is the DatasetVersion or Dataset null?
+           //
+           if (workingVersion == null || this.dataset == null){
+               return "/404.xhtml";
+           }
+           
+           // Is the Dataset harvested?
+           if (dataset.isHarvested()) {
+               return "/404.xhtml";
+           }
 
-            if (workingVersion == null) {
-                return "/404.xhtml";
-            } else if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-            }
+           // If this DatasetVersion is unpublished and permission is doesn't have permissions:
+           //  > Go to the Login page
+           //
+           if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
+               return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+           }
+         
+           if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()){
+              //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
+              JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//JH.localize("dataset.message.metadataSuccess"));
+           }
 
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
@@ -1251,7 +1259,7 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editMetadata"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
-            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editLicense"));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editTerms"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
     }
@@ -1847,7 +1855,7 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(JH.localize("dataset.message.metadataSuccess"));
         }
         if(editMode.equals(EditMode.LICENSE)){
-            JsfHelper.addSuccessMessage(JH.localize("dataset.message.licenseSuccess"));
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.termsSuccess"));
         }
         if(editMode.equals(EditMode.FILE)){
             JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
@@ -1869,7 +1877,7 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.metadataFailure"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.licenseFailure"));
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.termsFailure"));
             }
             if (editMode.equals(EditMode.FILE)) {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));

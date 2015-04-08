@@ -25,6 +25,7 @@ import javax.persistence.*;
 			    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id")
 })
 @Entity
+@Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
 
     public enum FieldType {

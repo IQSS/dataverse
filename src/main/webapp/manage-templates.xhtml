@@ -155,7 +155,10 @@
                                 </div>
                             </div>
                         </div>
-                        <ui:include src="metadataFragment.xhtml"/>
+                        <ui:include src="metadataFragment.xhtml">
+                            <ui:param name="managePage" value="true"/>                            
+                            <ui:param name="metadataBlocks" value="#{TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>
+                        </ui:include>
                         <div class="button-block">
                             <p:commandButton type="button" value="#{bundle.close}" onclick="viewTemplate.hide()" />
                         </div>

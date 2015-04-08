@@ -17,9 +17,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -27,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
  * @author gdurand
  */
 @Entity
+@Table(indexes = {@Index(columnList="parentdatasetfield_id")})
 public class DatasetFieldCompoundValue implements Serializable {
 
     private static final long serialVersionUID = 1L;

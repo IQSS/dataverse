@@ -6,53 +6,53 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
-<!-- LICENSE + TERMS -->
+<!-- TERMS -->
    <div class="text-right margin-bottom" 
         jsf:rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
        <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('LICENSE')}" 
-                      update="@form,:messagePanel" oncomplete="javascript:post_edit_license()" disabled="#{DatasetPage.locked}">
+                      update="@form,:messagePanel" oncomplete="javascript:post_edit_terms()" disabled="#{DatasetPage.locked}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-           <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editLicenseBtn']}
+           <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
        </p:commandLink>
     </div>
     <div class="panel-group">
        <div class="panel panel-default">
-           <div data-toggle="collapse" data-target="#panelCollapseLiscensingTOU" class="panel-heading text-info">
+           <div data-toggle="collapse" data-target="#panelCollapseTOU" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
-           <div id="panelCollapseLiscensingTOU" class="collapse in">
+           <div id="panelCollapseTOU" class="collapse in">
                <p:fragment id="touFragment"> 
                    <div class="panel-body">
                        <div class="form-group">
-                           <label for="metadata_License" class="col-sm-3 control-label">
-                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.title']}">
-                                   #{bundle['file.dataFilesTab.terms.list.termsOfUse.license']}
+                           <label for="metadata_Terms" class="col-sm-3 control-label">
+                               <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.title']}">
+                                   #{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver']}
                                </span>
                            </label>
                            <div class="col-sm-9">
                                <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                    <p class="help-block">
-                                       <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt.description']}" escape="false"/>
+                                       <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt.description']}" escape="false"/>
                                    </p>
                                </ui:fragment>
                                <ui:fragment rendered="#{empty DatasetPage.editMode and DatasetPage.workingVersion.license == 'NONE'}">
-                                   <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.license.txt']}" escape="false"/></p>
+                                   <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.waiver.txt']}" escape="false"/></p>
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty DatasetPage.editMode}">
-                                   <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.description']}" escape="false"/></p>
+                                   <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.description']}" escape="false"/></p>
                                    <p:selectOneRadio id="options" value="#{DatasetPage.workingVersion.license}">
-                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.CCO']}" itemValue="CC0" />
-                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.select.notCCO']}" itemValue="NONE" />
+                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.CCO']}" itemValue="CC0" />
+                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.notCCO']}" itemValue="NONE" />
                                        <p:ajax update="touFragment" oncomplete="javascript:dataverseuser_page_rebind();" />
                                    </p:selectOneRadio>
                                </ui:fragment>
                                <ui:fragment rendered="#{DatasetPage.workingVersion.license == 'CC0'}">
-                                   <p>#{bundle['file.dataFilesTab.terms.list.termsOfUse.license.txt']} <img src="/resources/images/cc0.png" alt="CC0" class="license-CC0-inline"/></p>
+                                   <p>#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt']} <img src="/resources/images/cc0.png" alt="CC0" class="waiver-CC0-inline"/></p>
                                </ui:fragment>
                            </div>
                        </div>
-                       <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
+                       <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0'}">
                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}">
                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
@@ -226,10 +226,10 @@
        </div>
 
        <div class="panel panel-default">
-           <div data-toggle="collapse" data-target="#panelCollapseRestrictedFilesTOA" class="panel-heading text-info">
+           <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
-           <div id="panelCollapseRestrictedFilesTOA" class="collapse in">
+           <div id="panelCollapseTOA" class="collapse in">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
                        <div class="form-group">
@@ -514,7 +514,7 @@
            </div>
        </div>
     </div>
-    <!-- / LICENSE + TERMS -->
+    <!-- / TERMS -->
 
     <!-- View Guest Book -->
     <p:dialog id="viewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">

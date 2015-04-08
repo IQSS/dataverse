@@ -268,8 +268,9 @@
                                                                     <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
+                                                                                                      onchange="#{DataversePage.updateInclude(mdb.id, dsft.id)}"                                                 
                                                                                                      disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or DataversePage.editInputLevel == false }">
-                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})" listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"/>
+                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id}), @widgetVar(optionBlock)" />
                                                                             </p:selectBooleanCheckbox>
                                                                             <div class="checkbox child-field" jsf:rendered="#{dsft.hasParent}">
                                                                                 <label>
@@ -381,12 +382,14 @@
                                                     <h:outputText value="#{bundle['dataverse.option.themeAndWidgets']}" />
                                                 </h:link>
                                             </li>
-                                            <li>
-                                                <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                    <h:outputText value="#{bundle['dataverse.option.permissions']}" />
-                                                    <f:param name="id" value="#{DataversePage.dataverse.id}" />
-                                                </h:link>
-                                            </li>
+                                            <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DataversePage.dataverse)}">
+                                                <li>
+                                                    <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                        <h:outputText value="#{bundle['dataverse.option.permissions']}" />
+                                                        <f:param name="id" value="#{DataversePage.dataverse.id}" />
+                                                    </h:link>
+                                                </li>
+                                            </ui:fragment>
                                             <li>
                                                 <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
                                                     <h:outputText value="#{bundle['dataverse.option.datasetTemplates']}" />
@@ -452,14 +455,16 @@
                                         <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
                                             <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"                                                          
                                                            oncomplete="PF('linkDataverseForm').show()"
-                                                           update=":linkDataverseForm">
+                                                           update=":linkDataverseForm"
+                                                           disabled="#{DataversePage.dataverse.owner == null}">
                                                 #{bundle['dataverse.link']}
                                             </p:commandLink>
                                         </li>
-                                        <li class="#{dataverseSession.user.superuser and SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
+                                        <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
                                             <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
                                                            oncomplete="PF('linkDataverseForm').show()"
-                                                           update=":linkDataverseForm">
+                                                           update=":linkDataverseForm"
+                                                           disabled="#{SearchIncludeFragment.mode != 'search'}">
                                                 #{bundle['dataverse.savedsearch.link']}
                                             </p:commandLink>
                                         </li>
@@ -471,9 +476,7 @@
                                     <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
-                            <p:confirmDialog message="#{bundle['dataverse.email.tip']}" header="#{bundle['dataverse.contact']}" widgetVar="contact_confirmation">
-                            </p:confirmDialog>
-                            <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog">
+                            <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
                                 <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataverse.share.dataverseShare.tip']}</p>
                                 
                                 <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse.xhtml?alias=#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
@@ -537,7 +540,9 @@
 
                     <!-- Save / Cancel Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty DataversePage.editMode}">
-                        <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all"/>
+                        <p:commandButton id="save" tabindex="9" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
+                            <f:ajax onerror="window.scrollTo(0, 0);" />
+                        </p:commandButton>
                         <p:commandButton id="cancel" tabindex="10" value="#{bundle.cancel}" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
                         <p:button tabindex="10" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </div>
@@ -569,7 +574,7 @@
                     </p:dialog>
 
                     <!-- Publish Confirmation Popup -->
-                    <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="confirmation">
+                    <p:dialog header="#{bundle['dataverse.publish.header']}" widgetVar="confirmation" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.tip']}
                         </p>
@@ -579,7 +584,7 @@
                         </div>
                     </p:dialog>
                    
-                    <p:dialog header="#{bundle['dataverse.publish.failed']}" widgetVar="mayNotRelease">
+                    <p:dialog header="#{bundle['dataverse.publish.failed']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.publish.failed.tip']}
                         </p>
@@ -588,7 +593,7 @@
                         </div>
                     </p:dialog>
                    
-                    <p:dialog header="#{bundle['dataverse.delete']}" widgetVar="deleteConfirmation">
+                    <p:dialog header="#{bundle['dataverse.delete']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.delete.tip']}
                         </p>
@@ -608,8 +613,6 @@
                     </ui:include>
                 </ui:fragment>
                
-                <!-- Link Dataverse Popup -->
-
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
                     <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">

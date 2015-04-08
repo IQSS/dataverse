@@ -455,7 +455,7 @@ public class DataversePage implements java.io.Serializable {
                         if ((dsftTest.isHasParent() && !dsftTest.getParentDatasetFieldType().isInclude()) || (!dsftTest.isHasParent() && !dsftTest.isInclude())) {
                             dsftTest.setRequiredDV(false);
                         }
-                        if (dsftTest.isHasChildren() && !dsftTest.isInclude()) {
+                        if (dsftTest.isHasChildren()) {
                             childDSFT.addAll(dsftTest.getChildDatasetFieldTypes());
                         }
                     }
@@ -923,16 +923,31 @@ public class DataversePage implements java.io.Serializable {
             }
 
             for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dataverseIdForInputLevel, dsft.getId());
-                if (dsfIl != null) {
-                    dsft.setRequiredDV(dsfIl.isRequired());
-                    dsft.setInclude(dsfIl.isInclude());
-                } else {
-                    dsft.setRequiredDV(dsft.isRequired());
-                    dsft.setInclude(true);
+                if (!dsft.isChild()) {
+                    DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dataverseIdForInputLevel, dsft.getId());
+                    if (dsfIl != null) {
+                        dsft.setRequiredDV(dsfIl.isRequired());
+                        dsft.setInclude(dsfIl.isInclude());
+                    } else {
+                        dsft.setRequiredDV(dsft.isRequired());
+                        dsft.setInclude(true);
+                    }
+                    dsft.setOptionSelectItems(resetSelectItems(dsft));
+                    if (dsft.isHasChildren()) {
+                        for (DatasetFieldType child : dsft.getChildDatasetFieldTypes()) {
+                            DataverseFieldTypeInputLevel dsfIlChild = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dataverseIdForInputLevel, child.getId());
+                            if (dsfIlChild != null) {
+                                child.setRequiredDV(dsfIlChild.isRequired());
+                                child.setInclude(dsfIlChild.isInclude());
+                            } else {
+                                child.setRequiredDV(child.isRequired());
+                                child.setInclude(true);
+                            }
+                            child.setOptionSelectItems(resetSelectItems(child));
+                        }
+                    }
                 }
-                dsft.setOptionSelectItems(resetSelectItems(dsft));
-            }
+            }            
             retList.add(mdb);
         }
         setAllMetadataBlocks(retList);

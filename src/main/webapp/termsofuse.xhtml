@@ -4,16 +4,16 @@
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:p="http://primefaces.org/ui">
     
-    <div class="form-group col-sm-11"><!-- # {DataverseUserPage.editMode == 'CREATE' ? 'col-sm-3' : 'col-sm-2'} -->
-        
+    <div class="form-group col-sm-11">
         <label for="position" class="col-sm-3 control-label">
             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['user.acccountterms.tip']}">
                 #{bundle['user.acccountterms']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
             </span>
         </label>
         <div class="col-sm-9">
-            <textarea class="form-control" rows="4" readonly="readonly">
-              <h:outputText value="#{systemConfig.applicationTermsOfUse}"/></textarea>
+            <div id="terms-agreement-block" class="well">
+                <h:outputText value="#{systemConfig.applicationTermsOfUse}" escape="false"/>
+            </div>
             <div class="checkbox">
               <p:selectBooleanCheckbox id="terms" required="true" requiredMessage="#{bundle['user.acccountterms.required']}">
                 <f:validator validatorId="requiredCheckboxValidator"/>

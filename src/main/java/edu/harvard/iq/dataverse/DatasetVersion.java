@@ -20,9 +20,11 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -37,6 +39,7 @@ import javax.validation.ValidatorFactory;
  * @author skraffmiller
  */
 @Entity
+@Table(indexes = {@Index(columnList="dataset_id")} )
 public class DatasetVersion implements Serializable {
 
     /**
@@ -429,6 +432,9 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getVersionDate() {
+        if (this.lastUpdateTime == null){
+            return null; 
+        }
         return new SimpleDateFormat("MMMM d, yyyy").format(lastUpdateTime);
     }
 
@@ -786,48 +792,66 @@ public class DatasetVersion implements Serializable {
                 str += "\"" + this.getTitle() + "\"";
             }
         }
-        if (!StringUtil.isEmpty(this.getDataset().getIdentifier())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            if (isOnlineVersion) {
-                str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
-            } else {
-                str += this.getDataset().getPersistentURL();
+        
+        // The Global Identifier: 
+        // It is always part of the citation for the local datasets; 
+        // And for *some* harvested datasets. 
+        if (!this.getDataset().isHarvested()
+                || HarvestingDataverseConfig.HARVEST_STYLE_VDC.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
+                || HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())
+                || HarvestingDataverseConfig.HARVEST_STYLE_DATAVERSE.equals(this.getDataset().getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+            if (!StringUtil.isEmpty(this.getDataset().getIdentifier())) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                if (isOnlineVersion) {
+                    str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getPersistentURL() + "</a>";
+                } else {
+                    str += this.getDataset().getPersistentURL();
+                }
             }
         }
 
-        //Get root dataverse name for Citation
-        String dataverseName = getRootDataverseNameforCitation();
-        if (!StringUtil.isEmpty(dataverseName)) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
+        // Get root dataverse name for Citation
+        // (only for non-harvested datasets):
+        if (!this.getDataset().isHarvested()) {
+            String dataverseName = getRootDataverseNameforCitation();
+            if (!StringUtil.isEmpty(dataverseName)) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += " " + dataverseName;
             }
-            str += " " + dataverseName;
         }
 
-        if (this.isDraft()) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += " DRAFT VERSION ";
+        // Version status:
+        // Again, this is needed for non-harvested stuff only:
+        // (the check may be redundant - we may already be dropping version 
+        // numbers when harvesting -- L.A. 4.0 beta15)
+        if (!this.getDataset().isHarvested()) {
+            if (this.isDraft()) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += " DRAFT VERSION ";
 
-        } else if (this.getVersionNumber() != null) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += " V" + this.getVersionNumber();
+            } else if (this.getVersionNumber() != null) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += " V" + this.getVersionNumber();
 
+            }
+            if (this.isDeaccessioned()) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += " DEACCESSIONED VERSION ";
+
+            }
         }
-        if (this.isDeaccessioned()) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += " DEACCESSIONED VERSION ";
-
-        }
-        /*UNF is not calculated yet*/
-         if (!StringUtil.isEmpty(getUNF())) {
+        
+        if (!StringUtil.isEmpty(getUNF())) {
             if (!StringUtil.isEmpty(str)) {
                 str += " ";
             }

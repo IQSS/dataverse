@@ -11,12 +11,14 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.validator.constraints.NotBlank;
@@ -30,6 +32,7 @@ import org.hibernate.validator.constraints.NotBlank;
                      query="SELECT d FROM Dataset d WHERE d.identifier=:identifier")
 )
 @Entity
+@Table(indexes = {@Index(columnList="guestbook_id"), @Index(columnList="thumbnailfile_id")} )
 public class Dataset extends DvObjectContainer {
 
     private static final long serialVersionUID = 1L;
@@ -537,10 +540,12 @@ public class Dataset extends DvObjectContainer {
                     return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId();
                 }
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
-                // TODO: 
-                // figure out how to redirect them to the ICPSR page specific to 
-                // the study in question. -- L.A. 4.0 beta15
-                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+                // For the ICPSR, it turns out that the best thing to do is to 
+                // rely on DOI to send the user to the right landing page for 
+                // the study: 
+                //String icpsrId = identifier;
+                //return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
+                return "http://doi.org/"+authority+"/"+identifier;
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_NESSTAR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 String nServerURL = this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result

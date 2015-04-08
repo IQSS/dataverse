@@ -9,6 +9,9 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author skraffmiller
  */
 @Entity
+@Table(indexes = {
+        @Index(columnList = "guestbook_id")
+})
 public class CustomQuestion implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

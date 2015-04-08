@@ -65,7 +65,9 @@
                             <p:column>
                                 <h:outputText value="#{roleAssignee.displayInfo.title}"/> 
                                 <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
-                                <h:outputText value=" #{roleAssignee.identifier}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{roleAssignee.identifier}"/>
                             </p:column>
                             <p:ajax process="@this" event="itemSelect" />
                             <p:ajax process="@this" event="itemUnselect" />

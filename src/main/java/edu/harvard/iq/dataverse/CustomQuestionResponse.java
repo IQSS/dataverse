@@ -15,6 +15,9 @@ import javax.persistence.*;
  * @author skraffmiller
  */
 @Entity
+@Table(indexes = {
+        @Index(columnList = "guestbookresponse_id")
+})
 public class CustomQuestionResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;

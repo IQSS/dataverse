@@ -104,7 +104,9 @@ update _dvn3_vdc_linked_collections set vdc_id = vdc_id + (select max(id) from _
 update _dvn3_study set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
 update _dvn3_vdccollection set owner_id = owner_id + (select max(id) from _dvn3_vdcnetwork);
 
---todo: offsets needed for files
+-- note: need to determine what offset to use, based on the file scripts
+--update _dvn3_studyfile_vdcuser set studyfiles_id = studyfiles_id +100000;
+--update _dvn3_studyfile_usergroup set studyfiles_id = studyfiles_id + 100000;
 
 
 

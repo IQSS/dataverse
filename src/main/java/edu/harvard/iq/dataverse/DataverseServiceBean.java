@@ -187,11 +187,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     
     public List<MetadataBlock> findSystemMetadataBlocks(){
-        return em.createQuery("select object(o) from MetadataBlock as o where o.dataverse.id=null  order by o.id").getResultList();
+        return em.createQuery("select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id").getResultList();
     }
     
     public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
-        return em.createQuery("select object(o) from MetadataBlock as o where o.dataverse.id=:dataverse_id order by o.id")
+        return em.createQuery("select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id")
                 .setParameter("dataverse_id", dataverse_id).getResultList();
     }
     

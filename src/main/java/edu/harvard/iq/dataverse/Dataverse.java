@@ -136,7 +136,7 @@ public class Dataverse extends DvObjectContainer {
     @NotEmpty(message="At least one contact is required.")
     private List<DataverseContact> dataverseContacts = new ArrayList();
     
-    @OneToMany(cascade = {CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks = new ArrayList();
 
     @OneToMany(mappedBy = "dataverse")
@@ -178,10 +178,10 @@ public class Dataverse extends DvObjectContainer {
         this.savedSearches = savedSearches;
     }
     
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    @OneToMany(mappedBy="dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<Template> templates; 
     
-    @OneToMany(cascade = {CascadeType.MERGE})
+    @OneToMany(mappedBy="dataverse", cascade = {CascadeType.MERGE})
     private List<Guestbook> guestbooks;
         
     public List<Guestbook> getGuestbooks() {

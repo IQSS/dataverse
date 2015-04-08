@@ -24,8 +24,13 @@ public class JsfHelper {
             addSuccessMessage(message);
         }
         public static void addErrorMessage(String message) {
-              FacesContext.getCurrentInstance().getExternalContext().getFlash().put("errorMsg", message);
-      
+              FacesContext.getCurrentInstance().getExternalContext().getFlash().put("errorMsg", message);      
+        } 
+        public static void addInfoMessage(String message) {
+              FacesContext.getCurrentInstance().getExternalContext().getFlash().put("infoMsg", message);      
+        } 
+        public static void addWarningMessage(String message) {
+              FacesContext.getCurrentInstance().getExternalContext().getFlash().put("warningMsg", message);      
         } 
 	public void addMessage( FacesMessage.Severity s, String summary, String details ) {
 		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(s, summary, details));

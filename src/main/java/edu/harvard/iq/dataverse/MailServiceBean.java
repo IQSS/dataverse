@@ -11,11 +11,13 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -102,7 +104,8 @@ public class MailServiceBean implements java.io.Serializable {
                     logger.warning("Failed to send mail to " + to + " (SMTPSendFailedException)");
                 }
             } else {
-                logger.warning("Skipping sending mail to " + to + ", because the \"no-reply\" address not set.");
+              // commenting out the warning so as not to clutter the log of installations that haven't set up mail  
+              //  logger.warning("Skipping sending mail to " + to + ", because the \"no-reply\" address not set.");
             }
         } catch (AddressException ae) {
             logger.warning("Failed to send mail to " + to);
@@ -284,7 +287,7 @@ public class MailServiceBean implements java.io.Serializable {
                 version = versionService.find(notification.getObjectId());
             } 
             
-            if (version == null) {
+            if (version != null) {
                 String datasetName = null;
                 dataset = version.getDataset();
                 if (dataset != null) {
@@ -306,6 +309,143 @@ public class MailServiceBean implements java.io.Serializable {
         } else {
             logger.warning("Skipping Map Layer Updated notification, because email address is null");
         }
+    }
+    
+    public Boolean sendNotificationEmail(UserNotification notification){
+        boolean retval = false;
+        String emailAddress = getUserEmailAddress(notification);
+        if (emailAddress != null){
+           Object objectOfNotification =  getObjectOfNotification(notification);
+           if (objectOfNotification != null){
+               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
+               String subjectText = getSubjectTextBasedOnNotification(notification);
+               if (!(messageText.isEmpty() || subjectText.isEmpty())){
+                    retval = sendSystemEmail(emailAddress, subjectText, messageText);
+               } else {
+                   logger.warning("Skipping " + notification.getType() +  " notification, because couldn't get valid message");
+               }
+           } else { 
+               logger.warning("Skipping " + notification.getType() +  " notification, because no valid Object was found");
+           }           
+        } else {
+            logger.warning("Skipping " + notification.getType() +  " notification, because email address is null");
+        }
+        return retval;
+    }
+        
+    private String getSubjectTextBasedOnNotification(UserNotification userNotification) {
+        switch (userNotification.getType()) {
+            case CREATEDV:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataverse.subject");
+            case REQUESTFILEACCESS:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.request.file.access.subject");
+            case GRANTFILEACCESS:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.grant.file.access.subject");
+            case REJECTFILEACCESS:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.rejected.file.access.subject");
+            case MAPLAYERUPDATED:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.update.maplayer");
+            case CREATEDS:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataset.subject");
+            case SUBMITTEDDS:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.submit.dataset.subject");
+            case PUBLISHEDDS:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.publish.dataset.subject");
+            case RETURNEDDS:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.returned.dataset.subject");
+            case CREATEACC:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.create.account.subject");
+        }
+        return "";
+    }
+   
+    private String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){       
+        
+        String messageText = ResourceBundle.getBundle("Bundle").getString("notification.email.greeting");
+        DatasetVersion version = null;
+        Dataset dataset = null;
+        String datasetName = "";
+        String pattern ="";
+        switch (userNotification.getType()) {
+            case CREATEDV:
+                Dataverse dataverse = (Dataverse) targetObject;
+                String ownerDataverseName = getOwnerDataverseName(dataverse);
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataverse");
+                if (ownerDataverseName != null) {
+                    String[] paramArray = {dataverse.getDisplayName(), ownerDataverseName};
+                    messageText += MessageFormat.format(pattern, paramArray);
+                } else {
+                    messageText += MessageFormat.format(pattern, "Root Dataverse", "Root Dataverse");
+                }
+                return messageText;
+            case REQUESTFILEACCESS:
+                dataset = (Dataset) targetObject;
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.requestFileAccess");
+                messageText += MessageFormat.format(pattern, dataset.getDisplayName());
+                return messageText;
+            case GRANTFILEACCESS:
+                dataset = (Dataset) targetObject;
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.grantFileAccess");
+                messageText += MessageFormat.format(pattern, dataset.getDisplayName());
+                return messageText;
+            case REJECTFILEACCESS:
+                dataset = (Dataset) targetObject;
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.rejectFileAccess");
+                messageText += MessageFormat.format(pattern, dataset.getDisplayName());
+                return messageText;
+            case CREATEDS:
+                version =  (DatasetVersion) targetObject;
+                datasetName = version.getTitle();
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataset");
+                String[] paramArray = {datasetName, version.getDataset().getOwner().getDisplayName()};
+                messageText += MessageFormat.format(pattern, paramArray);
+                return messageText;
+            case MAPLAYERUPDATED:
+                version =  (DatasetVersion) targetObject;
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.worldMap.added");
+                messageText += MessageFormat.format(pattern, version.getTitle());
+                return messageText;                   
+            case SUBMITTEDDS:
+                version =  (DatasetVersion) targetObject;
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasSubmittedForReview");
+                messageText += MessageFormat.format(pattern, version.getTitle(), version.getDataset().getOwner().getDisplayName());
+                return messageText;
+            case PUBLISHEDDS:
+                version =  (DatasetVersion) targetObject;
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasPublished");
+                messageText += MessageFormat.format(pattern, version.getTitle(), version.getDataset().getOwner().getDisplayName());
+                return messageText;
+            case RETURNEDDS:
+                version =  (DatasetVersion) targetObject;
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
+                messageText += MessageFormat.format(pattern, version.getTitle(), version.getDataset().getOwner().getDisplayName());
+                return messageText;
+            case CREATEACC:
+                messageText += ResourceBundle.getBundle("Bundle").getString("notification.email.welcome");
+                return messageText;
+        }
+        
+        return "";
+    }
+    
+    private Object getObjectOfNotification (UserNotification userNotification){
+        switch (userNotification.getType()) {
+            case CREATEDV:
+                return dataverseService.find(userNotification.getObjectId());
+            case REQUESTFILEACCESS:
+            case GRANTFILEACCESS:
+            case REJECTFILEACCESS:
+                return datasetService.find(userNotification.getObjectId());
+            case MAPLAYERUPDATED:
+            case CREATEDS:
+            case SUBMITTEDDS:
+            case PUBLISHEDDS:
+            case RETURNEDDS:
+                return versionService.find(userNotification.getObjectId());
+            case CREATEACC:
+                return userNotification.getUser();
+        }
+        return null;
     }
     
     public void bulkSendNotifications() {
@@ -363,7 +503,7 @@ public class MailServiceBean implements java.io.Serializable {
      
     private String getOwnerDataverseName(Dataverse dataverse) {
         if (dataverse.getOwner() != null) {
-            return dataverse.getOwner().getName();
+            return dataverse.getOwner().getDisplayName();
         } 
         return null;
     }

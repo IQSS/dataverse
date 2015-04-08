@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +19,11 @@ import javax.persistence.*;
  * @author skraffmiller
  */
 @Entity
+@Table(indexes = {
+        @Index(columnList = "guestbook_id"),
+        @Index(columnList = "datafile_id"),
+        @Index(columnList = "dataset_id")
+})
 public class GuestbookResponse implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -143,6 +150,11 @@ public class GuestbookResponse implements Serializable {
     public void setResponseTime(Date responseTime) {
         this.responseTime = responseTime;
     }
+    
+    public String getResponseDateForDisplay(){
+        return null; //    SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
+    }
+    
 
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;

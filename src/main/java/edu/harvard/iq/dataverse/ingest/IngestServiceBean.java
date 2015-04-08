@@ -1021,7 +1021,11 @@ public class IngestServiceBean {
         
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
-                dataFile.SetIngestInProgress();
+                // todo: investigate why when calling save with the file object
+                // gotten from the loop, the roles assignment added at create is removed
+                // (switching to refinding via id resolves that)                
+                dataFile = fileService.find(dataFile.getId());
+                dataFile.SetIngestInProgress();               
                 dataFile = fileService.save(dataFile);
 
                 scheduledFiles.add(dataFile);
