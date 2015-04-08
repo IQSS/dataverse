@@ -117,7 +117,7 @@
 
         <!-- date column -->    
         <p:column class="col-sm-2">
-            <ui:fragment rendered="#{ !empty(versionTab) and !empty(versionTab.lastUpdateTime) }">
+            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.versionDate) }"-->
                 <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
             </ui:fragment>
         </p:column><!-- end: date column -->

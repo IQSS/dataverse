@@ -432,6 +432,9 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getVersionDate() {
+        if (this.lastUpdateTime == null){
+            return null; 
+        }
         return new SimpleDateFormat("MMMM d, yyyy").format(lastUpdateTime);
     }
 
