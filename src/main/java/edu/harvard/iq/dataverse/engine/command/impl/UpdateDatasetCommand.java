@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 /**
  *
@@ -115,7 +116,17 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
-        ctxt.em().flush();
+        try {
+            ctxt.em().flush();
+        } catch (ConstraintViolationException e) {
+
+                    for (ConstraintViolation<?> violation : e.getConstraintViolations()) {
+                        StringBuffer sb = new StringBuffer();
+                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
+                        System.out.println(sb.toString());
+                    }
+            
+        }
         /**
          * @todo What should we do with the indexing result? Print it to the
          * log?
