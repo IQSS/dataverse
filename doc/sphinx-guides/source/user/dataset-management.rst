@@ -35,6 +35,8 @@ TwoRavens for you to create your subset. For more information on `TwoRavens <htt
 within the "Download" button for tabular data you will find additional options including downloading: in the original file format,
 RDATA Format, Variable Metadata (`DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file), Data Subset (as described earlier) and Data File Citation (currently in either RIS format or EndNote XML).
 
+|image2|
+
 Geospatial
 --------------------
 
@@ -90,29 +92,35 @@ to specifically edit any of those parts of your dataset.
 Terms
 =======================
 
-CC0 Public Domain Dedication Waiver + Dataset Terms of Use 
+In the Terms tab, which can also be found by clicking on the Edit dropdown button, you can set the Terms for your dataset. More specifically, there you can set a CC0 waiver or create your own custom Terms of Use, edit any Terms of Access you may have (restricted files only) and enable a Guestbook for your dataset. 
+
+CC0 Waiver + Dataset Terms of Use 
 ---------------------------------------------------------------
 
 Starting with Dataverse version 4.0, all new datasets will default to a `CC0 public domain dedication 
-<https://creativecommons.org/publicdomain/zero/1.0/>`_ waiver. CC0 facilitates reuse and extensibility of research data. 
+<https://creativecommons.org/publicdomain/zero/1.0/>`_ . CC0 facilitates reuse and extensibility of research data. 
 Our `Community Norms <http://best-practices.dataverse.org/harvard-policies/community-norms.html>`_ as well as good scientific
 practices expect that proper credit is given via citation. If you are unable to give your datasets a CC0 waiver you may enter 
 your own custom Terms of Use for your Datasets.
 
-\* **Legal Disclaimer:** these Community Norms are not a substitute for the CC0 or custom licenses applicable to each dataset. Please be advised that the Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
+\* **Legal Disclaimer:** these `Community Norms <http://best-practices.dataverse.org/harvard-policies/community-norms.html>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. Please be advised that the Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
 
 Setting up Custom Terms of Use for Datasets
 --------------------------------------------
 
-If you are unable to use CC0 for your datasets you are able to set your own custom terms of use. 
+If you are unable to use a CC0 waiver for your datasets you are able to set your own custom terms of use. To do so, select "No, do not apply CC0.." and a Terms of Use textbox will show up allowing you to enter your own custom terms of use for your dataset. To add more information about the Terms of Use, click on "Additional Information \[+]".
 
 Here is an `example of a Data Usage Agreement <http://best-practices.dataverse.org/harvard-policies/sample-dua.html>`_ for datasets that have de-identified human subject data.
 
 Restricted Files + Terms of Access 
 -----------------------------------------------
 
+If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, click on "Additional Information \[+]".
+
 Guestbook
 --------------
+
+This is where you will enable a particular Guestbook for your dataset, which is setup at the Dataverse-level. For specific instructions please visit the Dataverse Management Guide > `Dataset Guestbook section <http://guides.dataverse.org/en/latest/user/dataverse-management.html#dataset-guestbooks>`_.
 
 .. _permissions:
 
@@ -121,6 +129,7 @@ Permissions
 
 Dataset-Level 
 ---------------
+
 Dataset permissions are located under the Edit button on a dataset page. The dataset permissions page has two sections: Users/Groups and Roles.
 
 To give someone access to view your unpublished dataset or edit your published or unpublished dataset, click on the Assign Roles to Users/Groups button in the Users/Groups section. 
@@ -149,7 +158,7 @@ or editing metadata) will be tracked in our versioning feature. For example if y
 edit your dataset a new draft version of this dataset will be created. To get to the already published version 1 of your dataset,
 click on the blue "View Published Version" button on the top right of your dataset. To go back to the unpublished version click on the orange "View Unpublished Version" button. Once you are ready to publish this new version of your dataset, select the "Publish Dataset" button on the top right side of the page. If you were at version 1 of your dataset, and depending on the types of changes you have made, you will be asked to select to publish your draft as either version 1.1 or version 2.0 (**important note**: if you add a file, your dataset will automatically be bumped up to version 2.0). 
 
-|image2|
+|image3|
 
 **Dataset Versions Tab**
 
@@ -169,4 +178,6 @@ Deaccessioning a dataset or a version of a dataset is a very serious action that
 
 
 .. |image1| image:: ./img/DatasetDiagram.png
-.. |image2| image:: http://static.projects.iq.harvard.edu/files/styles/os_files_xxlarge/public/datascience/files/data_publishing_version_workflow.png?itok=8Z0PM-QC
+.. |image2| image:: ./img/data-download.png 
+.. |image3| image:: http://static.projects.iq.harvard.edu/files/styles/os_files_xxlarge/public/datascience/files/data_publishing_version_workflow.png?itok=8Z0PM-QC
+
