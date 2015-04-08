@@ -60,24 +60,26 @@
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                         </p:commandLink>
-                                    </li>
-                                    <li class="dropdown-submenu">
-                                        <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                    <h:outputText value="Dataset" />
-                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                </h:link>
-                                            </li>
-                                            <li>
-                                                <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                                    <h:outputText value="File" />
-                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                </h:link>
-                                            </li>
-                                        </ul>
-                                    </li>
+                                    </li>                                   
+                                    <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
+                                        <li class="dropdown-submenu">
+                                            <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                        <h:outputText value="Dataset" />
+                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                    </h:link>
+                                                </li>
+                                                <li>
+                                                    <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
+                                                        <h:outputText value="File" />
+                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                    </h:link>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
@@ -94,7 +96,7 @@
                                             </p:commandLink>
                                         </li>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
                                             <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">

@@ -382,12 +382,14 @@
                                                     <h:outputText value="#{bundle['dataverse.option.themeAndWidgets']}" />
                                                 </h:link>
                                             </li>
-                                            <li>
-                                                <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                    <h:outputText value="#{bundle['dataverse.option.permissions']}" />
-                                                    <f:param name="id" value="#{DataversePage.dataverse.id}" />
-                                                </h:link>
-                                            </li>
+                                            <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DataversePage.dataverse)}">
+                                                <li>
+                                                    <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                        <h:outputText value="#{bundle['dataverse.option.permissions']}" />
+                                                        <f:param name="id" value="#{DataversePage.dataverse.id}" />
+                                                    </h:link>
+                                                </li>
+                                            </ui:fragment>
                                             <li>
                                                 <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
                                                     <h:outputText value="#{bundle['dataverse.option.datasetTemplates']}" />
