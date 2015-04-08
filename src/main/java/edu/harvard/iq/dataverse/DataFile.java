@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -284,10 +285,25 @@ public class DataFile extends DvObject {
     private FileMetadata getLatestFileMetadata() {
         FileMetadata fmd = null;
 
+       
+        
         for (FileMetadata fileMetadata : fileMetadatas) {
-            if (fmd == null || fileMetadata.getDatasetVersion().getId().compareTo( fmd.getDatasetVersion().getId() ) > 0 ) {
+            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
+                return fileMetadata;
+            }
+             if (fileMetadata.getDatasetVersion().getDataset().isHarvested()) {
+                return fileMetadata;
+            }
+        }
+         
+        
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            
+            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
-            }                       
+            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
+                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   )
+                fmd = fileMetadata;
         }
         return fmd;
     }
