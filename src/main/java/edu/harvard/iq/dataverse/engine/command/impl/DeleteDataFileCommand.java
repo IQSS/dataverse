@@ -71,14 +71,10 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             DatasetVersion dsv = doomed.getOwner().getEditVersion();
             for (FileMetadata fmd : dsv.getFileMetadatas()) {
                 if (doomed.getId() != null && doomed.equals(fmd.getDataFile())) {
-                    // first create draft, if it's new
-                    if (dsv.getId() == null) {
-                        ctxt.engine().submit(new UpdateDatasetCommand(dsv.getDataset(), user));
-                    }
+                    dsv.getFileMetadatas().remove(fmd);
+                    ctxt.engine().submit(new UpdateDatasetCommand(dsv.getDataset(), user));
                     
-                    FileMetadata doomedAndMerged = ctxt.em().merge(fmd);
-                    ctxt.em().remove(doomedAndMerged);
-                    String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+                    //String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
                     return;
                 }                    
             } 
