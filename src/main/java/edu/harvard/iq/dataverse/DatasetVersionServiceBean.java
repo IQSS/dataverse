@@ -41,6 +41,68 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
+    /**
+     *  Response to a successful request from the DatasetPage
+     * 
+     *  Used to help display messages in the cases when:
+     *      (1) A specific dataset version (including a DRAFT) is requested
+     *      (2) A different dataset is returned b/c the first one doesn't exist
+     * 
+     *  Simple example:  "DRAFT" requested but no longer exists b/c it
+     *      was published and is now version "1.0"
+     */
+    public class RetrieveDatasetVersionResponse{
+    
+        private DatasetVersion chosenVersion;
+        private boolean wasSpecificVersionRequested = false;
+        private boolean didSpecificVersionMatch = false;
+        private String requestedVersion = null;  
+        
+        public RetrieveDatasetVersionResponse(DatasetVersion chosenVersion, String requestedVersion){
+            this.chosenVersion = chosenVersion;
+            this.requestedVersion = requestedVersion;
+            this.checkVersion();
+        }
+        
+        private void checkVersion(){
+            if (chosenVersion==null){   // this shouldn't happen
+                return;
+            }
+            
+            // This may often be the case if version is not specified
+            //
+            if (requestedVersion == null || requestedVersion.equals("")){
+                return;
+            }
+
+            this.wasSpecificVersionRequested = true;                
+
+            if (this.requestedVersion.equalsIgnoreCase(chosenVersion.getSemanticVersion())){
+                this.didSpecificVersionMatch = true;
+            }            
+            
+        }
+        
+        public boolean didUserRequestSpecificVersion(){
+            return this.wasSpecificVersionRequested;
+        }
+        
+        public boolean didSpecificVersionMatch(){
+            return this.didSpecificVersionMatch;
+        }
+        
+        public DatasetVersion getChosenVersion(){
+            return this.chosenVersion;
+        }
+        
+        public String getReturnedVersion(){
+            if (this.chosenVersion == null){
+                return null;
+            }
+            return this.chosenVersion.getSemanticVersion();
+        }
+    }
+    
     public DatasetVersion find(Object pk) {
         return (DatasetVersion) em.find(DatasetVersion.class, pk);
     }
@@ -430,7 +492,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
      * @param version  "DRAFT", 1.0, 2, 3.4, null, etc
      * @return 
      */
-    public DatasetVersion retrieveDatasetVersionByPersistentId(String persistentId, String version){
+    public RetrieveDatasetVersionResponse retrieveDatasetVersionByPersistentId(String persistentId, String version){
         
         msg("retrieveDatasetVersionByPersistentId: " + persistentId + " " + version);
         if (persistentId==null){
@@ -452,7 +514,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         identifierClause += " AND ds.identifier = '" + persistentIdParts[2] + "'"; 
         
 
-        return retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        if (ds != null){
+            return new RetrieveDatasetVersionResponse(ds, version);
+        }
+        
+        return null;
+        
     }
     
     
@@ -463,7 +531,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
      * @param version  "DRAFT", 1.0, 2, 3.4, null, etc
      * @return 
      */
-    public DatasetVersion retrieveDatasetVersionById(Long datasetId, String version){
+    public RetrieveDatasetVersionResponse retrieveDatasetVersionById(Long datasetId, String version){
         msg("retrieveDatasetVersionById: " + datasetId + " " + version);
         if (datasetId==null){
             return null;
@@ -471,10 +539,21 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         String identifierClause = " AND ds.id = " + datasetId;
 
-        return retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        
+        if (ds != null){
+            return new RetrieveDatasetVersionResponse(ds, version);
+        }
+        
+        return null;
+
           
     } // end: retrieveDatasetVersionById
 
 } // end class
 
-
+/*RetrieveDatasetVersionResponse(DatasetVersion chosenVersion, String requestedVersion){
+            this.chosenVersion = chosenVersion;
+            this.requestedVersion = requestedVersion;
+            this.checkVersion();
+        }*/

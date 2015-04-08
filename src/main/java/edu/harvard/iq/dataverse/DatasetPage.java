@@ -953,26 +953,32 @@ public class DatasetPage implements java.io.Serializable {
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         if (dataset.getId() != null || persistentId != null) { // view mode for a dataset     
           
+            
+           DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
+           
            // ---------------------------------------
            // Set the workingVersion and Dataset
            // ---------------------------------------
            if (dataset.getId() != null) {
 
-               this.workingVersion = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);                     
-               if (workingVersion != null){
-                   this.dataset = workingVersion.getDataset();
-               }
+               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);                     
                
            }else if (persistentId != null) {
                // Set Working Version and Dataset by PersistentID
-               this.workingVersion = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);                     
-               if (workingVersion != null){
-                   this.dataset = workingVersion.getDataset();
-               }
+               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);                     
            }
+           
+           if (retrieveDatasetVersionResponse == null){
+               return "/404.xhtml";
+            }
+
+           this.workingVersion = retrieveDatasetVersionResponse.getChosenVersion();
+           this.dataset = this.workingVersion.getDataset();
+           
            // end: Set the workingVersion and Dataset
            // ---------------------------------------
-
+           
+           
            // Is the DatasetVersion or Dataset null?
            //
            if (workingVersion == null || this.dataset == null){
