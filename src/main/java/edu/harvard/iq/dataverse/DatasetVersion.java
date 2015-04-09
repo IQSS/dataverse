@@ -773,11 +773,22 @@ public class DatasetVersion implements Serializable {
         }
 
         if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
-            //if not released use current year
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
+            
+            if (!this.getDataset().isHarvested()) {
+                //if not released use current year
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
+            } else {
+                String distDate = getDistributionDate();
+                if (distDate != null) {
+                    if (!StringUtil.isEmpty(str)) {
+                        str += ", ";
+                    }
+                    str += distDate;
+                }
             }
-            str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime()));
         } else {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
@@ -868,7 +879,14 @@ public class DatasetVersion implements Serializable {
 
     public String getDistributionDate() {
         //todo get dist date from datasetfieldvalue table
-        return "Distribution Date";
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (DatasetFieldConstant.distributionDate.equals(dsf.getDatasetFieldType().getName())) {
+                String date = dsf.getValue();
+                return date;
+            }
+            
+        }
+        return null;
     }
 
     

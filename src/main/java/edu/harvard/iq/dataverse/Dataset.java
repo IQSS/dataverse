@@ -541,7 +541,7 @@ public class Dataset extends DvObjectContainer {
                 }
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_ICPSR.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
-                // rely on DOI to send the user to the right landing page for 
+                // rely on the DOI to send the user to the right landing page for 
                 // the study: 
                 //String icpsrId = identifier;
                 //return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
@@ -566,6 +566,8 @@ public class Dataset extends DvObjectContainer {
 
                 
                 return NesstarWebviewPage;
+            } else if (HarvestingDataverseConfig.HARVEST_STYLE_ROPER.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
             } else {
                 return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
             }
