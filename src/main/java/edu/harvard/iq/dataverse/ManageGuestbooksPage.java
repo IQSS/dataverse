@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
@@ -103,7 +104,13 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         if (selectedGuestbook != null) {
             guestbooks.remove(selectedGuestbook);
             dataverse.getGuestbooks().remove(selectedGuestbook);
-            saveDataverse("dataset.manageGuestbooks.message.deleteSuccess", "dataset.manageGuestbooks.message.deleteFailure");
+            try {
+                engineService.submit(new DeleteGuestbookCommand(session.getUser(), getDataverse(), selectedGuestbook));
+                JsfHelper.addFlashMessage("The guestbook has been deleted");
+            } catch (CommandException ex) {
+                String failMessage = "The dataset guestbook cannot be deleted.";
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            }
         } else {
             System.out.print("Selected Guestbook is null");
         }
