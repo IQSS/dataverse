@@ -83,6 +83,7 @@ public class SolrSearchResult {
     private String versionNumberFriendly;
     //Determine if the search result is owned by any of the dvs in the tree of the DV displayed
     private boolean isInTree;
+    private float score;
 
     public boolean isIsInTree() {
         return isInTree;
@@ -359,6 +360,7 @@ public class SolrSearchResult {
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
+            nullSafeJsonBuilder.add("score", getScore());
         }
         if (showEntityIds) {
             if (this.entityId != null) {
@@ -756,6 +758,14 @@ public class SolrSearchResult {
      */
     public void setDataverseParentAlias(String dataverseParentAlias) {
         this.dataverseParentAlias = dataverseParentAlias;
+    }
+
+    public float getScore() {
+        return score;
+    }
+
+    public void setScore(float score) {
+        this.score = score;
     }
 
     private String getDisplayType(String type) {

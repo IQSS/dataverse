@@ -125,6 +125,7 @@ public class SearchServiceBean {
             // String displayName = entry.getValue();
             solrQuery.addHighlightField(solrField);
         }
+        solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/spell");
         solrQuery.setParam("facet", "true");
         /**
@@ -379,6 +380,8 @@ public class SearchServiceBean {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
+            float score = (Float) solrDocument.getFieldValue(SearchFields.RELEVANCE);
+            logger.info("score for " + id + ": " + score);
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
             String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
@@ -445,6 +448,7 @@ public class SearchServiceBean {
             solrSearchResult.setIdentifier(identifier);
             solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
+            solrSearchResult.setScore(score);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
             solrSearchResult.setDateToDisplayOnCard(dateToDisplayOnCard);

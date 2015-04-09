@@ -499,6 +499,9 @@
                         <!--CARDS-->
                         <p:dataTable id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result">
                             <p:column styleClass="#{result.type == 'dataverses' ? 'dataverseResult' : (result.type == 'datasets' ? 'datasetResult' : '')}">
+                                <ui:fragment rendered="#{systemConfig.debugEnabled}">
+                                    <h:outputText value="score: #{result.score}" rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>
+                                </ui:fragment>
                                 <!--DATAVERSE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
                                     <div class="card-title-icon-block">
