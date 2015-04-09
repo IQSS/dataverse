@@ -292,7 +292,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     
     private void msg(String s){
-    //    System.out.println(s);
+        //System.out.println(s);
     }
     
     /**
@@ -398,6 +398,26 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
     }
     
+        /**
+     * Query to return a DEACCESSIONED DatasetVersion by Persistent ID
+     * 
+     * @param identifierClause  - query clause to retrieve via DatasetVersion.Id or DatasetVersion.persistentId 
+     * @return String fullQuery
+     */
+    private String getDeaccessionedDatasetVersionQuery(String identifierClause){
+        
+        if (identifierClause == null){
+            return null;
+        }
+        String draftClause = " AND dv.versionstate = '" + VersionState.DEACCESSIONED.toString() + "'";
+
+        return getDatasetVersionBasicQuery(identifierClause, draftClause);
+        
+    }
+    
+    
+    
+    
     /**
      * Execute a query to return DatasetVersion
      * 
@@ -474,9 +494,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         /* --------------------------------------------
             (2) Scenario: Version specified
-                - (2a) Look for major and minor version - RELEASE OR DRAFT
+                - (2a) Look for major and minor version - RELEASE OR DEACCESSIONED
                     - OR Look for major version - RELEASE
                 - (2c) Not found: look for latest released version
+                - (2c) Not found: look for DEACCESSIONED
                 - (2d) Not found: look for draft
                 - Permissions: check on DatasetPage        
         
@@ -487,7 +508,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         Long[] versionNumbers = parseVersionNumber(version);
         if (versionNumbers != null && versionNumbers.length == 2){        // At least a major version found
             
-            // (2a) Look for major and minor version - RELEASE OR DRAFT
+            // (2a) Look for major and minor version - RELEASE OR DEACCESSIONED
             msg("(2a) Look for major and minor version -" + Arrays.toString(versionNumbers));
             String specificVersionQuery = this.getNumericDatasetVersionQueryByIdentifier(identifierClause, versionNumbers[0], versionNumbers[1]);            
             
@@ -506,8 +527,17 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return chosenVersion;
         }
 
-        // (2c) Look for draft
+        // (2c) Look for DEACCESSIONED
         msg("(2c) Look for draft");        
+        String dQuery = this.getDeaccessionedDatasetVersionQuery(identifierClause);            
+        //msg("draftQuery: " + draftQuery);
+        chosenVersion = this.getDatasetVersionByQuery(dQuery);
+        if (chosenVersion != null){
+            return chosenVersion;
+        }
+        
+        // (2d) Look for draft
+        msg("(2d) Look for draft");        
         String draftQuery = this.getDraftDatasetVersionQuery(identifierClause);            
         //msg("draftQuery: " + draftQuery);
         chosenVersion = this.getDatasetVersionByQuery(draftQuery);
