@@ -87,7 +87,7 @@ public class DataverseRole implements Serializable  {
     
     @Size(max = 16, message = "Alias must be at most 16 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "Alias cannot be empty. Valid characters are a-Z, 0-9, '_', and '-'.")
-    @Column( nullable = false )
+    @Column(nullable = false, unique=true)
     private String alias;
 	
 	/** Stores the permissions in a bit set.  */
