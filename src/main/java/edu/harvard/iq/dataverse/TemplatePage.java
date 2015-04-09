@@ -98,11 +98,7 @@ public class TemplatePage implements java.io.Serializable {
     public void init() {
         if (templateId != null) { // edit or view existing for a template  
             dataverse = dataverseService.find(ownerId);
-            for (Template dvTemp : dataverse.getTemplates()) {
-                if (dvTemp.getId().longValue() == templateId) {
-                    template = dvTemp;
-                }
-            }
+            template = templateService.find(templateId);
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
             updateDatasetFieldInputLevels();
