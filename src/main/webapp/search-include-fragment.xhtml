@@ -502,6 +502,10 @@
                                 <!--DATAVERSE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
                                     <div class="card-title-icon-block">
+                                        <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
+                                        <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
+                                        <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
+                                        
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.name} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet} #{bundle.dataverse}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
@@ -511,10 +515,6 @@
                                         <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
-
-                                        <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
-                                        <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
-                                        <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
                                     </div>
                                     <div class="card-preview-icon-block text-center">
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
@@ -587,6 +587,10 @@
                                 <!--DATASET CARDS-->
                                 <ui:fragment rendered="#{result.type == 'datasets'}">
                                     <div class="card-title-icon-block">
+                                        <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
+                                        <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
+                                        <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
+                                        
                                         <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
@@ -594,10 +598,6 @@
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.DEACCESSIONED}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
-
-                                        <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
-                                        <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
-                                        <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
                                     </div>
                                     <div class="card-preview-icon-block text-center">
                                         <a href="#{result.datasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
@@ -649,17 +649,18 @@
                                 <!--FILE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'files'}">
                                     <div class="card-title-icon-block">
+                                        <span class="glyphicon glyphicon-lock text-danger pull-right" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                                        <span class="icon-unlock text-success pull-right" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                                        <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
+                                        <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
+                                        <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
+                                        
                                         <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                             <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
-                                        <span class="glyphicon glyphicon-lock text-danger pull-right" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
-                                        <span class="icon-unlock text-success pull-right" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
-                                        <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!result.isInTree}"/>
-                                        <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.entity.harvested}"/>
-                                        <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
                                     </div>
                                     <ui:remove>
                                         <div>

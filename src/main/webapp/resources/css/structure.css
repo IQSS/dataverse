@@ -371,7 +371,7 @@ div[id$='resultsTable'] div.file-tags-block span.label:first-of-type {margin-lef
 div[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;padding:4px;}
 div[id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 div[id$='resultsTable'] div.card-title-icon-block span[class^='icon'],
-div[id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {font-size:1.3em;}
+div[id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {font-size:1.3em; margin-left:3px;}
 div[id$='resultsTable'] div.card-title-icon-block span[class^='glyphicon'] {margin-top:3px;}
 div[id$='resultsTable'] div.card-preview-icon-block {width:48px; float:left; margin:4px 12px 6px 0;}
 div[id$='resultsTable'] div.card-preview-icon-block a {display:block; height:48px; line-height:48px;}
