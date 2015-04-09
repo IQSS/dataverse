@@ -280,7 +280,7 @@
                     <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <div class="clearfix">
-                                <ui:fragment rendered="#{systemConfig.shibEnabled == true}">
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and systemConfig.shibEnabled == true}">
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['user.institutionLogIn.tip']}" escape="false"/></p>
                                 </ui:fragment>
                                 <div class="form-horizontal">
