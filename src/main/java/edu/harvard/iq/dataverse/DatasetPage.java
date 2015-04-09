@@ -1004,7 +1004,7 @@ public class DatasetPage implements java.io.Serializable {
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
             datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
-            datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
+            datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
             updateDatasetFieldInputLevels();
             displayCitation = dataset.getCitation(true, workingVersion);
             setVersionTabList(resetVersionTabList());  
@@ -1198,7 +1198,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private void resetVersionUI() {
         
-        datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
+        datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
         if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
 
@@ -1253,7 +1253,7 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editFiles"));
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode.equals(EditMode.METADATA)) {
-            datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
+            datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
             updateDatasetFieldInputLevels();
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editMetadata"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));

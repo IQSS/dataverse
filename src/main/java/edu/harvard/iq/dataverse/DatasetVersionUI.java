@@ -57,7 +57,7 @@ public class DatasetVersionUI implements Serializable {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
     
-    public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion) {
+    public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion, boolean createBlanks) {
         /*takes in the values of a dataset version 
          and apportions them into lists for 
          viewing and editng in the dataset page.
@@ -131,7 +131,7 @@ public class DatasetVersionUI implements Serializable {
             }
         }
         
-        datasetVersion.setDatasetFields(initDatasetFields());
+        datasetVersion.setDatasetFields(initDatasetFields(createBlanks));
         
         setMetadataValueBlocks(datasetVersion);
         
@@ -315,12 +315,12 @@ public class DatasetVersionUI implements Serializable {
     
  // TODO: clean up init methods and get them to work, cascading all the way down.
     // right now, only work for one level of compound objects
-    private DatasetField initDatasetField(DatasetField dsf) {
+    private DatasetField initDatasetField(DatasetField dsf, boolean createBlanks) {
         if (dsf.getDatasetFieldType().isCompound()) {
             for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
                 // for each compound value; check the datasetfieldTypes associated with its type
                 for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
-                    boolean add = true;
+                    boolean add = createBlanks;
                     for (DatasetField subfield : cv.getChildDatasetFields()) {
                         if (dsfType.equals(subfield.getDatasetFieldType())) {
                             add = false;
@@ -340,11 +340,11 @@ public class DatasetVersionUI implements Serializable {
         return dsf;
     }
 
-    private List<DatasetField> initDatasetFields() {
+    private List<DatasetField> initDatasetFields(boolean createBlanks) {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
         for (DatasetField dsf : this.datasetVersion.getDatasetFields()) {
-            retList.add(initDatasetField(dsf));
+            retList.add(initDatasetField(dsf, createBlanks));
         }
      
 
@@ -354,7 +354,7 @@ public class DatasetVersionUI implements Serializable {
         for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
             for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
                 if (!dsfType.isSubField()) {
-                    boolean add = true;
+                    boolean add = createBlanks;
                     //don't add if already added as a val
                     for (DatasetField dsf : retList) {
                         if (dsfType.equals(dsf.getDatasetFieldType())) {
