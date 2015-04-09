@@ -1,2 +1,3 @@
 #!/bin/bash
-diff <(curl -s 'http://localhost:8080/api/search?q=:' | jq .message) scripts/search/tests/expected/query-unparseable
+. scripts/search/export-keys
+diff <(curl -s "http://localhost:8080/api/search?q=:&key=$ADMINKEY" | jq .message) scripts/search/tests/expected/query-unparseable

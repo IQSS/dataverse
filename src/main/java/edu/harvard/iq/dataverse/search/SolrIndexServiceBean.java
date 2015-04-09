@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -48,6 +49,8 @@ public class SolrIndexServiceBean {
     SearchPermissionsServiceBean searchPermissionsService;
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
     @EJB
     DataverseRoleServiceBean rolesSvc;
     @EJB
@@ -356,6 +359,10 @@ public class SolrIndexServiceBean {
         UpdateResponse commitResponse = solrServer.commit();
     }
 
+    /**
+     * We use the database to determine direct children since there is no
+     * inheritance
+     */
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
         List<Long> dvObjectsToReindexPermissionsFor = new ArrayList<>();
         /**
@@ -370,20 +377,13 @@ public class SolrIndexServiceBean {
             if (!selfDataverse.equals(dataverseService.findRootDataverse())) {
                 dvObjectsToReindexPermissionsFor.add(definitionPoint.getId());
             }
-        } else {
-            dvObjectsToReindexPermissionsFor.add(definitionPoint.getId());
-        }
-        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("*");
-        solrQuery.setRows(Integer.SIZE);
-        if (definitionPoint.isInstanceofDataverse()) {
-            Dataverse dataverse = (Dataverse) definitionPoint;
-
-            String dataversePath = dataverseService.determineDataversePath(dataverse);
-            String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-
-            solrQuery.addFilterQuery(filterDownToSubtree);
+            List<Dataset> directChildDatasetsOfDvDefPoint = datasetService.findByOwnerId(selfDataverse.getId());
+            for (Dataset dataset : directChildDatasetsOfDvDefPoint) {
+                dvObjectsToReindexPermissionsFor.add(dataset.getId());
+                for (long fileId : filesToReIndexPermissionsFor(dataset)) {
+                    dvObjectsToReindexPermissionsFor.add(fileId);
+                }
+            }
         } else if (definitionPoint.isInstanceofDataset()) {
             // index the dataset itself
             indexPermissionsForOneDvObject(definitionPoint.getId());
@@ -392,32 +392,11 @@ public class SolrIndexServiceBean {
              * @todo make this faster, index files in batches
              */
             Dataset dataset = (Dataset) definitionPoint;
-            Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
-            for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
-                boolean cardShouldExist = desiredCards.get(version.getVersionState());
-                if (cardShouldExist) {
-                    for (FileMetadata fileMetadata : version.getFileMetadatas()) {
-                        dvObjectsToReindexPermissionsFor.add(fileMetadata.getDataFile().getId());
-                    }
-                }
+            for (long fileId : filesToReIndexPermissionsFor(dataset)) {
+                dvObjectsToReindexPermissionsFor.add(fileId);
             }
-
-        }
-
-        QueryResponse queryResponse = null;
-        try {
-            queryResponse = solrServer.query(solrQuery);
-            if (queryResponse != null) {
-                for (SolrDocument solrDoc : queryResponse.getResults()) {
-                    Object entityIdObject = solrDoc.getFieldValue(SearchFields.ENTITY_ID);
-                    if (entityIdObject != null) {
-                        dvObjectsToReindexPermissionsFor.add((Long) entityIdObject);
-                    }
-                }
-            }
-
-        } catch (SolrServerException | HttpSolrServer.RemoteSolrException ex) {
-            return new IndexResponse("Unable to execute indexPermissionsOnSelfAndChildren on " + definitionPoint.getId() + ":" + definitionPoint.getDisplayName() + ". Exception: " + ex.toString());
+        } else {
+            dvObjectsToReindexPermissionsFor.add(definitionPoint.getId());
         }
 
         List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
@@ -437,6 +416,20 @@ public class SolrIndexServiceBean {
                 + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
                 + "): " + dvObjectsToReindexPermissionsFor.size()
         );
+    }
+
+    private List<Long> filesToReIndexPermissionsFor(Dataset dataset) {
+        List<Long> filesToReindexPermissionsFor = new ArrayList<>();
+        Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
+        for (DatasetVersion version : datasetVersionsToBuildCardsFor(dataset)) {
+            boolean cardShouldExist = desiredCards.get(version.getVersionState());
+            if (cardShouldExist) {
+                for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+                    filesToReindexPermissionsFor.add(fileMetadata.getDataFile().getId());
+                }
+            }
+        }
+        return filesToReindexPermissionsFor;
     }
 
     public IndexResponse deleteMultipleSolrIds(List<String> solrIdsToDelete) {
