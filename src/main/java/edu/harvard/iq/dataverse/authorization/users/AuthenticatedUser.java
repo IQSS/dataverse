@@ -65,12 +65,6 @@ public class AuthenticatedUser implements User, Serializable {
      */
     private Timestamp modificationTime;
 
-    /**
-     * @deprecated This column can be removed. We used to index users into Solr
-     * but now we JOIN on "permission documents" instead.
-     */
-    @Deprecated
-    private Timestamp indexTime;
 
     @Transient
     private UserRequestMetadata requestMetadata;
@@ -196,11 +190,6 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setModificationTime(Timestamp modificationTime) {
         this.modificationTime = modificationTime;
-    }
-
-    @Deprecated
-    public void setIndexTime(Timestamp indexTime) {
-        this.indexTime = indexTime;
     }
 
     public boolean isBuiltInUser() {
