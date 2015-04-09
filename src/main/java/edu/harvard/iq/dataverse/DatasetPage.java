@@ -310,33 +310,36 @@ public class DatasetPage implements java.io.Serializable {
             this.fileDownloadPermissionMap.put(fid, false);
             return false;
         }
+
+        // (3) User has EditDataset Permission  
+        //
+        if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
+            // Yes, save answer and return true
+            this.fileDownloadPermissionMap.put(fid, true);
+            return true;
+        }
+      
         
         // For an unrestrictd file, check Dataset Permissions
         //
         if (!(isRestrictedFile)){
-        
-            // (3) Authenticated User has ViewUnpublishedDataset Permission and File is Unrestricted 
+                                   
+            // (4) File is released and File is unrestricted
+            if (fileMetadata.getDataFile().isReleased()){
+                return true;
+            }
+            
+            // (5) Authenticated User has ViewUnpublishedDataset Permission and File is Unrestricted 
             //
             if (this.doesSessionUserHaveDataSetPermission(Permission.ViewUnpublishedDataset)){
                 // Yes, save answer and return true
                 this.fileDownloadPermissionMap.put(fid, true);
                 return true;
             }
-
-            // (4) User has EditDataset Permission and File is Unrestricted 
-            //
-            if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
-                // Yes, save answer and return true
-                this.fileDownloadPermissionMap.put(fid, true);
-                return true;
-            }
-                        
-            // (5) File is released and File is unrestricted
-            if (fileMetadata.getDataFile().isReleased()){
-                return true;
-            }
+             
             
         }else{
+                                
             // Restricted, make the call to the Permissions Service
             // (6) Check the Download DataFile permission
             //
@@ -944,7 +947,7 @@ public class DatasetPage implements java.io.Serializable {
 
     
    public String init() {
-        //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        // System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         
         guestbookResponse = new GuestbookResponse();
@@ -1882,6 +1885,8 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
             }
     }
+    
+    
     
     private String returnToLatestVersion(){
          dataset = datasetService.find(dataset.getId());
