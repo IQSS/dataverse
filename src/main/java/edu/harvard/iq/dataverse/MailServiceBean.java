@@ -169,147 +169,6 @@ public class MailServiceBean implements java.io.Serializable {
             me.printStackTrace(System.out);
         }
     }
- 
-    public void sendCreateDataverseNotification(UserNotification notification) {
-        String emailAddress = getUserEmailAddress(notification);
-
-        if (emailAddress != null) {
-            Long object_id = notification.getObjectId();
-            Dataverse dataverse = null;
-            if (object_id != null) {
-                dataverse = dataverseService.find(notification.getObjectId());
-            } else {
-                logger.fine("Null dataverse id");
-            }
-            String dataverseName = null;
-            String ownerDataverseName = null;
-            if (dataverse != null) {
-                dataverseName = dataverse.getName();
-                logger.fine("Dataverse name: " + dataverseName);
-                ownerDataverseName = getOwnerDataverseName(dataverse);
-                logger.fine("Owner Dataverse name: " + ownerDataverseName);
-                
-                String messageText = "";
-                
-                if (ownerDataverseName != null) {
-                    messageText = "Hello, \nYour new dataverse named '" + dataverseName + "' was"
-                            + " created in the " + ownerDataverseName + " Dataverse. Remember to release your dataverse.";
-                } else {
-                    messageText = "Hello, \nYour new Root dataverse was"
-                            + " created. Remember to release your Root dataverse.";
-                }
-                String subject = "Dataverse: Your dataverse has been created";
-                sendSystemEmail(emailAddress, subject, messageText);
-                
-            } else {
-                logger.warning("Skipping create dataverse notification, because no valid dataverse id was supplied");
-            }
-        } else {
-            logger.warning("Skipping create dataverse notification, because email address is null");
-        }
-        
-    }
-    
-    public void sendCreateDatasetNotification(UserNotification notification) {
-        String emailAddress = getUserEmailAddress(notification);
-
-        if (emailAddress != null) {
-            Long object_id = notification.getObjectId();
-            Dataset dataset = null;
-            DatasetVersion version = null; 
-            if (object_id != null) {
-                version = versionService.find(notification.getObjectId());
-            } else {
-                logger.fine("Null version id");
-            }
-            if (version != null) {
-                String datasetName = null;
-                String ownerDataverseName = null;
-                dataset = version.getDataset();
-                if (dataset != null) {
-                    datasetName = version.getTitle();
-                    logger.fine("Dataset name: " + datasetName);
-                    Dataverse ownerDataverse = dataset.getOwner();
-                    if (ownerDataverse != null) {
-                        ownerDataverseName = ownerDataverse.getName();
-                        logger.fine("Owner Dataverse name: " + ownerDataverseName);
-
-                        String messageText = "";
-
-                        if ("Root".equals(ownerDataverseName)) {
-                            messageText = "Hello, \nYour new dataset named '" + datasetName + "' was"
-                                    + " created in the Root Dataverse. Remember to release your dataset.";
-                        } else {
-                            messageText = "Hello, \nYour new dataset named '" + datasetName + "' was"
-                                    + " created in the " + ownerDataverseName + " Dataverse. Remember to release your dataset.";
-                        }
-                        String subject = "Dataverse: Your dataset has been created";
-                        sendSystemEmail(emailAddress, subject, messageText);
-                    } else {
-                        logger.warning("Skipping create dataset notification, because the owner dataverse is NULL (?!)");
-                    }
-                } else {
-                    logger.warning("Skipping create dataset notification, because no valid dataset was found!");
-                }
-            } else {
-                logger.warning("Skipping create dataset notification, because no valid dataset version id was supplied");
-            }
-        } else {
-            logger.warning("Skipping create dataset notification, because email address is null");
-        }
-    }
-    
-    public void sendCreateAccountNotification(UserNotification notification) {
-        String emailAddress = getUserEmailAddress(notification);
-
-        if (emailAddress != null) {
-
-            String messageText = "Welcome to Dataverse 4.0 Beta! Please take a look around, try everything out, \n"
-                    + "and check out our Google Group (https://groups.google.com/forum/#!forum/dataverse-community)\n"
-                    + "to leave feedback.";
-
-            String subject = "Dataverse: Your account has been created.";
-            sendSystemEmail(emailAddress, subject, messageText);
-
-        } else {
-            logger.warning("Skipping create account notification, because email address is null");
-        }
-    }
-    
-    public void sendMapLayerUpdatedNotification(UserNotification notification) {
-        String emailAddress = getUserEmailAddress(notification);
-
-        if (emailAddress != null) {
-            Long object_id = notification.getObjectId();
-            Dataset dataset = null;
-            DatasetVersion version = null; 
-            if (object_id != null) {
-                version = versionService.find(notification.getObjectId());
-            } 
-            
-            if (version != null) {
-                String datasetName = null;
-                dataset = version.getDataset();
-                if (dataset != null) {
-                    datasetName = version.getTitle();
-                    logger.fine("Dataset name: " + datasetName);
-
-                    String messageText = "";
-
-                    messageText = "Hello, \nWorldMap layer data has been added to the dataset named '" + datasetName + ".";
-                    String subject = "Dataverse: WorldMap layer added to dataset";
-                    sendSystemEmail(emailAddress, subject, messageText);
-
-                } else {
-                    logger.warning("Skipping Map Layer Updated notification, because no valid dataset was found!");
-                }
-            } else {
-                logger.warning("Skipping Map Layer Updated notification, because no valid dataset versio id was supplied");
-            }
-        } else {
-            logger.warning("Skipping Map Layer Updated notification, because email address is null");
-        }
-    }
     
     public Boolean sendNotificationEmail(UserNotification notification){        
         boolean retval = false;
@@ -374,10 +233,7 @@ public class MailServiceBean implements java.io.Serializable {
         String messageText = ResourceBundle.getBundle("Bundle").getString("notification.email.greeting");
         DatasetVersion version = null;
         Dataset dataset = null;
-        String datasetName = "";
         String pattern ="";
-        String dataverseLink = "";
-        String datasetLink = "";
 
         switch (userNotification.getType()) {
             case CREATEDV:
@@ -385,7 +241,7 @@ public class MailServiceBean implements java.io.Serializable {
                 String ownerDataverseName = getOwnerDataverseName(dataverse);
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataverse");
                 if (ownerDataverseName != null) {
-                    String[] paramArray = {dataverse.getDisplayName(), ownerDataverseName};
+                    String[] paramArray = {getDataverseLink(dataverse), getDataverseLink(dataverse.getOwner())};
                     messageText += MessageFormat.format(pattern, paramArray);
                 } else {
                     messageText += MessageFormat.format(pattern, "Root Dataverse", "Root Dataverse");
@@ -408,7 +264,6 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
-                datasetName = version.getTitle();
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataset");
                 String[] paramArray = {getDatasetLink(version.getDataset()), getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArray);
@@ -461,41 +316,7 @@ public class MailServiceBean implements java.io.Serializable {
         return null;
     }
     
-    public void bulkSendNotifications() {
-        List<UserNotification> notificationsList = userNotificationService.findUnemailed();
-        if (notificationsList != null) {
-            for (UserNotification notification : notificationsList) {
-                
-                if (UserNotification.Type.CREATEDV.equals(notification.getType())) {
-                    logger.fine("sending Create Dataverse notification");
-                     sendCreateDataverseNotification(notification);
-                } else if (UserNotification.Type.CREATEDS.equals(notification.getType())) {
-                    logger.fine("sending Create Dataset notification");
-                    sendCreateDatasetNotification(notification);
-                } else if (UserNotification.Type.CREATEACC.equals(notification.getType())) {
-                    logger.fine("Sending CREATE ACCOUNT notification");
-                    sendCreateAccountNotification(notification);
-                } else if (UserNotification.Type.MAPLAYERUPDATED.equals(notification.getType())) {
-                    logger.fine("Sending MAPLAYERUPDATED notification");
-                    sendMapLayerUpdatedNotification(notification);
-                }
-                
-                // As more types of notifications become available, this code 
-                // will need to be modified, with proper handling methods added.
-                // -- L.A. 4.0 beta 9
-                
-                notification.setEmailed(true);
-                notification.setSendDate(new Timestamp(new Date().getTime()));
-                userNotificationService.save(notification);
-                // TODO: 
-                // would be prudent to add some logic to only update the 
-                // "emailed" status and the timestamp if the send was 
-                // actually successful. 
-                // -- L.A. 4.0 beta 9
-               
-            }
-        }
-    }
+
     
     
     private String getUserEmailAddress(UserNotification notification) {

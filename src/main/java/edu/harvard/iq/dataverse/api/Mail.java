@@ -22,9 +22,9 @@ public class Mail extends AbstractApiBean {
     @Path("notifications")
     public Response sendMail() {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "sendMail");
-        mailService.bulkSendNotifications();
+       // mailService.bulkSendNotifications();
         actionLogSvc.log(alr);
-        return okResponse("bulk send notification started");
+        return okResponse("bulk send notification is deprecated");
     }
     
 }
