@@ -96,7 +96,7 @@ public class MailServiceBean implements java.io.Serializable {
                 msg.setRecipients(Message.RecipientType.TO,
                         InternetAddress.parse(to, false));
                 msg.setSubject(subject);
-                msg.setText(messageText + "\n\nThank you,\nThe Dataverse Project");
+                msg.setText(messageText + ResourceBundle.getBundle("Bundle").getString("notification.email.closing"));
                 try {
                     Transport.send(msg);
                     sent = true;
@@ -177,9 +177,9 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification);
-               String subjectText = getSubjectTextBasedOnNotification(notification);
+               String subjectText = getSubjectTextBasedOnNotification(notification);              
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
-                    retval = sendSystemEmail(emailAddress, subjectText, messageText);                    
+                    retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
                    logger.warning("Skipping " + notification.getType() +  " notification, because couldn't get valid message");
                }
@@ -218,14 +218,16 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
     
-    private String getDatasetLink(Dataset dataset){
-        
-        return dataset.getDisplayName() + " at " +  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalId();
-    }
+    private String getDatasetManagePermissionsLink(Dataset dataset){        
+        return  systemConfig.getDataverseSiteUrl() + "/permissions-manage.xhtml?id=" + dataset.getId();
+    } 
     
-    private String getDataverseLink(Dataverse dataverse){
-        
-        return dataverse.getDisplayName() + " at " +  systemConfig.getDataverseSiteUrl() + "/dataverse.xhtml?alias=" + dataverse.getAlias();
+    private String getDatasetLink(Dataset dataset){        
+        return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalId();
+    }  
+    
+    private String getDataverseLink(Dataverse dataverse){       
+        return  systemConfig.getDataverseSiteUrl() + "/dataverse.xhtml?alias=" + dataverse.getAlias();
     }
    
     private String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){       
@@ -241,8 +243,8 @@ public class MailServiceBean implements java.io.Serializable {
                 String ownerDataverseName = getOwnerDataverseName(dataverse);
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataverse");
                 if (ownerDataverseName != null) {
-                    String[] paramArray = {getDataverseLink(dataverse), getDataverseLink(dataverse.getOwner())};
-                    messageText += MessageFormat.format(pattern, paramArray);
+                    String[] paramArrayCreateDV = {dataverse.getDisplayName(), getDataverseLink(dataverse),dataverse.getOwner().getDisplayName(), getDataverseLink(dataverse.getOwner())};
+                    messageText += MessageFormat.format(pattern, paramArrayCreateDV);
                 } else {
                     messageText += MessageFormat.format(pattern, "Root Dataverse", "Root Dataverse");
                 }
@@ -250,43 +252,54 @@ public class MailServiceBean implements java.io.Serializable {
             case REQUESTFILEACCESS:
                 dataset = (Dataset) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.requestFileAccess");
-                messageText += MessageFormat.format(pattern, getDatasetLink(dataset));
+                String[] paramArrayRequestFileAccess = {dataset.getDisplayName(), getDatasetManagePermissionsLink(dataset)};
+                messageText += MessageFormat.format(pattern, paramArrayRequestFileAccess);
                 return messageText;
             case GRANTFILEACCESS:
                 dataset = (Dataset) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.grantFileAccess");
-                messageText += MessageFormat.format(pattern, getDatasetLink(dataset));
+                String[] paramArrayGrantFileAccess = {dataset.getDisplayName(), getDatasetLink(dataset)};
+                messageText += MessageFormat.format(pattern, paramArrayGrantFileAccess);
                 return messageText;
             case REJECTFILEACCESS:
                 dataset = (Dataset) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.rejectFileAccess");
-                messageText += MessageFormat.format(pattern, getDatasetLink(dataset));
+                String[] paramArrayRejectFileAccess = {dataset.getDisplayName(), getDatasetLink(dataset)};
+                messageText += MessageFormat.format(pattern, paramArrayRejectFileAccess);
                 return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
-                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataset");
-                String[] paramArray = {getDatasetLink(version.getDataset()), getDataverseLink(version.getDataset().getOwner())};
-                messageText += MessageFormat.format(pattern, paramArray);
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataset");                
+                String[] paramArrayCreateDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                    version.getDataset().getOwner().getDisplayName(), getDataverseLink(version.getDataset().getOwner())};               
+                messageText += MessageFormat.format(pattern, paramArrayCreateDataset);
                 return messageText;
             case MAPLAYERUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.worldMap.added");
-                messageText += MessageFormat.format(pattern, getDatasetLink(version.getDataset()));
+                String[] paramArrayMapLayer = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset())};
+                messageText += MessageFormat.format(pattern, paramArrayMapLayer);
                 return messageText;                   
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasSubmittedForReview");
-                messageText += MessageFormat.format(pattern, getDatasetLink(version.getDataset()), getDataverseLink(version.getDataset().getOwner()));
+                String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                messageText += MessageFormat.format(pattern, paramArraySubmittedDataset);
                 return messageText;
             case PUBLISHEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasPublished");
-                messageText += MessageFormat.format(pattern, getDatasetLink(version.getDataset()), getDataverseLink(version.getDataset().getOwner()));
+                String[] paramArrayPublishedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                messageText += MessageFormat.format(pattern, paramArrayPublishedDataset);
                 return messageText;
             case RETURNEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.wasReturnedByReviewer");
-                messageText += MessageFormat.format(pattern, getDatasetLink(version.getDataset()), getDataverseLink(version.getDataset().getOwner()));
+                String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
                 return messageText;
             case CREATEACC:
                 messageText += ResourceBundle.getBundle("Bundle").getString("notification.email.welcome");
