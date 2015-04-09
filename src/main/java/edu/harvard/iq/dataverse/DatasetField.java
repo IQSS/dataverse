@@ -466,16 +466,22 @@ public class DatasetField implements Serializable {
     }
 
     public boolean removeBlankDatasetFieldValues() {
-        if (this.getDatasetFieldType().isPrimitive() && !this.getDatasetFieldType().isControlledVocabulary()) {
-            Iterator<DatasetFieldValue> dsfvIt = this.getDatasetFieldValues().iterator();
-            while (dsfvIt.hasNext()) {
-                DatasetFieldValue dsfv = dsfvIt.next();
-                if (StringUtils.isBlank(dsfv.getValue())) {
-                    dsfvIt.remove();
+        if (this.getDatasetFieldType().isPrimitive()) {
+            if (!this.getDatasetFieldType().isControlledVocabulary()) {
+                Iterator<DatasetFieldValue> dsfvIt = this.getDatasetFieldValues().iterator();
+                while (dsfvIt.hasNext()) {
+                    DatasetFieldValue dsfv = dsfvIt.next();
+                    if (StringUtils.isBlank(dsfv.getValue())) {
+                        dsfvIt.remove();
+                    }
                 }
-            }
-            if (this.getDatasetFieldValues().isEmpty()) {
-                return true;
+                if (this.getDatasetFieldValues().isEmpty()) {
+                    return true;
+                }
+            } else { // controlled vocab
+                if (this.getControlledVocabularyValues().isEmpty()) {
+                    return true;
+                }                 
             }
         } else if (this.getDatasetFieldType().isCompound()) {
             Iterator<DatasetFieldCompoundValue> cvIt = this.getDatasetFieldCompoundValues().iterator();
