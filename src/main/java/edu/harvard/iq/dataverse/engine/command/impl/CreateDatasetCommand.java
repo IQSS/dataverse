@@ -103,7 +103,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             throw new IllegalCommandException(validationFailedString, this);
         }
                 
-        logger.log(Level.INFO, "after validation "  + formatter.format(new Date().getTime())); // TODO remove
+        logger.log(Level.FINE, "after validation "  + formatter.format(new Date().getTime())); // TODO remove
         theDataset.setCreator((AuthenticatedUser) getUser());
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
@@ -125,7 +125,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
-        logger.log(Level.INFO,"after datascrub "  + formatter.format(new Date().getTime()));        
+        logger.log(Level.FINE,"after datascrub "  + formatter.format(new Date().getTime()));        
         String nonNullDefaultIfKeyNotFound = "";
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
@@ -159,9 +159,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
                }
-        logger.log(Level.INFO,"after doi "  + formatter.format(new Date().getTime()));          
+        logger.log(Level.FINE,"after doi "  + formatter.format(new Date().getTime()));          
         Dataset savedDataset = ctxt.em().merge(theDataset);
-         logger.log(Level.INFO,"after db update "  + formatter.format(new Date().getTime()));       
+         logger.log(Level.FINE,"after db update "  + formatter.format(new Date().getTime()));       
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
             ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getUser(), savedDataset));
@@ -184,7 +184,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         } catch ( RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
         }
-          logger.log(Level.INFO,"after index "  + formatter.format(new Date().getTime()));      
+          logger.log(Level.FINE,"after index "  + formatter.format(new Date().getTime()));      
         
         // if we are not migrating, assign the user to this version
         if (importType==null || importType.equals(ImportType.NEW)) {  
@@ -202,7 +202,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             }       
             ctxt.em().merge(datasetVersionDataverseUser); 
         }
-           logger.log(Level.INFO,"after create version user "  + formatter.format(new Date().getTime()));       
+           logger.log(Level.FINE,"after create version user "  + formatter.format(new Date().getTime()));       
         return savedDataset;
     }
 

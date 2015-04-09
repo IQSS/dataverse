@@ -195,7 +195,7 @@ public class SolrSearchResult {
         for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
             SolrField solrField = entry.getKey();
             Highlight highlight = entry.getValue();
-            logger.info("SolrSearchResult class: " + solrField.getNameSearchable() + ":" + highlight.getSnippets());
+            logger.fine("SolrSearchResult class: " + solrField.getNameSearchable() + ":" + highlight.getSnippets());
         }
 
         Highlight highlight = highlightsAsMap.get(SearchFields.DESCRIPTION);

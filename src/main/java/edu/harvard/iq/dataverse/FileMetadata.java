@@ -197,7 +197,7 @@ public class FileMetadata implements Serializable {
 
                 
                 if (fileCategory != null) {
-                    logger.log(Level.INFO, "Found file category for {0}", newCategoryName);
+                    logger.log(Level.FINE, "Found file category for {0}", newCategoryName);
 
                     this.addCategory(fileCategory);
                     fileCategory.addFileMetadata(this);

@@ -49,7 +49,7 @@ public class SwordAuth extends AbstractApiBean {
         AuthenticatedUser authenticatedUserFromToken = findUserByApiToken(username);
         if (authenticatedUserFromToken == null) {
             String msg = "User not found based on API token.";
-            logger.info(msg);
+            logger.fine(msg);
             throw new SwordAuthException(msg);
         } else {
             return authenticatedUserFromToken;

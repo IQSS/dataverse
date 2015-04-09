@@ -93,7 +93,7 @@ public class ImportGenericServiceBean {
         
             Gson gson = new Gson();
             String json = gson.toJson(datasetDTO.getDatasetVersion());
-            logger.info(json);
+            logger.fine(json);
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
             DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);

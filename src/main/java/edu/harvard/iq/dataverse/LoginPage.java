@@ -146,7 +146,7 @@ public class LoginPage implements java.io.Serializable {
         authReq.setIpAddress( session.getUser().getRequestMetadata().getIpAddress() );
         try {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
-            logger.log(Level.INFO, "User authenticated: {0}", r.getEmail());
+            logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             
             if ("dataverse.xhtml".equals(redirectPage)) {
@@ -160,7 +160,7 @@ public class LoginPage implements java.io.Serializable {
                 redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
-            logger.log(Level.INFO, "Sending user to = {0}", redirectPage);
+            logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
 
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
 

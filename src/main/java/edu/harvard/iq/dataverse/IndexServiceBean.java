@@ -97,7 +97,7 @@ public class IndexServiceBean {
     }
 
     public Future<String> indexDataverse(Dataverse dataverse) {
-        logger.info("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
+        logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
             String msg = "unable to index dataverse. id was null (alias: " + dataverse.getAlias() + ")";
             logger.info(msg);
@@ -220,7 +220,7 @@ public class IndexServiceBean {
     }
 
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        logger.info("indexing dataset " + dataset.getId());
+        logger.fine("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
          * IndexableObject.IndexableTypes.DATASET.getName() + "_" ?
@@ -348,7 +348,7 @@ public class IndexServiceBean {
                  * {responseHeader={status=0,QTime=0}}
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
-                logger.info(result);
+                logger.fine(result);
                 indexDatasetPermissions(dataset);
                 return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
@@ -396,11 +396,12 @@ public class IndexServiceBean {
                  * {responseHeader={status=0,QTime=1}}
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
-                logger.info(result);
+                logger.fine(result);
                 indexDatasetPermissions(dataset);
                 return new AsyncResult<>(result);
             } else {
                 String result = "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
+                logger.fine(result);
                 return new AsyncResult<>(result);
             }
         } else if (atLeastOnePublishedVersion == true) {
@@ -452,7 +453,7 @@ public class IndexServiceBean {
                  * {responseHeader={status=0,QTime=0}}
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
-                logger.info(result);
+                logger.fine(result);
                 indexDatasetPermissions(dataset);
                 return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
@@ -500,17 +501,17 @@ public class IndexServiceBean {
                  * {responseHeader={status=0,QTime=0}}
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
-                logger.info(result);
+                logger.fine(result);
                 indexDatasetPermissions(dataset);
                 return new AsyncResult<>(result);
             } else {
                 String result = "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
-                logger.info(result);
+                logger.fine(result);
                 return new AsyncResult<>(result);
             }
         } else {
             String result = "No-op. Unexpected condition reached: Has a version been published or not?";
-            logger.info(result);
+            logger.fine(result);
             return new AsyncResult<>(result);
         }
     }
@@ -530,7 +531,7 @@ public class IndexServiceBean {
     private String addOrUpdateDataset(IndexableDataset indexableDataset) {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
-        logger.info("adding or updating Solr document for dataset id " + dataset.getId());
+        logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = new ArrayList<>();
@@ -577,7 +578,7 @@ public class IndexServiceBean {
             if (createDate != null) {
                 if (true) {
                     String msg = "can't find major release date, using create date: " + createDate;
-                    logger.info(msg);
+                    logger.fine(msg);
                 }
                 datasetSortByDate = createDate;
             } else {
@@ -603,7 +604,6 @@ public class IndexServiceBean {
         if (datasetVersion != null) {
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
-            System.out.print(datasetVersion.getCitation(true));
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(true));
 
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
@@ -783,7 +783,7 @@ public class IndexServiceBean {
                     if (datafile != null) {
                         boolean fileHasBeenReleased = datafile.isReleased();
                         if (fileHasBeenReleased) {
-                            logger.info("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            logger.fine("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
                             Timestamp filePublicationTimestamp = datafile.getPublicationDate();
                             if (filePublicationTimestamp != null) {
                                 fileSortByDate = filePublicationTimestamp;
@@ -792,7 +792,7 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                         } else {
-                            logger.info("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
                             Timestamp fileCreateTimestamp = datafile.getCreateDate();
                             if (fileCreateTimestamp != null) {
                                 fileSortByDate = fileCreateTimestamp;
@@ -982,7 +982,7 @@ public class IndexServiceBean {
     public String delete(Dataverse doomed) {
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
-        logger.info("deleting Solr document for dataverse " + doomed.getId());
+        logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
             updateResponse = server.deleteById(solrDocIdentifierDataverse + doomed.getId());
@@ -995,7 +995,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
         String response = "Successfully deleted dataverse " + doomed.getId() + " from Solr index. updateReponse was: " + updateResponse.toString();
-        logger.info(response);
+        logger.fine(response);
         return response;
     }
 
@@ -1008,7 +1008,7 @@ public class IndexServiceBean {
     public String removeSolrDocFromIndex(String doomed) {
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
-        logger.info("deleting Solr document: " + doomed);
+        logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
             updateResponse = server.deleteById(doomed);
@@ -1021,7 +1021,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
         String response = "Attempted to delete " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
-        logger.info(response);
+        logger.fine(response);
         return response;
     }
 

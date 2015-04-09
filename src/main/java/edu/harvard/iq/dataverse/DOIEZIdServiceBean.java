@@ -44,7 +44,7 @@ public class DOIEZIdServiceBean  {
         ezidService = new EZIDService (baseURLString);    
         USERNAME  = System.getProperty("doi.username");
         PASSWORD  = System.getProperty("doi.password");
-        logger.log(Level.INFO, "baseURLString " + baseURLString);
+        logger.log(Level.FINE, "baseURLString " + baseURLString);
         try {
            ezidService.login(USERNAME, PASSWORD);  
         } catch(Exception e){
@@ -63,7 +63,7 @@ public class DOIEZIdServiceBean  {
         metadata.put("_status", "reserved");;       
         try {
             retString = ezidService.createIdentifier(identifier, metadata);
-            logger.log(Level.INFO, "create DOI identifier retString : " + retString);
+            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
         } catch (EZIDException e) {
             logger.log(Level.INFO, "Identifier not created: create failed");
             logger.log(Level.INFO, "String " + e.toString());
@@ -98,8 +98,8 @@ public class DOIEZIdServiceBean  {
        try {
               metadata = ezidService.getMetadata(identifierOut);
             }  catch (EZIDException e){                
-            logger.log(Level.INFO, "None existing so we can use this identifier");
-            logger.log(Level.INFO, "identifier: " + identifierOut );  
+            logger.log(Level.FINE, "None existing so we can use this identifier");
+            logger.log(Level.FINE, "identifier: " + identifierOut);
             return metadata;
         }         
        return metadata;

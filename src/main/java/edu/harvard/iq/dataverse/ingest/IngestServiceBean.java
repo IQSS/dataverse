@@ -398,7 +398,7 @@ public class IngestServiceBean {
                         }
 
                         String fileEntryName = zipEntry.getName();
-                        logger.info("ZipEntry, file: "+fileEntryName);
+                        logger.fine("ZipEntry, file: "+fileEntryName);
 
                         if (fileEntryName != null && !fileEntryName.equals("")) {
 
@@ -416,7 +416,7 @@ public class IngestServiceBean {
                                 if (!fileEntryName.equals(shortName)) {
                                     String categoryName = fileEntryName.replaceFirst("[\\/][^\\/]*$", "");
                                     if (!"".equals(categoryName)) {
-                                        logger.info("setting category to "+categoryName);
+                                        logger.fine("setting category to " + categoryName);
                                         datafile.getFileMetadata().setCategory(categoryName.replaceAll("[\\/]", "-"));
                                     }
                                 }

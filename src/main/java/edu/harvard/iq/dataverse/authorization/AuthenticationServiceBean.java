@@ -104,7 +104,7 @@ public class AuthenticationServiceBean {
                     "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
         }
         providerFactories.put( aFactory.getAlias(), aFactory);
-        logger.log( Level.INFO, "Registered Authentication Provider Facotry {0} as {1}", 
+        logger.log( Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
                 new Object[]{aFactory.getInfo(), aFactory.getAlias()});
     }
     

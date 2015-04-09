@@ -199,7 +199,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Dataverses can not be deleted via the Data Deposit API but other Dataverse APIs may support this operation.");
             } else if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
-                logger.info("globalId: " + globalId);
+                logger.fine("globalId: " + globalId);
                 if (globalId != null) {
                     Dataset dataset = dataset = datasetService.findByGlobalId(globalId);
                     if (dataset != null) {
@@ -232,7 +232,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 try {
                                     engineSvc.submit(new DeleteDatasetCommand(dataset, user));
-                                    logger.info("dataset deleted");
+                                    logger.fine("dataset deleted");
                                 } catch (CommandExecutionException ex) {
                                     // internal error
                                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset: " + ex.getMessage());

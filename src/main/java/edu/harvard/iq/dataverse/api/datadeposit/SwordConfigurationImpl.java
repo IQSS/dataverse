@@ -134,7 +134,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
                 return unlimited;
             }
         } else {
-            logger.info("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit API max upload size limit to unlimited.");
+            logger.fine("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit API max upload size limit to unlimited.");
             return unlimited;
         }
     }

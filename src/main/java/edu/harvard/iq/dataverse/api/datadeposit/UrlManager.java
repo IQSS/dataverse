@@ -56,7 +56,7 @@ public class UrlManager {
              * attributes - Java.net JIRA -
              * https://java.net/jira/browse/GLASSFISH-20694
              */
-            logger.info("https is required but protocol was " + javaNetUri.getScheme());
+            logger.fine("https is required but protocol was " + javaNetUri.getScheme());
 //            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "https is required but protocol was " + javaNetUri.getScheme());
         }
         this.port = javaNetUri.getPort();

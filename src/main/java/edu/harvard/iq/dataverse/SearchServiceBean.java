@@ -328,7 +328,7 @@ public class SearchServiceBean {
             } else {
                 error += messageFromSolr;
             }
-            logger.info(error);
+            logger.fine(error);
             SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse();
             exceptionSolrQueryResponse.setError(error);
 
