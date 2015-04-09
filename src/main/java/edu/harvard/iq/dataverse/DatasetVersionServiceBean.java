@@ -425,10 +425,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             
         } catch (javax.persistence.NoResultException e) {
             msg("DatasetVersion not found: " + queryString);
-            logger.log(Level.WARNING, "DatasetVersion not found: {0}", queryString);
+            logger.log(Level.FINE, "DatasetVersion not found: {0}", queryString);
             return null;
-         }catch (EJBException e) {
-             logger.log(Level.SEVERE, "EJBException exception: {0}", e.getMessage());
+         } catch (EJBException e) {
+             logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
              return null;
          }
     } // end getDatasetVersionByQuery
@@ -549,8 +549,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
         
-        msg("retrieved dataset: " + ds.getId() + " semantic: " + ds.getSemanticVersion());
         if (ds != null){
+            msg("retrieved dataset: " + ds.getId() + " semantic: " + ds.getSemanticVersion());
             return new RetrieveDatasetVersionResponse(ds, version);
         }
         
