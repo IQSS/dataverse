@@ -96,7 +96,7 @@ public class MailServiceBean implements java.io.Serializable {
                 msg.setRecipients(Message.RecipientType.TO,
                         InternetAddress.parse(to, false));
                 msg.setSubject(subject);
-                msg.setText(messageText + "\n\nPlease do not reply to this email.\nThank you,\nThe Dataverse Project");
+                msg.setText(messageText + "\n\nThank you,\nThe Dataverse Project");
                 try {
                     Transport.send(msg);
                     sent = true;
