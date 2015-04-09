@@ -285,20 +285,18 @@ public class DataFile extends DvObject {
     private FileMetadata getLatestFileMetadata() {
         FileMetadata fmd = null;
 
-       
+        // for newly added or harvested, just return the one fmd
+        if (fileMetadatas.size() == 1) {
+            return fileMetadatas.get(0);
+        }
         
         for (FileMetadata fileMetadata : fileMetadatas) {
+            // if it finds a draft, return it
             if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
                 return fileMetadata;
-            }
-             if (fileMetadata.getDatasetVersion().getDataset().isHarvested()) {
-                return fileMetadata;
-            }
-        }
-         
-        
-        for (FileMetadata fileMetadata : fileMetadatas) {
+            }            
             
+            // otherwise return the one with the latest version number
             if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
             } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
