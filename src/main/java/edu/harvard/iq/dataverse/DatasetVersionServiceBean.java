@@ -560,29 +560,45 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     
      /**
-     * Find a DatasetVersion using the persisentID and version string
+     * Find a DatasetVersion using the datasetId and versionId
      * 
      * @param datasetId
-     * @param version  "DRAFT", 1.0, 2, 3.4, null, etc
+     * @param versionId DatasetVersion id
      * @return 
      */
-    public RetrieveDatasetVersionResponse retrieveDatasetVersionById(Long datasetId, String version){
-        msg("retrieveDatasetVersionById: " + datasetId + " " + version);
-        if (datasetId==null){
+    public RetrieveDatasetVersionResponse retrieveDatasetVersionById(Long datasetId, Long versionId){
+        //msg("retrieveDatasetVersionById: " + datasetId + " " + versionId);
+        if (datasetId==null && versionId==null ){
             return null;
         }        
-        
-        String identifierClause = " AND ds.id = " + datasetId;
-
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
-        
-        if (ds != null){
-            return new RetrieveDatasetVersionResponse(ds, version);
-        }
-        
-        return null;
-
-          
+        String identifierClause = "";
+        String retrieveSpecifiedDSVQuery = "";
+        DatasetVersion   chosenVersion = null;
+        if (versionId != null) {
+            //If we have versionId use it alone
+            identifierClause = " and dv.id = " + versionId;
+            retrieveSpecifiedDSVQuery = getDatasetVersionBasicQuery(identifierClause, null);
+            chosenVersion = this.getDatasetVersionByQuery(retrieveSpecifiedDSVQuery);
+            if (chosenVersion != null) {
+                return new RetrieveDatasetVersionResponse(chosenVersion, "");
+            }
+        } else {
+            //if we don't have version Id
+            //get released dataset
+            identifierClause = " AND ds.id = " + datasetId;
+            String latestVersionQuery = this.getLatestReleasedDatasetVersionQuery(identifierClause);
+            chosenVersion = this.getDatasetVersionByQuery(latestVersionQuery);
+            if (chosenVersion != null) {
+                return new RetrieveDatasetVersionResponse(chosenVersion, "");
+            }
+            // otherwise look for draft
+            String draftQuery = this.getDraftDatasetVersionQuery(identifierClause);;
+            chosenVersion = this.getDatasetVersionByQuery(draftQuery);
+            if (chosenVersion != null) {
+                return new RetrieveDatasetVersionResponse(chosenVersion, "");
+            }
+        }                     
+        return null;          
     } // end: retrieveDatasetVersionById
 
 } // end class

@@ -951,7 +951,7 @@ public class DatasetPage implements java.io.Serializable {
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        if (dataset.getId() != null || persistentId != null) { // view mode for a dataset     
+        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
           
             
            DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
@@ -959,10 +959,9 @@ public class DatasetPage implements java.io.Serializable {
            // ---------------------------------------
            // Set the workingVersion and Dataset
            // ---------------------------------------
-           if (dataset.getId() != null) {
-
-               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);                     
-               
+           if (dataset.getId() != null || versionId != null) {
+               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), versionId);                     
+              
            }else if (persistentId != null) {
                // Set Working Version and Dataset by PersistentID
                retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);                     
