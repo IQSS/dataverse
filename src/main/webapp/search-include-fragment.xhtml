@@ -567,7 +567,7 @@
                                             <p:dataTable id="childDatasetTable" styleClass="margin-top-half" value="#{result.datasets}" var="dataset" rows="3" scrollable="true">
                                                 <p:column headerText="Title">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
-                                                    <a href="/dataset.xhtml?globalId=#{dataset.globalId}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                                    <a href="/dataset.xhtml?persistentId=#{dataset.globalId}" target="#{showFacets == true ? '_self' : '_blank'}">
                                                         <h:outputText value="#{dataset.releasedVersion.title}" /></a>
                                                 </p:column>
                                                 <p:column headerText="Files" class="text-right" style="width:10%;">
