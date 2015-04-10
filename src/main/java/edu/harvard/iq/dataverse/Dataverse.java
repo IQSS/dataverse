@@ -21,6 +21,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -80,7 +81,13 @@ public class Dataverse extends DvObjectContainer {
     public void setDataverseType(DataverseType dataverseType) {
         this.dataverseType = dataverseType;
     }
-    
+
+    @Transient
+    private final String uncategorizedString = "Uncategorized";
+
+    /**
+     * @todo Don't hard code these as English.
+     */
     public String getFriendlyCategoryName(){
        switch (this.dataverseType) {
             case RESEARCHERS:
@@ -94,12 +101,21 @@ public class Dataverse extends DvObjectContainer {
             case TEACHING_COURSES:
                 return "Teaching Course";            
             case UNCATEGORIZED:
-                return "Uncategorized";
+                return uncategorizedString;
             default:
                 return "";
         }    
     }
-    
+
+    public String getIndexableCategoryName() {
+        String friendlyName = getFriendlyCategoryName();
+        if (friendlyName.equals(uncategorizedString)) {
+            return null;
+        } else {
+            return friendlyName;
+        }
+    }
+
     private String affiliation;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
