@@ -80,6 +80,7 @@
         <h:outputScript library="js" name="jquery.matchHeight.js" />
         <h:outputScript library="js" name="jquery.sharrre.js" />
         <script>
+            
             $(document).ready(function() {
                 // Navbar Search Toggle
                 $(document).on('click', '#navbar-search-toggle', function (e) {
@@ -111,7 +112,7 @@
                 var popoverContentHTML = ['<code>',
                     '<h:outputText value="#{bundle.htmlAllowedTags}" escape="true"/>',
                     '</code>'].join('');
-
+ 
                 $('body').popover({
                     selector: 'span.popoverHTML',
                     title: '<h:outputText value="#{bundle.htmlAllowedTitle}"/>',
@@ -124,26 +125,7 @@
                 });
             }
         </script>
-        <script>
-          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        <ui:include src="google-analytics-snippet.xhtml"></ui:include>                         
 
-          ga('create', 'UA-3745567-8', 'harvard.edu');
-          ga('send', 'pageview', {
-            'hitType': 'social',
-            'socialNetwork': 'facebook',
-            'socialAction': 'send',
-            'socialTarget': '#{systemConfig.dataverseSiteUrl}',
-            'page': '#{systemConfig.pageURLWithQueryString}'
-          }, {
-            'hitType': 'social',
-            'socialNetwork': 'twitter',
-            'socialAction': 'tweet',
-            'socialTarget': '#{systemConfig.dataverseSiteUrl}',
-            'page': '#{systemConfig.pageURLWithQueryString}'
-          });
-	</script>
     </h:body>
 </html>

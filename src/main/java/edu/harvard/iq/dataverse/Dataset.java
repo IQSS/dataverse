@@ -568,7 +568,20 @@ public class Dataset extends DvObjectContainer {
                 return NesstarWebviewPage;
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_ROPER.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
-            } else {
+            } else if (HarvestingDataverseConfig.HARVEST_STYLE_HGL.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
+                // a bit of a hack, true. 
+                // TODO: create a 4.+ ticket for a cleaner solution. 
+                List<DataFile> dataFiles = this.getFiles();
+                if (dataFiles != null && dataFiles.size() == 1) {
+                    if (dataFiles.get(0) != null) {
+                        String hglUrl = dataFiles.get(0).getFileSystemName();
+                        if (hglUrl != null && hglUrl.matches("^http.*")) {
+                            return hglUrl;
+                        }
+                    }
+                }
+                return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
+            }else {
                 return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl();
             }
         }

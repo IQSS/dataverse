@@ -5,9 +5,14 @@ import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import junit.framework.Assert;
@@ -25,8 +30,10 @@ public class SearchIT {
     private static final String idKey = "id";
     private static final String apiTokenKey = "apiToken";
     private static final String usernameKey = "userName";
+    private static final String emailKey = "email";
     private static TestUser homer;
     private static TestUser ned;
+    private static final String dv1 = "dv1";
     private static String dataset1;
     private static long nedAdminOnRootAssignment;
     private static final String dataverseToCreateDataset1In = "root";
@@ -91,6 +98,33 @@ public class SearchIT {
 
     }
 
+    @Test
+    public void dataverseCategory() {
+        Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, enableNonPublicSearch.getStatusCode());
+
+        /**
+         * Unfortunately, it appears that the ability to specify the category of
+         * a dataverse when creating it is a GUI-only feature. It can't
+         * currently be done via the API, to our knowledge. You also can't tell
+         * from the API which category was persisted but it always seems to be
+         * "UNCATEGORIZED"
+         */
+        TestDataverse dataverseToCreate = new TestDataverse(dv1, "dv1", Dataverse.DataverseType.ORGANIZATIONS_INSTITUTIONS);
+        Response createDvResponse = createDataverse(dataverseToCreate, homer);
+        assertEquals(201, createDvResponse.getStatusCode());
+
+        TestSearchQuery query = new TestSearchQuery("dv1");
+        Response searchResponse = search(query, homer);
+        JsonPath jsonPath = JsonPath.from(searchResponse.body().asString());
+        String dv1Category = jsonPath.get("data.facets." + SearchFields.DATAVERSE_CATEGORY).toString();
+        String msg = "dv1Category: " + dv1Category;
+        assertEquals("dv1Category: [null]", msg);
+
+        Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, disableNonPublicSearch.getStatusCode());
+    }
+
     @AfterClass
     public static void cleanup() {
 
@@ -112,9 +146,11 @@ public class SearchIT {
          */
         Response revokeNedAdminOnRoot = revokeRole(dataverseToCreateDataset1In, nedAdminOnRootAssignment, homer.getApiToken());
         System.out.println("cleanup - status code revoking admin on root from ned: " + revokeNedAdminOnRoot.getStatusCode());
-
         Response deleteDataset1Response = deleteDataset(dataset1, homer.getApiToken());
         assertEquals(204, deleteDataset1Response.getStatusCode());
+
+        Response deleteDv1Response = deleteDataverse(dv1, homer);
+        assertEquals(200, deleteDv1Response.getStatusCode());
 
         deleteUser(homer.getUsername());
         deleteUser(ned.getUsername());
@@ -133,6 +169,23 @@ public class SearchIT {
     private Response checkSetting(SettingsServiceBean.Key settingKey) {
         Response response = given().when().get("/api/admin/settings/" + settingKey);
         return response;
+    }
+
+    private static Response createDataverse(TestDataverse dataverseToCreate, TestUser creator) {
+        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+        contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", creator.getEmail()));
+        JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
+        subjectArrayBuilder.add("Other");
+        JsonObject dvData = Json.createObjectBuilder()
+                .add("alias", dataverseToCreate.alias)
+                .add("name", dataverseToCreate.name)
+                .add("dataverseContacts", contactArrayBuilder)
+                .add("dataverseSubjects", subjectArrayBuilder)
+                .build();
+        Response createDataverseResponse = given()
+                .body(dvData.toString()).contentType(ContentType.JSON)
+                .when().post("/api/dataverses/:root?key=" + creator.apiToken);
+        return createDataverseResponse;
     }
 
     private Response createDataset(String xmlIn, String dataverseToCreateDatasetIn, String apiToken) {
@@ -165,14 +218,14 @@ public class SearchIT {
         builder.add(usernameKey, username);
         builder.add("firstName", firstName);
         builder.add("lastName", lastName);
-        builder.add("email", getEmail(username));
+        builder.add(emailKey, getEmailFromUserName(username));
         String userAsJson = builder.build().toString();
         logger.fine("User to create: " + userAsJson);
         return userAsJson;
     }
 
-    private static String getEmail(String username) {
-        return username + "@malinator.com";
+    private static String getEmailFromUserName(String username) {
+        return username + "@mailinator.com";
     }
 
     private static Response createUserViaApi(String jsonStr, String password) {
@@ -251,6 +304,10 @@ public class SearchIT {
         return xmlIn;
     }
 
+    private static Response deleteDataverse(String doomed, TestUser user) {
+        return given().delete("/api/dataverses/" + doomed + "?key=" + user.getApiToken());
+    }
+
     private static Response deleteDataset(String globalId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -274,11 +331,19 @@ public class SearchIT {
         return datasetIdFound;
     }
 
+    private Response search(TestSearchQuery query, TestUser user) {
+        return given()
+                .get("api/search?key=" + user.getApiToken()
+                        + "&q=" + query.getQuery()
+                        + "&show_facets=" + true
+                );
+    }
+
     private static class TestUser {
 
-        long id;
-        String username;
-        String apiToken;
+        private long id;
+        private String username;
+        private String apiToken;
 
         private TestUser(JsonObject json) {
             this.id = json.getInt(idKey);
@@ -298,6 +363,10 @@ public class SearchIT {
             return apiToken;
         }
 
+        public String getEmail() {
+            return getEmailFromUserName(username);
+        }
+
         @Override
         public String toString() {
             return "TestUser{" + "id=" + id + ", username=" + username + '}';
@@ -305,4 +374,43 @@ public class SearchIT {
 
     }
 
+    private static class TestDataverse {
+
+        String alias;
+        String name;
+        Dataverse.DataverseType category;
+
+        public TestDataverse(String alias, String name, Dataverse.DataverseType category) {
+            this.alias = alias;
+            this.name = name;
+            this.category = category;
+        }
+
+    }
+
+    private static class TestSearchQuery {
+
+        private String query;
+        private List<String> filterQueries = new ArrayList<>();
+
+        private TestSearchQuery(String query) {
+            this.query = query;
+        }
+
+        public TestSearchQuery(String query, List<String> filterQueries) {
+            this.query = query;
+            if (!filterQueries.isEmpty()) {
+                this.filterQueries = filterQueries;
+            }
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public List<String> getFilterQueries() {
+            return filterQueries;
+        }
+
+    }
 }

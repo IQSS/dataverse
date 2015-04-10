@@ -267,10 +267,14 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * Convenience method for "Download File" button display logic
      * 
+     * Used by the dataset.xhtml render logic when listing files
+     *       > Assume user already has view access to the file list
+     * 
      * @param fileMetadata
      * @return boolean
      */
     public boolean canDownloadFile(FileMetadata fileMetadata){
+      
         if (fileMetadata == null){
             return false;
         }
@@ -287,22 +291,27 @@ public class DatasetPage implements java.io.Serializable {
         
         
         // --------------------------------------------------------------------
-        // Has this check already been done? Check the DatasetPage hash
+        // Has this file been checked? Look at the DatasetPage hash
         // --------------------------------------------------------------------
         if (this.fileDownloadPermissionMap.containsKey(fid)){
             // Yes, return previous answer
             return this.fileDownloadPermissionMap.get(fid);
         }
-        
-        // (1) Is the file Released and Unrestricted ?        
-        //
-        if ((fileMetadata.getDataFile().isReleased())&&(!(isRestrictedFile))){
+
+        // --------------------------------------------------------------------
+        // (1) Is the file Unrestricted ?        
+        // --------------------------------------------------------------------
+        if (!isRestrictedFile){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
         
+        // --------------------------------------------------------------------
+        // Conditions (2) through (4) are for Restricted files
+        // --------------------------------------------------------------------
         
+        // --------------------------------------------------------------------
         // (2) Is user authenticated?
         // No?  Then no button...
         // --------------------------------------------------------------------
@@ -310,47 +319,27 @@ public class DatasetPage implements java.io.Serializable {
             this.fileDownloadPermissionMap.put(fid, false);
             return false;
         }
-
-        // (3) User has EditDataset Permission  
-        //
-        if (this.doesSessionUserHaveDataSetPermission(Permission.EditDataset)){
+        
+        // --------------------------------------------------------------------
+        // (3) Does the User have DownloadFile Permission at the **Dataset** level 
+        // --------------------------------------------------------------------
+        if (this.doesSessionUserHaveDataSetPermission(Permission.DownloadFile)){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
-      
-        
-        // For an unrestrictd file, check Dataset Permissions
-        //
-        if (!(isRestrictedFile)){
-                                   
-            // (4) File is released and File is unrestricted
-            if (fileMetadata.getDataFile().isReleased()){
-                return true;
-            }
-            
-            // (5) Authenticated User has ViewUnpublishedDataset Permission and File is Unrestricted 
-            //
-            if (this.doesSessionUserHaveDataSetPermission(Permission.ViewUnpublishedDataset)){
-                // Yes, save answer and return true
-                this.fileDownloadPermissionMap.put(fid, true);
-                return true;
-            }
-             
-            
-        }else{
-                                
-            // Restricted, make the call to the Permissions Service
-            // (6) Check the Download DataFile permission
-            //
-            if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
-                this.fileDownloadPermissionMap.put(fid, true);
-                return true;
-            }
+  
+        // --------------------------------------------------------------------
+        // (4) Does the user has DownloadFile permission on the DataFile            
+        // --------------------------------------------------------------------
+        if (this.permissionService.on(fileMetadata.getDataFile()).has(Permission.DownloadFile)){
+            this.fileDownloadPermissionMap.put(fid, true);
+            return true;
         }
         
-        // (7) No download....
-        //
+        // --------------------------------------------------------------------
+        // (6) No download....
+        // --------------------------------------------------------------------
         this.fileDownloadPermissionMap.put(fid, false);
        
         return false;
@@ -369,13 +358,6 @@ public class DatasetPage implements java.io.Serializable {
                
         String permName = permissionToCheck.getHumanName();
        
-        // Make sure this is a Dataset related Permission
-        //
-        if (!permName.toLowerCase().contains("dataset")){
-            throw new IllegalArgumentException("The permission must be for a Dataset");        
-        }
-        
-        
         // Has this check already been done? 
         // 
         if (this.datasetPermissionMap.containsKey(permName)){
@@ -780,7 +762,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void msg(String s){
-        System.out.println(s);
+        //System.out.println(s);
     }
     
     /**

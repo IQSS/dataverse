@@ -370,4 +370,10 @@ public class GuestbookResponseServiceBean {
         return (Long) query.getSingleResult();
     }    
 
+    public Long getCountOfAllGuestbookResponses() {
+        // dataset id is null, will return 0        
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
+        return (Long) query.getSingleResult();
+    }
+    
 }
