@@ -381,7 +381,7 @@ public class SearchServiceBean {
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
             float score = (Float) solrDocument.getFieldValue(SearchFields.RELEVANCE);
-            logger.info("score for " + id + ": " + score);
+            logger.fine("score for " + id + ": " + score);
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
             String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
