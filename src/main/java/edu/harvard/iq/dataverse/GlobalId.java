@@ -110,7 +110,7 @@ public class GlobalId implements java.io.Serializable {
         // Looking for this split  
         //  doi:10.5072/FK2/BYM3IW => (doi) (10.5072/FK2/BYM3IW)
         //
-        //  or this one: hdl:1902.1/xxxxx
+        //  or this one: (hdl) (1902.1/xxxxx)
         //
         String[] items = persistentId.split(":");
         if (items.length != 2){
