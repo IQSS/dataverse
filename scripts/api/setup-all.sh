@@ -41,7 +41,7 @@ echo
 echo "Setting up the admin user (and as superuser)"
 adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/builtin-users?password=admin&key=burrito")
 echo $adminResp
-curl -X POST "$SERVER/admin/superuser/admin"
+curl -X POST "$SERVER/admin/superuser/dataverseAdmin"
 echo
 
 echo "Setting up the root dataverse"
