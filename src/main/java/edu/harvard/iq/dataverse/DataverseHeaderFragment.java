@@ -58,8 +58,13 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     @Inject
     DataverseSession dataverseSession;
 
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+    
     List<Breadcrumb> breadcrumbs = new ArrayList();
 
+    private Long unreadNotificationCount = null;
+    
     public List<Breadcrumb> getBreadcrumbs() {
         return breadcrumbs;
     }
@@ -75,6 +80,25 @@ public class DataverseHeaderFragment implements java.io.Serializable {
                 initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? JH.localize("newDataverse") : 
                         dvObject instanceof Dataset ? JH.localize("newDataset") : null );
             }
+    }
+    
+    public Long getUnreadNotificationCount(Long userId){
+        
+        if (userId == null){
+            return new Long("0");
+        }
+        
+        if (this.unreadNotificationCount != null){
+            return this.unreadNotificationCount;
+        }
+        
+        try{
+            this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
+        }catch (Exception e){
+            logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
+            this.unreadNotificationCount = new Long("0");
+        }
+        return this.unreadNotificationCount;
     }
 
     public void initBreadcrumbs(DvObject dvObject, String subPage) {

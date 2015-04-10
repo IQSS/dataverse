@@ -99,8 +99,8 @@
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
-                                  <h:outputText styleClass="label label-danger" value="#{ userNotificationServiceBean.getUnreadNotificationCountByUser(dataverseSession.user.id) }" 
-                                                rendered="#{ userNotificationServiceBean.getUnreadNotificationCountByUser(dataverseSession.user.id) > 0 }" />
+                                  <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
+                                                    value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
                                     
                                   <b class="caret"></b>
                                 </span>
@@ -115,8 +115,8 @@
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="notifications" />
                                             <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
-                                            <h:outputText styleClass="label label-danger" value="#{userNotificationServiceBean.getUnreadNotificationCountByUser(dataverseSession.user.id)}" 
-                                                          rendered="#{ userNotificationServiceBean.getUnreadNotificationCountByUser(dataverseSession.user.id) > 0 }" />
+                                            <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
+                                                          value="#{dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id)}" />
                                        </h:outputLink>
                                     </li>
                                     <ui:remove>
