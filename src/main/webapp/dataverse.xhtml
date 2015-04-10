@@ -488,6 +488,45 @@
                                 </div>
                             </p:dialog>
                             <!-- END: Email/Link/Share Button Group -->
+                            <!-- Metrics for Root Dataverse -->
+                            <div id="metrics-block" class="pull-left" jsf:rendered="#{ DataversePage.isRootDataverse() }">
+                                <div class="pull-left text-center" id="metrics-label">
+                                    <span class="metrics-label-text small"><span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}</span>
+                                </div>
+                                <div class="pull-left">
+                                    <div id="metrics-content" class="tab-content">
+                                        <div id="metrics-views" class="metrics-views tab-pane fade small text-center">
+                                            #{bundle['metrics.views']} <em>#{bundle['metrics.comingsoon']}</em>
+                                        </div>
+                                        <div id="metrics-downloads" class="metrics-downloads tab-pane fade small text-center">
+                                            <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/>
+                                            </h:outputFormat>
+                                        </div>
+                                        <div id="metrics-citations" class="metrics-citations tab-pane fade small text-center">
+                                            #{bundle['metrics.citations']} <em>#{bundle['metrics.comingsoon']}</em>
+                                        </div>
+                                        <div id="metrics-shares" class="metrics-shares tab-pane fade small text-center">
+                                            <span id="sharrre-count">&#160;#{bundle['metrics.shares']}</span>
+                                        </div>
+                                    </div>
+                                    <div id="metrics-tabs">
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-views" class="metrics-views" data-toggle="tab">&#160;</a>
+                                        </div>
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-downloads" class="metrics-downloads first" data-toggle="tab">&#160;</a>
+                                        </div>
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-citations" class="metrics-citations" data-toggle="tab">&#160;</a>
+                                        </div>
+                                        <div class="metrics-hover pull-left">
+                                            <a href="#metrics-shares" class="metrics-shares" data-toggle="tab">&#160;</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END: Metrics for Root Dataverse-->
                         </div>
                         
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
