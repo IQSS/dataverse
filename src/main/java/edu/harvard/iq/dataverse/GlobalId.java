@@ -120,17 +120,24 @@ public class GlobalId implements java.io.Serializable {
         
         String[] pieces = items[1].split(doiSeparator);
 
+        // -----------------------------
         // Is this a handle?
+        // -----------------------------
         if ( pieces.length == 2 && protocolPiece.equals("hdl")){
+            // example: hdl:1902.1/111012
             
-            this.protocol = protocolPiece;
-            this.authority = pieces[0];
-            this.identifier = pieces[1];                    
+            this.protocol = protocolPiece;  // hdl
+            this.authority = pieces[0];     // 1902.1
+            this.identifier = pieces[1];    // 111012            
             return true;
                     
         }else if (pieces.length == 3 && protocolPiece.equals("doi")){
-        
-            this.protocol = protocolPiece;
+            // -----------------------------
+            // Is this a DOI?
+            // -----------------------------
+            // example: doi:10.5072/FK2/BYM3IW
+            
+            this.protocol = protocolPiece;  // doi
             this.authority = pieces[0] + doiSeparator + pieces[1]; // "10.5072/FK2"
             this.identifier = pieces[2]; // "BYM3IW"
             return true;
