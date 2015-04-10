@@ -471,7 +471,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #metrics-label {background:#6f5499;color:#fff;padding: 7px 10px;}
 #metrics-content {background:#6f5499;position:relative;min-height:21px;}
 #metrics-content div.tab-pane {color:#fff;padding: 2px 0;width:152px;position:absolute;top:0;left:0;}
-#metrics-tabs a {background:#428bca;display:block;width:38px;line-height:.95;}
+#metrics-tabs a {background:#428bca;display:block;width:38px;line-height:13px;}
 #metrics-tabs a:hover {text-decoration:none;}
 #metrics-block .metrics-views {background:#428bca;}
 #metrics-block .metrics-downloads {background:#5cb85c;}
