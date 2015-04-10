@@ -59,7 +59,7 @@
                                </span>
                            </label>
                            <div class="col-sm-9">
-                               <h:outputText value="#{DatasetPage.workingVersion.termsOfUse}" rendered="#{empty DatasetPage.editMode}"/>
+                               <h:outputText value="#{DatasetPage.workingVersion.termsOfUse}" escape="false" rendered="#{empty DatasetPage.editMode}"/>
                                <ui:fragment rendered="#{!empty DatasetPage.editMode}">
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}" escape="false"/></p>
                                    <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUse}" rows="5" cols="60" styleClass="form-control" />
@@ -82,7 +82,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.confidentialityDeclaration}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.confidentialityDeclaration}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.specialPermissions}">
@@ -92,7 +92,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.specialPermissions}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.specialPermissions}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.restrictions}">
@@ -102,7 +102,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.restrictions}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.restrictions}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.citationRequirements}">
@@ -112,7 +112,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.citationRequirements}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.citationRequirements}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.depositorRequirements}">
@@ -122,7 +122,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.depositorRequirements}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.depositorRequirements}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.conditions}">
@@ -132,7 +132,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.conditions}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.conditions}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.disclaimer}">
@@ -142,7 +142,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.disclaimer}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.disclaimer}" escape="false"/>
                                    </div>
                                </div>
                            </div>
@@ -253,7 +253,7 @@
                                </span>
                            </label>
                            <div class="col-sm-9">
-                               <p><h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}"/></p>
+                               <p><h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}" escape="false"/></p>
                            </div>
                        </div>
                        <div class="form-group" jsf:rendered="#{DatasetPage.restrictedFileCount > 0}">
@@ -309,7 +309,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.dataAccessPlace}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.dataAccessPlace}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.originalArchive}">
@@ -319,7 +319,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.originalArchive}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.originalArchive}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.availabilityStatus}">
@@ -329,7 +329,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.availabilityStatus}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.availabilityStatus}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.contactForAccess}">
@@ -339,7 +339,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.contactForAccess}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.contactForAccess}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.sizeOfCollection}">
@@ -349,7 +349,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.sizeOfCollection}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.sizeOfCollection}" escape="false"/>
                                    </div>
                                </div>
                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.studyCompletion}">
@@ -359,7 +359,7 @@
                                        </span>
                                    </label>
                                    <div class="col-sm-9">
-                                       <h:outputText value="#{DatasetPage.workingVersion.studyCompletion}"/>
+                                       <h:outputText value="#{DatasetPage.workingVersion.studyCompletion}" escape="false"/>
                                    </div>
                                </div>
                            </ui:fragment>
