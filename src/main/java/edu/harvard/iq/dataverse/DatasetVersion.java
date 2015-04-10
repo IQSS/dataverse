@@ -804,6 +804,17 @@ public class DatasetVersion implements Serializable {
             }
         }
         
+        if (this.getDataset().isHarvested()) {
+            String distributorName = getDistributorName();
+            if (distributorName != null && distributorName.trim().length() > 0) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ". ";
+                }
+                str += " " + distributorName;
+                str += " [distributor]";
+            }
+        }
+        
         // The Global Identifier: 
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
@@ -889,7 +900,14 @@ public class DatasetVersion implements Serializable {
         return null;
     }
 
-    
+    public String getDistributorName() {
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (DatasetFieldConstant.distributorName.equals(dsf.getDatasetFieldType().getName())) {
+                return dsf.getValue();
+            }
+        }
+        return null;
+    }
     
     public String getRootDataverseNameforCitation(){
                     //Get root dataverse name for Citation
