@@ -887,14 +887,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isDebug() {
-        return systemConfig.isDebugEnabled();
+        return  (debug && session.getUser().isSuperuser()) ||
+                systemConfig.isDebugEnabled();
     }
 
-    /**
-     * @todo Remove this. Stop letting end users expose debug information with
-     * the debug=true query parameter.
-     */
-    @Deprecated
     public void setDebug(boolean debug) {
         this.debug = debug;
     }
@@ -1087,13 +1083,21 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void setDisplayCardValues() {
         for (SolrSearchResult result : searchResultsList) {
+            boolean valueSet = false;
             if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse){
                 result.setDisplayImage(dataverseService.isDataverseCardImageAvailable((Dataverse) result.getEntity(), session.getUser()));
+                valueSet = true;
             } else if (result.getType().equals("datasets") && result.getEntity() instanceof Dataset) {
                 result.setDisplayImage(datasetService.isDatasetCardImageAvailable(datasetVersionService.find(result.getDatasetVersionId()), session.getUser()));
+                valueSet = true;
             } else if (result.getType().equals("files") && result.getEntity() instanceof DataFile) {
                 result.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile) result.getEntity(), session.getUser()));
+                valueSet = true;
             }
+
+            if (!valueSet) {
+                logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
+            }            
         }
     }
 }
