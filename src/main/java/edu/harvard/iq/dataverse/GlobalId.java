@@ -6,10 +6,12 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import javax.ejb.EJB;
 
 /**
  *
@@ -17,23 +19,15 @@ import java.net.URL;
  */
 public class GlobalId implements java.io.Serializable {
 
+    @EJB
+    SettingsServiceBean settingsService;
+
     public GlobalId(String identifier) {
-
-        int index1 = identifier.indexOf(':');
-        int index2 = identifier.indexOf('/');
-        if (index1 == -1) {
-            throw new IllegalArgumentException("Error parsing identifier: " + identifier + ". ':' not found in string");
-        } else {
-            protocol = identifier.substring(0, index1);
+        
+        // set the protocol, authority, and identifier via parsePersistentId        
+        if (!this.parsePersistentId(identifier)){
+            throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
         }
-        if (index2 == -1) {
-            throw new IllegalArgumentException("Error parsing identifier: " + identifier + ". '/' not found in string");
-
-        } else {
-            authority = identifier.substring(index1 + 1, index2);
-        }
-        identifier = identifier.substring(index2 + 1).toUpperCase();
-
     }
 
     public GlobalId(String protocol, String authority, String identifier) {
@@ -88,4 +82,63 @@ public class GlobalId implements java.io.Serializable {
         return url;
     }    
 
+    
+    /** 
+     *   Parse a Persistent Id and set the protocol, authority, and identifier
+     * 
+     *   Example 1: doi:10.5072/FK2/BYM3IW
+     *       protocol: doi
+     *       authority: 10.5072/FK2
+     *       identifier: BYM3IW
+     * 
+     *   Example 2: hdl:1902.1/111012
+     *       protocol: hdl
+     *       authority: 1902.1
+     *       identifier: 111012
+     *
+     * @param persistentId
+     * 
+     */
+    private boolean parsePersistentId(String persistentId){
+
+        if (persistentId==null){
+            return false;
+        } 
+        
+        String doiSeparator = "/";//settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, "/");
+        
+        // Looking for this split  
+        //  doi:10.5072/FK2/BYM3IW => (doi) (10.5072/FK2/BYM3IW)
+        //
+        //  or this one: hdl:1902.1/xxxxx
+        //
+        String[] items = persistentId.split(":");
+        if (items.length != 2){
+            return false;
+        }
+        String protocolPiece = items[0].toLowerCase();
+        
+        String[] pieces = items[1].split(doiSeparator);
+
+        // Is this a handle?
+        if ( pieces.length == 2 && protocolPiece.equals("hdl")){
+            
+            this.protocol = protocolPiece;
+            this.authority = pieces[0];
+            this.identifier = pieces[1];                    
+            return true;
+                    
+        }else if (pieces.length == 3 && protocolPiece.equals("doi")){
+        
+            this.protocol = protocolPiece;
+            this.authority = pieces[0] + doiSeparator + pieces[1]; // "10.5072/FK2"
+            this.identifier = pieces[2]; // "BYM3IW"
+            return true;
+        }
+        
+        return false;
+    }
+
+    
+    
 }

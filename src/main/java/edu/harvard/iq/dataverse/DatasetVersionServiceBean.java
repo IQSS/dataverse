@@ -203,51 +203,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         return null;
     }
-
-    /** 
-     *   Parse a Persistent Id and return as 3 strings.        
-     * 
-     *   Example: doi:10.5072/FK2/BYM3IW
-     *       protocol: doi
-     *       authority: 10.5072/FK2
-     *       identifier: BYM3IW
-     * 
-     * @param persistentId
-     * @return String[] with [ protocol, authority, identifier]
-     */
-    public String[] parsePersistentId(String persistentId){
-
-        if (persistentId==null){
-            return null;
-        } 
-        
-        String doiSeparator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, "/");
-        
-        // Looking for this split  
-        //  doi:10.5072/FK2/BYM3IW => (doi) (10.5072/FK2/BYM3IW)
-        String[] items = persistentId.split(":");
-        if (items.length != 2){
-            return null;
-        }
-        String protocol = items[0];
-        
-        /* Looking for next split  
-          10.5072/FK2/BYM3IW => (10.5072) (FK2) (BYM3IW)
-        */
-        String[] pieces = items[1].split(doiSeparator);
-        if (pieces.length != 3){
-            return null;
-        }
-        
-        String authority = pieces[0] + doiSeparator + pieces[1]; // "10.5072/FK2"
-        String identifier = pieces[2]; // "BYM3IW"
-        
-        String persistentIdParts[] = { protocol, authority, identifier };
-        
-        return persistentIdParts;
-
-    }
-
     
     /** 
      *   Parse a Persistent Id and return as 3 strings.        
@@ -292,7 +247,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     
     private void msg(String s){
-        //System.out.println(s);
+        System.out.println(s);
     }
     
     /**
@@ -565,16 +520,17 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         /*        
             Parse the persistent id
         */
-        String[] persistentIdParts = parsePersistentId(persistentId);   // [ protocol, authority, identifier]
-        msg("persistentIdParts: " + Arrays.toString(persistentIdParts));
-        if ( persistentIdParts == null || persistentIdParts.length != 3){
+        GlobalId parsedId;
+        try{
+            parsedId = new GlobalId(persistentId);   // [ protocol, authority, identifier]
+        } catch (IllegalArgumentException e){
             logger.log(Level.WARNING, "Failed to parse persistentID: {0}", persistentId);
             return null;
         }
         
-        String identifierClause = " AND ds.protocol= '" + persistentIdParts[0] + "'"; 
-        identifierClause += " AND ds.authority = '" + persistentIdParts[1] + "'"; 
-        identifierClause += " AND ds.identifier = '" + persistentIdParts[2] + "'"; 
+        String identifierClause = " AND ds.protocol= '" + parsedId.getProtocol() + "'"; 
+        identifierClause += " AND ds.authority = '" + parsedId.getAuthority() + "'"; 
+        identifierClause += " AND ds.identifier = '" + parsedId.getIdentifier() + "'"; 
         
 
         DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
