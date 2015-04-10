@@ -3,9 +3,11 @@ SWORD API
 
 SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Java, R, Ruby, and PHP.
 
-Introduced in Dataverse Network (DVN) `3.6 <https://github.com/IQSS/dvn/blob/develop/doc/sphinx/source/dataverse-api-main.rst#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs will continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
+Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs will continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
 
 Dataverse implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc. For a quick introduction to SWORD, the two minute video at http://cottagelabs.com/news/intro-to-sword-2 is recommended.
+
+As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datasets can also be created via JSON using the "native" API.
 
 .. _SWORD: http://en.wikipedia.org/wiki/SWORD_%28protocol%29
 
@@ -32,7 +34,7 @@ In addition, differences in Dataverse 4.0 have lead to a few minor backward inco
 
   - dcterms:description
 
-- Deaccessioning is no longer supported. An alternative is being developed at https://github.com/IQSS/dataverse/issues/778
+- Deaccessioning is no longer supported. An alternative will be developed at https://github.com/IQSS/dataverse/issues/778
 
 - The Service Document will show a single API Terms of Use rather than root level and dataverse level Deposit Terms of Use.
 
@@ -45,11 +47,7 @@ New features as of v1.1
 
 - Datasets versions will only be increased to the next minor version (i.e. 1.1) rather than a major version (2.0) if possible. This depends on the nature of the change.
 
-- Granular permissions are used for certain operations. Previously, you needed to be "admin" on a dataverse to use the Data Deposit API at all.
-
-  - The Service Document will return all the dataverses on which you have the "AddDataset" permission. This should resolve the issue reported at https://trello.com/c/F2ZQPFdM/6-reconcile-what-is-seen-by-the-data-deposit-api-and-the-gui-currently-python-api-hides-dvs-from-admin-unless-it-is-also-dv-creato 
-
-- "Author Affiliation" can be populated with an XML attribute. For example: <dcterms:creator affiliation="Coffee Bean State University">Stumptown, Jane</dcterms:creator>
+- "Author Affiliation" can now be populated with an XML attribute. For example: <dcterms:creator affiliation="Coffee Bean State University">Stumptown, Jane</dcterms:creator>
 
 - "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: <dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>
 
@@ -57,10 +55,11 @@ New features as of v1.1
 
 - "Contact E-mail" is automatically populated from dataset owners email.
 
-- "Subject" is automatically populated with "N/A". #769 
+- "Subject" is automatically populated with "N/A".
 
-- Zero-length files are now allowed (but not necessarily encouraged) #753
+- Zero-length files are now allowed (but not necessarily encouraged).
 
+- "Depositor" and "Deposit Date" are auto-populated.
 
 curl examples
 -------------
@@ -224,27 +223,13 @@ The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-l
 Known issues
 ------------
 
-Most of these known issues are expected to be fixed before the release of Dataverse 4.0:
-
-- Permission checking is more strict than necessary. Inheritance of permissions is not honored ( https://github.com/IQSS/dataverse/issues/784#issuecomment-60151937 ) and many SWORD operations still require the equivalent of "admin" ( https://github.com/IQSS/dataverse/issues/1070 ).
-
-- The ``Service Document`` does not yet contain a real ``collectionPolicy``/Terms of Use: https://github.com/IQSS/dataverse/issues/551
-
-- dcterms:rights needs to be mapped "restrictions" or some other Dataverse field for SWORD: https://github.com/IQSS/dataverse/issues/805
-
-- File categories are no longer created from zip files: https://github.com/IQSS/dataverse/issues/303
-
-- DOIs are not real: https://github.com/IQSS/dataverse/issues/757
-
-- Mismatch between id and identifier for datasets in dvobject table: https://github.com/IQSS/dataverse/issues/758
+- Potential mismatch between the dataverses ("collections" from a SWORD perspective) the user can deposit data into in returned by the Service Document and which dataverses the user can actually deposit data into. This is due to an incomplete transition from the old DVN 3.x "admin-only" style permission checking to the new permissions system in Dataverse 4.0 ( https://github.com/IQSS/dataverse/issues/1070 ). The mismatch was reported at https://github.com/IQSS/dataverse/issues/1443
 
 - Should see all the fields filled in for a dataset regardless of what the parent dataverse specifies: https://github.com/IQSS/dataverse/issues/756
 
 - Inefficiency in constructing the ``Service Document``: https://github.com/IQSS/dataverse/issues/784
 
 - Inefficiency in constructing the list of datasets: https://github.com/IQSS/dataverse/issues/784
-
-- SWORD does not reflect the hierarchy of dataverses in a tree structure: https://github.com/IQSS/dataverse/issues/235#issuecomment-60132514
 
 Roadmap
 -------
@@ -254,10 +239,6 @@ These are features we'd like to add in the future:
 - Implement SWORD 2.0 Profile 6.4: https://github.com/IQSS/dataverse/issues/183
 
 - Support deaccessioning via API: https://github.com/IQSS/dataverse/issues/778
-
-- Like the GUI, auto-populate "Depositor" and "Deposit Date": https://github.com/IQSS/dataverse/issues/457
-
-- Populate "Subject" from parent dataverse rather than always using "Other": https://github.com/IQSS/dataverse/issues/769
 
 - Let file metadata (i.e. description) be specified during zip upload: https://github.com/IQSS/dataverse/issues/723
 
