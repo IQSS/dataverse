@@ -195,8 +195,9 @@ function sharrre(){
                 api.openPopup('googlePlus');
             });
             
-            var sharrrecount = $('#sharrre-total').val();
-            $('#sharrre-count').prepend(sharrrecount);
+            // Count not working... Coming soon...
+            // var sharrrecount = $('#sharrre-total').val();
+            // $('#sharrre-count').prepend(sharrrecount);
         }
     });
 }
