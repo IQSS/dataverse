@@ -1002,6 +1002,9 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
             dataset.setOwner(dataverseService.find(ownerId));
+            dataset.setProtocol(protocol);
+            dataset.setAuthority(authority);
+            dataset.setDoiSeparator(separator);
             dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority, separator));
 
             if (dataset.getOwner() == null) {
@@ -1662,11 +1665,7 @@ public class DatasetPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-
-        dataset.setProtocol(protocol);
-        dataset.setAuthority(authority);
-        dataset.setDoiSeparator(separator);
-
+               
         /*
          * Save and/or ingest files, if there are any:
         
