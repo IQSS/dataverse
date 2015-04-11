@@ -1,4 +1,7 @@
--- reference queries for duplicate roles in vdc_role - may need to run multiple times
+-- reference queries for duplicate roles in vdc_role
+-- (created when user accounts where merged)
+-- NOTE: may need to run multiple times
+
 /*
 select * from _dvn3_vdcrole
 where vdcuser_id || '|' || vdc_id || '|' || role_id in 
