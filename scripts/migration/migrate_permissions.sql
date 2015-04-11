@@ -1,5 +1,15 @@
--- reference query for duplicate roles in vdc_role
+-- reference queries for duplicate roles in vdc_role - may need to run multiple times
 /*
+select * from _dvn3_vdcrole
+where vdcuser_id || '|' || vdc_id || '|' || role_id in 
+(
+select vdcuser_id || '|' || vdc_id || '|' || role_id from _dvn3_vdcrole
+group by vdcuser_id, vdc_id, role_id
+having count(*) > 1
+)
+order by vdcuser_id, vdc_id, role_id
+
+
 delete from _dvn3_vdcrole where id in 
 ( 
 select max(id) from _dvn3_vdcrole
