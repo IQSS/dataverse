@@ -7,8 +7,11 @@ Assumptions:
 
 
 Pre steps (contained in the migration_presteps document):
--7. Make a copt of the production db, and point an app server to it
+
+-7. Make a copy of the production db, and point an app server to it
 -6. (if there is any data that will fail validation, run scrubbing script - this will need to be custom per installation)
+-5.9 run duplicate user scrubbing scripts
+-5.8 run users as emails scripts
 -5. Export DDI files from 3.6 copy for all datasets to be migrated 
     (this now includes exporting non-released versions - presteps doc. updated)
 -4. Create copies of tables in 3.6 database for migrated data
@@ -20,6 +23,7 @@ Migration:
 
 1. run migrate_users.sql script
 2. run migrate_dataverses.sql script
+2a. migrate preloaded customizations
 3. run custom_field_map.sql script (this must be updated to contain the custom field mappings specific to 
     the migration source installation.)
 4. run dataset APIs: execute the following HTTP  request on the Dataverse 4.0 application to initiate dataset migration:
@@ -62,6 +66,10 @@ the destination server.
 
 7. run migrate_permissions.sql script (may need to delete some duplicates)
 8. run migrate_links.sql script
+
+10. reset sequences
+
+11. (when ready for users to log in) add user passwords
 
 __________________________________________________
 
