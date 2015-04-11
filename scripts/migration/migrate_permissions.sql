@@ -109,12 +109,14 @@ insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 	select 			'@'|| useridentifier, studyfiles_id, dr.id
 	from _dvn3_studyfile_vdcuser, authenticateduser, dataverserole dr
 	where _dvn3_studyfile_vdcuser.allowedusers_id = authenticateduser.id
+	and _dvn3_studyfile_vdcuser.studyfiles_id in (select id from datafile)
 	and dr.alias='fileDownloader';
 
 insert into roleassignment (	assigneeidentifier, definitionpoint_id, role_id)
 	select 			'&'|| groupalias, studyfiles_id, dr.id
 	from _dvn3_studyfile_usergroup, explicitgroup, dataverserole dr
 	where _dvn3_studyfile_usergroup.allowedgroups_id = explicitgroup.id
+	and _dvn3_studyfile_usergroup.studyfiles_id in (select id from datafile)
 	and dr.alias='fileDownloader';
 
 
