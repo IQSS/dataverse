@@ -268,8 +268,32 @@ public class DatasetVersion implements Serializable {
     public String getTermsOfUse() {
         return termsOfUse;
     }
+    
+    /**
+     * Quick hack to disable <script> tags
+     * for Terms of Use and Terms of Access.
+     * 
+     * Need to add jsoup or something similar.
+     * 
+     * @param str
+     * @return 
+     */
+    private String stripScriptTags(String str){        
+        if (str == null){
+            return null;
+        }
+
+        str = str.replaceAll("(?i)<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>", "");
+        str = str.replaceAll("(?i)<\\/script>", "");
+        str = str.replaceAll("(?i)<script\\b", "");
+
+        return str;
+    }
 
     public void setTermsOfUse(String termsOfUse) {
+        if (termsOfUse != null){
+            termsOfUse = stripScriptTags(termsOfUse);
+        }
         this.termsOfUse = termsOfUse;
     }
 
@@ -278,6 +302,9 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setTermsOfAccess(String termsOfAccess) {
+        if (termsOfAccess != null){
+            termsOfAccess = stripScriptTags(termsOfAccess);
+        }
         this.termsOfAccess = termsOfAccess;
     }
     
