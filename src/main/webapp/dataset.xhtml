@@ -1417,7 +1417,11 @@
                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                 </label>
                                 <div class="col-sm-6">
-                                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body read-terms">                                             
+                                            <h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}" escape="false" />
+                                        </div>
+                                    </div>                                    
                                 </div>
                             </div>
                             <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null and DatasetPage.dataset.guestbook.enabled }" id="guestbookUIFragment">
