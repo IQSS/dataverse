@@ -123,6 +123,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         dsv.setLastUpdateTime(createDate);
         theDataset.setModificationTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
+            dataFile.setCreator((AuthenticatedUser) getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         logger.log(Level.FINE,"after datascrub "  + formatter.format(new Date().getTime()));        
