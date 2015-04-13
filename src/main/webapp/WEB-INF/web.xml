@@ -22,13 +22,11 @@
         <param-name>primefaces.THEME</param-name>
         <param-value>bootstrap</param-value>
     </context-param>
-
     <!-- example of a hard-coded PrimePush configuration: -->
     <!-- context-param -->
-        <!-- param-name>primefaces.PUSH_SERVER_URL</param-name -->
-        <!-- param-value>http://${dataverse.fqdn}:8081</param-value -->
+    <!-- param-name>primefaces.PUSH_SERVER_URL</param-name -->
+    <!-- param-value>http://${dataverse.fqdn}:8081</param-value -->
     <!-- /context-param -->
-    
     <context-param>
         <param-name>
             javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
@@ -47,10 +45,14 @@
     <filter-mapping>
         <filter-name>Router</filter-name>
         <url-pattern>/api/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
     <filter-mapping>
         <filter-name>Blocker</filter-name>
         <url-pattern>/api/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>

@@ -144,14 +144,14 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
         
-        logger.info("API blocker-start");
         String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
         if ( ! endpointList.equals(lastEndpointList) ) {
             updateBlockedPoints();
         }
         
         HttpServletRequest hsr = (HttpServletRequest) sr;
-        String apiEndpoint = canonize(hsr.getRequestURI().substring(hsr.getServletPath().length()));
+        String requestURI = hsr.getRequestURI();
+        String apiEndpoint = canonize(requestURI.substring(hsr.getServletPath().length()));
         for ( String prefix : blockedApiEndpoints ) {
             if ( apiEndpoint.startsWith(prefix) ) {
                 getBlockPolicy().doBlock(sr, sr1, fc);
@@ -159,14 +159,10 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
             }
         }
         fc.doFilter(sr, sr1);
-        logger.info("API blocker-end");
-        
     }
-
+    
     @Override
-    public void destroy() {
-        logger.info("WebFilter destroy");
-    }
+    public void destroy() {}
     
     private BlockPolicy getBlockPolicy() {
         String blockPolicyName = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "");

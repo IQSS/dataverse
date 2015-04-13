@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author michael
  */
 public class ApiRouter implements javax.servlet.Filter {
+    private static final Logger logger = Logger.getLogger(ApiRouter.class.getName());
     
     @Override
     public void init(FilterConfig fc) throws ServletException {
@@ -25,7 +26,6 @@ public class ApiRouter implements javax.servlet.Filter {
     public void doFilter(ServletRequest req, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         String requestUri = request.getRequestURI();
-        
         if ( requestUri.startsWith("/api/v1/") ) {
             fc.doFilter(req, sr1);
         } else {
