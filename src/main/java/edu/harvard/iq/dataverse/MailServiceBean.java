@@ -227,7 +227,7 @@ public class MailServiceBean implements java.io.Serializable {
     }  
     
     private String getDataverseLink(Dataverse dataverse){       
-        return  systemConfig.getDataverseSiteUrl() + "/dataverse.xhtml?alias=" + dataverse.getAlias();
+        return  systemConfig.getDataverseSiteUrl() + "/dataverse/" + dataverse.getAlias();
     }
    
     private String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){       

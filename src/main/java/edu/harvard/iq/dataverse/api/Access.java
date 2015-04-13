@@ -446,21 +446,22 @@ public class Access extends AbstractApiBean {
         }
         
         // If not, we'll try to use one of the files in this dataset version:
-        
-        if (imageThumbFileName == null) {
-            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
-            
-            for (FileMetadata fileMetadata : fileMetadatas) {
-                DataFile dataFile = fileMetadata.getDataFile();
-                if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
-                    imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
-                    break; 
-                } else if (dataFile.isImage()) {
-                    imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
-                    break;
-                } else if ("application/zipped-shapefile".equalsIgnoreCase(dataFile.getContentType())) {
-                    imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(dataFile.getFileSystemLocation().toString(), 48);
-                    break;
+        if (!datasetVersion.getDataset().isHarvested()) {
+            if (imageThumbFileName == null) {
+                List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+
+                for (FileMetadata fileMetadata : fileMetadatas) {
+                    DataFile dataFile = fileMetadata.getDataFile();
+                    if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                        imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                        break;
+                    } else if (dataFile.isImage()) {
+                        imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                        break;
+                    } else if ("application/zipped-shapefile".equalsIgnoreCase(dataFile.getContentType())) {
+                        imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(dataFile.getFileSystemLocation().toString(), 48);
+                        break;
+                    }
                 }
             }
         }
@@ -520,34 +521,42 @@ public class Access extends AbstractApiBean {
         
         // If there's no uploaded logo for this dataverse, go through its 
         // [released] datasets and see if any of them have card images:
-        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
-            if (dataset != null) {
-                DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        
+        // TODO: figure out if we want to be doing this! 
+        // (efficiency considerations...) -- L.A. 4.0 
+        // And we definitely don't want to be doing this for harvested 
+        // dataverses:
+        
+        if (!dataverse.isHarvested()) {
+            for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverseId)) {
+                if (dataset != null) {
+                    DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 // TODO: 
-                // put the Version-related code below away in its own method, 
-                // share it between this and the "dataset card image" method 
-                // above. 
-                // -- L.A. 4.0 beta 8
-                // TODO: 
-                // yeah, this needs to be cleaned up - after 4.0. 
-                // -- L.A. 4.0 beta 11
-                if (releasedVersion != null) {
-                    for (FileMetadata fileMetadata : releasedVersion.getFileMetadatas()) {
-                        DataFile dataFile = fileMetadata.getDataFile();
-                        if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
-                            imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
-                            break;
-                        } else if (dataFile.isImage()) {
-                            imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
-                            break;
-                        } else if ("application/zipped-shapefile".equalsIgnoreCase(dataFile.getContentType())) {
-                            imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(dataFile.getFileSystemLocation().toString(), 48);
-                            break;
+                    // put the Version-related code below away in its own method, 
+                    // share it between this and the "dataset card image" method 
+                    // above. 
+                    // -- L.A. 4.0 beta 8
+                    // TODO: 
+                    // yeah, this needs to be cleaned up - after 4.0. 
+                    // -- L.A. 4.0 beta 11
+                    if (releasedVersion != null) {
+                        for (FileMetadata fileMetadata : releasedVersion.getFileMetadatas()) {
+                            DataFile dataFile = fileMetadata.getDataFile();
+                            if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                                imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                                break;
+                            } else if (dataFile.isImage()) {
+                                imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                                break;
+                            } else if ("application/zipped-shapefile".equalsIgnoreCase(dataFile.getContentType())) {
+                                imageThumbFileName = ImageThumbConverter.generateWorldMapThumb(dataFile.getFileSystemLocation().toString(), 48);
+                                break;
+                            }
                         }
                     }
-                }
-                if (imageThumbFileName != null) {
-                    break;
+                    if (imageThumbFileName != null) {
+                        break;
+                    }
                 }
             }
         }
@@ -621,6 +630,21 @@ public class Access extends AbstractApiBean {
     // -- L.A. 4.0, beta11
     
     private void checkAuthorization(DataFile df, String apiToken) throws WebApplicationException {
+        // New as of beta15: 
+        // Either a session, or an API token is *always* required. 
+        // Even if it's a totally public object. 
+        // So, checking for that first:
+        logger.info("checking if either a session or a token supplied.");
+        if (session == null || session.getUser() == null) { // || !session.getUser().isAuthenticated()) {
+            logger.info("session is null, or unauthenticated.");
+            if (apiToken == null || findUserByApiToken(apiToken) == null) {
+                logger.info("token null or not supplied.");
+                throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+            }
+        } else {
+            logger.info("session not null.");
+        }
+
         // We don't even need to check permissions on files that are 
         // from released Dataset versions and not restricted: 
         
