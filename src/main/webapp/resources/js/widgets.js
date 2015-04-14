@@ -40,6 +40,6 @@ if(params.widget === 'iframe') {
     /*
      * Dataverse Listing iFrame
      */
-    document.write('<iframe src="' + params.dvUrl + '/iframe.xhtml?alias=' + params.alias + '" width="100%" height="' + params.heightPx + '" style="padding:4px; border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
+    document.write('<iframe src="' + params.dvUrl + '/iframe/' + params.alias + '" width="100%" height="' + params.heightPx + '" style="padding:4px; border:0; background:url(' + params.dvUrl + '/resources/images/ajax-loading.gif) no-repeat 50% 50%;"></iframe>');
 }
 
