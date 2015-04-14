@@ -6,6 +6,11 @@
         <pattern value="/dataverse/#{alias}" />
         <view-id value="/dataverse.xhtml" />
     </url-mapping>
+    
+    <url-mapping id="iframe">
+        <pattern value="/iframe/#{alias}" />
+        <view-id value="/iframe.xhtml" />
+    </url-mapping>    
         
     <url-mapping id="advancedSearch">
         <pattern value="/dataverse/#{dataverseIdentifier}/search" />
