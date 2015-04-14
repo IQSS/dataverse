@@ -25,6 +25,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import java.util.LinkedList;
+import javax.persistence.Query;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -261,9 +262,14 @@ public class PermissionServiceBean {
      * @return The list of dataverses {@code user} has permission {@code permission} on.
      */
     public List<Dataverse> getDataversesUserHasPermissionOn(User user, Permission permission) {
-        List<Dataverse> allDataverses = dataverseService.findAll();
+        /**
+         * @todo What about groups? And how can we make this more performant?
+         */
+        Query nativeQuery = em.createNativeQuery("SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "'));");
+        List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
-        for (Dataverse dataverse : allDataverses) {
+        for (int dvIdAsInt : dataverseIdsToCheck) {
+            Dataverse dataverse = dataverseService.find(Long.valueOf(dvIdAsInt));
             if (userOn(user, dataverse).has(permission)) {
                 dataversesUserHasPermissionOn.add(dataverse);
             }
