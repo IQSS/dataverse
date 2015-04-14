@@ -403,7 +403,7 @@
                                                 </h:link>
                                             </li>
                                             <li>
-                                                <p:commandLink id="browseOpts" actionListener="#{DataversePage.initFeaturedDataverses()}" oncomplete="browseOptsForm.show()"
+                                                <p:commandLink id="browseOpts" actionListener="#{DataversePage.edit('FEATURED')}" oncomplete="browseOptsForm.show()"
                                                                update="dataverseForm:browseOptsForm">
                                                     <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}" />
                                                 </p:commandLink>
@@ -598,7 +598,7 @@
                                         showSourceFilter="true" showTargetFilter="true" />
                         </div>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.saveChanges}" action="#{DataversePage.saveFeature()}"/>
+                            <p:commandButton value="#{bundle.saveChanges}" action="#{DataversePage.save}"/>
                             <p:commandButton value="#{bundle.cancel}" onclick="browseOptsForm.hide()"/>
                         </div>
                         </ui:fragment>
