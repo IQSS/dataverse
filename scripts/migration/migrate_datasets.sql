@@ -62,3 +62,8 @@ where dv1.dataset_id = dv2.dataset_id
 and dv1.versionnumber < dv2.versionnumber
 and dv2.versionstate  = 'DEACCESSIONED');
 
+-- update the globalidcreatetime to be equal to the publicationdate
+update dataset set globalidcreatetime = publicationdate
+from dvobject dvo
+where dataset.id = dvo.id;
+
