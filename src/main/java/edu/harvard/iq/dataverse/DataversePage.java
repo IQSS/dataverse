@@ -52,7 +52,7 @@ public class DataversePage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, PERMISSIONS, SETUP, THEME
+        CREATE, INFO, FEATURED
     }
     
     public enum LinkMode {
@@ -390,8 +390,8 @@ public class DataversePage implements java.io.Serializable {
         if (editMode == EditMode.INFO) {
             setupForGeneralInfoEdit();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
-        } else if (editMode == EditMode.SETUP) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse Setup", " - Edit the Metadata Blocks and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list."));
+        } else if (editMode == EditMode.FEATURED) {
+            initFeaturedDataverses();
         }
 
     }
@@ -523,16 +523,8 @@ public class DataversePage implements java.io.Serializable {
         }
     }
 
-    public String saveFeature() {
-        String successMessage = "The featured dataverses for this dataverse have been updated.";
-        return save(successMessage);
-    }
 
     public String save() {
-        return save(null);
-    }
-
-    public String save(String message) {
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList();
         if (editMode != null && editMode.equals(EditMode.INFO)) {
 
@@ -592,7 +584,11 @@ public class DataversePage implements java.io.Serializable {
             }
         } else {
             create = Boolean.FALSE;
-            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), featuredDataverses.getTarget(), session.getUser(), listDFTIL);
+            if (editMode != null && editMode.equals(editMode.FEATURED)) {
+                cmd = new UpdateDataverseCommand(dataverse, null, featuredDataverses.getTarget(), session.getUser(), null);
+            } else {
+                cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), null, session.getUser(), listDFTIL);                
+            }
         }
 
         try {
@@ -602,7 +598,18 @@ public class DataversePage implements java.io.Serializable {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
                 }
             }
+        
+            String message = "";
+            if (editMode != null && editMode.equals(editMode.FEATURED)) {
+                message = "The featured dataverses for this dataverse have been updated.";
+            } else {
+                message = (create) ? JH.localize("dataverse.create.success") : JH.localize("dataverse.update.success");
+            }
+            JsfHelper.addSuccessMessage(message);
+            
             editMode = null;
+            return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";            
+            
 
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
@@ -611,15 +618,10 @@ public class DataversePage implements java.io.Serializable {
             return null;
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", e);
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataverse.create.failure"));
+            String errMsg = create ? JH.localize("dataverse.create.failure") : JH.localize("dataverse.update.failure");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
         }
-        if (message == null) {
-            message = (create) ? JH.localize("dataverse.create.success") : JH.localize("dataverse.update.success");
-        }
-        JsfHelper.addSuccessMessage(message);
-
-        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
     public void cancel(ActionEvent e) {
