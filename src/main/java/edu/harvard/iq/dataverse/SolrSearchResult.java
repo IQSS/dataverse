@@ -56,8 +56,6 @@ public class SolrSearchResult {
      */
     public static String PARENT_IDENTIFIER = "identifier";
     private Map<String, String> parent;
-    // used on the SearchPage but not the search API
-    private List<Dataset> datasets;
     private String dataverseAffiliation;
     private String citation;
     /**
@@ -568,14 +566,6 @@ public class SolrSearchResult {
 
     public void setParent(Map<String, String> parent) {
         this.parent = parent;
-    }
-
-    public List<Dataset> getDatasets() {
-        return datasets;
-    }
-
-    public void setDatasets(List<Dataset> datasets) {
-        this.datasets = datasets;
     }
 
     public String getDataverseAffiliation() {

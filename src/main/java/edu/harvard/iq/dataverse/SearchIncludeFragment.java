@@ -344,8 +344,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
 
                     if (dataverseInCard != null) {
-                        List<Dataset> datasets = datasetService.findPublishedByOwnerId(dataverseInCard.getId());
-                        solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
                         solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());

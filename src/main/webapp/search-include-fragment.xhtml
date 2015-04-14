@@ -561,31 +561,6 @@
                                             </ui:repeat>
                                         </ui:repeat>
                                     </ui:fragment>
-
-                                    <div class="clear-both" jsf:rendered="#{result.datasets.size() > 0}">
-                                        <a data-toggle="collapse" data-parent="#accordion" href="#childDatasetBlock#{result.entityId}" value="javascript:void(0)">
-                                            [+] #{bundle['dataverse.results.cards.dataverse.preview.recentDatasets']}
-                                        </a>
-                                        <div class="panel-collapse collapse" id="childDatasetBlock#{result.entityId}">
-                                            <p:dataTable id="childDatasetTable" styleClass="margin-top-half" value="#{result.datasets}" var="dataset" rows="3" scrollable="true">
-                                                <p:column headerText="Title">
-                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
-                                                    <a href="/dataset.xhtml?persistentId=#{dataset.globalId}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                                        <h:outputText value="#{dataset.releasedVersion.title}" /></a>
-                                                </p:column>
-                                                <p:column headerText="Files" class="text-right" style="width:10%;">
-                                                    <h:outputFormat value="#{dataset.releasedVersion.fileMetadatas.size()} #{bundle['dataverse.results.cards.dataverse.preview.files']}">
-                                                        <f:param value="#{dataset.releasedVersion.fileMetadatas.size()}"/>
-                                                    </h:outputFormat>
-                                                </p:column>
-                                                <f:facet name="footer">  
-                                                    <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" styleClass="normal-text">
-                                                        <h:outputText value="#{bundle['dataverse.results.cards.dataverse.preview.viewAll']} &gt;"/>
-                                                    </h:outputLink>
-                                                </f:facet>
-                                            </p:dataTable>
-                                        </div>
-                                    </div>
                                 </ui:fragment>
                                 <!--DATASET CARDS-->
                                 <ui:fragment rendered="#{result.type == 'datasets'}">
