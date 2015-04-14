@@ -7,11 +7,7 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-            postLoad();
-        });
-    </script>    
+ 
 
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm" rendered="#{showSearch == true}">
@@ -829,4 +825,9 @@
             </button>
         </div>
     </p:dialog>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            postLoad();  // Calls the p:remoteCommand postLoad
+        });
+    </script>   
 </ui:composition>
