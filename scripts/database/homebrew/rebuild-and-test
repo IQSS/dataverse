@@ -1,18 +1,5 @@
 #!/bin/sh
-/Applications/NetBeans/glassfish4/glassfish/bin/asadmin stop-domain
-scripts/database/homebrew/drop-database
-scripts/search/clear
-rm -rf ~/dataverse/files
-scripts/database/homebrew/create-database
-mvn clean
-mvn package
-/Applications/NetBeans/glassfish4/glassfish/bin/asadmin start-domain
-# should probably use this instead: https://maven-glassfish-plugin.java.net/deploy-mojo.html
-/Applications/NetBeans/glassfish4/glassfish/bin/asadmin deploy --force target/dataverse-4.0.war
-#cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
-#sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
-scripts/search/tests/query-unparseable
 echo "---"
 echo "Creating search users"
 scripts/search/populate-users > /dev/null
@@ -20,26 +7,3 @@ scripts/search/create-users > /dev/null
 scripts/search/tests/grant-authusers-add-on-root
 scripts/search/tests/create-all-and-test
 #scripts/search/tests/create-saved-search-and-test
-
-exit
-# FIXME: clean up these old test and make them pass
-scripts/search/tests/delete-dataverse
-scripts/search/tests/highlighting-setup01 > /dev/null
-scripts/search/tests/highlighting-setup02 > /dev/null
-scripts/search/tests/highlighting-setup03 > /dev/null
-scripts/search/tests/highlighting
-scripts/search/tests/dataset-versioning01
-scripts/search/tests/dataset-versioning02-setup > /dev/null
-scripts/search/tests/dataset-versioning02
-scripts/search/tests/dataset-versioning03-setup > /dev/null
-scripts/search/tests/dataset-versioning03
-# TODO: get the equivalent of these old scripts working again.
-# They were taken out because we don't have a programmatic way
-# to change descriptions for files ( https://redmine.hmdc.harvard.edu/issues/3232 ):
-# 
-# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/permissions-datasets01
-# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/permissions-datasets02
-# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning04
-# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning05
-# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning06
-# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/special-characters

@@ -1,7 +1,0 @@
-#!/bin/sh
-USERNAME=pete
-PASSWORD=pete
-DVN_SERVER=localhost:8181
-GLOBAL_ID=doi:10.5072/FK2/17
-curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit-media/study/$GLOBAL_ID \
-| xmllint -format -

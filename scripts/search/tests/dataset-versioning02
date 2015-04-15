@@ -1,4 +1,0 @@
-#!/bin/bash
-# We assume you've done everything in scripts/search/tests/dataset-versioning01
-# and dataset-versioning02-setup
-diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true') scripts/search/tests/expected/dataset-versioning02anon
