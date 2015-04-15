@@ -929,7 +929,7 @@ public class DatasetPage implements java.io.Serializable {
 
     
    public String init() {
-        // System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         
         guestbookResponse = new GuestbookResponse();
@@ -941,18 +941,27 @@ public class DatasetPage implements java.io.Serializable {
             
            DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
            
-           // ---------------------------------------
-           // Set the workingVersion and Dataset
-           // ---------------------------------------
-           if (dataset.getId() != null || versionId != null) {
-               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), versionId);                     
-              
-           }else if (persistentId != null) {
-               // Set Working Version and Dataset by PersistentID
+            // ---------------------------------------
+            // Set the workingVersion and Dataset
+            // ---------------------------------------           
+            if (persistentId != null) {
+                // Set Working Version and Dataset by PersistentID
                retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);                     
-           }
+
+            } else if (dataset.getId() != null){
+               // Set Working Version and Dataset by Datasaet Id and Version
+               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
+
+            } else if (versionId != null) {
+               // Set Working Version and Dataset by DatasaetVersion Id
+               retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);                     
+              
+            } else if (retrieveDatasetVersionResponse == null){
+               return "/404.xhtml";
+            }
            
-           if (retrieveDatasetVersionResponse == null){
+                   
+            if (retrieveDatasetVersionResponse == null){
                return "/404.xhtml";
             }
 
