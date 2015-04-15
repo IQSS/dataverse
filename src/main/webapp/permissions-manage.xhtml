@@ -97,13 +97,13 @@
                                     <div class="button-block pull-right">
                                         <p:commandLink type="button" id="createGroup" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initExplicitGroupDialog}"
-                                                       update="explicitGroupNewDialog" oncomplete="explicitGroupForm.show();bind_bsui_components();">
+                                                       update="explicitGroupNewDialog" oncomplete="explicitGroupForm.show();handleResizeDialog('explicitGroupNewDialog');bind_bsui_components();">
                                             <span class="glyphicon glyphicon-plus-sign"/> #{bundle['dataverse.permissions.usersOrGroups.createGroupBtn']}
                                         </p:commandLink>
                                         <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
-                                                       oncomplete="userGroupsForm.show();bind_bsui_components();">
+                                                       oncomplete="userGroupsForm.show();handleResizeDialog('userGroupDialog');bind_bsui_components();">
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                         </p:commandLink>
                                     </div>

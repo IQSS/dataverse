@@ -57,7 +57,7 @@
                     </label>
                     <div class="col-sm-9">
                         <p:autoComplete id="roleAssigneeName" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
-                                        multiple="true" forceSelection="true" emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
+                                        multiple="true" scrollHeight="180" forceSelection="true" emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
                                         value="#{managePermissionsPage.newExplicitGroupRoleAssignees}"  
                                         completeMethod="#{managePermissionsPage.completeRoleAssignee}"
                                         var="roleAssignee" 

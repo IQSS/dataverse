@@ -40,7 +40,7 @@
                                     <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default pull-right"
                                                    actionListener="#{manageFilePermissionsPage.initAssignDialog}"
                                                    update="assignDialog"
-                                                   oncomplete="assignWidget.show();">
+                                                   oncomplete="assignWidget.show();handleResizeDialog('assignDialog');bind_bsui_components();">
                                         <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
                                     </p:commandLink>
                                     <p class="help-block clearfix">#{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</p>
@@ -158,7 +158,7 @@
                                             <p:commandLink type="button" styleClass="btn btn-default"
                                                            actionListener="#{manageFilePermissionsPage.initAssignDialogByFile(fileEntry.key)}"
                                                            update=":#{p:component('assignDialog')}"
-                                                           oncomplete="assignWidget.show();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
+                                                           oncomplete="assignWidget.show();handleResizeDialog('assignDialog');bind_bsui_components();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
                                         </p:column>
                                     </p:dataTable>
                                 </div>
@@ -169,7 +169,8 @@
                     <p:dialog id="viewRemoveDialog" styleClass="largePopUp" header="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.header']}" widgetVar="viewRemoveWidget" modal="true">
                         <div>
                             <p:dataTable id="assignedRoles" var="roleAssignment" value="#{manageFilePermissionsPage.roleAssignments}"
-                                         selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}">
+                                         selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}"
+                                         scrollable="true" scrollHeight="300">
                                 <p:column selectionMode="multiple" style="width:2%;text-align:center" disabledSelection="#{!roleAssignment.definitionPoint.instanceofDataFile}"/>
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" rendered="#{!empty manageFilePermissionsPage.selectedFile}">
                                     <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/>
@@ -204,7 +205,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissionspermissionsFiles.userOrGroup.enterName']}"
-                                                        multiple="true" forceSelection="true" emptyMessage="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.invalidMsg']}"
+                                                        multiple="true" scrollHeight="180" forceSelection="true" emptyMessage="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.invalidMsg']}"
                                                         value="#{manageFilePermissionsPage.selectedRoleAssignees}"  completeMethod="#{manageFilePermissionsPage.completeRoleAssignee}"
                                                         required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissionsFiles.assignDialog.userOrGroup.requiredMsg']}"
                                                         var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
@@ -226,7 +227,8 @@
                                     <p:dataTable id="restrictedFilesForAccess" styleClass="col-sm-12" var="file"
                                                  value="#{empty manageFilePermissionsPage.fileRequester ? Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray()) :
                                                           manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester)}"
-                                                 selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}">
+                                                 selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}"
+                                                 scrollable="true" scrollHeight="300">
                                         <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                         <p:column headerText="#{bundle['dataverse.permissionsFiles.assignDialog.file']}">
                                             <h:outputText value="#{file.displayName}"/>
