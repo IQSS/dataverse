@@ -23,3 +23,5 @@ Contents:
   search
   sword
   dataaccess
+  client-libraries
+  apps
