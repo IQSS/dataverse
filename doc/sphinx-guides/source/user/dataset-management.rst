@@ -21,7 +21,7 @@ File Handling + Uploading
 
 All file formats are supported, up to a few GB per file but some files types are supported by additional functionality, 
 including downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
-through data visualization and analysis.
+through data visualization and analysis. 
 
 Tabular
 --------------------
@@ -53,6 +53,12 @@ Astronomy (FITS)
 Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by Dataverse, 
 aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
 and browsable (facets) at the Dataset-level.
+
+Compresses Files: tar & zip
+----------------------------------------
+
+Compressed files in tar and zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as 
+is. If the number of files inside are more than a set limit (1,000), you will get an error message and the file will uploads as is.
 
 
 Adding a New Dataset
