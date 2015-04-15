@@ -54,7 +54,7 @@ Metadata found in the header section of `Flexible Image Transport System (FITS) 
 aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
 and browsable (facets) at the Dataset-level.
 
-Compresses Files: tar & zip
+Compressed Files: tar & zip
 ----------------------------------------
 
 Compressed files in tar and zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as 
