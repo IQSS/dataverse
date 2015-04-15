@@ -327,7 +327,9 @@ public class GuestbookResponseServiceBean {
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, User user, DataverseSession session) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         guestbookResponse.setGuestbook(findDefaultGuestbook());
-        guestbookResponse.setDataFile(dataFile);
+        if (dataFile != null){
+            guestbookResponse.setDataFile(dataFile);
+        }        
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());

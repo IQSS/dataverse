@@ -498,7 +498,7 @@
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                                                 </button>
-                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                                                   
                                                     <li  class="disabled">
                                                         <h:outputLink value="#">
                                                             <h:outputText value="All Files From This Dataset"/>
@@ -512,10 +512,24 @@
                                                         </li>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!(empty DatasetPage.selectedDownloadIds)}">
+                                                        <ui:remove> 
+                                                            <li>
+                                                                <h:outputLink  value="/api/access/datafiles/#{DatasetPage.selectedDownloadIds}">
+                                                                    <h:outputText value="Selected Files"/>
+                                                                </h:outputLink>
+                                                            </li>
+                                                        </ui:remove>
                                                         <li>
-                                                            <h:outputLink  value="/api/access/datafiles/#{DatasetPage.selectedDownloadIds}">
-                                                                <h:outputText value="Selected Files"/>
-                                                            </h:outputLink>
+                                                            <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
+                                                                           value="#{bundle.selectedFiles}"
+                                                                           action="#{DatasetPage.startMultipleFileDownload()}">                                                           
+                                                            </h:commandLink> 
+                                                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
+                                                                           action="#{DatasetPage.initGuestbookMultipleResponse()}"
+                                                                           value="#{bundle.selectedFiles}"
+                                                                           update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">                                                          
+                                                            </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
                                                 </ul>
@@ -553,7 +567,7 @@
                                     </f:facet>
                                     <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                     <p:column class="text-center" rendered="#{empty DatasetPage.editMode}">
-                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default"
+                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default"                                                                 
                                                                  valueChangeListener="#{DatasetPage.updateDownloadSelected}">
                                             <f:attribute name="fileId" value="#{fileMetadata.dataFile.id}"/>
                                             <p:ajax update=":#{p:component('filesTable')}" process="@this"/>
@@ -1409,12 +1423,12 @@
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                 </label>
                                 <div class="col-sm-6">
-                                    <div class="panel panel-default">
+                                   <div class="panel panel-default">
                                         <div class="panel-body read-terms">                                             
                                             <h:outputText value="#{DatasetPage.workingVersion.termsOfUse}" escape="false" />
                                         </div>
                                     </div>   
-                                </div>
+                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
                                 <label class="col-sm-3 control-label" for="guestbook_toa">
@@ -1423,12 +1437,12 @@
                                 <div class="col-sm-6">
                                     <div class="panel panel-default">
                                         <div class="panel-body read-terms">                                             
-                                            <h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}" escape="false" />
-                                        </div>
-                                    </div>                                    
+                                            <h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}" escape="false" />                                           
+                                        </div>  
+                                    </div>
                                 </div>
                             </div>
-                            <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null and DatasetPage.dataset.guestbook.enabled }" id="guestbookUIFragment">
+                            <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null and DatasetPage.dataset.guestbook.enabled and DatasetPage.downloadPopupRequired}" id="guestbookUIFragment">
                                 <p:fragment>
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label" for="guestbookuser_nameText">
@@ -1514,8 +1528,14 @@
                         </div>
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
-                                           rendered="#{DatasetPage.downloadType=='download'}"
+                                           rendered="#{DatasetPage.downloadType=='download' or DatasetPage.downloadType==''}"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('download')}"
+                                           update="@([id$=Messages])" oncomplete="if (args === undefined) downloadPopup.hide();">
+                                <f:param name="DO_GB_VALIDATION" value="true"/>
+                            </p:commandLink>
+                            <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                                           rendered="#{DatasetPage.downloadType=='multiple'}"
+                                           actionListener="#{DatasetPage.saveGuestbookResponse('multiple')}"
                                            update="@([id$=Messages])" oncomplete="if (args === undefined) downloadPopup.hide();">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
@@ -1534,7 +1554,8 @@
                             <ui:remove>                            
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
                                                  action="#{DatasetPage.saveGuestbookResponse('download')}" />
-
+                                <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='multiple'}"
+                                                 action="#{DatasetPage.saveGuestbookResponse('multiple')}" />
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
                                                  update="downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
 
@@ -1757,7 +1778,7 @@
                 </h:form>
                 <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
                 <script type="text/javascript">
-
+                    
                                 function openDialog() {
                                     details.show();
                                 }

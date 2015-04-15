@@ -148,6 +148,11 @@ public class DatasetVersion implements Serializable {
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
     }
+    
+    public List<FileMetadata> getFileMetadatasSorted() {
+        Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
+        return fileMetadatas;
+    }
 
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;

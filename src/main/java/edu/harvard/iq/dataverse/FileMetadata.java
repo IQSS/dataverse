@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -334,4 +335,10 @@ public class FileMetadata implements Serializable {
         return "edu.harvard.iq.dvn.core.study.FileMetadata[id=" + id + "]";
     }
     
+    public static final Comparator<FileMetadata> compareByLabel = new Comparator<FileMetadata>() {
+        @Override
+        public int compare(FileMetadata o1, FileMetadata o2) {
+            return o1.getLabel().compareTo(o2.getLabel());
+        }
+    };    
 }

@@ -181,6 +181,15 @@ public class DatasetPage implements java.io.Serializable {
     private Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
     private Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
 
+    private DataFile selectedDownloadFile;
+
+    public DataFile getSelectedDownloadFile() {
+        return selectedDownloadFile;
+    }
+
+    public void setSelectedDownloadFile(DataFile selectedDownloadFile) {
+        this.selectedDownloadFile = selectedDownloadFile;
+    }
     public Dataverse getLinkingDataverse() {
         return linkingDataverse;
     }
@@ -1104,20 +1113,36 @@ public class DatasetPage implements java.io.Serializable {
             
         Command cmd;
         try {
-            cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
-            commandEngine.submit(cmd);
+            if (this.guestbookResponse != null) {
+                if (!type.equals("multiple")) {
+                    cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
+                    commandEngine.submit(cmd);
+                } else {
+                    for (Long dfId : this.downloadSelection) {
+                        DataFile df = datafileService.find(dfId);
+                        if (df != null) {
+                            this.guestbookResponse.setDataFile(df);
+                            cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
+                            commandEngine.submit(cmd);
+                        }
+                    }
+                }
+            }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
-
         }
         
-        if (guestbookResponse.getDataFile() != null && type.equals("download")) {
-            return callDownloadServlet(downloadFormat, guestbookResponse.getDataFile().getId());
+        if (type.equals("multiple")){
+            return callDownloadServlet(getSelectedDownloadIds());
+        }
+       
+        if ((type.equals("download") || type.isEmpty())) {
+            return callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
         }
 
-        if (guestbookResponse.getDataFile() != null && type.equals("explore")) {
-            String retVal = getDataExploreURLComplete(guestbookResponse.getDataFile().getId());
+        if (type.equals("explore")) {
+            String retVal = getDataExploreURLComplete(this.selectedDownloadFile.getId());
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
                 return retVal;
@@ -1139,24 +1164,36 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
     
+    private String callDownloadServlet(String multiFileString){
+
+        String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
+
+        return fileDownloadUrl;
+    }
+    
     private String callDownloadServlet( String downloadType, Long fileId){
         
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
                     
         if (downloadType != null && downloadType.equals("bundle")){
-            fileDownloadUrl = "/api/access/datafile/bundle/" + guestbookResponse.getDataFile().getId();
+            fileDownloadUrl = "/api/access/datafile/bundle/" + this.selectedDownloadFile.getId();
         }
         if (downloadType != null && downloadType.equals("original")){
-            fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId() + "?format=original";
+            fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId() + "?format=original";
         }
         if (downloadType != null && downloadType.equals("RData")){
-            fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId() + "?format=RData";
+            fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId() + "?format=RData";
         }
         if (downloadType != null && downloadType.equals("var")){
-            fileDownloadUrl = "/api/meta/datafile/" + guestbookResponse.getDataFile().getId();
+            fileDownloadUrl = "/api/meta/datafile/" + this.selectedDownloadFile.getId();
         }
         if (downloadType != null && downloadType.equals("tab")){
-            fileDownloadUrl = "/api/access/datafile/" + guestbookResponse.getDataFile().getId()+ "?format=tab";
+            fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId()+ "?format=tab";
         }
                     logger.fine("Returning file download url: " + fileDownloadUrl);
         try {
@@ -2196,17 +2233,33 @@ public class DatasetPage implements java.io.Serializable {
         this.datasetVersionDifference = datasetVersionDifference;
     }
     
-    private void createSilentGuestbookEntry(FileMetadata fileMetadata, String format){
+   private void createSilentGuestbookEntry(FileMetadata fileMetadata, String format){
         initGuestbookResponse(fileMetadata, format);
         Command cmd;
         try {
-            cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
-            commandEngine.submit(cmd);
+            if (this.guestbookResponse != null) {
+                cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
+                commandEngine.submit(cmd);
+            }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Response Save Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
         
+    }
+    
+    public String startMultipleFileDownload (){
+        String downloadIdString = getSelectedDownloadIds();
+        if (downloadIdString != null ){
+        for (Long dfId : this.downloadSelection){
+            DataFile df = datafileService.find(dfId);
+            if (df.isReleased()){
+                createSilentGuestbookEntry(df.getFileMetadata(), "");
+            }
+        }
+        return callDownloadServlet(downloadIdString);
+        }
+        return "";
     }
     
     public String startFileDownload(FileMetadata fileMetadata, String format) {
@@ -2235,14 +2288,28 @@ public class DatasetPage implements java.io.Serializable {
     }
     
   
-    public void initGuestbookResponse(FileMetadata fileMetadata){
+   public void initGuestbookResponse(FileMetadata fileMetadata){
          initGuestbookResponse(fileMetadata, "");
+    }
+    
+    public void initGuestbookMultipleResponse(){
+         initGuestbookResponse(null, "download");
     }
 
     public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat) {
+        if (fileMetadata != null){
+           this.setSelectedDownloadFile(fileMetadata.getDataFile());
+        }
         setDownloadFormat(downloadFormat);
-        setDownloadType("download");
-        
+        if (fileMetadata == null){
+            setDownloadType("multiple");
+        } else {
+            setDownloadType("download");
+        }
+        if(this.workingVersion != null && this.workingVersion.isDraft()){
+            this.guestbookResponse = null;
+            return;
+        }
         this.guestbookResponse = new GuestbookResponse();
         
         User user = session.getUser();
@@ -2262,9 +2329,15 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse.setPosition(aUser.getPosition());
                 this.guestbookResponse.setSessionId(session.toString());
             }
-            this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
+            if (fileMetadata != null){
+                this.guestbookResponse.setDataFile(fileMetadata.getDataFile());
+            }            
         } else {
-            this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), user, session);
+            if (fileMetadata != null){
+                 this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), user, session);
+            } else {
+                 this.guestbookResponse = guestbookServiceBean.initDefaultGuestbookResponse(dataset, null, user, session);
+            }          
         }
         if (this.dataset.getGuestbook() != null && !this.dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             this.guestbookResponse.setCustomQuestionResponses(new ArrayList());
@@ -2908,7 +2981,12 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isDownloadPopupRequired() {
         // Each of these conditions is sufficient reason to have to 
         // present the user with the popup: 
-
+        
+        //0. if version is draft then Popup "not required"    
+        if (!workingVersion.isReleased()){
+            return false;
+        }
+        
         // 1. License and Terms of Use:
         if (!DatasetVersion.License.CC0.equals(workingVersion.getLicense())
                 && !(workingVersion.getTermsOfUse() == null
