@@ -170,7 +170,11 @@ Versioning is important for long term-research data management where metadata an
 Once you have published a dataset, any metadata or file changes (e.g, by uploading a new file, changing file metadata, adding 
 or editing metadata) will be tracked in our versioning feature. For example if you were at version 1 of your dataset, and you
 edit your dataset a new draft version of this dataset will be created. To get to the already published version 1 of your dataset,
-click on the blue "View Published Version" button on the top right of your dataset. To go back to the unpublished version click on the orange "View Unpublished Version" button. Once you are ready to publish this new version of your dataset, select the "Publish Dataset" button on the top right side of the page. If you were at version 1 of your dataset, and depending on the types of changes you have made, you will be asked to select to publish your draft as either version 1.1 or version 2.0 (**important note**: if you add a file, your dataset will automatically be bumped up to version 2.0). 
+click on the "View Dataset Versions" button on the top left section of your dataset. To go back to the unpublished version
+click on the same button. Once you are ready to publish this new version of your dataset, select the "Publish Dataset" button 
+on the top right side of the page. If you were at version 1 of your dataset, and depending on the types of changes you have 
+made, you will be asked to select to publish your draft as either version 1.1 or version 2.0 (**important note**: if you add 
+a file, your dataset will automatically be bumped up to a major version (example: if you were at 1.0 you will go to 2.0). 
 
 |image3|
 
