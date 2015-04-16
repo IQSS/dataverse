@@ -450,7 +450,12 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         jsonData.add("dataverse_id", dverse.getId());      
         jsonData.add("dataverse_name", dverse.getName());
-        jsonData.add("dataverse_description", dverse.getDescription());
+
+        String dataverseDesc = dverse.getDescription();
+        if (dataverseDesc == null || dataverseDesc.equalsIgnoreCase("")){
+            dataverseDesc = "(intentionally blank)";
+        }        
+        jsonData.add("dataverse_description", dataverseDesc);
 
         //------------------------------------
         // Dataset Info
