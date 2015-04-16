@@ -76,6 +76,19 @@ Permissions
 When you access a dataverse's permissions page, you will see there are three sections: Permissions, Users/Groups, and Roles. 
 
 |image2|
+Clicking on Permissions will bring you to this page:
+|image3|
+By clicking on the Edit Access button, you are able to change the settings allowing no one or anyone to add either dataverses or datasets to a dataverse.
+|image4|
+The Edit Access pop up allows you to also select if someone adding a dataset to this dataverse should be allowed to publish it (Curator role) or if the dataset will be submitted to the administrator of this dataverse to be reviewed then published (Contributor role). These Access settings can be changed at any time.
+
+Assigning a role
+-----------------------
+You can also give access to a Dataverse user to allow them to access an unpublished dataverse as well as other roles. To do this, click on the Assign Roles to Users/Groups button in the Users/Groups section. You can also give multiple users the same role at one time.
+|image5|
+|image6|
+This roles can be removed at any time.
+
 
 .. _dataset-templates: 
 
@@ -143,7 +156,10 @@ is made public, it can no longer be unpublished.
 
 .. |image1| image:: ./img/Dataverse-Diagram.png
 .. |image2| image:: ./img/dvperms1.png
-
+.. |image3| image:: ./img/dv2.png
+.. |image4| image:: ./img/dv3.png
+.. |image5| image:: ./img/dv4.png
+.. |image6| image:: ./img/dv5.png
 
 
 
