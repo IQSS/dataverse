@@ -453,7 +453,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         String dataverseDesc = dverse.getDescription();
         if (dataverseDesc == null || dataverseDesc.equalsIgnoreCase("")){
-            dataverseDesc = "(intentionally blank)";
+            dataverseDesc = "";
         }        
         jsonData.add("dataverse_description", dataverseDesc);
 
