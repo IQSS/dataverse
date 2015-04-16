@@ -338,7 +338,7 @@ public class FileMetadata implements Serializable {
     public static final Comparator<FileMetadata> compareByLabel = new Comparator<FileMetadata>() {
         @Override
         public int compare(FileMetadata o1, FileMetadata o2) {
-            return o1.getLabel().compareTo(o2.getLabel());
+            return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
         }
     };    
 }
