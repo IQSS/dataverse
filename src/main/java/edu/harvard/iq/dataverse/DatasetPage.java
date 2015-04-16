@@ -2283,7 +2283,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     //public String startFileDownload(FileMetadata fileMetadata, String format) {
-    void startFileDownload(FileMetadata fileMetadata, String format) {
+    public void startFileDownload(FileMetadata fileMetadata, String format) {
         createSilentGuestbookEntry(fileMetadata, format);
         callDownloadServlet(format, fileMetadata.getDataFile().getId());
     }
