@@ -1134,11 +1134,13 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         if (type.equals("multiple")){
-            return callDownloadServlet(getSelectedFilesIdsString());
+            //return callDownloadServlet(getSelectedFilesIdsString());
+            callDownloadServlet(getSelectedFilesIdsString());
         }
        
         if ((type.equals("download") || type.isEmpty())) {
-            return callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
+            //return callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
+            callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
         }
 
         if (type.equals("explore")) {
@@ -1164,7 +1166,8 @@ public class DatasetPage implements java.io.Serializable {
         return "";
     }
     
-    private String callDownloadServlet(String multiFileString){
+    //private String callDownloadServlet(String multiFileString){
+    private void callDownloadServlet(String multiFileString){
 
         String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
         try {
@@ -1173,10 +1176,11 @@ public class DatasetPage implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url.");
         }
 
-        return fileDownloadUrl;
+        //return fileDownloadUrl;
     }
     
-    private String callDownloadServlet( String downloadType, Long fileId){
+    //private String callDownloadServlet( String downloadType, Long fileId){
+    private void callDownloadServlet( String downloadType, Long fileId){
         
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
                     
@@ -1201,8 +1205,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
-            return fileDownloadUrl;       
-
+        //return fileDownloadUrl;       
     }
 
     public String getApiTokenKey() {
@@ -2261,9 +2264,10 @@ public class DatasetPage implements java.io.Serializable {
         
     }
     
-    public String startMultipleFileDownload (){
+    //public String startMultipleFileDownload (){
+    public void startMultipleFileDownload (){
         if (this.selectedFiles.isEmpty() ){
-            return "";
+            return;
         }
         
         for (FileMetadata fmd : this.selectedFiles){
@@ -2273,13 +2277,15 @@ public class DatasetPage implements java.io.Serializable {
             createSilentGuestbookEntry(df.getFileMetadata(), "");
         }
 
-        return callDownloadServlet(getSelectedFilesIdsString());
+        //return 
+        callDownloadServlet(getSelectedFilesIdsString());
 
     }
     
-    public String startFileDownload(FileMetadata fileMetadata, String format) {
+    //public String startFileDownload(FileMetadata fileMetadata, String format) {
+    void startFileDownload(FileMetadata fileMetadata, String format) {
         createSilentGuestbookEntry(fileMetadata, format);
-        return callDownloadServlet(format, fileMetadata.getDataFile().getId());
+        callDownloadServlet(format, fileMetadata.getDataFile().getId());
     }
     
     private String downloadFormat;
