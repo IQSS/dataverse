@@ -938,7 +938,7 @@ public class DatasetPage implements java.io.Serializable {
 
     
    public String init() {
-        System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        // System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         
         guestbookResponse = new GuestbookResponse();
