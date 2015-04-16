@@ -320,7 +320,7 @@ public class JsonPrinter {
 	
 	public static JsonObjectBuilder json( FileMetadata fmd ) {
 		return jsonObjectBuilder()
-				.add("category", fmd.getCategory())
+				// deprecated: .add("category", fmd.getCategory())
 				.add("description", fmd.getDescription())
 				.add("label", fmd.getLabel())
 				.add("version", fmd.getVersion())
