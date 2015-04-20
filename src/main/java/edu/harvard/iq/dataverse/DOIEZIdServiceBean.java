@@ -110,17 +110,19 @@ public class DOIEZIdServiceBean  {
     }
     
     
-    public void modifyIdentifier(Dataset dataset, HashMap metadata ){
-        String identifier = getIdentifierFromDataset(dataset);
+    public String modifyIdentifier(Dataset dataset, HashMap metadata ){
+       String identifier = getIdentifierFromDataset(dataset);
        try {
                ezidService.setMetadata(identifier, metadata);
+               return identifier;
             }  catch (EZIDException e){                
             logger.log(Level.INFO, "modifyMetadata failed");
             logger.log(Level.INFO, "String " + e.toString() );
             logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
             logger.log(Level.INFO, "cause " + e.getCause());
             logger.log(Level.INFO, "message " + e.getMessage());    
-        }                
+        } 
+       return null;
     }
     
     public void deleteIdentifier(Dataset datasetIn) {
@@ -184,7 +186,7 @@ public class DOIEZIdServiceBean  {
         
     }
     
-    private HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
+    public HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
         HashMap<String, String> metadata = new HashMap<String, String>();
         
         String authorString = datasetIn.getLatestVersion().getAuthorsStr();
@@ -203,6 +205,24 @@ public class DOIEZIdServiceBean  {
 	metadata.put("datacite.publisher", producerString);       
 	metadata.put("datacite.publicationyear", generateYear());
 	metadata.put("datacite.resourcetype", "Dataset");
+        String inetAddress = getSiteUrl();
+        String targetUrl = "";     
+        DOISHOULDER = "doi:" + datasetIn.getAuthority();
+        
+        if (inetAddress.equals("localhost")){                    
+           targetUrl ="http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER 
+                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
+        } else{
+           targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER 
+                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
+        }            
+        metadata.put("_target", targetUrl);
+        return metadata;
+    }
+    
+    public HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
+        HashMap<String, String> metadata = new HashMap<String, String>();
+        
         String inetAddress = getSiteUrl();
         String targetUrl = "";     
         DOISHOULDER = "doi:" + datasetIn.getAuthority();

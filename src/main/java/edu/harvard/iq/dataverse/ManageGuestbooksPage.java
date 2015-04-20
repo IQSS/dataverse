@@ -78,10 +78,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             for (Guestbook pg : dataverse.getParentGuestbooks()) {
                 pg.setUsageCount(guestbookService.findCountUsages(pg.getId()));
                 pg.setResponseCount(guestbookResponseService.findCountByGuestbookId(pg.getId()));
-                pg.setDeletable(true);
-                if (!(pg.getUsageCount().intValue() == 0)) {
-                    pg.setDeletable(false);
-                }
                 guestbooks.add(pg);
             }
         }
@@ -92,6 +88,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
                 cg.setDeletable(false);
             }
             cg.setResponseCount(guestbookResponseService.findCountByGuestbookId(cg.getId()));
+            if (!(cg.getResponseCount().intValue() == 0)) {
+                cg.setDeletable(false);
+            }
             cg.setDataverse(dataverse);
             guestbooks.add(cg);
         }

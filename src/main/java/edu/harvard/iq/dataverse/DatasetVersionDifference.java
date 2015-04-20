@@ -186,9 +186,9 @@ public class DatasetVersionDifference {
         if (!StringUtils.equals(fmdo.getDescription(), fmdn.getDescription())) {
             return false;
         }
-        if (!StringUtils.equals(fmdo.getCategory(), fmdn.getCategory())) {
-            return false;
-        }
+        //if (!StringUtils.equals(fmdo.getCategory(), fmdn.getCategory())) {
+        //    return false;
+        //}
         if (!StringUtils.equals(fmdo.getLabel(), fmdn.getLabel())) {
             return false;
         }
@@ -562,7 +562,7 @@ public class DatasetVersionDifference {
          }
          */
         // file category:
-        value1 = fm1.getCategory();
+        /*deprecated: value1 = fm1.getCategory();
         value2 = fm2.getCategory();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
@@ -574,7 +574,7 @@ public class DatasetVersionDifference {
 
         if (!value1.equals(value2)) {
             return true;
-        }
+        }*/
 
         // file description:
         value1 = fm1.getDescription();
@@ -610,7 +610,7 @@ public class DatasetVersionDifference {
             fdi.setFileType1(fm1.getDataFile().getFriendlyType());
             //fdi.setFileSize1(FileUtil. (new File(fm1.getDataFile().getFileSystemLocation()).length()));
 
-            fdi.setFileCat1(fm1.getCategory());
+            // deprecated: fdi.setFileCat1(fm1.getCategory());
             fdi.setFileDesc1(fm1.getDescription());
 
             fdi.setFile2Empty(true);
@@ -621,7 +621,7 @@ public class DatasetVersionDifference {
             fdi.setFileName2(fm2.getLabel());
             fdi.setFileType2(fm2.getDataFile().getFriendlyType());
             //fdi.setFileSize2(FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length()));
-            fdi.setFileCat2(fm2.getCategory());
+            // deprecated: fdi.setFileCat2(fm2.getCategory());
             fdi.setFileDesc2(fm2.getDescription());
 
         } else {
@@ -655,7 +655,7 @@ public class DatasetVersionDifference {
             // for the same studyFile! -- so no need to check for differences in
             // these 2 items.
             // file category:
-            value1 = fm1.getCategory();
+            /* deprecated: value1 = fm1.getCategory();
             value2 = fm2.getCategory();
 
             if (value1 == null || value1.equals("") || value1.equals(" ")) {
@@ -669,7 +669,7 @@ public class DatasetVersionDifference {
 
                 fdi.setFileCat1(value1);
                 fdi.setFileCat2(value2);
-            }
+            } */
 
             // file description:
             value1 = fm1.getDescription();

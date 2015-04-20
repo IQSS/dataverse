@@ -7,9 +7,9 @@ function IdPSelectUIParms() {
     this.alwaysShow = true;          // If true, this will show results as soon as you start typing
     this.dataSource = window.location.hostname === 'localhost' ? '/resources/dev/sample-shib-identities.json' : '/Shibboleth.sso/DiscoFeed'; // where to get the data from (dev vs. prod)
     this.defaultLanguage = 'en';     // Language to use if the browser local doesnt have a bundle
-    this.defaultLogo = 'flyingpiglogo.jpg';
-    this.defaultLogoWidth = 90;
-    this.defaultLogoHeight = 80;
+    this.defaultLogo = 'resources/images/shib_no_logo.png';
+    this.defaultLogoWidth = 1;
+    this.defaultLogoHeight = 1;
 //    this.defaultReturn = null;       // If non null, then the default place to send users who are not
     // Approaching via the Discovery Protocol for example
     //this.defaultReturn = "https://example.org/Shibboleth.sso/DS?SAMLDS=1&target=https://example.org/secure";
@@ -56,7 +56,7 @@ function IdPSelectUIParms() {
             'idpList.showSearch': 'Allow me to type the name of my institution',
             'submitButton.label': 'Continue',
             'helpText': 'Help',
-            'defaultLogoAlt': 'DefaultLogo'
+            'defaultLogoAlt': ' '
         },
         'de': {
             'fatal.divMissing': 'Das notwendige Div Element fehlt',

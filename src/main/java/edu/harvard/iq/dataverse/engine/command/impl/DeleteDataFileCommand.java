@@ -111,13 +111,33 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         }
         
         if (dataAccess != null) {
+            // If this is a local file, we only want to attempt to delete it 
+            // if it actually exists on the filesystem: 
+            // TODO: 
+            // add a generic .exists() method to the dataAccess object. 
+            // -- L.A. 4.0
+            boolean physicalFileExists = false;
             
-            try {
-                dataAccess.delete();
-            } catch (IOException ex) {
-                throw new CommandExecutionException("Error deleting physical file object while deleting DataFile " + doomed.getId() + " from the database.", ex, this);
+            if (dataAccess.isLocalFile()) {
+                try {
+                    if (dataAccess.getFileSystemPath() != null
+                            && dataAccess.getFileSystemPath().toFile() != null
+                            && dataAccess.getFileSystemPath().toFile().exists()) {
+                        physicalFileExists = true;
+                    }
+                } catch (IOException ioex) {
+                    physicalFileExists = true;
+                }
             }
 
+            if (physicalFileExists || (!dataAccess.isLocalFile())) {
+                try {
+                    dataAccess.delete();
+                } catch (IOException ex) {
+                    throw new CommandExecutionException("Error deleting physical file object while deleting DataFile " + doomed.getId() + " from the database.", ex, this);
+                }
+            }
+            
             logger.log(Level.FINE, "Successfully deleted physical storage object (file) for the DataFile {0}", doomed.getId());
             
             // Destroy the dataAccess object - we will need to purge the 

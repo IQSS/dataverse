@@ -417,7 +417,8 @@ public class IngestServiceBean {
                                     String categoryName = fileEntryName.replaceFirst("[\\/][^\\/]*$", "");
                                     if (!"".equals(categoryName)) {
                                         logger.fine("setting category to " + categoryName);
-                                        datafile.getFileMetadata().setCategory(categoryName.replaceAll("[\\/]", "-"));
+                                        //datafile.getFileMetadata().setCategory(categoryName.replaceAll("[\\/]", "-"));
+                                        datafile.getFileMetadata().addCategoryByName(categoryName.replaceAll("[\\/]", "-"));
                                     }
                                 }
                                 
@@ -473,10 +474,16 @@ public class IngestServiceBean {
                     }
                     version.getFileMetadatas().add(datafile.getFileMetadata());
                     datafile.getFileMetadata().setDatasetVersion(version);
+                    
+                    /* TODO!!
+                    // re-implement this in some way that does not use the 
+                    // deprecated .getCategory() on FileMeatadata:
                     if (datafile.getFileMetadata().getCategory() != null) {
                         datafile.getFileMetadata().addCategoryByName(datafile.getFileMetadata().getCategory());
                         datafile.getFileMetadata().setCategory(null);
+                        -- done? see above?
                     }
+                    */
                     version.getDataset().getFiles().add(datafile);
                 }
                 // remove the uploaded zip file: 

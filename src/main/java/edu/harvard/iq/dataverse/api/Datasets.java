@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVe
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -227,6 +228,21 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+    }
+        
+    
+    @GET
+    @Path("{id}/modifyRegistration")
+    public Response updateDatasetTargetURL(@PathParam("id") Long id, @QueryParam("key") String apiKey) {
+
+        try {
+            execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), findUserOrDie(apiKey)), "Update Target url " + id);
+            return okResponse("Dataset " + id + " target url updated");
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
     }
     
     @PUT

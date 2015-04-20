@@ -508,7 +508,7 @@
                                                         <li>
                                                             <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
                                                                            value="#{bundle.selectedFiles}"
-                                                                           action="#{DatasetPage.startMultipleFileDownload()}">                                                           
+                                                                           actionListener="#{DatasetPage.startMultipleFileDownload()}">                                                           
                                                             </h:commandLink> 
                                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                                                             <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
@@ -759,7 +759,7 @@
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
                                             <p:commandLink rendered="#{ DatasetPage.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(DatasetPage.downloadPopupRequired) }"
                                                            type="button" styleClass="btn btn-default"
-                                                           action="#{DatasetPage.startFileDownload(fileMetadata, '')}">
+                                                           actionListener="#{DatasetPage.startFileDownload(fileMetadata, '')}">
                                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                                             </p:commandLink> 
                                             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
@@ -778,7 +778,7 @@
                                                 <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                           
                                                     <li>
                                                         <p:commandLink styleClass="highlightBold" rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}">
+                                                                       actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}">
                                                             #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                         <p:commandLink styleClass="highlightBold" rendered="#{DatasetPage.downloadPopupRequired}"
@@ -791,7 +791,7 @@
                                                     <li role="presentation" class="divider"></li>                        
                                                     <li>
                                                         <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
+                                                                       actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
                                                             <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                                                                 <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                                                             </h:outputFormat>
@@ -807,7 +807,7 @@
                                                     </li>
                                                     <li>
                                                         <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'tab')}">
+                                                                       actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'tab')}">
                                                             #{bundle['file.downloadBtn.format.tab']}
                                                         </p:commandLink>
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
@@ -820,7 +820,7 @@
                                                     <ui:fragment rendered="#{!(fileMetadata.dataFile.originalFormatLabel == 'RData')}">
                                                         <li>
                                                             <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                           action="#{DatasetPage.startFileDownload(fileMetadata, 'RData')}">
+                                                                           actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'RData')}">
                                                                 #{bundle['file.downloadBtn.format.rdata']}
                                                             </p:commandLink>
                                                             <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
@@ -833,7 +833,7 @@
                                                     </ui:fragment>
                                                     <li>
                                                         <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                                       action="#{DatasetPage.startFileDownload(fileMetadata, 'var')}">
+                                                                       actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'var')}">
                                                             #{bundle['file.downloadBtn.format.var']}
                                                         </p:commandLink>
                                                         <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
@@ -1535,14 +1535,14 @@
                             </p:commandLink>
                             <ui:remove>                            
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='download'}"
-                                                 action="#{DatasetPage.saveGuestbookResponse('download')}" />
+                                                 actionListener="#{DatasetPage.saveGuestbookResponse('download')}" />
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='multiple'}"
-                                                 action="#{DatasetPage.saveGuestbookResponse('multiple')}" />
+                                                 actionListener="#{DatasetPage.saveGuestbookResponse('multiple')}" />
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
-                                                 update="downloadDataSubsetPopup" action="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
+                                                 update="downloadDataSubsetPopup" actionListener="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
 
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" 
-                                                 action="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
+                                                 actionListener="#{DatasetPage.saveGuestbookResponse('explore')}" rendered="#{DatasetPage.downloadType=='explore'}" />
                             </ui:remove>
                             <p:commandButton type="button" styleClass="btn btn-default" value="#{bundle.cancel}" onclick="downloadPopup.hide()" />
                         </div>
