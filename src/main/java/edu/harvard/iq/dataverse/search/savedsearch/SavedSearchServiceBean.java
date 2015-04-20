@@ -148,7 +148,7 @@ public class SavedSearchServiceBean {
                 } else if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because " + dataverseToLinkTo + " is already part of the subtree for " + savedSearch.getDefinitionPoint());
                 } else {
-                    DataverseLinkingDataverse link = commandEngine.submit(new LinkDataverseCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), dataverseToLinkTo));
+                    DataverseLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDataverseCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), dataverseToLinkTo));
                     hitInfo.add(resultString, "Persisted DataverseLinkingDataverse id " + link.getId() + " link of " + dataverseToLinkTo + " to " + savedSearch.getDefinitionPoint());
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
@@ -161,7 +161,7 @@ public class SavedSearchServiceBean {
                 } else if (datasetAncestorAlreadyLinked(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     hitInfo.add(resultString, "FIXME: implement this?");
                 } else {
-                    DatasetLinkingDataverse link = commandEngine.submit(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                    DatasetLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
