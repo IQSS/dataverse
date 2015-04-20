@@ -147,10 +147,11 @@ public class DatasetFieldCompoundValue implements Serializable {
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
                 String displayValue = format
-                        .replaceAll("#NAME", childDatasetField.getDatasetFieldType().getTitle())
+                        .replace("#NAME", childDatasetField.getDatasetFieldType().getTitle())
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
-                        .replaceAll("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
-                        .replaceAll("#VALUE", childDatasetField.getValue());
+                        // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
+                        .replace("#EMAIL", ResourceBundle.getBundle("Bundle").getString("dataset.email.hiddenMessage"))
+                        .replace("#VALUE", childDatasetField.getValue());
 
                 fieldMap.put(childDatasetField,displayValue);
             }
