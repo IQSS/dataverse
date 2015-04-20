@@ -25,6 +25,8 @@ import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
@@ -125,6 +127,11 @@ public class EjbDataverseEngine {
     ActionLogServiceBean logSvc;
 
     private CommandContext ctxt;
+    
+    @TransactionAttribute(REQUIRES_NEW)
+    public <R> R submitInNewTransaction(Command<R> aCommand) throws CommandException {
+        return submit(aCommand);
+    }
 
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
