@@ -494,6 +494,7 @@
                                              jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') 
                                                              and (permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
                                                              or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
+                                            <ui:remove>
                                             <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
@@ -520,7 +521,7 @@
                                                     </ui:fragment>
                                                 </ul>
                                             </div>
-
+                                            </ui:remove>
                                             <p:commandLink rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}"
                                                            type="button" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -551,7 +552,7 @@
                                             </p:commandLink>
                                         </div>                                           
                                     </f:facet>
-                                    <p:column selectionMode="multiple" class="col-select-width text-center"/>
+                                    <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{!empty DatasetPage.editMode}" />
                                     <p:column class="col-file-thumb text-center">
                                         <div class="thumbnail-block">
                                             <!-- Thumbnail Preview -->
