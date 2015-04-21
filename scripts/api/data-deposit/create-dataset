@@ -1,7 +1,6 @@
-#!/bin/bash -x
-USERNAME=spruce
-PASSWORD=spruce
+#!/bin/bash
+. scripts/search/export-keys
 SERVER=localhost:8181
 DATAVERSE_ALIAS=trees
-curl -s --insecure --data-binary "@scripts/search/tests/data/dataset-versioning03-setup.xml" -H "Content-Type: application/atom+xml" -u $USERNAME:$PASSWORD https://$SERVER/dvn/api/data-deposit/v1/swordv2/collection/dataverse/$DATAVERSE_ALIAS \
+curl -s --insecure --data-binary "@doc/sphinx-guides/source/api/sword-atom-entry.xml" -H "Content-Type: application/atom+xml" -u $SPRUCEKEY: https://$SERVER/dvn/api/data-deposit/v1/swordv2/collection/dataverse/$DATAVERSE_ALIAS \
 | xmllint -format -
