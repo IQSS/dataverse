@@ -275,7 +275,7 @@ public class ImportGenericServiceBean {
                 value = FieldDTO.createMultipleCompoundFieldDTO(dataverseFieldName, value);
             }
             else {
-                value = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
+                value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
             }
             if (dataverseFieldType.isChild()) {
                 DatasetFieldType parentDatasetFieldType = dataverseFieldType.getParentDatasetFieldType();
