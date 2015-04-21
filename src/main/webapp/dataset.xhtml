@@ -734,7 +734,6 @@
                                             </p:commandLink>
 
                                             <!-- WorldMap Explore | Map Data button group -->
-                                            <ui:remove>
                                             <div class="btn-group" role="group" jsf:rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) or DatasetPage.canUserSeeMapDataButton(fileMetadata) or DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}">
                                                 <!-- WorldMap Explore -->
                                                 <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
@@ -753,7 +752,7 @@
                                                     </button>
                                                 </ui:fragment>
                                             </div>
-                                            </ui:remove>
+                                            
 
                                             <!-- non-tabular data file: -->
                                             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
