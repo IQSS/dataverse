@@ -23,7 +23,7 @@ public class MarkupChecker {
      * @param unsafe
      * @return 
      */
-    public static String sanitizeText(String unsafe){
+    public static String sanitizeBasicHTML(String unsafe){
         
         if (unsafe == null){
             return null;
@@ -33,5 +33,23 @@ public class MarkupChecker {
         return Jsoup.clean(unsafe, Whitelist.basic());
         
     }
-    
+
+    /**
+     * Strip all HTMl tags
+     * 
+     * http://jsoup.org/apidocs/org/jsoup/safety/Whitelist.html#none%28%29
+     * 
+     * @param unsafe
+     * @return 
+     */
+    public static String stripAllTags(String unsafe){
+        
+        if (unsafe == null){
+            return null;
+        }        
+        
+        return Jsoup.clean(unsafe, Whitelist.none());
+        
+    }
+
 }
