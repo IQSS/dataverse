@@ -33,6 +33,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       puts "MAIL_SERVER environment variable found, using #{mailserver}"
     end
 
+    config.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+      v.cpus = 1
+    end
     config.vm.provision "shell", path: "scripts/vagrant/setup.sh"
     config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
     config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: mailserver

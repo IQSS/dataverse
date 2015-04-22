@@ -958,6 +958,7 @@ if ($pg_local_connection) {
     # have read access to it:
 
     copy( $SQL_REFERENCE_DATA, "/tmp" ) or die "Could not copy $SQL_REFERENCE_DATA to /tmp: $!";
+    unlink( $SQL_REFERENCE_DATA );
 
     chdir("/tmp");
     $< = $POSTGRES_SYS_UID;

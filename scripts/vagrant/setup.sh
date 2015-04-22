@@ -44,7 +44,7 @@ service shibd start
 service httpd stop
 cp /dataverse/conf/httpd/conf.d/dataverse.conf /etc/httpd/conf.d/dataverse.conf
 service httpd start
-curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /downloads/pdurbin.pagekite.me
+curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /tmp/pdurbin.pagekite.me
 cp -a /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
 cp -a /etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml.orig
 # need more attributes, such as sn, givenName, mail
