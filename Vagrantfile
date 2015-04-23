@@ -47,6 +47,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.network "forwarded_port", guest: 80, host: 8888
     config.vm.network "forwarded_port", guest: 443, host: 9999
     config.vm.network "forwarded_port", guest: 8983, host: 8993
+    config.vm.network "forwarded_port", guest: 8080, host: 8088
+    config.vm.network "forwarded_port", guest: 8181, host: 8188
 
     # FIXME: use /dataverse/downloads instead
     config.vm.synced_folder "downloads", "/downloads"
