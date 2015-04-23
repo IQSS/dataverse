@@ -137,7 +137,7 @@ public abstract class DataAccessObject {
             return status;
         }
 
-        private long getSize () {
+        public long getSize () {
             return size;
         }
 

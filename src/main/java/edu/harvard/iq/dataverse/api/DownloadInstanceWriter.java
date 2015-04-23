@@ -48,7 +48,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
     @Override
     public long getSize(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
-        return getFileSize(di);
+        return -1;
+        //return getFileSize(di);
     }
     
     @Override
@@ -184,8 +185,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
                     
                     long contentSize; 
-                    if ((contentSize = getFileSize(di, accessObject.getVarHeader())) > 0) {
+                    boolean useChunkedTransfer = false; 
+                    //if ((contentSize = getFileSize(di, accessObject.getVarHeader())) > 0) {
+                    if ((contentSize = getContentSize(accessObject)) > 0) {
+                        logger.info("Content size (retrieved from the AccessObject): "+contentSize);
                         httpHeaders.add("Content-Length", contentSize); 
+                    } else {
+                        //httpHeaders.add("Transfer-encoding", "chunked");
+                        //useChunkedTransfer = true;
                     }
                     
                     // (the httpHeaders map must be modified *before* writing any
@@ -193,19 +200,41 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                                               
                     int bufsize;
                     byte [] bffr = new byte[4*8192];
+                    byte [] chunkClose = "\r\n".getBytes();
                     
                     // before writing out any bytes from the input stream, flush
                     // any extra content, such as the variable header for the 
-                    // subsettable files:
+                    // subsettable files: (??)4
                     
                     if (accessObject.getVarHeader() != null) {
-                        outstream.write(accessObject.getVarHeader().getBytes());
+                        if (accessObject.getVarHeader().getBytes().length > 0) {
+                            if (useChunkedTransfer) {
+                                String chunkSizeLine = String.format("%x\r\n", accessObject.getVarHeader().getBytes().length);
+                                outstream.write(chunkSizeLine.getBytes());
+                            }
+                            outstream.write(accessObject.getVarHeader().getBytes());
+                            if (useChunkedTransfer) {
+                                outstream.write(chunkClose);
+                            }
+                        }
                     }
 
                     while ((bufsize = instream.read(bffr)) != -1) {
+                        if (useChunkedTransfer) {
+                            String chunkSizeLine = String.format("%x\r\n", bufsize);
+                            outstream.write(chunkSizeLine.getBytes());
+                        }
                         outstream.write(bffr, 0, bufsize);
+                        if (useChunkedTransfer) {
+                            outstream.write(chunkClose);
+                        }
                     }
 
+                    if (useChunkedTransfer) {
+                        String chunkClosing = "0\r\n\r\n";
+                        outstream.write(chunkClosing.getBytes());
+                    }
+                    
                     instream.close();
                     outstream.close(); 
                     return;
@@ -215,6 +244,21 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         
         throw new WebApplicationException(Response.Status.NOT_FOUND);
 
+    }
+    
+    private long getContentSize(DataAccessObject accessObject) {
+        long contentSize = 0; 
+        
+        if (accessObject.getSize() > -1) {
+            contentSize+=accessObject.getSize();
+            if (accessObject.getVarHeader() != null) {
+                if (accessObject.getVarHeader().getBytes().length > 0) {
+                    contentSize+=accessObject.getVarHeader().getBytes().length;
+                }
+            }
+            return contentSize;
+        }
+        return -1;
     }
     
     private long getFileSize(DownloadInstance di) {

@@ -94,6 +94,9 @@ public class EjbDataverseEngine {
     DOIEZIdServiceBean doiEZId;
     
     @EJB
+    HandlenetServiceBean handleNet;
+    
+    @EJB
     SettingsServiceBean settings;
     
     @EJB
@@ -297,6 +300,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DOIEZIdServiceBean doiEZId() {
                     return doiEZId;
+                }
+                
+                @Override
+                public HandlenetServiceBean handleNet() {
+                    return handleNet;
                 }
 
                 @Override
