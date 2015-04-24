@@ -347,6 +347,7 @@ public class Index extends AbstractApiBean {
     private JsonObjectBuilder getContentInSolrButNotDatabase() throws SearchException {
         List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
         List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+        List<Long> filesInSolrOnly = indexService.findFilesInSolrOnly();
         JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
         for (Long dataverseId : dataversesInSolrOnly) {
             dataversesInSolrButNotDatabase.add(dataverseId);
@@ -355,13 +356,18 @@ public class Index extends AbstractApiBean {
         for (Long datasetId : datasetsInSolrOnly) {
             datasetsInSolrButNotDatabase.add(datasetId);
         }
+        JsonArrayBuilder filesInSolrButNotDatabase = Json.createArrayBuilder();
+        for (Long fileId : filesInSolrOnly) {
+            filesInSolrButNotDatabase.add(fileId);
+        }
         JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
                 /**
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
                  */
                 .add("dataverses", dataversesInSolrButNotDatabase.build().size())
-                .add("datasets", datasetsInSolrButNotDatabase.build().size());
+                .add("datasets", datasetsInSolrButNotDatabase.build().size())
+                .add("files", filesInSolrButNotDatabase.build().size());
         return contentInSolrButNotDatabase;
     }
 
