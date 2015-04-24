@@ -8,10 +8,7 @@ package edu.harvard.iq.dataverse.api;
 
 import java.lang.reflect.Type;
 import java.lang.annotation.Annotation;
-import javax.ejb.Singleton;
-import java.io.InputStream; 
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.ws.rs.WebApplicationException;
@@ -23,18 +20,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.*;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
  *
  * @author Leonid Andreev
  */
-@Singleton
 @Provider
 public class ZippedDownloadInstanceWriter implements MessageBodyWriter<ZippedDownloadInstance> {
     

@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse.api;
 
 import java.lang.reflect.Type;
 import java.lang.annotation.Annotation;
-import javax.ejb.Singleton;
 import java.io.InputStream; 
 import java.io.OutputStream;
 import java.io.IOException;
@@ -32,7 +31,6 @@ import java.util.zip.ZipOutputStream;
  *
  * @author Leonid Andreev
  */
-@Singleton
 @Provider
 public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDownloadInstance> {
     

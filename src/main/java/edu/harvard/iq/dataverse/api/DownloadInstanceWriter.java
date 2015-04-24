@@ -8,10 +8,8 @@ package edu.harvard.iq.dataverse.api;
 
 import java.lang.reflect.Type;
 import java.lang.annotation.Annotation;
-import javax.ejb.Singleton;
 import java.io.InputStream; 
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.ws.rs.WebApplicationException;
@@ -34,7 +32,6 @@ import java.util.logging.Logger;
  *
  * @author Leonid Andreev
  */
-@Singleton
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
     
