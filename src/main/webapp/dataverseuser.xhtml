@@ -160,14 +160,14 @@
                                                 <ui:fragment rendered="#{item.type == 'GRANTFILEACCESS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.grantFileAccess']}" escape="false">
-                                                        <f:param value="#{item.theObject.id}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.displayName}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REJECTFILEACCESS'}">
                                                     <i class="icon-dataset text-icon-inline text-muted"></i>
                                                     <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
-                                                        <f:param value="#{item.theObject.id}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.displayName}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>                                    
