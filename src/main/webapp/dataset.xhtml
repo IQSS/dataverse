@@ -775,7 +775,8 @@
                                                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
                                                 </button>
-                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                           
+                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">     
+                                                    <ui:remove>
                                                     <li>
                                                         <p:commandLink styleClass="highlightBold" rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                                                        actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'bundle')}">
@@ -788,6 +789,7 @@
                                                             #{bundle['file.downloadBtn.format.all']}
                                                         </p:commandLink>
                                                     </li>
+                                                    </ui:remove>
                                                     <li role="presentation" class="divider"></li>                        
                                                     <li>
                                                         <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
