@@ -537,4 +537,27 @@ public class DatasetField implements Serializable {
         datasetFieldCompoundValues.remove(index);
     }
 
+    
+    /**
+     *  If this is a FieldType.TEXT or FieldType.TEXTBOX, then run it through the markup checker
+     * 
+     * @return
+     */
+    public boolean needsTextCleaning(){
+  
+        
+        if (this.getDatasetFieldType() == null || this.getDatasetFieldType().getFieldType() == null){
+            return false;
+        }
+        
+        if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXT)){
+            return true;
+        } else if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)){
+            return true;
+        }
+    
+        return false;
+        
+    } // end: needsTextCleaning
+
 }

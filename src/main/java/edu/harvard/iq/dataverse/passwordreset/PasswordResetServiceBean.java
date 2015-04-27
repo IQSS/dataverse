@@ -90,10 +90,9 @@ public class PasswordResetServiceBean {
                 + "Thank you,\n\n"
                 + "Dataverse Support Team";
         try {
-            String fromAddress = "do-not-reply@dataverse.org";
             String toAddress = aUser.getEmail();
             String subject = "Dataverse Password Reset Requested";
-            mailService.sendMail(fromAddress, toAddress, subject, messageBody);
+            mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
              * @todo get more specific about the exception that's thrown
@@ -238,7 +237,6 @@ public class PasswordResetServiceBean {
                 // suboptimal but when it expires it should be deleted
                 logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
             }
-            String fromAddress = "do-not-reply@dataverse.org";
             String toAddress = user.getEmail();
             String subject = "Dataverse Password Reset Successfully Changed";
 
@@ -247,7 +245,7 @@ public class PasswordResetServiceBean {
                     + "Please contact us if you did not request this password reset or need further help.\n\n"
                     + "Thank you,\n\n"
                     + "Dataverse Support Team";
-            mailService.sendMail(fromAddress, toAddress, subject, messageBody);
+            mailService.sendSystemEmail(toAddress, subject, messageBody);
             return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
         } else {
             messageSummary = messageSummaryFail;

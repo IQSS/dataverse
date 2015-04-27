@@ -16,6 +16,8 @@
    <dcterms:identifier>hdl:1XXZY.1/XYXZ</dcterms:identifier>
    -->
    <dcterms:description>Considerations before you start roasting your own coffee at home.</dcterms:description>
+   <!-- Dataverse controlled vocabulary subject term -->
+   <dcterms:subject>Chemistry</dcterms:subject>
    <!-- keywords -->
    <dcterms:subject>coffee</dcterms:subject>
    <dcterms:subject>beverage</dcterms:subject>

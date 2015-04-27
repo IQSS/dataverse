@@ -56,6 +56,14 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
             } else {
                 //do nothing - we'll know it failed because the global id create time won't have been updated.
             }
+        } else if ("hdl".equals(target.getProtocol())) {
+            // TODO: 
+            // handlenet registration still needs diagnostics! 
+            // -- L.A. 4.0
+            ctxt.handleNet().reRegisterHandle(target);
+            target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+            ctxt.em().merge(target);
+            ctxt.em().flush();
         } else {
             throw new UnsupportedOperationException("UpdateDatasetTargetURLCommand only supported for doi protocol."); //To change body of generated methods, choose Tools | Templates.  
         }

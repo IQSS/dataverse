@@ -48,6 +48,7 @@ public class FileAccessObject extends DataAccessObject {
 
     public FileAccessObject(DataFile file) throws IOException {
         this (file, null);
+        
     }
 
     public FileAccessObject(DataFile file, DataAccessRequest req) throws IOException {
@@ -60,7 +61,6 @@ public class FileAccessObject extends DataAccessObject {
             throw new IOException ("not a local file.");
         }
          */
-
 
         this.setIsLocalFile(true);
         this.setIsDownloadSupported(true);

@@ -66,6 +66,8 @@ public class ImageThumbConverter {
             return false; 
         }
         
+        logger.info("Checking for thumbnail, file type: "+file.getContentType());
+        
         String imageThumbFileName = null;
 
         if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
@@ -77,9 +79,11 @@ public class ImageThumbConverter {
         }
         
         if (imageThumbFileName != null) {
+            logger.info("image thumb file name: "+imageThumbFileName);
             return true; 
         }
         
+        logger.info("image thumb file name is null");
         return false; 
     }
     
@@ -141,22 +145,35 @@ public class ImageThumbConverter {
 
         if (new File(thumbFileLocation).exists()) {
             return thumbFileLocation;
-        }
-
+        } 
+        
         // let's attempt to generate the thumb:
+        
+        // As a temporary measure, generating thumbnails on the fly is 
+        // completely disabled. If the thumbnail is not present, we 
+        // just return null here. Which will make the page show the 
+        // appropriate default icon instead. 
+        // Thumbnails that are already generated, previously or asynchronously, 
+        // outside of the app, will of course be used, per the above. 
+        // L.A. Apr. 23 2015
+        
+        return null;
 
 
+        /*
         try {
+            logger.info("attempting to read the image file "+fileLocation+" with ImageIO.read()");
             BufferedImage fullSizeImage = ImageIO.read(new File(fileLocation));
 
 	    if ( fullSizeImage == null ) {
+                logger.info("could not read image with ImageIO.read()");
 		return null; 
 	    }
 
             int width = fullSizeImage.getWidth(null);
             int height = fullSizeImage.getHeight(null);
             
-            logger.fine("image dimensions: "+width+"x"+height);
+            logger.info("image dimensions: "+width+"x"+height);
             
             double scaleFactor = 0.0;
             int thumbHeight = size; 
@@ -170,8 +187,8 @@ public class ImageThumbConverter {
                 thumbWidth = (int) (width * scaleFactor);
             }
             
-            logger.fine("scale factor: "+scaleFactor);
-            logger.fine("thumbnail dimensions: "+thumbWidth+"x"+thumbHeight);
+            logger.info("scale factor: "+scaleFactor);
+            logger.info("thumbnail dimensions: "+thumbWidth+"x"+thumbHeight);
 
 
 
@@ -184,7 +201,7 @@ public class ImageThumbConverter {
             //logger.fine("Finished image rescaling.");
 
             // if transparency is defined, we should preserve it in the png:
-            /*   
+            *//*   
             OK, turns out *nothing* special needs to be done in order to preserve
             the transparency; the transparency is already there, because ImageIO.read()
             creates a BufferedImage with the color type BufferedImage.TYPE_INT_ARGB;
@@ -203,7 +220,7 @@ public class ImageThumbConverter {
             logger.info("color we'll be using for transparency: "+color);
             
             thumbImage = makeColorTransparent(bufferedImageForTransparency, new Color(color));
-            */
+            *//*
             
             ImageWriter writer = null;
             Iterator iter = ImageIO.getImageWritersByFormatName("png");
@@ -231,11 +248,13 @@ public class ImageThumbConverter {
             lowRes.flush();
             return thumbFileLocation;
         } catch (Exception e) {
+            logger.info("Caught exception trying to generate thumbnail: "+e.getMessage());
             // something went wrong...
 	    //dbgLog.fine("ImageIO: caught an exception while trying to generate a thumbnail for "+fileLocation);
 
             return null;
         }
+        */
     }
     
     public static String generatePDFThumb(String fileLocation) {
@@ -250,10 +269,22 @@ public class ImageThumbConverter {
 
         if (new File(thumbFileLocation).exists()) {
             return thumbFileLocation;
-        }
+        } 
 
         // doesn't exist yet, let's attempt to generate it:
+        
+        // As a temporary measure, generating thumbnails on the fly is 
+        // completely disabled. If the thumbnail is not present, we 
+        // just return null here. Which will make the page show the 
+        // appropriate default icon instead. 
+        // Thumbnails that are already generated, previously or asynchronously, 
+        // outside of the app, will of course be used, per the above. 
+        // L.A. Apr. 23 2015
+        
+        return null; 
 
+
+        /*
 	String imageMagickExec = System.getProperty("dataverse.path.imagemagick.convert");
 
         if ( imageMagickExec != null ) {
@@ -305,6 +336,7 @@ public class ImageThumbConverter {
         }
 
         return null; 
+        */
         
     }
     

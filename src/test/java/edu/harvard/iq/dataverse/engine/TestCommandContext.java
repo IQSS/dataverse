@@ -99,6 +99,11 @@ public class TestCommandContext implements CommandContext {
 	} 
         
         @Override
+	public HandlenetServiceBean handleNet() {
+		return null;
+	}
+        
+        @Override
 	public SettingsServiceBean settings() {
 		return null;
 	} 
