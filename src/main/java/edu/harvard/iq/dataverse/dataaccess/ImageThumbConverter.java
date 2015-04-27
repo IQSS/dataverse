@@ -66,7 +66,7 @@ public class ImageThumbConverter {
             return false; 
         }
         
-        logger.info("Checking for thumbnail, file type: "+file.getContentType());
+        logger.fine("Checking for thumbnail, file type: "+file.getContentType());
         
         String imageThumbFileName = null;
 
@@ -79,11 +79,11 @@ public class ImageThumbConverter {
         }
         
         if (imageThumbFileName != null) {
-            logger.info("image thumb file name: "+imageThumbFileName);
+            logger.fine("image thumb file name: "+imageThumbFileName);
             return true; 
         }
         
-        logger.info("image thumb file name is null");
+        logger.fine("image thumb file name is null");
         return false; 
     }
     
