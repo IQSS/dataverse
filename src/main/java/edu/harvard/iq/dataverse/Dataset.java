@@ -66,6 +66,17 @@ public class Dataset extends DvObjectContainer {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Guestbook guestbook;
+    
+    @OneToMany(mappedBy="dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetLinkingDataverse> datasetLinkingDataverses;
+
+    public List<DatasetLinkingDataverse> getDatasetLinkingDataverses() {
+        return datasetLinkingDataverses;
+    }
+
+    public void setDatasetLinkingDataverses(List<DatasetLinkingDataverse> datasetLinkingDataverses) {
+        this.datasetLinkingDataverses = datasetLinkingDataverses;
+    }
 
     private boolean fileAccessRequest;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})

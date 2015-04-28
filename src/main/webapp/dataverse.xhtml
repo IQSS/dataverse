@@ -530,9 +530,10 @@
                         </div>
                         
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
+                            <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                             <ui:fragment rendered="#{!empty DataversePage.dataverse.description}">
                                 <div id="dataverseDesc" style="margin-bottom:1em;">
-                                    <h:outputText value="#{DataversePage.dataverse.description}" escape="false"/>
+                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DataversePage.dataverse.description)}" escape="false"/>
                                 </div>
                             </ui:fragment>
                             

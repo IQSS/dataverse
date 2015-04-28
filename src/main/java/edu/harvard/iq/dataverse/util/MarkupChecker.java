@@ -28,9 +28,10 @@ public class MarkupChecker {
         if (unsafe == null){
             return null;
         }
+        // basic includes: a, b, blockquote, br, cite, code, dd, dl, dt, em, i, li, ol, p, pre, q, small, span, strike, strong, sub, sup, u, ul
+        Whitelist wl = Whitelist.basic().addTags("img", "h1", "h2", "h3", "kbd", "hr", "s", "del");       
         
-         // a, b, blockquote, br, cite, code, dd, dl, dt, em, i, li, ol, p, pre, q, small, span, strike, strong, sub, sup, u, ul
-        return Jsoup.clean(unsafe, Whitelist.basic());
+        return Jsoup.clean(unsafe, wl);
         
     }
 

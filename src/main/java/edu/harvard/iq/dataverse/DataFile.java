@@ -84,6 +84,17 @@ public class DataFile extends DvObject {
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileMetadata> fileMetadatas;
     
+    @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<GuestbookResponse> guestbookResponses;
+
+    public List<GuestbookResponse> getGuestbookResponses() {
+        return guestbookResponses;
+    }
+
+    public void setGuestbookResponses(List<GuestbookResponse> guestbookResponses) {
+        this.guestbookResponses = guestbookResponses;
+    }
+    
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")

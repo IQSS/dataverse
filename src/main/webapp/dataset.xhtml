@@ -8,6 +8,7 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:pt="http://java.sun.com/jsf/passthrough"
       xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <h:head>
@@ -356,7 +357,8 @@
                                             <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</span>
                                         </label>
                                         <div class="col-sm-9 no-padding-left-right">
-                                            <h:outputText value="#{DatasetPage.datasetVersionUI.notes.value}" escape="false"/>
+                                            <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.notes.value)}" escape="false"/>
                                         </div>
                                     </div>
                                 </div>
@@ -1392,6 +1394,7 @@
                     <!-- END: Request Access Sign Up/Log In Button -->
 
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
+                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <p class="help-block">
                             <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.downloadDialog.tip']}
                         </p>
@@ -1409,7 +1412,7 @@
                                 <div class="col-sm-6">
                                     <div class="panel panel-default">
                                         <div class="panel-body read-terms">                                             
-                                            <h:outputText value="#{DatasetPage.workingVersion.termsOfUse}" escape="false" />
+                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUse)}" escape="false" />
                                         </div>
                                     </div>   
                                 </div>
@@ -1421,7 +1424,7 @@
                                 <div class="col-sm-6">
                                     <div class="panel panel-default">
                                         <div class="panel-body read-terms">                                             
-                                            <h:outputText value="#{DatasetPage.workingVersion.termsOfAccess}" escape="false" />                                           
+                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfAccess)}" escape="false" />                                           
                                         </div>  
                                     </div>
                                 </div>

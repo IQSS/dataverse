@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -297,8 +296,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setTermsOfUse(String termsOfUse) {
-
-        this.termsOfUse = MarkupChecker.sanitizeBasicHTML(termsOfUse);
+        this.termsOfUse = termsOfUse;
     }
 
     public String getTermsOfAccess() {
@@ -306,8 +304,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setTermsOfAccess(String termsOfAccess) {
-
-        this.termsOfAccess = MarkupChecker.sanitizeBasicHTML(termsOfAccess);
+        this.termsOfAccess = termsOfAccess;
     }
     
         

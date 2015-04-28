@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -83,7 +84,7 @@ public class DatasetVersionUI implements Serializable {
                         }
                     }
                 }                 
-                setDescriptionDisplay(descriptionString);
+                setDescriptionDisplay(MarkupChecker.sanitizeBasicHTML(descriptionString) );
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
                 setKeyword(dsf);
                 String keywordString = "";

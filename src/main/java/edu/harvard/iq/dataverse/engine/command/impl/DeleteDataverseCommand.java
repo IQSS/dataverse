@@ -62,13 +62,8 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
             ctxt.em().remove(ra);
         }
-        
-        // FACETS
-        for (DataverseFacet facet : doomed.getDataverseFacets(true)) {
-            DataverseFacet merged = ctxt.em().merge(facet);
-            ctxt.em().remove(merged);
-        }
-        doomed.setDataverseFacets(new ArrayList());
+
+        // FACETS handled with cascade on dataverse
 
         // Input Level
         for (DataverseFieldTypeInputLevel inputLevel : doomed.getDataverseFieldTypeInputLevels()) {

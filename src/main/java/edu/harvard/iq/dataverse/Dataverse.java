@@ -154,7 +154,7 @@ public class Dataverse extends DvObjectContainer {
     @ManyToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks = new ArrayList();
 
-    @OneToMany(mappedBy = "dataverse")
+    @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
     
@@ -164,8 +164,61 @@ public class Dataverse extends DvObjectContainer {
     inverseJoinColumns = @JoinColumn(name = "controlledvocabularyvalue_id"))
     private Set<ControlledVocabularyValue> dataverseSubjects;
     
+    @OneToMany(mappedBy="dataverse", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataverseFeaturedDataverse> dataverseFeaturedDataverses;
+
+    public List<DataverseFeaturedDataverse> getDataverseFeaturedDataverses() {
+        return dataverseFeaturedDataverses;
+    }
+
+    public void setDataverseFeaturedDataverses(List<DataverseFeaturedDataverse> dataverseFeaturedDataverses) {
+        this.dataverseFeaturedDataverses = dataverseFeaturedDataverses;
+    }
     
+    @OneToMany(mappedBy="featuredDataverse", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataverseFeaturedDataverse> dataverseFeaturingDataverses;
+
+    public List<DataverseFeaturedDataverse> getDataverseFeaturingDataverses() {
+        return dataverseFeaturingDataverses;
+    }
+
+    public void setDataverseFeaturingDataverses(List<DataverseFeaturedDataverse> dataverseFeaturingDataverses) {
+        this.dataverseFeaturingDataverses = dataverseFeaturingDataverses;
+    }
     
+    @OneToMany(mappedBy="dataverse", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataverseLinkingDataverse> dataverseLinkingDataverses;
+
+    public List<DataverseLinkingDataverse> getDataverseLinkingDataverses() {
+        return dataverseLinkingDataverses;
+    }
+
+    public void setDataverseLinkingDataverses(List<DataverseLinkingDataverse> dataverseLinkingDataverses) {
+        this.dataverseLinkingDataverses = dataverseLinkingDataverses;
+    }
+       
+    @OneToMany(mappedBy="linkingDataverse", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataverseLinkingDataverse> dataverseLinkedDataverses;
+
+    public List<DataverseLinkingDataverse> getDataverseLinkedDataverses() {
+        return dataverseLinkedDataverses;
+    }
+
+    public void setDataverseLinkedDataverses(List<DataverseLinkingDataverse> dataverseLinkedDataverses) {
+        this.dataverseLinkedDataverses = dataverseLinkedDataverses;
+    }
+    
+    @OneToMany(mappedBy="linkingDataverse", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetLinkingDataverse> datasetLinkingDataverses;
+
+    public List<DatasetLinkingDataverse> getDatasetLinkingDataverses() {
+        return datasetLinkingDataverses;
+    }
+
+    public void setDatasetLinkingDataverses(List<DatasetLinkingDataverse> datasetLinkingDataverses) {
+        this.datasetLinkingDataverses = datasetLinkingDataverses;
+    }
+        
     public Set<ControlledVocabularyValue> getDataverseSubjects() {
         return dataverseSubjects;
     }
@@ -182,7 +235,7 @@ public class Dataverse extends DvObjectContainer {
     @JoinColumn(nullable = true)
     private Template defaultTemplate;  
     
-    @OneToMany(mappedBy = "definitionPoint")
+    @OneToMany(mappedBy = "definitionPoint", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<SavedSearch> savedSearches;
 
     public List<SavedSearch> getSavedSearches() {
@@ -196,7 +249,7 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy="dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<Template> templates; 
     
-    @OneToMany(mappedBy="dataverse", cascade = {CascadeType.MERGE})
+    @OneToMany(mappedBy="dataverse", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<Guestbook> guestbooks;
         
     public List<Guestbook> getGuestbooks() {
