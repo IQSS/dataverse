@@ -277,7 +277,13 @@ public class Shib implements java.io.Serializable {
         } catch (Exception ex) {
             String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
             if (shibIdp.equals(testShibIdpEntityId)) {
-                logger.info("For " + testShibIdpEntityId + " (which as of this writing doesn't provide the " + emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
+                String msg = "The error about the \"" + emailAttribute
+                        + "\" attribute being null can be safely ignored because "
+                        + testShibIdpEntityId + " is being used which as of this writing doesn't provide the "
+                        + emailAttribute + " attribute. As a work around, we will set the email address to value of \""
+                        + uniquePersistentIdentifier + "\" (" + shibUserIdentifier + ") which we expect to look like an email address.";
+                logger.info(msg);
+                JsfHelper.addWarningMessage(msg);
                 emailAddress = shibUserIdentifier;
             } else {
                 // forcing all other IdPs to send us an an email
@@ -393,7 +399,7 @@ public class Shib implements java.io.Serializable {
         String discoFeedJson = emptyJsonArray.toString();
         String discoFeedUrl;
         if (getDevShibAccountType().equals(DevShibAccountType.PRODUCTION)) {
-            discoFeedUrl = systemConfig.getDataverseSiteUrl() + "/Shibboleth.sso/DiscoFeed";
+            discoFeedUrl = systemConfig.getDataverseSiteUrl() + ":" + SystemConfig.APACHE_HTTPS_PORT + "/Shibboleth.sso/DiscoFeed";
         } else {
             String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
             discoFeedUrl = devUrl;
@@ -425,6 +431,11 @@ public class Shib implements java.io.Serializable {
             discoFeedRequest.connect();
         } catch (IOException ex) {
             logger.info(ex.toString());
+            return null;
+        } catch (Exception ex) {
+            String msg = "Problem retrieving your affiliation.";
+            JsfHelper.addWarningMessage(msg);
+            logger.info(msg + " Affected user: " + internalUserIdentifer + " " + ex.toString());
             return null;
         }
         JsonParser jp = new JsonParser();
