@@ -12,9 +12,7 @@ Create User Account
 ===================
 
 #. In the top right corner of each page, click on the Sign Up link.
-#. Fill out all the fields, then click the Create Account button at the end. Please note that the Username field does not 
-support email addresses but will allow the following characters: a-Z, 0-9, _ (underscores), - (hyphens), and . (periods).
-Congrats you now have a Dataverse account!
+#. Fill out all the fields, then click the Create Account button at the end. Please note that the Username field does not support email addresses but will allow the following characters: a-Z, 0-9, _ (underscores), - (hyphens), and . (periods). Congrats you now have a Dataverse account!
 
 Edit Your Account
 ==================
