@@ -1,0 +1,2 @@
+#!/bin/sh
+cut -f1 files.tsv | tail -n +2 > files

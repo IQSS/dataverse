@@ -1,0 +1,10 @@
+#!/bin/sh
+DOWNLOAD_DIR=downloaded-files
+rm -rf $DOWNLOAD_DIR
+mkdir -p $DOWNLOAD_DIR && \
+cat files | while read i; do
+  echo "Downloding file id $i..."
+  cd $DOWNLOAD_DIR && mkdir $i && cd $i && \
+  curl -s -k -O -J https://$DATAVERSE_SERVER/api/access/datafile/$i?key=$API_TOKEN && \
+  cd ../..
+done

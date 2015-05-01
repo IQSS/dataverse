@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+  echo "No start date in YYYY-MM-DD format provided."
+  exit 1
+else
+  if [ -z "$2" ]; then
+    echo "No end date in YYYY-MM-DD format provided."
+    exit 1
+  fi
+  START_DATE=$1
+  END_DATE=$2
+fi
+psql -h $DB_SERVER -U $DB_USER -p $DB_PORT $DB_NAME -F $'\t' --no-align --pset footer -c "select dvobject.id, dvobject.createdate, dvobject.owner_id, datafile.* from dvobject, datafile where dvobject.id=datafile.id and dvobject.dtype='DataFile' and dvobject.createdate>to_date('$START_DATE','YYYY-MM-DD') and dvobject.createdate<to_date('$END_DATE','YYYY-MM-DD') order by dvobject.createdate asc;" > files.tsv
