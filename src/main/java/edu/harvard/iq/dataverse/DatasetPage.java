@@ -276,8 +276,8 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * Convenience method for "Download File" button display logic
      *
-     * Used by the dataset.xhtml render logic when listing files > Assume user
-     * already has view access to the file list
+     * Used by the dataset.xhtml render logic when listing files
+     * > Assume user already has view access to the file list
      *
      * @param fileMetadata
      * @return boolean
@@ -598,7 +598,7 @@ public class DatasetPage implements java.io.Serializable {
         this.defaultTemplate = defaultTemplate;
     }
 
-    public Template getSelectedTemplate() {;
+    public Template getSelectedTemplate() {
         return selectedTemplate;
     }
 
@@ -777,8 +777,11 @@ public class DatasetPage implements java.io.Serializable {
      *
      * Can the user see a reminder to publish button?
      *
-     * (1) Logged in user (2) Is geospatial file? (3) File has NOT been released
-     * (4) No existing Map (5) Can Edit Dataset
+     * (1) Logged in user
+     * (2) Is geospatial file?
+     * (3) File has NOT been released
+     * (4) No existing Map
+     * (5) Can Edit Dataset
      *
      * @param FileMetadata fm
      * @return boolean
@@ -826,11 +829,14 @@ public class DatasetPage implements java.io.Serializable {
 
     /**
      * Should there be a Map Data Button for this file? see table in:
-     * https://github.com/IQSS/dataverse/issues/1618 (1) Is the user logged in?
-     * (2) Is this file a Shapefile or a Tabular file tagged as Geospatial? (3)
-     * Does the logged in user have permission to edit the Dataset to which this
-     * FileMetadata belongs? (4) Any of these conditions: 9a) File Published (b)
-     * Draft: File Previously published
+     * https://github.com/IQSS/dataverse/issues/1618
+     * (1) Is the user logged in?
+     * (2) Is this file a Shapefile or a Tabular file tagged as Geospatial?
+     * (3) Does the logged in user have permission to edit the Dataset to which
+     * this FileMetadata belongs?
+     * (4) Any of these conditions:
+     *   (a) File Published
+     *   (b) Draft: File Previously published
      *
      * @param fm FileMetadata
      * @return boolean
@@ -873,8 +879,8 @@ public class DatasetPage implements java.io.Serializable {
      * Should there be a Explore WorldMap Button for this file? See table in:
      * https://github.com/IQSS/dataverse/issues/1618
      *
-     * (1) Does the file have MapLayerMetadata? (2) Is there DownloadFile
-     * permission for this file?
+     * (1) Does the file have MapLayerMetadata?
+     * (2) Is there DownloadFile permission for this file?
      *
      * @param fm FileMetadata
      * @return boolean
