@@ -3,9 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse;
-
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.ucsb.nceas.ezid.EZIDException;
@@ -24,43 +22,44 @@ import javax.ejb.Stateless;
  * @author skraffmiller
  */
 @Stateless
-public class DOIEZIdServiceBean  {
+public class DOIEZIdServiceBean {
+
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB 
+    @EJB
     SettingsServiceBean settingsService;
     EZIDService ezidService;
-    EZIDServiceRequest ezidServiceRequest;    
-    String baseURLString =  "https://ezid.cdlib.org";  
+    EZIDServiceRequest ezidServiceRequest;
+    String baseURLString = "https://ezid.cdlib.org";
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dvn.core.index.DOIEZIdServiceBean");
-    
+
     // get username and password from system properties
     private String DOISHOULDER = "";
     private String USERNAME = "";
-    private String PASSWORD = "";    
-    
-    public DOIEZIdServiceBean(){
+    private String PASSWORD = "";
+
+    public DOIEZIdServiceBean() {
         baseURLString = System.getProperty("doi.baseurlstring");
-        ezidService = new EZIDService (baseURLString);    
-        USERNAME  = System.getProperty("doi.username");
-        PASSWORD  = System.getProperty("doi.password");
+        ezidService = new EZIDService(baseURLString);
+        USERNAME = System.getProperty("doi.username");
+        PASSWORD = System.getProperty("doi.password");
         logger.log(Level.FINE, "baseURLString {0}", baseURLString);
         try {
-           ezidService.login(USERNAME, PASSWORD);  
-        } catch(Exception e){
+            ezidService.login(USERNAME, PASSWORD);
+        } catch (Exception e) {
             logger.log(Level.INFO, "login failed ");
             logger.log(Level.INFO, "String {0}", e.toString());
             logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.INFO, "cause {0}", e.getCause());
-            logger.log(Level.INFO, "message {0}", e.getMessage());           
+            logger.log(Level.INFO, "message {0}", e.getMessage());
         }
-    }    
-    
+    }
+
     public String createIdentifier(Dataset dataset) {
         String retString = "";
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
-        metadata.put("_status", "reserved");;       
+        metadata.put("_status", "reserved");
         try {
             retString = ezidService.createIdentifier(identifier, metadata);
             logger.log(Level.FINE, "create DOI identifier retString : {0}", retString);
@@ -70,61 +69,59 @@ public class DOIEZIdServiceBean  {
             logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.INFO, "cause {0}", e.getCause());
             logger.log(Level.INFO, "message {0}", e.getMessage());
-            return "Identifier not created "  +  e.getLocalizedMessage();
+            return "Identifier not created " + e.getLocalizedMessage();
         }
         return retString;
     }
-    
-   
-    public HashMap getIdentifierMetadata(Dataset dataset){
-        String identifier = getIdentifierFromDataset(dataset);        
+
+    public HashMap getIdentifierMetadata(Dataset dataset) {
+        String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = new HashMap();
-       try {
-              metadata = ezidService.getMetadata(identifier);
-            }  catch (EZIDException e){                
+        try {
+            metadata = ezidService.getMetadata(identifier);
+        } catch (EZIDException e) {
             logger.log(Level.INFO, "getIdentifierMetadata failed");
             logger.log(Level.INFO, "String {0}", e.toString());
             logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.INFO, "cause {0}", e.getCause());
-            logger.log(Level.INFO, "message {0}", e.getMessage());    
+            logger.log(Level.INFO, "message {0}", e.getMessage());
             return metadata;
-        }         
-       return metadata;
+        }
+        return metadata;
     }
-    
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier){
-        String identifierOut = getIdentifierForLookup( protocol,  authority, separator, identifier);        
+
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String separator, String identifier) {
+        String identifierOut = getIdentifierForLookup(protocol, authority, separator, identifier);
         HashMap metadata = new HashMap();
-       try {
-              metadata = ezidService.getMetadata(identifierOut);
-            }  catch (EZIDException e){                
+        try {
+            metadata = ezidService.getMetadata(identifierOut);
+        } catch (EZIDException e) {
             logger.log(Level.FINE, "None existing so we can use this identifier");
             logger.log(Level.FINE, "identifier: {0}", identifierOut);
             return metadata;
-        }         
-       return metadata;
+        }
+        return metadata;
     }
-    
+
     public String getIdentifierForLookup(String protocol, String authority, String separator, String identifier) {
-        return protocol + ":" + authority + separator  + identifier;
+        return protocol + ":" + authority + separator + identifier;
     }
-    
-    
-    public String modifyIdentifier(Dataset dataset, HashMap metadata ){
-       String identifier = getIdentifierFromDataset(dataset);
-       try {
-               ezidService.setMetadata(identifier, metadata);
-               return identifier;
-            }  catch (EZIDException e){                
+
+    public String modifyIdentifier(Dataset dataset, HashMap metadata) {
+        String identifier = getIdentifierFromDataset(dataset);
+        try {
+            ezidService.setMetadata(identifier, metadata);
+            return identifier;
+        } catch (EZIDException e) {
             logger.log(Level.INFO, "modifyMetadata failed");
             logger.log(Level.INFO, "String {0}", e.toString());
             logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.INFO, "cause {0}", e.getCause());
-            logger.log(Level.INFO, "message {0}", e.getMessage());    
-        } 
-       return null;
+            logger.log(Level.INFO, "message {0}", e.getMessage());
+        }
+        return null;
     }
-    
+
     public void deleteIdentifier(Dataset datasetIn) {
         String identifier = getIdentifierFromDataset(datasetIn);
         HashMap doiMetadata = new HashMap();
@@ -140,7 +137,7 @@ public class DOIEZIdServiceBean  {
         }
 
         String idStatus = (String) doiMetadata.get("_status");
-        
+
         if (idStatus.equals("reserved")) {
             logger.log(Level.INFO, "Delete status is reserved..");
             try {
@@ -154,90 +151,90 @@ public class DOIEZIdServiceBean  {
             }
             return;
         }
-        if (idStatus.equals("public")) { 
+        if (idStatus.equals("public")) {
             //if public then it has been released set to unavaialble and reset target to n2t url
             updateIdentifierStatus(datasetIn, "unavailable | withdrawn by author");
             HashMap metadata = new HashMap();
-            metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() 
-              + datasetIn.getDoiSeparator()      + datasetIn.getIdentifier());
+            metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority()
+                    + datasetIn.getDoiSeparator() + datasetIn.getIdentifier());
             modifyIdentifier(datasetIn, metadata);
         }
     }
-    
-    private HashMap getUpdateMetadataFromDataset(Dataset datasetIn){
+
+    private HashMap getUpdateMetadataFromDataset(Dataset datasetIn) {
         HashMap<String, String> metadata = new HashMap<String, String>();
-        
+
         String authorString = datasetIn.getLatestVersion().getAuthorsStr();
-        
-        if(authorString.isEmpty()) {
+
+        if (authorString.isEmpty()) {
             authorString = ":unav";
         }
-        
+
         String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
 
-        if(producerString.isEmpty()) {
+        if (producerString.isEmpty()) {
             producerString = ":unav";
         }
         metadata.put("datacite.creator", authorString);
-	metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
-	metadata.put("datacite.publisher", producerString);       
+        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+        metadata.put("datacite.publisher", producerString);
 
         return metadata;
-        
+
     }
-    
+
     public HashMap getMetadataFromStudyForCreateIndicator(Dataset datasetIn) {
         HashMap<String, String> metadata = new HashMap<String, String>();
-        
+
         String authorString = datasetIn.getLatestVersion().getAuthorsStr();
-        
-        if(authorString.isEmpty()) {
+
+        if (authorString.isEmpty()) {
             authorString = ":unav";
         }
-        
+
         String producerString = dataverseService.findRootDataverse().getName() + " Dataverse";
 
-        if(producerString.isEmpty()) {
+        if (producerString.isEmpty()) {
             producerString = ":unav";
         }
         metadata.put("datacite.creator", authorString);
-	metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
-	metadata.put("datacite.publisher", producerString);       
-	metadata.put("datacite.publicationyear", generateYear());
-	metadata.put("datacite.resourcetype", "Dataset");
+        metadata.put("datacite.title", datasetIn.getLatestVersion().getTitle());
+        metadata.put("datacite.publisher", producerString);
+        metadata.put("datacite.publicationyear", generateYear());
+        metadata.put("datacite.resourcetype", "Dataset");
         String inetAddress = getSiteUrl();
-        String targetUrl = "";     
+        String targetUrl = "";
         DOISHOULDER = "doi:" + datasetIn.getAuthority();
-        
-        if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
-        } else{
-           targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
-        }            
+
+        if (inetAddress.equals("localhost")) {
+            targetUrl = "http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER
+                    + datasetIn.getDoiSeparator() + datasetIn.getIdentifier();
+        } else {
+            targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER
+                    + datasetIn.getDoiSeparator() + datasetIn.getIdentifier();
+        }
         metadata.put("_target", targetUrl);
         return metadata;
     }
-    
+
     public HashMap getMetadataFromDatasetForTargetURL(Dataset datasetIn) {
         HashMap<String, String> metadata = new HashMap<String, String>();
-        
+
         String inetAddress = getSiteUrl();
-        String targetUrl = "";     
+        String targetUrl = "";
         DOISHOULDER = "doi:" + datasetIn.getAuthority();
-        
-        if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                    + datasetIn.getDoiSeparator()       + datasetIn.getIdentifier();
-        } else{
-           targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER 
-                + datasetIn.getDoiSeparator()     + datasetIn.getIdentifier();
-        }            
+
+        if (inetAddress.equals("localhost")) {
+            targetUrl = "http://localhost:8080" + "/dataset.xhtml?persistentId=" + DOISHOULDER
+                    + datasetIn.getDoiSeparator() + datasetIn.getIdentifier();
+        } else {
+            targetUrl = inetAddress + "/dataset.xhtml?persistentId=" + DOISHOULDER
+                    + datasetIn.getDoiSeparator() + datasetIn.getIdentifier();
+        }
         metadata.put("_target", targetUrl);
         return metadata;
     }
-    
+
     public String getSiteUrl() {
         String hostUrl = System.getProperty("dataverse.siteUrl");
         if (hostUrl != null && !"".equals(hostUrl)) {
@@ -254,35 +251,32 @@ public class DOIEZIdServiceBean  {
         hostUrl = "https://" + hostName;
         return hostUrl;
     }
-   
-    private String getIdentifierFromDataset(Dataset dataset){       
+
+    private String getIdentifierFromDataset(Dataset dataset) {
         return dataset.getGlobalId();
     }
-    
 
     public void publicizeIdentifier(Dataset studyIn) {
         updateIdentifierStatus(studyIn, "public");
     }
-    
-    private void updateIdentifierStatus(Dataset dataset, String statusIn){
+
+    private void updateIdentifierStatus(Dataset dataset, String statusIn) {
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
-       try {
-               ezidService.setMetadata(identifier, metadata);
-            }  catch (EZIDException e){                
+        try {
+            ezidService.setMetadata(identifier, metadata);
+        } catch (EZIDException e) {
             logger.log(Level.INFO, "modifyMetadata failed");
             logger.log(Level.INFO, "String {0}", e.toString());
             logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.INFO, "cause {0}", e.getCause());
-            logger.log(Level.INFO, "message {0}", e.getMessage());    
+            logger.log(Level.INFO, "message {0}", e.getMessage());
         }
-        
+
     }
-    
-    
-    public static String generateYear()
-    {
+
+    public static String generateYear() {
         StringBuffer guid = new StringBuffer();
 
         // Create a calendar to get the date formatted properly
@@ -298,10 +292,7 @@ public class DOIEZIdServiceBean  {
         return guid.toString();
     }
 
-    
-    
-    public static String generateTimeString()
-    {
+    public static String generateTimeString() {
         StringBuffer guid = new StringBuffer();
 
         // Create a calendar to get the date formatted properly
@@ -322,5 +313,5 @@ public class DOIEZIdServiceBean  {
         guid.append(random);
 
         return guid.toString();
-    }  
+    }
 }
