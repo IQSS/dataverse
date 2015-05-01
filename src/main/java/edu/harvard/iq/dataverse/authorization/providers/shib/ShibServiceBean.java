@@ -50,7 +50,7 @@ public class ShibServiceBean {
     }
     
     public AuthenticatedUser canLogInAsBuiltinUser(String username, String password) {
-        logger.info("checking to see if " + username + " knows the password...");
+        logger.log(Level.INFO, "checking to see if {0} knows the password...", username);
         if (password == null) {
             logger.info("password was null");
             return null;
@@ -70,7 +70,7 @@ public class ShibServiceBean {
             logger.log(Level.INFO, "User authenticated: {0}", au.getEmail());
             return au;
         } catch (AuthenticationFailedException ex) {
-            logger.info("The username and/or password you entered is invalid. Need assistance accessing your account?" + ex.getResponse().getMessage());
+            logger.log(Level.INFO, "The username and/or password you entered is invalid. Need assistance accessing your account?{0}", ex.getResponse().getMessage());
             return null;
         }
     }

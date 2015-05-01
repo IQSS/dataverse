@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
 import javax.inject.Inject;
 
 import javax.ws.rs.GET;
@@ -110,7 +111,7 @@ public class Access extends AbstractApiBean {
         DataFile df = dataFileService.find(fileId);
         
         if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.log(Level.WARNING, "Access: datafile service could not locate a DataFile object for id {0}!", fileId);
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
@@ -155,7 +156,7 @@ public class Access extends AbstractApiBean {
         DataFile df = dataFileService.find(fileId);
         
         if (df == null) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.log(Level.WARNING, "Access: datafile service could not locate a DataFile object for id {0}!", fileId);
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         
@@ -191,9 +192,9 @@ public class Access extends AbstractApiBean {
                     String subsetParam = downloadInstance.getConversionParamValue();
                     String variableIdParams[] = subsetParam.split(",");
                     if (variableIdParams != null && variableIdParams.length > 0) {
-                        logger.fine(variableIdParams.length + " tokens;");
+                        logger.log(Level.FINE, "{0} tokens;", variableIdParams.length);
                         for (int i = 0; i < variableIdParams.length; i++) {
-                            logger.fine("token: " + variableIdParams[i]);
+                            logger.log(Level.FINE, "token: {0}", variableIdParams[i]);
                             String token = variableIdParams[i].replaceFirst("^v", "");
                             Long variableId = null;
                             try {
@@ -202,14 +203,14 @@ public class Access extends AbstractApiBean {
                                 variableId = null;
                             }
                             if (variableId != null) {
-                                logger.fine("attempting to look up variable id " + variableId);
+                                logger.log(Level.FINE, "attempting to look up variable id {0}", variableId);
                                 if (variableService != null) {
                                     DataVariable variable = variableService.find(variableId);
                                     if (variable != null) {
                                         if (downloadInstance.getExtraArguments() == null) {
                                             downloadInstance.setExtraArguments(new ArrayList<Object>());
                                         }
-                                        logger.fine("putting variable id "+variable.getId()+" on the parameters list of the download instance.");
+                                        logger.log(Level.FINE, "putting variable id {0} on the parameters list of the download instance.", variable.getId());
                                         downloadInstance.getExtraArguments().add(variable);
                                         
                                         //if (!variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
@@ -267,20 +268,20 @@ public class Access extends AbstractApiBean {
 
         String fileIdParams[] = fileIds.split(",");
         if (fileIdParams != null && fileIdParams.length > 0) {
-            logger.fine(fileIdParams.length + " tokens;");
+            logger.log(Level.FINE, "{0} tokens;", fileIdParams.length);
             for (int i = 0; i < fileIdParams.length; i++) {
-                logger.fine("token: " + fileIdParams[i]);
+                logger.log(Level.FINE, "token: {0}", fileIdParams[i]);
                 Long fileId = null;
                 try {
                     fileId = new Long(fileIdParams[i]);
                 } catch (NumberFormatException nfe) {
                     fileId = null;
                 }
-                logger.fine("attempting to look up file id " + fileId);
+                logger.log(Level.FINE, "attempting to look up file id {0}", fileId);
                 DataFile file = dataFileService.find(fileId);
                 if (file != null) {
                     if (isAccessAuthorized(file, apiToken)) { 
-                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                        logger.log(Level.FINE, "adding datafile (id={0}) to the download list of the ZippedDownloadInstance.", file.getId());
                         downloadInstance.addDataFile(file);
                     } else {
                         downloadInstance.setManifest(downloadInstance.getManifest() + 
@@ -373,7 +374,7 @@ public class Access extends AbstractApiBean {
         DataFile df = dataFileService.find(fileId);
         
         if (df == null) {
-            logger.warning("Preview: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.log(Level.WARNING, "Preview: datafile service could not locate a DataFile object for id {0}!", fileId);
             return null; 
         }
         
@@ -426,7 +427,7 @@ public class Access extends AbstractApiBean {
         DatasetVersion datasetVersion = versionService.find(versionId);
         
         if (datasetVersion == null) {
-            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+versionId+"!");
+            logger.log(Level.WARNING, "Preview: Version service could not locate a DatasetVersion object for id {0}!", versionId);
             return null; 
         }
         
@@ -489,7 +490,7 @@ public class Access extends AbstractApiBean {
         Dataverse dataverse = dataverseService.find(dataverseId);
         
         if (dataverse == null) {
-            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+dataverseId+"!");
+            logger.log(Level.WARNING, "Preview: Version service could not locate a DatasetVersion object for id {0}!", dataverseId);
             return null; 
         }
         
@@ -705,7 +706,7 @@ public class Access extends AbstractApiBean {
             // User from the Session object, just like in the code fragment 
             // above. That's why it's not passed along as an argument.
             if (user != null) {
-                logger.fine("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
+                logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the requested datafile.", user.getName());
             } else {
                 logger.fine("Session-based auth: guest user is granted access to the datafile.");
             }
@@ -738,11 +739,11 @@ public class Access extends AbstractApiBean {
             } 
             
             if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
-                logger.fine("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
+                logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the datafile.", user.getName());
                 throw new WebApplicationException(Response.Status.FORBIDDEN);
             }
             
-            logger.fine("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
+            logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getName());
         } else {
             logger.fine("Unauthenticated access: No guest access to the datafile.");
             // throwing "authorization required" (401) instead of "access denied" (403) here:
@@ -803,7 +804,7 @@ public class Access extends AbstractApiBean {
             // User from the Session object, just like in the code fragment 
             // above. That's why it's not passed along as an argument.
             if (user != null) {
-                logger.fine("Session-based auth: user "+user.getName()+" has access rights on the requested datafile.");
+                logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the requested datafile.", user.getName());
             } else {
                 logger.fine("Session-based auth: guest user is granted access to the datafile.");
             }
@@ -820,11 +821,11 @@ public class Access extends AbstractApiBean {
             } 
             
             if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
-                logger.fine("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
+                logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the datafile.", user.getName());
                 return false; 
             }
             
-            logger.fine("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
+            logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getName());
         } else {
             logger.fine("Unauthenticated access: No guest access to the datafile.");
             // throwing "authorization required" (401) instead of "access denied" (403) here:

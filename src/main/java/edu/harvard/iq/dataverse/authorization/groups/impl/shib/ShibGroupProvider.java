@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ShibGroupProvider implements GroupProvider<ShibGroup> {
@@ -68,7 +69,7 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
         try {
             shibGroupPrimaryKey = Long.parseLong(groupAlias);
         } catch (NumberFormatException ex) {
-            logger.info("Could not convert \"" + groupAlias + "\" into a long.");
+            logger.log(Level.INFO, "Could not convert \"{0}\" into a long.", groupAlias);
             return null;
         }
         ShibGroup shibGroup = shibGroupService.findById(shibGroupPrimaryKey);

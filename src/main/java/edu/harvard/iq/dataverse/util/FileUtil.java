@@ -35,6 +35,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
@@ -197,7 +198,7 @@ public class FileUtil implements java.io.Serializable  {
         
         fileType = tabChk.detectTabularDataFormat(f);
         
-        logger.fine("determineFileType: tabular data checker found "+fileType);
+        logger.log(Level.FINE, "determineFileType: tabular data checker found {0}", fileType);
                 
         // step 2: If not found, check if graphml or FITS
         if (fileType==null) {
@@ -228,7 +229,7 @@ public class FileUtil implements java.io.Serializable  {
         // the file extension:
         
         if ( fileExtension != null) {
-            logger.fine("fileExtension="+fileExtension);
+            logger.log(Level.FINE, "fileExtension={0}", fileExtension);
 
             if (fileType != null && fileType.startsWith("text/plain")){
                 if (( fileExtension != null) && (STATISTICAL_SYNTAX_FILE_EXTENSION.containsKey(fileExtension))) {
@@ -237,7 +238,7 @@ public class FileUtil implements java.io.Serializable  {
                 }
             } else if ("application/octet-stream".equals(fileType)) {
                 fileType = determineFileType(fileName);
-                logger.fine("mime type recognized by extension: "+fileType);
+                logger.log(Level.FINE, "mime type recognized by extension: {0}", fileType);
             }
         } else {
             logger.fine("fileExtension is null");
@@ -281,7 +282,7 @@ public class FileUtil implements java.io.Serializable  {
              }
         } 
         
-        logger.fine("returning fileType "+fileType);
+        logger.log(Level.FINE, "returning fileType {0}", fileType);
         return fileType;
     }
     
@@ -319,7 +320,7 @@ public class FileUtil implements java.io.Serializable  {
 
         try {
             byte[] b = new byte[magicWordLength];
-            logger.fine("attempting to read "+magicWordLength+" bytes from the FITS format candidate stream.");
+            logger.log(Level.FINE, "attempting to read {0} bytes from the FITS format candidate stream.", magicWordLength);
             if (ins.read(b, 0, magicWordLength) != magicWordLength) {
                 throw new IOException();
             }
@@ -355,7 +356,7 @@ public class FileUtil implements java.io.Serializable  {
                 if (event == XMLStreamConstants.START_ELEMENT) {
                     if (xmlr.getLocalName().equals("graphml")) {
                         String schema = xmlr.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
-                        logger.fine("schema = "+schema);
+                        logger.log(Level.FINE, "schema = {0}", schema);
                         if (schema!=null && schema.indexOf("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd")!=-1){
                             logger.fine("graphML is true");
                             isGraphML = true;

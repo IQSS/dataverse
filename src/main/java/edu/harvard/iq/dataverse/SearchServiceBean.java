@@ -207,7 +207,7 @@ public class SearchServiceBean {
             Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamCurrentDataverse);
             StringBuilder sb = new StringBuilder();
             for (Group group : groups) {
-                logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
+                logger.log(Level.FINE, "found group {0} with alias {1}", new Object[]{group.getIdentifier(), group.getAlias()});
                 String groupAlias = group.getAlias();
                 if (groupAlias != null && !groupAlias.isEmpty()) {
                     sb.append(" OR ");
@@ -314,7 +314,7 @@ public class SearchServiceBean {
 //        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
 //        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         solrQuery.setRows(numResultsPerPage);
-        logger.fine("Solr query:" + solrQuery);
+        logger.log(Level.FINE, "Solr query:{0}", solrQuery);
 
         QueryResponse queryResponse;
         try {
@@ -381,7 +381,7 @@ public class SearchServiceBean {
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
             float score = (Float) solrDocument.getFieldValue(SearchFields.RELEVANCE);
-            logger.fine("score for " + id + ": " + score);
+            logger.log(Level.FINE, "score for {0}: {1}", new Object[]{id, score});
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
             String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
@@ -495,7 +495,7 @@ public class SearchServiceBean {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
                 } else {
-                    logger.info("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
+                    logger.log(Level.INFO, "No title indexed. Setting to empty string to prevent NPE. Dataset id {0} and version id {1}", new Object[]{entityid, datasetVersionId});
                     solrSearchResult.setTitle("");
                 }
                 List<String> authors = (ArrayList) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
@@ -529,7 +529,7 @@ public class SearchServiceBean {
                         long fileSizeInBytesLong = (long) fileSizeInBytesObject;
                         solrSearchResult.setFileSizeInBytes(fileSizeInBytesLong);
                     } catch (ClassCastException ex) {
-                        logger.info("Could not cast file " + entityid + " to long for " + SearchFields.FILE_SIZE_IN_BYTES + ": " + ex.getLocalizedMessage());
+                        logger.log(Level.INFO,"Could not cast file {0}" + " to long for " + SearchFields.FILE_SIZE_IN_BYTES + ": {1}", new Object[]{entityid, ex.getLocalizedMessage()});
                     }
                 }
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));

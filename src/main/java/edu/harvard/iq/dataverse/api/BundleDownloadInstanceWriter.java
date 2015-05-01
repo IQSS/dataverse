@@ -23,6 +23,7 @@ import javax.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -113,7 +114,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     } catch (IOException ioex) {
                         // ignore; if for whatever reason the original is not
                         // available, we'll just skip it. 
-                        logger.warning("failed to retrieve saved original for " + fileName);
+                        logger.log(Level.WARNING, "failed to retrieve saved original for {0}", fileName);
                     } finally {
                         if (instream != null) {
                             try {instream.close();} catch (IOException ioex) {}
@@ -150,7 +151,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         } catch (IOException ioex) {
                             // ignore; if for whatever reason RData conversion is not
                             // available, we'll just skip it.
-                            logger.warning("failed to convert tabular data file "+fileName+" to RData.");
+                            logger.log(Level.WARNING, "failed to convert tabular data file {0} to RData.", fileName);
                         } finally {
                             if (instream != null) {
                                 try{instream.close();}catch(IOException ioex){}

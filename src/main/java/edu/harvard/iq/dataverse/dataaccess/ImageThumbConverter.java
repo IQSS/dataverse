@@ -41,6 +41,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -66,7 +67,7 @@ public class ImageThumbConverter {
             return false; 
         }
         
-        logger.fine("Checking for thumbnail, file type: "+file.getContentType());
+        logger.log(Level.FINE, "Checking for thumbnail, file type: {0}", file.getContentType());
         
         String imageThumbFileName = null;
 
@@ -79,7 +80,7 @@ public class ImageThumbConverter {
         }
         
         if (imageThumbFileName != null) {
-            logger.fine("image thumb file name: "+imageThumbFileName);
+            logger.log(Level.FINE, "image thumb file name: {0}", imageThumbFileName);
             return true; 
         }
         

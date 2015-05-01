@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.rserve.*;
+import java.util.logging.Level;
 
 
 
@@ -220,9 +221,9 @@ public class DataFileConverter {
             Map<String, Map<String, String>> vls = null;
 
             vls = getValueTableForRequestedVariables(dataVariables);
-            dbgLog.fine("format conversion: variables(getDataVariableForRequest())=" + dataVariables + "\n");
-            dbgLog.fine("format conversion: variables(dataVariables)=" + dataVariables + "\n");
-            dbgLog.fine("format conversion: value table(vls)=" + vls + "\n");
+            dbgLog.log(Level.FINE, "format conversion: variables(getDataVariableForRequest())={0}\n", dataVariables);
+            dbgLog.log(Level.FINE, "format conversion: variables(dataVariables)={0}\n", dataVariables);
+            dbgLog.log(Level.FINE, "format conversion: value table(vls)={0}\n", vls);
             RJobRequest sro = new RJobRequest(dataVariables, vls);
 
             sro.setTabularDataFileName(tabFile.getAbsolutePath());
@@ -235,7 +236,7 @@ public class DataFileConverter {
             Map<String, String> resultInfo = dfs.execute(sro);
 
             //resultInfo.put("offlineCitation", citation);
-            dbgLog.fine("resultInfo="+resultInfo+"\n");
+            dbgLog.log(Level.FINE, "resultInfo={0}\n", resultInfo);
 
             // check whether a requested file is actually created
 
@@ -244,20 +245,20 @@ public class DataFileConverter {
                 return  null;
             } else {
                 String dataFrameFileName = resultInfo.get("dataFrameFileName");
-                dbgLog.fine("data frame file name: "+dataFrameFileName);
+                dbgLog.log(Level.FINE, "data frame file name: {0}", dataFrameFileName);
 
                 formatConvertedFile = new File(dataFrameFileName);
             }
         } else if ("prep".equals(formatRequested)) {
             formatConvertedFile = dfs.runDataPreprocessing(file);
         } else {
-            dbgLog.warning("Unsupported file format requested: "+formatRequested);
+            dbgLog.log(Level.WARNING, "Unsupported file format requested: {0}", formatRequested);
             return null; 
         }
             
 
         if (formatConvertedFile.exists()) {
-            dbgLog.fine("frmtCnvrtdFile:length=" + formatConvertedFile.length());
+            dbgLog.log(Level.FINE, "frmtCnvrtdFile:length={0}", formatConvertedFile.length());
         } else {
             dbgLog.warning("Format-converted file was not properly created.");
             return null;

@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -297,12 +298,12 @@ public class WorldMapToken implements java.io.Serializable {
             this.expireToken();
             return true;
         }
-         logger.info("currentTimestamp: " + currentTimestamp);
-         logger.info("lastRefreshTime: " + lastRefreshTime);
+         logger.log(Level.INFO, "currentTimestamp: {0}", currentTimestamp);
+         logger.log(Level.INFO, "lastRefreshTime: {0}", lastRefreshTime);
 
         //System.out.println("  ..pre diff: "+ currentTimestamp);
         long hours = this.getElapsedHours(currentTimestamp, this.created);
-        logger.info("elapsed hours: " + hours);
+        logger.log(Level.INFO, "elapsed hours: {0}", hours);
 
         if (hours > MAX_HOURS_TOKEN_CAN_BE_USED){
             this.expireToken();

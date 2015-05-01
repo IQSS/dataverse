@@ -28,7 +28,7 @@ public class DataTagsAPITestingBean implements Serializable {
     
     public String requestInterview() {
         String url = dt.requestInterview();
-        Logger.getLogger(DataTagsAPITestingBean.class.getName()).info("Dataset name: " + datasetName);        
+        Logger.getLogger(DataTagsAPITestingBean.class.getName()).log(Level.INFO, "Dataset name: {0}", datasetName);        
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(url);
         } catch (IOException ex) {

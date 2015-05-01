@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.AsyncResult;
 import javax.ejb.EJB;
@@ -97,7 +98,7 @@ public class IndexServiceBean {
     }
 
     public Future<String> indexDataverse(Dataverse dataverse) {
-        logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
+        logger.log(Level.FINE, "indexDataverse called on dataverse id {0}({1})", new Object[]{dataverse.getId(), dataverse.getAlias()});
         if (dataverse.getId() == null) {
             String msg = "unable to index dataverse. id was null (alias: " + dataverse.getAlias() + ")";
             logger.info(msg);
@@ -220,7 +221,7 @@ public class IndexServiceBean {
     }
 
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        logger.fine("indexing dataset " + dataset.getId());
+        logger.log(Level.FINE, "indexing dataset {0}", dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
          * IndexableObject.IndexableTypes.DATASET.getName() + "_" ?
@@ -531,14 +532,14 @@ public class IndexServiceBean {
     private String addOrUpdateDataset(IndexableDataset indexableDataset) {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
-        logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
+        logger.log(Level.FINE, "adding or updating Solr document for dataset id {0}", dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = new ArrayList<>();
         try {
             dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
         } catch (Exception ex) {
-            logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
+            logger.log(Level.INFO,"failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": {0}", ex);
         }
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         //Add Paths for linking dataverses
@@ -613,13 +614,13 @@ public class IndexServiceBean {
                 String solrFieldFacetable = dsfType.getSolrField().getNameFacetable();
 
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
-                    logger.fine("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+                    logger.log(Level.FINE, "indexing {0}:{1} into {2} and maybe {3}", new Object[]{dsf.getDatasetFieldType().getName(), dsf.getValues(), solrFieldSearchable, solrFieldFacetable});
 //                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
                     if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.EMAIL)) {
                         //no-op. we want to keep email address out of Solr per https://github.com/IQSS/dataverse/issues/759
                     } else if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
                         String dateAsString = dsf.getValues().get(0);
-                        logger.fine("date as string: " + dateAsString);
+                        logger.log(Level.FINE, "date as string: {0}", dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
                             try {
@@ -627,11 +628,11 @@ public class IndexServiceBean {
                                  * @todo when bean validation is working we
                                  * won't have to convert strings into dates
                                  */
-                                logger.fine("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
+                                logger.log(Level.FINE, "Trying to convert {0} to a YYYY date from dataset {1}", new Object[]{dateAsString, dataset.getId()});
                                 Date dateAsDate = inputDateyyyy.parse(dateAsString);
                                 SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                                 String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
-                                logger.fine("YYYY only: " + datasetFieldFlaggedAsDate);
+                                logger.log(Level.FINE, "YYYY only: {0}", datasetFieldFlaggedAsDate);
 //                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
                                 solrInputDocument.addField(solrFieldSearchable, datasetFieldFlaggedAsDate);
                                 if (dsfType.getSolrField().isFacetable()) {
@@ -639,7 +640,7 @@ public class IndexServiceBean {
                                     solrInputDocument.addField(solrFieldFacetable, datasetFieldFlaggedAsDate);
                                 }
                             } catch (Exception ex) {
-                                logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + dsfType.getName() + ")");
+                                logger.log(Level.INFO, "unable to convert {0} into YYYY format and couldn''t index it ({1})", new Object[]{dateAsString, dsfType.getName()});
                             }
                         }
                     } else {
@@ -761,7 +762,7 @@ public class IndexServiceBean {
                                     filenameWithoutExtension = "";
                                 }
                             } else {
-                                logger.info("problem with filename '" + filenameComplete + "': no extension? empty string as filename?");
+                                logger.log(Level.INFO, "problem with filename ''{0}'': no extension? empty string as filename?", filenameComplete);
                                 filenameWithoutExtension = filenameComplete;
                             }
                             filenameCompleteFinal = filenameComplete;
@@ -783,7 +784,7 @@ public class IndexServiceBean {
                     if (datafile != null) {
                         boolean fileHasBeenReleased = datafile.isReleased();
                         if (fileHasBeenReleased) {
-                            logger.fine("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            logger.log(Level.FINE, "indexing file with filePublicationTimestamp. {0} (file id {1})", new Object[]{fileMetadata.getId(), datafile.getId()});
                             Timestamp filePublicationTimestamp = datafile.getPublicationDate();
                             if (filePublicationTimestamp != null) {
                                 fileSortByDate = filePublicationTimestamp;
@@ -792,7 +793,7 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                         } else {
-                            logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            logger.log(Level.FINE, "indexing file with fileCreateTimestamp. {0} (file id {1})", new Object[]{fileMetadata.getId(), datafile.getId()});
                             Timestamp fileCreateTimestamp = datafile.getCreateDate();
                             if (fileCreateTimestamp != null) {
                                 fileSortByDate = fileCreateTimestamp;
@@ -982,7 +983,7 @@ public class IndexServiceBean {
     public String delete(Dataverse doomed) {
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
-        logger.fine("deleting Solr document for dataverse " + doomed.getId());
+        logger.log(Level.FINE, "deleting Solr document for dataverse {0}", doomed.getId());
         UpdateResponse updateResponse;
         try {
             updateResponse = server.deleteById(solrDocIdentifierDataverse + doomed.getId());
@@ -1008,7 +1009,7 @@ public class IndexServiceBean {
     public String removeSolrDocFromIndex(String doomed) {
         SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
-        logger.fine("deleting Solr document: " + doomed);
+        logger.log(Level.FINE, "deleting Solr document: {0}", doomed);
         UpdateResponse updateResponse;
         try {
             updateResponse = server.deleteById(doomed);
@@ -1104,10 +1105,10 @@ public class IndexServiceBean {
                 Dataverse rootDataverse = dataverseService.findRootDataverse();
                 return rootDataverse;
             } catch (EJBException ex) {
-                logger.info("caught " + ex);
+                logger.log(Level.INFO, "caught {0}", ex);
                 Throwable cause = ex.getCause();
                 while (cause.getCause() != null) {
-                    logger.info("caused by... " + cause);
+                    logger.log(Level.INFO, "caused by... {0}", cause);
                     cause = cause.getCause();
                 }
                 return null;

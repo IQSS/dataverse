@@ -143,7 +143,7 @@ public class ImportServiceBean {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
             JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
             status.add("file", file.getName());
-            logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
+            logger.log(Level.INFO, "completed doImport {0}/{1}", new Object[]{file.getParentFile().getName(), file.getName()});
             return status;
         } catch (ImportException ex) {
             String msg = "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage();
@@ -307,10 +307,10 @@ public class ImportServiceBean {
             }
 
         } catch (JsonParseException ex) {
-            logger.info("Error parsing datasetVersion: " + ex.getMessage());
+            logger.log(Level.INFO, "Error parsing datasetVersion: {0}", ex.getMessage());
             throw new ImportException("Error parsing datasetVersion: " + ex.getMessage(), ex);
         } catch (CommandException ex) {
-            logger.info("Error excuting Create dataset command: " + ex.getMessage());
+            logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
         return Json.createObjectBuilder().add("message", status);

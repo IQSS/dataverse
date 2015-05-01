@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -106,7 +107,7 @@ public class IndexAllServiceBean {
         int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
             dataverseIndexCount++;
-            logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size());
+            logger.log(Level.INFO, "indexing dataverse {0} of {1}", new Object[]{dataverseIndexCount, dataverses.size()});
             Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
         }
 
@@ -114,7 +115,7 @@ public class IndexAllServiceBean {
         List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Dataset dataset : datasets) {
             datasetIndexCount++;
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size());
+            logger.log(Level.INFO, "indexing dataset {0} of {1}", new Object[]{datasetIndexCount, datasets.size()});
             Future<String> result = indexService.indexDatasetInNewTransaction(dataset);
         }
 //        logger.info("advanced search fields: " + advancedSearchFields);

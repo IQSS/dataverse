@@ -4,6 +4,7 @@ import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -86,11 +87,11 @@ public class SystemConfig {
                 if (configuredValueAsInteger > 0) {
                     return configuredValueAsInteger;
                 } else {
-                    logger.info(PASSWORD_RESET_TIMEOUT_IN_MINUTES + " is configured as a negative number \"" + configuredValueAsInteger + "\". Using default value instead: " + reasonableDefault);
+                    logger.log(Level.INFO,PASSWORD_RESET_TIMEOUT_IN_MINUTES + " is configured as a negative number \"{0}\". Using default value instead: {1}", new Object[]{configuredValueAsInteger, reasonableDefault});
                     return reasonableDefault;
                 }
             } catch (NumberFormatException ex) {
-                logger.info("Unable to convert " + PASSWORD_RESET_TIMEOUT_IN_MINUTES + " from \"" + configuredValueAsString + "\" into an integer value: " + ex + ". Using default value " + reasonableDefault);
+                logger.log(Level.INFO,"Unable to convert " + PASSWORD_RESET_TIMEOUT_IN_MINUTES + " from \"{0}\" into an integer value: {1}. Using default value {2}", new Object[]{configuredValueAsString, ex, reasonableDefault});
             }
         }
         return reasonableDefault;

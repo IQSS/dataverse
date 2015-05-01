@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -82,7 +83,7 @@ public class SavedSearchServiceBean {
         try {
             persisted = em.merge(toPersist);
         } catch (Exception ex) {
-            System.out.println("exeption: " + ex);
+            logger.log(Level.SEVERE, "exeption: {0}", ex);
         }
         return persisted;
     }
@@ -91,12 +92,12 @@ public class SavedSearchServiceBean {
         SavedSearch doomed = find(id);
         boolean wasDeleted = false;
         if (doomed != null) {
-            System.out.println("deleting saved search id " + doomed.getId());
+            logger.log(Level.INFO, "deleting saved search id {0}", doomed.getId());
             em.remove(doomed);
             em.flush();
             wasDeleted = true;
         } else {
-            System.out.println("problem deleting saved search id " + id);
+            logger.log(Level.WARNING, "problem deleting saved search id {0}", id);
         }
         return wasDeleted;
     }
@@ -253,14 +254,14 @@ public class SavedSearchServiceBean {
         StringBuilder sb = new StringBuilder();
         while (dataverseWeMayLinkTo != null) {
             String alias = dataverseWeMayLinkTo.getAlias();
-            logger.fine("definitionPoint " + definitionPoint.getAlias() + " may link to " + alias);
+            logger.log(Level.FINE, "definitionPoint {0} may link to {1}", new Object[]{definitionPoint.getAlias(), alias});
             sb.append(alias + " ");
             if (dataverseWeMayLinkTo.equals(definitionPoint)) {
                 return true;
             }
             dataverseWeMayLinkTo = dataverseWeMayLinkTo.getOwner();
         }
-        logger.fine("dataverse aliases seen on the way to root: " + sb);
+        logger.log(Level.FINE, "dataverse aliases seen on the way to root: {0}", sb);
         return false;
     }
 

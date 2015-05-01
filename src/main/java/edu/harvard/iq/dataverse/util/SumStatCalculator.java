@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse.util;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.*;
@@ -37,7 +38,7 @@ public class SumStatCalculator {
     private static Logger logger = Logger.getLogger(SumStatCalculator.class.getPackage().getName());
 
     public static double[] calculateSummaryStatistics(Number[] x){
-        logger.fine("entering calculate summary statistics ("+x.length+" Number values);");
+        logger.log(Level.FINE, "entering calculate summary statistics ({0} Number values);", x.length);
         
         double[] nx = new double[8];
         //("mean", "medn", "mode", "vald", "invd", "min", "max", "stdev");
@@ -50,29 +51,29 @@ public class SumStatCalculator {
         
         int invalid = countInvalidValues(x);
         nx[4] = invalid;
-        logger.fine("counted invalid values: "+nx[4]);
+        logger.log(Level.FINE, "counted invalid values: {0}", nx[4]);
         nx[3] = x.length - invalid;
-        logger.fine("counted valid values: "+nx[3]);
+        logger.log(Level.FINE, "counted valid values: {0}", nx[3]);
         
         
         //double[] newx = prepareForSummaryStats(x);
         double[] newx = prepareForSummaryStatsAlternative(x, x.length - invalid);
-        logger.fine("prepared double vector for summary stats calculation ("+newx.length+" double values);");        
+        logger.log(Level.FINE, "prepared double vector for summary stats calculation ({0} double values);", newx.length);        
         
         ////nx[0] = StatUtils.mean(newx);
         nx[0] = calculateMean(newx);
-        logger.fine("calculated mean: "+nx[0]);
+        logger.log(Level.FINE, "calculated mean: {0}", nx[0]);
         ////nx[1] = StatUtils.percentile(newx, 50);
         nx[1] = calculateMedian(newx);
-        logger.fine("calculated medn: "+nx[1]);
+        logger.log(Level.FINE, "calculated medn: {0}", nx[1]);
         nx[2] = 0.0; //getMode(newx); 
         
         nx[5] = StatUtils.min(newx);
-        logger.fine("calculated min: "+nx[5]);
+        logger.log(Level.FINE, "calculated min: {0}", nx[5]);
         nx[6] = StatUtils.max(newx);
-        logger.fine("calculated max: "+nx[6]);
+        logger.log(Level.FINE, "calculated max: {0}", nx[6]);
         nx[7] = Math.sqrt(StatUtils.variance(newx));
-        logger.fine("calculated stdev: "+nx[7]);
+        logger.log(Level.FINE, "calculated stdev: {0}", nx[7]);
         return nx;
     }  
 

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -101,17 +102,17 @@ public class MailServiceBean implements java.io.Serializable {
                     Transport.send(msg);
                     sent = true;
                 } catch (SMTPSendFailedException ssfe) {
-                    logger.warning("Failed to send mail to " + to + " (SMTPSendFailedException)");
+                    logger.log(Level.WARNING, "Failed to send mail to {0} (SMTPSendFailedException)", to);
                 }
             } else {
               // commenting out the warning so as not to clutter the log of installations that haven't set up mail  
               //  logger.warning("Skipping sending mail to " + to + ", because the \"no-reply\" address not set.");
             }
         } catch (AddressException ae) {
-            logger.warning("Failed to send mail to " + to);
+            logger.log(Level.WARNING, "Failed to send mail to {0}", to);
             ae.printStackTrace(System.out);
         } catch (MessagingException me) {
-            logger.warning("Failed to send mail to " + to);
+            logger.log(Level.WARNING, "Failed to send mail to {0}", to);
             me.printStackTrace(System.out);
         }
         return sent;
@@ -181,13 +182,13 @@ public class MailServiceBean implements java.io.Serializable {
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                     retval = sendSystemEmail(emailAddress, subjectText, messageText); 
                } else {
-                   logger.warning("Skipping " + notification.getType() +  " notification, because couldn't get valid message");
+                   logger.log(Level.WARNING, "Skipping {0} notification, because couldn''t get valid message", notification.getType());
                }
            } else { 
-               logger.warning("Skipping " + notification.getType() +  " notification, because no valid Object was found");
+               logger.log(Level.WARNING, "Skipping {0} notification, because no valid Object was found", notification.getType());
            }           
         } else {
-            logger.warning("Skipping " + notification.getType() +  " notification, because email address is null");
+            logger.log(Level.WARNING, "Skipping {0} notification, because email address is null", notification.getType());
         }
         return retval;
     }
@@ -337,7 +338,7 @@ public class MailServiceBean implements java.io.Serializable {
             if (notification.getUser() != null) {
                 if (notification.getUser().getDisplayInfo() != null) {
                     if (notification.getUser().getDisplayInfo().getEmailAddress() != null) {
-                        logger.fine("Email address: "+notification.getUser().getDisplayInfo().getEmailAddress());
+                        logger.log(Level.FINE, "Email address: {0}", notification.getUser().getDisplayInfo().getEmailAddress());
                         return notification.getUser().getDisplayInfo().getEmailAddress();
                     }
                 }

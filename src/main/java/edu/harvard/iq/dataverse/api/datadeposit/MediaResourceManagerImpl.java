@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -59,7 +60,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-            logger.fine("looking up dataset with globalId " + globalId);
+            logger.log(Level.FINE, "looking up dataset with globalId {0}", globalId);
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset != null) {
                 /**
@@ -133,7 +134,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "File id must be a number, not '" + fileIdString + "'. URL was: " + uri);
                     }
                     if (fileIdLong != null) {
-                        logger.info("preparing to delete file id " + fileIdLong);
+                        logger.log(Level.INFO, "preparing to delete file id {0}", fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
                             Dataset dataset = fileToDelete.getOwner();
@@ -187,7 +188,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-            logger.fine("looking up dataset with globalId " + globalId);
+            logger.log(Level.FINE, "looking up dataset with globalId {0}", globalId);
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);

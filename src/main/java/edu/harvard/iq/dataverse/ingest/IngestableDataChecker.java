@@ -116,7 +116,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
     public IngestableDataChecker(String[] requestedFormatSet) {
         this.testFormatSet = requestedFormatSet;
-        dbgLog.fine("SubsettableFileChecker instance=" + this.toString());
+        dbgLog.log(Level.FINE, "SubsettableFileChecker instance={0}", this.toString());
     }
 
     // public class methods
@@ -208,8 +208,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             //return result;
         } else if (!IngestableDataChecker.stataReleaseNumber.containsKey(hdr4[0])) {
             if (DEBUG) {
-                dbgLog.info("1st byte (" + hdr4[0] +
-                    ") is not within the ingestable range [rel. 3-10]: this file is NOT stata-dta type");
+                dbgLog.log(Level.INFO, "1st byte ({0}) is not within the ingestable range [rel. 3-10]: this file is NOT stata-dta type", hdr4[0]);
             }
             //return result;
         } else {
@@ -308,7 +307,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
         // size test
 	int bufferCapacity = buff.capacity();
-	dbgLog.fine("Subsettable Checker: buffer capacity: "+bufferCapacity);
+	dbgLog.log(Level.FINE, "Subsettable Checker: buffer capacity: {0}", bufferCapacity);
 
         if (bufferCapacity < 491) {
             if (DEBUG) {
@@ -344,7 +343,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             pos1 = baseBias + i;
 
 	    if ( pos1 > bufferCapacity - 1 ) {
-		dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity ("+pos1+")");
+		dbgLog.log(Level.FINE, "Subsettable Checker: request to go beyond buffer capacity ({0})", pos1);
 		return result; 
 	    }
 
@@ -365,7 +364,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             pos2 = baseBias + 2 * i;
 
 	    if ( pos2 > bufferCapacity - 2 ) {
-		dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity ("+pos2+")");
+		dbgLog.log(Level.FINE, "Subsettable Checker: request to read 2 bytes beyond buffer capacity ({0})", pos2);
 		return result; 
 	    }
 
@@ -381,7 +380,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             pos3 = baseBias + 3 * i;
 
 	    if ( pos3 > bufferCapacity - 3 ) {
-		dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity ("+pos3+")");
+		dbgLog.log(Level.FINE, "Subsettable Checker: request to read 3 bytes beyond buffer capacity ({0})", pos3);
 		return result; 
 	    }
 
@@ -566,17 +565,17 @@ public class IngestableDataChecker implements java.io.Serializable {
                     String result = (String) retobj;
 
                     if (result != null) {
-                        dbgLog.fine("result for (" + fmt + ")=" + result);
+                        dbgLog.log(Level.FINE, "result for ({0})={1}", new Object[]{fmt, result});
                         if (DEBUG) {
                             out.println("result for (" + fmt + ")=" + result);
                         }
                         if (readableFileTypes.contains(result)) {
                             readableFormatType = result;
                         }
-                        dbgLog.fine("readableFormatType=" + readableFormatType);
+                        dbgLog.log(Level.FINE, "readableFormatType={0}", readableFormatType);
                         return readableFormatType;
                     } else {
-                        dbgLog.fine("null was returned for " + fmt + " test");
+                        dbgLog.log(Level.FINE, "null was returned for {0} test", fmt);
                         if (DEBUG) {
                             out.println("null was returned for " + fmt + " test");
                         }
@@ -588,7 +587,7 @@ public class IngestableDataChecker implements java.io.Serializable {
                         err.format(cause.getMessage());
                         e.printStackTrace();
                     } else {
-                        dbgLog.info("cause.getMessage() was null for " + e);
+                        dbgLog.log(Level.INFO, "cause.getMessage() was null for {0}", e);
                         e.printStackTrace();
                     }
                 } catch (IllegalAccessException e) {

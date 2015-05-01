@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.swordapp.server.SwordError;
@@ -21,7 +22,7 @@ public class UrlManager {
     int port;
 
     String processUrl(String url) throws SwordError {
-        logger.fine("URL was: " + url);
+        logger.log(Level.FINE, "URL was: {0}", url);
         String warning = null;
         this.originalUrl = url;
         URI javaNetUri;
@@ -56,7 +57,7 @@ public class UrlManager {
              * attributes - Java.net JIRA -
              * https://java.net/jira/browse/GLASSFISH-20694
              */
-            logger.fine("https is required but protocol was " + javaNetUri.getScheme());
+            logger.log(Level.FINE, "https is required but protocol was {0}", javaNetUri.getScheme());
 //            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "https is required but protocol was " + javaNetUri.getScheme());
         }
         this.port = javaNetUri.getPort();
@@ -141,8 +142,8 @@ public class UrlManager {
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type from URL: " + url);
             }
-            logger.fine("target type: " + targetType);
-            logger.fine("target identifier: " + targetIdentifier);
+            logger.log(Level.FINE, "target type: {0}", targetType);
+            logger.log(Level.FINE, "target identifier: {0}", targetIdentifier);
         }
         if (warning != null) {
             logger.info(warning);

@@ -17,6 +17,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -162,7 +163,7 @@ public class MapLayerMetadataServiceBean {
         //
         Path fileDirname = df.getFileSystemLocation().getParent();
         if (fileDirname == null){
-            logger.warning("DataFile directory has null path.  Directory path: " + df.getFileSystemLocation().toString());
+            logger.log(Level.WARNING, "DataFile directory has null path.  Directory path: {0}", df.getFileSystemLocation().toString());
             return false;
         }
         
@@ -170,7 +171,7 @@ public class MapLayerMetadataServiceBean {
         //
         File fileDirectory = new File(fileDirname.normalize().toString());
         if (!(fileDirectory.isDirectory())){
-            logger.warning("DataFile directory is not actuall a directory.  Directory path: " + fileDirectory.toString());
+            logger.log(Level.WARNING, "DataFile directory is not actuall a directory.  Directory path: {0}", fileDirectory.toString());
             return false;            
         }
         
@@ -236,14 +237,14 @@ public class MapLayerMetadataServiceBean {
         
         String imageUrl = mapLayerMetadata.getMapImageLink();
         imageUrl = imageUrl.replace("https:", "http:");
-        logger.info("Attempt to retrieve map image: " + imageUrl);
+        logger.log(Level.INFO, "Attempt to retrieve map image: {0}", imageUrl);
         
         String destinationFile = mapLayerMetadata.getDataFile().getFileSystemLocation().toString() +  ".img";
-        logger.info("destinationFile: getFileSystemLocation()" + mapLayerMetadata.getDataFile().getFileSystemLocation());
-        logger.info("destinationFile: " + destinationFile);
+        logger.log(Level.INFO, "destinationFile: getFileSystemLocation(){0}", mapLayerMetadata.getDataFile().getFileSystemLocation());
+        logger.log(Level.INFO, "destinationFile: {0}", destinationFile);
         
         URL url = new URL(imageUrl);
-        logger.info("retrieve url : " + imageUrl);
+        logger.log(Level.INFO, "retrieve url : {0}", imageUrl);
 
         logger.info("try to open InputStream");
         InputStream is = null;
@@ -251,7 +252,7 @@ public class MapLayerMetadataServiceBean {
         try{
             is = url.openStream();
         }catch(IOException exio){
-            logger.warning("Error when retrieving map icon image. Exception: " + exio.getMessage());
+            logger.log(Level.WARNING, "Error when retrieving map icon image. Exception: {0}", exio.getMessage());
             if (is!=null){
                 try { is.close(); } catch (IOException ignore) {}
             }
@@ -265,7 +266,7 @@ public class MapLayerMetadataServiceBean {
             logger.info("try to start OutputStream");
             os = new FileOutputStream(destinationFile);
         } catch (Exception ex){
-            logger.warning("Error when retrieving map icon image. Exception: " + ex.getMessage());
+            logger.log(Level.WARNING, "Error when retrieving map icon image. Exception: {0}", ex.getMessage());
             if (os!=null){
                 try { os.close(); } catch (IOException ignore) {}
             }

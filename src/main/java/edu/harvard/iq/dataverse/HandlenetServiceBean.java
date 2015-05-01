@@ -74,7 +74,7 @@ public class HandlenetServiceBean {
     
     public void reRegisterHandle(Dataset dataset) {
         if (!HANDLE_PROTOCOL_TAG.equals(dataset.getProtocol())) {
-            logger.warning("reRegisterHandle called on a dataset with the non-handle global id: "+dataset.getId());
+            logger.log(Level.WARNING, "reRegisterHandle called on a dataset with the non-handle global id: {0}", dataset.getId());
         }
         
         String handle = getDatasetHandle(dataset);
@@ -84,7 +84,7 @@ public class HandlenetServiceBean {
         if (handleRegistered) {
             // Rebuild/Modify an existing handle
             
-            logger.info("Re-registering an existing handle id "+handle);
+            logger.log(Level.INFO, "Re-registering an existing handle id {0}", handle);
 
             String authority = dataset.getAuthority();
             String identifier = dataset.getIdentifier();
@@ -103,7 +103,7 @@ public class HandlenetServiceBean {
 
             String datasetUrl = getRegistrationUrl(dataset);
             
-            logger.info("New registration URL: "+datasetUrl);
+            logger.log(Level.INFO, "New registration URL: {0}", datasetUrl);
 
             try {
                 PublicKeyAuthenticationInfo auth
@@ -130,16 +130,16 @@ public class HandlenetServiceBean {
                 resolver.traceMessages = true;
                 AbstractResponse response = resolver.processRequest(req);
                 if (response.responseCode == AbstractMessage.RC_SUCCESS) {
-                    logger.info("\nGot Response: \n" + response);
+                    logger.log(Level.INFO, "\nGot Response: \n{0}", response);
                 } else {
-                    logger.info("\nGot Error: \n" + response);
+                    logger.log(Level.INFO, "\nGot Error: \n{0}", response);
                 }
             } catch (Throwable t) {
-                logger.fine("\nError: " + t);
+                logger.log(Level.FINE, "\nError: {0}", t);
             }
         } else {
             // Create a new handle from scratch:
-            logger.info("Handle " + handle + " not registered. Skipping (for now)");
+            logger.log(Level.INFO, "Handle {0} not registered. Skipping (for now)", handle);
             /*
              registerHandle(handle);
              */
@@ -148,7 +148,7 @@ public class HandlenetServiceBean {
     
     public void registerHandle( String handle){
         String authority = handle.substring(0,handle.indexOf("/"));
-        logger.fine("Creating handle "+handle);
+        logger.log(Level.FINE, "Creating handle {0}", handle);
         /* */
    }
     /*
@@ -205,7 +205,7 @@ public class HandlenetServiceBean {
                 key[n++] = (byte)fs.read();
             }
         } catch (Throwable t){
-            logger.severe("Cannot read private key " + file +": " + t);
+            logger.log(Level.SEVERE, "Cannot read private key {0}: {1}", new Object[]{file, t});
         }
         return key;
     }
@@ -222,7 +222,7 @@ public class HandlenetServiceBean {
             key = Util.decrypt(key, secKey);
             privkey = Util.getPrivateKeyFromBytes(key, 0);
         } catch (Throwable t){
-            logger.severe("Can't load private key in " + file +": " + t);
+            logger.log(Level.SEVERE, "Can''t load private key in {0}: {1}", new Object[]{file, t});
         }
         return privkey;
     }

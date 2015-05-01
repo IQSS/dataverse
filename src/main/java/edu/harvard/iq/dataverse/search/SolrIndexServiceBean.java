@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -94,7 +95,7 @@ public class SolrIndexServiceBean {
             List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs((DataFile) dvObject);
             solrDocs.addAll(fileSolrDocs);
         } else {
-            logger.info("Unexpected DvObject: " + dvObject.getClass().getName());
+            logger.log(Level.INFO, "Unexpected DvObject: {0}", dvObject.getClass().getName());
         }
         return solrDocs;
     }
@@ -200,7 +201,7 @@ public class SolrIndexServiceBean {
                     String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                     String solrId = solrIdStart + solrIdEnd;
                     DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, fileMetadata.getLabel(), perms);
-                    logger.fine("adding fileid " + fileId);
+                    logger.log(Level.FINE, "adding fileid {0}", fileId);
                     datafileSolrDocs.add(dataFileSolrDoc);
                 }
             }
@@ -258,7 +259,7 @@ public class SolrIndexServiceBean {
         Map<Long, List<Long>> filesPerDataset = new HashMap<>();
         List<DvObject> allExceptFiles = dvObjectService.findAll();
         for (DvObject dvObject : allExceptFiles) {
-            logger.info("determining definition points for dvobject id " + dvObject.getId());
+            logger.log(Level.INFO, "determining definition points for dvobject id {0}", dvObject.getId());
             if (dvObject.isInstanceofDataFile()) {
                 Long dataset = dvObject.getOwner().getId();
                 Long datafile = dvObject.getId();
@@ -286,9 +287,9 @@ public class SolrIndexServiceBean {
         }
 
         for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
-            logger.info("creating solr doc in memory for " + dvObjectSolrDoc.getSolrId());
+            logger.log(Level.INFO, "creating solr doc in memory for {0}", dvObjectSolrDoc.getSolrId());
             SolrInputDocument solrInputDocument = createSolrDoc(dvObjectSolrDoc);
-            logger.info("adding to list of docs to index " + dvObjectSolrDoc.getSolrId());
+            logger.log(Level.INFO, "adding to list of docs to index {0}", dvObjectSolrDoc.getSolrId());
             docs.add(solrInputDocument);
         }
         try {
@@ -507,7 +508,7 @@ public class SolrIndexServiceBean {
                      * @todo What should we do here? Permissions should always
                      * be there. They are assigned at create time.
                      */
-                    logger.info("no permission modification time for dvobject id " + dvObject.getId());
+                    logger.log(Level.INFO, "no permission modification time for dvobject id {0}", dvObject.getId());
                 } else {
                     if (permissionIndexTime.before(permissionModificationTime)) {
                         indexingRequired.add(dvObject.getId());

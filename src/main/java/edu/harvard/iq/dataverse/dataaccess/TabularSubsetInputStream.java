@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -52,7 +53,7 @@ public class TabularSubsetInputStream extends InputStream {
     public int read(byte[] b) throws IOException {
         // TODO: 
         // Move this code into TabularSubsetGenerator
-        logger.fine("subset input stream: read request, on a "+b.length+" byte buffer;");
+        logger.log(Level.FINE, "subset input stream: read request, on a {0} byte buffer;", b.length);
         
         if (numberOfSubsetVariables == 1) {
             logger.fine("calling the single variable subset read method");

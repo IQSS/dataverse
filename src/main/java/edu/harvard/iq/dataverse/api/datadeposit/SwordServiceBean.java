@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -73,7 +74,7 @@ public class SwordServiceBean {
         boolean subjectFieldExists = false;
         List<DatasetField> datasetFields = datasetVersion.getDatasetFields();
         for (DatasetField datasetField : datasetFields) {
-            logger.fine("datasetField: " + datasetField.getDisplayValue() + " ... " + datasetField.getDatasetFieldType().getName());
+            logger.log(Level.FINE, "datasetField: {0} ... {1}", new Object[]{datasetField.getDisplayValue(), datasetField.getDatasetFieldType().getName()});
             if (datasetField.getDatasetFieldType().getName().equals(subjectDatasetFieldType.getName())) {
                 subjectFieldExists = true;
                 logger.fine("subject field exists already");

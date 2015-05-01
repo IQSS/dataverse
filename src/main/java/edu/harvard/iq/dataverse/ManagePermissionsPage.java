@@ -140,7 +140,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     if (roleAssignee != null) {
                         raList.add(new RoleAssignmentRow(roleAssignment, roleAssignee.getDisplayInfo()));
                     } else {
-                        logger.info("Could not find role assignee based on role assignment id " + roleAssignment.getId());
+                        logger.log(Level.INFO, "Could not find role assignee based on role assignment id {0}", roleAssignment.getId());
                     }
                 }
             }
@@ -504,12 +504,12 @@ public class ManagePermissionsPage implements java.io.Serializable {
             }
         }
         try {
-            logger.info( "Attempting to create group " + eg.getGroupAliasInOwner() ); // TODO MBS remove
+            logger.log(Level.INFO, "Attempting to create group {0}", eg.getGroupAliasInOwner()); // TODO MBS remove
             eg = commandEngine.submit( new CreateExplicitGroupCommand(session.getUser(), (Dataverse) getDvObject(), eg));
             JsfHelper.addSuccessMessage("Succesfully created group " + eg.getDisplayName());
         
         } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
-            logger.info( "Got me then message " + gaee.getMessage() ); // TODO MBS remove
+            logger.log(Level.INFO, "Got me then message {0}", gaee.getMessage()); // TODO MBS remove
             explicitGroupIdentifierField.setValid( false );
             FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
                            new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));

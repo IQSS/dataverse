@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import org.swordapp.server.SwordConfiguration;
@@ -104,11 +105,11 @@ public class SwordConfigurationImpl implements SwordConfiguration {
             } else {
                 boolean mkdirSuccess = swordDirFile.mkdirs();
                 if (mkdirSuccess) {
-                    logger.info("Created directory " + swordDirString);
+                    logger.log(Level.INFO, "Created directory {0}", swordDirString);
                     return swordDirString;
                 } else {
                     String msgForSwordUsers = ("Could not determine or create SWORD temp directory. Check logs for details.");
-                    logger.severe(msgForSwordUsers + " Failed to create " + swordDirString);
+                    logger.log(Level.SEVERE, "{0} Failed to create {1}", new Object[]{msgForSwordUsers, swordDirString});
                     // sadly, must throw RunTimeException to communicate with SWORD user
                     throw new RuntimeException(msgForSwordUsers);
                 }
@@ -130,11 +131,11 @@ public class SwordConfigurationImpl implements SwordConfiguration {
                 int maxUploadSizeInBytes = Integer.parseInt(maxUploadInBytes);
                 return maxUploadSizeInBytes;
             } catch (NumberFormatException ex) {
-                logger.info("Could not convert " + maxUploadInBytes + " from setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " to int. Setting Data Deposit API max upload size limit to unlimited.");
+                logger.log(Level.INFO, "Could not convert {0} from setting {1} to int. Setting Data Deposit API max upload size limit to unlimited.", new Object[]{maxUploadInBytes, SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes});
                 return unlimited;
             }
         } else {
-            logger.fine("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit API max upload size limit to unlimited.");
+            logger.log(Level.FINE, "Setting {0} is undefined. Setting Data Deposit API max upload size limit to unlimited.", SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes);
             return unlimited;
         }
     }

@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -88,7 +89,7 @@ public class SearchPermissionsServiceBean {
         resetRoleAssigneeCache();
         Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
         for (RoleAssignment roleAssignment : roleAssignments) {
-            logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
+            logger.log(Level.FINE, "role assignment on dvObject {0}: {1}", new Object[]{dvObject.getId(), roleAssignment.getAssigneeIdentifier()});
             if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
                 RoleAssignee userOrGroup = getRoleAssignee(roleAssignment.getAssigneeIdentifier());
                 String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(userOrGroup);
@@ -123,7 +124,7 @@ public class SearchPermissionsServiceBean {
         List<String> permStrings = new ArrayList<>();
         List<RoleAssignee> roleAssignees = findWhoHasDirectAssignments(dvObject);
         for (RoleAssignee roleAssignee : roleAssignees) {
-            logger.fine("user or group (findDirectAssignments): " + roleAssignee.getIdentifier());
+            logger.log(Level.FINE, "user or group (findDirectAssignments): {0}", roleAssignee.getIdentifier());
             String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(roleAssignee);
             if (indexableUserOrGroupPermissionString != null) {
                 permStrings.add(indexableUserOrGroupPermissionString);
@@ -248,20 +249,20 @@ public class SearchPermissionsServiceBean {
      */
     private String getIndexableStringForUserOrGroup(RoleAssignee userOrGroup) {
         if (userOrGroup instanceof AuthenticatedUser) {
-            logger.fine(userOrGroup.getIdentifier() + " must be a user: " + userOrGroup.getClass().getName());
+            logger.log(Level.FINE, "{0} must be a user: {1}", new Object[]{userOrGroup.getIdentifier(), userOrGroup.getClass().getName()});
             AuthenticatedUser au = (AuthenticatedUser) userOrGroup;
             // Strong prefence to index based on system generated value (e.g. primary key) whenever possible: https://github.com/IQSS/dataverse/issues/1151
             Long primaryKey = au.getId();
             return IndexServiceBean.getGroupPerUserPrefix() + primaryKey;
         } else if (userOrGroup instanceof Group) {
-            logger.fine(userOrGroup.getIdentifier() + " must be a group: " + userOrGroup.getClass().getName());
+            logger.log(Level.FINE, "{0} must be a group: {1}", new Object[]{userOrGroup.getIdentifier(), userOrGroup.getClass().getName()});
             Group group = (Group) userOrGroup;
-            logger.fine("group: " + group.getAlias());
+            logger.log(Level.FINE, "group: {0}", group.getAlias());
             String groupAlias = group.getAlias();
             if (groupAlias != null) {
                 return IndexServiceBean.getGroupPrefix() + groupAlias;
             } else {
-                logger.fine("Could not find group alias for " + group.getIdentifier());
+                logger.log(Level.FINE, "Could not find group alias for {0}", group.getIdentifier());
                 return null;
             }
         } else {

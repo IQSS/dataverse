@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.search;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -38,7 +39,7 @@ private static final Logger logger = Logger.getLogger(BatchIndex.class.getCanoni
     }
     
     public String indexDocs(Collection<SolrInputDocument> docs) {
-        logger.info("Starting BATCHindex of "+docs.size()+" documents");
+        logger.log(Level.INFO, "Starting BATCHindex of {0} documents", docs.size());
         try {
             getServer().add(docs);
         } catch (SolrServerException | IOException ex) {

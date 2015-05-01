@@ -108,7 +108,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             if (!datafile.getDataTable().getId().equals(variables.get(0).getDataTable().getId())) {
                 throw new IOException("Variable in the subset request does not belong to the datafile.");
             }
-            dbgLog.fine("single variable subset; setting fileChannel position to "+extractColumnOffset(columnEndOffsets, variables.get(0).getFileOrder()));
+            dbgLog.log(Level.FINE, "single variable subset; setting fileChannel position to {0}", extractColumnOffset(columnEndOffsets, variables.get(0).getFileOrder()));
             fileChannel.position(extractColumnOffset(columnEndOffsets, variables.get(0).getFileOrder()));
             columnTotalLengths[0] = extractColumnLength(columnEndOffsets, variables.get(0).getFileOrder());
             columnTotalOffsets[0] = 0;
@@ -206,11 +206,11 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
         columnByteBuffers[column].clear();
         if (columnTotalLengths[column] < columnTotalOffsets[column] + MAX_COLUMN_BUFFER) {
-            dbgLog.fine("Limiting the buffer to "+(columnTotalLengths[column] - columnTotalOffsets[column])+" bytes");
+            dbgLog.log(Level.FINE, "Limiting the buffer to {0} bytes", (columnTotalLengths[column] - columnTotalOffsets[column]));
             columnByteBuffers[column].limit((int) (columnTotalLengths[column] - columnTotalOffsets[column]));
         }
         columnBufferSizes[column] = fileChannel.read(columnByteBuffers[column]);
-        dbgLog.fine("Read "+columnBufferSizes[column]+" bytes for subset column "+column);
+        dbgLog.log(Level.FINE, "Read {0} bytes for subset column {1}", new Object[]{columnBufferSizes[column], column});
         columnBufferOffsets[column] = 0;
         columnTotalOffsets[column] += columnBufferSizes[column];
     }
@@ -343,7 +343,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
                 
         int bytesread = fileChannel.read(columnByteBuffers[0]);
-        dbgLog.fine("single column subset: read "+bytesread+" bytes.");
+        dbgLog.log(Level.FINE, "single column subset: read {0} bytes.", bytesread);
         if (columnTotalOffsets[0] + bytesread > columnTotalLengths[0]) {
             bytesread = (int)(columnTotalLengths[0] - columnTotalOffsets[0]);
         }
@@ -373,7 +373,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             System.arraycopy(columnEntries[i], 0, ret, offset, columnEntries[i].length);
             offset += columnEntries[i].length;
         }
-        dbgLog.fine("line: "+new String(ret));
+        dbgLog.log(Level.FINE, "line: {0}", new String(ret));
         return ret;
     } 
     
@@ -829,7 +829,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                                 retVector[caseindex] = new Double(token);
                             }
                         } catch (NumberFormatException ex) {
-                            dbgLog.warning("NumberFormatException thrown for "+token+" as Double");
+                            dbgLog.log(Level.WARNING, "NumberFormatException thrown for {0} as Double", token);
 
                             retVector[caseindex] = null; // missing value
                             // TODO: ?
@@ -853,7 +853,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                                 retVector[caseindex] = new Float(token);
                             }
                         } catch (NumberFormatException ex) {
-                            dbgLog.warning("NumberFormatException thrown for "+token+" as Float");
+                            dbgLog.log(Level.WARNING, "NumberFormatException thrown for {0} as Float", token);
                             retVector[caseindex] = null; // assume missing value (TODO: ?)
                         }
                     }

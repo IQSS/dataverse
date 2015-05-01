@@ -138,7 +138,7 @@ public class PasswordResetServiceBean {
         try {
             passwordResetData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.info("When looking up " + token + " caught " + ex);
+            logger.log(Level.INFO, "When looking up {0} caught {1}", new Object[]{token, ex});
         }
         return passwordResetData;
     }
@@ -235,7 +235,7 @@ public class PasswordResetServiceBean {
             boolean tokenDeleted = deleteToken(token);
             if (!tokenDeleted) {
                 // suboptimal but when it expires it should be deleted
-                logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
+                logger.log(Level.INFO, "token {0} for user id {1} was not deleted", new Object[]{token, user.getId()});
             }
             String toAddress = user.getEmail();
             String subject = "Dataverse Password Reset Successfully Changed";
@@ -250,7 +250,7 @@ public class PasswordResetServiceBean {
         } else {
             messageSummary = messageSummaryFail;
             messageDetail = "Your password was not reset. Please contact support.";
-            logger.info("Enable to save user " + user.getId());
+            logger.log(Level.INFO, "Enable to save user {0}", user.getId());
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }
 
@@ -262,7 +262,7 @@ public class PasswordResetServiceBean {
             em.remove(doomed);
             return true;
         } catch (Exception ex) {
-            logger.info("Caught exception trying to delete token " + token + " - " + ex);
+            logger.log(Level.INFO, "Caught exception trying to delete token {0} - {1}", new Object[]{token, ex});
             return false;
         }
     }

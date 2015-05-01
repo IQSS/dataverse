@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 
@@ -66,7 +67,7 @@ public class IngestServiceShapefileHelper {
             return false;
         }
         if (!fileObject.isFile()){
-            logger.warning("fileObject was not a file.  Failed \"isFile()\": " + fileObject.getAbsolutePath());
+            logger.log(Level.WARNING, "fileObject was not a file.  Failed \"isFile()\": {0}", fileObject.getAbsolutePath());
             return false;
         }
         return true;
@@ -80,7 +81,7 @@ public class IngestServiceShapefileHelper {
             return false;
         }
         if (!fileObject.isDirectory()){
-            logger.warning("fileObject was not a directory.  Failed \"isFile()\": " + fileObject.getAbsolutePath());
+            logger.log(Level.WARNING, "fileObject was not a directory.  Failed \"isFile()\": {0}", fileObject.getAbsolutePath());
             return false;
         }
         return true;
@@ -108,7 +109,7 @@ public class IngestServiceShapefileHelper {
        try {
             return new FileInputStream(fileObject);
         } catch (FileNotFoundException ex) {
-            logger.severe("Failed to create FileInputStream from File: " + fileObject.getAbsolutePath());
+            logger.log(Level.SEVERE, "Failed to create FileInputStream from File: {0}", fileObject.getAbsolutePath());
             return null;
         }
    }
@@ -146,7 +147,7 @@ public class IngestServiceShapefileHelper {
         this.closeFileInputStream(shpfileInputStream);
         
         //  (2) Rezip the shapefile pieces
-        logger.info("rezipFolder: " + rezipFolder.getAbsolutePath());
+        logger.log(Level.INFO, "rezipFolder: {0}", rezipFolder.getAbsolutePath());
         shpfileInputStream = this.getFileInputStream(zippedShapefile);
         if (shpfileInputStream==null){
             return false;
@@ -157,7 +158,7 @@ public class IngestServiceShapefileHelper {
             rezipSuccess = shpHandler.rezipShapefileSets(shpfileInputStream, rezipFolder);
         } catch (IOException ex) {
             logger.severe("Shapefile was not correctly unpacked/repacked");
-            logger.severe("shpHandler message: " + shpHandler.errorMessage);
+            logger.log(Level.SEVERE, "shpHandler message: {0}", shpHandler.errorMessage);
             return false;
         }
         

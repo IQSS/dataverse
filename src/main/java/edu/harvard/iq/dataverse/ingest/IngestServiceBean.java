@@ -237,12 +237,12 @@ public class IngestServiceBean {
             // the DataStore framework for this - the assumption is that 
             // temp files will always be stored on the local filesystem. 
             //          -- L.A. Jul. 2014
-            logger.fine("Will attempt to save the file as: " + tempFile.toString());
+            logger.log(Level.FINE, "Will attempt to save the file as: {0}", tempFile.toString());
             Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
         } else {
             throw new IOException ("Temp directory is not configured.");
         }
-        logger.fine("mime type supplied: "+contentType);
+        logger.log(Level.FINE, "mime type supplied: {0}", contentType);
         // Let's try our own utilities (Jhove, etc.) to determine the file type 
         // of the uploaded file. (We may already have a mime type supplied for this
         // file - maybe the type that the browser recognized on upload; or, if 
@@ -254,7 +254,7 @@ public class IngestServiceBean {
         String finalType = null; 
         try {
             recognizedType = FileUtil.determineFileType(tempFile.toFile(), fileName);
-            logger.fine("File utility recognized the file as " + recognizedType);
+            logger.log(Level.FINE, "File utility recognized the file as {0}", recognizedType);
             if (recognizedType != null && !recognizedType.equals("")) {
                 // is it any better than the type that was supplied to us,
                 // if any?
@@ -275,7 +275,7 @@ public class IngestServiceBean {
             }
             
         } catch (Exception ex) {
-            logger.warning("Failed to run the file utility mime type check on file " + fileName);
+            logger.log(Level.WARNING, "Failed to run the file utility mime type check on file {0}", fileName);
         }
         
         if (finalType == null) {
@@ -321,7 +321,7 @@ public class IngestServiceBean {
                     tempFile.toFile().delete();
                 } catch (SecurityException ex) {
                     // (this is very non-fatal)
-                    logger.warning("Failed to delete temporary file "+tempFile.toString());
+                    logger.log(Level.WARNING, "Failed to delete temporary file {0}", tempFile.toString());
                 }
                 
                 datafiles.add(datafile);
@@ -398,7 +398,7 @@ public class IngestServiceBean {
                         }
 
                         String fileEntryName = zipEntry.getName();
-                        logger.fine("ZipEntry, file: "+fileEntryName);
+                        logger.log(Level.FINE, "ZipEntry, file: {0}", fileEntryName);
 
                         if (fileEntryName != null && !fileEntryName.equals("")) {
 
@@ -416,7 +416,7 @@ public class IngestServiceBean {
                                 if (!fileEntryName.equals(shortName)) {
                                     String categoryName = fileEntryName.replaceFirst("[\\/][^\\/]*$", "");
                                     if (!"".equals(categoryName)) {
-                                        logger.fine("setting category to " + categoryName);
+                                        logger.log(Level.FINE, "setting category to {0}", categoryName);
                                         //datafile.getFileMetadata().setCategory(categoryName.replaceAll("[\\/]", "-"));
                                         datafile.getFileMetadata().addCategoryByName(categoryName.replaceAll("[\\/]", "-"));
                                     }
@@ -431,12 +431,12 @@ public class IngestServiceBean {
                                     
                                     try {
                                         recognizedType = FileUtil.determineFileType(new File(tempFileName), shortName);
-                                        logger.fine("File utility recognized unzipped file as " + recognizedType);
+                                        logger.log(Level.FINE, "File utility recognized unzipped file as {0}", recognizedType);
                                         if (recognizedType != null && !recognizedType.equals("")) {
                                             datafile.setContentType(recognizedType);
                                         }
                                     } catch (Exception ex) {
-                                        logger.warning("Failed to run the file utility mime type check on file " + fileName);
+                                        logger.log(Level.WARNING, "Failed to run the file utility mime type check on file {0}", fileName);
                                     }
                                     
                                     datafiles.add(datafile);
@@ -491,7 +491,7 @@ public class IngestServiceBean {
                     Files.delete(tempFile);
                 } catch (IOException ioex) {
                     // do nothing - it's just a temp file.
-                    logger.warning("Could not remove temp file "+tempFile.getFileName().toString());
+                    logger.log(Level.WARNING, "Could not remove temp file {0}", tempFile.getFileName().toString());
                 }
                 // and return:
                 return datafiles;
@@ -528,7 +528,7 @@ public class IngestServiceBean {
             }
             
             // Delete the temp directory used for unzipping
-            logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
+            logger.log(Level.FINE, "Delete temp shapefile unzip directory: {0}", rezipFolder.getAbsolutePath());
             FileUtils.deleteDirectory(rezipFolder);
 
             // Delete rezipped files
@@ -565,7 +565,7 @@ public class IngestServiceBean {
             try {
                 datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
             } catch (Exception md5ex) {
-                logger.warning("Could not calculate MD5 signature for new file " + fileName);
+                logger.log(Level.WARNING, "Could not calculate MD5 signature for new file {0}", fileName);
             }
         
             if (warningMessage != null) {
@@ -725,7 +725,7 @@ public class IngestServiceBean {
         try {
             contentType = FileUtil.determineFileType(fileObject, fileObject.getName());
         } catch (Exception ex) {
-            logger.warning("FileUtil.determineFileType failed for file with name: " + fileObject.getName());
+            logger.log(Level.WARNING, "FileUtil.determineFileType failed for file with name: {0}", fileObject.getName());
             contentType = null;
         }
 
@@ -819,7 +819,7 @@ public class IngestServiceBean {
                 try {
                     datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
                 } catch (Exception md5ex) {
-                    logger.warning("Could not calculate MD5 signature for new file " + fileName);
+                    logger.log(Level.WARNING, "Could not calculate MD5 signature for new file {0}", fileName);
                 }
             }
         }
@@ -848,7 +848,7 @@ public class IngestServiceBean {
                     Files.createDirectories(dataset.getFileSystemDirectory());
                 }
             } catch (IOException dirEx) {
-                logger.severe("Failed to create study directory " + dataset.getFileSystemDirectory().toString());
+                logger.log(Level.SEVERE, "Failed to create study directory {0}", dataset.getFileSystemDirectory().toString());
                 return; 
                 // TODO:
                 // Decide how we are communicating failure information back to 
@@ -886,12 +886,12 @@ public class IngestServiceBean {
                             dataFile.setContentType("application/fits");
                             metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
                         } catch (IOException mex) {
-                            logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
+                            logger.log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file {0},  {1}", new Object[]{fileName, mex.getMessage()});
                         }
                         if (metadataExtracted) {
-                            logger.fine("Successfully extracted indexable metadata from file " + fileName);
+                            logger.log(Level.FINE, "Successfully extracted indexable metadata from file {0}", fileName);
                         } else {
-                            logger.fine("Failed to extract indexable metadata from file " + fileName);
+                            logger.log(Level.FINE, "Failed to extract indexable metadata from file {0}", fileName);
                         }
                     }
 
@@ -931,12 +931,12 @@ public class IngestServiceBean {
                         try {
                             dataFile.setFilesize(readChannel.size());
                         } catch (IOException fsize_ex) {
-                            logger.warning("Could not calculate the size of new file: " + fileName);
+                            logger.log(Level.WARNING, "Could not calculate the size of new file: {0}", fileName);
                         }
                         
                         
                     } catch (IOException ioex) {
-                        logger.warning("Failed to save the file  " + dataFile.getFileSystemLocation());
+                        logger.log(Level.WARNING, "Failed to save the file  {0}", dataFile.getFileSystemLocation());
                     } finally {
                         if (readChannel != null) {try{readChannel.close();}catch(IOException e){}}
                         if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}
@@ -944,7 +944,7 @@ public class IngestServiceBean {
 
                     // delete the temporary file: 
                     try {
-                        logger.fine("Will attempt to delete the temp file "+tempLocationPath.toString());
+                        logger.log(Level.FINE, "Will attempt to delete the temp file {0}", tempLocationPath.toString());
                         // also, delete a temporary thumbnail image file, if exists:
                         // (TODO: probably not a very good style, that the size of the thumbnail 
                         // is hard-coded here; it may change in the future...)
@@ -955,7 +955,7 @@ public class IngestServiceBean {
                         }
                     } catch (IOException ex) {
                         // (non-fatal - it's just a temp file.)
-                        logger.warning("Failed to delete temp file "+tempLocationPath.toString());
+                        logger.log(Level.WARNING, "Failed to delete temp file {0}", tempLocationPath.toString());
                     }
                     // Any necessary post-processing: 
                     performPostProcessingTasks(dataFile);
@@ -1037,7 +1037,7 @@ public class IngestServiceBean {
 
                 scheduledFiles.add(dataFile);
                 
-                logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
+                logger.log(Level.FINE, "Attempting to queue the file {0} for ingest.", dataFile.getFileMetadata().getLabel());
                 //asyncIngestAsTabular(dataFile);
                 count++;
             }
@@ -1069,7 +1069,7 @@ public class IngestServiceBean {
             
             for (int i = 0; i < count; i++) {
                 ingestMessage.addFileId(scheduledFilesArray[i].getId());
-                logger.fine("Sorted order: "+i+" (size="+scheduledFilesArray[i].getFilesize()+")");
+                logger.log(Level.FINE, "Sorted order: {0} (size={1})", new Object[]{i, scheduledFilesArray[i].getFilesize()});
             }
             
             QueueConnection conn = null;
@@ -1227,9 +1227,9 @@ public class IngestServiceBean {
         try {
             fileUnfValue = UNFUtil.calculateUNF(unfValues);
         } catch (IOException ex) {
-            logger.warning("Failed to recalculate the UNF for the datafile id="+dataFile.getId());
+            logger.log(Level.WARNING, "Failed to recalculate the UNF for the datafile id={0}", dataFile.getId());
         } catch (UnfException uex) {
-                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id="+dataFile.getId());
+                logger.log(Level.WARNING, "UNF Exception: Failed to recalculate the UNF for the dataset version id={0}", dataFile.getId());
         }
         
         if (fileUnfValue != null) {
@@ -1258,18 +1258,18 @@ public class IngestServiceBean {
         if (unfValueList.size() > 0) {
             unfValues = unfValueList.toArray(unfValues);
         
-            logger.fine("Attempting to calculate new UNF from total of " + unfValueList.size() + " file-level signatures.");
+            logger.log(Level.FINE, "Attempting to calculate new UNF from total of {0} file-level signatures.", unfValueList.size());
             try {
                 datasetUnfValue = UNFUtil.calculateUNF(unfValues);
             } catch (IOException ex) {
-                logger.warning("IO Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
+                logger.log(Level.WARNING, "IO Exception: Failed to recalculate the UNF for the dataset version id={0}", version.getId());
             } catch (UnfException uex) {
-                logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id="+version.getId());
+                logger.log(Level.WARNING, "UNF Exception: Failed to recalculate the UNF for the dataset version id={0}", version.getId());
             }        
         
             if (datasetUnfValue != null) {
                 version.setUNF(datasetUnfValue);
-                logger.fine("Recalculated the UNF for the dataset version id="+version.getId()+", new signature: "+datasetUnfValue);
+                logger.log(Level.FINE, "Recalculated the UNF for the dataset version id={0}, new signature: {1}", new Object[]{version.getId(), datasetUnfValue});
             }
         }
     }
@@ -1306,8 +1306,7 @@ public class IngestServiceBean {
 
         PushContext pushContext = PushContextFactory.getDefault().getPushContext();
         if (pushContext != null) {
-            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.FINE, "Ingest: Obtained push context "
-                    + pushContext.toString());
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.FINE, "Ingest: Obtained push context {0}", pushContext.toString());
         } else {
             Logger.getLogger(IngestServiceBean.class.getName()).log(Level.SEVERE, "Warning! Could not obtain push context.");
         } 
@@ -1351,7 +1350,7 @@ public class IngestServiceBean {
         if (ingestRequest != null) {
             if (ingestRequest.getTextEncoding() != null 
                     && !ingestRequest.getTextEncoding().equals("") ) {
-                logger.fine("Setting language encoding to "+ingestRequest.getTextEncoding());
+                logger.log(Level.FINE, "Setting language encoding to {0}", ingestRequest.getTextEncoding());
                 ingestPlugin.setDataLanguageEncoding(ingestRequest.getTextEncoding());
             }
             if (ingestRequest.getLabelsFile() != null) {
@@ -1374,7 +1373,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            logger.info("Ingest failure (IO Exception): "+ingestEx.getMessage()+ "; Sent push notification to the page.");
+            logger.log(Level.INFO, "Ingest failure (IO Exception): {0}; Sent push notification to the page.", ingestEx.getMessage());
             return false;
         } catch (Exception unknownEx) {
             // this is a bit of a kludge, to make sure no unknown exceptions are
@@ -1386,7 +1385,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            logger.info("Ingest failure (Unknown Exception): "+unknownEx.getMessage()+"; Sent push notification to the page.");
+            logger.log(Level.INFO, "Ingest failure (Unknown Exception): {0}; Sent push notification to the page.", unknownEx.getMessage());
             return false;
             
         }
@@ -1399,10 +1398,9 @@ public class IngestServiceBean {
                         && tabFile != null
                         && tabFile.exists()) {
 
-                    logger.info("Tabular data successfully ingested; DataTable with "
-                            + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
+                    logger.log(Level.INFO, "Tabular data successfully ingested; DataTable with {0} variables produced.", tabDataIngest.getDataTable().getVarQuantity());
 
-                    logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
+                    logger.log(Level.INFO, "Tab-delimited file produced: {0}", tabFile.getAbsolutePath());
 
                     if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
                         tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
@@ -1414,7 +1412,7 @@ public class IngestServiceBean {
                     try {
                         saveIngestedOriginal(dataFile, new FileInputStream(new File(tempFileLocation)));
                     } catch (IOException iox) {
-                        logger.info("Failed to save the ingested original! " + iox.getMessage());
+                        logger.log(Level.INFO, "Failed to save the ingested original! {0}", iox.getMessage());
                     }
 
                     Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
@@ -1441,7 +1439,7 @@ public class IngestServiceBean {
                     dataFile = fileService.save(dataFile);
                     FacesMessage facesMessage = new FacesMessage("Success " + dataFile.getFileMetadata().getLabel());
                     pushContext.push("/ingest" + dataFile.getOwner().getId(), "Success " + dataFile.getFileMetadata().getLabel()); //facesMessage);
-                    logger.info("Ingest (" + dataFile.getFileMetadata().getLabel() + "); Sent push notification to the page.");
+                    logger.log(Level.INFO, "Ingest ({0}); Sent push notification to the page.", dataFile.getFileMetadata().getLabel());
 
                     if (additionalData != null) {
                         // remove the extra tempfile, if there was one:
@@ -1622,7 +1620,7 @@ public class IngestServiceBean {
         if (extractedMetadataMap != null) {
             logger.fine("Ingest Service: Processing extracted metadata;");
             if (extractedMetadata.getMetadataBlockName() != null) {
-                logger.fine("Ingest Service: This metadata belongs to the "+extractedMetadata.getMetadataBlockName()+" metadata block."); 
+                logger.log(Level.FINE, "Ingest Service: This metadata belongs to the {0} metadata block.", extractedMetadata.getMetadataBlockName()); 
                 processDatasetMetadata(extractedMetadata, editVersion);
             }
             
@@ -1641,7 +1639,7 @@ public class IngestServiceBean {
         
         for (MetadataBlock mdb : editVersion.getDataset().getOwner().getMetadataBlocks()) {  
             if (mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
-                logger.fine("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
+                logger.log(Level.FINE, "Ingest Service: dataset version has {0} metadata block enabled.", mdb.getName());
                 
                 editVersion.setDatasetFields(editVersion.initDatasetFields());
                 
@@ -1653,7 +1651,7 @@ public class IngestServiceBean {
                             // See if the plugin has found anything for this field: 
                             if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
 
-                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
+                                logger.log(Level.FINE, "Ingest Service: found extracted metadata for field {0}", dsfName);
                                 // go through the existing fields:
                                 for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
                                     if (dsf.getDatasetFieldType().equals(dsft)) {
@@ -1773,14 +1771,14 @@ public class IngestServiceBean {
                                                     while (dsfvIt.hasNext()) {
                                                         DatasetFieldValue dsfv = dsfvIt.next();
                                                         if (fValue.equals(dsfv.getValue())) {
-                                                            logger.fine("Value " + fValue + " already exists for field " + dsfName);
+                                                            logger.log(Level.FINE, "Value {0} already exists for field {1}", new Object[]{fValue, dsfName});
                                                             valueExists = true;
                                                             break;
                                                         }
                                                     }
 
                                                     if (!valueExists) {
-                                                        logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
+                                                        logger.log(Level.FINE, "Creating a new value for field {0}: {1}", new Object[]{dsfName, fValue});
                                                         DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
                                                         newDsfv.setValue(fValue);
                                                         dsf.getDatasetFieldValues().add(newDsfv);
@@ -1794,7 +1792,7 @@ public class IngestServiceBean {
                                                     if (definedVocabularyValues != null) {
                                                         for (ControlledVocabularyValue definedVocabValue : definedVocabularyValues) {
                                                             if (fValue.equals(definedVocabValue.getStrValue())) {
-                                                                logger.fine("Yes, " + fValue + " is a valid controlled vocabulary value for the field " + dsfName);
+                                                                logger.log(Level.FINE, "Yes, {0} is a valid controlled vocabulary value for the field {1}", new Object[]{fValue, dsfName});
                                                                 legitControlledVocabularyValue = definedVocabValue;
                                                                 break;
                                                             }
@@ -1812,7 +1810,7 @@ public class IngestServiceBean {
                                                                 ControlledVocabularyValue cvv = cvvIt.next();
                                                                 if (fValue.equals(cvv.getStrValue())) {
                                                                     // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
-                                                                    logger.fine("Controlled vocab. value " + fValue + " already exists for field " + dsfName);
+                                                                    logger.log(Level.FINE, "Controlled vocab. value {0} already exists for field {1}", new Object[]{fValue, dsfName});
                                                                     valueExists = true;
                                                                     break;
                                                                 }
@@ -1820,7 +1818,7 @@ public class IngestServiceBean {
                                                         }
 
                                                         if (!valueExists) {
-                                                            logger.fine("Adding controlled vocabulary value " + fValue + " to field " + dsfName);
+                                                            logger.log(Level.FINE, "Adding controlled vocabulary value {0} to field {1}", new Object[]{fValue, dsfName});
                                                             dsf.getControlledVocabularyValues().add(legitControlledVocabularyValue);
                                                         }
                                                     }
@@ -1843,7 +1841,7 @@ public class IngestServiceBean {
                         for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
                             String dsfName = cdsft.getName();
                             if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {  
-                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
+                                logger.log(Level.FINE, "Ingest Service: found extracted metadata for field {0}, part of the compound field {1}", new Object[]{dsfName, dsft.getName()});
                                 
                                 if (cdsft.isPrimitive()) {
                                     // probably an unnecessary check - child fields
@@ -1891,7 +1889,7 @@ public class IngestServiceBean {
                                             String cdsfValue = cdsf.getDatasetFieldValues().get(0).getValue();
                                             if (cdsfValue != null && !cdsfValue.equals("")) {
                                                 String extractedValue = (String)fileMetadataMap.get(cdsfName).toArray()[0];
-                                                logger.fine("values: existing: "+cdsfValue+", extracted: "+extractedValue);
+                                                logger.log(Level.FINE, "values: existing: {0}, extracted: {1}", new Object[]{cdsfValue, extractedValue});
                                                 if (cdsfValue.equals(extractedValue)) {
                                                     matches++;
                                                 }
@@ -2051,15 +2049,15 @@ public class IngestServiceBean {
         try {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
+            logger.log(Level.WARNING, "exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable {0}", varnum);
         } catch (UnfException uex) {
-            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
+            logger.log(Level.WARNING, "UNF Exception: thrown when attempted to calculate UNF signature for (numeric, continuous) variable {0}", varnum);
         }
         
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.log(Level.WARNING, "failed to calculate UNF signature for variable {0}", varnum);
         }
     }
     
@@ -2068,15 +2066,15 @@ public class IngestServiceBean {
         try {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
+            logger.log(Level.WARNING, "exception thrown when attempted to calculate UNF signature for (numeric, discrete) variable {0}", varnum);
         }  catch (UnfException uex) {
-            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
+            logger.log(Level.WARNING, "UNF Exception: thrown when attempted to calculate UNF signature for (numeric, discrete) variable {0}", varnum);
         }
         
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.log(Level.WARNING, "failed to calculate UNF signature for variable {0}", varnum);
         }
     }
     
@@ -2127,17 +2125,17 @@ public class IngestServiceBean {
                         fullFormatParser.setLenient(false);
                     
                         try {
-                            logger.fine("trying the \"full\" time format, with milliseconds: "+timeFormat+", "+dataVector[i]);
+                            logger.log(Level.FINE, "trying the \"full\" time format, with milliseconds: {0}, {1}", new Object[]{timeFormat, dataVector[i]});
                             fullFormatParser.parse(dataVector[i]);
                          } catch (ParseException ex) {
                             // try the simplified (no time zone) format instead:
-                            logger.fine("trying the simplified format: "+simplifiedFormat+", "+dataVector[i]);
+                            logger.log(Level.FINE, "trying the simplified format: {0}, {1}", new Object[]{simplifiedFormat, dataVector[i]});
                             simplifiedFormatParser.setLenient(false);
                             try {
                                 simplifiedFormatParser.parse(dataVector[i]);
                                 timeFormat = simplifiedFormat;
                             } catch (ParseException ex1) {
-                                logger.warning("no parseable format found for time value "+i+" - "+dataVector[i]);
+                                logger.log(Level.WARNING, "no parseable format found for time value {0} - {1}", new Object[]{i, dataVector[i]});
                                 throw new IOException("no parseable format found for time value "+i+" - "+dataVector[i]);
                             }
                         }
@@ -2162,21 +2160,21 @@ public class IngestServiceBean {
                 
         try {
             if (dateFormats == null) {
-                logger.fine("calculating the UNF value for string vector; first value: "+dataVector[0]);
+                logger.log(Level.FINE, "calculating the UNF value for string vector; first value: {0}", dataVector[0]);
                 unf = UNFUtil.calculateUNF(dataVector);
             } else {
                 unf = UNFUtil.calculateUNF(dataVector, dateFormats);
             }
         } catch (IOException iex) {
-            logger.warning("IO exception thrown when attempted to calculate UNF signature for (character) variable " + varnum);
+            logger.log(Level.WARNING, "IO exception thrown when attempted to calculate UNF signature for (character) variable {0}", varnum);
         } catch (UnfException uex) {
-            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (character) variable " + varnum);
+            logger.log(Level.WARNING, "UNF Exception: thrown when attempted to calculate UNF signature for (character) variable {0}", varnum);
         }
         
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.log(Level.WARNING, "failed to calculate UNF signature for variable {0}", varnum);
         }
     }
     
@@ -2193,15 +2191,15 @@ public class IngestServiceBean {
         try {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable " + varnum);
+            logger.log(Level.WARNING, "exception thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable {0}", varnum);
         } catch (UnfException uex) {
-            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable" + varnum);
+            logger.log(Level.WARNING, "UNF Exception: thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable{0}", varnum);
         }
         
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.log(Level.WARNING, "failed to calculate UNF signature for variable {0}", varnum);
         }
     }
     

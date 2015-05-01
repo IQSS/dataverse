@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -47,7 +48,7 @@ public class StatementManagerImpl implements StatementManager {
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
 
-            logger.fine("request for sword statement by user " + user.getDisplayInfo().getTitle());
+            logger.log(Level.FINE, "request for sword statement by user {0}", user.getDisplayInfo().getTitle());
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find dataset with global ID of " + globalId);

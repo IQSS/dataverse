@@ -139,15 +139,15 @@ public class WorldMapRelatedData extends AbstractApiBean {
                                     , @PathParam("identifier") int identifier) {
 
         MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.find(new Long(identifier));
-        logger.info("mapLayerMetadata retrieved. Try to retrieve image (after 1st time):<br />" + mapLayerMetadata.getMapImageLink());
+        logger.log(Level.INFO, "mapLayerMetadata retrieved. Try to retrieve image (after 1st time):<br />{0}", mapLayerMetadata.getMapImageLink());
         
         try {
             this.mapLayerMetadataService.retrieveMapImageForIcon(mapLayerMetadata);
         } catch (IOException ex) {
-            logger.info("IOException. Failed to retrieve image. Error:" + ex);
+            logger.log(Level.INFO, "IOException. Failed to retrieve image. Error:{0}", ex);
           //  Logger.getLogger(WorldMapRelatedData.class.getName()).log(Level.SEVERE, null, ex);
         }catch(Exception e2){
-            logger.info("Failed to retrieve image. Error:" + e2);
+            logger.log(Level.INFO, "Failed to retrieve image. Error:{0}", e2);
         }
         
         return okResponse( "Looks good " + identifier + " " + mapLayerMetadata.getLayerName());
@@ -298,8 +298,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (jsonTokenInfo==null){
             return null;
         }
-        logger.info("retrieveTokenValueFromJson.jsonTokenInfo:"+ jsonTokenInfo);
-        logger.info("token keys: " + jsonTokenInfo.keySet());
+        logger.log(Level.INFO, "retrieveTokenValueFromJson.jsonTokenInfo:{0}", jsonTokenInfo);
+        logger.log(Level.INFO, "token keys: {0}", jsonTokenInfo.keySet());
         logger.info("key looked for: " + WorldMapToken.GEOCONNECT_TOKEN_KEY);
         if (!jsonTokenInfo.containsKey(WorldMapToken.GEOCONNECT_TOKEN_KEY)){
             logger.warning("Token not found.  Permission denied.");
@@ -348,20 +348,20 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
         //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
         //----------------------------------
-        logger.info("(1) jsonTokenData: " + jsonTokenData);
+        logger.log(Level.INFO, "(1) jsonTokenData: {0}", jsonTokenData);
         // Parse JSON 
         JsonObject jsonTokenInfo;
         try ( StringReader rdr = new StringReader(jsonTokenData) ) {
             jsonTokenInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonTokenData);
+            logger.log(Level.SEVERE, "Json: {0}", jsonTokenData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
-        logger.info("(1a) jsonTokenInfo: " + jsonTokenInfo);
+        logger.log(Level.INFO, "(1a) jsonTokenInfo: {0}", jsonTokenInfo);
         
         // Retrieve token string
         String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonTokenInfo);
-        logger.info("(1b) token from JSON: " + worldmapTokenParam);
+        logger.log(Level.INFO, "(1b) token from JSON: {0}", worldmapTokenParam);
         if (worldmapTokenParam==null){
             return errorResponse(Response.Status.BAD_REQUEST, "Token not found in JSON request.");
         }
@@ -369,7 +369,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Retrieve WorldMapToken and make sure it is valid
         //
         WorldMapToken wmToken = tokenServiceBean.retrieveAndRefreshValidToken(worldmapTokenParam);
-        logger.info("(2) token retrieved from db: " + wmToken);
+        logger.log(Level.INFO, "(2) token retrieved from db: {0}", wmToken);
 
         if (wmToken==null){
             return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
@@ -528,7 +528,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonLayerData) ) {
             jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonLayerData);
+            logger.log(Level.SEVERE, "Json: {0}", jsonLayerData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
@@ -603,7 +603,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //mapLayer.save();
         MapLayerMetadata savedMapLayerMetadata = mapLayerMetadataService.save(mapLayerMetadata);
         if (savedMapLayerMetadata==null){
-            logger.log(Level.SEVERE, "Json: " + jsonLayerData);
+            logger.log(Level.SEVERE, "Json: {0}", jsonLayerData);
             return errorResponse( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
         }
         
@@ -657,7 +657,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonData) ) {
             jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonData);
+            logger.log(Level.SEVERE, "Json: {0}", jsonData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
@@ -726,7 +726,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonData) ) {
             jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonData);
+            logger.log(Level.SEVERE, "Json: {0}", jsonData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         

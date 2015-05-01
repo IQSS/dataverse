@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -66,11 +67,11 @@ public class ContainerManagerImpl implements ContainerManager {
     @Override
     public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        logger.fine("getEntry called with url: " + uri);
+        logger.log(Level.FINE, "getEntry called with url: {0}", uri);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
+            logger.log(Level.FINE, "operating on target type: {0}", urlManager.getTargetType());
             if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = datasetService.findByGlobalId(globalId);
@@ -102,11 +103,11 @@ public class ContainerManagerImpl implements ContainerManager {
     @Override
     public DepositReceipt replaceMetadata(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        logger.fine("replaceMetadata called with url: " + uri);
+        logger.log(Level.FINE, "replaceMetadata called with url: {0}", uri);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
+            logger.log(Level.FINE, "operating on target type: {0}", urlManager.getTargetType());
             if ("dataverse".equals(targetType)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Metadata replace of dataverse is not supported.");
             } else if ("study".equals(targetType)) {
@@ -114,7 +115,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 // do a sanity check on the XML received
                 try {
                     SwordEntry swordEntry = deposit.getSwordEntry();
-                    logger.fine("deposit XML received by replaceMetadata():\n" + swordEntry);
+                    logger.log(Level.FINE, "deposit XML received by replaceMetadata():\n{0}", swordEntry);
                 } catch (ParseException ex) {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not replace dataset metadata due to malformed Atom entry: " + ex);
                 }
@@ -185,21 +186,21 @@ public class ContainerManagerImpl implements ContainerManager {
     @Override
     public void deleteContainer(String uri, AuthCredentials authCredentials, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        logger.fine("deleteContainer called with url: " + uri);
+        logger.log(Level.FINE, "deleteContainer called with url: {0}", uri);
         urlManager.processUrl(uri);
-        logger.fine("original url: " + urlManager.getOriginalUrl());
+        logger.log(Level.FINE, "original url: {0}", urlManager.getOriginalUrl());
         if (!"edit".equals(urlManager.getServlet())) {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "edit servlet expected, not " + urlManager.getServlet());
         }
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
+            logger.log(Level.FINE, "operating on target type: {0}", urlManager.getTargetType());
 
             if ("dataverse".equals(targetType)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Dataverses can not be deleted via the Data Deposit API but other Dataverse APIs may support this operation.");
             } else if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
-                logger.fine("globalId: " + globalId);
+                logger.log(Level.FINE, "globalId: {0}", globalId);
                 if (globalId != null) {
                     Dataset dataset = dataset = datasetService.findByGlobalId(globalId);
                     if (dataset != null) {
@@ -211,13 +212,13 @@ public class ContainerManagerImpl implements ContainerManager {
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
                         if (dataset.isReleased()) {
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
-                                logger.info("destroying working copy version of dataset " + dataset.getGlobalId());
+                                logger.log(Level.INFO, "destroying working copy version of dataset {0}", dataset.getGlobalId());
                                 try {
                                     engineSvc.submit(new DeleteDatasetVersionCommand(user, dataset));
                                 } catch (CommandException ex) {
                                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + dataset.getGlobalId() + ": " + ex);
                                 }
-                                logger.info("dataset version deleted for dataset id " + dataset.getId());
+                                logger.log(Level.INFO, "dataset version deleted for dataset id {0}", dataset.getId());
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.RELEASED)) {
                                 throw new SwordError(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "Deaccessioning a dataset is no longer supported as of Data Deposit API version in URL (" + swordConfiguration.getBaseUrlPathV1() + ") Equivalent functionality is being developed at https://github.com/IQSS/dataverse/issues/778");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
@@ -260,13 +261,13 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public DepositReceipt useHeaders(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        logger.fine("uri was " + uri);
-        logger.fine("isInProgress:" + deposit.isInProgress());
+        logger.log(Level.FINE, "uri was {0}", uri);
+        logger.log(Level.FINE, "isInProgress:{0}", deposit.isInProgress());
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
+            logger.log(Level.FINE, "operating on target type: {0}", urlManager.getTargetType());
             if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 if (globalId != null) {
@@ -311,7 +312,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                         dataset = engineSvc.submit(cmd);
                                     } catch (CommandException ex) {
                                         String msg = "Unable to publish dataset: " + ex;
-                                        logger.severe(msg + ": " + ex.getMessage());
+                                        logger.log(Level.SEVERE, "{0}: {1}", new Object[]{msg, ex.getMessage()});
                                         throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
                                     }
                                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();

@@ -51,9 +51,9 @@ public class RJobRequest {
         valueTables = vts;
         categoryValueOrders=categoryOrders;
         dbgLog.fine("***** DvnRJobRequest: within the default constructor : initial *****");
-        dbgLog.fine("DvnRJobRequest: variables="+dataVariablesForRequest);
-        dbgLog.fine("DvnRJobRequest: value table="+valueTables);
-        dbgLog.fine("DvnRJobRequest: category value orders="+categoryValueOrders);
+        dbgLog.log(Level.FINE, "DvnRJobRequest: variables={0}", dataVariablesForRequest);
+        dbgLog.log(Level.FINE, "DvnRJobRequest: value table={0}", valueTables);
+        dbgLog.log(Level.FINE, "DvnRJobRequest: category value orders={0}", categoryValueOrders);
         
         
         checkVariableNames();
@@ -182,7 +182,7 @@ public class RJobRequest {
             }
         }
         Integer[]tmp = (Integer[])rw.toArray(new Integer[rw.size()]);
-        dbgLog.fine("vartype="+ StringUtils.join(tmp, ", "));
+        dbgLog.log(Level.FINE, "vartype={0}", StringUtils.join(tmp, ", "));
         int[] variableTypes=new int[tmp.length];
         for (int j=0;j<tmp.length;j++){
             variableTypes[j]= tmp[j];
@@ -255,7 +255,7 @@ public class RJobRequest {
             dbgLog.fine(String.format("DvnRJobRequest: column[%d] category = %s", i, dv.getFormatCategory()));
             
             //experiment dbgLog.fine(i+"-th \tformatschema="+dv.getFormatSchema());
-            dbgLog.fine(i+"-th \tformatcategory="+dv.getFormatCategory());
+            dbgLog.log(Level.FINE, "{0}-th \tformatcategory={1}", new Object[]{i, dv.getFormatCategory()});
             
             // TODO: 
             // clean this up! -- L.A. 4.0 beta15
@@ -327,10 +327,10 @@ public class RJobRequest {
                 // TODO: (?)
                 // What about STATA? -- L.A.
             } else {
-                dbgLog.fine(i+"\t var: not date or time variable");
+                dbgLog.log(Level.FINE, "{0}\t var: not date or time variable", i);
             }
         }
-        dbgLog.fine("format="+variableFormats);
+        dbgLog.log(Level.FINE, "format={0}", variableFormats);
         return variableFormats;
     }
         
@@ -344,9 +344,9 @@ public class RJobRequest {
             // check this var is unsafe
             
             if (raw2safeTable.containsKey(raw)){
-                dbgLog.fine("this var is unsafe="+raw);
+                dbgLog.log(Level.FINE, "this var is unsafe={0}", raw);
                 safe = raw2safeTable.get(raw);
-                dbgLog.fine("safe var is:"+ safe);
+                dbgLog.log(Level.FINE, "safe var is:{0}", safe);
             } else {
                 dbgLog.fine("not on the unsafe list");
                 safe = raw;
@@ -394,10 +394,10 @@ public class RJobRequest {
     public List<String> getFilteredVarNameSet(List<String> varIdSet){
         List<String> varNameSet = new ArrayList<String>();
         for (String vid : varIdSet){
-            dbgLog.fine("name list: vid="+vid);
+            dbgLog.log(Level.FINE, "name list: vid={0}", vid);
             String raw = getVarIdToRawVarNameTable().get(vid);
             if (raw != null){
-                dbgLog.fine("raw is not null case="+raw);
+                dbgLog.log(Level.FINE, "raw is not null case={0}", raw);
                 if (raw2safeTable.containsKey(raw)){
                     dbgLog.fine("raw is unsafe case");
                     varNameSet.add(raw2safeTable.get(raw));
@@ -409,7 +409,7 @@ public class RJobRequest {
                 dbgLog.fine("raw is null-case");
             }
         }
-        dbgLog.fine("varNameSet="+varNameSet);
+        dbgLog.log(Level.FINE, "varNameSet={0}", varNameSet);
         return varNameSet;
     }
     
