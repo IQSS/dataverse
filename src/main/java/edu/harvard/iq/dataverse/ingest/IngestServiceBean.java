@@ -130,9 +130,7 @@ import org.apache.commons.io.FileUtils;
  * New service for handling ingest tasks
  * 
  */
-//@Stateless
-@Startup
-@Singleton
+@Stateless
 @Named
 public class IngestServiceBean {
     private static final Logger logger = Logger.getLogger(IngestServiceBean.class.getCanonicalName());
@@ -863,6 +861,10 @@ public class IngestServiceBean {
 
                     FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
                     String fileName = fileMetadata.getLabel();
+                    
+                    // temp dbug line
+                    System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
+                    
                     // These are all brand new files, so they should all have 
                     // one filemetadata total. -- L.A. 
                     boolean metadataExtracted = false;
@@ -1038,6 +1040,8 @@ public class IngestServiceBean {
                 scheduledFiles.add(dataFile);
                 
                 logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
+                // temp dbug line
+                System.out.println("QUEUEING INGEST FOR FILE: " + dataFile.getFileMetadata().getLabel() + "; for dataset: " + dataset.getGlobalId());  
                 //asyncIngestAsTabular(dataFile);
                 count++;
             }
