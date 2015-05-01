@@ -706,7 +706,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void handleChange() {
         logger.info("handle change");
-        logger.info("new value " + selectedTemplate.getId());
+        logger.log(Level.INFO, "new value {0}", selectedTemplate.getId());
     }
 
     public void handleChangeButton() {
@@ -1185,7 +1185,7 @@ public class DatasetPage implements java.io.Serializable {
         if (downloadType != null && downloadType.equals("tab")) {
             fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId() + "?format=tab";
         }
-        logger.fine("Returning file download url: " + fileDownloadUrl);
+        logger.log(Level.FINE, "Returning file download url: {0}", fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
@@ -1990,7 +1990,7 @@ public class DatasetPage implements java.io.Serializable {
             String fileName = dbObject.getString("name");
             int fileSize = dbObject.getInt("bytes");
 
-            logger.fine("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
+            logger.log(Level.FINE, "DropBox url: {0}, filename: {1}, size: {2}", new Object[]{fileLink, fileName, fileSize});
 
             DataFile dFile = null;
 
@@ -2011,7 +2011,7 @@ public class DatasetPage implements java.io.Serializable {
                     newFiles.add(dFile);
                 }
             } catch (IOException ex) {
-                logger.warning("Failed to access DropBox url: " + fileLink + "!");
+                logger.log(Level.WARNING, "Failed to access DropBox url: {0}!", fileLink);
                 continue;
             } finally {
                 if (dropBoxMethod != null) {
@@ -2038,7 +2038,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
-            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            logger.log(Level.WARNING, "Failed to process and/or save the file {0}; {1}", new Object[]{uFile.getFileName(), ioex.getMessage()});
             return;
         }
 
@@ -2115,7 +2115,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (warningMessage != null) {
-            logger.fine("trying to send faces message to " + event.getComponent().getClientId());
+            logger.log(Level.FINE, "trying to send faces message to {0}", event.getComponent().getClientId());
             FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
             logger.severe(warningMessage);
         }
@@ -2123,7 +2123,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isLocked() {
         if (dataset != null) {
-            logger.fine("checking lock status of dataset " + dataset.getId());
+            logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
             if (dataset.isLocked()) {
                 // refresh the dataset and version, if the current working
                 // version of the dataset is locked:
@@ -2579,12 +2579,12 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         fileMetadataSelected = fm;
-        logger.fine("set the file for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
+        logger.log(Level.FINE, "set the file for the advanced options popup ({0})", fileMetadataSelected.getLabel());
     }
 
     public FileMetadata getFileMetadataSelected() {
         if (fileMetadataSelected != null) {
-            logger.fine("returning file metadata for the advanced options popup (" + fileMetadataSelected.getLabel() + ")");
+            logger.log(Level.FINE, "returning file metadata for the advanced options popup ({0})", fileMetadataSelected.getLabel());
         } else {
             logger.fine("file metadata for the advanced options popup is null.");
         }
@@ -2764,10 +2764,10 @@ public class DatasetPage implements java.io.Serializable {
         // So here we only need to take care of the new, custom category
         // name, if entered: 
 
-        logger.fine("New category name: " + newCategoryName);
+        logger.log(Level.FINE, "New category name: {0}", newCategoryName);
 
         if (fileMetadataSelectedForTagsPopup != null && newCategoryName != null) {
-            logger.fine("Adding new category, for file " + fileMetadataSelectedForTagsPopup.getLabel());
+            logger.log(Level.FINE, "Adding new category, for file {0}", fileMetadataSelectedForTagsPopup.getLabel());
             fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
         } else {
             logger.fine("No FileMetadata selected, or no category specified!");
@@ -2853,7 +2853,7 @@ public class DatasetPage implements java.io.Serializable {
             try {
                 uploadStream = file.getInputstream();
             } catch (IOException ioex) {
-                logger.warning("the file " + file.getFileName() + " failed to upload!");
+                logger.log(Level.WARNING, "the file {0} failed to upload!", file.getFileName());
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "upload failure", "the file " + file.getFileName() + " failed to upload!");
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 return;
@@ -2861,7 +2861,7 @@ public class DatasetPage implements java.io.Serializable {
 
             savedLabelsTempFile = saveTempFile(uploadStream);
 
-            logger.fine(file.getFileName() + " is successfully uploaded.");
+            logger.log(Level.FINE, "{0} is successfully uploaded.", file.getFileName());
             FacesMessage message = new FacesMessage("Succesful", file.getFileName() + " is uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
         }

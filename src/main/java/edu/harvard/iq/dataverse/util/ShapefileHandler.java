@@ -153,7 +153,7 @@ public class ShapefileHandler {
         }
         File finalFile = new File(targetFileFullpath);
         if (!(finalFile.isFile())) {
-            logger.warning("addFinalRezippedFile. Not a file: " + targetFileFullpath);
+            logger.log(Level.WARNING, "addFinalRezippedFile. Not a file: {0}", targetFileFullpath);
             return;
         }
         this.finalRezippedFiles.add(finalFile);
@@ -166,7 +166,7 @@ public class ShapefileHandler {
         if (m == null) {
             return;
         }
-        logger.severe("ShapeFileHandler Error: " + m);
+        logger.log(Level.SEVERE, "ShapeFileHandler Error: {0}", m);
         this.errorFound = true;
         this.errorMessage = m;
     }
@@ -284,7 +284,7 @@ public class ShapefileHandler {
         }
         String unzipFileName = new File(fileName).getName();
         if (unzipFileName.equals("")) {
-            logger.info("getFileBasename.  fileName is an empty string: " + fileName);
+            logger.log(Level.INFO, "getFileBasename.  fileName is an empty string: {0}", fileName);
             return null;
         }
         return unzipFileName;
@@ -338,18 +338,18 @@ public class ShapefileHandler {
                 // Write the file
                 String unzipFileName = this.getFileBasename(zentryFileName);
                 if (unzipFileName == null) {
-                    logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
+                    logger.log(Level.WARNING, "Zip Entry Basename is an empty string: {0}", zentryFileName);
                     continue;
                 }
 
                 String outpath = target_directory.getAbsolutePath() + "/" + unzipFileName;
                 if (unzippedFileNames.contains(outpath)) {
-                    logger.info("Potential name collision.  Avoiding duplicate files in 'collapsed' zip directories. Skipping file: " + zentryFileName);
+                    logger.log(Level.INFO, "Potential name collision.  Avoiding duplicate files in ''collapsed'' zip directories. Skipping file: {0}", zentryFileName);
                     continue;
                 } else {
                     unzippedFileNames.add(outpath);
                 }
-                logger.fine("Write zip file: " + outpath);
+                logger.log(Level.FINE, "Write zip file: {0}", outpath);
                 FileOutputStream fileOutputStream;
                 long fsize = 0;
                 fileOutputStream = new FileOutputStream(outpath);
@@ -415,7 +415,7 @@ public class ShapefileHandler {
 
         dirname_for_unzipping = rezippedFolder.getAbsolutePath() + "/" + "scratch-for-unzip-12345";
         dir_for_unzipping = new File(dirname_for_unzipping);
-        logger.fine("Try to create directory: " + dirname_for_unzipping);
+        logger.log(Level.FINE, "Try to create directory: {0}", dirname_for_unzipping);
 
         if (!this.createDirectory(dir_for_unzipping)) {
             this.addErrorMessage("Failed to make directory: " + dirname_for_unzipping);
@@ -431,13 +431,13 @@ public class ShapefileHandler {
         String target_dirname = rezippedFolder.getAbsolutePath();
         boolean redistribute_success = this.redistributeFilesFromZip(dirname_for_unzipping, target_dirname);
 
-        logger.fine("About to delete: " + dir_for_unzipping);
+        logger.log(Level.FINE, "About to delete: {0}", dir_for_unzipping);
         // Delete unzipped files in scratch directory
         FileUtils.deleteDirectory(dir_for_unzipping);
 
         logger.fine("Post redistribute:)");
         for (File f : new File(target_dirname).listFiles()) {
-            logger.fine("File exists: " + f.getAbsolutePath());
+            logger.log(Level.FINE, "File exists: {0}", f.getAbsolutePath());
         }
 
         return redistribute_success;
@@ -471,7 +471,7 @@ public class ShapefileHandler {
      */
     private boolean redistributeFilesFromZip(String source_dirname, String target_dirname) {
 
-        logger.fine("redistributeFilesFromZip. source: '" + source_dirname + "'  target: '" + target_dirname + "'");
+        logger.log(Level.FINE, "redistributeFilesFromZip. source: ''{0}''  target: ''{1}''", new Object[]{source_dirname, target_dirname});
 
         int cnt = 0;
         /* START: Redistribute files by iterating through the Map of basenames + extensions
@@ -700,7 +700,7 @@ public class ShapefileHandler {
 
                 String unzipFileName = this.getFileBasename(zentryFileName);
                 if (unzipFileName == null) {
-                    logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
+                    logger.log(Level.WARNING, "Zip Entry Basename is an empty string: {0}", zentryFileName);
                     continue;
                 }
 

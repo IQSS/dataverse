@@ -44,15 +44,15 @@ public class DOIEZIdServiceBean  {
         ezidService = new EZIDService (baseURLString);    
         USERNAME  = System.getProperty("doi.username");
         PASSWORD  = System.getProperty("doi.password");
-        logger.log(Level.FINE, "baseURLString " + baseURLString);
+        logger.log(Level.FINE, "baseURLString {0}", baseURLString);
         try {
            ezidService.login(USERNAME, PASSWORD);  
         } catch(Exception e){
             logger.log(Level.INFO, "login failed ");
-            logger.log(Level.INFO, "String " + e.toString() );
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());           
+            logger.log(Level.INFO, "String {0}", e.toString());
+            logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.INFO, "cause {0}", e.getCause());
+            logger.log(Level.INFO, "message {0}", e.getMessage());           
         }
     }    
     
@@ -63,13 +63,13 @@ public class DOIEZIdServiceBean  {
         metadata.put("_status", "reserved");;       
         try {
             retString = ezidService.createIdentifier(identifier, metadata);
-            logger.log(Level.FINE, "create DOI identifier retString : " + retString);
+            logger.log(Level.FINE, "create DOI identifier retString : {0}", retString);
         } catch (EZIDException e) {
             logger.log(Level.INFO, "Identifier not created: create failed");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
+            logger.log(Level.INFO, "String {0}", e.toString());
+            logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.INFO, "cause {0}", e.getCause());
+            logger.log(Level.INFO, "message {0}", e.getMessage());
             return "Identifier not created "  +  e.getLocalizedMessage();
         }
         return retString;
@@ -83,10 +83,10 @@ public class DOIEZIdServiceBean  {
               metadata = ezidService.getMetadata(identifier);
             }  catch (EZIDException e){                
             logger.log(Level.INFO, "getIdentifierMetadata failed");
-            logger.log(Level.INFO, "String " + e.toString() );
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());    
+            logger.log(Level.INFO, "String {0}", e.toString());
+            logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.INFO, "cause {0}", e.getCause());
+            logger.log(Level.INFO, "message {0}", e.getMessage());    
             return metadata;
         }         
        return metadata;
@@ -99,7 +99,7 @@ public class DOIEZIdServiceBean  {
               metadata = ezidService.getMetadata(identifierOut);
             }  catch (EZIDException e){                
             logger.log(Level.FINE, "None existing so we can use this identifier");
-            logger.log(Level.FINE, "identifier: " + identifierOut);
+            logger.log(Level.FINE, "identifier: {0}", identifierOut);
             return metadata;
         }         
        return metadata;
@@ -117,10 +117,10 @@ public class DOIEZIdServiceBean  {
                return identifier;
             }  catch (EZIDException e){                
             logger.log(Level.INFO, "modifyMetadata failed");
-            logger.log(Level.INFO, "String " + e.toString() );
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());    
+            logger.log(Level.INFO, "String {0}", e.toString());
+            logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.INFO, "cause {0}", e.getCause());
+            logger.log(Level.INFO, "message {0}", e.getMessage());    
         } 
        return null;
     }
@@ -132,10 +132,10 @@ public class DOIEZIdServiceBean  {
             doiMetadata = ezidService.getMetadata(identifier);
         } catch (EZIDException e) {
             logger.log(Level.INFO, "get matadata failed cannot delete");
-            logger.log(Level.INFO, "String " + e.toString());
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());
+            logger.log(Level.INFO, "String {0}", e.toString());
+            logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.INFO, "cause {0}", e.getCause());
+            logger.log(Level.INFO, "message {0}", e.getMessage());
             return;
         }
 
@@ -147,10 +147,10 @@ public class DOIEZIdServiceBean  {
                 ezidService.deleteIdentifier(identifier);
             } catch (EZIDException e) {
                 logger.log(Level.INFO, "delete failed");
-                logger.log(Level.INFO, "String " + e.toString());
-                logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-                logger.log(Level.INFO, "cause " + e.getCause());
-                logger.log(Level.INFO, "message " + e.getMessage());
+                logger.log(Level.INFO, "String {0}", e.toString());
+                logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
+                logger.log(Level.INFO, "cause {0}", e.getCause());
+                logger.log(Level.INFO, "message {0}", e.getMessage());
             }
             return;
         }
@@ -272,10 +272,10 @@ public class DOIEZIdServiceBean  {
                ezidService.setMetadata(identifier, metadata);
             }  catch (EZIDException e){                
             logger.log(Level.INFO, "modifyMetadata failed");
-            logger.log(Level.INFO, "String " + e.toString() );
-            logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
-            logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());    
+            logger.log(Level.INFO, "String {0}", e.toString());
+            logger.log(Level.INFO, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.INFO, "cause {0}", e.getCause());
+            logger.log(Level.INFO, "message {0}", e.getMessage());    
         }
         
     }

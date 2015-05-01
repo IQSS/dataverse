@@ -291,7 +291,7 @@ public class Shib implements java.io.Serializable {
             }
         }
         internalUserIdentifer = generateFriendlyLookingUserIdentifer(usernameAttribute, emailAttribute);
-        logger.info("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
+        logger.log(Level.INFO, "friendly looking identifer (backend will enforce uniqueness):{0}", internalUserIdentifer);
 
         /**
          * @todo Remove, longer term. For now, commenting out special logic for
@@ -318,15 +318,15 @@ public class Shib implements java.io.Serializable {
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
-            logger.info("Found user based on " + userPersistentId + ". Logging in.");
-            logger.info("Updating display info for " + au.getName());
+            logger.log(Level.INFO, "Found user based on {0}. Logging in.", userPersistentId);
+            logger.log(Level.INFO, "Updating display info for {0}", au.getName());
             authSvc.updateAuthenticatedUser(au, displayInfo);
             logInUserAndSetShibAttributes(au);
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(prettyFacesHomePageString);
             } catch (IOException ex) {
-                logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
+                logger.log(Level.INFO, "Unable to redirect user to homepage at {0}", prettyFacesHomePageString);
             }
         } else {
             state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
@@ -354,7 +354,7 @@ public class Shib implements java.io.Serializable {
              * eduPersonScopedAffiliation?
              */
 //            positionToPersist = "FIXME";
-            logger.info("Couldn't find authenticated user based on " + userPersistentId);
+            logger.log(Level.INFO, "Couldn''t find authenticated user based on {0}", userPersistentId);
             visibleTermsOfUse = true;
             /**
              * Using the email address from the IdP, try to find an existing
@@ -404,7 +404,7 @@ public class Shib implements java.io.Serializable {
             String devUrl = "http://localhost:8080/resources/dev/sample-shib-identities.json";
             discoFeedUrl = devUrl;
         }
-        logger.info("Trying to get affiliation from disco feed URL: " + discoFeedUrl);
+        logger.log(Level.INFO, "Trying to get affiliation from disco feed URL: {0}", discoFeedUrl);
         URL url = null;
         try {
             url = new URL(discoFeedUrl);
@@ -413,7 +413,7 @@ public class Shib implements java.io.Serializable {
             return null;
         }
         if (url == null) {
-            logger.info("url object was null after parsing " + discoFeedUrl);
+            logger.log(Level.INFO, "url object was null after parsing {0}", discoFeedUrl);
             return null;
         }
         HttpURLConnection discoFeedRequest = null;
@@ -435,7 +435,7 @@ public class Shib implements java.io.Serializable {
         } catch (Exception ex) {
             String msg = "Problem retrieving your affiliation.";
             JsfHelper.addWarningMessage(msg);
-            logger.info(msg + " Affected user: " + internalUserIdentifer + " " + ex.toString());
+            logger.log(Level.INFO, "{0} Affected user: {1} {2}", new Object[]{msg, internalUserIdentifer, ex.toString()});
             return null;
         }
         JsonParser jp = new JsonParser();
@@ -456,14 +456,14 @@ public class Shib implements java.io.Serializable {
             return null;
         }
         discoFeedJson = rootArray.toString();
-        logger.fine("Dump of disco feed:" + discoFeedJson);
+        logger.log(Level.FINE, "Dump of disco feed:{0}", discoFeedJson);
         String affiliation = ShibUtil.getDisplayNameFromDiscoFeed(shibIdp, discoFeedJson);
         if (affiliation != null) {
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;
             return affiliation;
         } else {
-            logger.info("Couldn't find an affiliation from  " + shibIdp);
+            logger.log(Level.INFO, "Couldn''t find an affiliation from  {0}", shibIdp);
             return null;
         }
     }
@@ -483,17 +483,17 @@ public class Shib implements java.io.Serializable {
     private DevShibAccountType getDevShibAccountType() {
         DevShibAccountType saneDefault = DevShibAccountType.PRODUCTION;
         String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugShibAccountType);
-        logger.fine("setting returned: " + settingReturned);
+        logger.log(Level.FINE, "setting returned: {0}", settingReturned);
         if (settingReturned != null) {
             try {
                 DevShibAccountType parsedValue = DevShibAccountType.valueOf(settingReturned);
                 return parsedValue;
             } catch (IllegalArgumentException ex) {
-                logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
+                logger.log(Level.INFO, "Couldn''t parse value: {0} - returning a sane default: {1}", new Object[]{ex, saneDefault});
                 return saneDefault;
             }
         } else {
-            logger.fine("Shibboleth dev mode has not been configured. Returning a sane default: " + saneDefault);
+            logger.log(Level.FINE, "Shibboleth dev mode has not been configured. Returning a sane default: {0}", saneDefault);
             return saneDefault;
         }
 
@@ -545,9 +545,9 @@ public class Shib implements java.io.Serializable {
         AuthenticatedUser au = authSvc.createAuthenticatedUser(
                 new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifer, displayInfo, true);
         if (au != null) {
-            logger.info("created user " + au.getIdentifier());
+            logger.log(Level.INFO, "created user {0}", au.getIdentifier());
         } else {
-            logger.info("couldn't create user " + userPersistentId);
+            logger.log(Level.INFO, "couldn''t create user {0}", userPersistentId);
         }
         logInUserAndSetShibAttributes(au);
         return getPrettyFacesHomePageString(true);
@@ -558,7 +558,7 @@ public class Shib implements java.io.Serializable {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
         UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
-        logger.info("builtin username: " + builtinUsername);
+        logger.log(Level.INFO, "builtin username: {0}", builtinUsername);
         AuthenticatedUser builtInUserToConvert = shibService.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
             AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier);
@@ -672,7 +672,7 @@ public class Shib implements java.io.Serializable {
                     String firstPart = parts[0];
                     return firstPart;
                 } catch (ArrayIndexOutOfBoundsException ex) {
-                    logger.info("odd email address. no @ sign: " + email);
+                    logger.log(Level.INFO, "odd email address. no @ sign: {0}", email);
                 }
             }
         } else {

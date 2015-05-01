@@ -158,7 +158,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 query.setParameter("minorVersionNumber", minorVersionNumber);
                 foundDatasetVersion = (DatasetVersion) query.getSingleResult();
             } catch (javax.persistence.NoResultException e) {
-                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
+                logger.log(Level.WARNING, "no ds version found: {0} {1}", new Object[]{datasetId, friendlyVersionNumber});
                 // DO nothing, just return null.
             }
             return foundDatasetVersion;
@@ -192,7 +192,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 return retVal;
 
             } catch (javax.persistence.NoResultException e) {
-                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
+                logger.log(Level.WARNING, "no ds version found: {0} {1}", new Object[]{datasetId, friendlyVersionNumber});
                 // DO nothing, just return null.
             }
 

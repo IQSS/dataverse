@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -105,7 +106,7 @@ public class DataFileZipper {
                     } else {
                         String zipEntryName = checkZipEntryName(fileName, nameList);
                         ZipEntry e = new ZipEntry(zipEntryName);
-                        logger.fine("created new zip entry for " + zipEntryName);
+                        logger.log(Level.FINE, "created new zip entry for {0}", zipEntryName);
                         // support for categories: (not yet implemented)
                         //String zipEntryDirectoryName = file.getCategory(versionNum);
                         //ZipEntry e = new ZipEntry(zipEntryDirectoryName + "/" + zipEntryName);
@@ -126,14 +127,14 @@ public class DataFileZipper {
                         int i = 0;
                         while ((i = instream.read(data)) > 0) {
                             zout.write(data, 0, i);
-                            logger.fine("wrote " + i + " bytes;");
+                            logger.log(Level.FINE, "wrote {0} bytes;", i);
 
                             fileSize += i;
                             //zout.flush();
                         }
                         instream.close();
                         zout.closeEntry();
-                        logger.fine("closed zip entry for " + zipEntryName);
+                        logger.log(Level.FINE, "closed zip entry for {0}", zipEntryName);
 
                         if (createManifest) {
                             fileManifest = fileManifest + zipEntryName + " (" + mimeType + ") " + fileSize + " bytes.\r\n";

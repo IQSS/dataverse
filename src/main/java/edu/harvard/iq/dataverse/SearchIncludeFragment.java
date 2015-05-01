@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -269,9 +270,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
          */
 
         try {
-            logger.fine("query from user:   " + query);
-            logger.fine("queryToPassToSolr: " + queryToPassToSolr);
-            logger.fine("sort by: " + sortField);
+            logger.log(Level.FINE, "query from user:   {0}", query);
+            logger.log(Level.FINE, "queryToPassToSolr: {0}", queryToPassToSolr);
+            logger.log(Level.FINE, "sort by: {0}", sortField);
 
             /**
              * @todo Number of search results per page should be configurable -
@@ -321,7 +322,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             for (SolrSearchResult solrSearchResult : searchResults) {
                 if (solrSearchResult.getEntityId() == null) {
                     // avoiding EJBException a la https://redmine.hmdc.harvard.edu/issues/3809
-                    logger.warning(SearchFields.ENTITY_ID + " was null for Solr document id:" + solrSearchResult.getId() + ", skipping. Bad Solr data?");
+                    logger.log(Level.WARNING,SearchFields.ENTITY_ID + " was null for Solr document id:{0}, skipping. Bad Solr data?", solrSearchResult.getId());
                     break;
                 }
                 if (solrSearchResult.getType().equals("dataverses")) {
@@ -903,13 +904,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public boolean publishedSelected() {
         String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"";
-        logger.info("published expected: " + expected + " actual: " + selectedTypesList);
+        logger.log(Level.INFO, "published expected: {0} actual: {1}", new Object[]{expected, selectedTypesList});
         return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"");
     }
 
     public boolean unpublishedSelected() {
         String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"";
-        logger.info("unpublished expected: " + expected + " actual: " + selectedTypesList);
+        logger.log(Level.INFO, "unpublished expected: {0} actual: {1}", new Object[]{expected, selectedTypesList});
         return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"");
     }
 
@@ -1009,7 +1010,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         DataFile datafile = dataFileService.find(fileId);
 
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
+            logger.log(Level.WARNING, "isTabular: datafile service could not locate a DataFile object for id {0}!", fileId);
             return false;
         }
 
@@ -1030,7 +1031,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         DataFile datafile = dataFileService.find(fileId);
 
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
+            logger.log(Level.WARNING, "isTabular: datafile service could not locate a DataFile object for id {0}!", fileId);
             return "";
         }
 
@@ -1057,7 +1058,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public String dataFileSizeDisplay(Long fileId) {
         DataFile datafile = dataFileService.find(fileId);
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
+            logger.log(Level.WARNING, "isTabular: datafile service could not locate a DataFile object for id {0}!", fileId);
             return "";
         }
 
@@ -1068,7 +1069,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public String dataFileMD5Display(Long fileId) {
         DataFile datafile = dataFileService.find(fileId);
         if (datafile == null) {
-            logger.warning("isTabular: datafile service could not locate a DataFile object for id " + fileId + "!");
+            logger.log(Level.WARNING, "isTabular: datafile service could not locate a DataFile object for id {0}!", fileId);
             return "";
         }
 
@@ -1094,7 +1095,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
 
             if (!valueSet) {
-                logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
+                logger.log(Level.WARNING, "Index result / entity mismatch (id:resultType) - {0}:{1}", new Object[]{result.getId(), result.getType()});
             }            
         }
     }

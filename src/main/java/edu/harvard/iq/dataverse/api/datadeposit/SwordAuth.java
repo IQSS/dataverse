@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import org.swordapp.server.AuthCredentials;
@@ -99,7 +100,7 @@ public class SwordAuth extends AbstractApiBean {
              * per SWORD commands that map onto permissions like
              * canIssue(CreateDatasetCommand.class)
              */
-            logger.fine(dataverse.getAlias() + ": " + dataverseUser.getIdentifier() + " has role " + roleAssignment.getRole().getAlias());
+            logger.log(Level.FINE, "{0}: {1} has role {2}", new Object[]{dataverse.getAlias(), dataverseUser.getIdentifier(), roleAssignment.getRole().getAlias()});
         }
         if (permissionService.userOn(dataverseUser, dataverse).has(Permission.EditDataverse)) {
             authorized = true;

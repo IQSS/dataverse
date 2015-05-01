@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -129,7 +130,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             try {
                 Double.parseDouble(value.getValue());
             } catch (Exception e) {
-                logger.fine("Float value failed validation: "+value.getValue()+" ("+dsfType.getDisplayName()+")");
+                logger.log(Level.FINE, "Float value failed validation: {0} ({1})", new Object[]{value.getValue(), dsfType.getDisplayName()});
                 context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid number.").addConstraintViolation();
                 return false;
             }

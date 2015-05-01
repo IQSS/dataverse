@@ -48,7 +48,7 @@ public class XLSXFileReaderSpi extends TabularDataFileReaderSpi{
    */
   public XLSXFileReaderSpi() {
     super("HU-IQSS-DVN-project", "4.0", formatNames, extensions, mimeType, XLSXFileReaderSpi.class.getName());
-    LOG.fine(XLSXFileReaderSpi.class.getName()+" is called");
+    LOG.log(Level.FINE, "{0} is called", XLSXFileReaderSpi.class.getName());
   }
   
   public String getDescription(Locale locale) {

@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -117,14 +118,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // -- L.A. 4.0 beta 9
                             
                             if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
-                                logger.fine("processing extra arguments list of length "+di.getExtraArguments().size());
+                                logger.log(Level.FINE, "processing extra arguments list of length {0}", di.getExtraArguments().size());
                                 List <DataVariable> variableList = new ArrayList<>();
                                 String subsetVariableHeader = null;
                                 for (int i = 0; i < di.getExtraArguments().size(); i++) {
                                     DataVariable variable = (DataVariable)di.getExtraArguments().get(i);
                                     if (variable != null) {
                                         if (variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
-                                            logger.fine("adding variable id "+variable.getId()+" to the list.");
+                                            logger.log(Level.FINE, "adding variable id {0} to the list.", variable.getId());
                                             variableList.add(variable);
                                             if (subsetVariableHeader == null) {
                                                 subsetVariableHeader = variable.getName();
@@ -185,7 +186,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     boolean useChunkedTransfer = false; 
                     //if ((contentSize = getFileSize(di, accessObject.getVarHeader())) > 0) {
                     if ((contentSize = getContentSize(accessObject)) > 0) {
-                        logger.info("Content size (retrieved from the AccessObject): "+contentSize);
+                        logger.log(Level.INFO, "Content size (retrieved from the AccessObject): {0}", contentSize);
                         httpHeaders.add("Content-Length", contentSize); 
                     } else {
                         //httpHeaders.add("Transfer-encoding", "chunked");

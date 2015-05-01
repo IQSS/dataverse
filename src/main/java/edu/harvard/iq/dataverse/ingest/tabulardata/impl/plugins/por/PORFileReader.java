@@ -164,7 +164,7 @@ public class PORFileReader  extends TabularDataFileReader{
         
         if (additionalData != null) {
             //throw new IOException ("this plugin does not support external raw data files");
-            dbgLog.fine("Using extended variable labels from file "+additionalData.getName());
+            dbgLog.log(Level.FINE, "Using extended variable labels from file {0}", additionalData.getName());
             
             extendedLabels = createLabelMap(additionalData);
         }
@@ -188,7 +188,7 @@ public class PORFileReader  extends TabularDataFileReader{
                 bfReader.read(header);
                 String headerId = Character.toString(header[0]);
                 
-                dbgLog.fine("////////////////////// headerId="+headerId+ "//////////////////////");
+                dbgLog.log(Level.FINE, "////////////////////// headerId={0}//////////////////////", headerId);
                 
                 if (headerId.equals("Z")){
                     throw new IOException("reading failure: wrong headerId(Z) here");
@@ -288,15 +288,15 @@ public class PORFileReader  extends TabularDataFileReader{
 
                         if (formatCategory != null) {
                             if (dateFormatList[indx] != null) {
-                                dbgLog.fine("setting format category to "+formatCategory);
+                                dbgLog.log(Level.FINE, "setting format category to {0}", formatCategory);
                                 variableList.get(indx).setFormatCategory(formatCategory);
-                                dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
+                                dbgLog.log(Level.FINE, "setting formatschemaname to {0}", dateFormatList[indx]);
                                 variableList.get(indx).setFormat(dateFormatList[indx]);
                             }
                         }
                     } else if (variableFormatType.equals("other")) {
                         dbgLog.fine("Variable of format type \"other\"; type adjustment may be needed");
-                        dbgLog.fine("SPSS print format: "+printFormatTable.get(variableList.get(indx).getName()));
+                        dbgLog.log(Level.FINE, "SPSS print format: {0}", printFormatTable.get(variableList.get(indx).getName()));
                         
                         if (printFormatTable.get(variableList.get(indx).getName()).equals("WKDAY")
                             || printFormatTable.get(variableList.get(indx).getName()).equals("MONTH")) {
@@ -317,7 +317,7 @@ public class PORFileReader  extends TabularDataFileReader{
                 
             }
             
-            dbgLog.fine("Finished creating variable "+indx+", "+varName);
+            dbgLog.log(Level.FINE, "Finished creating variable {0}, {1}", new Object[]{indx, varName});
             
             // OK, we can now assign the types: 
             
@@ -457,7 +457,7 @@ public class PORFileReader  extends TabularDataFileReader{
             // 1-char case
             pos1 = baseBias + i;
             buff.position(pos1);
-            dbgLog.finer("\tposition(1)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(1)={0}", buff.position());
             int j = 6 * i;
             nlch[j] = buff.get();
 
@@ -470,7 +470,7 @@ public class PORFileReader  extends TabularDataFileReader{
             // 2-char case
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
-            dbgLog.finer("\tposition(2)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(2)={0}", buff.position());
             
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
@@ -478,16 +478,14 @@ public class PORFileReader  extends TabularDataFileReader{
             // 3-char case
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
-            dbgLog.finer("\tposition(3)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(3)={0}", buff.position());
             
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
-            dbgLog.finer(i + "-th iteration position =" +
-                    nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
-            dbgLog.finer(i + "-th iteration position =" +
-                    nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j], nlch[j + 1], nlch[j + 2]});
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j + 3], nlch[j + 4], nlch[j + 5]});
             
             if ((nlch[j + 3] == 13) &&
                 (nlch[j + 4] == 13) &&
@@ -526,8 +524,7 @@ public class PORFileReader  extends TabularDataFileReader{
         String pormarks = new String(pormark);
 
         //dbgLog.fine("pormark =>" + pormarks + "<-");
-        dbgLog.fine("pormark[hex: 53 50 53 53 50 4F 52 54 == SPSSPORT] =>" +
-                new String(Hex.encodeHex(pormark)) + "<-");
+        dbgLog.log(Level.FINE, "pormark[hex: 53 50 53 53 50 4F 52 54 == SPSSPORT] =>{0}<-", new String(Hex.encodeHex(pormark)));
 
         if (pormarks.equals(POR_MARK)) {
             dbgLog.fine("POR ID toke test: Passed");
@@ -565,7 +562,7 @@ public class PORFileReader  extends TabularDataFileReader{
                 lineCounter++;
                 if (lineCounter<=5){
                     String line = porScanner.nextLine().toString();
-                    dbgLog.fine("line="+lineCounter+":"+line.length()+":"+line);
+                    dbgLog.log(Level.FINE, "line={0}:{1}:{2}", new Object[]{lineCounter, line.length(), line});
                 } else {
                     fileWriter.write(porScanner.nextLine().toString());
                 }
@@ -611,12 +608,11 @@ public class PORFileReader  extends TabularDataFileReader{
         int nbytes_sixthLine = reader.read(sixthLineCharArray);
 
         String sixthLine = new String(sixthLineCharArray);
-        dbgLog.fine("sixthLineCharArray="+
-            Arrays.deepToString(ArrayUtils.toObject(sixthLineCharArray)));
+        dbgLog.log(Level.FINE, "sixthLineCharArray={0}", Arrays.deepToString(ArrayUtils.toObject(sixthLineCharArray)));
         int signatureLocation = sixthLine.indexOf(POR_MARK);
 
         if (signatureLocation >= 0){
-            dbgLog.fine("format signature was found at:"+signatureLocation);
+            dbgLog.log(Level.FINE, "format signature was found at:{0}", signatureLocation);
         } else {
             dbgLog.severe("signature string was not found");
             throw new IOException("signature string was not found");
@@ -633,7 +629,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
         String leader_string = new String(sec2_leader);
 
-        dbgLog.fine("format signature [SPSSPORT] detected="+leader_string);
+        dbgLog.log(Level.FINE, "format signature [SPSSPORT] detected={0}", leader_string);
 
 
         if (leader_string.equals("SPSSPORT")){
@@ -655,11 +651,11 @@ public class PORFileReader  extends TabularDataFileReader{
             dbgLog.severe("decodeSec2: reading error");
             throw new IOException("decodeSec2: reading error");
         } else {
-            dbgLog.fine("bytes read="+nbytes_sec2);
+            dbgLog.log(Level.FINE, "bytes read={0}", nbytes_sec2);
         }
 
         String sec2 = new String(Sec2_bytes);
-        dbgLog.fine("sec2[creation date/time]="+sec2);
+        dbgLog.log(Level.FINE, "sec2[creation date/time]={0}", sec2);
 
         // sec2
         //       0123456789012345678
@@ -669,7 +665,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
         String[] section2 = StringUtils.split(sec2, '/');
 
-        dbgLog.fine("section2="+StringUtils.join(section2, "|"));
+        dbgLog.log(Level.FINE, "section2={0}", StringUtils.join(section2, "|"));
 
         String fileCreationDate =null;
         String fileCreationTime = null;
@@ -680,8 +676,8 @@ public class PORFileReader  extends TabularDataFileReader{
             dbgLog.severe("decodeSec2: file creation date/time were not correctly detected");
             throw new IOException("decodeSec2: file creation date/time were not correctly detected");
         }
-        dbgLog.fine("fileCreationDate="+fileCreationDate);
-        dbgLog.fine("fileCreationTime="+fileCreationTime);
+        dbgLog.log(Level.FINE, "fileCreationDate={0}", fileCreationDate);
+        dbgLog.log(Level.FINE, "fileCreationTime={0}", fileCreationTime);
         ///smd.getFileInformation().put("fileCreationDate", fileCreationDate);
         ///smd.getFileInformation().put("fileCreationTime", fileCreationTime);
         ///smd.getFileInformation().put("varFormat_schema", "SPSS");
@@ -1164,7 +1160,7 @@ public class PORFileReader  extends TabularDataFileReader{
                         }
 
 
-                        dbgLog.finer(j+"-th case "+i+"=th var:datum length=" +sb_StringLengthBase30.toString());
+                        dbgLog.log(Level.FINER, "{0}-th case {1}=th var:datum length={2}", new Object[]{j, i, sb_StringLengthBase30.toString()});
 
                         // this length value should be a positive integer
                         Matcher mtr = pattern4positiveInteger.matcher(sb_StringLengthBase30.toString());
@@ -1400,16 +1396,16 @@ public class PORFileReader  extends TabularDataFileReader{
 
          */
 
-        dbgLog.fine("missingValueCodeTable="+missingValueCodeTable);
+        dbgLog.log(Level.FINE, "missingValueCodeTable={0}", missingValueCodeTable);
         Set<Map.Entry<String,List<String>>> msvlc = missingValueCodeTable.entrySet();
         for (Iterator<Map.Entry<String,List<String>>> itc = msvlc.iterator(); itc.hasNext();){
             Map.Entry<String, List<String>> et = itc.next();
             String variable = et.getKey();
-            dbgLog.fine("variable="+variable);
+            dbgLog.log(Level.FINE, "variable={0}", variable);
             List<String> codeList = et.getValue();
             List<String> valueList = missingValueTable.get(variable);
-            dbgLog.fine("codeList="+codeList);
-            dbgLog.fine("valueList="+valueList);
+            dbgLog.log(Level.FINE, "codeList={0}", codeList);
+            dbgLog.log(Level.FINE, "valueList={0}", valueList);
             int type;
             InvalidData invalidDataInfo = null;
             if (valueList.size() == 3){
@@ -1474,7 +1470,7 @@ public class PORFileReader  extends TabularDataFileReader{
             invalidDataTable.put(variable, invalidDataInfo);
         }
 
-        dbgLog.fine("invalidDataTable="+invalidDataTable);
+        dbgLog.log(Level.FINE, "invalidDataTable={0}", invalidDataTable);
 
 
         Set<Map.Entry<String,List<String>>> msvl = missingValueTable.entrySet();
@@ -1486,7 +1482,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
             List<String> codeList = missingValueCodeTable.get(variable);
 
-            dbgLog.finer("var="+variable+"\tvalue="+valueList+"\t code"+ codeList);
+            dbgLog.log(Level.FINER, "var={0}\tvalue={1}\t code{2}", new Object[]{variable, valueList, codeList});
             List<String> temp = new ArrayList<String>();
             for (int j=0; j<codeList.size(); j++){
                 if (codeList.get(j).equals("8")){
@@ -1495,7 +1491,7 @@ public class PORFileReader  extends TabularDataFileReader{
             }
             missingValueTable.put(variable, temp);
         }
-        dbgLog.fine("missingValueTable="+missingValueTable);
+        dbgLog.log(Level.FINE, "missingValueTable={0}", missingValueTable);
     }
     
     
@@ -1516,9 +1512,9 @@ public class PORFileReader  extends TabularDataFileReader{
             //temp = sb.toString();//new String(tmp);
         }
         String base30numberString = sb.toString();
-        dbgLog.finer("base30numberString="+base30numberString);
+        dbgLog.log(Level.FINER, "base30numberString={0}", base30numberString);
         int base10equivalent = Integer.valueOf(base30numberString, 30);
-        dbgLog.finer("base10equivalent="+base10equivalent);
+        dbgLog.log(Level.FINER, "base10equivalent={0}", base10equivalent);
         return base10equivalent;
     }
 
@@ -1543,7 +1539,7 @@ public class PORFileReader  extends TabularDataFileReader{
         char[] stringBody = new char[base10equivalent];
         reader.read(stringBody);
         String stringData = new String(stringBody);
-        dbgLog.finer("stringData="+stringData);
+        dbgLog.log(Level.FINER, "stringData={0}", stringData);
         return stringData;
     }
 
@@ -1563,7 +1559,7 @@ public class PORFileReader  extends TabularDataFileReader{
             //temp = sb.toString();//new String(tmp);
         }
         String base30numberString = sb.toString();
-        dbgLog.finer("base30numberString="+base30numberString);
+        dbgLog.log(Level.FINER, "base30numberString={0}", base30numberString);
 
         return base30numberString;
     }

@@ -711,7 +711,7 @@ public class DataversePage implements java.io.Serializable {
             DataverseLinkingDataverse linkedDataverse = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             String msg = "Unable to link " + dataverse.getDisplayName() + " to " + linkingDataverse.getDisplayName() + ". An internal error occurred.";
-            logger.severe(msg + " " + ex);
+            logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
             JsfHelper.addErrorMessage(msg);
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
@@ -729,7 +729,7 @@ public class DataversePage implements java.io.Serializable {
             } catch (SearchException | CommandException ex) {
                 // error: solr is down, etc. can't link children right now
                 String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
-                logger.severe(msg + " " + ex);
+                logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
                 JsfHelper.addErrorMessage(msg);
                 return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
             }

@@ -15,6 +15,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.util.logging.Level;
 
 public class SolrSearchResult {
 
@@ -194,7 +195,7 @@ public class SolrSearchResult {
         for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
             SolrField solrField = entry.getKey();
             Highlight highlight = entry.getValue();
-            logger.fine("SolrSearchResult class: " + solrField.getNameSearchable() + ":" + highlight.getSnippets());
+            logger.log(Level.FINE, "SolrSearchResult class: {0}:{1}", new Object[]{solrField.getNameSearchable(), highlight.getSnippets()});
         }
 
         Highlight highlight = highlightsAsMap.get(SearchFields.DESCRIPTION);
@@ -697,11 +698,11 @@ public class SolrSearchResult {
                 }
                 return "/dataset.xhtml?persistentId=" + identifier;
             } else {
-                logger.info("Dataset identifier/globalId contains \"" + badString + "\" perhaps due to https://github.com/IQSS/dataverse/issues/1147 . Fix data in database and reindex. Returning failsafe URL: " + failSafeUrl);
+                logger.log(Level.INFO, "Dataset identifier/globalId contains \"{0}\" perhaps due to https://github.com/IQSS/dataverse/issues/1147 . Fix data in database and reindex. Returning failsafe URL: {1}", new Object[]{badString, failSafeUrl});
                 return failSafeUrl;
             }
         } else {
-            logger.info("Dataset identifier/globalId was null. Returning failsafe URL: " + failSafeUrl);
+            logger.log(Level.INFO, "Dataset identifier/globalId was null. Returning failsafe URL: {0}", failSafeUrl);
             return failSafeUrl;
         }
     }

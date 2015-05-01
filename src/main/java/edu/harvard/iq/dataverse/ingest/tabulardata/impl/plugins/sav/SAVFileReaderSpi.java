@@ -99,8 +99,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]="+
-                new String(Hex.encodeHex(b)));
+        dbgLog.log(Level.FINE, "hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]={0}", new String(Hex.encodeHex(b)));
         if (stream.markSupported()){
             stream.reset();
         }
@@ -108,7 +107,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
         boolean DEBUG = false;
 
         String hdr4sav = new String(b);
-        dbgLog.fine("from string[$FL2 == 24 46 4C 32]=" + new String(Hex.encodeHex(b)).toUpperCase());
+        dbgLog.log(Level.FINE, "from string[$FL2 == 24 46 4C 32]={0}", new String(Hex.encodeHex(b)).toUpperCase());
 
         if (hdr4sav.equals(SAV_FILE_SIGNATURE)) {
             dbgLog.fine("this file is spss-sav type");
@@ -139,8 +138,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]="+
-                (new String (Hex.encodeHex(b))).toUpperCase());
+        dbgLog.log(Level.FINE, "hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]={0}", (new String (Hex.encodeHex(b))).toUpperCase());
 
 
         if (stream.markSupported()){
@@ -150,7 +148,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
         boolean DEBUG = false;
 
         String hdr4sav = new String(b);
-        dbgLog.fine("from string[$FL2 == 24 46 4C 32]=" + new String(Hex.encodeHex(b)).toUpperCase());
+        dbgLog.log(Level.FINE, "from string[$FL2 == 24 46 4C 32]={0}", new String(Hex.encodeHex(b)).toUpperCase());
 
 
         if (hdr4sav.equals(SAV_FILE_SIGNATURE)) {
@@ -180,8 +178,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
         MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, SAV_HEADER_SIZE);
 
         //printHexDump(buff, "hex dump of the byte-buffer");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]="+
-                new String(Hex.encodeHex(buff.array())));
+        dbgLog.log(Level.FINE, "hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]={0}", new String(Hex.encodeHex(buff.array())));
 
         buff.rewind();
 
@@ -190,7 +187,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
         byte[] hdr4 = new byte[4];
         buff.get(hdr4, 0, 4);
         String hdr4sav = new String(hdr4);
-        dbgLog.fine("from string[hdr4]=" + new String(Hex.encodeHex(hdr4)).toUpperCase());
+        dbgLog.log(Level.FINE, "from string[hdr4]={0}", new String(Hex.encodeHex(hdr4)).toUpperCase());
         
         if (hdr4sav.equals("$FL2")) {
             dbgLog.fine("this file is spss-sav type");

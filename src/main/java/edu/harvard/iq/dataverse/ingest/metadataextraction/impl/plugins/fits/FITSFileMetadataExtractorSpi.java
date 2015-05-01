@@ -42,7 +42,7 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi{
             "HU-IQSS-DVN-project",
             "0.1",
             formatNames, extensions, mimeType, FITSFileMetadataExtractorSpi.class.getName());
-        dbgLog.fine(FITSFileMetadataExtractorSpi.class.getName()+" is called");
+        dbgLog.log(Level.FINE, "{0} is called", FITSFileMetadataExtractorSpi.class.getName());
     }
 
     
@@ -92,8 +92,7 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi{
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.info("hex dump of the 1st "+FITS_HEADER_SIZE+" bytes:"+
-                (new String (Hex.encodeHex(b))).toUpperCase());
+        dbgLog.log(Level.INFO, "hex dump of the 1st {0} bytes:{1}", new Object[]{FITS_HEADER_SIZE, (new String (Hex.encodeHex(b))).toUpperCase()});
 
 
         if (stream.markSupported()){

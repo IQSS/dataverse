@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObjectBuilder;
 
@@ -41,7 +42,7 @@ public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
         if (persistedSavedSearch != null) {
             try {
                 JsonObjectBuilder result = ctxt.savedSearches().makeLinksForSingleSavedSearch(persistedSavedSearch, true);
-                logger.info("result from attempt to make links from saved search: " + result.build().toString());
+                logger.log(Level.INFO, "result from attempt to make links from saved search: {0}", result.build().toString());
             } catch (SearchException ex) {
                 logger.info(ex.getLocalizedMessage());
             }

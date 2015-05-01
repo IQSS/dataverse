@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -108,7 +109,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         String solrIdOfDeaccessionedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.deaccessionedSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDeaccessionedDatasetVersion);
         IndexResponse resultOfSolrDeletionAttempt = ctxt.solrIndex().deleteMultipleSolrIds(datasetAndFileSolrIdsToDelete);
-        logger.fine("Result of attempt to delete dataset and file IDs from the search index: " + resultOfSolrDeletionAttempt.getMessage());
+        logger.log(Level.FINE, "Result of attempt to delete dataset and file IDs from the search index: {0}", resultOfSolrDeletionAttempt.getMessage());
 
         ctxt.index().indexDataverse(toReIndex);
     }

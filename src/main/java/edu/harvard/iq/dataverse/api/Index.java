@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -418,7 +419,7 @@ public class Index extends AbstractApiBean {
                  * when we do a big schema.xml update for
                  * https://github.com/IQSS/dataverse/issues/754
                  */
-                logger.info("email type detected (" + nameSearchable + ") See also https://github.com/IQSS/dataverse/issues/759");
+                logger.log(Level.INFO, "email type detected ({0}) See also https://github.com/IQSS/dataverse/issues/759", nameSearchable);
             }
             String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>

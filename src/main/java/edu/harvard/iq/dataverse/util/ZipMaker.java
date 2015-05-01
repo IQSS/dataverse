@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -55,7 +56,7 @@ public class ZipMaker {
     public static void addToZipFile(String fileName, String fullFilepath, ZipOutputStream zip_output_stream) throws FileNotFoundException, IOException {
 
         if (DEBUG) {
-            logger.fine("Writing '" + fileName + "' to zip file");
+            logger.log(Level.FINE, "Writing ''{0}'' to zip file", fileName);
         }
 
         File file = new File(fullFilepath);

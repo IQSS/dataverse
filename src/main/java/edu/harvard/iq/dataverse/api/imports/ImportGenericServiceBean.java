@@ -129,7 +129,7 @@ public class ImportGenericServiceBean {
 
             Gson gson = new Gson();
             String json = gson.toJson(datasetDTO.getDatasetVersion());
-            logger.info("Json:\n"+json);
+            logger.log(Level.INFO, "Json:\n{0}", json);
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
             DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
@@ -176,7 +176,7 @@ public class ImportGenericServiceBean {
     }
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
-        logger.fine("entering processXMLElement; ("+currentPath+")");
+        logger.log(Level.FINE, "entering processXMLElement; ({0})", currentPath);
         
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
@@ -201,7 +201,7 @@ public class ImportGenericServiceBean {
                                 if (attributeValue != null) {
                                     String mappedFieldName = childMapping.getDatasetfieldName();
 
-                                    logger.fine("looking up dataset field " + mappedFieldName);
+                                    logger.log(Level.FINE, "looking up dataset field {0}", mappedFieldName);
 
                                     DatasetFieldType mappedFieldType = datasetfieldService.findByNameOpt(mappedFieldName);
                                     if (mappedFieldType != null) {
@@ -213,7 +213,7 @@ public class ImportGenericServiceBean {
                                             //citationBlock.getFields().add(value);
 // TO DO replace database output with Json                                        cachedCompoundValue = createDatasetFieldValue(mappedFieldType, cachedCompoundValue, attributeValue, datasetVersion);
                                         } catch (Exception ex) {
-                                            logger.warning("Caught unknown exception when processing attribute " + currentPath + currentElement + "{" + attributeName + "} (skipping);");
+                                            logger.log(Level.WARNING, "Caught unknown exception when processing attribute {0}{1}'{'{2}'}' (skipping);", new Object[]{currentPath, currentElement, attributeName});
                                         }
                                     } else {
                                         throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + mappedFieldName + "!");

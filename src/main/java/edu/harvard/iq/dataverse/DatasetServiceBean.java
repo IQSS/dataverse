@@ -158,7 +158,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             query.setParameter("authority", authority);
             foundDataset = (Dataset) query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.info("no ds found: " + globalId);
+            logger.log(Level.INFO, "no ds found: {0}", globalId);
             // DO nothing, just return null.
         }
         return foundDataset;

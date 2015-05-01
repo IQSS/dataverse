@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -75,7 +76,7 @@ public class ShibGroupServiceBean {
     public Set<ShibGroup> findFor(AuthenticatedUser authenticatedUser) {
         Set<ShibGroup> groupsForUser = new HashSet<>();
         String shibIdp = authenticatedUser.getShibIdentityProvider();
-        logger.fine("IdP for user " + authenticatedUser.getIdentifier() + " is " + shibIdp);
+        logger.log(Level.FINE, "IdP for user {0} is {1}", new Object[]{authenticatedUser.getIdentifier(), shibIdp});
         if (shibIdp != null) {
             /**
              * @todo Rather than a straight string equality match, we have a

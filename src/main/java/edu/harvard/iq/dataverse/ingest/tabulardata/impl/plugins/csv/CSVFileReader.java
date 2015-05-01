@@ -107,8 +107,8 @@ public class CSVFileReader extends TabularDataFileReader {
 
         int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);        
         
-        dbglog.fine("CSV ingest: found "+lineCount+" data cases/observations.");
-        dbglog.fine("Tab file produced: "+tabFileDestination.getAbsolutePath());
+        dbglog.log(Level.FINE, "CSV ingest: found {0} data cases/observations.", lineCount);
+        dbglog.log(Level.FINE, "Tab file produced: {0}", tabFileDestination.getAbsolutePath());
         
         dataTable.setUnf("UNF:6:NOTCALCULATED");
         
@@ -267,35 +267,35 @@ public class CSVFileReader extends TabularDataFileReader {
                             boolean isTime = false;
 
                             if (selectedDateTimeFormat[i] != null) {
-                                dbglog.info("will try selected format " + selectedDateTimeFormat[i].toPattern());
+                                dbglog.log(Level.INFO, "will try selected format {0}", selectedDateTimeFormat[i].toPattern());
                                 ParsePosition pos = new ParsePosition(0);
                                 dateResult = selectedDateTimeFormat[i].parse(valueTokens[i], pos);
 
                                 if (dateResult == null) {
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": null result.");
+                                    dbglog.log(Level.INFO, "{0}: null result.", selectedDateTimeFormat[i].toPattern());
                                 } else if (pos.getIndex() != valueTokens[i].length()) {
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": didn't parse to the end - bad time zone?");
+                                    dbglog.log(Level.INFO, "{0}: didn''t parse to the end - bad time zone?", selectedDateTimeFormat[i].toPattern());
                                 } else {
                                     // OK, successfully parsed a value!
                                     isTime = true;
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + " worked!");
+                                    dbglog.log(Level.INFO, "{0} worked!", selectedDateTimeFormat[i].toPattern());
                                 }
                             } else {
                                 for (SimpleDateFormat format : TIME_FORMATS) {
-                                    dbglog.info("will try format " + format.toPattern());
+                                    dbglog.log(Level.INFO, "will try format {0}", format.toPattern());
                                     ParsePosition pos = new ParsePosition(0);
                                     dateResult = format.parse(valueTokens[i], pos);
                                     if (dateResult == null) {
-                                        dbglog.info(format.toPattern() + ": null result.");
+                                        dbglog.log(Level.INFO, "{0}: null result.", format.toPattern());
                                         continue;
                                     }
                                     if (pos.getIndex() != valueTokens[i].length()) {
-                                        dbglog.info(format.toPattern() + ": didn't parse to the end - bad time zone?");
+                                        dbglog.log(Level.INFO, "{0}: didn''t parse to the end - bad time zone?", format.toPattern());
                                         continue;
                                     }
                                     // OK, successfully parsed a value!
                                     isTime = true;
-                                    dbglog.info(format.toPattern() + " worked!");
+                                    dbglog.log(Level.INFO, "{0} worked!", format.toPattern());
                                     selectedDateTimeFormat[i] = format;
                                     break;
                                 }
@@ -330,16 +330,16 @@ public class CSVFileReader extends TabularDataFileReader {
                                 // Strict parsing - it will throw an 
                                 // exception if it doesn't parse!
                                 format.setLenient(false);
-                                dbglog.info("will try format " + format.toPattern());
+                                dbglog.log(Level.INFO, "will try format {0}", format.toPattern());
                                 try {
                                     dateResult = format.parse(valueTokens[i]);
-                                    dbglog.info("format " + format.toPattern() + " worked!");
+                                    dbglog.log(Level.INFO, "format {0} worked!", format.toPattern());
                                     isDate = true;
                                     selectedDateFormat[i] = format;
                                     break;
                                 } catch (ParseException ex) {
                                     //Do nothing                                      
-                                    dbglog.info("format " + format.toPattern() + " didn't work.");
+                                    dbglog.log(Level.INFO, "format {0} didn''t work.", format.toPattern());
                                 }
                             }
                             if (!isDate) {

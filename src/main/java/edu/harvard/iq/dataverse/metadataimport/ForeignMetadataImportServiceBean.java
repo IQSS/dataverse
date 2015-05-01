@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.io.StringReader;
+import java.util.logging.Level;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.ejb.EJB;
@@ -137,7 +138,7 @@ public class ForeignMetadataImportServiceBean {
     }
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetVersion datasetVersion) throws XMLStreamException {
-        logger.fine("entering processXMLElement; ("+currentPath+")");
+        logger.log(Level.FINE, "entering processXMLElement; ({0})", currentPath);
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
@@ -157,14 +158,14 @@ public class ForeignMetadataImportServiceBean {
                             if (attributeValue != null) {
                                 String mappedFieldName = childMapping.getDatasetfieldName();
                                 
-                                logger.fine("looking up dataset field "+mappedFieldName);
+                                logger.log(Level.FINE, "looking up dataset field {0}", mappedFieldName);
 
                                 DatasetFieldType mappedFieldType = datasetfieldService.findByNameOpt(mappedFieldName);
                                 if (mappedFieldType != null) {
                                     try {
                                         cachedCompoundValue = createDatasetFieldValue(mappedFieldType, cachedCompoundValue, attributeValue, datasetVersion);
                                     } catch (Exception ex) {
-                                        logger.warning("Caught unknown exception when processing attribute "+currentPath+currentElement+"{"+attributeName+"} (skipping);");
+                                        logger.log(Level.WARNING, "Caught unknown exception when processing attribute {0}{1}'{'{2}'}' (skipping);", new Object[]{currentPath, currentElement, attributeName});
                                     }
                                 } else {
                                     throw new EJBException ("Bad foreign metadata field mapping: no such DatasetField "+mappedFieldName+"!");
@@ -220,7 +221,7 @@ public class ForeignMetadataImportServiceBean {
                 String dsfName = dsft.getName();
 
                 if (!dsft.isControlledVocabulary()) {
-                    logger.fine("Creating a new value for field " + dsfName + ": " + elementText);
+                    logger.log(Level.FINE, "Creating a new value for field {0}: {1}", new Object[]{dsfName, elementText});
                     DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
                     newDsfv.setValue(elementText);
                     dsf.getDatasetFieldValues().add(newDsfv);

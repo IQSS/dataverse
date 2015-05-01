@@ -75,8 +75,8 @@ public class RTabFileParser implements java.io.Serializable {
             throw new IOException ("R Tab File Parser: varQnty=0 in the dataset metadata!");
         }
 
-        dbgLog.fine("CSV reader; varQnty: "+varQnty);
-        dbgLog.fine("CSV reader; delimiter: "+delimiterChar);
+        dbgLog.log(Level.FINE, "CSV reader; varQnty: {0}", varQnty);
+        dbgLog.log(Level.FINE, "CSV reader; delimiter: {0}", delimiterChar);
 
 
         String[] caseRow = new String[varQnty];
@@ -192,7 +192,7 @@ public class RTabFileParser implements java.io.Serializable {
                     // the tokens, hence the post-processing - we'll just need 
                     // to remove all these quotes, and then we'll be fine. 
                     
-                    dbgLog.fine("R Tab File Parser; double value: "+valueTokens[i]); 
+                    dbgLog.log(Level.FINE, "R Tab File Parser; double value: {0}", valueTokens[i]); 
                     // Dealing with quotes: 
                     // remove the leading and trailing quotes, if present:
                     valueTokens[i] = valueTokens[i].replaceFirst("^\"", "");
@@ -212,7 +212,7 @@ public class RTabFileParser implements java.io.Serializable {
                             Double testDoubleValue = new Double(valueTokens[i]);
                             caseRow[i] = testDoubleValue.toString();//valueTokens[i];
                         } catch (Exception ex) {
-                            dbgLog.fine("caught exception reading numeric value; variable: " + i + ", case: " + lineCounter + "; value: " + valueTokens[i]);
+                            dbgLog.log(Level.FINE, "caught exception reading numeric value; variable: {0}, case: {1}; value: {2}", new Object[]{i, lineCounter, valueTokens[i]});
 
                             //dataTable[i][lineCounter] = (new Double(0)).toString();
                             caseRow[i] = "";
@@ -253,7 +253,7 @@ public class RTabFileParser implements java.io.Serializable {
                     // create an Integer object from the String "NA" would
                     // result in an exception, that would be intercepted below,
                     // with the same end result)
-                    dbgLog.fine("R Tab File Parser; integer value: "+valueTokens[i]);
+                    dbgLog.log(Level.FINE, "R Tab File Parser; integer value: {0}", valueTokens[i]);
                     if (valueTokens[i] != null && valueTokens[i].equalsIgnoreCase("NA")) {
                         caseRow[i] = "";
                     } else {
@@ -261,7 +261,7 @@ public class RTabFileParser implements java.io.Serializable {
                             Integer testIntegerValue = new Integer(valueTokens[i]);
                             caseRow[i] = testIntegerValue.toString();
                         } catch (Exception ex) {
-                            dbgLog.fine("caught exception reading numeric value; variable: " + i + ", case: " + lineCounter + "; value: " + valueTokens[i]);
+                            dbgLog.log(Level.FINE, "caught exception reading numeric value; variable: {0}, case: {1}; value: {2}", new Object[]{i, lineCounter, valueTokens[i]});
 
                             //dataTable[i][lineCounter] = "0";
                             caseRow[i] = "";

@@ -454,7 +454,7 @@ public class DTAFileReader extends TabularDataFileReader{
      */
     private void init() throws IOException {
         //
-        if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("release number="+releaseNumber);
+        if (dbgLog.isLoggable(Level.INFO)) dbgLog.log(Level.INFO, "release number={0}", releaseNumber);
         
         if (releaseNumber < 111) {
             typeOffsetTable = release105type;
@@ -475,7 +475,7 @@ public class DTAFileReader extends TabularDataFileReader{
             value_label_table_length = 4;
         }
         
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("type-offset table to be used:\n"+typeOffsetTable);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "type-offset table to be used:\n{0}", typeOffsetTable);
 
         constantTable = CONSTATNT_TABLE.get(releaseNumber);
 
@@ -483,9 +483,9 @@ public class DTAFileReader extends TabularDataFileReader{
         
         dataLabelLength = headerLength - (NVAR_FIELD_LENGTH +
             NOBS_FIELD_LENGTH + TIME_STAMP_LENGTH);
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("data_label_length="+dataLabelLength);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "data_label_length={0}", dataLabelLength);
 
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("constant table to be used:\n"+constantTable);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "constant table to be used:\n{0}", constantTable);
        
 
         doubleNumberFormatter.setGroupingUsed(false);
@@ -558,8 +558,7 @@ public class DTAFileReader extends TabularDataFileReader{
         }
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("hex dump: 1st 4bytes =>"
-                    + new String(Hex.encodeHex(magic_number)) + "<-");
+            dbgLog.log(Level.FINE, "hex dump: 1st 4bytes =>{0}<-", new String(Hex.encodeHex(magic_number)));
         }
 
         if (magic_number[2] != 1) {
@@ -569,9 +568,9 @@ public class DTAFileReader extends TabularDataFileReader{
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             throw new IllegalArgumentException("given file is not stata-dta type");
         } else if (!STATA_RELEASE_NUMBER.containsKey((int) magic_number[0])) {
-            dbgLog.fine("1st byte (" + magic_number[0]
+            dbgLog.log(Level.FINE,"1st byte ({0}"
                     + ") is not within the ingestable range [rel. 3-10]:"
-                    + "we cannot ingest this Stata file.");
+                    + "we cannot ingest this Stata file.", magic_number[0]);
             throw new IllegalArgumentException("given file is not stata-dta type");
         } else {
             releaseNumber = (int) magic_number[0];
@@ -589,12 +588,10 @@ public class DTAFileReader extends TabularDataFileReader{
             dataTable.setUnf("UNF:6:FILEFILEFILEFILE");
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("this file is stata-dta type: "
-                        + STATA_RELEASE_NUMBER.get(releaseNumber)
-                        + " (that means Stata version " + releaseNumber + ")");
+                dbgLog.log(Level.FINE, "this file is stata-dta type: {0} (that means Stata version {1})", new Object[]{STATA_RELEASE_NUMBER.get(releaseNumber), releaseNumber});
             }
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("Endian(file)(Big: 1; Little:2)=" + magic_number[1]);
+                dbgLog.log(Level.FINE, "Endian(file)(Big: 1; Little:2)={0}", magic_number[1]);
             }
 
             /* 
@@ -606,7 +603,7 @@ public class DTAFileReader extends TabularDataFileReader{
                         + "multi-byte fields");
             }
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("Endian of this platform:" + ByteOrder.nativeOrder().toString());
+                dbgLog.log(Level.FINE, "Endian of this platform:{0}", ByteOrder.nativeOrder().toString());
             }
         }
 
@@ -621,7 +618,7 @@ public class DTAFileReader extends TabularDataFileReader{
         short short_nvar = dupnvar.getShort();
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("get original short view(nvar)=" + short_nvar);
+            dbgLog.log(Level.FINE, "get original short view(nvar)={0}", short_nvar);
         }
         if (isLittleEndian) {
             bbnvar.order(ByteOrder.LITTLE_ENDIAN);
@@ -633,7 +630,7 @@ public class DTAFileReader extends TabularDataFileReader{
         int nvar = shrt_nvar;
         
         if (dbgLog.isLoggable(Level.INFO)) {
-            dbgLog.info("number of variables(nvar)=" + nvar);
+            dbgLog.log(Level.INFO, "number of variables(nvar)={0}", nvar);
         }
 
         // 4.0 Initialize dataverse variable objects: 
@@ -665,14 +662,14 @@ public class DTAFileReader extends TabularDataFileReader{
         ByteBuffer dupnobs = nobs.duplicate();
         int int_dupnobs = dupnobs.getInt();
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("raw nobs=" + int_dupnobs);
+            dbgLog.log(Level.FINE, "raw nobs={0}", int_dupnobs);
         }
         if (isLittleEndian) {
             nobs.order(ByteOrder.LITTLE_ENDIAN);
         }
         int int_nobs = nobs.getInt();
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("reversed nobs=" + int_nobs);
+            dbgLog.log(Level.FINE, "reversed nobs={0}", int_nobs);
         }
 
         // smd.getFileInformation().put("caseQnty", new Integer(int_nobs));
@@ -689,28 +686,28 @@ public class DTAFileReader extends TabularDataFileReader{
         // 3. data_label: 32 or 81 bytes
         int dl_offset = NVAR_FIELD_LENGTH + NOBS_FIELD_LENGTH;
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("dl_offset=" + dl_offset);
+            dbgLog.log(Level.FINE, "dl_offset={0}", dl_offset);
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("data_label_length=" + dataLabelLength);
+            dbgLog.log(Level.FINE, "data_label_length={0}", dataLabelLength);
         }
 
         String data_label = new String(Arrays.copyOfRange(header, dl_offset,
                 (dl_offset + dataLabelLength)), "ISO-8859-1");
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("data_label_length=" + data_label.length());
+            dbgLog.log(Level.FINE, "data_label_length={0}", data_label.length());
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("loation of the null character=" + data_label.indexOf(0));
+            dbgLog.log(Level.FINE, "loation of the null character={0}", data_label.indexOf(0));
         }
 
         String dataLabel = getNullStrippedString(data_label);
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("data_label_length=" + dataLabel.length());
+            dbgLog.log(Level.FINE, "data_label_length={0}", dataLabel.length());
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("data_label=[" + dataLabel + "]");
+            dbgLog.log(Level.FINE, "data_label=[{0}]", dataLabel);
         }
 
         // smd.getFileInformation().put("dataLabel", dataLabel);
@@ -723,18 +720,18 @@ public class DTAFileReader extends TabularDataFileReader{
             String time_stamp = new String(Arrays.copyOfRange(header, ts_offset,
                     ts_offset + TIME_STAMP_LENGTH), "ISO-8859-1");
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("time_stamp_length=" + time_stamp.length());
+                dbgLog.log(Level.FINE, "time_stamp_length={0}", time_stamp.length());
             }
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("loation of the null character=" + time_stamp.indexOf(0));
+                dbgLog.log(Level.FINE, "loation of the null character={0}", time_stamp.indexOf(0));
             }
 
             String timeStamp = getNullStrippedString(time_stamp);
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("timeStamp_length=" + timeStamp.length());
+                dbgLog.log(Level.FINE, "timeStamp_length={0}", timeStamp.length());
             }
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("timeStamp=[" + timeStamp + "]");
+                dbgLog.log(Level.FINE, "timeStamp=[{0}]", timeStamp);
             }
 
         }
@@ -802,13 +799,13 @@ public class DTAFileReader extends TabularDataFileReader{
         byte:  98 105 108 102 100 (unsigned byte)
         HEX:  62  69  6C  66  64
          */
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("type_offset_table:\n" + typeOffsetTable);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "type_offset_table:\n{0}", typeOffsetTable);
 
 
         bytes_per_row = 0;
         
         for (int i = 0; i < typeList.length; i++) {
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th value=" + typeList[i]);
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "{0}-th value={1}", new Object[]{i, typeList[i]});
             
             /*
              * How Stata types correspond to the DVN types: 
@@ -847,7 +844,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     int stringType = 256 + typeList[i];
                     if (stringType >= typeOffsetTable.get("STRING")) {
                         int string_var_length = stringType - typeOffsetTable.get("STRING");
-                        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("string_var_length=" + string_var_length);
+                        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "string_var_length={0}", string_var_length);
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
@@ -862,7 +859,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     }
                 } else if (releaseNumber >= 111) {
                     // post-111 string type
-                    if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("DTA reader: typeList[" + i + "]=" + typeList[i]);
+                    if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "DTA reader: typeList[{0}]={1}", new Object[]{i, typeList[i]});
 
                     // if the size of strXXX type is less than 128,
                     // the value of typeList[i] will be equal to that;
@@ -874,7 +871,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
                     if (stringType >= typeOffsetTable.get("STRING")) {
                         int string_var_length = stringType - typeOffsetTable.get("STRING");
-                        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("DTA reader: string_var_length=" + string_var_length);
+                        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "DTA reader: string_var_length={0}", string_var_length);
                         bytes_per_row += string_var_length;
 
                         variableTypes[i] = "String";
@@ -892,12 +889,12 @@ public class DTAFileReader extends TabularDataFileReader{
                 }
 
             }
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "=th\t sum=" + bytes_per_row);
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "{0}=th\t sum={1}", new Object[]{i, bytes_per_row});
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("bytes_per_row(final)=" + bytes_per_row);
-            dbgLog.fine("variableTypes:\n" + Arrays.deepToString(variableTypes));
-            dbgLog.fine("StringLengthTable=" + StringLengthTable);
+            dbgLog.log(Level.FINE, "bytes_per_row(final)={0}", bytes_per_row);
+            dbgLog.log(Level.FINE, "variableTypes:\n{0}", Arrays.deepToString(variableTypes));
+            dbgLog.log(Level.FINE, "StringLengthTable={0}", StringLengthTable);
         }
 
     }
@@ -908,7 +905,7 @@ public class DTAFileReader extends TabularDataFileReader{
         int length_var_name = constantTable.get("NAME");
         int length_var_name_list = length_var_name * nvar;
         
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("length_var_name_list=" + length_var_name_list);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "length_var_name_list={0}", length_var_name_list);
 
         byte[] variableNameBytes = new byte[length_var_name_list];
 
@@ -926,7 +923,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     offset_end), "ISO-8859-1");
             String varName = getNullStrippedString(vari);
             dataTable.getDataVariables().get(i).setName(varName);
-            dbgLog.fine(i + "-th name=[" + varName + "]");
+            dbgLog.log(Level.FINE, "{0}-th name=[{1}]", new Object[]{i, varName});
             offset_start = offset_end;
         }
     }
@@ -939,7 +936,7 @@ public class DTAFileReader extends TabularDataFileReader{
          * -- L.A. 4.0
          */
         int length_var_sort_list = VAR_SORT_FIELD_LENGTH * (nvar + 1);
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("length_var_sort_list=" + length_var_sort_list);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "length_var_sort_list={0}", length_var_sort_list);
 
         byte[] varSortList = new byte[length_var_sort_list];
         short[] variableSortList = new short[nvar + 1];
@@ -964,7 +961,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
             offset_start += VAR_SORT_FIELD_LENGTH;
         }
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("variableSortList=" + Arrays.toString(variableSortList));
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "variableSortList={0}", Arrays.toString(variableSortList));
 
     }
 
@@ -975,7 +972,7 @@ public class DTAFileReader extends TabularDataFileReader{
     private void decodeDescriptorVariableFormat(BufferedInputStream stream, int nvar) throws IOException {
         int length_var_format = constantTable.get("FORMAT");
         int length_var_format_list = length_var_format * nvar;
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("length_var_format_list=" + length_var_format_list);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "length_var_format_list={0}", length_var_format_list);
 
         byte[] variableFormatList = new byte[length_var_format_list];
 
@@ -991,7 +988,7 @@ public class DTAFileReader extends TabularDataFileReader{
             String vari = new String(Arrays.copyOfRange(variableFormatList, offset_start,
                     offset_end), "ISO-8859-1");
             String variableFormat = getNullStrippedString(vari);
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th format=[" + variableFormat + "]");
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "{0}-th format=[{1}]", new Object[]{i, variableFormat});
                         
             String variableFormatKey = null;
             if (variableFormat.startsWith("%t")) {
@@ -999,7 +996,7 @@ public class DTAFileReader extends TabularDataFileReader{
             } else {
                 variableFormatKey = variableFormat.substring(0, 2);
             }
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + " th variableFormatKey=" + variableFormatKey);
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "{0} th variableFormatKey={1}", new Object[]{i, variableFormatKey});
 
             /* 
              * Now, let's check if this format is a known time or date format. 
@@ -1022,8 +1019,7 @@ public class DTAFileReader extends TabularDataFileReader{
                 //dataTable.getDataVariables().get(i).setFormatSchemaName(variableFormat);
                 // TODO: make sure we do save the real format (as .setFormat() somewhere else!)
                 dataTable.getDataVariables().get(i).setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
-                if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "th var: category=" +
-                        DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
+                if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "{0}th var: category={1}", new Object[]{i, DATE_TIME_FORMAT_TABLE.get(variableFormatKey)});
                 dataTable.getDataVariables().get(i).setTypeCharacter();
                 dataTable.getDataVariables().get(i).setIntervalDiscrete();
             } 
@@ -1040,7 +1036,7 @@ public class DTAFileReader extends TabularDataFileReader{
         
         int length_label_name = constantTable.get("NAME");
         int length_label_name_list = length_label_name * nvar;
-        dbgLog.info("length_label_name=" + length_label_name_list);
+        dbgLog.log(Level.INFO, "length_label_name={0}", length_label_name_list);
 
         byte[] labelNameList = new byte[length_label_name_list];
         String[] labelNames = new String[nvar];
@@ -1057,10 +1053,10 @@ public class DTAFileReader extends TabularDataFileReader{
             String vari = new String(Arrays.copyOfRange(labelNameList, offset_start,
                     offset_end), "ISO-8859-1");
             labelNames[i] = getNullStrippedString(vari);
-            dbgLog.fine(i + "-th label=[" + labelNames[i] + "]");
+            dbgLog.log(Level.FINE, "{0}-th label=[{1}]", new Object[]{i, labelNames[i]});
             offset_start = offset_end;
         }
-        dbgLog.info("labelNames=\n" + StringUtils.join(labelNames, ",\n") + "\n");
+        dbgLog.log(Level.INFO, "labelNames=\n{0}\n", StringUtils.join(labelNames, ",\n"));
 
         for (int i = 0; i < nvar; i++) {
             if ((labelNames[i] != null) && (!labelNames[i].equals(""))) {
@@ -1086,7 +1082,7 @@ public class DTAFileReader extends TabularDataFileReader{
         int length_var_label_list = length_var_label * nvar;
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("length_label_name=" + length_var_label_list);
+            dbgLog.log(Level.FINE, "length_label_name={0}", length_var_label_list);
         }
 
         byte[] variableLabelBytes = new byte[length_var_label_list];
@@ -1104,7 +1100,7 @@ public class DTAFileReader extends TabularDataFileReader{
             
             String variableLabelParsed = getNullStrippedString(vari);
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine(i + "-th label=[" + variableLabelParsed + "]");
+                dbgLog.log(Level.FINE, "{0}-th label=[{1}]", new Object[]{i, variableLabelParsed});
             }
             offset_start = offset_end;
 
@@ -1136,7 +1132,7 @@ public class DTAFileReader extends TabularDataFileReader{
         // length is specified by the previous short/int field]
         
         int int_type_expansion_field = constantTable.get("EXPANSION");
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("int_type_expansion_field="+int_type_expansion_field);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "int_type_expansion_field={0}", int_type_expansion_field);
         while(true){
             byte[] firstByte = new byte[1];
             byte[] lengthBytes = new byte[int_type_expansion_field];
@@ -1161,8 +1157,8 @@ public class DTAFileReader extends TabularDataFileReader{
                 field_length = bb_field_length.getInt();
             }
             
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("field_length="+field_length);
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("firstByte[0]="+firstByte[0]);
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "field_length={0}", field_length);
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.log(Level.FINE, "firstByte[0]={0}", firstByte[0]);
             if ((field_length + (int)firstByte[0]) == 0){
                 // reached the end of this field
                 break;
@@ -1219,10 +1215,10 @@ public class DTAFileReader extends TabularDataFileReader{
                 + length_label_name;
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("value_label_table_length=" + value_label_table_length);
+            dbgLog.log(Level.FINE, "value_label_table_length={0}", value_label_table_length);
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("length_value_label_header=" + length_value_label_header);
+            dbgLog.log(Level.FINE, "length_value_label_header={0}", length_value_label_header);
         }
 
         int length_lable_name_field = 8;
@@ -1250,7 +1246,7 @@ public class DTAFileReader extends TabularDataFileReader{
         
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("\n\n" + i + "th value-label table header");
+                dbgLog.log(Level.FINE, "\n\n{0}th value-label table header", i);
             }
 
             byte[] valueLabelHeader = new byte[length_value_label_header];
@@ -1274,7 +1270,7 @@ public class DTAFileReader extends TabularDataFileReader{
             int no_value_label_pairs = bb_value_label_pairs.getShort();
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("no_value_label_pairs=" + no_value_label_pairs);
+                dbgLog.log(Level.FINE, "no_value_label_pairs={0}", no_value_label_pairs);
             }
 
             // 1.2 labelName
@@ -1285,16 +1281,16 @@ public class DTAFileReader extends TabularDataFileReader{
                     "ISO-8859-1");
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("rawLabelName(length)=" + rawLabelName.length());
+                dbgLog.log(Level.FINE, "rawLabelName(length)={0}", rawLabelName.length());
             }
             String labelName = rawLabelName.substring(0, rawLabelName.indexOf(0));
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("label name = " + labelName + "\n");
+                dbgLog.log(Level.FINE, "label name = {0}\n", labelName);
             }
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine(i + "-th value-label table");
+                dbgLog.log(Level.FINE, "{0}-th value-label table", i);
             }
             // Part 2: reading the value-label table
             // the length of the value-label table is: 2*m + 8*m = 10*m
@@ -1302,7 +1298,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     + length_lable_name_field) * no_value_label_pairs;
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("length_value_label_table=" + length_value_label_table);
+                dbgLog.log(Level.FINE, "length_value_label_table={0}", length_value_label_table);
             }
 
             byte[] valueLabelTable_i = new byte[length_value_label_table];
@@ -1330,12 +1326,12 @@ public class DTAFileReader extends TabularDataFileReader{
             }
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("value_list=" + Arrays.toString(valueList) + "\n");
+                dbgLog.log(Level.FINE, "value_list={0}\n", Arrays.toString(valueList));
             }
 
             // 2-2. 8-byte chars that store label data (m units of labels)
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("current offset_value=" + offset_value);
+                dbgLog.log(Level.FINE, "current offset_value={0}", offset_value);
             }
 
             int offset_start = offset_value;
@@ -1365,7 +1361,7 @@ public class DTAFileReader extends TabularDataFileReader{
             
             for (int j = 0; j < no_value_label_pairs; j++) {
                 if (dbgLog.isLoggable(Level.FINE)) {
-                    dbgLog.fine(j + "-th pair:" + valueList[j] + "[" + labelList[j] + "]");
+                    dbgLog.log(Level.FINE, "{0}-th pair:{1}[{2}]", new Object[]{j, valueList[j], labelList[j]});
                 }
                 
                 // TODO: do we need any null/empty string checks here? -- L.A. 4.0
@@ -1376,7 +1372,7 @@ public class DTAFileReader extends TabularDataFileReader{
             if (stream.available() == 0) {
                 // reached the end of the file
                 if (dbgLog.isLoggable(Level.FINE)) {
-                    dbgLog.fine("reached the end of file at " + i + "th value-label Table.");
+                    dbgLog.log(Level.FINE, "reached the end of file at {0}th value-label Table.", i);
                 }
                 break;
             }
@@ -1429,10 +1425,10 @@ public class DTAFileReader extends TabularDataFileReader{
                 + VALUE_LABEL_HEADER_PADDING_LENGTH;
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("value_label_table_length=" + value_label_table_length);
+            dbgLog.log(Level.FINE, "value_label_table_length={0}", value_label_table_length);
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("length_value_label_header=" + length_value_label_header);
+            dbgLog.log(Level.FINE, "length_value_label_header={0}", length_value_label_header);
         }
         /*
          Seg  field         byte    type
@@ -1463,7 +1459,7 @@ public class DTAFileReader extends TabularDataFileReader{
         
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("\n\n" + i + "th value-label table header");
+                dbgLog.log(Level.FINE, "\n\n{0}th value-label table header", i);
             }
 
             byte[] valueLabelHeader = new byte[length_value_label_header];
@@ -1486,8 +1482,7 @@ public class DTAFileReader extends TabularDataFileReader{
             int length_value_label_table = bb_value_label_header.getInt();
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("length of this value-label table="
-                        + length_value_label_table);
+                dbgLog.log(Level.FINE, "length of this value-label table={0}", length_value_label_table);
             }
 
             // 1.2 labelName
@@ -1499,11 +1494,11 @@ public class DTAFileReader extends TabularDataFileReader{
             String labelName = getNullStrippedString(rawLabelName);
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("label name = " + labelName + "\n");
+                dbgLog.log(Level.FINE, "label name = {0}\n", labelName);
             }
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine(i + "-th value-label table");
+                dbgLog.log(Level.FINE, "{0}-th value-label table", i);
             }
             // Part 2: reading the value-label table
             byte[] valueLabelTable_i = new byte[length_value_label_table];
@@ -1527,7 +1522,7 @@ public class DTAFileReader extends TabularDataFileReader{
             valueLabelTable_offset += value_label_table_length;
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine("no_value_label_pairs=" + no_value_label_pairs);
+                dbgLog.log(Level.FINE, "no_value_label_pairs={0}", no_value_label_pairs);
             }
 
                 // 2-2. 4-byte-integer: length of the label section (m bytes)
@@ -1561,7 +1556,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     dbgLog.fine("label offset: byte reversed");
                 }
                 label_offsets[j] = bb_label_offset.getInt();
-                dbgLog.fine("label offset [" + j + "]: " + label_offsets[j]);
+                dbgLog.log(Level.FINE, "label offset [{0}]: {1}", new Object[]{j, label_offsets[j]});
 
                 byte_offset += value_label_table_length;
 
@@ -1628,7 +1623,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
             for (int l = 0; l < no_value_label_pairs; l++) {
                 if (dbgLog.isLoggable(Level.FINE)) {
-                    dbgLog.fine(l + "-th pair:" + valueList[l] + "[" + labelList[l] + "]");
+                    dbgLog.log(Level.FINE, "{0}-th pair:{1}[{2}]", new Object[]{l, valueList[l], labelList[l]});
                 }
 
                 // TODO: do we need any null/empty string checks here? -- L.A. 4.0
@@ -1637,7 +1632,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
             if (stream.available() == 0) {
                 // reached the end of the file
-                dbgLog.fine("reached the end of the file at " + i + "th value-label Table");
+                dbgLog.log(Level.FINE, "reached the end of the file at {0}th value-label Table", i);
                 break;
             }
 
@@ -1689,17 +1684,17 @@ public class DTAFileReader extends TabularDataFileReader{
         int nobs = dataTable.getCaseQuantity().intValue();
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("data dimensions[observations x variables] = (" + nobs + "x" + nvar + ")");
+            dbgLog.log(Level.FINE, "data dimensions[observations x variables] = ({0}x{1})", new Object[]{nobs, nvar});
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("bytes per row=" + bytes_per_row + " bytes");
+            dbgLog.log(Level.FINE, "bytes per row={0} bytes", bytes_per_row);
         }
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("variableTypes=" + Arrays.deepToString(variableTypes));
+            dbgLog.log(Level.FINE, "variableTypes={0}", Arrays.deepToString(variableTypes));
         }
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("StringLengthTable=" + StringLengthTable);
+            dbgLog.log(Level.FINE, "StringLengthTable={0}", StringLengthTable);
         }
 
         // create a File object to save the tab-delimited data file
@@ -1766,13 +1761,11 @@ public class DTAFileReader extends TabularDataFileReader{
                         byte byte_datum = dataRowBytes[byte_offset];
 
                         if (dbgLog.isLoggable(Level.FINER)) {
-                            dbgLog.finer(i + "-th row " + columnCounter
-                                    + "=th column byte =" + byte_datum);
+                            dbgLog.log(Level.FINER, "{0}-th row {1}=th column byte ={2}", new Object[]{i, columnCounter, byte_datum});
                         }
                         if (byte_datum >= BYTE_MISSING_VALUE) {
                             if (dbgLog.isLoggable(Level.FINER)) {
-                                dbgLog.finer(i + "-th row " + columnCounter
-                                        + "=th column byte MV=" + byte_datum);
+                                dbgLog.log(Level.FINER, "{0}-th row {1}=th column byte MV={2}", new Object[]{i, columnCounter, byte_datum});
                             }
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                         } else {
@@ -1793,13 +1786,11 @@ public class DTAFileReader extends TabularDataFileReader{
                         short short_datum = int_buffer.getShort();
 
                         if (dbgLog.isLoggable(Level.FINER)) {
-                            dbgLog.finer(i + "-th row " + columnCounter
-                                    + "=th column stata int =" + short_datum);
+                            dbgLog.log(Level.FINER, "{0}-th row {1}=th column stata int ={2}", new Object[]{i, columnCounter, short_datum});
                         }
                         if (short_datum >= INT_MISSIG_VALUE) {
                             if (dbgLog.isLoggable(Level.FINER)) {
-                                dbgLog.finer(i + "-th row " + columnCounter
-                                        + "=th column stata long missing value=" + short_datum);
+                                dbgLog.log(Level.FINER, "{0}-th row {1}=th column stata long missing value={2}", new Object[]{i, columnCounter, short_datum});
                             }
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                         } else {
@@ -1808,7 +1799,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
                                 DecodedDateTime ddt = decodeDateTimeData("short", variableFormat, Short.toString(short_datum));
                                 if (dbgLog.isLoggable(Level.FINER)) {
-                                    dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                                    dbgLog.log(Level.FINER, "{0}-th row , decodedDateTime {1}, format={2}", new Object[]{i, ddt.decodedDateTime, ddt.format});
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
                                 //dateFormat[columnCounter][i] = ddt.format;
@@ -1847,7 +1838,7 @@ public class DTAFileReader extends TabularDataFileReader{
                             if (isDateTimeDatum) {
                                 DecodedDateTime ddt = decodeDateTimeData("int", variableFormat, Integer.toString(int_datum));
                                 if (dbgLog.isLoggable(Level.FINER)) {
-                                    dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                                    dbgLog.log(Level.FINER, "{0}-th row , decodedDateTime {1}, format={2}", new Object[]{i, ddt.decodedDateTime, ddt.format});
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
                                 dataTable.getDataVariables().get(columnCounter).setFormat(ddt.format);
@@ -1870,13 +1861,11 @@ public class DTAFileReader extends TabularDataFileReader{
                         float float_datum = float_buffer.getFloat();
 
                         if (dbgLog.isLoggable(Level.FINER)) {
-                            dbgLog.finer(i + "-th row " + columnCounter
-                                    + "=th column float =" + float_datum);
+                            dbgLog.log(Level.FINER, "{0}-th row {1}=th column float ={2}", new Object[]{i, columnCounter, float_datum});
                         }
                         if (FLOAT_MISSING_VALUE_SET.contains(float_datum)) {
                             if (dbgLog.isLoggable(Level.FINER)) {
-                                dbgLog.finer(i + "-th row " + columnCounter
-                                        + "=th column float missing value=" + float_datum);
+                                dbgLog.log(Level.FINER, "{0}-th row {1}=th column float missing value={2}", new Object[]{i, columnCounter, float_datum});
                             }
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
 
@@ -1885,7 +1874,7 @@ public class DTAFileReader extends TabularDataFileReader{
                             if (isDateTimeDatum) {
                                 DecodedDateTime ddt = decodeDateTimeData("float", variableFormat, doubleNumberFormatter.format(float_datum));
                                 if (dbgLog.isLoggable(Level.FINER)) {
-                                    dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                                    dbgLog.log(Level.FINER, "{0}-th row , decodedDateTime {1}, format={2}", new Object[]{i, ddt.decodedDateTime, ddt.format});
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
                                 dataTable.getDataVariables().get(columnCounter).setFormat(ddt.format);
@@ -1913,8 +1902,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
                         if (DOUBLE_MISSING_VALUE_SET.contains(double_datum)) {
                             if (dbgLog.isLoggable(Level.FINER)) {
-                                dbgLog.finer(i + "-th row " + columnCounter
-                                        + "=th column double missing value=" + double_datum);
+                                dbgLog.log(Level.FINER, "{0}-th row {1}=th column double missing value={2}", new Object[]{i, columnCounter, double_datum});
                             }
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                         } else {
@@ -1922,7 +1910,7 @@ public class DTAFileReader extends TabularDataFileReader{
                             if (isDateTimeDatum) {
                                 DecodedDateTime ddt = decodeDateTimeData("double", variableFormat, doubleNumberFormatter.format(double_datum));
                                 if (dbgLog.isLoggable(Level.FINER)) {
-                                    dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                                    dbgLog.log(Level.FINER, "{0}-th row , decodedDateTime {1}, format={2}", new Object[]{i, ddt.decodedDateTime, ddt.format});
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
                                 dataTable.getDataVariables().get(columnCounter).setFormat(ddt.format);
@@ -1945,13 +1933,11 @@ public class DTAFileReader extends TabularDataFileReader{
                         // it just needs to be verified. -- L.A. Jul. 2014)
                         String string_datum = getNullStrippedString(raw_datum);
                         if (dbgLog.isLoggable(Level.FINER)) {
-                            dbgLog.finer(i + "-th row " + columnCounter
-                                    + "=th column string =" + string_datum);
+                            dbgLog.log(Level.FINER, "{0}-th row {1}=th column string ={2}", new Object[]{i, columnCounter, string_datum});
                         }
                         if (string_datum.equals("")) {
                             if (dbgLog.isLoggable(Level.FINER)) {
-                                dbgLog.finer(i + "-th row " + columnCounter
-                                        + "=th column string missing value=" + string_datum);
+                                dbgLog.log(Level.FINER, "{0}-th row {1}=th column string missing value={2}", new Object[]{i, columnCounter, string_datum});
                             }
                             // TODO: 
                             /* Is this really a missing value case? 
@@ -2006,7 +1992,7 @@ public class DTAFileReader extends TabularDataFileReader{
         pwout.close();
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("variableTypes:\n" + Arrays.deepToString(variableTypes));
+            dbgLog.log(Level.FINE, "variableTypes:\n{0}", Arrays.deepToString(variableTypes));
         }
 
         dbgLog.fine("DTA Ingest: decodeData(): end.");
@@ -2021,8 +2007,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
     private DecodedDateTime decodeDateTimeData(String storageType, String FormatType, String rawDatum) throws IOException {
 
-        if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("(storageType, FormatType, rawDatum)=("+
-        storageType +", " +FormatType +", " +rawDatum+")");
+        if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "(storageType, FormatType, rawDatum)=({0}, {1}, {2})", new Object[]{storageType, FormatType, rawDatum});
         /*
          *         Historical note:
                    pseudofunctions,  td(), tw(), tm(), tq(), and th()
@@ -2042,15 +2027,15 @@ public class DTAFileReader extends TabularDataFileReader{
             milliSeconds = Long.parseLong(rawDatum)+ STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result="+decodedDateTime+", format = "+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "tc: result={0}, format = {1}", new Object[]{decodedDateTime, format});
             
         } else if (FormatType.matches("^%t?d.*")){
             milliSeconds = Long.parseLong(rawDatum)*SECONDS_PER_YEAR + STATA_BIAS_TO_EPOCH;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("milliSeconds="+milliSeconds);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "milliSeconds={0}", milliSeconds);
             
             decodedDateTime = sdf_ymd.format(new Date(milliSeconds));
             format = sdf_ymd.toPattern();
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("td:"+decodedDateTime+", format = "+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "td:{0}, format = {1}", new Object[]{decodedDateTime, format});
 
         } else if (FormatType.matches("^%t?w.*")){
 
@@ -2105,11 +2090,11 @@ public class DTAFileReader extends TabularDataFileReader{
             month = "-"+twoDigitFormatter.format(monthdata).toString()+"-01";
             long year  = 1960L + years;
             String monthYear = Long.valueOf(year).toString() + month;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": monthYear="+monthYear);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "rawDatum={0}: monthYear={1}", new Object[]{rawDatum, monthYear});
             
             decodedDateTime = monthYear;
             format = "yyyy-MM-dd";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tm:"+decodedDateTime+", format:"+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "tm:{0}, format:{1}", new Object[]{decodedDateTime, format});
 
         } else if (FormatType.matches("^%t?q.*")){
             // quater
@@ -2143,11 +2128,11 @@ public class DTAFileReader extends TabularDataFileReader{
 
             long year  = 1960L + years;
             String quaterYear = Long.valueOf(year).toString() + quater;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": quaterYear="+quaterYear);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "rawDatum={0}: quaterYear={1}", new Object[]{rawDatum, quaterYear});
 
             decodedDateTime = quaterYear;
             format = "yyyy-MM-dd";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tq:"+decodedDateTime+", format:"+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "tq:{0}, format:{1}", new Object[]{decodedDateTime, format});
 
         } else if (FormatType.matches("^%t?h.*")){
             // half year
@@ -2176,17 +2161,17 @@ public class DTAFileReader extends TabularDataFileReader{
             }
             long year  = 1960L + years;
             String halfYear = Long.valueOf(year).toString() + half;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": halfYear="+halfYear);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "rawDatum={0}: halfYear={1}", new Object[]{rawDatum, halfYear});
             
             decodedDateTime = halfYear;
             format = "yyyy-MM-dd";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("th:"+decodedDateTime+", format:"+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "th:{0}, format:{1}", new Object[]{decodedDateTime, format});
             
         } else if (FormatType.matches("^%t?y.*")){
             // year type's origin is 0 AD
             decodedDateTime = rawDatum;
             format = "yyyy";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("th:"+decodedDateTime);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.log(Level.FINER, "th:{0}", decodedDateTime);
         } else {
             decodedDateTime = rawDatum;
             format=null;

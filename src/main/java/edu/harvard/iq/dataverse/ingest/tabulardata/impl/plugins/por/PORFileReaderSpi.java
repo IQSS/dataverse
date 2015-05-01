@@ -129,7 +129,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 1-char case
             pos1 = baseBias + i;
             buff.position(pos1);
-            dbgLog.finer("\tposition(1)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(1)={0}", buff.position());
             int j = 6 * i;
             nlch[j] = buff.get();
 
@@ -142,7 +142,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 2-char case
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
-            dbgLog.finer("\tposition(2)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(2)={0}", buff.position());
 
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
@@ -150,14 +150,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 3-char case
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
-            dbgLog.finer("\tposition(3)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(3)={0}", buff.position());
 
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
-            dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
-            dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j], nlch[j + 1], nlch[j + 2]});
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j + 3], nlch[j + 4], nlch[j + 5]});
 
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
@@ -194,8 +194,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
         buff.get(pormark, 0, 8);
         String pormarks = new String(pormark);
 
-        dbgLog.fine("pormark[hex: 53 50 53 53 50 4F 52 54 == SPSSPORT] =>" +
-                new String(Hex.encodeHex(pormark)) + "<-");
+        dbgLog.log(Level.FINE, "pormark[hex: 53 50 53 53 50 4F 52 54 == SPSSPORT] =>{0}<-", new String(Hex.encodeHex(pormark)));
 
         if (pormarks.equals(POR_MARK)) {
             dbgLog.fine("this file is spss-por type");
@@ -267,7 +266,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 1-char case
             pos1 = baseBias + i;
             buff.position(pos1);
-            dbgLog.finer("\tposition(1)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(1)={0}", buff.position());
             int j = 6 * i;
             nlch[j] = buff.get();
 
@@ -280,7 +279,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 2-char case
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
-            dbgLog.finer("\tposition(2)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(2)={0}", buff.position());
             
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
@@ -288,14 +287,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 3-char case
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
-            dbgLog.finer("\tposition(3)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(3)={0}", buff.position());
             
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
-            dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
-            dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j], nlch[j + 1], nlch[j + 2]});
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j + 3], nlch[j + 4], nlch[j + 5]});
             
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
@@ -333,8 +332,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
         String pormarks = new String(pormark);
 
         //dbgLog.fine("pormark =>" + pormarks + "<-");
-        dbgLog.fine("pormark[hex: 53 50 53 53 50 4F 52 54 == SPSSPORT] =>" +
-                new String(Hex.encodeHex(pormark)) + "<-");
+        dbgLog.log(Level.FINE, "pormark[hex: 53 50 53 53 50 4F 52 54 == SPSSPORT] =>{0}<-", new String(Hex.encodeHex(pormark)));
 
         if (pormarks.equals(POR_MARK)) {
             dbgLog.fine("this file is spss-por type");
@@ -401,7 +399,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 1-char case
             pos1 = baseBias + i;
             buff.position(pos1);
-            dbgLog.finer("\tposition(1)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(1)={0}", buff.position());
             int j = 6 * i;
             nlch[j] = buff.get();
 
@@ -414,7 +412,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 2-char case
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
-            dbgLog.finer("\tposition(2)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(2)={0}", buff.position());
             
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
@@ -422,14 +420,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
             // 3-char case
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
-            dbgLog.finer("\tposition(3)=" + buff.position());
+            dbgLog.log(Level.FINER, "\tposition(3)={0}", buff.position());
             
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
-            dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
-            dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j], nlch[j + 1], nlch[j + 2]});
+            dbgLog.log(Level.FINER, "{0}-th iteration position ={1}\t{2}\t{3}", new Object[]{i, nlch[j + 3], nlch[j + 4], nlch[j + 5]});
             
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
@@ -466,7 +464,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
         buff.get(pormark, 0, 8);
         String pormarks = new String(pormark);
 
-        dbgLog.fine("pormark =>" + pormarks + "<-");
+        dbgLog.log(Level.FINE, "pormark =>{0}<-", pormarks);
         
 
         if (pormarks.equals(POR_MARK)) {

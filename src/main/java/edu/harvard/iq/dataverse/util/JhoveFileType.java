@@ -23,6 +23,7 @@ import edu.harvard.hul.ois.jhove.*;
 import java.io.*;
 import java.util.*;
 import static java.lang.System.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -73,7 +74,7 @@ public class JhoveFileType implements java.io.Serializable  {
             String saxClass = JhoveBase.getSaxClassFromProperties();
 
             String configFile = getJhoveConfigFile();
-            logger.fine("config file: "+configFile);
+            logger.log(Level.FINE, "config file: {0}", configFile);
 
         
             // create an instance of jhove engine
@@ -98,14 +99,14 @@ public class JhoveFileType implements java.io.Serializable  {
             
             if (DEBUG) {
                 if (module != null) {
-                    logger.fine("Module "+module.getName());
+                    logger.log(Level.FINE, "Module {0}", module.getName());
                 } else {
                     logger.fine("module is null!");
                 }
             }
             
             if (DEBUG){
-                logger.fine("file name="+file.getAbsolutePath());
+                logger.log(Level.FINE, "file name={0}", file.getAbsolutePath());
             }
             
             // get a RepInfo instance
@@ -118,7 +119,7 @@ public class JhoveFileType implements java.io.Serializable  {
                         info = null; 
                     } else {
                         if (DEBUG) {
-                            logger.fine("mime type (module specified above)="+info.getMimeType()); 
+                            logger.log(Level.FINE, "mime type (module specified above)={0}", info.getMimeType()); 
                         }
                     }
                 } else {
@@ -135,7 +136,7 @@ public class JhoveFileType implements java.io.Serializable  {
 
                         if (mod.hasFeature("edu.harvard.hul.ois.jhove.canValidate")) {
                             if (DEBUG) {
-                                logger.fine("Trying to apply Jhove module "+mod.getName());
+                                logger.log(Level.FINE, "Trying to apply Jhove module {0}", mod.getName());
                             }
                             try {
                                 if (!jb.processFile(jhoveApp, mod, false, file, infc)) {

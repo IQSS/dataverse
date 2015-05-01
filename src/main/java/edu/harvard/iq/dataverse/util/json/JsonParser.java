@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -499,7 +500,7 @@ public class JsonParser {
                 }
                 // Only add value to the list if it is not a duplicate 
                 if (strValue.equals("Other")) {
-                    logger.fine("vals = " + vals + ", contains: " + vals.contains(cvv));
+                    logger.log(Level.FINE, "vals = {0}, contains: {1}", new Object[]{vals, vals.contains(cvv)});
                 }
                 if (!vals.contains(cvv)) {
                     vals.add(cvv);

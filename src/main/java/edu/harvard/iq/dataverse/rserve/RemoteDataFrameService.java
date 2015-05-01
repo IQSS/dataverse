@@ -117,8 +117,8 @@ public class RemoteDataFrameService {
         tempFileNameOut = RSERVE_TMP_DIR + "/" + RWRKSP_FILE_PREFIX
                 + "." + PID + TMP_RDATA_FILE_EXT;
 
-        dbgLog.fine("tempFileNameIn=" + tempFileNameIn);
-        dbgLog.fine("tempFileNameOut=" + tempFileNameOut);
+        dbgLog.log(Level.FINE, "tempFileNameIn={0}", tempFileNameIn);
+        dbgLog.log(Level.FINE, "tempFileNameOut={0}", tempFileNameOut);
 
     }
 
@@ -131,7 +131,7 @@ public class RemoteDataFrameService {
 
             String checkWrkDir = "if (!file_test('-d', '" + RSERVE_TMP_DIR + "')) {dir.create('" + RSERVE_TMP_DIR + "', showWarnings = FALSE, recursive = TRUE);}";
 
-            dbgLog.fine("w permission=" + checkWrkDir);
+            dbgLog.log(Level.FINE, "w permission={0}", checkWrkDir);
             c.voidEval(checkWrkDir);
 
         } catch (RserveException rse) {
@@ -168,18 +168,18 @@ public class RemoteDataFrameService {
             // -- L.A. 4.0 alpha 1
             
             // Set up an Rserve connection
-            dbgLog.fine("sro dump:\n"+ToStringBuilder.reflectionToString(sro, ToStringStyle.MULTI_LINE_STYLE));
+            dbgLog.log(Level.FINE, "sro dump:\n{0}", ToStringBuilder.reflectionToString(sro, ToStringStyle.MULTI_LINE_STYLE));
             
-            dbgLog.fine("RSERVE_USER="+RSERVE_USER+"[default=rserve]");
-            dbgLog.fine("RSERVE_PASSWORD="+RSERVE_PWD+"[default=rserve]");
-            dbgLog.fine("RSERVE_PORT="+RSERVE_PORT+"[default=6311]");
-            dbgLog.fine("RSERVE_HOST="+RSERVE_HOST);
+            dbgLog.log(Level.FINE, "RSERVE_USER={0}[default=rserve]", RSERVE_USER);
+            dbgLog.log(Level.FINE, "RSERVE_PASSWORD={0}[default=rserve]", RSERVE_PWD);
+            dbgLog.log(Level.FINE, "RSERVE_PORT={0}[default=6311]", RSERVE_PORT);
+            dbgLog.log(Level.FINE, "RSERVE_HOST={0}", RSERVE_HOST);
 
 
             RConnection c = new RConnection(RSERVE_HOST, RSERVE_PORT);
 
             c.login(RSERVE_USER, RSERVE_PWD);
-            dbgLog.fine(">" + c.eval("R.version$version.string").asString() + "<");
+            dbgLog.log(Level.FINE, ">{0}<", c.eval("R.version$version.string").asString());
             
             // check working directories
             // This needs to be done *before* we try to create any files 
@@ -205,7 +205,7 @@ public class RemoteDataFrameService {
             inb.close();
             
             // Rserve code starts here
-            dbgLog.fine("wrkdir="+RSERVE_TMP_DIR);
+            dbgLog.log(Level.FINE, "wrkdir={0}", RSERVE_TMP_DIR);
             
             String RversionLine = "R.Version()$version.string";
             String Rversion = c.eval(RversionLine).asString();
@@ -217,11 +217,10 @@ public class RemoteDataFrameService {
             c.voidEval(rscript);
             
             
-            dbgLog.fine("raw variable type="+sro.getVariableTypes());
+            dbgLog.log(Level.FINE, "raw variable type={0}", sro.getVariableTypes());
             c.assign("vartyp", new REXPInteger(sro.getVariableTypes()));
             String [] tmpt = c.eval("vartyp").asStrings();
-            dbgLog.fine("vartyp length="+ tmpt.length + "\t " +
-                StringUtils.join(tmpt,","));
+            dbgLog.log(Level.FINE, "vartyp length={0}\t {1}", new Object[]{tmpt.length, StringUtils.join(tmpt,",")});
         
             // variable *formats* - not to be confused with variable *types*!
             // these specify extra, optional format specifications - for example, 
@@ -229,7 +228,7 @@ public class RemoteDataFrameService {
             
             Map<String, String> tmpFmt = sro.getVariableFormats();
             
-            dbgLog.fine("tmpFmt="+tmpFmt);
+            dbgLog.log(Level.FINE, "tmpFmt={0}", tmpFmt);
             
             // TODO: figure out what's going on in this awful code fragment below!!
             // -- L.A. 4.0 alpha 1
@@ -258,7 +257,7 @@ public class RemoteDataFrameService {
             if (sro.hasUnsafeVariableNames){
                 // create  list
                 jvnames =  sro.safeVarNames;
-                dbgLog.fine("renamed="+StringUtils.join(jvnames,","));
+                dbgLog.log(Level.FINE, "renamed={0}", StringUtils.join(jvnames,","));
             } else {
                 jvnames = jvnamesRaw;
             }
@@ -268,7 +267,7 @@ public class RemoteDataFrameService {
             // confirm:
             
             String [] tmpjvnames = c.eval("vnames").asStrings();
-            dbgLog.fine("vnames:"+ StringUtils.join(tmpjvnames, ","));
+            dbgLog.log(Level.FINE, "vnames:{0}", StringUtils.join(tmpjvnames, ","));
             
             
             // Parameters for the read.dataverseTabData method executed on the R side:
@@ -279,13 +278,13 @@ public class RemoteDataFrameService {
             // varFormat -> Arrays.deepToString((new REXPString(getValueSet(tmpFmt, tmpFmt.keySet().toArray(new String[tmpFmt.keySet().size()])))).asStrings())
 
             dbgLog.fine("read.dataverseTabData parameters:");
-            dbgLog.fine("col.names = " + Arrays.deepToString((new REXPString(jvnames)).asStrings()));
-            dbgLog.fine("colClassesx = " + Arrays.deepToString((new REXPInteger(sro.getVariableTypes())).asStrings()));
-            dbgLog.fine("varFormat = " + Arrays.deepToString((new REXPString(getValueSet(tmpFmt, tmpFmt.keySet().toArray(new String[tmpFmt.keySet().size()])))).asStrings()));
+            dbgLog.log(Level.FINE, "col.names = {0}", Arrays.deepToString((new REXPString(jvnames)).asStrings()));
+            dbgLog.log(Level.FINE, "colClassesx = {0}", Arrays.deepToString((new REXPInteger(sro.getVariableTypes())).asStrings()));
+            dbgLog.log(Level.FINE, "varFormat = {0}", Arrays.deepToString((new REXPString(getValueSet(tmpFmt, tmpFmt.keySet().toArray(new String[tmpFmt.keySet().size()])))).asStrings()));
             
             String readtableline = "x<-read.dataverseTabData(file='"+tempFileNameIn+
                 "', col.names=vnames, colClassesx=vartyp, varFormat=varFmt )";
-            dbgLog.fine("readtable="+readtableline);
+            dbgLog.log(Level.FINE, "readtable={0}", readtableline);
 
             c.voidEval(readtableline);
         
@@ -324,7 +323,7 @@ public class RemoteDataFrameService {
             
             // Confirm:
             String [] vlbl = c.eval("attr(x, 'var.labels')").asStrings();
-            dbgLog.fine("varlabels="+StringUtils.join(vlbl, ","));
+            dbgLog.log(Level.FINE, "varlabels={0}", StringUtils.join(vlbl, ","));
         
             // create the VALTABLE
             String vtFirstLine = "VALTABLE<-list()";
@@ -352,12 +351,12 @@ public class RemoteDataFrameService {
                     String[] tmpk = (String[]) vlkeys.toArray(new String[vlkeys.size()]);
                     String[] tmpv = getValueSet(tmp, tmpk);
 
-                    dbgLog.fine("tmp:k=" + StringUtils.join(tmpk, ","));
-                    dbgLog.fine("tmp:v=" + StringUtils.join(tmpv, ","));
+                    dbgLog.log(Level.FINE, "tmp:k={0}", StringUtils.join(tmpk, ","));
+                    dbgLog.log(Level.FINE, "tmp:v={0}", StringUtils.join(tmpv, ","));
 
                     // index number starts from 1(not 0):
                     int indx = j + 1;
-                    dbgLog.fine("index=" + indx);
+                    dbgLog.log(Level.FINE, "index={0}", indx);
 
                     if (tmpv.length > 0) {
 
@@ -369,18 +368,18 @@ public class RemoteDataFrameService {
                         c.voidEval(namesValueLine);
 
                         String sbvl = "VALTABLE[['" + Integer.toString(indx) + "']]" + "<- as.list(tmpv)";
-                        dbgLog.fine("frag=" + sbvl);
+                        dbgLog.log(Level.FINE, "frag={0}", sbvl);
                         c.voidEval(sbvl);
 
                         // confirmation test for j-th variable name
                         REXP jl = c.parseAndEval(sbvl);
-                        dbgLog.fine("jl(" + j + ") = " + jl);
+                        dbgLog.log(Level.FINE, "jl({0}) = {1}", new Object[]{j, jl});
                     }
                 }
             }
 
             // debug: confirmation test for value-table
-            dbgLog.fine("length of vl=" + c.eval("length(VALTABLE)").asInteger());
+            dbgLog.log(Level.FINE, "length of vl={0}", c.eval("length(VALTABLE)").asInteger());
             String attrValTableLine = "attr(x, 'val.table')<-VALTABLE";
             c.voidEval(attrValTableLine);
             
@@ -416,17 +415,17 @@ public class RemoteDataFrameService {
             
             int wbFileSize = getFileSize(c,dsnprfx);
             
-            dbgLog.fine("wbFileSize="+wbFileSize);
+            dbgLog.log(Level.FINE, "wbFileSize={0}", wbFileSize);
             
             // save workspace:
             
             String saveWS = "save('x', file='"+ tempFileNameOut +"')";
-            dbgLog.fine("save workspace command: "+saveWS);
+            dbgLog.log(Level.FINE, "save workspace command: {0}", saveWS);
             c.voidEval(saveWS);
             
             // Transfer the saved dataframe workspace back to the DVN:
                         
-            dbgLog.fine("wrkspFileName="+tempFileNameOut);
+            dbgLog.log(Level.FINE, "wrkspFileName={0}", tempFileNameOut);
             
             int wrkspflSize = getFileSize(c,tempFileNameOut);
             
@@ -435,7 +434,7 @@ public class RemoteDataFrameService {
             result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
             
             if (localDataFrameFile != null){
-                dbgLog.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());
+                dbgLog.log(Level.FINE, "data frame file name: {0}", localDataFrameFile.getAbsolutePath());
             } else {
                 dbgLog.fine("data frame file is null!");
             }
@@ -443,7 +442,7 @@ public class RemoteDataFrameService {
             
             result.put("Rversion", Rversion);
             
-            dbgLog.fine("result object (before closing the Rserve):\n"+result);
+            dbgLog.log(Level.FINE, "result object (before closing the Rserve):\n{0}", result);
             
             String deleteLine = "file.remove('"+tempFileNameIn+"')";
             c.eval(deleteLine);
@@ -534,7 +533,7 @@ public class RemoteDataFrameService {
             os.close(); 
             
             // Rserve code starts here
-            dbgLog.fine("wrkdir="+RSERVE_TMP_DIR);
+            dbgLog.log(Level.FINE, "wrkdir={0}", RSERVE_TMP_DIR);
             
             // Locate the R code and run it on the temp file we've just 
             // created: 
@@ -542,17 +541,17 @@ public class RemoteDataFrameService {
             String loadlib = "library(rjson)";
             c.voidEval(loadlib);
             String rscript = readLocalResource(DATAVERSE_R_PREPROCESSING);
-            dbgLog.fine("preprocessing R code: "+rscript.substring(0,64));
+            dbgLog.log(Level.FINE, "preprocessing R code: {0}", rscript.substring(0,64));
             c.voidEval(rscript);
             
             String runPreprocessing = "json<-preprocess(filename=\""+ tempFileNameIn +"\")";
-            dbgLog.fine("data preprocessing command: "+runPreprocessing);
+            dbgLog.log(Level.FINE, "data preprocessing command: {0}", runPreprocessing);
             c.voidEval(runPreprocessing);
                         
             // Save the output in a temp file: 
             
             String saveResult = "write(json, file='"+ tempFileNameOut +"')";
-            dbgLog.fine("data preprocessing save command: "+saveResult);
+            dbgLog.log(Level.FINE, "data preprocessing save command: {0}", saveResult);
             c.voidEval(saveResult);
             
             // Finally, transfer the saved file back on the application side:
@@ -622,7 +621,7 @@ public class RemoteDataFrameService {
             
             int wbFileSize = getFileSize(c,dsnprfx);
             
-            dbgLog.fine("wbFileSize="+wbFileSize);
+            dbgLog.log(Level.FINE, "wbFileSize={0}", wbFileSize);
             
         } catch (RserveException rse) {
             rse.printStackTrace();
@@ -700,7 +699,7 @@ public class RemoteDataFrameService {
     
    
     public int getFileSize(RConnection c, String targetFilename){
-        dbgLog.fine("targetFilename="+targetFilename);
+        dbgLog.log(Level.FINE, "targetFilename={0}", targetFilename);
         int fileSize = 0;
         try {
             String fileSizeLine = "round(file.info('"+targetFilename+"')$size)";

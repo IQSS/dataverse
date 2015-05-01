@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -49,7 +50,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                      * @todo update permissionModificationTime here.
                      */
                     IndexResponse indexDefinitionPountResult = indexDefinitionPoint(merged.getOwner());
-                    logger.info("aRole getId was not null. Indexing result: " + indexDefinitionPountResult);
+                    logger.log(Level.INFO, "aRole getId was not null. Indexing result: {0}", indexDefinitionPountResult);
                     return merged;
 		}
 	}
@@ -65,7 +66,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
              * @todo update permissionModificationTime here.
              */
             IndexResponse indexDefinitionPountResult = indexDefinitionPoint(assignment.getDefinitionPoint());
-            logger.fine("output from indexing operations: " + indexDefinitionPountResult);
+            logger.log(Level.FINE, "output from indexing operations: {0}", indexDefinitionPountResult);
                 return assignment;
 	}
 
@@ -132,7 +133,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
              * @todo update permissionModificationTime here.
              */
             IndexResponse indexDefinitionPointResult = indexDefinitionPoint(ra.getDefinitionPoint());
-            logger.fine("indexing operation results: " + indexDefinitionPointResult);
+            logger.log(Level.FINE, "indexing operation results: {0}", indexDefinitionPointResult);
 	}
 	
 	public RoleAssignmentSet roleAssignments( User user, Dataverse dv ) {

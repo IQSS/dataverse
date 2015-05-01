@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -171,7 +172,7 @@ public class WorldMapTokenServiceBean {
         }
         WorldMapToken wmToken = this.findByName(worldmapTokenParam);
         if (wmToken==null){
-            logger.warning("WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
+            logger.log(Level.WARNING, "WorldMapToken not found for ''{0}''.  Permission denied.", worldmapTokenParam);
             return null;
         }
         if (wmToken.hasTokenExpired()){
@@ -231,7 +232,7 @@ public class WorldMapTokenServiceBean {
     
     */
     public boolean isWorldMapTokenAuthorizedForDataFileDownload(String worldmapTokenParam, DataFile df){
-        logger.info("-- isWorldMapTokenAuthorizedForDataFileworldmapTokenParam " + worldmapTokenParam);
+        logger.log(Level.INFO, "-- isWorldMapTokenAuthorizedForDataFileworldmapTokenParam {0}", worldmapTokenParam);
         
         if ((worldmapTokenParam == null)||(df == null)){
             logger.info("nope: worldmapTokenParam or data file is null");

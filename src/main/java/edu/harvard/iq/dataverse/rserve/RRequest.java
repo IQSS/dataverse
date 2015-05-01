@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.rserve;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.rosuda.REngine.Rserve.*;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -92,7 +93,7 @@ public class RRequest {
       mRC.login(mUser, mPassword);
       
       // SERVER VERSION
-      LOG.fine("SERVER VERSION = " + mRC.getServerVersion());
+      LOG.log(Level.FINE, "SERVER VERSION = {0}", mRC.getServerVersion());
       
       // Output everything is cool message
       LOG.fine(String.format("RRequest: Successful Connection to RSERVE on %s %d", mHost, mPort));

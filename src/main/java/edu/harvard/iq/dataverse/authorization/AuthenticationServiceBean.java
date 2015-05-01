@@ -438,16 +438,16 @@ public class AuthenticationServiceBean {
     // TODO should probably be moved to the Shib provider - this is a classic Shib-specific
     //      use case. This class should deal with general autnetications.
     public AuthenticatedUser convertBuiltInToShib(AuthenticatedUser builtInUserToConvert, String shibProviderId, UserIdentifier newUserIdentifierInLookupTable) {
-        logger.info("converting user " + builtInUserToConvert.getId() + " from builtin to shib");
+        logger.log(Level.INFO, "converting user {0} from builtin to shib", builtInUserToConvert.getId());
         String builtInUserIdentifier = builtInUserToConvert.getIdentifier();
-        logger.info("builtin user identifier: " + builtInUserIdentifier);
+        logger.log(Level.INFO, "builtin user identifier: {0}", builtInUserIdentifier);
         TypedQuery<AuthenticatedUserLookup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup AS o WHERE o.authenticatedUser = :auid", AuthenticatedUserLookup.class);
         typedQuery.setParameter("auid", builtInUserToConvert);
         AuthenticatedUserLookup authuserLookup;
         try {
             authuserLookup = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.info("exception caught: " + ex);
+            logger.log(Level.INFO, "exception caught: {0}", ex);
             return null;
         }
         if (authuserLookup == null) {
@@ -455,10 +455,10 @@ public class AuthenticationServiceBean {
         }
 
         String oldProviderId = authuserLookup.getAuthenticationProviderId();
-        logger.info("we expect this to be 'builtin': " + oldProviderId);
+        logger.log(Level.INFO, "we expect this to be ''builtin'': {0}", oldProviderId);
         authuserLookup.setAuthenticationProviderId(shibProviderId);
         String oldUserLookupIdentifier = authuserLookup.getPersistentUserId();
-        logger.info("this should be 'pete' or whatever the old builtin username was: " + oldUserLookupIdentifier);
+        logger.log(Level.INFO, "this should be ''pete'' or whatever the old builtin username was: {0}", oldUserLookupIdentifier);
         String perUserShibIdentifier = newUserIdentifierInLookupTable.getLookupStringPerAuthProvider();
         authuserLookup.setPersistentUserId(perUserShibIdentifier);
         /**
@@ -472,7 +472,7 @@ public class AuthenticationServiceBean {
         if (builtin != null) {
             em.remove(builtin);
         } else {
-            logger.info("Couldn't delete builtin user because could find it based on username " + builtinUsername);
+            logger.log(Level.INFO, "Couldn''t delete builtin user because could find it based on username {0}", builtinUsername);
         }
         AuthenticatedUser shibUser = lookupUser(shibProviderId, perUserShibIdentifier);
         if (shibUser != null) {

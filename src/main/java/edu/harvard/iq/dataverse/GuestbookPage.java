@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -293,7 +294,7 @@ public class GuestbookPage implements java.io.Serializable {
             }
             //
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + error.toString()));
-            logger.severe("dataverse " + dataverse.getName());
+            logger.log(Level.SEVERE, "dataverse {0}", dataverse.getName());
             logger.severe("Ejb exception");
             logger.severe(error.toString());
             return null;

@@ -95,7 +95,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         try{
             this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
         }catch (Exception e){
-            logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
+            logger.log(Level.WARNING, "Error trying to retrieve unread notification count for user.{0}", e.getMessage());
             this.unreadNotificationCount = new Long("0");
         }
         return this.unreadNotificationCount;
@@ -177,7 +177,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
         }
 
-        logger.log(Level.INFO, "Sending user to = " + redirectPage);
+        logger.log(Level.INFO, "Sending user to = {0}", redirectPage);
         return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
     }
 

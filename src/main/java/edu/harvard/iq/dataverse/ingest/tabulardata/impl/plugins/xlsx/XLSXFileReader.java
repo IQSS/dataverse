@@ -211,8 +211,8 @@ public class XLSXFileReader extends TabularDataFileReader {
         ingesteddata.setTabDelimitedFile(tabFileDestination);
         ingesteddata.setDataTable(dataTable);
         
-        dbglog.fine("Produced temporary file "+ingesteddata.getTabDelimitedFile().getAbsolutePath());
-        dbglog.fine("Found "+dataTable.getVarQuantity()+" variables, "+dataTable.getCaseQuantity()+" observations.");
+        dbglog.log(Level.FINE, "Produced temporary file {0}", ingesteddata.getTabDelimitedFile().getAbsolutePath());
+        dbglog.log(Level.FINE, "Found {0} variables, {1} observations.", new Object[]{dataTable.getVarQuantity(), dataTable.getCaseQuantity()});
         String varNames = null;
         for (int i = 0; i<dataTable.getVarQuantity().intValue(); i++) {
             if (varNames == null) {
@@ -221,7 +221,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                 varNames = varNames + ", " + dataTable.getDataVariables().get(i).getName();
             }
         }
-        dbglog.fine("Variable names: "+varNames);
+        dbglog.log(Level.FINE, "Variable names: {0}", varNames);
 
         
         return ingesteddata;
@@ -301,7 +301,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         
         public void startElement(String uri, String localName, String name,
                 Attributes attributes) throws SAXException {
-            dbglog.fine("entering startElement ("+name+")");
+            dbglog.log(Level.FINE, "entering startElement ({0})", name);
 
             // first raw encountered: 
             if (variableHeader && name.equals("row")) {
@@ -319,7 +319,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                 } 
                 int colIndex = spansAttribute.indexOf(':');
                 if (colIndex < 1 || (colIndex == spansAttribute.length() - 1)) {
-                    dbglog.warning("Invalid spans attribute in the first row element: "+spansAttribute+"!");
+                    dbglog.log(Level.WARNING, "Invalid spans attribute in the first row element: {0}!", spansAttribute);
                 }
                 try {
                     varCount = new Long(spansAttribute.substring(colIndex + 1, spansAttribute.length()));
@@ -331,7 +331,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                     throw new SAXException("Could not establish column count, or invalid column count encountered.");
                 }
                 
-                dbglog.info("Established variable (column) count: "+varCount);
+                dbglog.log(Level.INFO, "Established variable (column) count: {0}", varCount);
                 
                 dataTable.setVarQuantity(varCount);
                 variableNames = new String[varCount.intValue()];
@@ -348,7 +348,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                     dbglog.warning("Null r attribute in a cell element!");
                 } 
                 if (!indexAttribute.matches(".*[0-9]")) {
-                    dbglog.warning("Invalid index (r) attribute in a cell element: "+indexAttribute+"!"); 
+                    dbglog.log(Level.WARNING, "Invalid index (r) attribute in a cell element: {0}!", indexAttribute); 
                 }
                 columnCount = getColumnCount(indexAttribute.replaceFirst("[0-9].*$", ""));
                 
@@ -372,7 +372,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             if (columnTag.length() == 1 && columnTag.matches("[A-Z]")) {
                 count = columnTag.charAt(0) - 'A';
             } else {
-                dbglog.warning("Unsupported column index tag: "+columnTag);
+                dbglog.log(Level.WARNING, "Unsupported column index tag: {0}", columnTag);
             }
             
             return count;
@@ -391,7 +391,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         
         public void endElement(String uri, String localName, String name)
                 throws SAXException {
-            dbglog.fine("entering endElement ("+name+")");
+            dbglog.log(Level.FINE, "entering endElement ({0})", name);
             // Process the content cache as required.
             // Do it now, as characters() may be called more than once
             if (nextIsString) {
@@ -404,13 +404,13 @@ public class XLSXFileReader extends TabularDataFileReader {
             // Output after we've seen the string contents
             if (name.equals("v")) {
                 if (variableHeader) {
-                    dbglog.fine("variable header mode; cell "+columnCount+", cell contents: "+cellContents);
+                    dbglog.log(Level.FINE, "variable header mode; cell {0}, cell contents: {1}", new Object[]{columnCount, cellContents});
                     
                     //variableNames.add(cellContents);
                     variableNames[columnCount] = cellContents;
                 } else {
                     dataRow[columnCount] = cellContents;
-                    dbglog.fine("data row mode; cell "+columnCount+", cell contents: "+cellContents);
+                    dbglog.log(Level.FINE, "data row mode; cell {0}, cell contents: {1}", new Object[]{columnCount, cellContents});
                 }
             }
             

@@ -107,8 +107,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             stream.reset();
         }
 
-       dbgLog.info("hex dump: 1st 4bytes =>" +
-                new String(Hex.encodeHex(b)) + "<-");
+       dbgLog.log(Level.INFO, "hex dump: 1st 4bytes =>{0}<-", new String(Hex.encodeHex(b)));
 
         if (b[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
@@ -117,14 +116,12 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             return false;
         } else if (!DTAFileReaderSpi.stataReleaseNumber.containsKey(b[0])) {
-            dbgLog.fine("1st byte (" + b[0]+
+            dbgLog.log(Level.FINE,"1st byte ({0}"+
                     ") is not within the ingestable range [rel. 3-10]:"+
-                    "this file is NOT stata-dta type");
+                    "this file is NOT stata-dta type", b[0]);
             return false;
         } else {
-            dbgLog.fine("this file is stata-dta type: " +
-                    DTAFileReaderSpi.stataReleaseNumber.get(b[0]) +
-                    "(No in byte=" + b[0] + ")");
+            dbgLog.log(Level.FINE, "this file is stata-dta type: {0}(No in byte={1})", new Object[]{DTAFileReaderSpi.stataReleaseNumber.get(b[0]), b[0]});
             return true;
         }
     }
@@ -152,8 +149,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             stream.reset();
         }
         
-       dbgLog.info("hex dump: 1st 4bytes =>" +
-                new String(Hex.encodeHex(b)) + "<-");
+       dbgLog.log(Level.INFO, "hex dump: 1st 4bytes =>{0}<-", new String(Hex.encodeHex(b)));
 
         if (b[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
@@ -162,14 +158,12 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             return false;
         } else if (!DTAFileReaderSpi.stataReleaseNumber.containsKey(b[0])) {
-            dbgLog.fine("1st byte (" + b[0]+
+            dbgLog.log(Level.FINE,"1st byte ({0}"+
                     ") is not within the ingestable range [rel. 3-10]:"+
-                    "this file is NOT stata-dta type");
+                    "this file is NOT stata-dta type", b[0]);
             return false;
         } else {
-            dbgLog.fine("this file is stata-dta type: " +
-                    DTAFileReaderSpi.stataReleaseNumber.get(b[0]) +
-                    "(No in HEX=" + b[0] + ")");
+            dbgLog.log(Level.FINE, "this file is stata-dta type: {0}(No in HEX={1})", new Object[]{DTAFileReaderSpi.stataReleaseNumber.get(b[0]), b[0]});
             return true;
         }
 
@@ -200,8 +194,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
         byte[] hdr4 = new byte[4];
         buff.get(hdr4, 0, 4);
 
-       dbgLog.fine("hex dump: 1st 4bytes =>" +
-                new String(Hex.encodeHex(hdr4)) + "<-");
+       dbgLog.log(Level.FINE, "hex dump: 1st 4bytes =>{0}<-", new String(Hex.encodeHex(hdr4)));
 
         if (hdr4[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
@@ -210,13 +203,10 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             return false;
         } else if (!stataReleaseNumber.containsKey(hdr4[0])) {
-            dbgLog.fine("1st byte (" + hdr4[0] +
-            ") is not within the ingestable range [rel. 3-10]: this file is NOT stata-dta type");
+            dbgLog.log(Level.FINE, "1st byte ({0}) is not within the ingestable range [rel. 3-10]: this file is NOT stata-dta type", hdr4[0]);
             return false;
         } else {
-            dbgLog.fine("this file is stata-dta type: " +
-                    stataReleaseNumber.get(hdr4[0]) +
-                    "(No in HEX=" + hdr4[0] + ")");
+            dbgLog.log(Level.FINE, "this file is stata-dta type: {0}(No in HEX={1})", new Object[]{stataReleaseNumber.get(hdr4[0]), hdr4[0]});
             return true;
         }
     }

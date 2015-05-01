@@ -26,7 +26,7 @@ public class AuthFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        logger.info(AuthFilter.class.getName() + "initialized. filterConfig.getServletContext().getServerInfo(): " + filterConfig.getServletContext().getServerInfo());
+        logger.log(Level.INFO, "{0}initialized. filterConfig.getServletContext().getServerInfo(): {1}", new Object[]{AuthFilter.class.getName(), filterConfig.getServletContext().getServerInfo()});
 
         try {
             String glassfishLogsDirectory = "logs";

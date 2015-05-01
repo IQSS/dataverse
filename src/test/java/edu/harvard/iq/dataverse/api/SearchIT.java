@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -220,7 +221,7 @@ public class SearchIT {
         builder.add("lastName", lastName);
         builder.add(emailKey, getEmailFromUserName(username));
         String userAsJson = builder.build().toString();
-        logger.fine("User to create: " + userAsJson);
+        logger.log(Level.FINE, "User to create: {0}", userAsJson);
         return userAsJson;
     }
 

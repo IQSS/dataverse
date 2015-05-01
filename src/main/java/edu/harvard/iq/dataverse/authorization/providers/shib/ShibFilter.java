@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -44,7 +45,7 @@ public class ShibFilter implements Filter {
          */
         String headerValue = "https://" + httpServletRequest.getServerName() + ":" + SystemConfig.APACHE_HTTPS_PORT;
         httpServletResponse.setHeader(headerKey, headerValue);
-        logger.fine("Setting header \"" + headerKey + "\" to \"" + headerValue + "\" for " + httpServletRequest.getRequestURI());
+        logger.log(Level.FINE, "Setting header \"{0}\" to \"{1}\" for {2}", new Object[]{headerKey, headerValue, httpServletRequest.getRequestURI()});
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 

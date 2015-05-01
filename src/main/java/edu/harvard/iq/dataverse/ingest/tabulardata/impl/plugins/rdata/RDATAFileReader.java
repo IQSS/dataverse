@@ -232,7 +232,7 @@ public class RDATAFileReader extends TabularDataFileReader {
 
                     while (iter.hasNext()) {
                         key = (String) iter.next();
-                        LOG.fine("directoryNames list key: "+key);
+                        LOG.log(Level.FINE, "directoryNames list key: {0}", key);
                     }
                 }
             }
@@ -521,7 +521,7 @@ public class RDATAFileReader extends TabularDataFileReader {
         
             int lineCount = csvFileReader.read(localBufferedReader, dataTable, tabFileWriter);
 
-            LOG.fine("RDATAFileReader: successfully read "+lineCount+" lines of tab-delimited data.");
+            LOG.log(Level.FINE, "RDATAFileReader: successfully read {0} lines of tab-delimited data.", lineCount);
         
             dataTable.setUnf("UNF:pending");
         
@@ -747,12 +747,12 @@ public class RDATAFileReader extends TabularDataFileReader {
                 variableLevels = !columnMeta.at("levels").isNull() ? columnMeta.at("levels").asStrings() : new String[0];
                 variableFormat = !columnMeta.at("format").isNull() ? columnMeta.at("format").asString() : null;
 
-                LOG.fine("variable type: " + variableType);
-                LOG.fine("variable type name: " + variableTypeName);
-                LOG.fine("variable format: " + variableFormat);
+                LOG.log(Level.FINE, "variable type: {0}", variableType);
+                LOG.log(Level.FINE, "variable type name: {0}", variableTypeName);
+                LOG.log(Level.FINE, "variable format: {0}", variableFormat);
 
                 for (int i = 0; i < variableLevels.length; i++) {
-                    LOG.fine("variable level: " + variableLevels[i]);
+                    LOG.log(Level.FINE, "variable level: {0}", variableLevels[i]);
                 }
 
                 //dataTable.getDataVariables().get(k).setFormatSchema("RDATA");

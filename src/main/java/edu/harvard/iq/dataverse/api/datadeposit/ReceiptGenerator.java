@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.abdera.i18n.iri.IRI;
 import org.swordapp.server.DepositReceipt;
@@ -11,7 +12,7 @@ public class ReceiptGenerator {
     private static final Logger logger = Logger.getLogger(ReceiptGenerator.class.getCanonicalName());
 
     DepositReceipt createDatasetReceipt(String baseUrl, Dataset dataset) {
-        logger.fine("baseUrl was: " + baseUrl);
+        logger.log(Level.FINE, "baseUrl was: {0}", baseUrl);
         DepositReceipt depositReceipt = new DepositReceipt();
         String globalId = dataset.getGlobalId();
         String editIri = baseUrl + "/edit/study/" + globalId;
@@ -30,7 +31,7 @@ public class ReceiptGenerator {
     }
 
     DepositReceipt createDataverseReceipt(String baseUrl, Dataverse dataverse) {
-        logger.fine("baseUrl was: " + baseUrl);
+        logger.log(Level.FINE, "baseUrl was: {0}", baseUrl);
         DepositReceipt depositReceipt = new DepositReceipt();
         String globalId = dataverse.getAlias();
         String collectionIri = baseUrl + "/collection/dataverse/" + globalId;

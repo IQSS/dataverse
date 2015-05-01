@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ShibUtil {
@@ -68,15 +69,15 @@ public class ShibUtil {
     private static String getSingleName(String name) {
         String[] parts = name.split(";");
         if (parts.length != 1) {
-            logger.fine("parts (before sorting): " + Arrays.asList(parts));
+            logger.log(Level.FINE, "parts (before sorting): {0}", Arrays.asList(parts));
             // predictable order (sorted alphabetically)
             Arrays.sort(parts);
-            logger.fine("parts (after sorting): " + Arrays.asList(parts));
+            logger.log(Level.FINE, "parts (after sorting): {0}", Arrays.asList(parts));
             try {
                 String first = parts[0];
                 name = first;
             } catch (ArrayIndexOutOfBoundsException ex) {
-                logger.info("Couldn't find first part of " + name);
+                logger.log(Level.INFO, "Couldn''t find first part of {0}", name);
             }
         }
         return name;

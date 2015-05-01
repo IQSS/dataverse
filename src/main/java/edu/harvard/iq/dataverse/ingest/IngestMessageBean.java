@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
@@ -100,7 +101,7 @@ public class IngestMessageBean implements MessageListener {
                     // -- L.A. Aug. 13 2014; 
                     logger.info("Unknown exception occurred  during ingest (supressed stack trace); re-setting ingest status.");
                     if (datafile_id != null) {
-                        logger.info("looking up datafile for id " + datafile_id);
+                        logger.log(Level.INFO, "looking up datafile for id {0}", datafile_id);
                         DataFile datafile = datafileService.find(datafile_id);
                         if (datafile != null) {
                             datafile.SetIngestProblem();
@@ -115,12 +116,12 @@ public class IngestMessageBean implements MessageListener {
                             datafile.setIngestReport(errorReport);
                             datafile.setDataTables(null);
 
-                            logger.info("trying to save datafile " + datafile_id);
+                            logger.log(Level.INFO, "trying to save datafile {0}", datafile_id);
                             datafile = datafileService.save(datafile);
 
                             Dataset dataset = datafile.getOwner();
                             if (dataset != null && dataset.getId() != null) {
-                                logger.info("attempting to remove dataset lock for dataset " + dataset.getId());
+                                logger.log(Level.INFO, "attempting to remove dataset lock for dataset {0}", dataset.getId());
                                 datasetService.removeDatasetLock(dataset.getId());
                                 ingestService.sendFailNotification(dataset.getId());
                             }
