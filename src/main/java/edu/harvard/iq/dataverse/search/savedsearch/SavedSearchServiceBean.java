@@ -82,7 +82,7 @@ public class SavedSearchServiceBean {
         try {
             persisted = em.merge(toPersist);
         } catch (Exception ex) {
-            System.out.println("exeption: " + ex);
+            logger.severe("exeption: " + ex);
         }
         return persisted;
     }
@@ -91,12 +91,12 @@ public class SavedSearchServiceBean {
         SavedSearch doomed = find(id);
         boolean wasDeleted = false;
         if (doomed != null) {
-            System.out.println("deleting saved search id " + doomed.getId());
+            logger.info("deleting saved search id " + doomed.getId());
             em.remove(doomed);
             em.flush();
             wasDeleted = true;
         } else {
-            System.out.println("problem deleting saved search id " + id);
+            logger.warning("problem deleting saved search id " + id);
         }
         return wasDeleted;
     }

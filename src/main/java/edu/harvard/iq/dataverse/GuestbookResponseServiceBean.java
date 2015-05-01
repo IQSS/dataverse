@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -31,6 +32,7 @@ public class GuestbookResponseServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
 
     public List<GuestbookResponse> findAll() {
         return em.createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc").getResultList();
@@ -217,7 +219,7 @@ public class GuestbookResponseServiceBean {
                 + " gbr.firstname, gbr.lastname, gbr.email, gbr.institution, "
                 + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, s.id, gbr.downloadType  "
                 + "order by s.id, gbr.id";
-        System.out.print(gbrDownloadQueryString);
+        logger.fine(gbrDownloadQueryString);
         Query query = em.createNativeQuery(gbrDownloadQueryString);
 
         return convertIntegerToLong(query.getResultList(), 14);

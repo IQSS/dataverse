@@ -36,15 +36,16 @@ import javax.persistence.PersistenceContext;
 @Named
 public class ManageGuestbooksPage implements java.io.Serializable {
 
+    private static final Logger logger = Logger.getLogger(ManageGuestbooksPage.class.getCanonicalName());
     @EJB
     DataverseServiceBean dvService;
 
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
-    
+
     @EJB
     GuestbookServiceBean guestbookService;
-    
+
     @EJB
     EjbDataverseEngine engineService;
 
@@ -96,9 +97,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
     }
 
-
-
-
     public void deleteGuestbook() {
         if (selectedGuestbook != null) {
             guestbooks.remove(selectedGuestbook);
@@ -111,14 +109,14 @@ public class ManageGuestbooksPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
-            System.out.print("Selected Guestbook is null");
+            logger.warning("Selected Guestbook is null");
         }
     }
 
     public void saveDataverse(ActionEvent e) {
         saveDataverse("", "");
     }
-    
+
     public String enableGuestbook(Guestbook selectedGuestbook) {
         selectedGuestbook.setEnabled(true);
         saveDataverse("dataset.manageGuestbooks.message.enableSuccess", "dataset.manageGuestbooks.message.enableFailure");
@@ -130,7 +128,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         saveDataverse("dataset.manageGuestbooks.message.disableSuccess", "dataset.manageGuestbooks.message.disableFailure");
         return "";
     }
-    
 
     private void saveDataverse(String successMessage, String failureMessage) {
         if (successMessage.isEmpty()) {
@@ -138,7 +135,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         if (failureMessage.isEmpty()) {
             failureMessage = "dataset.manageGuestbooks.message.editFailure";
-        }     
+        }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser(), null));
             JsfHelper.addSuccessMessage(JH.localize(successMessage));
@@ -155,8 +152,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void setGuestbooks(List<Guestbook> guestbooks) {
         this.guestbooks = guestbooks;
     }
-    
-
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -194,8 +189,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         this.selectedGuestbook = selectedGuestbook;
         guestbookPage.setGuestbook(selectedGuestbook);
     }
-
-
 
     public String updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {

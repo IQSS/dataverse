@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -34,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 @Named("GuestbookPage")
 public class GuestbookPage implements java.io.Serializable {
 
+    private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
     @EJB
     GuestbookServiceBean guestbookService;
 
@@ -42,10 +44,10 @@ public class GuestbookPage implements java.io.Serializable {
 
     @EJB
     EjbDataverseEngine commandEngine;
-    
+
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
-    
+
     @Inject
     DataverseSession session;
 
@@ -60,9 +62,9 @@ public class GuestbookPage implements java.io.Serializable {
     private Long ownerId;
     private Long guestbookId;
     private Long sourceId;
-    
+
     private Guestbook sourceGB;
-    
+
     public Long getSourceId() {
         return sourceId;
     }
@@ -136,7 +138,7 @@ public class GuestbookPage implements java.io.Serializable {
             // create mode for a new template
             dataverse = dataverseService.find(ownerId);
             guestbook = new Guestbook();
-            guestbook.setDataverse(dataverse);            
+            guestbook.setDataverse(dataverse);
             guestbook.setCustomQuestions(new ArrayList());
             initCustomQuestion();
         } else if (ownerId != null && sourceId != null && editMode.equals(GuestbookPage.EditMode.CLONE)) {
@@ -158,54 +160,52 @@ public class GuestbookPage implements java.io.Serializable {
         }
     }
 
-    public String removeCustomQuestion(Long index){
+    public String removeCustomQuestion(Long index) {
         guestbook.removeCustomQuestion(index.intValue());
         return "";
     }
-    
-    public List<GuestbookResponse> getGuestbookResponses(){
+
+    public List<GuestbookResponse> getGuestbookResponses() {
         return null;
     }
-    
-    private void initCustomQuestion(){
+
+    private void initCustomQuestion() {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList());
-        toAdd.setGuestbook(guestbook);       
+        toAdd.setGuestbook(guestbook);
         int index = guestbook.getCustomQuestions().size();
-        guestbook.addCustomQuestion(index, toAdd);       
+        guestbook.addCustomQuestion(index, toAdd);
     }
-        
-    public void addCustomQuestion(Integer indexIn){
+
+    public void addCustomQuestion(Integer indexIn) {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList());
-        toAdd.setGuestbook(guestbook);       
+        toAdd.setGuestbook(guestbook);
         guestbook.addCustomQuestion(indexIn, toAdd);
     }
-    
-    public void addCustomQuestionValue(CustomQuestion cq, int index){
+
+    public void addCustomQuestionValue(CustomQuestion cq, int index) {
         CustomQuestionValue toAdd = new CustomQuestionValue();
         toAdd.setValueString("");
         toAdd.setCustomQuestion(cq);
-        cq.addCustomQuestionValue(index, toAdd);    
+        cq.addCustomQuestionValue(index, toAdd);
     }
-    
-    public void removeCustomQuestionValue(CustomQuestion cq, Long index){
+
+    public void removeCustomQuestionValue(CustomQuestion cq, Long index) {
         cq.removeCustomQuestionValue(index.intValue());
     }
-    
+
     public void toggleQuestionType(CustomQuestion questionIn) {
-        if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty() 
-                && questionIn.getQuestionType() !=null && questionIn.getQuestionType().equals("options")){
+        if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty()
+                && questionIn.getQuestionType() != null && questionIn.getQuestionType().equals("options")) {
             questionIn.setCustomQuestionValues(new ArrayList());
             CustomQuestionValue addCQV = new CustomQuestionValue();
             addCQV.setCustomQuestion(questionIn);
             questionIn.getCustomQuestionValues().add(addCQV);
-        } 
+        }
     }
-    
-
 
     public void edit(GuestbookPage.EditMode editMode) {
         this.editMode = editMode;
@@ -239,16 +239,16 @@ public class GuestbookPage implements java.io.Serializable {
                     }
                 }
             }
-            
+
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq != null && cq.getQuestionType().equals("options")) {
-                    if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()){
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving." ));
+                    if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()) {
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving."));
                         return null;
                     }
-                    if (cq.getCustomQuestionValues().size() == 1){
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving." ));
-                        return null; 
+                    if (cq.getCustomQuestionValues().size() == 1) {
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving."));
+                        return null;
                     }
                 }
             }
@@ -256,24 +256,24 @@ public class GuestbookPage implements java.io.Serializable {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 int j = 0;
                 cq.setDisplayOrder(i);
-                if (cq.getCustomQuestionValues() != null &&  !cq.getCustomQuestionValues().isEmpty()){
-                    for (CustomQuestionValue cqv : cq.getCustomQuestionValues()){
+                if (cq.getCustomQuestionValues() != null && !cq.getCustomQuestionValues().isEmpty()) {
+                    for (CustomQuestionValue cqv : cq.getCustomQuestionValues()) {
                         cqv.setDisplayOrder(j);
                         j++;
                     }
                 }
                 i++;
-            }            
+            }
         }
-           
+
         Command<Dataverse> cmd;
         try {
-            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE ) {
+            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE) {
                 guestbook.setCreateTime(new Timestamp(new Date().getTime()));
                 guestbook.setUsageCount(new Long(0));
                 guestbook.setEnabled(true);
                 dataverse.getGuestbooks().add(guestbook);
-                cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser(), null);                
+                cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser(), null);
                 commandEngine.submit(cmd);
                 create = true;
             } else {
@@ -293,18 +293,18 @@ public class GuestbookPage implements java.io.Serializable {
             }
             //
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + error.toString()));
-            System.out.print("dataverse " + dataverse.getName());
-            System.out.print("Ejb exception");
-            System.out.print(error.toString());
+            logger.severe("dataverse " + dataverse.getName());
+            logger.severe("Ejb exception");
+            logger.severe(error.toString());
             return null;
         } catch (CommandException ex) {
-            System.out.print("command exception");
-            System.out.print(ex.toString());
+            logger.severe("command exception");
+            logger.severe(ex.toString());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }
         editMode = null;
-        String msg = (create)? "The guestbook has been created.": "The guestbook has been edited and saved.";
+        String msg = (create) ? "The guestbook has been created." : "The guestbook has been edited and saved.";
         JsfHelper.addFlashMessage(msg);
         return "/manage-guestbooks.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
@@ -314,4 +314,3 @@ public class GuestbookPage implements java.io.Serializable {
     }
 
 }
-
