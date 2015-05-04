@@ -175,7 +175,17 @@ public class IngestServiceBean {
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
     
-    
+   
+    /* 
+        Commenting out the @PostConstruct/init method. 
+        This was going through the datasets on startup and looking for ingests
+        in progress, un-marking the progress status. 
+        This was before we realized that the JMS queue survived glassfish 
+        restarts. 
+        It appears that any purging of the queue will need to be done outside 
+        the application. 
+        -- L.A. May 4 2015
+        
     @PostConstruct
     public void init() {
         logger.info("Initializing the Ingest Service.");
@@ -206,6 +216,7 @@ public class IngestServiceBean {
             logger.log(Level.WARNING, "Error initing the IngestServiceBean: {0}", ex.getMessage());
         }
     }
+    */
     
     @Deprecated
     // All the parts of the app should use the createDataFiles() method instead, 
