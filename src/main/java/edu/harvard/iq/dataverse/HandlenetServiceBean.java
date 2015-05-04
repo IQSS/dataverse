@@ -79,25 +79,14 @@ public class HandlenetServiceBean {
         
         String handle = getDatasetHandle(dataset);
 
-        boolean handleRegistered = true; // isHandleRegistered(handle);
+        boolean handleRegistered = isHandleRegistered(handle);
         
         if (handleRegistered) {
             // Rebuild/Modify an existing handle
             
             logger.info("Re-registering an existing handle id "+handle);
-
-            String authority = dataset.getAuthority();
-            String identifier = dataset.getIdentifier();
             
             String authHandle = getHandleAuthority(dataset);
-            
-            int index = 300;
-
-            byte[] key = null;
-            String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-            key = readKey(adminCredFile);
-            PrivateKey privkey = null;
-            privkey = readPrivKey(key, adminCredFile);
 
             HandleResolver resolver = new HandleResolver();
 
@@ -105,11 +94,9 @@ public class HandlenetServiceBean {
             
             logger.info("New registration URL: "+datasetUrl);
 
+            PublicKeyAuthenticationInfo auth = getAuthInfo(dataset.getAuthority());
+            
             try {
-                PublicKeyAuthenticationInfo auth
-                        = new PublicKeyAuthenticationInfo(authHandle.getBytes("UTF8"),
-                                index,
-                                privkey);
 
                 AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
                         true, true, true, true, true, true,
@@ -139,19 +126,56 @@ public class HandlenetServiceBean {
             }
         } else {
             // Create a new handle from scratch:
-            logger.info("Handle " + handle + " not registered. Skipping (for now)");
-            /*
-             registerHandle(handle);
-             */
+            logger.info("Handle " + handle + " not registered. Registering (creating) from scratch.");
+            registerNewHandle(dataset);
         }
     }
     
-    public void registerHandle( String handle){
-        String authority = handle.substring(0,handle.indexOf("/"));
-        logger.fine("Creating handle "+handle);
-        /* */
-   }
-    /*
+    public void registerNewHandle(Dataset dataset) {
+        String handlePrefix = dataset.getAuthority();
+        String handle = getDatasetHandle(dataset);
+        String datasetUrl = getRegistrationUrl(dataset);
+
+        logger.info("Creating NEW handle " + handle);
+
+        String authHandle = getHandleAuthority(dataset);
+
+        PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
+        HandleResolver resolver = new HandleResolver();
+
+        int index = 300;
+
+        try {
+
+            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), 300,
+                    true, true, true, true, true, true,
+                    true, true, true, true, true, true);
+
+            int timestamp = (int) (System.currentTimeMillis() / 1000);
+
+            HandleValue[] val = {new HandleValue(100, "HS_ADMIN".getBytes("UTF8"),
+                Encoder.encodeAdminRecord(admin),
+                HandleValue.TTL_TYPE_RELATIVE, 86400,
+                timestamp, null, true, true, true, false), new HandleValue(1, "URL".getBytes("UTF8"),
+                datasetUrl.getBytes(),
+                HandleValue.TTL_TYPE_RELATIVE, 86400,
+                timestamp, null, true, true, true, false)};
+
+            CreateHandleRequest req
+                    = new CreateHandleRequest(handle.getBytes("UTF8"), val, auth);
+
+            resolver.traceMessages = true;
+            AbstractResponse response = resolver.processRequest(req);
+            if (response.responseCode == AbstractMessage.RC_SUCCESS) {
+                logger.info("Success! Response: \n" + response);
+            } else {
+                logger.warning("Error response: \n" + response);
+            }
+        } catch (Throwable t) {
+            logger.warning("\nError (caught exception): " + t);
+        }
+    }
+    
     public boolean isHandleRegistered(String handle){
         boolean handleRegistered = false;
         ResolutionRequest req = buildResolutionRequest(handle);
@@ -160,15 +184,46 @@ public class HandlenetServiceBean {
         try {
             response = resolver.processRequest(req);
         } catch (HandleException ex) {
+            logger.info("Caught exception trying to process lookup request");
             ex.printStackTrace();
         }
         if((response!=null && response.responseCode==AbstractMessage.RC_SUCCESS)) {
-            handleRegistered = true;;
+            logger.info("Handle "+handle+" registered.");
+            handleRegistered = true;
         } 
         return handleRegistered;
     }
-    */
     
+    private ResolutionRequest buildResolutionRequest(final String handle) {
+        String handlePrefix = handle.substring(0,handle.indexOf("/"));
+        
+        PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
+        
+        byte[][] types = null;
+        int[] indexes = null;
+        ResolutionRequest req =
+                new ResolutionRequest(Util.encodeString(handle),
+                types, indexes,
+                auth);
+        req.certify = false;
+        req.cacheCertify = true;
+        req.authoritative = false;
+        req.ignoreRestrictedValues = true;
+        return req;
+    }
+    
+    private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
+        byte[] key = null;
+        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
+
+        key = readKey(adminCredFile);        
+        PrivateKey privkey = null;
+        privkey = readPrivKey(key, adminCredFile);
+        String authHandle =  getHandleAuthority(handlePrefix);
+        PublicKeyAuthenticationInfo auth =
+                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), 300, privkey);
+        return auth;
+    }
     private String getRegistrationUrl(Dataset dataset) {
         String siteUrl = getSiteUrl();
         
@@ -237,7 +292,11 @@ public class HandlenetServiceBean {
     }
     
     private String getHandleAuthority(Dataset dataset){
-        return "0.NA/" + dataset.getAuthority();
+        return getHandleAuthority(dataset.getAuthority());
+    }
+    
+    private String getHandleAuthority(String handlePrefix) {
+        return "0.NA/" + handlePrefix;
     }
 }
 
