@@ -86,9 +86,7 @@ public class PasswordResetServiceBean {
                  * @todo It would be a nice touch to show the IP from
                  * which the password reset originated.
                  */
-                + "Please contact us if you did not request this password reset or need further help.\n\n"
-                + "Thank you,\n\n"
-                + "Dataverse Support Team";
+                + "Please contact us if you did not request this password reset or need further help.\n\n";
         try {
             String toAddress = aUser.getEmail();
             String subject = "Dataverse Password Reset Requested";
@@ -242,9 +240,7 @@ public class PasswordResetServiceBean {
 
             String messageBody = "Hi " + user.getDisplayName() + ",\n\n"
                     + "Your Dataverse account password was successfully changed.\n\n"
-                    + "Please contact us if you did not request this password reset or need further help.\n\n"
-                    + "Thank you,\n\n"
-                    + "Dataverse Support Team";
+                    + "Please contact us if you did not request this password reset or need further help.\n\n";
             mailService.sendSystemEmail(toAddress, subject, messageBody);
             return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
         } else {
