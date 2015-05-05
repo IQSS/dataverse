@@ -29,6 +29,11 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+       /**
+        * Domain name specific code for Google Analytics
+        */
+        GoogleAnalyticsCode,
+        
         /**
          * Experimental: Allow non-public search with a key/token using the
          * Search API. See also https://github.com/IQSS/dataverse/issues/1299
