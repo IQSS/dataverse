@@ -99,7 +99,10 @@ to specifically edit any of those parts of your dataset.
 Terms
 =======================
 
-In the Terms tab, which can also be found by clicking on the Edit dropdown button, you can set the Terms for your dataset. More specifically, there you can set a CC0 waiver or create your own custom Terms of Use, edit any Terms of Access you may have (restricted files only) and enable a Guestbook for your dataset. 
+In the Terms tab, which can also be found by clicking on the Edit dropdown button of a Dataset, you can setup how users can use your data 
+once they have downloaded it (CC0 waiver or custom Terms of Use) and how they can access your data if you have files that 
+are restricted (terms of access), and enable a Guestbook for your dataset so that you can track who is using your data and for
+what purposes. 
 
 CC0 Waiver + Dataset Terms of Use 
 ---------------------------------------------------------------
