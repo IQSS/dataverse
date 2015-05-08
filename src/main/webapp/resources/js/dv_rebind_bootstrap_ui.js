@@ -216,6 +216,20 @@ function metricsTabs() {
     $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
 }
 
+function selectText(ele) {
+    try {
+        var div = document.createRange();
+        div.setStartBefore(ele);
+        div.setEndAfter(ele);
+        window.getSelection().addRange(div)
+    } catch (e) {
+        // for internet explorer
+        div = document.selection.createRange();
+        div.moveToElementText(ele);
+        div.select()
+    }
+}
+
 function handleResizeDialog(dialog) {
         var el = $('div[id$="' + dialog + '"]');
         var doc = $('body');
