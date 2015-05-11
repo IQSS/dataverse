@@ -75,8 +75,14 @@ Adding a New Dataset
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Add Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note 1: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
 
+Supported HTML Fields
+------------------------
+
+We currently only support the following HTML tags for any of our textbox meatdata fields (i.e., Description) : <a>, <b>, <blockquote>, 
+<br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
+<strong>, <strike>, <ul>.
 
 Edit Dataset
 ==================
