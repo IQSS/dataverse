@@ -1,10 +1,10 @@
 #!/bin/bash
 . scripts/search/export-keys
-FIRST_FINCH_ID=126
-GET_VERSION_OUTPUT=`curl -s GET http://localhost:8080/api/datasets/$FIRST_FINCH_ID/versions/:draft?key=$FINCHKEY`
+. scripts/search/assumptions
+GET_VERSION_OUTPUT=`curl -s GET http://localhost:8080/api/datasets/$FIRST_FINCH_DATASET_ID/versions/:latest?key=$FINCHKEY`
 echo $GET_VERSION_OUTPUT | jq .data > /tmp/old
 cp /tmp/old /tmp/new
-sed -i -e "s/Darwin's Finches/Darwins Galápagos Finches/" /tmp/new
-EDIT_OUTPUT=`curl -s -H "Content-type:application/json" -X PUT -d @/tmp/new http://localhost:8080/api/datasets/$FIRST_FINCH_ID/versions/:draft?key=$FINCHKEY`
+sed -i -e "s/Darwin's Finches/Darwin's Galápagos Finches/" /tmp/new
+EDIT_OUTPUT=`curl -s -H "Content-type:application/json" -X PUT -d @/tmp/new http://localhost:8080/api/datasets/$FIRST_FINCH_DATASET_ID/versions/:draft?key=$FINCHKEY`
 echo $EDIT_OUTPUT
 echo $EDIT_OUTPUT | jq .
