@@ -36,12 +36,11 @@ Edit Dataverse
 To edit your dataverse, navigate to your dataverse homepage and select the "Edit Dataverse" button, 
 where you will be presented with the following editing options: 
 
-- :ref:`General Information <general-information>` : edit name, host dataverse, alias, email, 
-  description, affilitation, Metadata Elements, and facets for your dataverse.
+- :ref:`General Information <general-information>` : edit name, identifier, category, contact email, affiliation, description, Metadata Elements, and facets for your dataverse.
 - :ref:`Theme + Widgets <theme-widgets>` : upload a logo for your dataverse, add a link to your department or personal website, and select colors for your dataverse in order to brand it. Also, you can get code to add to your website to have your dataverse display on it.
 - :ref:`Permissions <dataverse-permissions>` : give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
 - :ref:`Dataset Templates <dataset-templates>` : these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
-- :ref:`Dataset Guestbooks <dataset-guestbooks>` : 
+- :ref:`Dataset Guestbooks <dataset-guestbooks>` : allows you to collect data about who is downloading the files from your datasets
 - :ref:`Featured Dataverses <featured-dataverses>` : if you have one or more dataverses, you can use this option to show them at the top of your dataverse page to help others easily find interesting or important dataverses
 - **Delete Dataverse**: you are able to delete your dataverse as long as it is not published and does not have any draft datasets 
 
@@ -66,7 +65,11 @@ For Theme, you can decide either to use the customization from the dataverse abo
 There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data. Within the Widgets page, you can copy and paste the code for the widget you would like to have on your website. 
 
 Adding Widgets to an OpenScholar Website
-
+********************************************
+#. Log in to your OpenScholar website
+#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
+#. Click on the Settings Cog and select Layout
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Search Box and the Dataverse Listing widgets. Click on the widget you would like to add (we recommend using both), fill out the form, and then drag it to where you would like it to display in the page. 
 
 
 .. _dataverse-permissions:
@@ -144,7 +147,7 @@ Note: Featured Dataverses can only be used with published dataverses.
 
 Linked Dataverses + Linked Datasets
 ======================================================
-
+Coming soon in 4.0.2!
 
 Publish Your Dataverse
 =================================================================
