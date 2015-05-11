@@ -61,6 +61,13 @@ Compressed Files: tar & zip
 Compressed files in tar and zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as 
 is. If the number of files inside are more than a set limit (1,000), you will get an error message and the file will uploads as is.
 
+Advanced Options
+---------------------------------------------
+There are several advanced options available for certain file types.
+
+- Image files: jpgs, pngs, and tiff files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
+- SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
+
 
 Adding a New Dataset
 ============================
