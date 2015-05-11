@@ -19,6 +19,10 @@ import javax.ejb.EJB;
  */
 public class GlobalId implements java.io.Serializable {
 
+    
+    public static final String DOI_PROTOCOL = "doi";
+    public static final String HDL_PROTOCOL = "hdl";
+    
     @EJB
     SettingsServiceBean settingsService;
 
@@ -71,9 +75,9 @@ public class GlobalId implements java.io.Serializable {
     public URL toURL() {
         URL url = null;
         try {
-            if (protocol.equals("doi")){
+            if (protocol.equals(DOI_PROTOCOL)){
                url = new URL("http://dx.doi.org/" + authority + "/" + identifier); 
-            } else {
+            } else if (protocol.equals(HDL_PROTOCOL)){
                url = new URL("http://hdl.handle.net/" + authority + "/" + identifier);  
             }           
         } catch (MalformedURLException ex) {
@@ -123,29 +127,73 @@ public class GlobalId implements java.io.Serializable {
         // -----------------------------
         // Is this a handle?
         // -----------------------------
-        if ( pieces.length == 2 && protocolPiece.equals("hdl")){
+        if ( pieces.length == 2 && protocolPiece.equals(HDL_PROTOCOL)){
             // example: hdl:1902.1/111012
             
             this.protocol = protocolPiece;  // hdl
-            this.authority = pieces[0];     // 1902.1
-            this.identifier = pieces[1];    // 111012            
+            this.authority = formatIdentifierString(pieces[0]);     // 1902.1
+            this.identifier = formatIdentifierString(pieces[1]);    // 111012            
             return true;
                     
-        }else if (pieces.length == 3 && protocolPiece.equals("doi")){
+        }else if (pieces.length == 3 && protocolPiece.equals(DOI_PROTOCOL)){
             // -----------------------------
             // Is this a DOI?
             // -----------------------------
             // example: doi:10.5072/FK2/BYM3IW
             
             this.protocol = protocolPiece;  // doi
-            this.authority = pieces[0] + doiSeparator + pieces[1]; // "10.5072/FK2"
-            this.identifier = pieces[2]; // "BYM3IW"
+            
+            String doiAuthority = formatIdentifierString(pieces[0]) + doiSeparator + formatIdentifierString(pieces[1]); // "10.5072/FK2"
+            if (this.checkDOIAuthority(doiAuthority)){
+                this.authority = doiAuthority;
+            } else {
+                return false;
+            }
+                        
+            this.identifier = formatIdentifierString(pieces[2]); // "BYM3IW"
             return true;
         }
         
         return false;
     }
 
+    
+    private String formatIdentifierString(String str){
+        
+        if (str == null){
+            return null;
+        }
+        return str.replaceAll("\\s+","").replace(";", "");   // remove whitespace
+        
+        /*
+        < 	(%3C)
+> 	(%3E)
+{ 	(%7B)
+} 	(%7D)
+^ 	(%5E)
+[ 	(%5B)
+] 	(%5D)
+` 	(%60)
+| 	(%7C)
+\ 	(%5C)
++
+        */
+        // http://www.doi.org/doi_handbook/2_Numbering.html
+    }
+    
+    
+    private boolean checkDOIAuthority(String doiAuthority){
+        
+        if (doiAuthority==null){
+            return false;
+        }
+        
+        if (!(doiAuthority.startsWith("10."))){
+            return false;
+        }
+        
+        return true;
+    }
     
     
 }
