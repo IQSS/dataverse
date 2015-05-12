@@ -15,9 +15,9 @@ These guides are for the most recent version of Dataverse (v4.0). For the guides
 
   getting-started/index
   user/index
-  developers/index
   installation/index
   api/index
+  developers/index
 
 How the Guides Are Organized
 =============================
