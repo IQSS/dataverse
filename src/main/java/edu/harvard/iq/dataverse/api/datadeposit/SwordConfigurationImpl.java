@@ -124,19 +124,28 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     @Override
     public int getMaxUploadSize() {
         int unlimited = -1;
-        String maxUploadInBytes = settingsService.getValueForKey(SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes);
+                
+        Integer maxUploadInBytes = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+        if (maxUploadInBytes == null){
+            return unlimited;
+        }
+        
+        return maxUploadInBytes;
+        /*
+        String maxUploadInBytes = settingsService.getValueForKey(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
         if (maxUploadInBytes != null) {
             try {
                 int maxUploadSizeInBytes = Integer.parseInt(maxUploadInBytes);
                 return maxUploadSizeInBytes;
             } catch (NumberFormatException ex) {
-                logger.info("Could not convert " + maxUploadInBytes + " from setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " to int. Setting Data Deposit API max upload size limit to unlimited.");
+                logger.info("Could not convert " + maxUploadInBytes + " from setting " + SettingsServiceBean.Key.MaxFileUploadSizeInBytes + " to int. Setting Data Deposit API max upload size limit to unlimited.");
                 return unlimited;
             }
         } else {
-            logger.fine("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit API max upload size limit to unlimited.");
+            logger.fine("Setting " + SettingsServiceBean.Key.MaxFileUploadSizeInBytes + " is undefined. Setting Data Deposit API max upload size limit to unlimited.");
             return unlimited;
         }
+        */
     }
 
     @Override

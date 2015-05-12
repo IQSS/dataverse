@@ -96,8 +96,8 @@ public class SettingsServiceBean {
         SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
-        /** Key for limiting the number of bytes uploaded via the Data Deposit API. */
-        DataDepositApiMaxUploadInBytes,
+        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
+        MaxFileUploadSizeInBytes,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
@@ -167,6 +167,32 @@ public class SettingsServiceBean {
      */
     public String getValueForKey( Key key ) {
         return get(key.toString());
+    }
+    
+    
+    /**
+     * Attempt to convert the value to an integer
+     *  - Applicable for keys such as MaxFileUploadSizeInBytes
+     * 
+     * @param key
+     * @return 
+     */
+    public Integer getValueForKeyAsInt(Key key){
+        
+        String val = this.getValueForKey(key);
+
+        if (val == null){
+            return null;
+        }
+
+        try {
+            int valAsInt = Integer.parseInt(val);
+            return valAsInt;
+        } catch (NumberFormatException ex) {
+            //logger.info("Could not convert " + key + " from setting " + key.toString() + " to int.");
+            return null;
+        }
+        
     }
     
     /**
