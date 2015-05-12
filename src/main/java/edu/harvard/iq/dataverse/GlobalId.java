@@ -163,7 +163,8 @@ public class GlobalId implements java.io.Serializable {
         if (str == null){
             return null;
         }
-        return str.replaceAll("\\s+","").replace(";", "");   // remove whitespace
+        // remove whitespace, single quotes, and semicolons
+        return str.replaceAll("\\s+|'|;","");  
         
         /*
         < 	(%3C)
