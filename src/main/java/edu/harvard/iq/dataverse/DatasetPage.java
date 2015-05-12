@@ -487,7 +487,6 @@ public class DatasetPage implements java.io.Serializable {
     public String getDropBoxKey() {
         // Site-specific DropBox application registration key is configured 
         // via a JVM option under glassfish.
-
         String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
         if (configuredDropBoxKey != null) {
             return configuredDropBoxKey;
@@ -2001,6 +2000,12 @@ public class DatasetPage implements java.io.Serializable {
         JsonArray dbArray = dbJsonReader.readArray();
         dbJsonReader.close();
 
+        Integer maxUploadInBytes = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+        if (maxUploadInBytes == null){
+            maxUploadInBytes = -1;
+        }
+        
+        
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
 
@@ -2011,6 +2016,12 @@ public class DatasetPage implements java.io.Serializable {
 
             logger.fine("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
 
+            // If the file is too big, skip this upload
+            //
+            if ((maxUploadInBytes > -1)&&(fileSize > maxUploadInBytes)){
+                continue;  // continue and add error mesage                
+            }
+            
             DataFile dFile = null;
 
             // Make http call, download the file: 
