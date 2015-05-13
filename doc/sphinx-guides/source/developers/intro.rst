@@ -9,7 +9,9 @@ Intended Audience
 
 This guide is intended primarily for developers who want to work on the main Dataverse code base at https://github.com/IQSS/dataverse
 
-If you are a developer who wants to make use of Dataverse APIs, please see the :doc:`/api/index`.
+To get started, you'll want to set up your :doc:`/developers/dev-environment` and make sure you understand the :doc:`/developers/branching-strategy`. Thorough :doc:`/developers/testing` is encouraged (and expected). Opinions about :doc:`/coding-style` are welcome!
+
+If you have any questions at all, please reach out to other developers per https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md
 
 Roadmap
 -------
@@ -18,9 +20,16 @@ For the Dataverse development roadmap, please see https://github.com/IQSS/datave
 
 The `Contributing to Dataverse <https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md>`_ document in the root of the source tree provides guidance on:
 
-- the use of `labels <https://github.com/IQSS/dataverse/labels>`_ to organize and prioritize issues 
+- the use of `labels <https://github.com/IQSS/dataverse/labels>`_ to organize and prioritize `issues <https://github.com/IQSS/dataverse/issues>`_ 
 - making pull requests
 - how to contact the development team
+
+Related Guides
+--------------
+
+If you are a developer who wants to make use of Dataverse APIs, please see the :doc:`/api/index`.
+
+If you are a sysadmin who likes to code, you may be interested in hacking on installation scripts mentioned in the :doc:`/installation/index`. We validate the installation scripts with :doc:`/developers/tools` such as `Vagrant <http://vagrantup.com>`_.
 
 Related Projects
 ----------------

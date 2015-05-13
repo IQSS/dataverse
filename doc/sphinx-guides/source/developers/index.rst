@@ -13,6 +13,10 @@ Contents:
 
   intro
   dev-environment
+  branching-strategy
+  testing
+  coding-style
+  making-releases
   tools
   unf/index
 
