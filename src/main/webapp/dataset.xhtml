@@ -450,7 +450,7 @@
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                 <!-- Upload -->
-                                <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                <ui:fragment rendered="#{DatasetPage.showFileUploadFileComponent()}">
                                     <script>
                                         function uploadWidgetDropMsg() {
                                             var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
@@ -469,9 +469,11 @@
                                         });
                                     </script>
                                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['file.selectToAdd.tip']}" escape="false"/></p>
-                                    <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                    
+                                    <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.showFileUploadFileComponent()}"
                                                   fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                                  oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
+                                                  oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" 
+                                                  sizeLimit="#{DatasetPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
                                     <!-- Dropbox Upload -->
                                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty DatasetPage.dropBoxKey}">
                                         <div class="panel-body">
