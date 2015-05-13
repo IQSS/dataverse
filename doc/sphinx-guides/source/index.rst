@@ -13,7 +13,6 @@ These guides are for the most recent version of Dataverse (v4.0). For the guides
   :titlesonly:
   :maxdepth: 2
 
-  getting-started/index
   user/index
   installation/index
   api/index
@@ -23,7 +22,7 @@ How the Guides Are Organized
 =============================
 
 The Guides are reference documents that explain how to use Dataverse,
-which are divided into the following sections: Getting Started, User Guide,
+which are divided into the following sections: User Guide,
 Installation Guide, Developers Guide, and API Guide. The User Guide is further divided into primary activities: finding & using
 data, adding Datasets, administering dataverses or Datasets, and Dataset exploration/visualizations. Details
 on all of the above tasks can be found in the Users Guide. The
