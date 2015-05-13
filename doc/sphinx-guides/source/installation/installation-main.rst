@@ -57,12 +57,12 @@ Set ``ShibEnabled`` to ``true`` to enable Shibboleth login.
 
 ``curl -X PUT -d true http://localhost:8080/api/s/settings/:ShibEnabled``
 
-DataDepositApiMaxUploadInBytes
+MaxFileUploadSizeInBytes
 ------------------------------
 
-Set `DataDepositApiMaxUploadInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB.
+Set `MaxFileUploadSizeInBytes` to "10737418240", for example, to limit the size of files uploaded to 10 GB.
 
-``curl -X PUT http://localhost:8080/api/s/settings/:DataDepositApiMaxUploadInBytes/2147483648``
+``curl -X PUT http://localhost:8080/api/s/settings/:MaxFileUploadSizeInBytes/10737418240``
 
 JVM Options
 +++++++++++
