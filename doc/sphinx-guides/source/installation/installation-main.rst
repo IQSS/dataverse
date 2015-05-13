@@ -34,35 +34,35 @@ ApplicationPrivacyPolicyUrl
 
 Specify a URL where users can read your Privacy Policy.
 
-``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html http://localhost:8080/api/s/settings/:ApplicationPrivacyPolicyUrl``
+``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html http://localhost:8080/api/admin/settings/:ApplicationPrivacyPolicyUrl``
 
 ApiTermsOfUse
 -------------
 
 Upload a text file containing the API Terms of Use.
 
-``curl -X PUT -d@/tmp/api-tos.txt http://localhost:8080/api/s/settings/:ApiTermsOfUse``
+``curl -X PUT -d@/tmp/api-tos.txt http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
 SolrHostColonPort
 -----------------
 
 Set ``SolrHostColonPort`` to override ``localhost:8983``.
 
-``curl -X PUT -d localhost:8983 http://localhost:8080/api/s/settings/:SolrHostColonPort``
+``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
 
 ShibEnabled
 -----------
 
 Set ``ShibEnabled`` to ``true`` to enable Shibboleth login.
 
-``curl -X PUT -d true http://localhost:8080/api/s/settings/:ShibEnabled``
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled``
 
 MaxFileUploadSizeInBytes
 ------------------------------
 
 Set `MaxFileUploadSizeInBytes` to "10737418240", for example, to limit the size of files uploaded to 10 GB.
 
-``curl -X PUT http://localhost:8080/api/s/settings/:MaxFileUploadSizeInBytes/10737418240``
+``curl -X PUT -d 10737418240 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 
 JVM Options
 +++++++++++
