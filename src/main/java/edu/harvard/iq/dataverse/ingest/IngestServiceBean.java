@@ -1001,6 +1001,7 @@ public class IngestServiceBean {
             try {
                 Files.createDirectories(Paths.get(datestampedFolderName));
             } catch (IOException ex) {
+                logger.severe("Failed to create temp. directory to unzip shapefile: " + datestampedFolderName );
                 return null;
             }
         }
