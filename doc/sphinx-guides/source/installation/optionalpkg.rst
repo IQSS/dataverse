@@ -87,7 +87,7 @@ To use “Permissive” mode permanently modify /etc/selinix/config to ``SELINUX
 - Enable Shibboleth login:
 Set ShibEnabled to true after Dataverse intallation::
 
-	$ curl -X PUT -d true http://localhost:8080/api/s/settings/:ShibEnabled
+	$ curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled
 	
 	
 - Register with `TestShib <http://www.testshib.org/>`__

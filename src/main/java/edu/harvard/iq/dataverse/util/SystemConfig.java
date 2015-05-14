@@ -184,7 +184,6 @@ public class SystemConfig {
         return defaultZipUploadFilesLimit; 
     }
 
-    // curl -X PUT -d@/tmp/apptos.txt http://localhost:8080/api/s/settings/:ApplicationTermsOfUse
     public String getApplicationTermsOfUse() {
         String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);

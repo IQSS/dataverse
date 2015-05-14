@@ -493,12 +493,13 @@ public class Shib implements java.io.Serializable {
      * You can populate the request with Shibboleth attributes by changing a
      * setting like this:
      *
-     * curl http://localhost:8080/api/s/settings/:DebugShibAccountType -X PUT -d
-     * RANDOM
+     * curl -X PUT -d RANDOM
+     * http://localhost:8080/api/admin/settings/:DebugShibAccountType
      *
      * When you're done, feel free to delete the setting:
      *
-     * curl -X DELETE http://localhost:8080/api/s/settings/:DebugShibAccountType
+     * curl -X DELETE
+     * http://localhost:8080/api/admin/settings/:DebugShibAccountType
      */
     private void possiblyMutateRequestInDev() {
         switch (getDevShibAccountType()) {
