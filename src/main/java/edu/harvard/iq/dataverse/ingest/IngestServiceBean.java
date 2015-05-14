@@ -531,6 +531,8 @@ public class IngestServiceBean {
                 DataFile new_datafile = createSingleDataFile(version, finalFileInputStream, finalFile.getName(), finalType);
                 if (new_datafile != null) {
                   datafiles.add(new_datafile);
+                }else{
+                  logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
                 }
                 finalFileInputStream.close();                
              
@@ -549,6 +551,8 @@ public class IngestServiceBean {
             
             if (datafiles.size() > 0) {
                 return datafiles;
+            }else{
+                logger.severe("No files added from directory of rezipped shapefiles");
             }
             return null;
            

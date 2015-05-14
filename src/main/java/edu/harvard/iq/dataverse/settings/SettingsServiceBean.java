@@ -182,11 +182,11 @@ public class SettingsServiceBean {
      * Attempt to convert the value to an integer
      *  - Applicable for keys such as MaxFileUploadSizeInBytes
      * 
-     * On failure (key not found or string not convertible to an int), returns null
+     * On failure (key not found or string not convertible to a long), returns null
      * @param key
      * @return 
      */
-    public Integer getValueForKeyAsInt(Key key){
+       public Long getValueForKeyAsLong(Key key){
         
         String val = this.getValueForKey(key);
 
@@ -195,14 +195,15 @@ public class SettingsServiceBean {
         }
 
         try {
-            int valAsInt = Integer.parseInt(val);
+            long valAsInt = Long.parseLong(val);
             return valAsInt;
         } catch (NumberFormatException ex) {
-            logger.warning("Incorrect setting.  Could not convert \"" + val + "\" from setting " + key.toString() + " to int.");
+            logger.warning("Incorrect setting.  Could not convert \"" + val + "\" from setting " + key.toString() + " to long.");
             return null;
         }
         
     }
+    
     
     /**
      * Return the value stored, or the default value, in case no setting by that
