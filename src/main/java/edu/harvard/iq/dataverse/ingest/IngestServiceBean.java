@@ -987,6 +987,7 @@ public class IngestServiceBean {
         
         String tempDirectory = this.getFilesTempDirectory();
         if (tempDirectory == null){
+            logger.severe("Failed to retrieve tempDirectory, null was returned" );
             return null;
         }
         String datestampedFileName =  "shp_" + new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS").format(new Date());
@@ -1024,6 +1025,7 @@ public class IngestServiceBean {
             try {
                 Files.createDirectories(Paths.get(filesTempDirectory));
             } catch (IOException ex) {
+                logger.severe("Failed to create filesTempDirectory: " + filesTempDirectory );
                 return null;
             }
         }
