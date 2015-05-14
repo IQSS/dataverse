@@ -9,7 +9,7 @@ Intended Audience
 
 This guide is intended primarily for developers who want to work on the main Dataverse code base at https://github.com/IQSS/dataverse
 
-To get started, you'll want to set up your :doc:`/developers/dev-environment` and make sure you understand the :doc:`/developers/branching-strategy`. Thorough :doc:`/developers/testing` is encouraged (and expected). Opinions about :doc:`/coding-style` are welcome!
+To get started, you'll want to set up your :doc:`/developers/dev-environment` and make sure you understand the :doc:`/developers/branching-strategy`. Thorough :doc:`/developers/testing` is encouraged (and expected). Opinions about :doc:`/developers/coding-style` are welcome!
 
 If you have any questions at all, please reach out to other developers per https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md
 

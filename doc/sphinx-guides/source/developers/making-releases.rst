@@ -7,7 +7,7 @@ Bump Version Numbers
 
 Before tagging, ensure the version number has been incremented in the following places:
 
-- pom.xml
+- pom.xml (and scripts that reference the name of the war file)
 - src/main/java/VersionNumber.properties
 - doc/sphinx-guides/source/conf.py
 
