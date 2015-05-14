@@ -35,6 +35,8 @@ public class SettingsServiceBean {
     public enum Key {
        /**
         * Domain name specific code for Google Analytics
+        *//**
+        * Domain name specific code for Google Analytics
         */
         GoogleAnalyticsCode,
         
@@ -124,6 +126,8 @@ public class SettingsServiceBean {
         */
         /* TwoRavens location */
         TwoRavensUrl,
+        /** Optionally override http://guides.dataverse.org . */
+        GuidesBaseUrl,
         /* zip download size limit */
         ZipDonwloadLimit,
         /* zip upload number of files limit */

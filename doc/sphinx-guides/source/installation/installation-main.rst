@@ -64,6 +64,13 @@ Set `MaxFileUploadSizeInBytes` to "10737418240", for example, to limit the size 
 
 ``curl -X PUT -d 10737418240 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 
+GuidesBaseUrl
+-------------
+
+Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org".
+
+``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
+
 JVM Options
 +++++++++++
 

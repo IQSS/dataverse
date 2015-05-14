@@ -138,7 +138,18 @@ public class SystemConfig {
         }
         return fqdn;
     }
-    
+
+    public String getGuidesBaseUrl() {
+        String saneDefault = "http://guides.dataverse.org";
+        String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
+        return guidesBaseUrl + "/" + getGuidesLanguage();
+    }
+
+    private String getGuidesLanguage() {
+        String saneDefault = "en";
+        return saneDefault;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 
