@@ -59,11 +59,6 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
-
-    /**
-     * @todo Stop hard coding the same value in idpselect_config.js
-     */
-    public static final int APACHE_HTTPS_PORT = 8181;
     
     public String getSolrHostColonPort() {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
