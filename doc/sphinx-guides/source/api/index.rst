@@ -18,9 +18,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-  native-api
-  search
   sword
+  search
   dataaccess
+  native-api
   client-libraries
   apps
