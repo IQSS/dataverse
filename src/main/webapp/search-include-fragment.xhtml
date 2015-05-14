@@ -289,7 +289,12 @@
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / PERMS-->
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                                     <!--BROWSE CAN_ADD ZERO COUNTS-->
-                                    <p><h:outputText value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false"/></p>
+                                    <p>
+                                        <h:outputFormat value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
+                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                            <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                        </h:outputFormat>
+                                    </p>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
                                     <!--BROWSE CAN_ADD HIDDEN-->

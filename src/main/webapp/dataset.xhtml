@@ -468,7 +468,13 @@
                                             uploadWidgetDropMsg();
                                         });
                                     </script>
-                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> <h:outputText value=" #{bundle['file.selectToAdd.tip']}" escape="false"/></p>
+                                    <p class="help-block">
+                                        <span class="glyphicon glyphicon-info-sign"/> 
+                                        <h:outputFormat value=" #{bundle['file.selectToAdd.tip']}" escape="false">
+                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                            <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                        </h:outputFormat>
+                                    </p>
                                     
                                     <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.showFileUploadFileComponent()}"
                                                   fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
