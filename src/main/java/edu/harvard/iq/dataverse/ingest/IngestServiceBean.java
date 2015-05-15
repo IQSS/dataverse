@@ -539,6 +539,7 @@ public class IngestServiceBean {
             }
             
             // Delete the temp directory used for unzipping
+            /*
             logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
             FileUtils.deleteDirectory(rezipFolder);
 
@@ -548,7 +549,8 @@ public class IngestServiceBean {
                     finalFile.delete();
                 }
             }
-            
+            */
+             
             if (datafiles.size() > 0) {
                 return datafiles;
             }else{
