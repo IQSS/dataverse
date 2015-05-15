@@ -241,6 +241,11 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEDV:
                 Dataverse dataverse = (Dataverse) targetObject;
                 String ownerDataverseName = getOwnerDataverseName(dataverse);
+                /**
+                 * @todo Use new BundleUtil.getStringFromBundle method that
+                 * accepts an argument list for
+                 * https://github.com/IQSS/dataverse/issues/2154
+                 */
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataverse");
                 if (ownerDataverseName != null) {
                     String[] paramArrayCreateDV = {dataverse.getDisplayName(), getDataverseLink(dataverse),dataverse.getOwner().getDisplayName(), getDataverseLink(dataverse.getOwner())};
@@ -269,6 +274,11 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
+                /**
+                 * @todo Use new BundleUtil.getStringFromBundle method that
+                 * accepts an argument list for
+                 * https://github.com/IQSS/dataverse/issues/2154
+                 */
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataset");                
                 String[] paramArrayCreateDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(), getDataverseLink(version.getDataset().getOwner())};               

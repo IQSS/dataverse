@@ -55,7 +55,7 @@
                             </span>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/#{dataverseServiceBean.applicationVersion}/user" target="_blank">
+                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user" target="_blank">
                                         #{bundle['header.guides.user']}
                                     </h:outputLink>
                                 </li>
@@ -70,7 +70,7 @@
                                     </h:outputLink>
                                 </li>
                                 <li>
-                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/#{dataverseServiceBean.applicationVersion}/api" target="_blank">
+                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/api" target="_blank">
                                         <h:outputText value="#{bundle['header.guides.api']}" />
                                     </h:outputLink>
                                 </li>

@@ -292,7 +292,7 @@
                                     <p>
                                         <h:outputFormat value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
                                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                            <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                            <f:param value="#{systemConfig.version}"/>
                                         </h:outputFormat>
                                     </p>
                                 </ui:fragment>

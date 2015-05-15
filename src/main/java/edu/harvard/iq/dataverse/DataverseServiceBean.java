@@ -204,7 +204,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     }  
    
     private String appVersionString;
-    
+
+    /**
+     * @todo Move this method to SystemConfig.java and reconcile with the
+     * getVersion method you find there.
+     */
     public String getApplicationVersion() {        
         if (appVersionString == null) {
 

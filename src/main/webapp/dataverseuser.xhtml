@@ -113,7 +113,7 @@
                                                         <f:param value="#{item.theObject.getOwner().getAlias()}"/>
                                                         <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
                                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                        <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                                        <f:param value="#{systemConfig.version}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDS'}">
@@ -124,7 +124,7 @@
                                                         <f:param value="#{item.theObject.getDataset().getOwner().getAlias()}"/>
                                                         <f:param value="#{item.theObject.getDataset().getOwner().getDisplayName()}"/>
                                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                        <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                                        <f:param value="#{systemConfig.version}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
