@@ -132,6 +132,12 @@ public class SettingsServiceBean {
         ZipDonwloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
+        /* Size limits for generating thumbnails on the fly */
+        /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
+         * size of the file is less than this)
+        */
+        ThumbnailSizeLimitImage,
+        ThumbnailSizeLimitPDF,
         /* status message that will appear on the home page */
         StatusMessageHeader,
         /* full text of status message, to appear in popup */

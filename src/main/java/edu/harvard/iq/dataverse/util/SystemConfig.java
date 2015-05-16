@@ -205,6 +205,38 @@ public class SystemConfig {
         return defaultZipUploadFilesLimit; 
     }
 
+    public long getThumbnailSizeLimitImage() {
+        return getThumbnailSizeLimit("Image");
+    } 
+    
+    public long getThumbnailSizeLimitPDF() {
+        return getThumbnailSizeLimit("PDF");
+    }
+    
+    public long getThumbnailSizeLimit(String type) {
+        String option = null; 
+        if ("Image".equals(type)) {
+            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
+        } else if ("PDF".equals(type)) {
+            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitPDF);
+        }
+        Long limit = null; 
+        
+        if (option != null && !option.equals("")) {
+            try {
+                limit = new Long(option);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit.longValue();
+        }
+        
+        return 0; 
+    }
+    
     public String getApplicationTermsOfUse() {
         String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
