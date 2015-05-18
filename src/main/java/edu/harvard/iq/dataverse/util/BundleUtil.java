@@ -33,7 +33,7 @@ public class BundleUtil {
             stringFromBundle = bundle.getString(key);
             logger.info("string found: " + stringFromBundle);
         } catch (MissingResourceException ex) {
-            logger.warning("Could not find key \"" + key + "\" in bundle file " + bundle.getBaseBundleName());
+            logger.warning("Could not find key \"" + key + "\" in bundle file.");
             return null;
         }
         if (arguments != null) {
