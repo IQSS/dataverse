@@ -4,13 +4,8 @@ Development Environment
 
 .. contents:: :local:
 
-Dependencies
+Requirements
 ------------
-
-Operating System
-~~~~~~~~~~~~~~~~
-
-The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) so an operating system with Unix underpinnings such as Mac OS X or Linux is recommended. Windows users are encouraged to install `Cygwin <http://cygwin.com>`_.
 
 Java
 ~~~~
@@ -47,15 +42,22 @@ A command-line tool called ``jq`` ( http://stedolan.github.io/jq/ ) is required 
 
 If you are already using ``brew``, ``apt-get``, or ``yum``, you can install ``jq`` that way. Otherwise, download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your ``$PATH`` (``/usr/bin/jq`` is fine) and executable with ``sudo chmod +x /usr/bin/jq``.
 
-Tools
------
+Recommendations
+---------------
+
+Mac OS X
+~~~~~~~~
+
+The setup of a Dataverse development environment assumes the presence of a Unix shell (i.e. bash) so an operating system with Unix underpinnings such as Mac OS X or Linux is recommended. (The `development team at IQSS <http://datascience.iq.harvard.edu/team>`_ has standardized Mac OS X.) Windows users are encouraged to install `Cygwin <http://cygwin.com>`_.
 
 Netbeans
 ~~~~~~~~
 
-While developers are welcome to use any editor or IDE they wish, Netbeans 8+ is recommended because it is free of cost, cross platform, and has good support for Java EE projects. It can be downloaded from http://netbeans.org
+While developers are welcome to use any editor or IDE they wish, Netbeans 8+ is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and happens to be the IDE that the `development team at IQSS <http://datascience.iq.harvard.edu/team>`_ has standardized on. It can be downloaded from http://netbeans.org
 
 This guide will assume you are using Netbeans for development.
+
+Please see also the :doc:`/developers/tools` page, which lists additional tools that very useful but not essential.
 
 Setting up your dev environment
 -------------------------------
@@ -88,18 +90,18 @@ Once you install Glassfish 4 and PostgreSQL, you need to configure the environme
 
 ``./install``
 
-The script will prompt you  for some configuration values. It is recommended that you choose "localhost" for your hostname if this is a development environment. For everything else it should be safe to accept the defaults. 
+The script will prompt you for some configuration values. It is recommended that you choose "localhost" for your hostname if this is a development environment. For everything else it should be safe to accept the defaults.
 
-This new script is a hybrid of the old installer from v.3.* and Michael's shell script - the latter is used for configuring Glassfish, by means of asadmin commands. A serious advantage of this approach is that you should now be able to safely run the installer on an already configured system. 
+The script is a variation of the old installer from DVN 3.x that calls another script that runs ``asadmin`` commands. A serious advantage of this approach is that you should now be able to safely run the installer on an already configured system.
 
-All the future changes to the configuration that are Glassfish-specific and can be done through asadmin should now go into ``scripts/install/glassfish-setup.sh``. 
+All the future changes to the configuration that are Glassfish-specific and can be done through ``asadmin`` should now go into ``scripts/install/glassfish-setup.sh``.
 
 Shibboleth
 ----------
 
 If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth users. Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
 
-``curl http://localhost:8080/api/s/settings/:DebugShibAccountType -X PUT -d RANDOM``
+``curl http://localhost:8080/api/admin/settings/:DebugShibAccountType -X PUT -d RANDOM``
 
 For a list of possible values, please "find usages" on the settings key above and look at the enum.
 

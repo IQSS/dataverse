@@ -183,7 +183,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private DataFile selectedDownloadFile;
 
-    private Integer maxFileUploadSizeInBytes = null;
+    private Long maxFileUploadSizeInBytes = null;
     
     
     /*
@@ -191,7 +191,7 @@ public class DatasetPage implements java.io.Serializable {
     
         This may be "null", signifying unlimited download size
     */
-    public Integer getMaxFileUploadSizeInBytes(){
+    public Long getMaxFileUploadSizeInBytes(){
         return this.maxFileUploadSizeInBytes;
     }
     
@@ -507,7 +507,6 @@ public class DatasetPage implements java.io.Serializable {
     public String getDropBoxKey() {
         // Site-specific DropBox application registration key is configured 
         // via a JVM option under glassfish.
-
         String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
         if (configuredDropBoxKey != null) {
             return configuredDropBoxKey;
@@ -960,8 +959,8 @@ public class DatasetPage implements java.io.Serializable {
    public String init() {
         // System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
-        this.maxFileUploadSizeInBytes = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
-
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
+        
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);

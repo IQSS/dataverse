@@ -154,6 +154,18 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         // TODO: make noVarHeader option work for subsets too!
                                         subsetVariableHeader = subsetVariableHeader.concat("\n");
                                         accessObject.setVarHeader(subsetVariableHeader);
+                                        
+                                        String tabularFileName = accessObject.getFileName();
+                                        
+                                        if (tabularFileName != null && tabularFileName.endsWith(".tab")) {
+                                            tabularFileName = tabularFileName.replaceAll("\\.tab$", "-subset.tab");
+                                        } else if (tabularFileName != null && !"".equals(tabularFileName)) {
+                                            tabularFileName = tabularFileName.concat("-subset.tab");
+                                        } else {
+                                            tabularFileName = "subset.tab";
+                                        }
+                                        
+                                        accessObject.setFileName(tabularFileName);
                                     }
                                 }
                             } else {

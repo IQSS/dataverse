@@ -49,7 +49,13 @@ public class JsfHelper {
 			return defaultValue;
 		}
 	}
-    
+
+    /**
+     * @deprecated Localization applies not only to the front end (JSF) but also
+     * the API so consider using the newer, more flexible BundleUtil methods
+     * instead.
+     */
+    @Deprecated
     public String localize( String messageKey ) {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         String messageBundleName = facesContext.getApplication().getMessageBundle();

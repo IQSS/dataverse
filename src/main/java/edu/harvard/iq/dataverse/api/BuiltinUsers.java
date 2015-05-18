@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -41,24 +40,6 @@ public class BuiltinUsers extends AbstractApiBean {
     @EJB
     protected BuiltinUserServiceBean builtinUserSvc;
 
-    @GET
-    public Response list(@QueryParam("key") String key) {
-        String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
-        if (expectedKey == null) {
-            return errorResponse(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
-        }
-        if (!expectedKey.equals(key)) {
-            return badApiKey(key);
-        }
-        JsonArrayBuilder bld = Json.createArrayBuilder();
-
-        for (BuiltinUser u : builtinUserSvc.findAll()) {
-            bld.add(json(u));
-        }
-
-        return okResponse(bld);
-    }
-    
     @GET
     @Path("{username}/api-token")
     public Response getApiToken( @PathParam("username") String username, @QueryParam("password") String password ) {

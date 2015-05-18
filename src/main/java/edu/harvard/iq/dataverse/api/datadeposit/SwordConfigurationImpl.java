@@ -13,6 +13,8 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
 
     private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
 
@@ -126,12 +128,21 @@ public class SwordConfigurationImpl implements SwordConfiguration {
         
         int unlimited = -1;
 
-        Integer maxUploadInBytes = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
-        if (maxUploadInBytes == null){
-             return unlimited;
-        }
+        Long maxUploadInBytes = systemConfig.getMaxFileUploadSize();
 
-        return maxUploadInBytes;
+        if (maxUploadInBytes == null){
+            // (a) No setting, return unlimited           
+            return unlimited;      
+        
+        }else if (maxUploadInBytes > Integer.MAX_VALUE){
+            // (b) setting returns the limit of int, return max int value  (BUG)
+            return Integer.MAX_VALUE;
+            
+        }else{            
+            // (c) Return the setting as an int
+            return maxUploadInBytes.intValue();
+
+        }
     }
 
     @Override

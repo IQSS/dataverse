@@ -9,9 +9,11 @@ import com.sun.mail.smtp.SMTPSendFailedException;
 import com.sun.mail.smtp.SMTPSenderFailedException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Map;
@@ -240,15 +242,23 @@ public class MailServiceBean implements java.io.Serializable {
         switch (userNotification.getType()) {
             case CREATEDV:
                 Dataverse dataverse = (Dataverse) targetObject;
-                String ownerDataverseName = getOwnerDataverseName(dataverse);
-                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataverse");
-                if (ownerDataverseName != null) {
-                    String[] paramArrayCreateDV = {dataverse.getDisplayName(), getDataverseLink(dataverse),dataverse.getOwner().getDisplayName(), getDataverseLink(dataverse.getOwner())};
-                    messageText += MessageFormat.format(pattern, paramArrayCreateDV);
-                } else {
-                    messageText += MessageFormat.format(pattern, "Root Dataverse", "Root Dataverse");
+                Dataverse parentDataverse = dataverse.getOwner();
+                // initialize to empty string in the rare case that there is no parent dataverse (i.e. root dataverse just created)
+                String parentDataverseDisplayName = "";
+                String parentDataverseUrl = "";
+                if (parentDataverse != null) {
+                    parentDataverseDisplayName = parentDataverse.getDisplayName();
+                    parentDataverseUrl = getDataverseLink(parentDataverse);
                 }
-                return messageText;
+                String dataverseCreatedMessage = BundleUtil.getStringFromBundle("notification.email.createDataverse", Arrays.asList(
+                        dataverse.getDisplayName(),
+                        getDataverseLink(dataverse),
+                        parentDataverseDisplayName,
+                        parentDataverseUrl,
+                        systemConfig.getGuidesBaseUrl(),
+                        systemConfig.getVersion()));
+                logger.fine(dataverseCreatedMessage);
+                return messageText += dataverseCreatedMessage;
             case REQUESTFILEACCESS:
                 dataset = (Dataset) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.requestFileAccess");
@@ -269,11 +279,16 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
-                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.createDataset");                
-                String[] paramArrayCreateDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(), getDataverseLink(version.getDataset().getOwner())};               
-                messageText += MessageFormat.format(pattern, paramArrayCreateDataset);
-                return messageText;
+                String datasetCreatedMessage = BundleUtil.getStringFromBundle("notification.email.createDataset", Arrays.asList(
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner()),
+                        systemConfig.getGuidesBaseUrl(),
+                        systemConfig.getVersion()
+                ));
+                logger.fine(datasetCreatedMessage);
+                return messageText += datasetCreatedMessage;
             case MAPLAYERUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.worldMap.added");
@@ -347,11 +362,5 @@ public class MailServiceBean implements java.io.Serializable {
         logger.fine("no email address");
         return null; 
     }
-     
-    private String getOwnerDataverseName(Dataverse dataverse) {
-        if (dataverse.getOwner() != null) {
-            return dataverse.getOwner().getDisplayName();
-        } 
-        return null;
-    }
+
 }

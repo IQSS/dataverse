@@ -1,4 +1,3 @@
 #!/bin/sh
-# relies on experimental feature, see https://github.com/IQSS/dataverse/issues/1299
-# curl -X PUT -d true http://localhost:8080/api/s/settings/:SearchApiNonPublicAllowed
+# relies on experimental SearchApiNonPublicAllowed feature, see https://github.com/IQSS/dataverse/issues/1299
 curl "http://localhost:8080/api/search?key=$SPARROWKEY&show_relevance=true&q=sparrow"

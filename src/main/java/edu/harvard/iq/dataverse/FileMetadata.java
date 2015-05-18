@@ -41,8 +41,7 @@ public class FileMetadata implements Serializable {
     private String label = "";
     @Column(columnDefinition = "TEXT")
     private String description = "";
-    //@Column(columnDefinition="TEXT")
-    //private String category = ""; // TODO: remove! -- L.A. 4.0 beta 10
+    
     private boolean restricted;
 
     @ManyToOne

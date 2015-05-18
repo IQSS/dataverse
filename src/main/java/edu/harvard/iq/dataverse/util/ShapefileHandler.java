@@ -437,9 +437,9 @@ public class ShapefileHandler{
         String target_dirname = rezippedFolder.getAbsolutePath();
         boolean redistribute_success = this.redistributeFilesFromZip(dirname_for_unzipping, target_dirname);
 
-        logger.fine("About to delete: " + dir_for_unzipping);               
+        //logger.fine("About to delete: " + dir_for_unzipping);               
         // Delete unzipped files in scratch directory
-        FileUtils.deleteDirectory(dir_for_unzipping);
+        //FileUtils.deleteDirectory(dir_for_unzipping);
         
         logger.fine("Post redistribute:)");
         for (File f : new File(target_dirname).listFiles()){

@@ -356,11 +356,33 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"text/xml"})
     
-    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
-        uriInfo.getQueryParameters().clear();
-        uriInfo.getQueryParameters().add("format", "prep");
+    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
+    
+        DataFile df = dataFileService.find(fileId);
         
-        return datafile(fileId, apiToken, uriInfo, headers, response);
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        // This will throw a WebApplicationException, with the correct 
+        // exit code, if access isn't authorized: 
+        checkAuthorization(df, apiToken);
+        DownloadInfo dInfo = new DownloadInfo(df);
+
+        if (df.isTabularData()) {
+            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
+        } else {
+            throw new ServiceUnavailableException("Preprocessed Content Metadata requested on a non-tabular data file.");
+        }
+        DownloadInstance downloadInstance = new DownloadInstance(dInfo);
+        if (downloadInstance.isDownloadServiceSupported("format", "prep")) {
+            logger.fine("Preprocessed data for tabular file "+fileId);
+        }
+        
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        
+        return downloadInstance;
     }
     
     /* 

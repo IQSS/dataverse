@@ -81,15 +81,6 @@
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
-    <filter>
-        <filter-name>ShibFilter</filter-name>
-        <filter-class>edu.harvard.iq.dataverse.authorization.providers.shib.ShibFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>ShibFilter</filter-name>
-        <url-pattern>/resources/*</url-pattern>
-        <url-pattern>/javax.faces.resource/*</url-pattern>
-    </filter-mapping>
     <servlet-mapping>
         <servlet-name>Push Servlet</servlet-name>
         <url-pattern>/primepush/*</url-pattern>

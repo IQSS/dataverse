@@ -51,28 +51,33 @@
                         </li>
                         <li class="dropdown">
                             <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
-                                #{bundle['header.support']} <b class="caret"></b>
+                                #{bundle['header.guides']} <b class="caret"></b>
                             </span>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <h:outputLink value="http://community.dataverse.org/advisory-team.html" target="_blank">
-                                        <h:outputText value="#{bundle['header.community']}" />
+                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/user" target="_blank">
+                                        #{bundle['header.guides.user']}
                                     </h:outputLink>
                                 </li>
                                 <li>
-                                    <h:outputLink value="http://dataverse.org/contact/" target="_blank">
-                                        <h:outputText value="#{bundle['header.support']}" />
+                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/latest/developers" target="_blank">
+                                        <h:outputText value="#{bundle['header.guides.developers']}" />
                                     </h:outputLink>
                                 </li>
                                 <li>
-                                    <h:outputLink value="/guides/index.html" target="_blank">
-                                        #{bundle['header.support.guides']}
+                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/latest/installation" target="_blank">
+                                        <h:outputText value="#{bundle['header.guides.installation']}" />
+                                    </h:outputLink>
+                                </li>
+                                <li>
+                                    <h:outputLink value="#{systemConfig.guidesBaseUrl}/#{systemConfig.version}/api" target="_blank">
+                                        <h:outputText value="#{bundle['header.guides.api']}" />
                                     </h:outputLink>
                                 </li>
                             </ul>
                         </li>
                         <h:form class="navbar-form navbar-left navbar-form-link">
-                           <p:commandLink value="#{bundle['header.contact']}" oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                           <p:commandLink value="#{bundle['header.support']}" oncomplete="contactForm.show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value="#{bundle['dataverse']} #{dataverseService.getApplicationVersion()} #{bundle['header.contact']}"/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
