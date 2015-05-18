@@ -84,9 +84,11 @@ none.
 Data Variable Metadata Access
 -----------------------------
 
-``/api/meta/datafile/$id``
+**These methods are only available for tabular data files. (i.e., data files with associated data table and variable objects).**
 
-This method is only available for tabular data files. (i.e., data files with associated data table and variable objects). 
+
+``/api/access/datafile/$id/metadata/ddi``
+
 In its basic form the verb above returns a DDI fragment that describes the file and the data variables in it. 
 The DDI XML is the only format supported so far. In the future, support for formatting the output in JSON will 
 (may?) be added.
@@ -168,6 +170,10 @@ especially with data files with large numbers of variables.
 Partial record parameters: 
 
 (TODO). 
+
+``/api/access/datafile/$id/metadata/preprocessed``
+
+This method provides the "Pre-processed Data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, the companion data exploration utility of the Dataverse application. 
 
 Authentication and Authorization
 -------------------------------- 

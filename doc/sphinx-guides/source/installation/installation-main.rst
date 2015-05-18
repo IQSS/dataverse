@@ -1,8 +1,28 @@
 ====================================
-Installation Guide
+Application Configuration
 ====================================
 
+**Much of the Dataverse Application configuration is done by the automated installer (described above). This section documents the additional configuration tasks that need to be done after you run the installer.** 
+
 .. _introduction:
+
+Dataverse Admin Account
++++++++++++++++++++++++
+
+Now that you've run the application installer and have your own Dataverse instance, you need to configure the Dataverse Administrator user. 
+By default installer pre-sets the Admin credentials as follows:
+
+.. code-block:: none
+
+    First Name: Dataverse
+    Last Name:  Admin
+    Affiliation: Dataverse.org
+    Position: Admin
+    Email: dataverse@mailinator.com
+
+Log in as the user dataverseAdmin and change these values to suit your installation. 
+
+(Alteratively, you can modify the file ``dvinstall/data/user-admin.json`` in the installer bundle **before** you run the installer). 
 
 Glassfish Configuration
 +++++++++++++++++++++++

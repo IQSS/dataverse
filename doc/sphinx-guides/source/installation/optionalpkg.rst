@@ -1,11 +1,14 @@
 Optional Packages
 ==========================
 
+Support for Shibboleth
+++++++++++++++++++++++
+
+**Note: Shibboleth support requires Apache. Shibboleth authentication is provided by the Apache mod_shib, and the entire Dataverse application is running behind the Apache mod_proxy.**
 
 
 Apache Installation and Configuration
 --------------------------------------
-``Note: Apache is required when enforcing HTTPS``
 
 - Install Apache HTTPD. ::
 
@@ -33,7 +36,7 @@ Apache Installation and Configuration
 	SSLCertificateChainFile /etc/pki/tls/certs/apitest.dataverse.org.crt
 		
 
-Shobboleth SP Installation and Configuration
+Shibboleth SP Installation and Configuration
 ---------------------------------------------
 Requirements: Apache HTTPD, Apache SSL Certs from Trusted Certificate Authority, Shibboleth.
 
