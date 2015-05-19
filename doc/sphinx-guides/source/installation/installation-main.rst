@@ -24,16 +24,6 @@ Log in as the user dataverseAdmin and change these values to suit your installat
 
 (Alteratively, you can modify the file ``dvinstall/data/user-admin.json`` in the installer bundle **before** you run the installer). 
 
-Glassfish Configuration
-+++++++++++++++++++++++
-
-SSLEngine is null workaround
-----------------------------
-
-If you are fronting Glassfish with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Glassfish server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null". 
-
-To hide these warnings, run ``asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
-
 Solr Configuration
 ++++++++++++++++++
 
@@ -73,9 +63,7 @@ Set ``SolrHostColonPort`` to override ``localhost:8983``.
 ShibEnabled
 -----------
 
-Set ``ShibEnabled`` to ``true`` to enable Shibboleth login.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled``
+This setting is experimental per :doc:`/installation/shibboleth`.
 
 MaxFileUploadSizeInBytes
 ------------------------------
@@ -127,31 +115,6 @@ dataverse.auth.password-reset-timeout-in-minutes
 ------------------------------------------------
 
 Set the ``dataverse.auth.password-reset-timeout-in-minutes`` option if you'd like to override the default value put into place by the installer.
-
-**Enforce SSL on SWORD**
-
-- Set up connector Apache and Glassfish
-``asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector``
-
-- Apache dataverse.conf
-
-Add the following to ``/etc/httpd/conf.d/dataverse.conf``
-
-.. code-block:: guess
-
-  # From https://wiki.apache.org/httpd/RewriteHTTPToHTTPS
-  RewriteEngine On
- 
-  # This will enable the Rewrite capabilities
-  RewriteCond %{HTTPS} !=on
- 
-  # This checks to make sure the connection is not already HTTPS
-  # RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L] 
-  RewriteRule ^/dvn/api/data-deposit/?(.*) https://%{SERVER_NAME}/dvn/api/data-deposit/$1 [R,L]
-  # This rule will redirect users from their original location, to the same location but using HTTPS.
-  # i.e.  http://www.example.com/foo/ to https://www.example.com/foo/
-  # The leading slash is made optional so that this will work either in httpd.conf or .htaccess context
-
 
 Dropbox Configuration
 ++++++++++++++++++++++
