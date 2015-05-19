@@ -33,6 +33,14 @@ function bind_bsui_components(){
 
 }
 
+function dataset_fileupload_rebind(){
+    //console.log('dataset_fileupload_rebind');
+    bind_bsui_components();
+    // rebind for dropdown menus on restrict button
+    $('.dropdown-toggle').dropdown();
+
+}
+
 function dataverseuser_page_rebind(){
     bind_bsui_components();
     // rebind for dropdown menus on dataverseuser.xhtml
