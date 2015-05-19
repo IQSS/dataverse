@@ -7,6 +7,8 @@ Development Environment
 Requirements
 ------------
 
+Ubuntu users please visit :doc:`/developers/ubuntu`
+
 Java
 ~~~~
 
