@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLInputFactory;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -510,13 +511,76 @@ public class ImportDDIServiceBean {
         }
     }
     
-    private void processNotes (XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+    /**
+     * Process the notes portion of the DDI doc -- if there is one
+     * Return a formatted string
+     * 
+     * @param xmlr
+     * @return 
+     */
+    private String formatNotesfromXML(XMLStreamReader xmlr) throws XMLStreamException{
+        
+        if (xmlr==null){
+            throw new NullPointerException("XMLStreamReader xmlr cannot be null");
+        }
+        //System.out.println("formatNotesfromXML");
+        // Initialize array of strings
+        List<String> noteValues = new ArrayList<String>();
+        String attrVal;
+
+        // Check for "subject"
+        attrVal = xmlr.getAttributeValue(null, "subject");
+        if (attrVal != null){
+            noteValues.add("Subject: " + attrVal);
+        }
+        
+        // Check for "type"
+        attrVal = xmlr.getAttributeValue(null, "type");
+        if (attrVal != null){
+            noteValues.add("Type: " + attrVal);
+        }
+        
+        // Add notes, if they exist
+        attrVal = parseText(xmlr, "notes");
+        if ((attrVal != null) && (!attrVal.isEmpty())){
+            noteValues.add("Notes: " + attrVal);
+        }        
+        
+        // Nothing to add
+        if (noteValues.isEmpty()){
+            //System.out.println("nuthin'");
+            return null;
+        }
+        
+        //System.out.println(StringUtils.join(noteValues, " ") + ";");
+        return StringUtils.join(noteValues, " ") + ";";
+
+        /*
+        Examples of xml:
+        <notes type="Statistics" subject="Babylon"> </notes>
+        <notes type="Note Type" subject="Note Subject">Note Text</notes>
+        <notes type="Note Type 2" subject="Note Subject 2">Note Text 2</notes>
+        <notes>Note Text 3</notes>
+        */
+        
+        /*
+        // Original, changed b/c of string 'null' appearing in final output
         String note = " Subject: "+xmlr.getAttributeValue(null, "subject")+" "
         + " Type: "+xmlr.getAttributeValue(null, "type")+" "
         + " Notes: "+parseText(xmlr, "notes")+";";
         addNote(note, dvDTO);
-       
-    } 
+       */
+    }
+    
+    
+    private void processNotes (XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        
+        String formattedNotes = this.formatNotesfromXML(xmlr);
+        
+        if (formattedNotes != null){
+            this.addNote(formattedNotes, dvDTO);
+        }
+    }
     
     private void addNote(String noteText, DatasetVersionDTO dvDTO ) {
         MetadataBlockDTO citation = getCitation(dvDTO);
