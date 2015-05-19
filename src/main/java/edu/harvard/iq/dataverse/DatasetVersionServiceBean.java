@@ -62,8 +62,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             if (datasetVersion == null){
                 throw new IllegalArgumentException("datasetVersion cannot be null");
             }
-            //System.out.println("RetrieveDatasetVersionResponse: datasetVersion: " + datasetVersion.getSemanticVersion() + " requestedVersion: " + requestedVersion);
-            //System.out.println("chosenVersion id: " + datasetVersion.getId() + "  getFriendlyVersionNumber: " + datasetVersion.getFriendlyVersionNumber());
+            //logger.fine("RetrieveDatasetVersionResponse: datasetVersion: " + datasetVersion.getSemanticVersion() + " requestedVersion: " + requestedVersion);
+            //logger.fine("chosenVersion id: " + datasetVersion.getId() + "  getFriendlyVersionNumber: " + datasetVersion.getFriendlyVersionNumber());
             this.datasetVersionForResponse = datasetVersion;
             
             this.actualVersion = datasetVersion.getSemanticVersion();
@@ -97,7 +97,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             if (actualVersion==null){   // this shouldn't happen
                 return;
             }
-            //System.out.println("check version. requested: " + this.requestedVersion + " returned: " + actualVersion);
+            //logger.fine("check version. requested: " + this.requestedVersion + " returned: " + actualVersion);
             // This may often be the case if version is not specified
             //
             if (requestedVersion == null || requestedVersion.equals("")){
@@ -161,7 +161,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 query.setParameter("minorVersionNumber", minorVersionNumber);
                 foundDatasetVersion = (DatasetVersion) query.getSingleResult();
             } catch (javax.persistence.NoResultException e) {
-                System.out.print("no ds version found: " + datasetId + " " + friendlyVersionNumber);
+                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
             return foundDatasetVersion;
@@ -195,7 +195,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 return retVal;
 
             } catch (javax.persistence.NoResultException e) {
-                System.out.print("no ds version found: " + datasetId + " " + friendlyVersionNumber);
+                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
 
@@ -247,7 +247,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     
     private void msg(String s){
-        //System.out.println(s);
+        //logger.fine(s);
     }
     
     /**

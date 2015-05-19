@@ -726,8 +726,8 @@ public class DatasetPage implements java.io.Serializable {
      }
 
     public void handleChange() {
-        System.out.print("handle change");
-        System.out.print("new value " + selectedTemplate.getId());
+        logger.info("handle change");
+        logger.info("new value " + selectedTemplate.getId());
     }
 
     public void handleChangeButton() {
@@ -790,7 +790,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void msg(String s){
-        //System.out.println(s);
+        //logger.fine(s);
     }
     
     /**
@@ -957,7 +957,7 @@ public class DatasetPage implements java.io.Serializable {
 
     
    public String init() {
-        // System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         
@@ -1620,7 +1620,6 @@ public class DatasetPage implements java.io.Serializable {
 
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataset to yours: " + ex;
-            System.out.print("in catch exception... " + ex);
             logger.severe(msg);
             /**
              * @todo how do we get this message to show up in the GUI?
