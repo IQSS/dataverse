@@ -53,7 +53,7 @@ public class IngestableDataChecker implements java.io.Serializable {
     private String[] testFormatSet;
     // Map that returns a Stata Release number
     private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
-    private static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
+    public static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
     // Map that returns a reader-implemented mime-type
     private static Set<String> readableFileTypes = new HashSet<String>();
     private static Map<String, Method> testMethods = new HashMap<String, Method>();
