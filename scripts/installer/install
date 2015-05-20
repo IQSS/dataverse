@@ -148,7 +148,7 @@ if ($gfdir) {
     $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} = $gfdir;
 }
 
-print "\nWelcome to the dataverse 4.0 beta installer.\n";
+print "\nWelcome to the Dataverse installer.\n";
 unless ($postgresonly) {
     print "You will be guided through the process of setting up a NEW\n";
     print "instance of the dataverse application\n";
