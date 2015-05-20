@@ -4,10 +4,13 @@ Development Environment
 
 .. contents:: :local:
 
+Assumptions
+-----------
+
+This guide assumes you are using a Mac but we do have pages for :doc:`/developers/windows` and :doc:`/developers/ubuntu`.
+
 Requirements
 ------------
-
-Ubuntu users please visit :doc:`/developers/ubuntu`
 
 Java
 ~~~~
@@ -37,6 +40,11 @@ Dataverse depends on `Solr <http://lucene.apache.org/solr/>`_ for browsing and s
 
 Solr 4.6.0 is the only version that has been tested extensively and is recommended in development. Download and configuration instructions can be found below. An upgrade to newer versions of Solr is being tracked at https://github.com/IQSS/dataverse/issues/456
 
+curl
+~~~~
+
+A command-line tool called ``curl`` ( http://curl.haxx.se ) is required by the setup scripts and it is useful to have curl installed when working on APIs.
+
 jq
 ~~
 
@@ -46,19 +54,6 @@ If you are already using ``brew``, ``apt-get``, or ``yum``, you can install ``jq
 
 Recommendations
 ---------------
-SSH keys - GitHub
-~~~~~~~~~~~~~~~~~
-
-You can use git with passwords over HTTPS but it's much nicer to set up SSH keys. https://github.com/settings/ssh is the place to manage the ssh keys GitHub knows about for you. That page also links to a nice howto: https://help.github.com/articles/generating-ssh-keys
-
-From the terminal, ``ssh-keygen`` will create new ssh keys for you:
-
-private key: ~/.ssh/id_rsa
-It is very important to protect your private key. If someone else acquires it, they can access private repositories on GitHub and make commits as you! Ideally, you'll store your ssh keys on an encrypted volume and protect your private key with a password when prompted for one by ssh-keygen. See also "Why do passphrases matter" at https://help.github.com/articles/generating-ssh-keys
-
-public key: ~/.ssh/id_rsa.pub
-After you've created your ssh keys, add the public key to your GitHub account.
-
 
 Mac OS X
 ~~~~~~~~
@@ -74,40 +69,52 @@ NetBeans can be downloaded from http://netbeans.org. Please make sure that you u
 
 This guide will assume you are using Netbeans for development.
 
-Please see also the :doc:`/developers/tools` page, which lists additional tools that very useful but not essential.
+Additional Tools
+~~~~~~~~~~~~~~~~
 
+Please see also the :doc:`/developers/tools` page, which lists additional tools that very useful but not essential.
 
 Setting up your dev environment
 -------------------------------
 
+SSH keys
+~~~~~~~~
+
+You can use git with passwords over HTTPS, but it's much nicer to set up SSH keys. https://github.com/settings/ssh is the place to manage the ssh keys GitHub knows about for you. That page also links to a nice howto: https://help.github.com/articles/generating-ssh-keys
+
+From the terminal, ``ssh-keygen`` will create new ssh keys for you:
+
+- private key: ``~/.ssh/id_rsa`` - It is very important to protect your private key. If someone else acquires it, they can access private repositories on GitHub and make commits as you! Ideally, you'll store your ssh keys on an encrypted volume and protect your private key with a password when prompted for one by ``ssh-keygen``. See also "Why do passphrases matter" at https://help.github.com/articles/generating-ssh-keys
+
+- public key: ``~/.ssh/id_rsa.pub`` - After you've created your ssh keys, add the public key to your GitHub account.
+
 Clone Project from GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Using NetBeans:
+Before making commits, please read about our :doc:`/developers/branching-strategy` to make sure you commit to the right branch.
 
-Go to Team >> Clone and add the repository info.
+Determine Which Repo To Push To
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Alternative method using Terminal:
+Developers who are not part of the `development team at IQSS <http://datascience.iq.harvard.edu/team>`_ should first fork https://github.com/IQSS/dataverse per https://help.github.com/articles/fork-a-repo/
 
-Without push access to the project:
+Cloning the Project from Netbeans
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Fork the project
+From NetBeans, click "Team" then "Remote" then "Clone". Under "Repository URL", enter the `"ssh clone URL" <https://help.github.com/articles/which-remote-url-should-i-use/#cloning-with-ssh>`_ for your fork (if you do not have push access to the repo under IQSS) or ``git@github.com:IQSS/dataverse.git`` (if you do have push access to the repo under IQSS). See also https://netbeans.org/kb/docs/ide/git.html#github
 
-- ``git clone git@github.com:[your GitHub user]/dataverse.git``
+Cloning the Project from the Terminal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- ``cd dataverse``
+If you prefer using git from the command line, you can clone the project from a terminal and later open the project in Netbeans.
 
-- ``mvn package`` 
+If you do not have push access to https://github.com/IQSS/dataverse clone your fork:
 
+``git clone git@github.com:[your GitHub user or organization]/dataverse.git``
 
-With push access to the project:
+If you do have push access to https://github.com/IQSS/dataverse clone it:
 
-- ``git clone git@github.com:IQSS/dataverse.git``
-
-- ``cd dataverse``
-
-- ``mvn package`` 
-
+``git clone git@github.com:IQSS/dataverse.git``
 
 Installing and Running Solr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

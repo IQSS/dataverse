@@ -2,6 +2,19 @@
 Tools
 =====
 
+These are handy tools for your :doc:`/developers/dev-environment/`.
+
+Netbeans Connector Chrome Extension
++++++++++++++++++++++++++++++++++++
+
+The `Netbeans Connector <https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa?hl=en>`_ extension for Chrome allows you to see changes you've made to HTML pages the moment you save the file without having to refresh your browser. See also 
+http://wiki.netbeans.org/ChromeExtensionInstallation
+
+Maven
++++++
+
+With Maven installed you can run `mvn package` and `mvn test` from the command line. It can be downloaded from https://maven.apache.org
+
 PageKite
 ++++++++
 

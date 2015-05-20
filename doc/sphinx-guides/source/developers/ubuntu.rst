@@ -1,9 +1,11 @@
-==============
-Ubuntu (14.04)
-==============
+======
+Ubuntu
+======
 
 Requirements
 ------------
+
+Tested on Ubuntu 14.04.
 
 Java 7
 ~~~~~~
