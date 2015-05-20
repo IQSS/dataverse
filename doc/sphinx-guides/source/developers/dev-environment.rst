@@ -23,12 +23,12 @@ Glassfish
 
 As a `Java Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ 7 (Java EE 7) application, Dataverse requires an applications server to run.
 
-Glassfish 4.0+ is required, which can be downloaded from http://glassfish.java.net
+Glassfish 4.1+ is required, which can be downloaded from http://glassfish.java.net
 
 PostgreSQL
 ~~~~~~~~~~
 
-PostgreSQL 9+ is required and can be downloaded from http://postgresql.org
+PostgreSQL 9.x is required and can be downloaded from http://postgresql.org
 
 Solr
 ~~~~
@@ -70,7 +70,7 @@ Netbeans
 
 While developers are welcome to use any editor or IDE they wish, Netbeans 8+ is recommended because it is free of cost, works cross platform, has good support for Java EE projects, and happens to be the IDE that the `development team at IQSS <http://datascience.iq.harvard.edu/team>`_ has standardized on. 
 
-NetBeans can be downloaded from http://netbeans.org. Please make sure that you use an option that contains the Jave EE features when choosing your download bundle. While using the installer you might be prompted about installing JUnit and Glassfish. There is no need to reinstall Glassfish if you already have a 4.0+ version, but it is recommended that you install JUnit.  
+NetBeans can be downloaded from http://netbeans.org. Please make sure that you use an option that contains the Jave EE features when choosing your download bundle. While using the installer you might be prompted about installing JUnit and Glassfish. There is no need to reinstall Glassfish, but it is recommended that you install JUnit.
 
 This guide will assume you are using Netbeans for development.
 
@@ -131,7 +131,7 @@ Once some dataverses, datasets, and files have been created and indexed, you can
 Run installer
 ~~~~~~~~~~~~~
 
-Once you install Glassfish 4.0+ and PostgreSQL, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
+Once you install Glassfish and PostgreSQL, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you. Again, assuming that the clone on the Dataverse repository was retrieved using NetBeans and that it is saved in the path ~/NetBeansProjects:
 
 ``cd ~/NetBeansProjects/dataverse/scripts/installer``
 
