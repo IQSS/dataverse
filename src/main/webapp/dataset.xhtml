@@ -501,68 +501,76 @@
                                              emptyMessage="#{bundle['file.notFound.tip']}">
                                     <f:facet name="header">
                                         <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
-                                        <!-- Button Panels -->
-                                        <div jsf:id="zipDownloadPanel" class="button-block margin-bottom text-right"
-                                             jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') 
-                                                             and (permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
-                                                             or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                                            <ui:remove>
-                                            <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
-                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
-                                                </button> 
-                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                                                   
-                                                    <li  class="disabled">
-                                                        <h:outputLink value="#">
-                                                            <h:outputText value="All Files From This Dataset"/>
-                                                        </h:outputLink>
-                                                    </li>
-                                                    <ui:fragment>
+                                        <div id="filesHeaderBlock" class="clearfix margin-bottom">
+                                            <!-- Files Count -->
+                                            <div id="filesHeaderCount" class="pull-left text-left">
+                                                <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
+                                                    <f:param value="#{DatasetPage.workingVersion.fileMetadatas.size()}"/>
+                                                </h:outputFormat>
+                                            </div>
+                                            <!-- Button Panels -->
+                                            <div jsf:id="zipDownloadPanel" class="button-block pull-right text-right"
+                                                 jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') 
+                                                                 and (permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
+                                                                 or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
+                                                <ui:remove>
+                                                <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
+                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
+                                                    </button> 
+                                                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                                                   
+                                                        <li  class="disabled">
+                                                            <h:outputLink value="#">
+                                                                <h:outputText value="All Files From This Dataset"/>
+                                                            </h:outputLink>
+                                                        </li>
+                                                        <ui:fragment>
+                                                            <li>
+                                                                <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
+                                                                               value="#{bundle.selectedFiles}"
+                                                                               actionListener="#{DatasetPage.startMultipleFileDownload()}">                                                           
+                                                                </h:commandLink> 
+                                                                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
+                                                                               action="#{DatasetPage.initGuestbookMultipleResponse()}"
+                                                                               value="#{bundle.selectedFiles}"
+                                                                               update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">                                                          
+                                                                </p:commandLink>
+                                                            </li>
+                                                        </ui:fragment>
+                                                    </ul>
+                                                </div>
+                                                </ui:remove>
+                                                <p:commandLink rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}"
+                                                               type="button" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                    <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
+                                                </p:commandLink>
+                                            </div>
+                                            <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
+                                                 jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
+                                                    </button>
+                                                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                                         <li>
-                                                            <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
-                                                                           value="#{bundle.selectedFiles}"
-                                                                           actionListener="#{DatasetPage.startMultipleFileDownload()}">                                                           
-                                                            </h:commandLink> 
-                                                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
-                                                                           action="#{DatasetPage.initGuestbookMultipleResponse()}"
-                                                                           value="#{bundle.selectedFiles}"
-                                                                           update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">                                                          
+                                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
+                                                                <h:outputText value="#{bundle['file.restrict']}"/>
                                                             </p:commandLink>
                                                         </li>
-                                                    </ui:fragment>
-                                                </ul>
+                                                        <li>
+                                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
+                                                                <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                                            </p:commandLink>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
+                                                    <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
+                                                </p:commandLink>
                                             </div>
-                                            </ui:remove>
-                                            <p:commandLink rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}"
-                                                           type="button" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
-                                            </p:commandLink>
                                         </div>
-                                        <div jsf:id="restrictDeletePanel" class="button-block margin-bottom text-right"
-                                             jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
-                                            <div class="btn-group">
-                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                                    <li>
-                                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
-                                                            <h:outputText value="#{bundle['file.restrict']}"/>
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <li>
-                                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
-                                                            <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                                        </p:commandLink>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
-                                                <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
-                                            </p:commandLink>
-                                        </div>                                           
                                     </f:facet>
                                     <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{!empty DatasetPage.editMode}" />
                                     <p:column class="col-file-thumb text-center">
