@@ -17,8 +17,10 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -86,6 +88,8 @@ public class DataversePage implements java.io.Serializable {
     ControlledVocabularyValueServiceBean controlledVocabularyValueServiceBean;
     @EJB
     SavedSearchServiceBean savedSearchService;
+    @EJB
+    SystemConfig systemConfig;
     @Inject
     SearchIncludeFragment searchIncludeFragment;
 
@@ -603,7 +607,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(editMode.FEATURED)) {
                 message = "The featured dataverses for this dataverse have been updated.";
             } else {
-                message = (create) ? JH.localize("dataverse.create.success") : JH.localize("dataverse.update.success");
+                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getVersion())) : JH.localize("dataverse.update.success");
             }
             JsfHelper.addSuccessMessage(message);
             

@@ -531,12 +531,15 @@ public class IngestServiceBean {
                 DataFile new_datafile = createSingleDataFile(version, finalFileInputStream, finalFile.getName(), finalType);
                 if (new_datafile != null) {
                   datafiles.add(new_datafile);
+                }else{
+                  logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
                 }
                 finalFileInputStream.close();                
              
             }
             
             // Delete the temp directory used for unzipping
+            /*
             logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
             FileUtils.deleteDirectory(rezipFolder);
 
@@ -546,9 +549,12 @@ public class IngestServiceBean {
                     finalFile.delete();
                 }
             }
-            
+            */
+             
             if (datafiles.size() > 0) {
                 return datafiles;
+            }else{
+                logger.severe("No files added from directory of rezipped shapefiles");
             }
             return null;
            
@@ -987,6 +993,7 @@ public class IngestServiceBean {
         
         String tempDirectory = this.getFilesTempDirectory();
         if (tempDirectory == null){
+            logger.severe("Failed to retrieve tempDirectory, null was returned" );
             return null;
         }
         String datestampedFileName =  "shp_" + new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS").format(new Date());
@@ -1001,6 +1008,7 @@ public class IngestServiceBean {
             try {
                 Files.createDirectories(Paths.get(datestampedFolderName));
             } catch (IOException ex) {
+                logger.severe("Failed to create temp. directory to unzip shapefile: " + datestampedFolderName );
                 return null;
             }
         }
@@ -1023,6 +1031,7 @@ public class IngestServiceBean {
             try {
                 Files.createDirectories(Paths.get(filesTempDirectory));
             } catch (IOException ex) {
+                logger.severe("Failed to create filesTempDirectory: " + filesTempDirectory );
                 return null;
             }
         }

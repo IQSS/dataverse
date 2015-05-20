@@ -98,7 +98,7 @@ public class StoredOriginalFile {
 
                 fileDownload.setNoVarHeader(true);
                 fileDownload.setVarHeader(null);
-
+                
                 return fileDownload;
             }
         }
@@ -119,7 +119,7 @@ public class StoredOriginalFile {
             return ".sav";
         } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
             return ".por";
-        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
+        } else if (fileType.equalsIgnoreCase("application/x-stata") || fileType.equalsIgnoreCase("application/x-stata-13")) {
             return ".dta";
         } else if (fileType.equalsIgnoreCase("application/x-dvn-csvspss-zip")) {
             return ".zip";
@@ -127,6 +127,10 @@ public class StoredOriginalFile {
             return ".zip";
         } else if (fileType.equalsIgnoreCase("application/x-rlang-transport")) {
             return ".RData";
+        } else if (fileType.equalsIgnoreCase("text/csv") || fileType.equalsIgnoreCase("text/comma-separated-values")) {
+            return ".csv";
+        } else if (fileType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            return ".xlsx";
         }
 
         return "";

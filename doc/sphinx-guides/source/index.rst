@@ -13,17 +13,16 @@ These guides are for the most recent version of Dataverse (v4.0). For the guides
   :titlesonly:
   :maxdepth: 2
 
-  getting-started/index
   user/index
-  developers/index
   installation/index
   api/index
+  developers/index
 
 How the Guides Are Organized
 =============================
 
 The Guides are reference documents that explain how to use Dataverse,
-which are divided into the following sections: Getting Started, User Guide,
+which are divided into the following sections: User Guide,
 Installation Guide, Developers Guide, and API Guide. The User Guide is further divided into primary activities: finding & using
 data, adding Datasets, administering dataverses or Datasets, and Dataset exploration/visualizations. Details
 on all of the above tasks can be found in the Users Guide. The
@@ -41,7 +40,7 @@ Other Resources
 Additional information about the Dataverse Project itself
 including presentations, information about upcoming releases, data
 management and citation, and announcements can be found at
-`http://datascience.iq.harvard.edu/ <http://datascience.iq.harvard.edu/>`__
+`http://dataverse.org/ <http://dataverse.org/>`__
 
 **User Group**
 
@@ -60,7 +59,7 @@ attempt to respond within one business day to all questions and if it
 cannot be resolved immediately, we'll let you know what to expect.
 
 The support email address is
-`support@thedata.org <mailto:support@thedata.org>`__.
+`support@dataverse.org <mailto:support@dataverse.org>`__.
 
 This is the same address as the Report Issue link. We try to respond
 within one business day.

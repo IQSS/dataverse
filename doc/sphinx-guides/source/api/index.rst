@@ -11,17 +11,16 @@ interoperate with the Dataverse to utilize our
 APIs. In 4.0, we require to get a token, by simply registering for a Dataverse account, before using our APIs 
 (We are considering making some of the APIs completley public in the future - no token required - if you use it only a few times).
 
-Rather than using a production installation of Dataverse, API users are
-welcome to use http://apitest.dataverse.org for testing.
+Rather than using a production installation of Dataverse, API users should use http://apitest.dataverse.org for testing.
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-  native-api
-  search
   sword
+  search
   dataaccess
+  native-api
   client-libraries
   apps

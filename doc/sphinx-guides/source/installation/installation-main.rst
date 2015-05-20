@@ -1,18 +1,28 @@
 ====================================
-Installation Guide
+Application Configuration
 ====================================
+
+**Much of the Dataverse Application configuration is done by the automated installer (described above). This section documents the additional configuration tasks that need to be done after you run the installer.** 
 
 .. _introduction:
 
-Glassfish Configuration
+Dataverse Admin Account
 +++++++++++++++++++++++
 
-SSLEngine is null workaround
-----------------------------
+Now that you've run the application installer and have your own Dataverse instance, you need to configure the Dataverse Administrator user. 
+By default installer pre-sets the Admin credentials as follows:
 
-If you are fronting Glassfish with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Glassfish server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null". 
+.. code-block:: none
 
-To hide these warnings, run ``asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
+    First Name: Dataverse
+    Last Name:  Admin
+    Affiliation: Dataverse.org
+    Position: Admin
+    Email: dataverse@mailinator.com
+
+Log in as the user dataverseAdmin and change these values to suit your installation. 
+
+(Alteratively, you can modify the file ``dvinstall/data/user-admin.json`` in the installer bundle **before** you run the installer). 
 
 Solr Configuration
 ++++++++++++++++++
@@ -34,35 +44,43 @@ ApplicationPrivacyPolicyUrl
 
 Specify a URL where users can read your Privacy Policy.
 
-``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html http://localhost:8080/api/s/settings/:ApplicationPrivacyPolicyUrl``
+``curl -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html http://localhost:8080/api/admin/settings/:ApplicationPrivacyPolicyUrl``
 
 ApiTermsOfUse
 -------------
 
 Upload a text file containing the API Terms of Use.
 
-``curl -X PUT -d@/tmp/api-tos.txt http://localhost:8080/api/s/settings/:ApiTermsOfUse``
+``curl -X PUT -d@/tmp/api-tos.txt http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
 SolrHostColonPort
 -----------------
 
 Set ``SolrHostColonPort`` to override ``localhost:8983``.
 
-``curl -X PUT -d localhost:8983 http://localhost:8080/api/s/settings/:SolrHostColonPort``
+``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
 
 ShibEnabled
 -----------
 
-Set ``ShibEnabled`` to ``true`` to enable Shibboleth login.
+This setting is experimental per :doc:`/installation/shibboleth`.
 
-``curl -X PUT -d true http://localhost:8080/api/s/settings/:ShibEnabled``
-
-DataDepositApiMaxUploadInBytes
+MaxFileUploadSizeInBytes
 ------------------------------
 
-Set `DataDepositApiMaxUploadInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB.
+Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB. 
+Notes:
+- For SWORD, this size is limited by the Java Integer.MAX_VALUE of 2,147,483,647. (see: https://github.com/IQSS/dataverse/issues/2169)
+- If the MaxFileUploadSizeInBytes is NOT set, uploads, including SWORD may be of unlimited size.
 
-``curl -X PUT http://localhost:8080/api/s/settings/:DataDepositApiMaxUploadInBytes/2147483648``
+``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
+
+GuidesBaseUrl
+-------------
+
+Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org".
+
+``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
 JVM Options
 +++++++++++
@@ -97,31 +115,6 @@ dataverse.auth.password-reset-timeout-in-minutes
 ------------------------------------------------
 
 Set the ``dataverse.auth.password-reset-timeout-in-minutes`` option if you'd like to override the default value put into place by the installer.
-
-**Enforce SSL on SWORD**
-
-- Set up connector Apache and Glassfish
-``asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector``
-
-- Apache dataverse.conf
-
-Add the following to ``/etc/httpd/conf.d/dataverse.conf``
-
-.. code-block:: guess
-
-  # From https://wiki.apache.org/httpd/RewriteHTTPToHTTPS
-  RewriteEngine On
- 
-  # This will enable the Rewrite capabilities
-  RewriteCond %{HTTPS} !=on
- 
-  # This checks to make sure the connection is not already HTTPS
-  # RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L] 
-  RewriteRule ^/dvn/api/data-deposit/?(.*) https://%{SERVER_NAME}/dvn/api/data-deposit/$1 [R,L]
-  # This rule will redirect users from their original location, to the same location but using HTTPS.
-  # i.e.  http://www.example.com/foo/ to https://www.example.com/foo/
-  # The leading slash is made optional so that this will work either in httpd.conf or .htaccess context
-
 
 Dropbox Configuration
 ++++++++++++++++++++++

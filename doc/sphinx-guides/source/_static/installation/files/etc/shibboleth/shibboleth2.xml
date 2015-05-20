@@ -1,10 +1,9 @@
 <!--
-This is an example shibboleth2.xml generated for you by TestShib.  It's reduced and recommended
-specifically for testing.  You don't need to change anything, but you may want to explore the file
-to learn about how your SP works.  Uncomment attributes in your attribute-map.xml file to test them.
+This is an example shibboleth2.xml generated originally by http://testshib.org
+and tweaked for Dataverse.  See also:
 
-If you want to test advanced functionality, start from the distribution shibboleth2.xml and add the
-MetadataProvider, the right entityID, and a properly configured SSO element.  More information:
+- attribute-map.xml
+- dataverse-idp-metadata.xml
 
 https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
 -->
@@ -12,7 +11,7 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
 <SPConfig xmlns="urn:mace:shibboleth:2.0:native:sp:config" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
     clockSkew="1800">
 
-    <!-- The entityID is the name TestShib made for your SP. -->
+    <!-- FIXME: change the entityID to your hostname. -->
     <ApplicationDefaults entityID="https://shibtest.dataverse.org/sp"
         REMOTE_USER="eppn" attributePrefix="AJP_">
 
@@ -20,19 +19,10 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
         <!-- https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSessions -->
         <Sessions lifetime="28800" timeout="3600" checkAddress="false" relayState="ss:mem" handlerSSL="false">
 
-            <!-- Triggers a login request directly to the TestShib IdP. -->
-            <!-- https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPServiceSSO -->
-            <!-- A single explicit entityId could be used for Dataverse installation that only cares about one IdP. -->
-            <!-- <SSO entityID="https://idp.testshib.org/idp/shibboleth">SAML2 SAML1</SSO> -->
-
-            <!-- not used but maybe helpful for troubleshooting -->
-            <!--<SSO discoveryProtocol="SAMLDS" discoveryURL="https://shibtest.dataverse.org/shibboleth-ds/index.html">SAML2 SAML1</SSO>-->
-            <!-- picker is displayed as an iframe in this page -->
-            <SSO discoveryProtocol="SAMLDS" discoveryURL="https://shibtest.dataverse.org/shibboleth-ds/index.html">
+	    <SSO>
 	      SAML2 SAML1
 	    </SSO>
-<!--
--->
+
             <!-- SAML and local-only logout. -->
             <!-- https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPServiceLogout -->
             <Logout>SAML2 Local</Logout>
@@ -58,13 +48,10 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
         </Sessions>
 
         <!-- Error pages to display to yourself if something goes horribly wrong. -->
-        <Errors supportContact="root@localhost" logoLocation="/shibboleth-sp/logo.jpg" 
+        <Errors supportContact="root@localhost" logoLocation="/shibboleth-sp/logo.jpg"
                 styleSheet="/shibboleth-sp/main.css"/>
 
         <!-- Loads and trusts a metadata file that describes only the Testshib IdP and how to communicate with it. -->
-        <!-- For Dataverse we hard code a local file instead of using a URI -->
-        <!-- <MetadataProvider type="XML" uri="http://www.testshib.org/metadata/testshib-providers.xml" backingFilePath="testshib-two-idp-metadata.xml" reloadInterval="180000" /> -->
-
         <!-- IdPs we want allow go in /etc/shibboleth/dataverse-idp-metadata.xml -->
         <MetadataProvider type="XML" file="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
 
@@ -77,7 +64,7 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
         <CredentialResolver type="File" key="sp-key.pem" certificate="sp-cert.pem"/>
 
     </ApplicationDefaults>
-    
+
     <!-- Security policies you shouldn't change unless you know what you're doing. -->
     <SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
 

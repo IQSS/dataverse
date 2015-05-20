@@ -8,11 +8,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -22,6 +24,8 @@ import javax.persistence.PersistenceContext;
 @Named
 public class SettingsServiceBean {
     
+    private static final Logger logger = Logger.getLogger(SettingsServiceBean.class.getCanonicalName());
+    
     /**
      * Some convenient keys for the settings. Note that the setting's 
      * name is really a {@code String}, but it's good to have the compiler look
@@ -30,6 +34,8 @@ public class SettingsServiceBean {
      */
     public enum Key {
        /**
+        * Domain name specific code for Google Analytics
+        *//**
         * Domain name specific code for Google Analytics
         */
         GoogleAnalyticsCode,
@@ -96,8 +102,8 @@ public class SettingsServiceBean {
         SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
-        /** Key for limiting the number of bytes uploaded via the Data Deposit API. */
-        DataDepositApiMaxUploadInBytes,
+        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
+        MaxFileUploadSizeInBytes,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
         /** Key for if ScrubMigrationData is enabled or disabled. */
@@ -120,10 +126,18 @@ public class SettingsServiceBean {
         */
         /* TwoRavens location */
         TwoRavensUrl,
+        /** Optionally override http://guides.dataverse.org . */
+        GuidesBaseUrl,
         /* zip download size limit */
         ZipDonwloadLimit,
         /* zip upload number of files limit */
         ZipUploadFilesLimit,
+        /* Size limits for generating thumbnails on the fly */
+        /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
+         * size of the file is less than this)
+        */
+        ThumbnailSizeLimitImage,
+        ThumbnailSizeLimitPDF,
         /* status message that will appear on the home page */
         StatusMessageHeader,
         /* full text of status message, to appear in popup */
@@ -168,6 +182,34 @@ public class SettingsServiceBean {
     public String getValueForKey( Key key ) {
         return get(key.toString());
     }
+    
+    
+    /**
+     * Attempt to convert the value to an integer
+     *  - Applicable for keys such as MaxFileUploadSizeInBytes
+     * 
+     * On failure (key not found or string not convertible to a long), returns null
+     * @param key
+     * @return 
+     */
+       public Long getValueForKeyAsLong(Key key){
+        
+        String val = this.getValueForKey(key);
+
+        if (val == null){
+            return null;
+        }
+
+        try {
+            long valAsInt = Long.parseLong(val);
+            return valAsInt;
+        } catch (NumberFormatException ex) {
+            logger.warning("Incorrect setting.  Could not convert \"" + val + "\" from setting " + key.toString() + " to long.");
+            return null;
+        }
+        
+    }
+    
     
     /**
      * Return the value stored, or the default value, in case no setting by that
@@ -230,5 +272,6 @@ public class SettingsServiceBean {
     public Set<Setting> listAll() {
         return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
     }
+    
     
 }

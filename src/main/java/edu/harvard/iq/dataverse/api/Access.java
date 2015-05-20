@@ -51,7 +51,9 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -251,6 +253,141 @@ public class Access extends AbstractApiBean {
         return downloadInstance;
     }
     
+    
+    /* 
+     * Variants of the Access API calls for retrieving datafile-level 
+     * Metadata.
+    */
+    
+    
+    // Metadata format defaults to DDI:
+    @Path("datafile/{fileId}/metadata")
+    @GET
+    @Produces({"text/xml"})
+    public String tabularDatafileMetadata(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ { 
+        return tabularDatafileMetadataDDI(fileId, exclude, include, header, response);
+    }
+    
+    /* 
+     * This has been moved here, under /api/access, from the /api/meta hierarchy
+     * which we are going to retire.
+     */
+    @Path("datafile/{fileId}/metadata/ddi")
+    @GET
+    @Produces({"text/xml"})
+    public String tabularDatafileMetadataDDI(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+        String retValue = "";
+
+        DataFile dataFile = null; 
+        
+        //httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+        //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
+        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+        
+        dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            throw new NotFoundException();
+        }
+        
+        String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
+        response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
+        response.setHeader("Content-Type", "application/xml; name=\""+fileName+"\"");
+        
+        ByteArrayOutputStream outStream = null;
+        outStream = new ByteArrayOutputStream();
+
+        try {
+            ddiExportService.exportDataFile(
+                    fileId,
+                    outStream,
+                    exclude,
+                    include);
+
+            retValue = outStream.toString();
+
+        } catch (Exception e) {
+            // For whatever reason we've failed to generate a partial 
+            // metadata record requested. 
+            // We return Service Unavailable.
+            throw new ServiceUnavailableException();
+        }
+
+        response.setHeader("Access-Control-Allow-Origin", "*");
+
+        return retValue;
+    }
+    
+    @Path("variable/{varId}/metadata/ddi")
+    @GET
+    @Produces({ "application/xml" })
+
+    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        String retValue = "";
+        
+        ByteArrayOutputStream outStream = null;
+        try {
+            outStream = new ByteArrayOutputStream();
+
+            ddiExportService.exportDataVariable(
+                    varId,
+                    outStream,
+                    exclude,
+                    include);
+        } catch (Exception e) {
+            // For whatever reason we've failed to generate a partial 
+            // metadata record requested. We simply return an empty string.
+            return retValue;
+        }
+
+        retValue = outStream.toString();
+        
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        
+        return retValue; 
+    }
+    
+    /*
+     * "Preprocessed data" metadata format:
+     * (this was previously provided as a "format conversion" option of the 
+     * file download form of the access API call)
+     */
+    
+    @Path("datafile/{fileId}/metadata/preprocessed")
+    @GET
+    @Produces({"text/xml"})
+    
+    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") Long fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
+    
+        DataFile df = dataFileService.find(fileId);
+        
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        
+        // This will throw a WebApplicationException, with the correct 
+        // exit code, if access isn't authorized: 
+        checkAuthorization(df, apiToken);
+        DownloadInfo dInfo = new DownloadInfo(df);
+
+        if (df.isTabularData()) {
+            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
+        } else {
+            throw new ServiceUnavailableException("Preprocessed Content Metadata requested on a non-tabular data file.");
+        }
+        DownloadInstance downloadInstance = new DownloadInstance(dInfo);
+        if (downloadInstance.isDownloadServiceSupported("format", "prep")) {
+            logger.fine("Preprocessed data for tabular file "+fileId);
+        }
+        
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        
+        return downloadInstance;
+    }
+    
+    /* 
+     * API method for downloading zipped bundles of multiple files:
+    */
     
     
     @Path("datafiles/{fileIds}")

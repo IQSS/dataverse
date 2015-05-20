@@ -21,7 +21,7 @@ Creating a dataverse is easy but first you must be a registered user (see Create
     * **Identifier**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse URL field, the URL for your Dataverse changes (http//.../'url'), which affects links to this page.
     * **Email**: This is the email address that will be used as the contact for this particular dataverse. You can have more than one contact email address for your dataverse.
     * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
-    * **Description**: Provide a description of this dataverse. This will display on the home page of your dataverse and in the search result list.
+    * **Description**: Provide a description of this dataverse. This will display on the home page of your dataverse and in the search result list. The description field supports certain HTML tags (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <ul>).
     * **Category**: Select a category that best describes the type of dataverse this will be. For example, if this is a dataverse for an individual researcher's datasets, select Researcher. If this is a dataverse for an institution, select Organization & Institution.
     * **Choose the sets of Metadata Elements for datasets in this dataverse**: by default the metadata elements will be from the host dataverse that this new dataverse is created in. Dataverse offers metadata standards for multiple domains. To learn more about the metadata standards in Dataverse please check out the appendix (insert link here)
     * **Select facets for this dataverse**: by default the facets that will appear on your dataverse landing page will be from the host dataverse that this new dataverse was created in. The facets are simply metadata fields that can be used to help others easily find dataverses and datasets within this dataverse. You can select as many facets as you would like.
@@ -36,12 +36,11 @@ Edit Dataverse
 To edit your dataverse, navigate to your dataverse homepage and select the "Edit Dataverse" button, 
 where you will be presented with the following editing options: 
 
-- :ref:`General Information <general-information>` : edit name, host dataverse, alias, email, 
-  description, affilitation, Metadata Elements, and facets for your dataverse.
+- :ref:`General Information <general-information>` : edit name, identifier, category, contact email, affiliation, description, Metadata Elements, and facets for your dataverse.
 - :ref:`Theme + Widgets <theme-widgets>` : upload a logo for your dataverse, add a link to your department or personal website, and select colors for your dataverse in order to brand it. Also, you can get code to add to your website to have your dataverse display on it.
 - :ref:`Permissions <dataverse-permissions>` : give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
 - :ref:`Dataset Templates <dataset-templates>` : these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
-- :ref:`Dataset Guestbooks <dataset-guestbooks>` : 
+- :ref:`Dataset Guestbooks <dataset-guestbooks>` : allows you to collect data about who is downloading the files from your datasets
 - :ref:`Featured Dataverses <featured-dataverses>` : if you have one or more dataverses, you can use this option to show them at the top of your dataverse page to help others easily find interesting or important dataverses
 - **Delete Dataverse**: you are able to delete your dataverse as long as it is not published and does not have any draft datasets 
 
@@ -66,7 +65,11 @@ For Theme, you can decide either to use the customization from the dataverse abo
 There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data. Within the Widgets page, you can copy and paste the code for the widget you would like to have on your website. 
 
 Adding Widgets to an OpenScholar Website
-
+********************************************
+#. Log in to your OpenScholar website
+#. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
+#. Click on the Settings Cog and select Layout
+#. At the top right, select Add New Widget and under Misc. you will see the Dataverse Search Box and the Dataverse Listing widgets. Click on the widget you would like to add (we recommend using both), fill out the form, and then drag it to where you would like it to display in the page. 
 
 
 .. _dataverse-permissions:
@@ -144,7 +147,7 @@ Note: Featured Dataverses can only be used with published dataverses.
 
 Linked Dataverses + Linked Datasets
 ======================================================
-
+Coming soon in 4.0.2!
 
 Publish Your Dataverse
 =================================================================

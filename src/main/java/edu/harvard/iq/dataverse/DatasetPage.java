@@ -183,6 +183,26 @@ public class DatasetPage implements java.io.Serializable {
 
     private DataFile selectedDownloadFile;
 
+    private Long maxFileUploadSizeInBytes = null;
+    
+    
+    /*
+        Save the setting locally so db isn't hit repeatedly
+    
+        This may be "null", signifying unlimited download size
+    */
+    public Long getMaxFileUploadSizeInBytes(){
+        return this.maxFileUploadSizeInBytes;
+    }
+    
+    public boolean isUnlimitedUploadFileSize(){
+        
+        if (this.maxFileUploadSizeInBytes == null){
+            return true;
+        }
+        return false;
+    }
+    
     public DataFile getSelectedDownloadFile() {
         return selectedDownloadFile;
     }
@@ -487,7 +507,6 @@ public class DatasetPage implements java.io.Serializable {
     public String getDropBoxKey() {
         // Site-specific DropBox application registration key is configured 
         // via a JVM option under glassfish.
-
         String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
         if (configuredDropBoxKey != null) {
             return configuredDropBoxKey;
@@ -707,8 +726,8 @@ public class DatasetPage implements java.io.Serializable {
      }
 
     public void handleChange() {
-        System.out.print("handle change");
-        System.out.print("new value " + selectedTemplate.getId());
+        logger.info("handle change");
+        logger.info("new value " + selectedTemplate.getId());
     }
 
     public void handleChangeButton() {
@@ -771,7 +790,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void msg(String s){
-        //System.out.println(s);
+        //logger.fine(s);
     }
     
     /**
@@ -938,8 +957,9 @@ public class DatasetPage implements java.io.Serializable {
 
     
    public String init() {
-        // System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
@@ -1600,7 +1620,6 @@ public class DatasetPage implements java.io.Serializable {
 
         } catch (CommandException ex) {
             String msg = "There was a problem linking this dataset to yours: " + ex;
-            System.out.print("in catch exception... " + ex);
             logger.severe(msg);
             /**
              * @todo how do we get this message to show up in the GUI?
@@ -1995,12 +2014,21 @@ public class DatasetPage implements java.io.Serializable {
         return new HttpClient();
     }
 
+    public boolean showFileUploadFileComponent(){
+        
+        if ((this.editMode == this.editMode.FILE) || (this.editMode == this.editMode.CREATE)){
+           return true;
+        }
+        return false;
+    }
+    
+    
     public void handleDropBoxUpload(ActionEvent e) {
         // Read JSON object from the output of the DropBox Chooser: 
         JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection));
         JsonArray dbArray = dbJsonReader.readArray();
         dbJsonReader.close();
-
+               
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
 
@@ -2010,7 +2038,18 @@ public class DatasetPage implements java.io.Serializable {
             int fileSize = dbObject.getInt("bytes");
 
             logger.fine("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
-
+            
+            /* ----------------------------
+               If the file is too big:
+                - Add error mesage      
+                - Go to the next file
+            // ---------------------------- */
+            if ((!this.isUnlimitedUploadFileSize())&&(fileSize > this.getMaxFileUploadSizeInBytes())){
+                String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
+                FacesContext.getCurrentInstance().addMessage(e.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+                continue;  // skip to next file, and add error mesage                
+            }
+            
             DataFile dFile = null;
 
             // Make http call, download the file: 

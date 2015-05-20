@@ -34,12 +34,12 @@ Advanced Search
 -----------------
 
 In an advanced search, you can refine your criteria by choosing which Metadata fields to search. You can perform an 
-advanced search on Citation metadata fields as well as domain specific metadata fields depending on the metadata blocks
-available for your Dataverse (Social Sciences & Humanities, Geospatial
-Astronomy & Astrophysics, and Life Sciences) . Additionally, you can perform an advanced search for dataverses and files.
+advanced search on Citation metadata fields as well as domain specific metadata fields depending on the metadata
+selected for your Dataverse (Social Sciences & Humanities, Geospatial
+Astronomy & Astrophysics, and Life Sciences). Additionally, you can perform an advanced search for dataverses and files.
 
 To perform an advanced search, click the "Advanced Search" link next to the search bar. There you will have the ability to 
-enter search terms for Dataverses, Dataset Publication Date, Dataset Metadata (citation and domain-specific), and file-level 
+enter search terms for Dataverses, Dataset Metadata (citation and domain-specific), and file-level 
 metadata. If you are searching for tabular data files you can also search at the variable level for name and label. To find 
 out more about what each field searches, hover over the field name for a detailed description of the field.
 
@@ -51,6 +51,7 @@ In Dataverse, browsing happens when a user hasn't entered a search term or query
 
 Saved Search
 --------------------
+Coming soon in 4.0.2!
 
 Using Data
 =============

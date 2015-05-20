@@ -13,6 +13,8 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
 
     private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
 
@@ -123,19 +125,23 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     @Override
     public int getMaxUploadSize() {
+        
         int unlimited = -1;
-        String maxUploadInBytes = settingsService.getValueForKey(SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes);
-        if (maxUploadInBytes != null) {
-            try {
-                int maxUploadSizeInBytes = Integer.parseInt(maxUploadInBytes);
-                return maxUploadSizeInBytes;
-            } catch (NumberFormatException ex) {
-                logger.info("Could not convert " + maxUploadInBytes + " from setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " to int. Setting Data Deposit API max upload size limit to unlimited.");
-                return unlimited;
-            }
-        } else {
-            logger.fine("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit API max upload size limit to unlimited.");
-            return unlimited;
+
+        Long maxUploadInBytes = systemConfig.getMaxFileUploadSize();
+
+        if (maxUploadInBytes == null){
+            // (a) No setting, return unlimited           
+            return unlimited;      
+        
+        }else if (maxUploadInBytes > Integer.MAX_VALUE){
+            // (b) setting returns the limit of int, return max int value  (BUG)
+            return Integer.MAX_VALUE;
+            
+        }else{            
+            // (c) Return the setting as an int
+            return maxUploadInBytes.intValue();
+
         }
     }
 

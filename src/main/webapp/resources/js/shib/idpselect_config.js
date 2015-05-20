@@ -5,7 +5,7 @@ function IdPSelectUIParms() {
     // Adjust the following to fit into your local configuration
     //
     this.alwaysShow = true;          // If true, this will show results as soon as you start typing
-    this.dataSource = window.location.hostname === 'localhost' ? '/resources/dev/sample-shib-identities.json' : window.location.protocol + "//" + window.location.hostname + ':8181/Shibboleth.sso/DiscoFeed'; // where to get the data from (dev vs. prod)
+    this.dataSource = window.location.hostname === 'localhost' ? '/resources/dev/sample-shib-identities.json' : '/Shibboleth.sso/DiscoFeed'; // where to get the data from (dev vs. prod)
     this.defaultLanguage = 'en';     // Language to use if the browser local doesnt have a bundle
     this.defaultLogo = 'resources/images/shib_no_logo.png';
     this.defaultLogoWidth = 1;
@@ -14,7 +14,7 @@ function IdPSelectUIParms() {
     // Approaching via the Discovery Protocol for example
     //this.defaultReturn = "https://example.org/Shibboleth.sso/DS?SAMLDS=1&target=https://example.org/secure";
 
-    this.defaultReturn = window.location.protocol + "//" + window.location.hostname + ":8181/Shibboleth.sso/Login?SAMLDS=1&target=" + window.location.protocol + "//" + window.location.hostname + ":8181/shib.xhtml";
+    this.defaultReturn = window.location.protocol + "//" + window.location.hostname + "/Shibboleth.sso/Login?SAMLDS=1&target=" + window.location.protocol + "//" + window.location.hostname + "/shib.xhtml";
     this.defaultReturnIDParam = null;
     this.helpURL = '/guides/user/account.html';
     this.ie6Hack = null;             // An array of structures to disable when drawing the pull down (needed to 

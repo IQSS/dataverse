@@ -4,6 +4,8 @@ import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -61,10 +63,13 @@ public class SystemConfig {
     private static final int defaultZipUploadFilesLimit = 1000; 
 
     /**
-     * @todo Stop hard coding the same value in idpselect_config.js
+     * @todo Reconcile with getApplicationVersion on DataverseServiceBean.java
+     * which we'd like to move to this class.
      */
-    public static final int APACHE_HTTPS_PORT = 8181;
-    
+    public String getVersion() {
+        return BundleUtil.getStringFromBundle("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
+    }
+
     public String getSolrHostColonPort() {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
@@ -143,7 +148,18 @@ public class SystemConfig {
         }
         return fqdn;
     }
-    
+
+    public String getGuidesBaseUrl() {
+        String saneDefault = "http://guides.dataverse.org";
+        String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
+        return guidesBaseUrl + "/" + getGuidesLanguage();
+    }
+
+    private String getGuidesLanguage() {
+        String saneDefault = "en";
+        return saneDefault;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 
@@ -189,7 +205,38 @@ public class SystemConfig {
         return defaultZipUploadFilesLimit; 
     }
 
-    // curl -X PUT -d@/tmp/apptos.txt http://localhost:8080/api/s/settings/:ApplicationTermsOfUse
+    public long getThumbnailSizeLimitImage() {
+        return getThumbnailSizeLimit("Image");
+    } 
+    
+    public long getThumbnailSizeLimitPDF() {
+        return getThumbnailSizeLimit("PDF");
+    }
+    
+    public long getThumbnailSizeLimit(String type) {
+        String option = null; 
+        if ("Image".equals(type)) {
+            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
+        } else if ("PDF".equals(type)) {
+            option = settingsService.getValueForKey(SettingsServiceBean.Key.ThumbnailSizeLimitPDF);
+        }
+        Long limit = null; 
+        
+        if (option != null && !option.equals("")) {
+            try {
+                limit = new Long(option);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit.longValue();
+        }
+        
+        return 0; 
+    }
+    
     public String getApplicationTermsOfUse() {
         String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
@@ -217,5 +264,12 @@ public class SystemConfig {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
     }
+    
+    
+    public Long getMaxFileUploadSize(){
+
+         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+     }
+    
 
 }

@@ -77,10 +77,12 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 throw new CommandException("Cannot delete files from a released version. Please create a draft version of this dataset.", this);               
             }
             
-            for (Iterator<FileMetadata> it = dsv.getFileMetadatas().iterator(); it.hasNext();) {
-                FileMetadata fmd = it.next();
-                if (doomed.getId() != null && doomed.equals(fmd.getDataFile())) {
+            // iterate through the filemetadatas of the file to find the one that belongs to
+            // this draft (need to go this way since we removed the fmd from the list on the version side)
+            for (FileMetadata fmd : doomed.getFileMetadatas()) {
+                if (fmd.getDatasetVersion().getId().equals(dsv.getId())) {
                     /* commented out, because not yet working as expected (see todo, above)
+                    // also - used iternator method of fir loop which has now been removed
                     it.remove();
                     ctxt.engine().submit(new UpdateDatasetCommand(dsv.getDataset(), user));
                     */

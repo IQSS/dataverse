@@ -276,7 +276,7 @@ public class ShapefileHandlerTest {
         rezipped_filenames.addAll(Arrays.asList(unzip2Folder.list()));
         
         msg("rezipped_filenames: " + rezipped_filenames);
-        List<String> expected_filenames = Arrays.asList("shape1.zip", "shape1.pdf", "README.md", "shape_notes.txt");  
+        List<String> expected_filenames = Arrays.asList("shape1.zip", "scratch-for-unzip-12345", "shape1.pdf", "README.md", "shape_notes.txt");  
 
         assertEquals(expected_filenames.containsAll(rezipped_filenames), true);
         

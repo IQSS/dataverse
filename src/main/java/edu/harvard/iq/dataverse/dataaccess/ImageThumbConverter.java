@@ -147,20 +147,38 @@ public class ImageThumbConverter {
             return thumbFileLocation;
         } 
         
-        // let's attempt to generate the thumb:
+        // if not, let's attempt to generate the thumb:
         
-        // As a temporary measure, generating thumbnails on the fly is 
-        // completely disabled. If the thumbnail is not present, we 
-        // just return null here. Which will make the page show the 
-        // appropriate default icon instead. 
-        // Thumbnails that are already generated, previously or asynchronously, 
-        // outside of the app, will of course be used, per the above. 
-        // L.A. Apr. 23 2015
+        long sizeLimit = getThumbnailSizeLimitImage();
         
-        return null;
+        /* 
+         * sizeLimit set to -1 means that generation of thumbnails on the fly 
+         * is disabled: 
+         */
+        if (sizeLimit < 0) {
+            return null;
+        }
 
+        /* 
+         * sizeLimit set to 0 means no limit - generate thumbnails on the fly
+         * for all files, regardless of size. 
+        */
+        
+        if (sizeLimit > 0 ) {
+            long fileSize = 0; 
+            
+            try {
+                fileSize = new File(fileLocation).length();
+            } catch (Exception ex) {
+                // 
+            }
+            
+            if (fileSize == 0 || fileSize > sizeLimit) {
+                // this file is too large, exiting.
+                return null; 
+            }
+        }
 
-        /*
         try {
             logger.info("attempting to read the image file "+fileLocation+" with ImageIO.read()");
             BufferedImage fullSizeImage = ImageIO.read(new File(fileLocation));
@@ -201,7 +219,7 @@ public class ImageThumbConverter {
             //logger.fine("Finished image rescaling.");
 
             // if transparency is defined, we should preserve it in the png:
-            *//*   
+            /*   
             OK, turns out *nothing* special needs to be done in order to preserve
             the transparency; the transparency is already there, because ImageIO.read()
             creates a BufferedImage with the color type BufferedImage.TYPE_INT_ARGB;
@@ -220,7 +238,7 @@ public class ImageThumbConverter {
             logger.info("color we'll be using for transparency: "+color);
             
             thumbImage = makeColorTransparent(bufferedImageForTransparency, new Color(color));
-            *//*
+            */
             
             ImageWriter writer = null;
             Iterator iter = ImageIO.getImageWritersByFormatName("png");
@@ -254,7 +272,6 @@ public class ImageThumbConverter {
 
             return null;
         }
-        */
     }
     
     public static String generatePDFThumb(String fileLocation) {
@@ -271,20 +288,40 @@ public class ImageThumbConverter {
             return thumbFileLocation;
         } 
 
-        // doesn't exist yet, let's attempt to generate it:
+        // it it doesn't exist yet, let's attempt to generate it:
         
-        // As a temporary measure, generating thumbnails on the fly is 
-        // completely disabled. If the thumbnail is not present, we 
-        // just return null here. Which will make the page show the 
-        // appropriate default icon instead. 
-        // Thumbnails that are already generated, previously or asynchronously, 
-        // outside of the app, will of course be used, per the above. 
-        // L.A. Apr. 23 2015
+        long sizeLimit = getThumbnailSizeLimitPDF();
         
-        return null; 
+        /* 
+         * sizeLimit set to -1 means that generation of thumbnails on the fly 
+         * is disabled: 
+         */
+        
+        if (sizeLimit < 0) {
+            return null;
+        }
+
+        /* 
+         * sizeLimit set to 0 means no limit - generate thumbnails on the fly
+         * for all files, regardless of size. 
+        */
+        
+        if (sizeLimit > 0 ) {
+            long fileSize = 0; 
+            
+            try {
+                fileSize = new File(fileLocation).length();
+            } catch (Exception ex) {
+                // 
+            }
+            
+            if (fileSize == 0 || fileSize > sizeLimit) {
+                // this file is too large, exiting.
+                return null; 
+            }
+        }
 
 
-        /*
 	String imageMagickExec = System.getProperty("dataverse.path.imagemagick.convert");
 
         if ( imageMagickExec != null ) {
@@ -336,7 +373,6 @@ public class ImageThumbConverter {
         }
 
         return null; 
-        */
         
     }
     
@@ -366,6 +402,39 @@ public class ImageThumbConverter {
         
         return null; 
     }
+    
+    public static long getThumbnailSizeLimitImage() {
+        return getThumbnailSizeLimit("Image");
+    } 
+    
+    public static long getThumbnailSizeLimitPDF() {
+        return getThumbnailSizeLimit("PDF");
+    }
+    
+    public static long getThumbnailSizeLimit(String type) {
+        String option = null; 
+        if ("Image".equals(type)) {
+            option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
+        } else if ("PDF".equals(type)) {
+            option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
+        }
+        Long limit = null; 
+        
+        if (option != null && !option.equals("")) {
+            try {
+                limit = new Long(option);
+            } catch (NumberFormatException nfe) {
+                limit = null; 
+            }
+        }
+        
+        if (limit != null) {
+            return limit.longValue();
+        }
+        
+        return 0; 
+    }
+    
     
     /*
        The method below takes a BufferedImage, and makes the specified color

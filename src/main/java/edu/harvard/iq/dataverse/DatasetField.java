@@ -376,7 +376,7 @@ public class DatasetField implements Serializable {
             }
 
         }
-        // System.out.print("at return  " + this.datasetFieldType.getDisplayName() + " " + required);
+        // logger.fine("at return  " + this.datasetFieldType.getDisplayName() + " " + required);
         return required;
     }
     
