@@ -94,21 +94,7 @@ public class IngestableDataCheckerTest {
         fail("The test case is a prototype.");
     }
     */
-    /**
-     * Test of testSAVformat method, of class IngestableDataChecker.
-     */
-    //@Test
-    public void testTestSAVformat() {
-        System.out.println("testSAVformat");
-        MappedByteBuffer buff = null;
-        IngestableDataChecker instance = new IngestableDataChecker();
-        String expResult = "";
-        String result = instance.testSAVformat(buff);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
+    
     private void msg(String m){
         System.out.println(m);
     }
@@ -160,6 +146,39 @@ public class IngestableDataCheckerTest {
         assertEquals(result, "application/x-stata-13");
         
    
+    }
+
+    
+    /**
+     * Test of testSAVformat method, of class IngestableDataChecker.
+     */
+    @Test
+    public void testTestSAVformat() throws IOException {
+        msgt("(2) testSAVformat");
+
+        msgt("(2a) Mock a Legit SPSS-SAV File (application/x-spss-sav)");
+        MappedByteBuffer buff = createTempFileAndGetBuffer("testSAV.txt", "$FL2");
+
+        IngestableDataChecker instance = new IngestableDataChecker();
+        String result = instance.testSAVformat(buff);
+        msg("result 2a: " + result);
+        assertEquals(result, "application/x-spss-sav");
+
+        msgt("(2b) File is empty string");
+        buff = createTempFileAndGetBuffer("testNotSAV.txt", "");
+
+        instance = new IngestableDataChecker();
+        result = instance.testSAVformat(buff);
+        msg("result 2b: " + result);
+        assertEquals(result, null);
+
+        msgt("(2c) File is non-SAV string");
+        buff = createTempFileAndGetBuffer("testNotSAV.txt", "i-am-not-a-x-spss-sav-file");
+        instance = new IngestableDataChecker();
+        result = instance.testSAVformat(buff);
+        msg("result 2c: " + result);
+        assertEquals(result, null);
+
     }
 
     /**
