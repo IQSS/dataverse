@@ -264,6 +264,32 @@ public class IndexServiceBean {
                 solrIdsOfFilesToDelete.add(solrIdOfPublishedFile);
                 fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
             }
+            try {
+                /**
+                 * Preemptively delete *all* Solr documents for files associated
+                 * with the dataset based on a Solr query.
+                 *
+                 * We must query Solr for this information because the file has
+                 * been deleted from the database ( perhaps when Solr was down,
+                 * as reported in https://github.com/IQSS/dataverse/issues/2086
+                 * ) so the database doesn't even know about the file. It's an
+                 * orphan.
+                 *
+                 * @todo This Solr query should make the iteration above based
+                 * on the database unnecessary because it the Solr query should
+                 * find all files for the dataset. We can probably remove the
+                 * iteration above after an "index all" has been performed.
+                 * Without an "index all" we won't be able to find files based
+                 * on parentId because that field wasn't searchable in 4.0.
+                 *
+                 * @todo We should also delete the corresponding Solr
+                 * "permission" documents for the files.
+                 */
+                List<String> allFilesForDataset = findFilesOfParentDataset(dataset.getId());
+                solrIdsOfFilesToDelete.addAll(allFilesForDataset);
+            } catch (SearchException ex) {
+                logger.info("could not run search of files to delete: " + ex);
+            }
             int numFiles = 0;
             if (fileMetadatas != null) {
                 numFiles = fileMetadatas.size();
@@ -1212,11 +1238,22 @@ public class IndexServiceBean {
         }
     }
 
+    public List<Long> findFilesInSolrOnly() throws SearchException {
+        try {
+            /**
+             * @todo define this centrally and statically
+             */
+            return findDvObjectInSolrOnly("files");
+        } catch (SearchException ex) {
+            throw ex;
+        }
+    }
+
     private List<Long> findDvObjectInSolrOnly(String type) throws SearchException {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
-        solrQuery.setRows(Integer.SIZE);
+        solrQuery.setRows(Integer.MAX_VALUE);
         solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
         List<Long> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
@@ -1238,6 +1275,34 @@ public class IndexServiceBean {
                 } catch (ClassCastException ex) {
                     throw new SearchException("Found " + SearchFields.ENTITY_ID + " but error casting " + idObject + " to long", ex);
                 }
+            }
+        }
+        return dvObjectInSolrOnly;
+    }
+
+    private List<String> findFilesOfParentDataset(long parentDatasetId) throws SearchException {
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("*");
+        solrQuery.setRows(Integer.MAX_VALUE);
+        solrQuery.addFilterQuery(SearchFields.PARENT_ID + ":" + parentDatasetId);
+        /**
+         * @todo "files" should be a constant
+         */
+        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + "files");
+        List<String> dvObjectInSolrOnly = new ArrayList<>();
+        QueryResponse queryResponse = null;
+        try {
+            queryResponse = solrServer.query(solrQuery);
+        } catch (SolrServerException ex) {
+            throw new SearchException("Error searching Solr for dataset parent id " + parentDatasetId, ex);
+        }
+        SolrDocumentList results = queryResponse.getResults();
+        for (SolrDocument solrDocument : results) {
+            Object idObject = solrDocument.getFieldValue(SearchFields.ID);
+            if (idObject != null) {
+                String id = (String) idObject;
+                dvObjectInSolrOnly.add(id);
             }
         }
         return dvObjectInSolrOnly;
