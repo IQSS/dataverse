@@ -1140,7 +1140,7 @@
                         </div>
                         <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
                             <div class="panel-heading text-info" >
-                                <h:outputText id="outputText" value="#{bundle.dataset.versionDifferences.termsOfUseAccess}"/>
+                                <h:outputText id="outputTextTOU" value="#{bundle['dataset.versionDifferences.termsOfUseAccess']}"/>
                             </div>
                             <p:dataTable id="changedTermsAccessTable" styleClass="dvnDifferanceTable" var="diffArray" value="#{DatasetPage.datasetVersionDifference.changedTermsAccess}">
                                 <p:column styleClass="versionValue">
