@@ -8,7 +8,9 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.PrePersist;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -17,6 +19,7 @@ import javax.persistence.TemporalType;
  * @author michael
  */
 @Entity
+@Table(indexes = {@Index(columnList="useridentifier"), @Index(columnList="actiontype"), @Index(columnList="starttime")})
 public class ActionLogRecord implements java.io.Serializable {
     
     public enum Result {
