@@ -14,16 +14,22 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 
 /**
  *
  * @author skraffmiller
  */
 @Entity
+@Table(indexes = {@Index(columnList="datasetfield_id"), 
+    @Index(columnList="defaultvalueset_id"), 
+    @Index(columnList="parentdatasetfielddefaultvalue_id"), 
+    @Index(columnList="displayorder")})
 public class DatasetFieldDefaultValue implements Serializable {
     
     @Id
