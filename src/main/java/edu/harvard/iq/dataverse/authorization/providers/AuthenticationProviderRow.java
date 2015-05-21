@@ -4,9 +4,11 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  * Database-storable form of an {@code AuthenticationProvider}.
@@ -23,6 +25,7 @@ import javax.persistence.NamedQuery;
                  query="SELECT r FROM AuthenticationProviderRow r" )
 })
 @Entity
+@Table(indexes = {@Index(columnList="enabled")})
 public class AuthenticationProviderRow implements java.io.Serializable {
     
     @Id
