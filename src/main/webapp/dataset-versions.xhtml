@@ -86,6 +86,9 @@
                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
                     <h:outputText styleClass="highlightBold" value="#{versionTab.defaultVersionDifference.fileNote}; " /> 
                 </ui:fragment>
+                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.changedTermsAccess)}">
+                    <h:outputText styleClass="highlightBold" value="#{bundle['dataset.versionDifferences.termsOfUseAccessChanged']} " /> 
+                </ui:fragment>
             </ui:fragment>
             <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
                 <ui:fragment rendered="#{versionTab.draft}">

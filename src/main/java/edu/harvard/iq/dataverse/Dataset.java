@@ -150,32 +150,11 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPersistentURL() {
-        switch (this.getProtocol()) {
-            case "hdl":
-                return getHandleURL();
-            case "doi":
-                return getEZIdURL();
-            default:
-                return "";
-        }
+        return new GlobalId(this).toURL().toString();
     }
 
-    private String getHandleURL() {
-        return "http://hdl.handle.net/" + authority + "/" + getIdentifier();
-    }
-
-    private String getEZIdURL() {
-        if (globalIdCreateTime != null) {
-            return "http://dx.doi.org/" + authority + doiSeparator + getIdentifier();
-        } else {
-            return "http://dx.doi.org/" + authority + doiSeparator + "Dataset-not-registered";
-        }
-    }
-
-    public String getGlobalId() {
-
-        return protocol + ":" + authority + doiSeparator + getIdentifier();
-
+    public String getGlobalId() {       
+        return new GlobalId(this).toString();
     }
 
     public List<DataFile> getFiles() {

@@ -15,6 +15,10 @@ public class StringUtil {
     public static final boolean isEmpty(String str) {
         return str==null || str.trim().equals("");        
     }
+    
+    public static  String nullToEmpty(String inString) {
+        return inString == null ? "" : inString;
+    }
 
     public static final boolean isAlphaNumeric(String str) {
       final char[] chars = str.toCharArray();

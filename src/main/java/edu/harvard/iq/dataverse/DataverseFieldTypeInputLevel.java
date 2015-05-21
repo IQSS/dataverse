@@ -14,6 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /**
  *
@@ -29,6 +31,9 @@ import javax.persistence.NamedQuery;
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList",
             query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id in :datasetFieldIdList")
  
+})
+@Table(name="DataverseFieldTypeInputLevel",  uniqueConstraints={
+   @UniqueConstraint(columnNames={"dataverse_id", "datasetfieldtype_id"})
 })
 @Entity
 public class DataverseFieldTypeInputLevel implements Serializable {

@@ -1111,6 +1111,8 @@
                             <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
                                 <p:column styleClass="versionValue">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
+                                    <br></br>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.md5']} #{fileDiff.fileMD5}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
@@ -1118,6 +1120,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
                                     &#160;
@@ -1128,12 +1131,29 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
                                     &#160;
                                 </p:column>
                             </p:dataTable>
                         </div>
+                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
+                            <div class="panel-heading text-info" >
+                                <h:outputText id="outputText" value="#{bundle.dataset.versionDifferences.termsOfUseAccess}"/>
+                            </div>
+                            <p:dataTable id="changedTermsAccessTable" styleClass="dvnDifferanceTable" var="diffArray" value="#{DatasetPage.datasetVersionDifference.changedTermsAccess}">
+                                <p:column styleClass="versionValue">
+                                            <h:outputText value="#{diffArray[0]}" />
+                                        </p:column>
+                                        <p:column styleClass="versionDetails">
+                                            <h:outputText value="#{diffArray[1]}" />
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" >
+                                            <h:outputText value="#{diffArray[2]}"/>
+                                        </p:column>
+                            </p:dataTable>
+                        </ui:fragment>
                         <div class="button-block margin-bottom">
                             <p:commandButton value="#{bundle.done}" onclick="detailsBlocks.hide()" type="button" />
                         </div>
