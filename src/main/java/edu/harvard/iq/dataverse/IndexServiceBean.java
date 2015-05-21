@@ -278,7 +278,9 @@ public class IndexServiceBean {
                  * @todo This Solr query should make the iteration above based
                  * on the database unnecessary because it the Solr query should
                  * find all files for the dataset. We can probably remove the
-                 * iteration above.
+                 * iteration above after an "index all" has been performed.
+                 * Without an "index all" we won't be able to find files based
+                 * on parentId because that field wasn't searchable in 4.0.
                  *
                  * @todo We should also delete the corresponding Solr
                  * "permission" documents for the files.
@@ -1251,10 +1253,7 @@ public class IndexServiceBean {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*");
-        /**
-         * @todo Integer.MAX_VALUE was intended here.
-         */
-        solrQuery.setRows(Integer.SIZE);
+        solrQuery.setRows(Integer.MAX_VALUE);
         solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
         List<Long> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
