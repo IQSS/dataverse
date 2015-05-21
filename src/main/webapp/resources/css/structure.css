@@ -495,7 +495,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation-block {margin-bottom:.5em;}
 .bg-citation {background:#ECF6FB;}
-#citation, #citation-download {padding:.5em;}
+#citation, #citation-download, #citation-standards {padding:.5em;}
 #citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 #metadata-panel label.col-sm-3 {padding-left:0;}
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
