@@ -17,6 +17,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -25,6 +26,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
@@ -56,6 +58,9 @@ import org.hibernate.validator.constraints.NotBlank;
                       +"WHERE eg.owner.id=:ownerId AND ra=:raIdtf")
 })
 @Entity
+@Table(indexes = {@Index(columnList="owner_id")
+		//, @Index(columnList="groupalias") //@unique takes care of this
+		, @Index(columnList="groupaliasinowner")})
 public class ExplicitGroup implements Group, java.io.Serializable {
     
     @Id
