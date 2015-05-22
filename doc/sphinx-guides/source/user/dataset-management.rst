@@ -58,7 +58,7 @@ and browsable (facets) at the Dataset-level.
 Compressed Files
 ----------------------------------------
 
-Compressed files in zip format (support for tar coming soon) are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as 
+Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as 
 is. If the number of files inside are more than a set limit (1,000), you will get an error message and the file will uploads as is.
 
 Advanced Options
