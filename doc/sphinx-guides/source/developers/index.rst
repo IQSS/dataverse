@@ -15,6 +15,7 @@ Contents:
   dev-environment
   branching-strategy
   testing
+  documentation
   coding-style
   making-releases
   tools
