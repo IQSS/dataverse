@@ -485,16 +485,14 @@
                                     
                                     <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.showFileUploadFileComponent()}"
                                                   fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                                  oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" 
+                                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" 
                                                   sizeLimit="#{DatasetPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
                                     <!-- Dropbox Upload -->
                                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty DatasetPage.dropBoxKey}">
                                         <div class="panel-body">
                                             <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                                            <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none;" 
-                                                        oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" />
-                                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status"
-                                                             oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" />
+                                            <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="filesTable,uploadMessage" style="display:none;" />
+                                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                         </div>
                                     </div>
