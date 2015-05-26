@@ -188,3 +188,9 @@ CREATE INDEX index_template_dataverse_id ON template (dataverse_id);
 CREATE INDEX index_worldmapauth_token_application_id ON worldmapauth_token (application_id);
 CREATE INDEX index_worldmapauth_token_datafile_id ON worldmapauth_token (datafile_id);
 CREATE INDEX index_worldmapauth_token_dataverseuser_id ON worldmapauth_token (dataverseuser_id);
+/*------------------------------------------
+ Add Compound Unique Constraint to dataversefieldtypeinputlevel
+    combining dataverse_id and datasetfieldtype_id
+*/------------------------------------------
+ALTER TABLE dataversefieldtypeinputlevel
+  ADD CONSTRAINT unq_dataversefieldtypeinputlevel_add  UNIQUE (dataverse_id, datasetfieldtype_id);
