@@ -491,12 +491,14 @@
                                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty DatasetPage.dropBoxKey}">
                                         <div class="panel-body">
                                             <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                                            <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="filesTable,uploadMessage" style="display:none;" />
+                                            <p:commandButton  id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
                                             <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                         </div>
+                                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
+
                                     </div>
-                                    <p:message for="fileUpload" id="uploadMessage" display="text"/>
+                                    <p:message for="fileUpload" id="uploadMessage" display="text" />
                                 </ui:fragment>
 
                                 <!-- Files Table -->

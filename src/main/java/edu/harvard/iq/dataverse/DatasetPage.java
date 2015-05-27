@@ -507,6 +507,8 @@ public class DatasetPage implements java.io.Serializable {
     public String getDropBoxKey() {
         // Site-specific DropBox application registration key is configured 
         // via a JVM option under glassfish.
+        //if (true)return "some-test-key";  // for debugging
+
         String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
         if (configuredDropBoxKey != null) {
             return configuredDropBoxKey;
@@ -790,7 +792,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void msg(String s){
-        //logger.fine(s);
+        // System.out.println(s);
     }
     
     /**
@@ -2092,12 +2094,13 @@ public class DatasetPage implements java.io.Serializable {
 
 
             /* ----------------------------
-            If the file is too big:
-            - Add error mesage
-            - Go to the next file
+                Check file size
+                - Max size NOT specified in db: default is unlimited
+                - Max size specified in db: check too make sure file is within limits
             // ---------------------------- */
             if ((!this.isUnlimitedUploadFileSize())&&(fileSize > this.getMaxFileUploadSizeInBytes())){
                 String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
+                //msg(warningMessage);
                 FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
                 continue; // skip to next file, and add error mesage
             }
@@ -2150,6 +2153,9 @@ public class DatasetPage implements java.io.Serializable {
                 this.logger.log(Level.SEVERE, "Failed to create DataFile for DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
                 continue;
             }else{    
+                // -----------------------------------------------------------
+                // Check if there are duplicate files or ingest warnings
+                // -----------------------------------------------------------
                 String warningMessage = processUploadedFileList(datafiles);
                 logger.info("Warning message during upload: " + warningMessage);
                 if (warningMessage != null){
@@ -2175,6 +2181,9 @@ public class DatasetPage implements java.io.Serializable {
             return;
         }
 
+        // -----------------------------------------------------------
+        // Check if there are duplicate files or ingest warnings
+        // -----------------------------------------------------------
         String warningMessage = processUploadedFileList(dFileList);
         if (warningMessage != null){
             logger.fine("trying to send faces message to " + event.getComponent().getClientId());
@@ -2195,13 +2204,18 @@ public class DatasetPage implements java.io.Serializable {
         boolean multipleDupes = false;
         String warningMessage = null;
 
+        // -----------------------------------------------------------
+        // Iterate through list of DataFile objects
+        // -----------------------------------------------------------
         if (dFileList != null) {
             for (int i = 0; i < dFileList.size(); i++) {
                 dFile = dFileList.get(i);
 
                 //logger.info("dFile: " + dFile);
                 
-                // Check for ingest warnings: 
+                // -----------------------------------------------------------
+                // Check for ingest warnings
+                // -----------------------------------------------------------
                 if (dFile.isIngestProblem()) {
                     if (dFile.getIngestReportMessage() != null) {
                         if (warningMessage == null) {
@@ -2213,8 +2227,11 @@ public class DatasetPage implements java.io.Serializable {
                     dFile.setIngestDone();
                 }
 
+                // -----------------------------------------------------------
+                // Check for duplicates -- e.g. file is already in the dataset
+                // -----------------------------------------------------------
                 if (!isDuplicate(dFile.getFileMetadata())) {
-                    newFiles.add(dFile);
+                    newFiles.add(dFile);        // looks good
                 } else {
                     if (duplicateFileNames == null) {
                         duplicateFileNames = dFile.getFileMetadata().getLabel();
@@ -2247,6 +2264,9 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
+        // -----------------------------------------------------------
+        // Formate error message for duplicate files
+        // -----------------------------------------------------------
         if (duplicateFileNames != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupes) {
@@ -2267,9 +2287,9 @@ public class DatasetPage implements java.io.Serializable {
         
         if (warningMessage != null) {
             logger.severe(warningMessage);
-            return warningMessage;
+            return warningMessage;     // there's an issue return error message
         } else {
-            return null;
+            return null;    // looks good, return null
         }
     }
     
