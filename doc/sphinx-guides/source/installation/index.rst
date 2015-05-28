@@ -17,3 +17,4 @@ Contents:
   installation-main
   r-rapache-tworavens
   shibboleth
+  administration
