@@ -476,7 +476,7 @@ public class DatasetVersion implements Serializable {
         this.releaseTime = releaseTime;
     }
 
-    @OneToMany(mappedBy = "datasetVersion")
+    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetVersionUser> datasetVersionUsers;
 
     public List<DatasetVersionUser> getDatasetVersionUsers() {
