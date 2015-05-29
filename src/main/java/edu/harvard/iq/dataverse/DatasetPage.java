@@ -1711,26 +1711,46 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         filesToBeDeleted.addAll(selectedFiles);
-        // remove from the files list
-        //dataset.getLatestVersion().getFileMetadatas().removeAll(selectedFiles);
-        Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-        while (fmit.hasNext()) {
-            FileMetadata fmd = (FileMetadata) fmit.next();
 
-            fmd.getDataFile().setModificationTime(new Timestamp(new Date().getTime()));
-            for (FileMetadata markedForDelete : selectedFiles) {
+        for (FileMetadata markedForDelete : selectedFiles) {
+            if (markedForDelete.getId() != null) {
+                // the file already exists as part of this dataset
+                // so all we remove is the file from the fileMetadatas (for display)
+                // and let the delete be handled in the command
+                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+            } else {
+                // the file was just added during this step, so in addition to 
+                // removing it from the fileMetadatas (for display), we also remove it from 
+                // the newFiles list and the dataset's files, so it won't get uploaded at all
+                Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+                while (fmit.hasNext()) {
+                    FileMetadata fmd = (FileMetadata) fmit.next();
+                    if (markedForDelete.getDataFile().getFileSystemName().equals(fmd.getDataFile().getFileSystemName())) {
+                        fmit.remove();
+                        break;
+                    }
+                }
+                
+                Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+                while (dfIt.hasNext()) {
+                    DataFile dfn = dfIt.next();
+                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                        dfIt.remove();
+                    }
+                }                
 
-                if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(fmd.getDataFile().getFileSystemName())) {
-                    fmit.remove();
-                    break;
-                }
-                if (markedForDelete.getId() != null && markedForDelete.getId().equals(fmd.getId())) {
-                    fmit.remove();
-                    break;
-                }
+                Iterator<DataFile> nfIt = newFiles.iterator();
+                while (nfIt.hasNext()) {
+                    DataFile dfn = nfIt.next();
+                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                        nfIt.remove();
+                    }
+                }                
+                
             }
         }
 
+     
         if (fileNames != null) {
             String successMessage = JH.localize("file.deleted.success");
             logger.fine(successMessage);
@@ -1749,118 +1769,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
                
-        /*
-         * Save and/or ingest files, if there are any:
-        
-         * All the back end-specific ingest logic has been moved into 
-         * the IngestServiceBean! -- L.A.
-         */
-        // File deletes (selected by the checkboxes on the page)
-        if (this.filesToBeDeleted != null) {
 
-            // First Remove Any that have never been ingested:
-            Iterator<DataFile> dfIt = newFiles.iterator();
-            while (dfIt.hasNext()) {
-                DataFile dfn = dfIt.next();
-                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
-                        dfIt.remove();
-                    }
-                }
-            }
-
-            dfIt = dataset.getFiles().iterator();
-            while (dfIt.hasNext()) {
-                DataFile dfn = dfIt.next();
-                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
-                    if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
-                        dfIt.remove();
-                    }
-                }
-            }
-
-            // this next iterator is likely unnecessary (because the metadata object
-            // was already deleted from the filemetadatas list associated with this
-            // version, when it was added to the "filestobedeleted" list. 
-            Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-
-            while (fmIt.hasNext()) {
-                FileMetadata dfn = fmIt.next();
-                dfn.getDataFile().setModificationTime(new Timestamp(new Date().getTime()));
-                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
-                    if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getDataFile().getFileSystemName())) {
-                        fmIt.remove();
-                        break;
-                    }
-                }
-            }
-//delete for files that have been injested....
-
-            for (FileMetadata fmd : filesToBeDeleted) {
-
-                if (fmd.getId() != null && fmd.getId().intValue() > 0) {
-                    Command cmd;
-                    /* TODO: 
-                     * I commented-out the code that was going through the filemetadatas
-                     * associated with the version... Because the new delete button 
-                     * functionality has already deleted the selected filemetadatas
-                     * from the list. 
-                     * I'm leaving that dead code commented-out, so that we can
-                     * review it before it's removed for good. 
-                     * -- L.A. 4.0 beta12
-                     */
-                    /*
-                     fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-                     while (fmIt.hasNext()) {
-                     FileMetadata dfn = fmIt.next();
-                     if (fmd.getId().equals(dfn.getId())) {
-                     */
-                    try {
-                        Long idToRemove = fmd.getId(); ///dfn.getId();
-                        logger.log(Level.INFO, "deleting file, filemetadata id {0}", idToRemove);
-
-                        // finally, check if this file is being used as the default thumbnail
-                        // for its dataset: 
-                        if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
-                            logger.info("deleting the dataset thumbnail designation");
-                            dataset.setThumbnailFile(null);
-                        }
-                        cmd = new DeleteDataFileCommand(fmd.getDataFile(), session.getUser());
-                        commandEngine.submit(cmd);
-
-                        ///fmIt.remove();
-                        Long fileIdToRemove = fmd.getDataFile().getId();
-                        int i = dataset.getFiles().size();
-                        for (int j = 0; j < i; j++) {
-                            Iterator<FileMetadata> tdIt = dataset.getFiles().get(j).getFileMetadatas().iterator();
-                            while (tdIt.hasNext()) {
-                                FileMetadata dsTest = tdIt.next();
-                                if (dsTest.getId().equals(idToRemove)) {
-                                    tdIt.remove();
-                                }
-                            }
-                        }
-
-                        if (!(dataset.isReleased())) {
-                            Iterator<DataFile> dfrIt = dataset.getFiles().iterator();
-                            while (dfrIt.hasNext()) {
-                                DataFile dsTest = dfrIt.next();
-                                if (dsTest.getId().equals(fileIdToRemove)) {
-                                    dfrIt.remove();
-                                }
-                            }
-                        }
-
-                    } catch (CommandException ex) {
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Data file Delete Failed", " - " + ex.toString()));
-                        logger.severe(ex.getMessage());
-                    }
-
-                    /*}
-                     }*/
-                }
-            }
-        }
 
         // One last check before we save the files - go through the newly-uploaded 
         // ones and modify their names so that there are no duplicates. 
@@ -1886,7 +1795,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
-                cmd = new UpdateDatasetCommand(dataset, session.getUser());
+                cmd = new UpdateDatasetCommand(dataset, session.getUser(), filesToBeDeleted);
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
