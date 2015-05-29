@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -151,7 +152,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                      * suspenders and do our normal sword auth
                                      * check.
                                      */
-                                    commandEngine.submit(new DeleteDataFileCommand(fileToDelete, user));
+                                    List<FileMetadata> filesToDelete = new ArrayList<>();
+                                    filesToDelete.add(fileToDelete.getFileMetadata());
+                                    commandEngine.submit(new UpdateDatasetCommand(dataset, user, filesToDelete));
                                 } catch (CommandException ex) {
                                     throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                                 }
