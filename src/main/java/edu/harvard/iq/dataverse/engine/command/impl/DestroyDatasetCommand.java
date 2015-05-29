@@ -58,10 +58,6 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         
         final Dataset managedDoomed = ctxt.em().merge(doomed);
 
-        // removed links
-        for (DatasetLinkingDataverse dld : ctxt.dsLinking().findDatasetLinkingDataverses(doomed.getId())) {
-            ctxt.em().remove(dld);
-        }
         
         List<String> datasetAndFileSolrIdsToDelete = new ArrayList<>();
         // files need to iterate through and remove 'by hand' to avoid
@@ -78,13 +74,6 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             dfIt.remove();
         }
         
-        // version users and versions 
-        for (DatasetVersion ver : managedDoomed.getVersions()) {
-            for (DatasetVersionUser ddu : ver.getDatasetVersionUsers()) {
-                ctxt.em().remove(ddu);
-            }
-            ctxt.em().remove(ver);
-        }
         
         // ASSIGNMENTS
         for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
