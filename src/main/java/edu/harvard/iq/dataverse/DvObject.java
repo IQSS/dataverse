@@ -71,7 +71,7 @@ public abstract class DvObject implements java.io.Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne
     private DvObject owner;
 
     private Timestamp publicationDate;
