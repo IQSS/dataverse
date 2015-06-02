@@ -1700,7 +1700,7 @@ public class DatasetPage implements java.io.Serializable {
 
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
-                // collect the names of the newly-restrticted files, 
+            // collect the names of the newly-restrticted files, 
             // to show in the success message:
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
@@ -1709,14 +1709,13 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        filesToBeDeleted.addAll(selectedFiles);
-
         for (FileMetadata markedForDelete : selectedFiles) {
             if (markedForDelete.getId() != null) {
                 // the file already exists as part of this dataset
                 // so all we remove is the file from the fileMetadatas (for display)
-                // and let the delete be handled in the command
+                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                filesToBeDeleted.add(markedForDelete);
             } else {
                 // the file was just added during this step, so in addition to 
                 // removing it from the fileMetadatas (for display), we also remove it from 
@@ -1769,7 +1768,7 @@ public class DatasetPage implements java.io.Serializable {
         }
                
 
-
+        System.out.println("NEW Files(: " + newFiles.size() + "): " + newFiles);
         // One last check before we save the files - go through the newly-uploaded 
         // ones and modify their names so that there are no duplicates. 
         // (but should we really be doing it here? - maybe a better approach to do it
