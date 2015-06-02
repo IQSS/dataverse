@@ -20,7 +20,7 @@ Detailed below are what metadata schemas we support for Citation and Domain Spec
 - `Astronomy and Astrophysics Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=3>`__
   : These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) 
   `VOResource Schema format <http://www.ivoa.net/documents/latest/RM.html>`__ and is based on 
-  `Virtual Observatory (VO) Discovery and Provenance Metadata <http://www.wf4ever-project.org/wiki/download/attachments/1179927/DPmetadata.pdf?version=1&modificationDate=1337186963000>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__).
+  `Virtual Observatory (VO) Discovery and Provenance Metadata <http://mail.ivoa.net/pipermail/dal/attachments/20120514/1d97b34d/attachment.obj>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__).
 - `Life Sciences Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=2>`__: based on `ISA-Tab Specification <http://isatab.sourceforge.net/format.html>`__, along with controlled vocabulary from subsets of the `OBI Ontology <http://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/biomedical.tsv>`__).
 
 
