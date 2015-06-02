@@ -231,7 +231,7 @@ public class IngestServiceBean {
         return fileList.get(0);
     }
     
-    public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
+    public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType) throws IOException {
         List<DataFile> datafiles = new ArrayList<DataFile>(); 
         
         String warningMessage = null; 
@@ -251,7 +251,7 @@ public class IngestServiceBean {
         } else {
             throw new IOException ("Temp directory is not configured.");
         }
-        logger.fine("mime type supplied: "+contentType);
+        logger.fine("mime type supplied: "+suppliedContentType);
         // Let's try our own utilities (Jhove, etc.) to determine the file type 
         // of the uploaded file. (We may already have a mime type supplied for this
         // file - maybe the type that the browser recognized on upload; or, if 
@@ -272,10 +272,23 @@ public class IngestServiceBean {
                 // be chosen over other choices available. Maybe it should 
                 // even be a weighed list... as in, "application/foo" should 
                 // be chosen over "application/foo-with-bells-and-whistles".
-                if (contentType == null
-                        || contentType.equals("")
-                        || contentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
-                        || contentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
+                
+                // For now the logic will be as follows: 
+                //
+                // 1. If the contentType supplied (by the browser, most likely) 
+                // is some form of "unknown", we always discard it in favor of 
+                // whatever our own utilities have determined; 
+                // 2. We should NEVER trust the browser when it comes to 
+                // "ingestable" types (Stata, SPSS, etc.)
+                // 3. We should ALWAYS trust our utilities when it comes to 
+                // ingestable types. 
+                
+                if (suppliedContentType == null
+                        || suppliedContentType.equals("")
+                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
+                        || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
+                        || ingestableAsTabular(suppliedContentType)
+                        || ingestableAsTabular(recognizedType)
                         || recognizedType.equals("application/fits-gzipped")
                         || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
                         || recognizedType.equals(MIME_TYPE_ZIP)) {
@@ -288,9 +301,9 @@ public class IngestServiceBean {
         }
         
         if (finalType == null) {
-            finalType = (contentType == null || contentType.equals("")) 
+            finalType = (suppliedContentType == null || suppliedContentType.equals("")) 
                 ? MIME_TYPE_UNDETERMINED_DEFAULT
-                : contentType;
+                : suppliedContentType;
         }
                 
         // A few special cases: 
@@ -1533,6 +1546,12 @@ public class IngestServiceBean {
         }
     }
     public boolean ingestableAsTabular(DataFile dataFile) {
+        String mimeType = dataFile.getContentType();
+        
+        return ingestableAsTabular(mimeType);
+    } 
+    
+    public boolean ingestableAsTabular(String mimeType) {
         /* 
          * In the final 4.0 we'll be doing real-time checks, going through the 
          * available plugins and verifying the lists of mime types that they 
@@ -1540,8 +1559,6 @@ public class IngestServiceBean {
          * main code base, so we can just go through a hard-coded list of mime 
          * types. -- L.A. 
          */
-        
-        String mimeType = dataFile.getContentType();
         
         if (mimeType == null) {
             return false;

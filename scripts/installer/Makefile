@@ -1,5 +1,5 @@
 INSTALLER_ZIP_DIR=dvinstall
-DATAVERSE_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse-4.0.war
+DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse.war
 GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/glassfish-setup.sh
 POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
 API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh 
@@ -10,9 +10,12 @@ INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
 installer:	dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${INSTALL_SCRIPT}
+clean: 
+	/bin/rm -rf ${INSTALLER_ZIP_DIR}
+
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${INSTALL_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -21,19 +24,19 @@ ${INSTALL_SCRIPT}: install
 	mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp install ${INSTALLER_ZIP_DIR}
 
-
-
-${DATAVERSE_WAR_FILE}:	../../target/dataverse-4.0.war
+${DISTRIBUTION_WAR_FILE}: 
 	@echo copying war file...
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../target/dataverse-4.0.war ${DATAVERSE_WAR_FILE}
-
-../../target/dataverse-4.0.war:
-	@echo
-	@echo "ERROR: can't find application .war file (../../target/dataverse-4.0.war)!"
-	@echo "Build the DVN war file, then try again."
-	@echo
-	@exit 1
+	@VERSION_NUMBER=`cat ../../src/main/java/VersionNumber.properties | sed 's/version.number=//'`; export VERSION_NUMBER; \
+	BUILT_WAR_FILE=../../target/dataverse-$$VERSION_NUMBER.war; export BUILT_WAR_FILE; \
+	if [ -f $$BUILT_WAR_FILE ]; \
+	then \
+		/bin/cp $$BUILT_WAR_FILE ${DISTRIBUTION_WAR_FILE}; \
+	else \
+		echo "ERROR: can't find application .war file ($${BUILT_WAR_FILE})!"; \
+		echo "Build the Dataverse application war file, then try again."; \
+		exit 1; \
+	fi
 
 ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	echo copying glassfish setup
