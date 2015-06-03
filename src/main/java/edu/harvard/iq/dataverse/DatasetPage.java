@@ -3099,7 +3099,7 @@ public class DatasetPage implements java.io.Serializable {
 
         // create notifications
         for (AuthenticatedUser au : permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset)) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, dataset.getId());
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, file.getId());
         }
     }
 }

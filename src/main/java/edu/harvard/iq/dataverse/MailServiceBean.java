@@ -45,6 +45,8 @@ public class MailServiceBean implements java.io.Serializable {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
+    DataFileServiceBean dataFileService;
+    @EJB
     DatasetServiceBean datasetService;
     @EJB
     DatasetVersionServiceBean versionService; 
@@ -212,8 +214,8 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
     
-    private String getDatasetManagePermissionsLink(Dataset dataset){        
-        return  systemConfig.getDataverseSiteUrl() + "/permissions-manage.xhtml?id=" + dataset.getId();
+    private String getDatasetManagePermissionsLink(DataFile datafile){
+        return  systemConfig.getDataverseSiteUrl() + "/permissions-manage-files.xhtml?id=" + datafile.getOwner().getId();
     } 
     
     private String getDatasetLink(Dataset dataset){        
@@ -252,9 +254,9 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.fine(dataverseCreatedMessage);
                 return messageText += dataverseCreatedMessage;
             case REQUESTFILEACCESS:
-                dataset = (Dataset) targetObject;
+                DataFile datafile = (DataFile) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.requestFileAccess");
-                String[] paramArrayRequestFileAccess = {dataset.getDisplayName(), getDatasetManagePermissionsLink(dataset)};
+                String[] paramArrayRequestFileAccess = {datafile.getOwner().getDisplayName(), getDatasetManagePermissionsLink(datafile)};
                 messageText += MessageFormat.format(pattern, paramArrayRequestFileAccess);
                 return messageText;
             case GRANTFILEACCESS:
@@ -321,6 +323,7 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEDV:
                 return dataverseService.find(userNotification.getObjectId());
             case REQUESTFILEACCESS:
+                return dataFileService.find(userNotification.getObjectId());
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
                 return datasetService.find(userNotification.getObjectId());
