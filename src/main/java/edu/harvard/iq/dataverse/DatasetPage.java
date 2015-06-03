@@ -31,6 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,9 +66,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
 import javax.faces.model.SelectItem;
-import java.util.HashSet;
 import java.util.logging.Level;
-import javax.faces.component.UIInput;
 
 /**
  *
@@ -1700,7 +1700,7 @@ public class DatasetPage implements java.io.Serializable {
 
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
-            // collect the names of the newly-restrticted files, 
+                // collect the names of the newly-restrticted files, 
             // to show in the success message:
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
@@ -1733,9 +1733,35 @@ public class DatasetPage implements java.io.Serializable {
                 while (dfIt.hasNext()) {
                     DataFile dfn = dfIt.next();
                     if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                        
+                        // Before we remove the file from the list and forget about 
+                        // it:
+                        // The physical uploaded file is still sitting in the temporary
+                        // directory. If it were saved, it would be moved into its 
+                        // permanent location. But since the user chose not to save it,
+                        // we have to delete the temp file too. 
+                        // 
+                        // Eventually, we will likely add a dedicated mechanism
+                        // for managing temp files, similar to (or part of) the storage 
+                        // access framework, that would allow us to handle specialized
+                        // configurations - highly sensitive/private data, that 
+                        // has to be kept encrypted even in temp files, and such. 
+                        // But for now, we just delete the file directly on the 
+                        // local filesystem: 
+
+                        try {
+                            Files.delete(Paths.get(ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName()));
+                        } catch (IOException ioEx) {
+                            // safe to ignore - it's just a temp file. 
+                            logger.warning("Failed to delete temporary file " + ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName());
+                        }
+                        
                         dfIt.remove();
+
                     }
-                }                
+                }
+                
+                
 
                 Iterator<DataFile> nfIt = newFiles.iterator();
                 while (nfIt.hasNext()) {
@@ -1768,7 +1794,7 @@ public class DatasetPage implements java.io.Serializable {
         }
                
 
-        System.out.println("NEW Files(: " + newFiles.size() + "): " + newFiles);
+
         // One last check before we save the files - go through the newly-uploaded 
         // ones and modify their names so that there are no duplicates. 
         // (but should we really be doing it here? - maybe a better approach to do it
