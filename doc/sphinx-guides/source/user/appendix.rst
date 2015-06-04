@@ -9,8 +9,8 @@ Metadata References
 ======================
 
 Dataverse is committed to using standard-compliant metadata to ensure that Dataverse
-metadata can be mapped easily to standard metadata schemas and be exported into XML/JSON
-format for preservation and interoperability. 
+metadata can be mapped easily to standard metadata schemas and be exported into JSON
+format (XML for tabular file metadata) for preservation and interoperability.
 
 Detailed below are what metadata schemas we support for Citation and Domain Specific Metadata in Dataverse:
 
