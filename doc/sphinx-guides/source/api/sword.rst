@@ -55,7 +55,7 @@ New features as of v1.1
 
 - "Contact E-mail" is automatically populated from dataset owners email.
 
-- "Subject" is automatically populated with "N/A".
+- "Subject" uses our controlled vocabulary list of subjects. This list is in the Citation Metadata of our User Guide > `Metadata References <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_. Otherwise, if a term does not match our controlled vocabulary list, it will put any subject terms in "Keyword". If Subject is empty it is automatically populated with "N/A".
 
 - Zero-length files are now allowed (but not necessarily encouraged).
 
@@ -89,7 +89,7 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:creator              |         authorName (LastName, FirstName)     |       Y      |  Author(s) for the Dataset.                                                                                                                                 |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:subject              |   subject (Controlled Vocabulary) OR keyword |       Y      |  Controlled Vocabulary list is in our User Guide > `Metadata References <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.   |                                                                                                                
+|dcterms:subject              |   subject (Controlled Vocabulary) OR keyword |       Y      |  Controlled Vocabulary list is in our User Guide > `Metadata References under Citation <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.   |                                                                                                                
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:description          |              dsDescriptionValue              |       Y      |  Describing the purpose, scope or nature of the Dataset. Can also use dcterms:abstract.                                                                     |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
