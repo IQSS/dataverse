@@ -59,14 +59,17 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 throw new PermissionException("Destroy can only be called by superusers.",
                     this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
             }            
+        } else {
+            // since this is not a destroy, we want to make sure the file is a draft
+            // we'll do three sanity checks
+            // 1. confirm the file is not released
+            // 2. confirm the file is only attached to one version (i.e. only has one fileMetadata)
+            // 3. confirm that version is not released
+            if (doomed.isReleased() || doomed.getFileMetadatas().size() > 1 || doomed.getFileMetadata().getDatasetVersion().isReleased()) {
+                throw new CommandException("Cannot delete file: the DataFile is published, is attached to more than one Dataset Version, or is attached to a released Dataset Version.", this);  
+            }            
         }
         
-        
-        // if destroy, we skip this and fully delete
-        if (doomed.isReleased() && !destroy) {
-            logger.log(Level.FINE, "Delete command called on a released (published) DataFile {0}", doomed.getId());
-            throw new CommandException("Cannot delete released files.", this);  
-        }
 
         
         // We need to delete a bunch of files from the file system;
