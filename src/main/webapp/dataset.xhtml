@@ -1145,7 +1145,7 @@
                                 </p:column>
                             </p:dataTable>
                         </div>
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
+                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
                             <div class="panel-heading text-info" >
                                 <h:outputText id="outputTextTOU" value="#{bundle['dataset.versionDifferences.termsOfUseAccess']}"/>
                             </div>
@@ -1160,7 +1160,7 @@
                                             <h:outputText value="#{diffArray[2]}"/>
                                         </p:column>
                             </p:dataTable>
-                        </ui:fragment>
+                        </div>
                         <div class="button-block margin-bottom">
                             <p:commandButton value="#{bundle.done}" onclick="detailsBlocks.hide()" type="button" />
                         </div>
