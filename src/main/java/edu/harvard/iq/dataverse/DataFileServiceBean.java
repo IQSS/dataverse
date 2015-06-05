@@ -12,16 +12,11 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -47,9 +42,6 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
-    @Resource
-    TimerService timerService;    
     
     // File type "classes" tags:
     
@@ -594,115 +586,5 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (contentType != null && (contentType.toLowerCase().startsWith("video/")));    
         
     }
-    
-    
-    public void deletePhysicalFile(DataFile doomed) {
-        /*
-    }
-        logger.log(Level.FINE, "Delete command called on an unpublished DataFile {0}", doomed.getId());
-        String fileSystemName = doomed.getFileSystemName();
-        logger.log(Level.FINE, "Storage identifier for the file: {0}", fileSystemName);
-        
-        DataAccessObject dataAccess = null; 
-        
-        try {
-            dataAccess = doomed.getAccessObject();
-        } catch (IOException ioex) {
-            throw new CommandExecutionException("Failed to initialize physical access driver.", ioex, this);
-        }
-        
-        if (dataAccess != null) {
-            // If this is a local file, we only want to attempt to delete it 
-            // if it actually exists on the filesystem: 
-            // TODO: 
-            // add a generic .exists() method to the dataAccess object. 
-            // -- L.A. 4.0
-            boolean physicalFileExists = false;
-            
-            if (dataAccess.isLocalFile()) {
-                try {
-                    if (dataAccess.getFileSystemPath() != null
-                            && dataAccess.getFileSystemPath().toFile() != null
-                            && dataAccess.getFileSystemPath().toFile().exists()) {
-                        physicalFileExists = true;
-                    }
-                } catch (IOException ioex) {
-                    physicalFileExists = true;
-                }
-            }
-
-            if (physicalFileExists || (!dataAccess.isLocalFile())) {
-                try {
-                    dataAccess.delete();
-                } catch (IOException ex) {
-                    throw new CommandExecutionException("Error deleting physical file object while deleting DataFile " + doomed.getId() + " from the database.", ex, this);
-                }
-            }
-            
-            logger.log(Level.FINE, "Successfully deleted physical storage object (file) for the DataFile {0}", doomed.getId());
-            
-            // Destroy the dataAccess object - we will need to purge the 
-            // DataFile from the database (below), so we don't want to have any
-            // objects in this transaction that reference it:
-            
-            dataAccess = null; 
-            
-            // We may also have a few extra files associated with this object - 
-            // preserved original that was used in the tabular data ingest, 
-            // cached R data frames, image thumbnails, etc.
-            // We need to delete these too; failures however are less 
-            // important with these. If we fail to delete any of these 
-            // auxiliary files, we'll just leave an error message in the 
-            // log file and proceed deleting the database object.
-            
-            // Note that the assumption here is that all these auxiliary 
-            // files - saved original, cached format conversions, etc., are
-            // all stored on the physical filesystem locally. 
-            // TODO: revisit and review this assumption! -- L.A. 4.0
-            
-            List<Path> victims = new ArrayList<>();
-
-            // 1. preserved original: 
-            Path filePath = doomed.getSavedOriginalFile();
-            if (filePath != null) {
-                victims.add(filePath);
-            }
-
-            // 2. Cached files: 
-            victims.addAll(listCachedFiles(doomed));
-
-            // Delete them all: 
-            List<String> failures = new ArrayList<>();
-            for (Path deadFile : victims) {
-                try {
-                    logger.log(Level.FINE, "Deleting cached file {0}", deadFile.toString());
-                    Files.delete(deadFile);
-                } catch (IOException ex) {
-                    failures.add(deadFile.toString());
-                }
-            }
-
-            if (!failures.isEmpty()) {
-                String failedFiles = StringUtils.join(failures, ",");
-                Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting physical file(s) {0} while deleting DataFile {1}", new Object[]{failedFiles, doomed.getName()});
-            }  
-                */
-        
-    }
-    
-    public void startDeleteTimer() {
-        logger.info("Starting the delete file timer");
-        Timer timer = timerService.createTimer(1000, "Created nthe delete file timer");        
-   
-    }
-    
-    @Timeout
-    public void runDelete() {
-        logger.info("Delete file timer running...");
-        logger.info("Delete file timer finished...");
-        
-    }
-            
-       
         
 }
