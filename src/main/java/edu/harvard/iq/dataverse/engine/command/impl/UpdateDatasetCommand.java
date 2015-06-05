@@ -117,6 +117,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             } else {
                 FileMetadata mergedFmd = ctxt.em().merge(fmd);
                 ctxt.em().remove(mergedFmd);
+                fmd.getDataFile().getFileMetadatas().remove(fmd);
                 theDataset.getEditVersion().getFileMetadatas().remove(fmd);
             }      
         }        
