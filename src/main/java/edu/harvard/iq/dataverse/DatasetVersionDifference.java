@@ -726,6 +726,11 @@ public class DatasetVersionDifference {
 
             // deprecated: fdi.setFileCat1(fm1.getCategory());
             fdi.setFileDesc1(fm1.getDescription());
+            if(!fm1.getCategoriesByName().isEmpty()){
+                fdi.setFileCat1(fm1.getCategoriesByName().toString());
+            }
+
+            fdi.setFileRest1(fm1.isRestricted() ? "Restricted" : "Not Restricted");
             fdi.setFile2Empty(true);
 
         } else if (fm1 == null) {
@@ -733,10 +738,15 @@ public class DatasetVersionDifference {
 
             fdi.setFileName2(fm2.getLabel());
             fdi.setFileType2(fm2.getDataFile().getFriendlyType());
+            
             //fdi.setFileSize2(FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length()));
             // deprecated: fdi.setFileCat2(fm2.getCategory());
             fdi.setFileDesc2(fm2.getDescription());
+            if(!fm2.getCategoriesByName().isEmpty()){
+                fdi.setFileCat2(fm2.getCategoriesByName().toString());
+            }
 
+            fdi.setFileRest2(fm2.isRestricted() ? "Restricted" : "Not Restricted");
         } else {
             // Both are non-null metadata objects.
             // We simply go through the 5 metadata fields, if any are
