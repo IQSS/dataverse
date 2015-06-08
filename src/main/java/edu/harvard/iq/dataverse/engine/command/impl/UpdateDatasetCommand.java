@@ -52,6 +52,20 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         this.theDataset = theDataset;
         this.filesToDelete = filesToDelete;
     }
+    
+    public UpdateDatasetCommand(Dataset theDataset, User user, DataFile fileToDelete) {
+        super(user, theDataset);
+        this.theDataset = theDataset;
+        
+        // get the latest file metadata for the file; ensuring that it is a draft version
+        this.filesToDelete = new ArrayList();
+        for (FileMetadata fmd : theDataset.getEditVersion().getFileMetadatas()) {
+            if (fmd.getDataFile().equals(fileToDelete)) {
+                filesToDelete.add(fmd);
+                break;
+            }
+        }
+    }    
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
@@ -117,6 +131,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             } else {
                 FileMetadata mergedFmd = ctxt.em().merge(fmd);
                 ctxt.em().remove(mergedFmd);
+                fmd.getDataFile().getFileMetadatas().remove(fmd);
                 theDataset.getEditVersion().getFileMetadatas().remove(fmd);
             }      
         }        
