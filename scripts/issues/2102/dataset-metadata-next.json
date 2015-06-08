@@ -1,0 +1,105 @@
+{
+	"id": 1,
+	"versionNumber": 1,
+	"versionMinorNumber": 0,
+	"versionState": "RELEASED",
+	"productionDate": "Production Date",
+	"lastUpdateTime": "2015-06-08T19:40:14Z",
+	"releaseTime": "2015-06-08T19:40:14Z",
+	"createTime": "2015-06-08T17:30:09Z",
+	"metadataBlocks": {
+		"citation": {
+			"displayName": "Citation Metadata",
+			"fields": [{
+				"typeName": "title",
+				"multiple": false,
+				"typeClass": "primitive",
+				"value": "Second Version of Sample Dataset"
+			}, {
+				"typeName": "author",
+				"multiple": true,
+				"typeClass": "compound",
+				"value": [{
+					"authorName": {
+						"typeName": "authorName",
+						"multiple": false,
+						"typeClass": "primitive",
+						"value": "Admin, Dataverse"
+					},
+					"authorAffiliation": {
+						"typeName": "authorAffiliation",
+						"multiple": false,
+						"typeClass": "primitive",
+						"value": "Dataverse.org"
+					}
+				}]
+			}, {
+				"typeName": "datasetContact",
+				"multiple": true,
+				"typeClass": "compound",
+				"value": [{
+					"datasetContactName": {
+						"typeName": "datasetContactName",
+						"multiple": false,
+						"typeClass": "primitive",
+						"value": "Admin, Dataverse"
+					},
+					"datasetContactAffiliation": {
+						"typeName": "datasetContactAffiliation",
+						"multiple": false,
+						"typeClass": "primitive",
+						"value": "Dataverse.org"
+					},
+					"datasetContactEmail": {
+						"typeName": "datasetContactEmail",
+						"multiple": false,
+						"typeClass": "primitive",
+						"value": "dataverse@mailinator.com"
+					}
+				}]
+			}, {
+				"typeName": "dsDescription",
+				"multiple": true,
+				"typeClass": "compound",
+				"value": [{
+					"dsDescriptionValue": {
+						"typeName": "dsDescriptionValue",
+						"multiple": false,
+						"typeClass": "primitive",
+						"value": "We need to add files to this Dataset."
+					}
+				}]
+			}, {
+				"typeName": "subject",
+				"multiple": true,
+				"typeClass": "controlledVocabulary",
+				"value": ["Arts and Humanities"]
+			}, {
+				"typeName": "depositor",
+				"multiple": false,
+				"typeClass": "primitive",
+				"value": "Admin, Dataverse"
+			}, {
+				"typeName": "dateOfDeposit",
+				"multiple": false,
+				"typeClass": "primitive",
+				"value": "2015-06-08"
+			}]
+		}
+	},
+	"files": [{
+		"description": "This is a description of the file.",
+		"label": "2001, Palestinian Proposal at the Taba Conference.kmz",
+		"version": 1,
+		"datasetVersionId": 1,
+		"datafile": {
+			"id": 4,
+			"name": "2001, Palestinian Proposal at the Taba Conference.kmz",
+			"contentType": "application/vnd.google-earth.kmz",
+			"filename": "14dd48f37d9-68789d517db2",
+			"originalFormatLabel": "UNKNOWN",
+			"md5": "cfaad1e9562443bb07119fcdbe11ccd2",
+			"description": "This is a description of the file."
+		}
+	}]
+}
