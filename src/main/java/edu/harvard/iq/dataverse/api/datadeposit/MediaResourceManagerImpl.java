@@ -152,9 +152,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                      * suspenders and do our normal sword auth
                                      * check.
                                      */
-                                    List<FileMetadata> filesToDelete = new ArrayList<>();
-                                    filesToDelete.add(fileToDelete.getFileMetadata());
-                                    commandEngine.submit(new UpdateDatasetCommand(dataset, user, filesToDelete));
+                                    commandEngine.submit(new UpdateDatasetCommand(dataset, user, fileToDelete));
                                 } catch (CommandException ex) {
                                     throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                                 }
