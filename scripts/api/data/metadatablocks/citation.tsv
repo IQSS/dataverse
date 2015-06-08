@@ -79,19 +79,20 @@
 	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	subject	Arts and Humanities	D0	0											
-	subject	Astronomy and Astrophysics	D1	1											
-	subject	Business and Management	D2	2											
-	subject	Chemistry	D3	3											
-	subject	Earth and Environmental Sciences	D4	4											
-	subject	Engineering	D5	5											
-	subject	Medicine, Health and Life Sciences	D6	6											
-	subject	Computer and Information Science	D7	7											
-	subject	Law	D8	8											
-	subject	Mathematical Sciences	D9	9											
-	subject	Physics	D10	10											
-	subject	Social Sciences	D11	11											
-	subject	Other	D12	12											
+	subject	Agricultural Sciences	D01	0											
+	subject	Arts and Humanities	D0	1											
+	subject	Astronomy and Astrophysics	D1	2											
+	subject	Business and Management	D2	3											
+	subject	Chemistry	D3	4											
+	subject	Earth and Environmental Sciences	D4	5											
+	subject	Engineering	D5	6											
+	subject	Medicine, Health and Life Sciences	D6	7											
+	subject	Computer and Information Science	D7	8											
+	subject	Law	D8	9											
+	subject	Mathematical Sciences	D9	10											
+	subject	Physics	D10	11											
+	subject	Social Sciences	D11	12											
+	subject	Other	D12	13											
 	publicationIDType	ark		0											
 	publicationIDType	arXiv		1	arxiv										
 	publicationIDType	bibcode		2											

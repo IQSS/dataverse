@@ -307,11 +307,31 @@ unless ($postgresonly) {
 
 # 2. CHECK IF THE WAR FILE IS AVAILABLE:
 
-my $WARFILE_LOCATION = "../../target/dataverse-4.0.war";
+# if this installation is running out of the installer zib bundle directory,
+# the war file will be sitting right here, named "dataverse.war": 
+
+my $WARFILE_LOCATION = "dataverse.war"; 
+
+# but if it's not there, this is probably a personal development 
+# setup, so their build should be up in their source tree:
 
 unless ( -f $WARFILE_LOCATION ) {
-    $WARFILE_LOCATION = "dataverse-4.0.war";
+    my $DATAVERSE_VERSION = "";
+    my $DATAVERSE_VERSION_FILE = "../../src/java/VersionNumber.properties";
+    if ( -f $DATAVERSE_VERSION_FILE ) 
+    {
+	open DVF, $DATAVERSE_VERSION_FILE; 
+	$DATAVERSE_VERSION = <DVF>; 
+	close DVF;
+	$DATAVERSE_VERSION=~s/[ \n\t\r]*$//; 
+	$DATAVERSE_VERSION=~s/^dataverse.version=//;
+	
+	$WARFILE_LOCATION = "../../target/dataverse-" . $DATAVERSE_VERSION . ".war";
+    }
 }
+
+# One last check... If the war file cannot be found in either of the 2
+# places - we'll just have to give up:
 
 unless ( -f $WARFILE_LOCATION ) {
     print "\nWARNING: Can't find the project .war file!\n";
@@ -652,7 +672,8 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 }
 else {
     if (0) {    # THE LINES BELOW WERE PART OF THE 3.* "DEV." INSTALLER:
-                # DO WE STILL WANT TO MAINTAIN THIS FUNCTIONALITY IN 4.0?
+                # DO WE STILL WANT TO MAINTAIN THIS FUNCTIONALITY IN DATAVERSE 4.*?
+
         print "\nIt is strongly recommended that you use a local PostgresQL server,\n";
         print "running on localhost, in your development environment!\n\n";
 

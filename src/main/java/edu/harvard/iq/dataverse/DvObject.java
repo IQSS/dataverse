@@ -26,7 +26,10 @@ import javax.persistence.*;
 // in the child tables. (i.e., the id sequences will be "sparse" in the 3 
 // child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
 @Inheritance(strategy=InheritanceType.JOINED)
-@Table(indexes = {@Index(columnList="owner_id"),@Index(columnList="creator_id"),@Index(columnList="releaseuser_id")})
+@Table(indexes = {@Index(columnList="dtype")
+		, @Index(columnList="owner_id")
+		, @Index(columnList="creator_id")
+		, @Index(columnList="releaseuser_id")})
 public abstract class DvObject implements java.io.Serializable {
     
     public static final Visitor<String> NamePrinter = new Visitor<String>(){
@@ -68,7 +71,7 @@ public abstract class DvObject implements java.io.Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne
     private DvObject owner;
 
     private Timestamp publicationDate;

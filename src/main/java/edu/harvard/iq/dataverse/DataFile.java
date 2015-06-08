@@ -21,11 +21,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -38,6 +40,10 @@ import org.hibernate.validator.constraints.NotBlank;
 		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId")
 })
 @Entity
+@Table(indexes = {@Index(columnList="ingeststatus")
+		, @Index(columnList="md5")
+		, @Index(columnList="contenttype")
+		, @Index(columnList="restricted")})
 public class DataFile extends DvObject {
     private static final long serialVersionUID = 1L;
     

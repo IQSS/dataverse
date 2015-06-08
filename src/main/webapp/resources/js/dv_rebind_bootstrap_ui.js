@@ -33,6 +33,14 @@ function bind_bsui_components(){
 
 }
 
+function dataset_fileupload_rebind(){
+    //console.log('dataset_fileupload_rebind');
+    bind_bsui_components();
+    // rebind for dropdown menus on restrict button
+    $('.dropdown-toggle').dropdown();
+
+}
+
 function dataverseuser_page_rebind(){
     bind_bsui_components();
     // rebind for dropdown menus on dataverseuser.xhtml
@@ -214,6 +222,20 @@ function metricsTabs() {
         $(this).click();
     });
     $('#metrics-tabs a.first[data-toggle="tab"]').tab('show');
+}
+
+function selectText(ele) {
+    try {
+        var div = document.createRange();
+        div.setStartBefore(ele);
+        div.setEndAfter(ele);
+        window.getSelection().addRange(div)
+    } catch (e) {
+        // for internet explorer
+        div = document.selection.createRange();
+        div.moveToElementText(ele);
+        div.select()
+    }
 }
 
 function handleResizeDialog(dialog) {

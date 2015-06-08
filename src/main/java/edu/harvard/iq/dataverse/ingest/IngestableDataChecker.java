@@ -53,7 +53,7 @@ public class IngestableDataChecker implements java.io.Serializable {
     private String[] testFormatSet;
     // Map that returns a Stata Release number
     private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
-    private static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
+    public static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
     // Map that returns a reader-implemented mime-type
     private static Set<String> readableFileTypes = new HashSet<String>();
     private static Map<String, Method> testMethods = new HashMap<String, Method>();
@@ -148,6 +148,14 @@ public class IngestableDataChecker implements java.io.Serializable {
         buff.rewind();
         boolean DEBUG = false;
 
+        
+        // -----------------------------------------
+        // Avoid java.nio.BufferUnderflowException
+        // -----------------------------------------
+        if (buff.capacity() < 4){
+            return null;
+        }
+        
         if (DEBUG) {
             out.println("applying the sav test\n");
         }
@@ -155,6 +163,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         byte[] hdr4 = new byte[4];
         buff.get(hdr4, 0, 4);
         String hdr4sav = new String(hdr4);
+
         if (DEBUG) {
             out.println("from string=" + hdr4sav);
         }
@@ -168,9 +177,11 @@ public class IngestableDataChecker implements java.io.Serializable {
                 out.println("this file is NOT spss-sav type");
             }
         }
+        
         return result;
     }
 
+    
     /**
      * test this byte buffer against STATA DTA spec
      *
@@ -184,12 +195,19 @@ public class IngestableDataChecker implements java.io.Serializable {
             out.println("applying the dta test\n");
         }
 
+        // -----------------------------------------
+        // Avoid java.nio.BufferUnderflowException
+        // -----------------------------------------
+        if (buff.capacity() < 4) {            
+            return result;
+        }
+        
         // We first check if it's a "classic", old DTA format 
         // (up to version 115): 
         
         byte[] hdr4 = new byte[4];
         buff.get(hdr4, 0, 4);
-
+        
         if (DEBUG) {
             for (int i = 0; i < hdr4.length; ++i) {
                 dbgLog.info(String.format("%d\t%02X\n", i, hdr4[i]));
@@ -221,7 +239,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             result = "application/x-stata";
         }
         
-        if (result == null) {
+        if ((result == null)&&(buff.capacity() >= STATA_13_HEADER.length())) {
             // Let's see if it's a "new" STATA (v.13+) format: 
             buff.rewind();
             byte[] headerBuffer = null; 
@@ -466,7 +484,11 @@ public class IngestableDataChecker implements java.io.Serializable {
     public String testRDAformat(MappedByteBuffer buff) {
         String result = null;
         buff.rewind();
-
+        
+        if (buff.capacity() < 4){
+            return null;
+        }
+        
         boolean DEBUG = false;
         if (DEBUG) {
             out.println("applying the RData test\n");
@@ -546,6 +568,8 @@ public class IngestableDataChecker implements java.io.Serializable {
         String readableFormatType = null;
         try {
             int buffer_size = this.getBufferSize(fh);
+            dbgLog.info("buffer_size: " + buffer_size);
+        
             // set-up a FileChannel instance for a given file object
             FileChannel srcChannel = new FileInputStream(fh).getChannel();
 
@@ -558,8 +582,11 @@ public class IngestableDataChecker implements java.io.Serializable {
             buff.rewind();
             dbgLog.fine("before the for loop");
             for (String fmt : this.getTestFormatSet()) {
+                
                 // get a test method
                 Method mthd = testMethods.get(fmt);
+                //dbgLog.info("mthd: " + mthd.getName());
+
                 try {
                     // invoke this method
                     Object retobj = mthd.invoke(this, buff);
@@ -592,6 +619,9 @@ public class IngestableDataChecker implements java.io.Serializable {
                         e.printStackTrace();
                     }
                 } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (BufferUnderflowException e){
+                    dbgLog.info("BufferUnderflowException " + e);
                     e.printStackTrace();
                 }
             }

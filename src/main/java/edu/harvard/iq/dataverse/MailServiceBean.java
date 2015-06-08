@@ -10,6 +10,7 @@ import com.sun.mail.smtp.SMTPSenderFailedException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
@@ -121,16 +122,7 @@ public class MailServiceBean implements java.io.Serializable {
     
     private InternetAddress getSystemAddress() {
        String systemEmail =  settingsService.getValueForKey(Key.SystemEmail);
-      
-       if (systemEmail!=null) {
-           try { 
-            return new InternetAddress(systemEmail);
-           } catch(AddressException e) {
-               return null;
-           }
-       }
-       return null;
-     
+       return MailUtil.parseSystemAddress(systemEmail);
     }
 
     //@Resource(name="mail/notifyMailSession")

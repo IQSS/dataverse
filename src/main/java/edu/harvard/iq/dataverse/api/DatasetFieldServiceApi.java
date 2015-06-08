@@ -294,10 +294,14 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     private String parseMetadataBlock(String[] values) {
-        MetadataBlock mdb = new MetadataBlock();
+        //Test to see if it exists by name
+        MetadataBlock mdb = metadataBlockService.findByName(values[1]);
+        if (mdb == null){
+            mdb = new MetadataBlock();
+        }
         mdb.setName(values[1]);
         if (!values[2].isEmpty()){
-            mdb.setOwner(dataverseService.findByAlias(values[2])); 
+            mdb.setOwner(dataverseService.findByAlias(values[2]));
         }
         mdb.setDisplayName(values[3]);
 
@@ -306,7 +310,14 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     private String parseDatasetField(String[] values) {
-        DatasetFieldType dsf = new DatasetFieldType();
+        
+        //First see if it exists
+        DatasetFieldType dsf = datasetFieldService.findByName(values[1]);
+        if (dsf == null) {
+            //if not create new
+            dsf = new DatasetFieldType();
+        }
+        //add(update) values
         dsf.setName(values[1]);
         dsf.setTitle(values[2]);
         dsf.setDescription(values[3]);
@@ -324,27 +335,36 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[14]));
         }
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
-
         datasetFieldService.save(dsf);
         return dsf.getName();
     }
 
     private String parseControlledVocabulary(String[] values) {
-        ControlledVocabularyValue cvv = new ControlledVocabularyValue();
+        
         DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
-        cvv.setDatasetFieldType(dsv);
+        //See if it already exists
+        /*
+        
+        NOTE - In the future we will change the search to Identifier - so that we can update the string(display to user) value        
+        
+        */
+        ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsv, values[2], true);
+        
+        if (cvv == null) {
+            cvv = new ControlledVocabularyValue();
+            cvv.setDatasetFieldType(dsv);
+            //Alt is only for dataload so only add to new
+            for (int i = 5; i < values.length; i++) {
+                ControlledVocabAlternate alt = new ControlledVocabAlternate();
+                alt.setDatasetFieldType(dsv);
+                alt.setControlledVocabularyValue(cvv);
+                alt.setStrValue(values[i]);
+                cvv.getControlledVocabAlternates().add(alt);
+            }
+        }        
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
-        for (int i = 5; i < values.length; i++) {
-            ControlledVocabAlternate alt = new ControlledVocabAlternate();
-            alt.setDatasetFieldType(dsv);
-            alt.setControlledVocabularyValue(cvv);
-            alt.setStrValue(values[i]);
-            cvv.getControlledVocabAlternates().add(alt);
-
-        }
-
         datasetFieldService.save(cvv);
         return cvv.getStrValue();
     }

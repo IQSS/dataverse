@@ -314,7 +314,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .form-group > .button-block, 
 .panel-body > .button-block, 
 td.col-file-action > .button-block, td.col-manage-action > .button-block,
-div.ui-datatable-header > .button-block {margin-top:0;}
+div.ui-datatable-header > .button-block, #filesHeaderBlock > .button-block {margin-top:0;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group {margin-right:1em;}
 .button-block div.btn-group div.btn-group {margin-right:0;}
@@ -495,7 +495,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation-block {margin-bottom:.5em;}
 .bg-citation {background:#ECF6FB;}
-#citation, #citation-download {padding:.5em;}
+#citation, #citation-download, #citation-standards {padding:.5em;}
 #citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 #metadata-panel label.col-sm-3 {padding-left:0;}
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
@@ -578,6 +578,7 @@ div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
+div[id$="filesTable"] #filesHeaderCount span.highlightBold {display:block; padding: 8px 0;}
 div[id$="filesTable"] td.col-file-thumb {width:64px; border-right:0;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}

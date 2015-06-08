@@ -8,26 +8,27 @@
       lang="en">
 
     <h:head>
-        <title><h:outputText value="#{pageTitle}"/></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <meta http-equiv="Content-Language" content="en"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <meta name="description" content="#{bundle['head.meta.description']}"/>
-        <link type="image/png" rel="icon" href="/resources/images/favicondataverse.png"/>
-        <link type="image/png" rel="image_src" href="/resources/images/dataverseproject.png"/>
-    </h:head>
+        <f:facet name="first">
+            <title><h:outputText value="#{pageTitle}"/></title>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <meta http-equiv="Content-Language" content="en"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+            <meta name="description" content="#{bundle['head.meta.description']}"/>
+        </f:facet>
+        <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
+        <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/ie-compat.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/owl.carousel.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
+   </h:head>
 
     <h:body>
-        <f:facet name="last">
-            <h:outputStylesheet library="bs" name="css/bootstrap.css" />
-            <h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
-            <h:outputStylesheet library="css" name="ie-compat.css" />
-            <h:outputStylesheet library="css" name="owl.carousel.css" />
-            <h:outputStylesheet library="css" name="fontcustom.css" />
-            <h:outputStylesheet library="css" name="socicon.css" />
-            <h:outputStylesheet library="css" name="structure.css" />
-        </f:facet>
+      
         <f:loadBundle basename="Bundle" var="bundle"/>
         <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
         <ui:include src="dataverse_header.xhtml">            
@@ -72,13 +73,14 @@
                 </button>
             </div>
         </p:dialog>
-        <h:outputScript library="bs" name="js/bootstrap.min.js" />
-        <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
-        <h:outputScript library="js" name="ie-compat.js" />
-        <h:outputScript library="js" name="dv_rebind_bootstrap_ui.js" />
-        <h:outputScript library="js" name="owl.carousel.js" />
-        <h:outputScript library="js" name="jquery.matchHeight.js" />
-        <h:outputScript library="js" name="jquery.sharrre.js" />
+        
+        <script type="text/javascript" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" src="#{resource['bs/js/bootstrap-hover-dropdown.min.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script type="text/javascript" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
         <script>
             
             $(document).ready(function() {

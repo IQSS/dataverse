@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Index;
 
 import javax.persistence.JoinColumn;
 
@@ -21,6 +22,7 @@ import javax.persistence.Table;
  * @author skraffmiller
  */
 @Entity
+@Table(indexes = {@Index(columnList="authenticateduser_id"), @Index(columnList="datasetversion_id")})
 public class DatasetVersionUser implements Serializable {
     
     private static final long serialVersionUID = 1L;

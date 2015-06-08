@@ -48,14 +48,17 @@
                                         <p:fragment id="userGroups">
                                             <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}"
                                                          rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
-                                                <p:column width="35%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
+                                                <p:column width="30%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}">
                                                     <h:outputText value="#{access.key.displayInfo.title}"/>
                                                     <h:outputText value=" (#{access.key.displayInfo.affiliation})" rendered="#{!empty access.key.displayInfo.affiliation}"/>
                                                 </p:column>
-                                                <p:column width="15%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.id']}">
+                                                <p:column width="10%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.id']}">
                                                     <h:outputText value="#{access.key.identifier}"/>
                                                 </p:column>
-                                                <p:column width="20%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
+                                                <p:column width="20%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.email']}">
+                                                    <h:outputText value="#{access.key.email}" rendered="#{!empty access.key.email}"/>
+                                                </p:column>
+                                                <p:column width="10%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.files']}">
                                                     <p:commandLink type="button" id="viewUserGroups"
                                                                    actionListener="#{manageFilePermissionsPage.initAssignDialogForFileRequester(access.key)}"
                                                                    update=":#{p:component('assignDialog')}"

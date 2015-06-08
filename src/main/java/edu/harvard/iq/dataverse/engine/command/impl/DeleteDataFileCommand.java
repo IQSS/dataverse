@@ -59,42 +59,19 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 throw new PermissionException("Destroy can only be called by superusers.",
                     this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
             }            
+        } else {
+            // since this is not a destroy, we want to make sure the file is a draft
+            // we'll do three sanity checks
+            // 1. confirm the file is not released
+            // 2. confirm the file is only attached to one version (i.e. only has one fileMetadata)
+            // 3. confirm that version is not released
+            if (doomed.isReleased() || doomed.getFileMetadatas().size() > 1 || doomed.getFileMetadata().getDatasetVersion().isReleased()) {
+                throw new CommandException("Cannot delete file: the DataFile is published, is attached to more than one Dataset Version, or is attached to a released Dataset Version.", this);  
+            }            
         }
         
-        
-        // if destroy, we skip this and fully delete
-        if (doomed.isReleased() && !destroy) {
-            logger.log(Level.FINE, "Delete command called on a released (published) DataFile {0}", doomed.getId());
-            /*
-             In this case we're only removing the link to the current version
-             we're not deleting the underlying data file
-             */
-            
-            // First, verify that we are in a draft version; ig not throw a Command Exception
-            // todo: review code to see how to make this create a draft when caled on a released version
-            DatasetVersion dsv = doomed.getOwner().getLatestVersion();
-            if (!dsv.isDraft()) {
-                throw new CommandException("Cannot delete files from a released version. Please create a draft version of this dataset.", this);               
-            }
-            
-            // iterate through the filemetadatas of the file to find the one that belongs to
-            // this draft (need to go this way since we removed the fmd from the list on the version side)
-            for (FileMetadata fmd : doomed.getFileMetadatas()) {
-                if (fmd.getDatasetVersion().getId().equals(dsv.getId())) {
-                    /* commented out, because not yet working as expected (see todo, above)
-                    // also - used iternator method of fir loop which has now been removed
-                    it.remove();
-                    ctxt.engine().submit(new UpdateDatasetCommand(dsv.getDataset(), user));
-                    */
-                    FileMetadata doomedAndMerged = ctxt.em().merge(fmd);
-                    ctxt.em().remove(doomedAndMerged);
-                    String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
-                    return;                    
-                }                    
-            } 
-            throw new CommandException("Could not find the file to be deleted in the draft version of the dataset", this);
-        }
 
+        
         // We need to delete a bunch of files from the file system;
         // First we try to delete the data file itself; if that 
         // fails, we throw an exception and abort the command without
@@ -187,7 +164,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 String failedFiles = StringUtils.join(failures, ",");
                 Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting physical file(s) {0} while deleting DataFile {1}", new Object[]{failedFiles, doomed.getName()});
             }
-
+                    
             DataFile doomedAndMerged = ctxt.em().merge(doomed);
             ctxt.em().remove(doomedAndMerged);
             /**
@@ -197,7 +174,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
              * deleted.
              */
             // ctxt.em().flush();
-
+            
             /**
              * We *could* re-index the entire dataset but it's more efficient to
              * target individual files for deletion, which should always be

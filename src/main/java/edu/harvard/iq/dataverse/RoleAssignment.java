@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -24,7 +25,11 @@ import javax.persistence.UniqueConstraint;
  */
 @Entity
 @Table(
-	uniqueConstraints = @UniqueConstraint(columnNames={"assigneeIdentifier","role_id","definitionPoint_id"}) )
+	uniqueConstraints = @UniqueConstraint(columnNames={"assigneeIdentifier","role_id","definitionPoint_id"})
+      , indexes = {@Index(columnList="assigneeidentifier")
+		, @Index(columnList="definitionpoint_id")
+		, @Index(columnList="role_id")}
+)
 @NamedQueries({
 	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId" ),

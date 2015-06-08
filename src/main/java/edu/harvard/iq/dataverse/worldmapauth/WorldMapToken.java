@@ -30,7 +30,12 @@ import javax.persistence.Transient;
  * @author raprasad
  */
 @Entity
-@Table(name="worldmapauth_token", indexes = {@Index(name = "token_value",  columnList="token", unique = true)})
+@Table(name="worldmapauth_token"
+     , indexes = {@Index(name = "token_value",  columnList="token", unique = true)
+                , @Index(columnList="application_id")
+		, @Index(columnList="datafile_id")
+		, @Index(columnList="dataverseuser_id")
+     })
 public class WorldMapToken implements java.io.Serializable {   
     
     @Transient

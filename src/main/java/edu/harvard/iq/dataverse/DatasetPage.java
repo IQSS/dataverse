@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
@@ -32,6 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,9 +66,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
 import javax.faces.model.SelectItem;
-import java.util.HashSet;
 import java.util.logging.Level;
-import javax.faces.component.UIInput;
 
 /**
  *
@@ -507,6 +506,8 @@ public class DatasetPage implements java.io.Serializable {
     public String getDropBoxKey() {
         // Site-specific DropBox application registration key is configured 
         // via a JVM option under glassfish.
+        //if (true)return "some-test-key";  // for debugging
+
         String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
         if (configuredDropBoxKey != null) {
             return configuredDropBoxKey;
@@ -790,7 +791,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private void msg(String s){
-        //logger.fine(s);
+        // System.out.println(s);
     }
     
     /**
@@ -1708,27 +1709,72 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        filesToBeDeleted.addAll(selectedFiles);
-        // remove from the files list
-        //dataset.getLatestVersion().getFileMetadatas().removeAll(selectedFiles);
-        Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-        while (fmit.hasNext()) {
-            FileMetadata fmd = (FileMetadata) fmit.next();
-
-            fmd.getDataFile().setModificationTime(new Timestamp(new Date().getTime()));
-            for (FileMetadata markedForDelete : selectedFiles) {
-
-                if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(fmd.getDataFile().getFileSystemName())) {
-                    fmit.remove();
-                    break;
+        for (FileMetadata markedForDelete : selectedFiles) {
+            if (markedForDelete.getId() != null) {
+                // the file already exists as part of this dataset
+                // so all we remove is the file from the fileMetadatas (for display)
+                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
+                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                filesToBeDeleted.add(markedForDelete);
+            } else {
+                // the file was just added during this step, so in addition to 
+                // removing it from the fileMetadatas (for display), we also remove it from 
+                // the newFiles list and the dataset's files, so it won't get uploaded at all
+                Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+                while (fmit.hasNext()) {
+                    FileMetadata fmd = (FileMetadata) fmit.next();
+                    if (markedForDelete.getDataFile().getFileSystemName().equals(fmd.getDataFile().getFileSystemName())) {
+                        fmit.remove();
+                        break;
+                    }
                 }
-                if (markedForDelete.getId() != null && markedForDelete.getId().equals(fmd.getId())) {
-                    fmit.remove();
-                    break;
+                
+                Iterator<DataFile> dfIt = dataset.getFiles().iterator();
+                while (dfIt.hasNext()) {
+                    DataFile dfn = dfIt.next();
+                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                        
+                        // Before we remove the file from the list and forget about 
+                        // it:
+                        // The physical uploaded file is still sitting in the temporary
+                        // directory. If it were saved, it would be moved into its 
+                        // permanent location. But since the user chose not to save it,
+                        // we have to delete the temp file too. 
+                        // 
+                        // Eventually, we will likely add a dedicated mechanism
+                        // for managing temp files, similar to (or part of) the storage 
+                        // access framework, that would allow us to handle specialized
+                        // configurations - highly sensitive/private data, that 
+                        // has to be kept encrypted even in temp files, and such. 
+                        // But for now, we just delete the file directly on the 
+                        // local filesystem: 
+
+                        try {
+                            Files.delete(Paths.get(ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName()));
+                        } catch (IOException ioEx) {
+                            // safe to ignore - it's just a temp file. 
+                            logger.warning("Failed to delete temporary file " + ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName());
+                        }
+                        
+                        dfIt.remove();
+
+                    }
                 }
+                
+                
+
+                Iterator<DataFile> nfIt = newFiles.iterator();
+                while (nfIt.hasNext()) {
+                    DataFile dfn = nfIt.next();
+                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                        nfIt.remove();
+                    }
+                }                
+                
             }
         }
 
+     
         if (fileNames != null) {
             String successMessage = JH.localize("file.deleted.success");
             logger.fine(successMessage);
@@ -1747,118 +1793,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
                
-        /*
-         * Save and/or ingest files, if there are any:
-        
-         * All the back end-specific ingest logic has been moved into 
-         * the IngestServiceBean! -- L.A.
-         */
-        // File deletes (selected by the checkboxes on the page)
-        if (this.filesToBeDeleted != null) {
 
-            // First Remove Any that have never been ingested:
-            Iterator<DataFile> dfIt = newFiles.iterator();
-            while (dfIt.hasNext()) {
-                DataFile dfn = dfIt.next();
-                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
-                        dfIt.remove();
-                    }
-                }
-            }
-
-            dfIt = dataset.getFiles().iterator();
-            while (dfIt.hasNext()) {
-                DataFile dfn = dfIt.next();
-                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
-                    if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
-                        dfIt.remove();
-                    }
-                }
-            }
-
-            // this next iterator is likely unnecessary (because the metadata object
-            // was already deleted from the filemetadatas list associated with this
-            // version, when it was added to the "filestobedeleted" list. 
-            Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-
-            while (fmIt.hasNext()) {
-                FileMetadata dfn = fmIt.next();
-                dfn.getDataFile().setModificationTime(new Timestamp(new Date().getTime()));
-                for (FileMetadata markedForDelete : this.filesToBeDeleted) {
-                    if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getDataFile().getFileSystemName())) {
-                        fmIt.remove();
-                        break;
-                    }
-                }
-            }
-//delete for files that have been injested....
-
-            for (FileMetadata fmd : filesToBeDeleted) {
-
-                if (fmd.getId() != null && fmd.getId().intValue() > 0) {
-                    Command cmd;
-                    /* TODO: 
-                     * I commented-out the code that was going through the filemetadatas
-                     * associated with the version... Because the new delete button 
-                     * functionality has already deleted the selected filemetadatas
-                     * from the list. 
-                     * I'm leaving that dead code commented-out, so that we can
-                     * review it before it's removed for good. 
-                     * -- L.A. 4.0 beta12
-                     */
-                    /*
-                     fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-                     while (fmIt.hasNext()) {
-                     FileMetadata dfn = fmIt.next();
-                     if (fmd.getId().equals(dfn.getId())) {
-                     */
-                    try {
-                        Long idToRemove = fmd.getId(); ///dfn.getId();
-                        logger.log(Level.INFO, "deleting file, filemetadata id {0}", idToRemove);
-
-                        // finally, check if this file is being used as the default thumbnail
-                        // for its dataset: 
-                        if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
-                            logger.info("deleting the dataset thumbnail designation");
-                            dataset.setThumbnailFile(null);
-                        }
-                        cmd = new DeleteDataFileCommand(fmd.getDataFile(), session.getUser());
-                        commandEngine.submit(cmd);
-
-                        ///fmIt.remove();
-                        Long fileIdToRemove = fmd.getDataFile().getId();
-                        int i = dataset.getFiles().size();
-                        for (int j = 0; j < i; j++) {
-                            Iterator<FileMetadata> tdIt = dataset.getFiles().get(j).getFileMetadatas().iterator();
-                            while (tdIt.hasNext()) {
-                                FileMetadata dsTest = tdIt.next();
-                                if (dsTest.getId().equals(idToRemove)) {
-                                    tdIt.remove();
-                                }
-                            }
-                        }
-
-                        if (!(dataset.isReleased())) {
-                            Iterator<DataFile> dfrIt = dataset.getFiles().iterator();
-                            while (dfrIt.hasNext()) {
-                                DataFile dsTest = dfrIt.next();
-                                if (dsTest.getId().equals(fileIdToRemove)) {
-                                    dfrIt.remove();
-                                }
-                            }
-                        }
-
-                    } catch (CommandException ex) {
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Data file Delete Failed", " - " + ex.toString()));
-                        logger.severe(ex.getMessage());
-                    }
-
-                    /*}
-                     }*/
-                }
-            }
-        }
 
         // One last check before we save the files - go through the newly-uploaded 
         // ones and modify their names so that there are no duplicates. 
@@ -1884,7 +1819,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } else {
-                cmd = new UpdateDatasetCommand(dataset, session.getUser());
+                cmd = new UpdateDatasetCommand(dataset, session.getUser(), filesToBeDeleted);
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
@@ -2023,92 +1958,197 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-    public void handleDropBoxUpload(ActionEvent e) {
+
+    /**
+     * Download a file from drop box
+     * 
+     * @param fileLink
+     * @return 
+     */
+    private InputStream getDropBoxInputStream(String fileLink, GetMethod dropBoxMethod){
+        
+        if (fileLink == null){
+            return null;
+        }
+        
+        // -----------------------------------------------------------
+        // Make http call, download the file: 
+        // -----------------------------------------------------------
+        int status = 0;
+        //InputStream dropBoxStream = null;
+
+        try {
+            status = getClient().executeMethod(dropBoxMethod);
+            if (status == 200) {
+                return dropBoxMethod.getResponseBodyAsStream();
+            }
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Failed to access DropBox url: {0}!", fileLink);
+            return null;
+        } 
+
+        logger.log(Level.WARNING, "Failed to get DropBox InputStream for file: {0}", fileLink);
+        return null;
+    } // end: getDropBoxInputStream
+                  
+    
+    /**
+     * Using information from the DropBox choose, ingest the chosen files
+     *  https://www.dropbox.com/developers/dropins/chooser/js
+     * 
+     * @param e 
+     */
+    public void handleDropBoxUpload(ActionEvent event) {
+        
+        logger.info("handleDropBoxUpload");
+        // -----------------------------------------------------------
         // Read JSON object from the output of the DropBox Chooser: 
+        // -----------------------------------------------------------
         JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection));
         JsonArray dbArray = dbJsonReader.readArray();
         dbJsonReader.close();
-               
+
+        // -----------------------------------------------------------
+        // Iterate through the Dropbox file information (JSON)
+        // -----------------------------------------------------------
+        DataFile dFile = null;
+        GetMethod dropBoxMethod = null;
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
 
-            // Extract the payload:
+            // -----------------------------------------------------------
+            // Parse information for a single file
+            // -----------------------------------------------------------
             String fileLink = dbObject.getString("link");
             String fileName = dbObject.getString("name");
             int fileSize = dbObject.getInt("bytes");
 
-            logger.fine("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
-            
+            logger.info("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
+
+
             /* ----------------------------
-               If the file is too big:
-                - Add error mesage      
-                - Go to the next file
+                Check file size
+                - Max size NOT specified in db: default is unlimited
+                - Max size specified in db: check too make sure file is within limits
             // ---------------------------- */
             if ((!this.isUnlimitedUploadFileSize())&&(fileSize > this.getMaxFileUploadSizeInBytes())){
                 String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
-                FacesContext.getCurrentInstance().addMessage(e.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-                continue;  // skip to next file, and add error mesage                
+                //msg(warningMessage);
+                FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+                continue; // skip to next file, and add error mesage
+            }
+
+            
+            dFile = null;
+            dropBoxMethod = new GetMethod(fileLink);
+
+            // -----------------------------------------------------------
+            // Download the file
+            // -----------------------------------------------------------
+            InputStream dropBoxStream = this.getDropBoxInputStream(fileLink, dropBoxMethod);
+            if (dropBoxStream==null){
+                logger.severe("Could not retrieve dropgox input stream for: " + fileLink);
+                continue;  // Error skip this file
             }
             
-            DataFile dFile = null;
-
-            // Make http call, download the file: 
-            GetMethod dropBoxMethod = new GetMethod(fileLink);
-            int status = 0;
-            InputStream dropBoxStream = null;
+            List<DataFile> datafiles = new ArrayList<DataFile>(); 
+            
+            // -----------------------------------------------------------
+            // Send it through the ingest service
+            // -----------------------------------------------------------
             try {
-                status = getClient().executeMethod(dropBoxMethod);
-                if (status == 200) {
-                    dropBoxStream = dropBoxMethod.getResponseBodyAsStream();
-
-                    // If we've made it this far, we must have been able to
-                    // make a successful HTTP call to the DropBox server and 
-                    // obtain an InputStream - so we can now create a new
-                    // DataFile object: 
-                    dFile = ingestService.createDataFile(workingVersion, dropBoxStream, fileName, null);
-                    newFiles.add(dFile);
-                }
+                // Note: A single file may be unzipped into multiple files
+                datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");     
+                
             } catch (IOException ex) {
-                logger.warning("Failed to access DropBox url: " + fileLink + "!");
+                this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
                 continue;
-            } finally {
+            }finally {
+                // -----------------------------------------------------------
+                // release connection for dropBoxMethod
+                // -----------------------------------------------------------
+                
                 if (dropBoxMethod != null) {
                     dropBoxMethod.releaseConnection();
                 }
-                if (dropBoxStream != null) {
-                    try {
-                        dropBoxStream.close();
-                    } catch (Exception ex) {
-                        //logger.whocares("...");
-                    }
+                
+                // -----------------------------------------------------------
+                // close the  dropBoxStream
+                // -----------------------------------------------------------
+                try {
+                    dropBoxStream.close();
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "Failed to close the dropBoxStream for file: {0}", fileLink);
+                }
+            }
+            
+            if (datafiles == null){
+                this.logger.log(Level.SEVERE, "Failed to create DataFile for DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
+                continue;
+            }else{    
+                // -----------------------------------------------------------
+                // Check if there are duplicate files or ingest warnings
+                // -----------------------------------------------------------
+                String warningMessage = processUploadedFileList(datafiles);
+                logger.info("Warning message during upload: " + warningMessage);
+                if (warningMessage != null){
+                     logger.fine("trying to send faces message to " + event.getComponent().getClientId());
+                     FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
                 }
             }
         }
     }
 
+    
+    
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
-        DataFile dFile = null;
         List<DataFile> dFileList = null;
 
-        String warningMessage = null;
-
+        
         try {
+            // Note: A single file may be unzipped into multiple files
             dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
         }
 
+        // -----------------------------------------------------------
+        // Check if there are duplicate files or ingest warnings
+        // -----------------------------------------------------------
+        String warningMessage = processUploadedFileList(dFileList);
+        if (warningMessage != null){
+            logger.fine("trying to send faces message to " + event.getComponent().getClientId());
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+        }
+    }
+
+    /**
+     *  After uploading via the site or Dropbox, 
+     *  check the list of DataFile objects
+     * @param dFileList 
+     */
+    private String processUploadedFileList(List<DataFile> dFileList){
+
+        DataFile dFile = null;
         String duplicateFileNames = null;
         boolean multipleFiles = dFileList.size() > 1;
         boolean multipleDupes = false;
+        String warningMessage = null;
 
+        // -----------------------------------------------------------
+        // Iterate through list of DataFile objects
+        // -----------------------------------------------------------
         if (dFileList != null) {
             for (int i = 0; i < dFileList.size(); i++) {
                 dFile = dFileList.get(i);
 
-                // Check for ingest warnings: 
+                //logger.info("dFile: " + dFile);
+                
+                // -----------------------------------------------------------
+                // Check for ingest warnings
+                // -----------------------------------------------------------
                 if (dFile.isIngestProblem()) {
                     if (dFile.getIngestReportMessage() != null) {
                         if (warningMessage == null) {
@@ -2120,8 +2160,11 @@ public class DatasetPage implements java.io.Serializable {
                     dFile.setIngestDone();
                 }
 
+                // -----------------------------------------------------------
+                // Check for duplicates -- e.g. file is already in the dataset
+                // -----------------------------------------------------------
                 if (!isDuplicate(dFile.getFileMetadata())) {
-                    newFiles.add(dFile);
+                    newFiles.add(dFile);        // looks good
                 } else {
                     if (duplicateFileNames == null) {
                         duplicateFileNames = dFile.getFileMetadata().getLabel();
@@ -2154,6 +2197,9 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
+        // -----------------------------------------------------------
+        // Formate error message for duplicate files
+        // -----------------------------------------------------------
         if (duplicateFileNames != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupes) {
@@ -2171,13 +2217,15 @@ public class DatasetPage implements java.io.Serializable {
                 warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
             }
         }
-
+        
         if (warningMessage != null) {
-            logger.fine("trying to send faces message to " + event.getComponent().getClientId());
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
             logger.severe(warningMessage);
+            return warningMessage;     // there's an issue return error message
+        } else {
+            return null;    // looks good, return null
         }
     }
+    
 
     public boolean isLocked() {
         if (dataset != null) {

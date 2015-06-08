@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  * A range of IPv4 addresses. In order to make SQL querying efficient, the actual fields
@@ -14,6 +16,7 @@ import javax.persistence.NamedQuery;
  * 
  * @author michael
  */
+@Table(indexes = {@Index(columnList="owner_id")})
 @NamedQueries({
     @NamedQuery( name="IPv4Range.findAllContainingAddressAsLong",
             query="SELECT r FROM IPv4Range r WHERE r.bottomAsLong<=:addressAsLong AND r.topAsLong>=:addressAsLong"),

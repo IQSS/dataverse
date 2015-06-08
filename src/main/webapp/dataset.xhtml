@@ -282,31 +282,38 @@
                                 <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                             </div>
-                            <div id="citation-block" class="row #{DatasetPage.workingVersion.deaccessioned ? 'bg-danger' : 'bg-citation'}" jsf:rendered="#{!empty DatasetPage.displayCitation}">
-                                <div id="citation" class="#{DatasetPage.workingVersion.deaccessioned ? 'col-md-12' : 'col-md-9'}">
-                                    <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
-                                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
-                                    <div id="whycite" class="text-muted small" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">#{bundle['dataset.cite.whyCite.tip']} <a href="http://best-practices.dataverse.org/data-citation/" target="_blank">#{bundle['dataset.cite.whyCite']}</a></div>
-                                </div>
-                                <div id="citation-download" class="col-md-3 text-right" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                    <div class="dropdown">
-                                        <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu pull-right text-left" role="menu">
-                                            <li>
-                                                <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.downloadDatasetCitationXML()}" >
-                                                    #{bundle['dataset.cite.downloadBtn.xml']}
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
-                                                    #{bundle['dataset.cite.downloadBtn.ris']}
-                                                </a>
-                                            </li>
-                                        </ul>
+                            <div id="citation-block" class="row" jsf:rendered="#{!empty DatasetPage.displayCitation}">
+                                <div class="col-md-12">
+                                    <div class="row #{DatasetPage.workingVersion.deaccessioned ? 'bg-danger' : 'bg-citation'}">
+                                        <div id="citation" class="#{DatasetPage.workingVersion.deaccessioned ? 'col-md-12' : 'col-md-9'}"
+                                             onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                            <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
+                                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                                        </div>
+                                        <div id="citation-download" class="col-md-3 text-right" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                                            <div class="dropdown">
+                                                <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                    <li>
+                                                        <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.downloadDatasetCitationXML()}" >
+                                                            #{bundle['dataset.cite.downloadBtn.xml']}
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
+                                                            #{bundle['dataset.cite.downloadBtn.ris']}
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row bg-muted" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                                        <div id="citation-standards" class="col-md-12 text-muted small"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                     </div>
                                 </div>
                             </div>
@@ -478,18 +485,20 @@
                                     
                                     <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.showFileUploadFileComponent()}"
                                                   fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                                                  oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" 
+                                                  oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" 
                                                   sizeLimit="#{DatasetPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
                                     <!-- Dropbox Upload -->
                                     <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty DatasetPage.dropBoxKey}">
                                         <div class="panel-body">
                                             <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                                            <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none"/>
-                                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status"/>
+                                            <p:commandButton  id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
+                                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                         </div>
+                                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
+
                                     </div>
-                                    <p:message for="fileUpload" id="uploadMessage" display="text"/>
+                                    <p:message for="fileUpload" id="uploadMessage" display="text" />
                                 </ui:fragment>
 
                                 <!-- Files Table -->
@@ -499,68 +508,76 @@
                                              emptyMessage="#{bundle['file.notFound.tip']}">
                                     <f:facet name="header">
                                         <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
-                                        <!-- Button Panels -->
-                                        <div jsf:id="zipDownloadPanel" class="button-block margin-bottom text-right"
-                                             jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') 
-                                                             and (permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
-                                                             or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                                            <ui:remove>
-                                            <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
-                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
-                                                </button> 
-                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                                                   
-                                                    <li  class="disabled">
-                                                        <h:outputLink value="#">
-                                                            <h:outputText value="All Files From This Dataset"/>
-                                                        </h:outputLink>
-                                                    </li>
-                                                    <ui:fragment>
+                                        <div id="filesHeaderBlock" class="clearfix margin-bottom">
+                                            <!-- Files Count -->
+                                            <div id="filesHeaderCount" class="pull-left text-left">
+                                                <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
+                                                    <f:param value="#{DatasetPage.workingVersion.fileMetadatas.size()}"/>
+                                                </h:outputFormat>
+                                            </div>
+                                            <!-- Button Panels -->
+                                            <div jsf:id="zipDownloadPanel" class="button-block pull-right text-right"
+                                                 jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') 
+                                                                 and (permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
+                                                                 or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
+                                                <ui:remove>
+                                                <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}">
+                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
+                                                    </button> 
+                                                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                                                   
+                                                        <li  class="disabled">
+                                                            <h:outputLink value="#">
+                                                                <h:outputText value="All Files From This Dataset"/>
+                                                            </h:outputLink>
+                                                        </li>
+                                                        <ui:fragment>
+                                                            <li>
+                                                                <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
+                                                                               value="#{bundle.selectedFiles}"
+                                                                               actionListener="#{DatasetPage.startMultipleFileDownload()}">                                                           
+                                                                </h:commandLink> 
+                                                                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
+                                                                               action="#{DatasetPage.initGuestbookMultipleResponse()}"
+                                                                               value="#{bundle.selectedFiles}"
+                                                                               update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">                                                          
+                                                                </p:commandLink>
+                                                            </li>
+                                                        </ui:fragment>
+                                                    </ul>
+                                                </div>
+                                                </ui:remove>
+                                                <p:commandLink rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}"
+                                                               type="button" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                    <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
+                                                </p:commandLink>
+                                            </div>
+                                            <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
+                                                 jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
+                                                    </button>
+                                                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                                         <li>
-                                                            <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
-                                                                           value="#{bundle.selectedFiles}"
-                                                                           actionListener="#{DatasetPage.startMultipleFileDownload()}">                                                           
-                                                            </h:commandLink> 
-                                                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
-                                                                           action="#{DatasetPage.initGuestbookMultipleResponse()}"
-                                                                           value="#{bundle.selectedFiles}"
-                                                                           update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">                                                          
+                                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
+                                                                <h:outputText value="#{bundle['file.restrict']}"/>
                                                             </p:commandLink>
                                                         </li>
-                                                    </ui:fragment>
-                                                </ul>
+                                                        <li>
+                                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
+                                                                <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                                            </p:commandLink>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
+                                                    <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
+                                                </p:commandLink>
                                             </div>
-                                            </ui:remove>
-                                            <p:commandLink rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}"
-                                                           type="button" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
-                                            </p:commandLink>
                                         </div>
-                                        <div jsf:id="restrictDeletePanel" class="button-block margin-bottom text-right"
-                                             jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
-                                            <div class="btn-group">
-                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                                    <li>
-                                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(true)}">
-                                                            <h:outputText value="#{bundle['file.restrict']}"/>
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <li>
-                                                        <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictFiles(false)}">
-                                                            <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                                        </p:commandLink>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
-                                                <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
-                                            </p:commandLink>
-                                        </div>                                           
                                     </f:facet>
                                     <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{!empty DatasetPage.editMode}" />
                                     <p:column class="col-file-thumb text-center">
@@ -1101,6 +1118,8 @@
                             <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
                                 <p:column styleClass="versionValue">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
+                                    <br></br>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.md5']} #{fileDiff.fileMD5}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
@@ -1108,6 +1127,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
                                     &#160;
@@ -1118,10 +1138,27 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileSize']}: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
                                     &#160;
                                 </p:column>
+                            </p:dataTable>
+                        </div>
+                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.datasetVersionDifference.changedTermsAccess)}">
+                            <div class="panel-heading text-info" >
+                                <h:outputText id="outputTextTOU" value="#{bundle['dataset.versionDifferences.termsOfUseAccess']}"/>
+                            </div>
+                            <p:dataTable id="changedTermsAccessTable" styleClass="dvnDifferanceTable" var="diffArray" value="#{DatasetPage.datasetVersionDifference.changedTermsAccess}">
+                                <p:column styleClass="versionValue">
+                                            <h:outputText value="#{diffArray[0]}" />
+                                        </p:column>
+                                        <p:column styleClass="versionDetails">
+                                            <h:outputText value="#{diffArray[1]}" />
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" >
+                                            <h:outputText value="#{diffArray[2]}"/>
+                                        </p:column>
                             </p:dataTable>
                         </div>
                         <div class="button-block margin-bottom">
@@ -1448,8 +1485,8 @@
                                             <p:inputText id="guestbookuser_nameText" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.nameRequired}" 
                                                          styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"
                                                          requiredMessage="#{bundle['requiredField']}"/>
+                                            <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                                         </div>
-                                        <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                                     </div>
                                 </p:fragment>
                                 <div class="form-group">
@@ -1461,9 +1498,8 @@
                                         <h:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.emailRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"
                                                      requiredMessage="#{bundle['requiredField']}"/>
-
+                                        <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                                     </div>
-                                    <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_institution">
@@ -1474,8 +1510,8 @@
                                         <h:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.institutionRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"
                                                      requiredMessage="#{bundle['requiredField']}"/>
+                                        <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
                                     </div>
-                                    <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label" for="guestbookuser_position">
@@ -1486,8 +1522,8 @@
                                         <h:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and DatasetPage.dataset.guestbook.positionRequired}"
                                                      styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"
                                                      requiredMessage="#{bundle['requiredField']}"/>
+                                        <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
                                     </div>
-                                    <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
                                     <label class="col-sm-3 control-label" for="guestbookuser_questions">

@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -19,6 +21,7 @@ public class DatasetVersionDifference {
     private List<FileMetadata> addedFiles = new ArrayList();
     private List<FileMetadata> removedFiles = new ArrayList();
     private List<FileMetadata> changedFileMetadata = new ArrayList();
+    private List<List> changedTermsAccess = new ArrayList();
     private List<Object[]> summaryDataForNote = new ArrayList();
     private List<Object[]> blockDataForNote = new ArrayList();
     String noFileDifferencesFoundLabel = "";
@@ -115,7 +118,90 @@ public class DatasetVersionDifference {
                 return Integer.valueOf(a).compareTo(Integer.valueOf(b));
             }
         });
+        getTermsDifferences();
     }
+    
+
+    
+    private void getTermsDifferences() {
+
+        changedTermsAccess = new ArrayList();
+        if (!StringUtil.nullToEmpty(newVersion.getTermsOfUse()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUse()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.header");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUse()), StringUtil.nullToEmpty(newVersion.getTermsOfUse()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getConfidentialityDeclaration()).equals(StringUtil.nullToEmpty(originalVersion.getConfidentialityDeclaration()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getConfidentialityDeclaration()), StringUtil.nullToEmpty(newVersion.getConfidentialityDeclaration()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getSpecialPermissions()).equals(StringUtil.nullToEmpty(originalVersion.getSpecialPermissions()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getSpecialPermissions()), StringUtil.nullToEmpty(newVersion.getSpecialPermissions()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getRestrictions()).equals(StringUtil.nullToEmpty(originalVersion.getRestrictions()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getRestrictions()), StringUtil.nullToEmpty(newVersion.getRestrictions()));
+            
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getCitationRequirements()).equals(StringUtil.nullToEmpty(originalVersion.getCitationRequirements()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getCitationRequirements()), StringUtil.nullToEmpty(newVersion.getCitationRequirements()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getDepositorRequirements()).equals(StringUtil.nullToEmpty(originalVersion.getDepositorRequirements()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getDepositorRequirements()), StringUtil.nullToEmpty(newVersion.getDepositorRequirements()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getConditions()).equals(StringUtil.nullToEmpty(originalVersion.getConditions()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getConditions()), StringUtil.nullToEmpty(newVersion.getConditions()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getDisclaimer()).equals(StringUtil.nullToEmpty(originalVersion.getDisclaimer()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getDisclaimer()), StringUtil.nullToEmpty(newVersion.getDisclaimer()));
+        }
+
+        if (!StringUtil.nullToEmpty(newVersion.getTermsOfAccess()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfAccess()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfAccess()), StringUtil.nullToEmpty(newVersion.getTermsOfAccess()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getDataAccessPlace()).equals(StringUtil.nullToEmpty(originalVersion.getDataAccessPlace()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getDataAccessPlace()), StringUtil.nullToEmpty(newVersion.getDataAccessPlace()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getOriginalArchive()).equals(StringUtil.nullToEmpty(originalVersion.getOriginalArchive()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getOriginalArchive()), StringUtil.nullToEmpty(newVersion.getOriginalArchive()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getAvailabilityStatus()).equals(StringUtil.nullToEmpty(originalVersion.getAvailabilityStatus()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getAvailabilityStatus()), StringUtil.nullToEmpty(newVersion.getAvailabilityStatus()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getContactForAccess()).equals(StringUtil.nullToEmpty(originalVersion.getContactForAccess()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getContactForAccess()), StringUtil.nullToEmpty(newVersion.getContactForAccess()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getSizeOfCollection()).equals(StringUtil.nullToEmpty(originalVersion.getSizeOfCollection()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getSizeOfCollection()), StringUtil.nullToEmpty(newVersion.getSizeOfCollection()));
+        }
+        if (!StringUtil.nullToEmpty(newVersion.getStudyCompletion()).equals(StringUtil.nullToEmpty(originalVersion.getStudyCompletion()))) {
+            String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion");
+            changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getStudyCompletion()), StringUtil.nullToEmpty(newVersion.getStudyCompletion()));
+        }
+        
+
+    }
+
+    private List addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
+        String[] diffArray;
+        diffArray = new String[3];
+        diffArray[0] = label;
+        diffArray[1] = origVal;
+        diffArray[2] = newVal;
+        listIn.add(diffArray);
+        return listIn;
+    }
+
 
     private void addToList(List listIn, DatasetField dsfo, DatasetField dsfn) {
         DatasetField[] dsfArray;
@@ -186,14 +272,16 @@ public class DatasetVersionDifference {
         if (!StringUtils.equals(fmdo.getDescription(), fmdn.getDescription())) {
             return false;
         }
-        //if (!StringUtils.equals(fmdo.getCategory(), fmdn.getCategory())) {
-        //    return false;
-        //}
+        
+        if (!StringUtils.equals(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString())) {
+            return false;
+        }
+        
         if (!StringUtils.equals(fmdo.getLabel(), fmdn.getLabel())) {
             return false;
         }
-
-        return true;
+        
+        return fmdo.isRestricted() == fmdn.isRestricted();
     }
     
     private void compareValues(DatasetField originalField, DatasetField newField, boolean compound) {
@@ -368,6 +456,15 @@ public class DatasetVersionDifference {
     public void setBlockDataForNote(List<Object[]> blockDataForNote) {
         this.blockDataForNote = blockDataForNote;
     }
+    
+    
+    public List<List> getChangedTermsAccess() {
+        return changedTermsAccess;
+    }
+
+    public void setChangedTermsAccess(List<List> changedTermsAccess) {
+        this.changedTermsAccess = changedTermsAccess;
+    }
 
     private void initDatasetFilesDifferencesList() {
         datasetFilesDiffList = new ArrayList<datasetFileDifferenceItem>();
@@ -446,6 +543,7 @@ public class DatasetVersionDifference {
                 if (fileMetadataIsDifferent(fm1, fm2)) {
                     datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, fm2);
                     fdi.setFileId(fm1.getDataFile().getId().toString());
+                    fdi.setFileMD5(fm1.getDataFile().getmd5());
                     datasetFilesDiffList.add(fdi);
                 }
                 i++;
@@ -453,12 +551,14 @@ public class DatasetVersionDifference {
             } else if (fm2.getDataFile().getId() != null && fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) > 0) {
                 datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
                 fdi.setFileId(fm2.getDataFile().getId().toString());
+                fdi.setFileMD5(fm2.getDataFile().getmd5());
                 datasetFilesDiffList.add(fdi);
 
                 j++;
             } else if (fm2.getDataFile().getId() == null || fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) < 0) {
                 datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
                 fdi.setFileId(fm1.getDataFile().getId().toString());
+                fdi.setFileMD5(fm1.getDataFile().getmd5());
                 datasetFilesDiffList.add(fdi);
 
                 i++;
@@ -472,6 +572,7 @@ public class DatasetVersionDifference {
             fm1 = originalVersion.getFileMetadatas().get(i);
             datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
             fdi.setFileId(fm1.getDataFile().getId().toString());
+            fdi.setFileMD5(fm1.getDataFile().getmd5());
             datasetFilesDiffList.add(fdi);
 
             i++;
@@ -484,6 +585,11 @@ public class DatasetVersionDifference {
                 fdi.setFileId(fm2.getDataFile().getId().toString());
             } else {
                 fdi.setFileId("[UNASSIGNED]");
+            }
+            if (fm2.getDataFile().getmd5() != null) {
+                fdi.setFileMD5(fm2.getDataFile().getmd5());
+            } else {
+                fdi.setFileMD5("[UNASSIGNED]");
             }
             datasetFilesDiffList.add(fdi);
 
@@ -562,8 +668,8 @@ public class DatasetVersionDifference {
          }
          */
         // file category:
-        /*deprecated: value1 = fm1.getCategory();
-        value2 = fm2.getCategory();
+        value1 = fm1.getCategoriesByName().toString();
+        value2 = fm2.getCategoriesByName().toString();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
             value1 = "";
@@ -574,7 +680,7 @@ public class DatasetVersionDifference {
 
         if (!value1.equals(value2)) {
             return true;
-        }*/
+        }
 
         // file description:
         value1 = fm1.getDescription();
@@ -590,7 +696,15 @@ public class DatasetVersionDifference {
         if (!value1.equals(value2)) {
             return true;
         }
-
+        
+        //File restrictions
+        
+        value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
+        value2 = fm2.isRestricted() ? "Restricted" : "Not Restricted";
+        
+        if (!value1.equals(value2)) {
+            return true;
+        }
         // if we got this far, the 2 metadatas are identical:
         return false;
     }
@@ -612,7 +726,11 @@ public class DatasetVersionDifference {
 
             // deprecated: fdi.setFileCat1(fm1.getCategory());
             fdi.setFileDesc1(fm1.getDescription());
+            if(!fm1.getCategoriesByName().isEmpty()){
+                fdi.setFileCat1(fm1.getCategoriesByName().toString());
+            }
 
+            fdi.setFileRest1(fm1.isRestricted() ? "Restricted" : "Not Restricted");
             fdi.setFile2Empty(true);
 
         } else if (fm1 == null) {
@@ -620,10 +738,15 @@ public class DatasetVersionDifference {
 
             fdi.setFileName2(fm2.getLabel());
             fdi.setFileType2(fm2.getDataFile().getFriendlyType());
+            
             //fdi.setFileSize2(FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length()));
             // deprecated: fdi.setFileCat2(fm2.getCategory());
             fdi.setFileDesc2(fm2.getDescription());
+            if(!fm2.getCategoriesByName().isEmpty()){
+                fdi.setFileCat2(fm2.getCategoriesByName().toString());
+            }
 
+            fdi.setFileRest2(fm2.isRestricted() ? "Restricted" : "Not Restricted");
         } else {
             // Both are non-null metadata objects.
             // We simply go through the 5 metadata fields, if any are
@@ -655,9 +778,8 @@ public class DatasetVersionDifference {
             // for the same studyFile! -- so no need to check for differences in
             // these 2 items.
             // file category:
-            /* deprecated: value1 = fm1.getCategory();
-            value2 = fm2.getCategory();
-
+            value1 = fm1.getCategoriesByName().toString();
+            value2 = fm2.getCategoriesByName().toString();
             if (value1 == null || value1.equals("") || value1.equals(" ")) {
                 value1 = "";
             }
@@ -666,10 +788,9 @@ public class DatasetVersionDifference {
             }
 
             if (!value1.equals(value2)) {
-
                 fdi.setFileCat1(value1);
                 fdi.setFileCat2(value2);
-            } */
+            } 
 
             // file description:
             value1 = fm1.getDescription();
@@ -687,6 +808,13 @@ public class DatasetVersionDifference {
                 fdi.setFileDesc1(value1);
                 fdi.setFileDesc2(value2);
             }
+
+            value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
+            value2 = fm2.isRestricted() ? "Restricted" : "Not Restricted";
+            if (!value1.equals(value2)) {
+                fdi.setFileRest1(value1);
+                fdi.setFileRest2(value2);
+            }
         }
         return fdi;
     }
@@ -697,18 +825,37 @@ public class DatasetVersionDifference {
         }
 
         private String fileId;
+        private String fileMD5;
 
         private String fileName1;
         private String fileType1;
         private String fileSize1;
         private String fileCat1;
         private String fileDesc1;
-
+        private String fileRest1;
+        
         private String fileName2;
         private String fileType2;
         private String fileSize2;
         private String fileCat2;
         private String fileDesc2;
+        private String fileRest2;
+
+        public String getFileRest1() {
+            return fileRest1;
+        }
+
+        public void setFileRest1(String fileRest1) {
+            this.fileRest1 = fileRest1;
+        }
+
+        public String getFileRest2() {
+            return fileRest2;
+        }
+
+        public void setFileRest2(String fileRest2) {
+            this.fileRest2 = fileRest2;
+        }
 
         private boolean file1Empty = false;
         private boolean file2Empty = false;
@@ -815,6 +962,14 @@ public class DatasetVersionDifference {
 
         public void setFile2Empty(boolean state) {
             file2Empty = state;
+        }
+        
+        public String getFileMD5() {
+            return fileMD5;
+        }
+
+        public void setFileMD5(String fileMD5) {
+            this.fileMD5 = fileMD5;
         }
 
     }

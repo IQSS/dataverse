@@ -55,11 +55,13 @@ Metadata found in the header section of `Flexible Image Transport System (FITS) 
 aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable
 and browsable (facets) at the Dataset-level.
 
-Compressed Files: tar & zip
+Compressed Files
 ----------------------------------------
 
-Compressed files in tar and zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as 
+Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as 
 is. If the number of files inside are more than a set limit (1,000), you will get an error message and the file will uploads as is.
+
+Support for unpacking tar files will be added when this ticket is closed: https://github.com/IQSS/dataverse/issues/2195.
 
 Advanced Options
 ---------------------------------------------

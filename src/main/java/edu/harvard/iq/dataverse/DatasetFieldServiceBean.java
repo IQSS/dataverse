@@ -120,7 +120,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return The ControlledVocabularyValue found or null.
      */
     public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);
+        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);       
         typedQuery.setParameter("strvalue", strValue);
         typedQuery.setParameter("dsft", dsft);
         try {
@@ -142,6 +142,21 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             } else {
                 return null;
             }
+        }
+    }
+    
+    public ControlledVocabAlternate findControlledVocabAlternateByControlledVocabularyValueAndStrValue(ControlledVocabularyValue cvv, String strValue){
+        TypedQuery<ControlledVocabAlternate> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate AS o WHERE o.strValue = :strvalue AND o.controlledVocabularyValue = :cvv", ControlledVocabAlternate.class);
+        typedQuery.setParameter("strvalue", strValue);
+        typedQuery.setParameter("cvv", cvv);
+        try {
+            ControlledVocabAlternate alt = typedQuery.getSingleResult();
+            return alt;
+        } catch (NoResultException e) {
+            return null;
+        } catch (NonUniqueResultException ex){
+           List results = typedQuery.getResultList();
+           return (ControlledVocabAlternate) results.get(0);
         }
     }
 

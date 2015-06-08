@@ -7,8 +7,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  * Convenience base class for implementing groups that apply to the entire Dataverse
@@ -21,6 +23,7 @@ import javax.persistence.NamedQuery;
                 query="SELECT g FROM PersistedGlobalGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias" )
 })
 @Entity
+@Table(indexes = {@Index(columnList="dtype")})
 public abstract class PersistedGlobalGroup implements Group, Serializable {
     
     @Id

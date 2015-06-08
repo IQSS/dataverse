@@ -12,10 +12,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  *
@@ -29,6 +31,9 @@ import javax.persistence.NamedQuery;
 })
 
 @Entity
+@Table(indexes = {@Index(columnList="dataverse_id")
+		, @Index(columnList="datasetfieldtype_id")
+		, @Index(columnList="displayorder")})
 public class DataverseFacet implements Serializable {
     private static final long serialVersionUID = 1L;
 

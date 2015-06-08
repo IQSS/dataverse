@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -21,6 +22,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -37,6 +39,18 @@ import org.hibernate.validator.constraints.NotEmpty;
     @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
 })
 @Entity
+@Table(indexes = {@Index(columnList="fk_dataverse_id")
+		, @Index(columnList="defaultcontributorrole_id")
+		, @Index(columnList="defaulttemplate_id")
+		, @Index(columnList="alias")
+		, @Index(columnList="affiliation")
+		, @Index(columnList="dataversetype")
+		, @Index(columnList="facetroot")
+		, @Index(columnList="guestbookroot")
+		, @Index(columnList="metadatablockroot")
+		, @Index(columnList="templateroot")
+		, @Index(columnList="permissionroot")
+		, @Index(columnList="themeroot")})
 public class Dataverse extends DvObjectContainer {
 
     public enum DataverseType {
