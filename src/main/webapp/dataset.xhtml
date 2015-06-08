@@ -503,7 +503,7 @@
 
                                 <!-- Files Table -->
                                 <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatasSorted : DatasetPage.dataset.latestVersion.fileMetadatas}"
-                                             rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.fileSystemName}"
+                                             rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                                              selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                                              emptyMessage="#{bundle['file.notFound.tip']}">
                                     <f:facet name="header">
@@ -589,10 +589,10 @@
                                             </span>
 
                                             <!-- Default Icon -->
-                                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.fileSystemName, fileMetadata.dataFile.contentType))}"/>
+                                            <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
 
-                                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.fileSystemName, fileMetadata.dataFile.contentType)}">
-                                                <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
+                                            <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
+                                                <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                                             </ui:fragment>
 

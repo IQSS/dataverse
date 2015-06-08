@@ -560,11 +560,15 @@ public class Dataset extends DvObjectContainer {
                 return this.getOwner().getHarvestingDataverseConfig().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + identifier;
             } else if (HarvestingDataverseConfig.HARVEST_STYLE_HGL.equals(this.getOwner().getHarvestingDataverseConfig().getHarvestStyle())) {
                 // a bit of a hack, true. 
+                // HGL documents, when turned into Dataverse studies/datasets
+                // all 1 datafile; the location ("storage identifier") of the file
+                // is the URL pointing back to the HGL GUI viewer. This is what 
+                // we will display for the dataset URL.  -- L.A. 
                 // TODO: create a 4.+ ticket for a cleaner solution. 
                 List<DataFile> dataFiles = this.getFiles();
                 if (dataFiles != null && dataFiles.size() == 1) {
                     if (dataFiles.get(0) != null) {
-                        String hglUrl = dataFiles.get(0).getFileSystemName();
+                        String hglUrl = dataFiles.get(0).getStorageIdentifier();
                         if (hglUrl != null && hglUrl.matches("^http.*")) {
                             return hglUrl;
                         }

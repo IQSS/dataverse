@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -77,11 +77,15 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         // fails, we throw an exception and abort the command without
         // trying to remove the object from the database:
         
+        
+        // TODO: !!
+        // The code below assumes all the files are stored locally, on the filesystem!
+        // -- L.A. 4.0.2
         logger.log(Level.FINE, "Delete command called on an unpublished DataFile {0}", doomed.getId());
-        String fileSystemName = doomed.getFileSystemName();
+        String fileSystemName = doomed.getStorageIdentifier();
         logger.log(Level.FINE, "Storage identifier for the file: {0}", fileSystemName);
         
-        DataAccessObject dataAccess = null; 
+        DataFileIO dataAccess = null; 
         
         try {
             dataAccess = doomed.getAccessObject();
@@ -198,7 +202,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         // cached files for a given datafiles are stored on the filesystem
         // as <filesystemname>.*; for example, <filename>.thumb64 or 
         // <filename>.RData.
-        final String baseName = dataFile.getFileSystemName();
+        final String baseName = dataFile.getStorageIdentifier();
 
         if (baseName == null || baseName.equals("")) {
             return null;

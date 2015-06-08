@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -1723,7 +1724,7 @@ public class DatasetPage implements java.io.Serializable {
                 Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
                     FileMetadata fmd = (FileMetadata) fmit.next();
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(fmd.getDataFile().getFileSystemName())) {
+                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                         fmit.remove();
                         break;
                     }
@@ -1732,7 +1733,7 @@ public class DatasetPage implements java.io.Serializable {
                 Iterator<DataFile> dfIt = dataset.getFiles().iterator();
                 while (dfIt.hasNext()) {
                     DataFile dfn = dfIt.next();
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                         
                         // Before we remove the file from the list and forget about 
                         // it:
@@ -1750,10 +1751,10 @@ public class DatasetPage implements java.io.Serializable {
                         // local filesystem: 
 
                         try {
-                            Files.delete(Paths.get(ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName()));
+                            Files.delete(Paths.get(ingestService.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier()));
                         } catch (IOException ioEx) {
                             // safe to ignore - it's just a temp file. 
-                            logger.warning("Failed to delete temporary file " + ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName());
+                            logger.warning("Failed to delete temporary file " + ingestService.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier());
                         }
                         
                         dfIt.remove();
@@ -1766,7 +1767,7 @@ public class DatasetPage implements java.io.Serializable {
                 Iterator<DataFile> nfIt = newFiles.iterator();
                 while (nfIt.hasNext()) {
                     DataFile dfn = nfIt.next();
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                         nfIt.remove();
                     }
                 }                
@@ -2179,7 +2180,7 @@ public class DatasetPage implements java.io.Serializable {
                     Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmIt.hasNext()) {
                         FileMetadata fm = fmIt.next();
-                        if (fm.getId() == null && dFile.getFileSystemName().equals(fm.getDataFile().getFileSystemName())) {
+                        if (fm.getId() == null && dFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
                             fmIt.remove();
                             break;
                         }
@@ -2188,7 +2189,7 @@ public class DatasetPage implements java.io.Serializable {
                     Iterator<DataFile> dfIt = dataset.getFiles().iterator();
                     while (dfIt.hasNext()) {
                         DataFile dfn = dfIt.next();
-                        if (dfn.getId() == null && dFile.getFileSystemName().equals(dfn.getFileSystemName())) {
+                        if (dfn.getId() == null && dFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                             dfIt.remove();
                             break;
                         }

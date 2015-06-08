@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -270,12 +270,12 @@ public class DataFile extends DvObject {
         super.setOwner(dataset);
     }
     
-    public String getFileSystemName() {
+    public String getStorageIdentifier() {
         return this.fileSystemName;
     }
 
-    public void setFileSystemName(String fileSystemName) {
-        this.fileSystemName = fileSystemName;
+    public void setStorageIdentifier(String storageIdentifier) {
+        this.fileSystemName = storageIdentifier;
     }
     
     public String getDescription() {
@@ -373,25 +373,9 @@ public class DataFile extends DvObject {
     public void setmd5(String md5) { 
         this.md5 = md5; 
     }
-
-    public Path getFileSystemLocation() {
-        // TEMPORARY HACK!
-        // (only used in batch ingest testing -- L.A. 4.0 beta)
-        if (this.fileSystemName != null && this.fileSystemName.startsWith("/")) {
-            return Paths.get(this.fileSystemName);
-        }
-        
-        Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
-        if (studyDirectoryPath == null) {
-            return null;
-        }
-        String studyDirectory = studyDirectoryPath.toString();
- 
-        return Paths.get(studyDirectory, this.fileSystemName);
-    }
     
-    public DataAccessObject getAccessObject() throws IOException {
-        DataAccessObject dataAccess =  DataAccess.createDataAccessObject(this);
+    public DataFileIO getAccessObject() throws IOException {
+        DataFileIO dataAccess =  DataAccess.createDataAccessObject(this);
         
         if (dataAccess == null) {
             throw new IOException("Failed to create access object for datafile.");
@@ -399,6 +383,12 @@ public class DataFile extends DvObject {
         
         return dataAccess; 
     }
+    
+    
+    // The 2 methods below - TODO: 
+    // remove everything filesystem-specific; 
+    // move the functionality into storage drivers. 
+    // -- L.A. 4.0.2
     
     public Path getSavedOriginalFile() {
        
@@ -419,6 +409,7 @@ public class DataFile extends DvObject {
         return null; 
     }
     
+    /*
     public String getFilename() {
         String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
  
@@ -427,7 +418,7 @@ public class DataFile extends DvObject {
         }
         String fileSystemPath = studyDirectory + "/" + this.fileSystemName;
         return fileSystemPath.replaceAll("/", "%2F");
-    }
+    }*/
     
     /*
         Does the contentType indicate a shapefile?

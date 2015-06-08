@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.rserve.*;
+import java.nio.file.Path;
 
 
 
@@ -62,8 +63,20 @@ public class DataFileConverter {
     public static String SERVICE_REQUEST_CONVERT = "convert";
     
     
-    public static FileAccessObject performFormatConversion (DataFile file, FileAccessObject fileDownload, String formatRequested, String formatType) {
-        if (!file.isTabularData()) {
+    public static FileAccessIO performFormatConversion (DataFile file, FileAccessIO fileDownload, String formatRequested, String formatType) {
+        if (!file.isTabularData() || !fileDownload.isLocalFile()) {
+            return null; 
+        }
+        
+        Path tabFilePath = null; 
+        
+        try {
+            tabFilePath = fileDownload.getFileSystemPath();
+        } catch (IOException ioEx) {
+            return null; 
+        }
+        
+        if (tabFilePath == null) {
             return null; 
         }
         
@@ -78,35 +91,27 @@ public class DataFileConverter {
 
         // if the format requested is "D00", and it's already a TAB file,
         // we don't need to do anything:
-        if (formatRequested.equals(FILE_TYPE_TAB) &&
-            file.getContentType().equals("text/tab-separated-values")) {
-                
+        if (formatRequested.equals(FILE_TYPE_TAB)
+                && file.getContentType().equals("text/tab-separated-values")) {
+
             return fileDownload;
         }
 
-        /* No support for "remote" files in 4.0 as of yet. 
-         * -- L.A. 4.0 alpha 1
-        if (file.isRemote()) {
-            //TODO://tabFile = saveRemoteFile (file, fileDownload);
-        } else { */
-            // If it's a local file we may already have a cached copy of this
-            // format.
-
-            cachedFileSystemLocation = file.getFileSystemLocation()
+        // We may already have a cached copy of this
+        // format:
+        cachedFileSystemLocation = tabFilePath.toString()
                 + "."
                 + formatRequested;
 
-
-            if (new File(cachedFileSystemLocation).exists()) {
-                formatConvertedFile = new File(cachedFileSystemLocation);
-            } else {
+        if (new File(cachedFileSystemLocation).exists()) {
+            formatConvertedFile = new File(cachedFileSystemLocation);
+        } else {
                 // OK, we don't have a cached copy. So we'll have to run
-                // conversion again (below). Let's have the
-                // tab-delimited file handy:
+            // conversion again (below). Let's have the
+            // tab-delimited file handy:
 
-                tabFile = file.getFileSystemLocation().toFile();
-            }
-        /*}*/
+            tabFile = tabFilePath.toFile();
+        }
                         
         
         // Check if the tab file is present and run the conversion:

@@ -87,7 +87,16 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         setVarCount(datafile.getDataTable().getVarQuantity().intValue()); 
         setCaseCount(datafile.getDataTable().getCaseQuantity().intValue()); 
         
-        File tabfile = datafile.getFileSystemLocation().toFile();    
+           
+        
+        DataFileIO dataAccess = datafile.getAccessObject();
+        if (!dataAccess.isLocalFile()) {
+            throw new IOException("Subsetting is supported on local files only!");
+        }
+        
+        //File tabfile = datafile.getFileSystemLocation().toFile();
+        File tabfile = dataAccess.getFileSystemPath().toFile();
+        
         File rotatedImageFile = getRotatedImage(tabfile, getVarCount(), getCaseCount());
         long[] columnEndOffsets = extractColumnOffsets(rotatedImageFile, getVarCount(), getCaseCount()); 
         
@@ -214,55 +223,6 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         columnBufferOffsets[column] = 0;
         columnTotalOffsets[column] += columnBufferSizes[column];
     }
-    
-    /* 
-       do not use this method!
-       there's a high potential for the "UTF8 character split between buffers" error!
-    public String readColumnEntry(int column) {
-        String ret = null; 
-        int currentbyte;
-        
-        if (columnBufferOffsets[column] >= columnBufferSizes[column]) {
-            try {
-                bufferMoreColumnBytes(column);
-            } catch (IOException ioe) {
-                return null; 
-            }
-        }
-        
-        currentbyte = columnBufferOffsets[column];
-        try {
-            while (columnByteBuffers[column].array()[currentbyte] != '\n') {
-                currentbyte++;
-                if (currentbyte == columnBufferSizes[column]) {
-                    // save the leftover: 
-                    if (ret == null) {
-                        ret = new String(columnByteBuffers[column].array(), columnBufferOffsets[column], columnBufferSizes[column] - columnBufferOffsets[column], "UTF8");
-                    } else {
-                        ret = ret.concat(new String(columnByteBuffers[column].array(), columnBufferOffsets[column], columnBufferSizes[column] - columnBufferOffsets[column], "UTF8"));
-                    }
-                    // read more bytes:
-                    bufferMoreColumnBytes(column);
-                    currentbyte = 0;
-                }
-            }
-
-            // presumably, we have found our '\n':
-            if (ret == null) {
-                ret = new String(columnByteBuffers[column].array(), columnBufferOffsets[column], currentbyte - columnBufferOffsets[column], "UTF8");
-            } else {
-                ret = ret.concat(new String(columnByteBuffers[column].array(), columnBufferOffsets[column], currentbyte - columnBufferOffsets[column], "UTF8"));
-            }
-
-        } catch (IOException ioe) {
-            return null;
-        }
-
-        columnBufferOffsets[column] += (currentbyte + 1);
-
-        return ret;
-    }
-    */
     
     public byte[] readColumnEntryBytes(int column) {
         return readColumnEntryBytes(column, true);
@@ -576,7 +536,13 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             throw new IOException("Column "+column+" is out of bounds.");
         }
         
-        File tabfile = dataFile.getFileSystemLocation().toFile();
+        DataFileIO dataAccess = dataFile.getAccessObject();
+        if (!dataAccess.isLocalFile()) {
+            throw new IOException("Subsetting is supported on local files only!");
+        }
+        
+        //File tabfile = datafile.getFileSystemLocation().toFile();
+        File tabfile = dataAccess.getFileSystemPath().toFile();
 
         if (columntype == COLUMN_TYPE_STRING) {
             String filename = dataFile.getFileMetadata().getLabel();

@@ -144,25 +144,6 @@ public class DownloadInfo {
         return null; 
     }
     
-    public Long getFileSize() {
-        Long fileSize = null; 
-        
-        if (dataFile != null) {
-            // No support for remote files, yet: if (!dataFile.isRemote()) {
-                try {
-                    File tmpFile = dataFile.getFileSystemLocation().toFile();
-                    if (tmpFile != null) {
-                        fileSize = tmpFile.length();
-                    }
-                } catch (Exception ex) {
-                    return null; 
-                }
-            //}
-        }
-        
-        return fileSize; 
-    }
-    
     public List<OptionalAccessService> getServicesAvailable() {
 	return optionalServicesAvailable; 
     }

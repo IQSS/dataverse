@@ -61,45 +61,64 @@ public class ImageThumbConverter {
         return isThumbnailAvailable(file, DEFAULT_THUMBNAIL_SIZE);
     }
     
-    public static boolean isThumbnailAvailable (DataFile file, int size) {
+    public static boolean isThumbnailAvailable(DataFile file, int size) {
         if (file == null) {
-            return false; 
+            return false;
         }
-        
-        logger.fine("Checking for thumbnail, file type: "+file.getContentType());
-        
+
         String imageThumbFileName = null;
 
-        if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            imageThumbFileName = generateImageThumb(file.getFileSystemLocation().toString(), size);
-        } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
-            imageThumbFileName = generatePDFThumb(file.getFileSystemLocation().toString(), size);
-        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
-            imageThumbFileName = generateWorldMapThumb(file.getFileSystemLocation().toString(), size);
+        try {
+
+            DataFileIO dataAccess = file.getAccessObject();
+
+            if (!dataAccess.isLocalFile()) {
+                logger.fine("thumbnails are supported on local files only at this time.");
+                return false;
+            }
+
+            logger.fine("Checking for thumbnail, file type: " + file.getContentType());
+
+            if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
+                imageThumbFileName = generateImageThumb(dataAccess.getFileSystemPath().toString(), size);
+            } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
+                imageThumbFileName = generatePDFThumb(dataAccess.getFileSystemPath().toString(), size);
+            } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
+                imageThumbFileName = generateWorldMapThumb(dataAccess.getFileSystemPath().toString(), size);
+            }
+        } catch (IOException ioEx) {
+            return false;
         }
-        
+
         if (imageThumbFileName != null) {
-            logger.fine("image thumb file name: "+imageThumbFileName);
-            return true; 
+            logger.fine("image thumb file name: " + imageThumbFileName);
+            return true;
         }
-        
-        logger.fine("image thumb file name is null");
-        return false; 
-    }
-    
-    public static FileAccessObject getImageThumb (DataFile file, FileAccessObject fileDownload) {
-        return getImageThumb (file, fileDownload, DEFAULT_THUMBNAIL_SIZE);
-    }
-    
-    public static FileAccessObject getImageThumb(DataFile file, FileAccessObject fileDownload, int size) {
-        String imageThumbFileName = null;
 
-        if (file != null && file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            imageThumbFileName = generateImageThumb(file.getFileSystemLocation().toString(), size);
-        } else if (file != null && file.getContentType().equalsIgnoreCase("application/pdf")) {
-            imageThumbFileName = generatePDFThumb(file.getFileSystemLocation().toString(), size);
-        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
-            imageThumbFileName = generateWorldMapThumb(file.getFileSystemLocation().toString(), size);
+        logger.fine("image thumb file name is null");
+        return false;
+    }
+    
+    public static FileAccessIO getImageThumb (FileAccessIO fileAccess) {
+        return getImageThumb (fileAccess, DEFAULT_THUMBNAIL_SIZE);
+    }
+    
+    public static FileAccessIO getImageThumb(FileAccessIO fileAccess, int size) {
+        String imageThumbFileName = null;
+        DataFile file = fileAccess.getDataFile();
+
+        try {
+            if (file != null && file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
+                imageThumbFileName = generateImageThumb(fileAccess.getFileSystemPath().toString(), size);
+            } else if (file != null && file.getContentType().equalsIgnoreCase("application/pdf")) {
+                imageThumbFileName = generatePDFThumb(fileAccess.getFileSystemPath().toString(), size);
+            } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile")) {
+                imageThumbFileName = generateWorldMapThumb(fileAccess.getFileSystemPath().toString(), size);
+            } else {
+                return null;
+            }
+        } catch (IOException ioEx) {
+            return null; 
         }
         
         if (imageThumbFileName != null) {
@@ -107,8 +126,8 @@ public class ImageThumbConverter {
 
             if (imageThumbFile != null && imageThumbFile.exists()) {
 
-                fileDownload.closeInputStream();
-                fileDownload.setSize(imageThumbFile.length());
+                fileAccess.closeInputStream();
+                fileAccess.setSize(imageThumbFile.length());
 
                 InputStream imageThumbInputStream = null;
 
@@ -120,17 +139,17 @@ public class ImageThumbConverter {
                 }
 
                 if (imageThumbInputStream != null) {
-                    fileDownload.setInputStream(imageThumbInputStream);
-                    fileDownload.setIsLocalFile(true);
+                    fileAccess.setInputStream(imageThumbInputStream);
+                    fileAccess.setIsLocalFile(true);
 
-                    fileDownload.setMimeType("image/png");
+                    fileAccess.setMimeType("image/png");
                 } else {
                     return null;
                 }
             }
         }
 
-        return fileDownload;
+        return fileAccess;
     }
     
     public static String generateImageThumb(String fileLocation) {

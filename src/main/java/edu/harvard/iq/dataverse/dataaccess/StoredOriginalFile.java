@@ -24,6 +24,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import edu.harvard.iq.dataverse.DataFile;
+import java.io.InputStream;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +41,83 @@ public class StoredOriginalFile {
         
     }
     
-    public static FileAccessObject retrieve (DataFile dataFile, FileAccessObject fileDownload) {
+    private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
+    
+    public static DataFileIO retreive(DataFileIO dataAccess) {
+        String originalMimeType = null;
+
+        DataFile dataFile = dataAccess.getDataFile();
+
+        if (dataFile == null) {
+            return null;
+        }
+
+        if (dataFile.getDataTable() != null) {
+            originalMimeType = dataFile.getDataTable().getOriginalFileFormat();
+        } else {
+            return null;
+        }
+
+        Channel storedOriginalChannel = null;
+        try {
+            storedOriginalChannel = dataAccess.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
+        } catch (IOException ioEx) {
+            // The original file not saved, or could not be opened.
+            return null;
+        }
+
+        if (storedOriginalChannel == null) {
+            return null;
+        }
+
+        dataAccess.setInputStream(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel));
+
+        // Reset the size, filename and the mime type: 
+        
+        long origFileSize; 
+        try {
+            origFileSize = dataAccess.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
+        } catch (IOException ioEx) {
+            return null; 
+        }
+        
+        dataAccess.setSize(origFileSize);
+        
+        if (originalMimeType != null && !originalMimeType.equals("")) {
+            if (originalMimeType.matches("application/x-dvn-.*-zip")) {
+                dataAccess.setMimeType("application/zip");
+            } else {
+                dataAccess.setMimeType(originalMimeType);
+            }
+        } else {
+            dataAccess.setMimeType("application/x-unknown");
+        }
+
+        String fileName = dataAccess.getFileName();
+        if (fileName != null) {
+            if (originalMimeType != null) {
+                String origFileExtension = generateOriginalExtension(originalMimeType);
+                dataAccess.setFileName(fileName.replaceAll(".tab$", origFileExtension));
+            } else {
+                dataAccess.setFileName(fileName.replaceAll(".tab$", ""));
+            }
+        }
+
+        dataAccess.setNoVarHeader(true);
+        dataAccess.setVarHeader(null);
+        
+        return dataAccess;
+
+    }
+    
+    // This method is deprecated; 
+    // The method above should be used instead, as it fully utilises the new generic 
+    // DataFileIO framework. 
+    // The method below is however left in place temporarily, for backward 
+    // compatibility access to the existing stored originals. 
+    
+    @Deprecated
+    public static FileAccessIO retrieve (DataFile dataFile, FileAccessIO fileDownload) {
         String originalMimeType = null; 
         
         if (dataFile.getDataTable() != null) {
@@ -46,7 +126,13 @@ public class StoredOriginalFile {
             return null; 
         }
         
-        String tabularFileName = dataFile.getFileSystemName(); 
+        /* 
+         * TODO: 
+         * This assumes that, and only works if this file is stored locally 
+         * on the filesystem!!
+         * L.A. 4.0.2
+        */
+        String tabularFileName = dataFile.getStorageIdentifier(); 
         Path savedOriginalPath = null; 
         
         if (tabularFileName != null && !tabularFileName.equals("")) {

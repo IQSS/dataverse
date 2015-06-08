@@ -338,7 +338,7 @@ public class JsonPrinter {
 				.add("id", df.getId() )
 				.add("name", fileName)
 				.add("contentType", df.getContentType())
-				.add("filename", df.getFilename())
+				.add("filename", df.getStorageIdentifier())
 				.add("originalFileFormat", df.getOriginalFileFormat())
 				.add("originalFormatLabel", df.getOriginalFormatLabel())
 				.add("UNF", df.getUnf())
