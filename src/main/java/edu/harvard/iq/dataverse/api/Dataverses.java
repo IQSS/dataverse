@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
@@ -328,6 +329,19 @@ public class Dataverses extends AbstractApiBean {
 
     }
     
+    @GET
+    @Path("{identifier}/facets/")
+    public Response listFacets( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            AuthenticatedUser u = findUserOrDie(apiKey);
+
+            return okResponse( json(execCommand(new ListFacetsCommand(u, dv), "Listing facets for dataverse " + dvIdtf )));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     @POST
     @Path("{identifier}/facets")
     @Produces(MediaType.APPLICATION_JSON)
