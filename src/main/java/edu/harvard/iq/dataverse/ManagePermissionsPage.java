@@ -22,9 +22,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +70,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
     GroupServiceBean groupService;
     @EJB
     EjbDataverseEngine commandEngine;
-    
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -163,6 +167,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
         try {
             commandEngine.submit(new RevokeRoleCommand(ra, session.getUser()));
             JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
+            RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
+            notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE);
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role assignment was not able to be removed.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
@@ -387,10 +393,32 @@ public class ManagePermissionsPage implements java.io.Serializable {
         }
     }
 
+    /**
+     * Notify a {@code RoleAssignee} that a role was either assigned or revoked.
+     * Will notify all members of a group.
+     * @param ra The {@code RoleAssignee} to be notified.
+     * @param type The type of notification.
+     */
+    private void notifyRoleChange(RoleAssignee ra, UserNotification.Type type) {
+        if (ra instanceof AuthenticatedUser) {
+                userNotificationService.sendNotification((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type, dvObject.getId());
+        } else if (ra instanceof ExplicitGroup) {
+            ExplicitGroup eg = (ExplicitGroup) ra;
+            Set<String> explicitGroupMembers = eg.getContainedRoleAssgineeIdentifiers();
+            for (String id : explicitGroupMembers) {
+                RoleAssignee explicitGroupMember = roleAssigneeService.getRoleAssignee(id);
+                if (explicitGroupMember instanceof AuthenticatedUser) {
+                    userNotificationService.sendNotification((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type, dvObject.getId());
+                }
+            }
+        }
+    }
+
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, session.getUser()));
             JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + dvObject.getDisplayName() + ".");
+            notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {

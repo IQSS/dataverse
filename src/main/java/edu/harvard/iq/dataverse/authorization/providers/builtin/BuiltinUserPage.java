@@ -455,6 +455,17 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void displayNotification() {
         for (UserNotification userNotification : notificationsList) {
             switch (userNotification.getType()) {
+                case ASSIGNROLE:
+                case REVOKEROLE:
+                    // Can either be a dataverse or dataset, so search both
+                    Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
+                    if (dataverse != null) {
+                        userNotification.setTheObject(dataverse);
+                    } else {
+                        Dataset dataset = datasetService.find(userNotification.getObjectId());
+                        userNotification.setTheObject(dataset);
+                    }
+                    break;
                 case CREATEDV:
                     userNotification.setTheObject(dataverseService.find(userNotification.getObjectId()));
                     break;
