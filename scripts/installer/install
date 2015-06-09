@@ -317,14 +317,14 @@ my $WARFILE_LOCATION = "dataverse.war";
 
 unless ( -f $WARFILE_LOCATION ) {
     my $DATAVERSE_VERSION = "";
-    my $DATAVERSE_VERSION_FILE = "../../src/java/VersionNumber.properties";
+    my $DATAVERSE_VERSION_FILE = "../../src/main/java/VersionNumber.properties";
     if ( -f $DATAVERSE_VERSION_FILE ) 
     {
 	open DVF, $DATAVERSE_VERSION_FILE; 
 	$DATAVERSE_VERSION = <DVF>; 
 	close DVF;
 	$DATAVERSE_VERSION=~s/[ \n\t\r]*$//; 
-	$DATAVERSE_VERSION=~s/^dataverse.version=//;
+	$DATAVERSE_VERSION=~s/^version\.number=//;
 	
 	$WARFILE_LOCATION = "../../target/dataverse-" . $DATAVERSE_VERSION . ".war";
     }
