@@ -56,8 +56,21 @@ Two distinct interfaces are used to access R: Dataverse uses Rserve; and TwoRave
 
 We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree; you will need the other 3 files in that directory as well - `https://github.com/IQSS/dataverse/conf/R/r-setup.sh <https://github.com/IQSS/dataverseconf/R/r-setup.sh>`__) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
 
-The script will attempt to download the packages from CRAN (or a mirror) and GitHub, so the system must have access to the internet. On a server fully firewalled from the world, packages can be installed from downloaded sources. This is left as an exercise for the reader. Consult the script for insight. 
+The script will attempt to download the packages from CRAN (or a mirror) and GitHub, so the system must have access to the internet. On a server fully firewalled from the world, packages can be installed from downloaded sources. This is left as an exercise for the reader. Consult the script for insight.
 
+TwoRavens requires the following R packages and versions to be installed:
+
+=============== ================
+R Package       Version Number
+=============== ================
+Zelig           5.0.5
+Rook            1.1.1
+rjson           0.2.13
+jsonlite        0.9.16
+DescTools       0.99.11
+=============== ================
+
+Note that some of these packages have their own dependencies, and additional installations are likely necessary. TwoRavens is not compatible with older versions of these R packages.
 
 2. Install the TwoRavens Application
 ++++++++++++++++++++++++++++++++++++
@@ -89,7 +102,7 @@ distribution (`https://github.com/IQSS/TwoRavens/blob/master/install.pl <https:/
 
 The installer will ask you to provide the following:
 
-===================  =============================  ===========  
+===================  =============================  ===========
 Setting              default                        Comment
 ===================  =============================  ===========  
 TwoRavens directory  ``/var/www/html/dataexplore``  File directory where TwoRavens is installed.
@@ -168,11 +181,11 @@ to
 c. Edit the following lines in dataexplore/rook/rookutils.R: 
 ************************************************************
 
-``url <- paste("https://dataverse-internal.iq.harvard.edu/custom/preprocess_dir/preprocessSubset_",sessionid,".txt",sep="")``
+``url <- paste("https://dataverse-demo.iq.harvard.edu/custom/preprocess_dir/preprocessSubset_",sessionid,".txt",sep="")``
 
 and 
 
-``imageVector[[qicount]]<<-paste("https://dataverse-internal.iq.harvard.edu/custom/pic_dir/", mysessionid,"_",mymodelcount,qicount,".png", sep = "")``
+``imageVector[[qicount]]<<-paste("https://dataverse-demo.iq.harvard.edu/custom/pic_dir/", mysessionid,"_",mymodelcount,qicount,".png", sep = "")``
 
 and change the URL to reflect the correct location of your rApache instance - make sure that the protocol and the port number are correct too, not just the host name!
 
@@ -209,6 +222,8 @@ e. Create the following directories and chown them user apache:
    mkdir --parents /var/www/html/custom/pic_dir
    
    mkdir --parents /var/www/html/custom/preprocess_dir
+
+   mkdir --parents /var/www/html/custom/log_dir
 
    chown -R apache.apache /var/www/html/custom
 
