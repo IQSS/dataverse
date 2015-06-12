@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -34,13 +36,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -51,7 +52,9 @@ import javax.ws.rs.core.Response.Status;
  * @author michael
  */
 public abstract class AbstractApiBean {
-	
+    
+    private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
+    
     /**
      * Utility class to convey a proper error response using Java's exceptions.
      */
@@ -118,6 +121,10 @@ public abstract class AbstractApiBean {
     @Context
     HttpServletRequest request;
 	
+    @QueryParam("key") 
+    private String queryParamApiKey;
+            
+    
     /**
      * For pretty printing (indenting) of JSON output.
      */
@@ -147,14 +154,47 @@ public abstract class AbstractApiBean {
         return authSvc.lookupUser(apiKey);
     }
     
-    protected AuthenticatedUser findUserOrDie( String apiKey ) throws WrappedResponse {
-        AuthenticatedUser u = authSvc.lookupUser(apiKey);
+    protected String getRequestApiKey() {
+        String headerParamApiKey = request.getHeader(DATAVERSE_KEY_HEADER_NAME);
+        return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
+    }
+    
+    /**
+     * Returns the user of pointed by the API key, or the guest user
+     * @return a user, may be a guest user.
+     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse iff there is an api key present, but it is invalid.
+     */
+    protected User findUserOrDie() throws WrappedResponse {
+        return ( getRequestApiKey() == null )
+                ? new GuestUser()
+                : findAuthenticatedUserOrDie();
+    }
+    
+    /**
+     * Finds the authenticated user, based on (in order):
+     * <ol>
+     *  <li>The key in the HTTP header {@link #DATAVERSE_KEY_HEADER_NAME}</li>
+     *  <li>The key in the query parameter {@code key}
+     * </ol>
+     * 
+     * If no user is found, throws a wrapped bad api key (HTTP UNAUTHORIZED) response.
+     * 
+     * @return The authenticated user which owns the passed api key
+     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
+     */
+    protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
+        return findAuthenticatedUserOrDie(getRequestApiKey());
+    }
+    
+    protected AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
+        AuthenticatedUser u = authSvc.lookupUser(key);
         if ( u != null ) {
             u.setRequestMetadata( new UserRequestMetadata(request) );
             return u;
         }
-        throw new WrappedResponse( badApiKey(apiKey) );
+        throw new WrappedResponse( badApiKey(key) );
     }
+    
     
     
 	protected Dataverse findDataverse( String idtf ) {
@@ -225,14 +265,6 @@ public abstract class AbstractApiBean {
             .add("data", bld).build()).build();
     }
     
-    protected Response okResponse(JsonArrayBuilder bld, Format format) {
-        return Response.ok(Util.jsonObject2prettyString(
-                Json.createObjectBuilder()
-                .add("status", "OK")
-                .add("data", bld).build()), MediaType.APPLICATION_JSON_TYPE
-        ).build();
-    }
-    
     protected Response createdResponse( String uri, JsonObjectBuilder bld ) {
         return Response.created( URI.create(uri) )
                 .entity( Json.createObjectBuilder()
@@ -265,9 +297,9 @@ public abstract class AbstractApiBean {
      * @return a HTTP OK response with the passed value as data.
      */
     protected Response okResponseWithValue( String value ) {
-        return Response.ok(Util.jsonObject2prettyString(Json.createObjectBuilder()
+        return Response.ok(Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", value).build()), MediaType.APPLICATION_JSON_TYPE ).build();
+            .add("data", value).build(), MediaType.APPLICATION_JSON_TYPE ).build();
     }
 
     protected Response okResponseWithValue( boolean value ) {
@@ -296,7 +328,7 @@ public abstract class AbstractApiBean {
     }
     
     protected Response badApiKey( String apiKey ) {
-        return errorResponse(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key '" + apiKey +"'" : "Please provide a key query parameter (?key=XXX)");
+        return errorResponse(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key '" + apiKey +"'" : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
     }
     
     protected Response permissionError( PermissionException pe ) {
@@ -325,12 +357,6 @@ public abstract class AbstractApiBean {
     }
  
     protected boolean isNumeric( String str ) { return Util.isNumeric(str); };
-	protected String error( String msg ) { return Util.error(msg); }
-	protected String ok( String msg ) { return Util.ok(msg); }
-	protected String ok( JsonObject jo ) { return Util.ok(jo); }
-	protected String ok( JsonArray jo ) { return Util.ok(jo); }
-	protected String ok( JsonObjectBuilder jo ) { return ok(jo.build()); }
-	protected String ok( JsonArrayBuilder jo ) { return ok(jo.build()); }
 }
 
 class LazyRef<T> {

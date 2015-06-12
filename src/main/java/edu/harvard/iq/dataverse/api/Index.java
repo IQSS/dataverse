@@ -476,12 +476,21 @@ public class Index extends AbstractApiBean {
             }
 
             // <copyField source="*_i" dest="text" maxChars="3000"/>
-            sb.append("   <copyField source=\"" + nameSearchable + "\" dest=\"text\" maxChars=\"3000\"/>\n");
+            sb.append("   <copyField source=\"").append(nameSearchable).append("\" dest=\"text\" maxChars=\"3000\"/>\n");
         }
 
         return sb.toString();
     }
 
+    static String error( String message ) {
+		JsonObjectBuilder response = Json.createObjectBuilder();
+		response.add("status", "ERROR");
+		response.add("message", message);
+		
+		return "{\n\t\"status\":\"ERROR\"\n\t\"message\":\"" + message.replaceAll("\"", "\\\\\"").replaceAll("\n","\\\\n") + "\"\n}" ;
+	}
+
+    
     /**
      * This method is for integration tests of search.
      */

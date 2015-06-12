@@ -754,7 +754,7 @@ public class Access extends AbstractApiBean {
         // Even if it's a totally public object. 
         // So, checking for that first:
         logger.info("checking if either a session or a token supplied.");
-        if (session == null || session.getUser() == null) { // || !session.getUser().isAuthenticated()) {
+        if (session == null || session.getUser() == null) { 
             logger.info("session is null, or unauthenticated.");
             if (apiToken == null || findUserByApiToken(apiToken) == null) {
                 logger.info("token null or not supplied.");

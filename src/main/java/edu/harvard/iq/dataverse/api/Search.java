@@ -200,7 +200,7 @@ public class Search extends AbstractApiBean {
          * @todo Check back on https://github.com/IQSS/dataverse/issues/1838 for
          * when/if the Search API is opened up to not require a key.
          */
-        AuthenticatedUser authenticatedUser = findUserOrDie(key);
+        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie(key);
         if (nonPublicSearchAllowed()) {
             return authenticatedUser;
         } else {
