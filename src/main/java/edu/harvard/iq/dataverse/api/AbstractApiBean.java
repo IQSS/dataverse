@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import java.net.URI;
 import java.util.concurrent.Callable;
@@ -60,13 +61,32 @@ public abstract class AbstractApiBean {
      */
     public static class WrappedResponse extends Exception {
         private final Response response;
-
+        
         public WrappedResponse(Response response) {
             this.response = response;
         }
-
+        
+        public WrappedResponse( Throwable cause, Response response ) {
+            super( cause );
+            this.response = response;
+        }
+        
         public Response getResponse() {
             return response;
+        }
+        
+        /**
+         * Creates a new response, based on the original response and the passed message.
+         * Typical use would be to add a better error message to the HTTP response.
+         * @param message additional message to be added to the response.
+         * @return A Response with updated message field.
+         */
+        public Response refineResponse( String message ) {
+            final Status statusCode = Response.Status.fromStatusCode(response.getStatus());
+            final Throwable cause = getCause();
+            return errorResponse(statusCode, message
+                    + (cause!=null ? " "+cause.getMessage() : "")
+                    + " (" + statusCode.toString() + ")" );
         }
     }
     
@@ -243,19 +263,19 @@ public abstract class AbstractApiBean {
                 : datasetFieldSvc.findByNameOpt(idtf);
     }    
     
-    protected <T> T execCommand( Command<T> com, String messageSeed ) throws WrappedResponse {
+    protected <T> T execCommand( Command<T> cmd ) throws WrappedResponse {
         try {
-            return engineSvc.submit(com);
+            return engineSvc.submit(cmd);
             
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( errorResponse( Response.Status.BAD_REQUEST, messageSeed + ": Bad Request (" + ex.getMessage() + ")" ));
+            throw new WrappedResponse( ex, errorResponse(Response.Status.BAD_REQUEST, ex.getMessage() ) );
           
         } catch (PermissionException ex) {
-            throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
+            throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, ex.getMessage()) );
             
         } catch (CommandException ex) {
-            Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
-            throw new WrappedResponse(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));
+            Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);
+            throw new WrappedResponse(ex, errorResponse(Status.INTERNAL_SERVER_ERROR, ex.getMessage()));
         }
     }
     
@@ -335,12 +355,16 @@ public abstract class AbstractApiBean {
         return errorResponse( Status.UNAUTHORIZED, pe.getMessage() );
     }
     
-    protected Response errorResponse( Status sts, String msg ) {
+    protected static Response errorResponse( Status sts ) {
+        return errorResponse(sts, null);
+    }
+    
+    protected static Response errorResponse( Status sts, String msg ) {
         return Response.status(sts)
-                .entity( Json.createObjectBuilder().add("status", "ERROR")
-                        .add( "message", (msg!=null) ? msg : "<message was null>" ).build())
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .build();
+                .entity( NullSafeJsonBuilder.jsonObjectBuilder()
+                        .add("status", "ERROR")
+                        .add( "message", msg ).build()
+                ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
     
     protected Response execute( Command c ) {

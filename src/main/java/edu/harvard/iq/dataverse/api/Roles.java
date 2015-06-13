@@ -60,11 +60,11 @@ public class Roles extends AbstractApiBean {
 			return notFound( "role with id " + id + " not found");
 		} else  {
             try {
-                execCommand( new DeleteRoleCommand(findUserOrDie(), role), "Deleting role " + id );
+                execCommand( new DeleteRoleCommand(findUserOrDie(), role) );
                 return okResponse("role " + id + " deleted.");
                 
             } catch (WrappedResponse ex) {
-                return ex.getResponse();
+                return ex.refineResponse( "Cannot delete role " + id + "." );
             }
 		}
 	}
@@ -77,9 +77,9 @@ public class Roles extends AbstractApiBean {
 		if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no dataverse with id " + dvoIdtf );
 		
 		try {
-			return okResponse(json(execCommand(new CreateRoleCommand(roleDto.asRole(), findUserOrDie(), d), "Create New Role")));
+			return okResponse(json(execCommand(new CreateRoleCommand(roleDto.asRole(), findUserOrDie(), d))));
 		} catch ( WrappedResponse ce ) {
-			return ce.getResponse();
+			return ce.refineResponse("Role creation failed.");
 		}
 	}
 

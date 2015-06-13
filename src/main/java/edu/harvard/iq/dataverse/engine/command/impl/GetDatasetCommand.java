@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Collections;
 import java.util.Map;

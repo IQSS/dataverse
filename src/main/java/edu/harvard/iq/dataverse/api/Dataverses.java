@@ -87,11 +87,11 @@ import javax.ws.rs.core.Response.Status;
 @Path("dataverses")
 public class Dataverses extends AbstractApiBean {
        
-	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
 
 	@POST
 	public Response addRoot( String body ) {
-        logger.info("Creating root dataverse");
+        LOGGER.info("Creating root dataverse");
 		return addDataverse( body, "");
 	}
 	
@@ -105,7 +105,7 @@ public class Dataverses extends AbstractApiBean {
             dvJson = Json.createReader(rdr).readObject();
             d = jsonParser().parseDataverse(dvJson);
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: {0}", body);
+            LOGGER.log(Level.SEVERE, "Json: {0}", body);
             return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         } catch (JsonParseException ex) {
             Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
@@ -125,7 +125,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = findAuthenticatedUserOrDie();
-            d = execCommand( new CreateDataverseCommand(d, u, null, null), "Creating Dataverse" );
+            d = execCommand( new CreateDataverseCommand(d, u, null, null) );
 			return createdResponse( "/dataverses/"+d.getAlias(), json(d) );
         } catch ( WrappedResponse ww ) {
             return ww.getResponse();
@@ -146,10 +146,10 @@ public class Dataverses extends AbstractApiBean {
                     }
                 }
             }
-            logger.log(Level.SEVERE, sb.toString());
+            LOGGER.log(Level.SEVERE, sb.toString());
             return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + sb.toString() );
         } catch ( Exception ex ) {
-			logger.log(Level.SEVERE, "Error creating dataverse", ex);
+			LOGGER.log(Level.SEVERE, "Error creating dataverse", ex);
 			return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + ex.getMessage() );
             
         }
@@ -166,14 +166,13 @@ public class Dataverses extends AbstractApiBean {
             try ( StringReader rdr = new StringReader(jsonBody) ) {
                 json = Json.createReader(rdr).readObject();
             } catch ( JsonParsingException jpe ) {
-                logger.log(Level.SEVERE, "Json: {0}", jsonBody);
+                LOGGER.log(Level.SEVERE, "Json: {0}", jsonBody);
                 return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
             }
             
             Dataset ds = new Dataset();
             ds.setOwner(owner);
           
-         
             JsonObject jsonVersion = json.getJsonObject("datasetVersion");
             if ( jsonVersion == null) {
                 return errorResponse(Status.BAD_REQUEST, "Json POST data are missing datasetVersion object.");
@@ -195,14 +194,14 @@ public class Dataverses extends AbstractApiBean {
                     throw rbe.getCausedByException();
                 }
             } catch (JsonParseException ex) {
-                logger.log( Level.INFO, "Error parsing dataset version from Json", ex);
+                LOGGER.log( Level.INFO, "Error parsing dataset version from Json", ex);
                 return errorResponse(Status.BAD_REQUEST, "Error parsing datasetVersion: " + ex.getMessage() );
             } catch ( Exception e ) {
-                logger.log( Level.WARNING, "Error parsing dataset version from Json", e);
+                LOGGER.log( Level.WARNING, "Error parsing dataset version from Json", e);
                 return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing datasetVersion: " + e.getMessage() );
             }
             
-            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u), "Creating Dataset");
+            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u));
             return createdResponse( "/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder().add("id", managedDs.getId()) );
                 
@@ -217,7 +216,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse d = findDataverseOrDie(idtf);
             User u = findUserOrDie();
-			Dataverse retrieved = execCommand( new GetDataverseCommand(u, d), "Get Dataverse" );
+			Dataverse retrieved = execCommand( new GetDataverseCommand(u, d) );
 			return okResponse( json(retrieved) );
 		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
@@ -230,7 +229,7 @@ public class Dataverses extends AbstractApiBean {
 		try {
             Dataverse d = findDataverseOrDie(idtf);
             User u = findUserOrDie();
-			execCommand( new DeleteDataverseCommand(u, d), "Delete Dataverse" );
+			execCommand( new DeleteDataverseCommand(u, d)  );
 			return okResponse( "Dataverse " + idtf  +" deleted");
 		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
@@ -245,15 +244,14 @@ public class Dataverses extends AbstractApiBean {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            for ( MetadataBlock blk : execCommand( new ListMetadataBlocksCommand(u, dataverse), 
-                                                    "Listing Metadata blocks for dataverse " + dvIdtf)){
+            for ( MetadataBlock blk : execCommand( new ListMetadataBlocksCommand(u, dataverse) )){
                 jab.add( brief.json(blk) );
             }
             
             return okResponse(jab);
             
         } catch (WrappedResponse ex) {
-            return ex.getResponse();
+            return ex.refineResponse( "Error listing metadata blocks for dataverse " + dvIdtf + ":");
         }
 	}
 	
@@ -278,9 +276,7 @@ public class Dataverses extends AbstractApiBean {
         }
         
         try {
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            execCommand( new UpdateDataverseMetadataBlocksCommand.SetBlocks(findUserOrDie(), dataverse, blocks),
-                    "updating metadata blocks for dataverse " + dvIdtf );
+            execCommand( new UpdateDataverseMetadataBlocksCommand.SetBlocks(findUserOrDie(), findDataverseOrDie(dvIdtf), blocks));
             return okResponse("Metadata blocks of dataverse " + dvIdtf + " updated.");
             
         } catch (WrappedResponse ex) {
@@ -330,9 +326,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/facets/")
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
         try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);
-
-            return okResponse( json(execCommand(new ListFacetsCommand(findUserOrDie(), dv), "Listing facets for dataverse " + dvIdtf )));
+            return okResponse( json(execCommand(new ListFacetsCommand(findUserOrDie(), findDataverseOrDie(dvIdtf)) )));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -357,8 +351,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
-            execCommand( new UpdateDataverseCommand(dataverse, facets, null, findUserOrDie(), null),
-                    "updating facets for dataverse " + dvIdtf );
+            execCommand( new UpdateDataverseCommand(dataverse, facets, null, findUserOrDie(), null) );
             return okResponse("Facets of dataverse " + dvIdtf + " updated.");
             
         } catch (WrappedResponse ex) {
@@ -395,7 +388,7 @@ public class Dataverses extends AbstractApiBean {
 		try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
-			for ( DvObject o : execCommand(new ListDataverseContentCommand(findUserOrDie(), dataverse), "List Dataverse") ) {
+			for ( DvObject o : execCommand(new ListDataverseContentCommand(findUserOrDie(), dataverse)) ) {
 				o.accept(ser);
 			}
             return okResponse(jab);
@@ -411,7 +404,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse d = findDataverseOrDie(dvIdtf);
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            for ( DataverseRole r : execCommand( new ListRolesCommand(findUserOrDie(), d), "Listing roles defined at Dataverse " + dvIdtf) ){
+            for ( DataverseRole r : execCommand( new ListRolesCommand(findUserOrDie(), d)) ){
                 jab.add( json(r) );
             }
             return okResponse(jab);
@@ -425,7 +418,7 @@ public class Dataverses extends AbstractApiBean {
 	public Response createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf ) {
 		try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-			return okResponse( json(execCommand(new CreateRoleCommand(roleDto.asRole(), findUserOrDie(), dataverse), "Create Role")));
+			return okResponse( json(execCommand(new CreateRoleCommand(roleDto.asRole(), findUserOrDie(), dataverse))));
         } catch ( WrappedResponse ce ) {
 			return ce.getResponse();
 		}
@@ -436,7 +429,7 @@ public class Dataverses extends AbstractApiBean {
 	public Response listAssignments( @PathParam("identifier") String dvIdtf) {
 		try {
 			JsonArrayBuilder jab = Json.createArrayBuilder();
-			for ( RoleAssignment ra : execCommand(new ListRoleAssignments(findUserOrDie(), findDataverseOrDie(dvIdtf)), "Role Assignment Listing") ){
+			for ( RoleAssignment ra : execCommand(new ListRoleAssignments(findUserOrDie(), findDataverseOrDie(dvIdtf))) ){
 				jab.add( json(ra) );
 			}
 			return okResponse(jab);
@@ -476,10 +469,10 @@ public class Dataverses extends AbstractApiBean {
 
 			return okResponse(
                     json(
-                       execCommand( new AssignRoleCommand(assignee, theRole, dataverse, findUserOrDie()), "Assign role")));
+                       execCommand( new AssignRoleCommand(assignee, theRole, dataverse, findUserOrDie()))));
 			
 		} catch (WrappedResponse ex) {
-			logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
+			LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
 			return ex.getResponse();
 		}
 	}
@@ -491,7 +484,7 @@ public class Dataverses extends AbstractApiBean {
 		if ( ra != null ) {
             try {
                 findDataverseOrDie(dvIdtf);
-                execCommand( new RevokeRoleCommand(ra, findUserOrDie()), "revoking role");
+                execCommand( new RevokeRoleCommand(ra, findUserOrDie()));
                 return okResponse("Role " + ra.getRole().getName() 
                                             + " revoked for assignee " + ra.getAssigneeIdentifier()
                                             + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter) );
@@ -508,7 +501,7 @@ public class Dataverses extends AbstractApiBean {
     public Response publishDataverse( @PathParam("identifier") String dvIdtf ) {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            return okResponse( json(execCommand( new PublishDataverseCommand(findAuthenticatedUserOrDie(), dv), "Publish Dataverse" )) );
+            return okResponse( json(execCommand( new PublishDataverseCommand(findAuthenticatedUserOrDie(), dv))) );
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -536,7 +529,7 @@ public class Dataverses extends AbstractApiBean {
             ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
             ExplicitGroup newGroup = dto.apply(prv.makeGroup());
             
-            newGroup = execCommand( new CreateExplicitGroupCommand(findUserOrDie(), dv, newGroup), "Create new group");
+            newGroup = execCommand( new CreateExplicitGroupCommand(findUserOrDie(), dv, newGroup));
             
             String groupUri = String.format("%s/groups/%s", dvIdtf, newGroup.getGroupAliasInOwner());
             return createdResponse( groupUri, json(newGroup) );
@@ -553,7 +546,7 @@ public class Dataverses extends AbstractApiBean {
             
             Dataverse dv = findDataverseOrDie(dvIdtf);
             
-            return okResponse( json(execCommand(new ListExplicitGroupsCommand(findUserOrDie(), dv), "Listing groups for dataverse " + dvIdtf )));
+            return okResponse( json(execCommand(new ListExplicitGroupsCommand(findUserOrDie(), dv) )));
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -590,8 +583,8 @@ public class Dataverses extends AbstractApiBean {
                     json(
                       execCommand( 
                              new UpdateExplicitGroupCommand(user,
-                                     groupDto.apply( findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner))),
-                                                   "Updating group " + dvIdtf + "/" + grpAliasInOwner)));
+                                     groupDto.apply( findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner))))));
+            
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -605,12 +598,12 @@ public class Dataverses extends AbstractApiBean {
         try {
             final User user = findUserOrDie();
             execCommand( new DeleteExplicitGroupCommand(user,
-                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner)),
-                        "Deleting group " + dvIdtf + "/" + grpAliasInOwner );
+                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner)) );
             
             return okResponse( "Group " + dvIdtf + "/" + grpAliasInOwner + " deleted" );
+        
         } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            return wr.refineResponse("Error deleting group " + dvIdtf + "/" + grpAliasInOwner);
         }
     }
     
@@ -627,10 +620,9 @@ public class Dataverses extends AbstractApiBean {
                       execCommand( 
                               new AddRoleAssigneesToExplicitGroupCommand(user, 
                                       findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner),
-                                      new TreeSet<>(roleAssingeeIdentifiers)),
-                              "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner )));
+                                      new TreeSet<>(roleAssingeeIdentifiers)))));
         } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            return wr.refineResponse( "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner );
         }
     }
     
@@ -655,16 +647,14 @@ public class Dataverses extends AbstractApiBean {
                       execCommand( 
                               new RemoveRoleAssigneesFromExplicitGroupCommand(user, 
                                       findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner),
-                                      Collections.singleton(roleAssigneeIdentifier)),
-                              "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner )));
+                                      Collections.singleton(roleAssigneeIdentifier)))));
         } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            return wr.refineResponse( "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner );
         }
     }
     
     private ExplicitGroup findExplicitGroupOrDie( DvObject dv, User u, String groupIdtf ) throws WrappedResponse {
-        ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(u, dv, groupIdtf ),
-                                            "Listing groups for dataverse " + dv.getId() );
+        ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(u, dv, groupIdtf) );
         if ( eg == null ) throw new WrappedResponse( notFound("Can't find " + groupIdtf + " in dataverse " + dv.getId()));
         return eg;
     }
