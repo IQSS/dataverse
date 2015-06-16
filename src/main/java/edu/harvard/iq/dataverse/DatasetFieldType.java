@@ -241,7 +241,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     /**
-     * Determines whether this field type is displayed after creation.
+     * Determines whether this field type is displayed in the form when creating
+     * the Dataset (or only later when editing after the initial creation).
      */
     private boolean displayOnCreate;
 
