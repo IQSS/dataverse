@@ -275,6 +275,17 @@ public class SystemConfig {
 
          return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
      }
-    
+
+    public Integer getSearchHighlightFragmentSize() {
+        String fragSize = settingsService.getValueForKey(SettingsServiceBean.Key.SearchHighlightFragmentSize);
+        if (fragSize != null) {
+            try {
+                return new Integer(fragSize);
+            } catch (NumberFormatException nfe) {
+                logger.info("Could not convert " + SettingsServiceBean.Key.SearchHighlightFragmentSize + " to int: " + nfe);
+            }
+        }
+        return null;
+    }
 
 }
