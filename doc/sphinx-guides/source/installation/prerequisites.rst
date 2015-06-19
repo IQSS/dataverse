@@ -53,8 +53,8 @@ Version 9.3 is recommended.
 	$ cd /etc/init.d; mv postgresql-9.3 postgres; chmod +x postgres
 
 
-- The installer script needs to have direct access to the local PostgresQL server via Unix domain sockets. So this needs to be set to either “trust” or “ident”. 
-I.e., your pg_hba.conf must contain either of the 2 lines below::
+- The installer script needs to have direct access to the local PostgresQL server via Unix domain sockets. So this needs to be set to either “trust” or “ident”. I.e., your pg_hba.conf must contain *either* of the 2 "local" entries below::
+
 	local all all ident sameuser
 	or
 	local all all trust
