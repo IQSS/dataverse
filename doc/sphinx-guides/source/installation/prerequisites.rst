@@ -39,12 +39,12 @@ Glassfish Version 4.1 is required.
 PostgreSQL
 ----------------------------
 
-- Install Postgres the EPEL repository. ::
+Version 9.3 is recommended. 
+
+- We recommend installing Postgres from the EPEL repository::
 
 	$ wget http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-centos93-9.3-1.noarch.rpm
 	rpm -ivh pgdg-centos93-9.3-1.noarch.rpm
-
-- Install PostgreSQL::
 
 	$ yum install postgresql93-server.x86_64
 	$ chkconfig postgresql-9.3 on
