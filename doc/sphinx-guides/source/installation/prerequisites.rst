@@ -90,20 +90,13 @@ Start Up Scripts
         	# the amount of memory glassfish is already using)
         	echo 1 > /proc/sys/vm/overcommit_memory
 
-        	#echo
-        	#echo "GLASSFISH IS UNDER MAINTENANCE;"
-        	#echo "PLEASE DO NOT USE service init script."
-        	#echo
-			LANG=en_US.UTF-8; export LANG
+		# Set UTF8 as the default encoding:
+		LANG=en_US.UTF-8; export LANG
         	$ASADMIN start-domain domain1
         	echo "."
         	;;
   		  stop)
         	echo -n "Stopping GlassFish server: glassfish"
-        	#echo
-        	#echo "GLASSFISH IS UNDER MAINTENANCE;"
-        	#echo "PLEASE DO NOT USE service init script."
-        	#echo
 
         	$ASADMIN stop-domain domain1
         	echo "."
