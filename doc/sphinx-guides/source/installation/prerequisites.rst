@@ -14,25 +14,27 @@ Oracle JDK 1.7.x. Use the latest available. OpenJDK should also work but we are 
 Glassfish
 ----------------------------
 
-Required Glassfish Versiion 4.1 is with weld v.2.2.4 module.
+Glassfish Version 4.1 is required. 
+
+**Important**: once Glassfish is installed, a new version of the WELD library (v2.2.10.SP1) must be downloaded and installed. This fixes a serious issue in the library supplied with Glassfish 4.1. 
 
 
-- Download Glassfish::
+- Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
 
 	$ wget http://dlc-cdn.sun.com/glassfish/4.1/release/glassfish-4.1.zip
-	$ rsync -auv glassfish4 /usr/local
+	$ unzip glassfish-4.1.zip
+	$ mv glassfish4 /usr/local
+
+- Download WELD v2.2.10.SP1 and install it in the modules folder::
+
 	$ cd /usr/local/glassfish4/glassfish/modules
 	$ mv weld-osgi-bundle.jar weld-osgi-bundle.jar.2.2
-
-- Download weld v.2.2.4 and copy in the modules folder::
-
-	$ wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.4.Final/weld-osgi-bundle-2.2.4.Final.jar
-	$ cp weld-osgi-bundle-2.2.4.Final.jar /usr/local/glassfish4/glassfish/modules/
-	$ service glassfish start
+	$ wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
+	$ /usr/local/glassfish4/bin/asadmin start-domain domain1
 
 - Verify Weld version::
 
-	$./asadmin osgi lb | grep 'Weld OSGi Bundle'
+	$ /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
 PostgreSQL
 ----------------------------
