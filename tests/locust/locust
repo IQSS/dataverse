@@ -23,5 +23,5 @@ if [ ! -z "$2" ]; then
     fi
 fi
 for i in $(seq 1 $NUM); do
-    locust -f basic_test_01.py -c 2 -r 2 -n 4 --no-web --print-stats --host=https://shibtest.dataverse.org$PORT 2>&1 | tee $OUTDIR/$OUTFILE.`date +%s`.txt
+    locust -f basic_test_01.py -c 2 -r 2 -n 4 --no-web --print-stats --only-summary --host=https://shibtest.dataverse.org$PORT 2>&1 | tee $OUTDIR/`date +%s`.$OUTFILE.txt
 done
