@@ -1,0 +1,27 @@
+#!/bin/sh
+OUTDIR=out
+mkdir -p $OUTDIR
+HELP_CMD=`locust --help 2>/dev/null`
+HELP_EXIT=$?
+if [ $HELP_EXIT -ne 0 ]; then
+    echo "Please set up an Python virtualenv and install locust"
+    exit 1
+fi
+OUTFILE=$1
+if [ "$1" = "apache" ] ; then
+    PORT=:8181
+elif [ "$1" = "glassfish" ] ; then
+    PORT=""
+else
+    echo "Please specify either apache or glassfish".
+    exit 1
+fi
+NUM=1
+if [ ! -z "$2" ]; then
+    if [ "$2" -gt "$NUM" ] ; then
+        NUM=$2
+    fi
+fi
+for i in $(seq 1 $NUM); do
+    locust -f basic_test_01.py -c 2 -r 2 -n 4 --no-web --print-stats --only-summary --host=https://shibtest.dataverse.org$PORT 2>&1 | tee $OUTDIR/`date +%s`.$OUTFILE.txt
+done

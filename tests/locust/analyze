@@ -1,0 +1,14 @@
+#!/bin/sh
+if [ "$1" = "apache" ] ; then
+    FILTER="apache"
+elif [ "$1" = "glassfish" ] ; then
+    FILTER="glassfish"
+elif [ "$1" = "all" ] ; then
+    FILTER=""
+else
+    echo 'Please specify "apache", "glassfish", or "all"'.
+    exit 1
+fi
+
+cd out
+ls *$FILTER.txt | while read i; do cat $i | perl -ne 'print if /Shutting/../Total/' | grep GET | awk '{print $2, $5}'; done | sort | grep -v ' 0$'
