@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.MyDataQueryHelper;
+import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -72,10 +74,12 @@ public class SearchServiceBean {
     GroupServiceBean groupService;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
 
     public static final JsfHelper JH = new JsfHelper();
 
-    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDataRelatedToMe, int numResultsPerPage) throws SearchException {
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
@@ -133,9 +137,15 @@ public class SearchServiceBean {
          */
         solrQuery.setParam("facet.query", "*");
         for (String filterQuery : filterQueries) {
-            solrQuery.addFilterQuery(filterQuery);
+            solrQuery.addFilterQuery(filterQuery);          
         }
-
+        if (onlyDataRelatedToMe && user instanceof AuthenticatedUser ){
+            //AuthenticatedUser user, ArrayList<DataverseRole> roles, ArrayList<String> dvObjectTypes, Boolean publishedOnly, String searchTerm
+            AuthenticatedUser au = (AuthenticatedUser) user;
+            MyDataQueryHelper qHelp = new MyDataQueryHelper(au, null, null, false, null, myDataQueryHelperServiceBean);   
+           solrQuery.addFilterQuery(qHelp.getSolrQueryString());
+        }
+        System.out.print("SolrQuery: " + Arrays.toString(solrQuery.getFilterQueries()));
         /**
          * @todo For people who are not logged in, should we show stuff indexed
          * with "AllUsers" group or not? If so, uncomment the allUsersString
@@ -222,15 +232,16 @@ public class SearchServiceBean {
                 /**
                  * @todo get rid of "experimental" in name
                  */
-                String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
-                if (onlyDatatRelatedToMe) {
+                String theJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
+                if (onlyDataRelatedToMe) {
                     /**
                      * @todo make this a variable called "String
                      * dataRelatedToMeFilterQuery" or something
                      */
-                    experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
+                    //theJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
+                   // theJoin = "";
                 }
-                publicPlusUserPrivateGroup = experimentalJoin;
+                publicPlusUserPrivateGroup = theJoin;
             }
 
             permissionFilterQuery = publicPlusUserPrivateGroup;
@@ -574,6 +585,7 @@ public class SearchServiceBean {
                     facetLabelList.add(facetLabel);
                     if (facetField.getName().equals(SearchFields.PUBLICATION_STATUS)) {
                         if (facetLabel.getName().equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                            
                             unpublishedAvailable = true;
                         } else if (facetLabel.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
                             draftsAvailable = true;

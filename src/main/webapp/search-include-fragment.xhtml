@@ -498,7 +498,8 @@
                         <o:importFunctions type="org.omnifaces.el.functions.Strings" />
                         <ui:param name="descriptionAbbreviationThreshold" value="200"/>
                         <!--CARDS-->
-                        <p:dataTable id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result">
+                        <!--Only render if there are results - no results messages handled above -->
+                        <p:dataTable rendered="#{SearchIncludeFragment.searchResultsCount > 0}" id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result">
                             <p:column styleClass="#{result.type == 'dataverses' ? 'dataverseResult' : (result.type == 'datasets' ? 'datasetResult' : '')}">
                                 <ui:fragment rendered="#{SearchIncludeFragment.debug == true}">
                                     <h:outputText value="score: #{result.score}" rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>

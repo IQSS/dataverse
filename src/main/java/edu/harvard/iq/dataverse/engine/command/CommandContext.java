@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.LinkedDvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
@@ -84,6 +85,8 @@ public interface CommandContext {
     public DataverseLinkingServiceBean dvLinking();
     
     public DatasetLinkingServiceBean dsLinking();
+    
+    public LinkedDvObjectServiceBean dvoLinking();
     
     public SettingsServiceBean settings();       
     

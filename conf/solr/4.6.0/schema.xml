@@ -295,7 +295,7 @@
    <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
 
    <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
-   <field name="entityId" type="long" stored="true" indexed="false" multiValued="false"/>
+   <field name="entityId" type="long" stored="true" indexed="true" multiValued="false"/>
 
    <field name="datasetVersionId" type="long" stored="true" indexed="false" multiValued="false"/>
 

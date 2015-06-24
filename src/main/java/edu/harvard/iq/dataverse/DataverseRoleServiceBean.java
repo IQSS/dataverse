@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -240,5 +242,21 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		}
 		
 		return roles;
-	}                
+	} 
+        
+    public List<DataverseRole> getDataverseRolesByPermission(Permission permissionIn, Long ownerId) {
+        /*
+         For a given permission and dataverse Id get all of the roles (built-in or owned by the dataverse)            
+         that contain that permission
+         */
+        List<DataverseRole> rolesToCheck = findBuiltinRoles();
+        List<DataverseRole> retVal = new ArrayList();
+        rolesToCheck.addAll(findByOwnerId(ownerId));
+        for (DataverseRole role : rolesToCheck) {
+            if (role.permissions().contains(permissionIn)) {
+                retVal.add(role);
+            }
+        }
+        return retVal;
+    }      
 }

@@ -112,6 +112,9 @@ public class EjbDataverseEngine {
     DatasetLinkingServiceBean dsLinking;
 
     @EJB
+    LinkedDvObjectServiceBean dvoLinking;
+    
+    @EJB
     ExplicitGroupServiceBean explicitGroups;
     
     @EJB
@@ -331,6 +334,12 @@ public class EjbDataverseEngine {
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
                 }
+                
+                 @Override
+                public LinkedDvObjectServiceBean dvoLinking() {
+                    return dvoLinking;
+                }
+                
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {
