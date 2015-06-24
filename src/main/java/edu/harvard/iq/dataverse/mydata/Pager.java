@@ -41,9 +41,9 @@ public class Pager {
         if (selectedPageNumber < 1){
             throw new IllegalArgumentException("selectedPageNumber must be 1 or higher");
         }      
-        numResults = numResults;
-        docsPerPage = docsPerPage;
-        selectedPageNumber = selectedPageNumber;
+        this.numResults = numResults;
+        this.docsPerPage = docsPerPage;
+        this.selectedPageNumber = selectedPageNumber;
         makePageStats();
     }
 
@@ -79,6 +79,7 @@ public class Pager {
     
     /**
      * get numResults
+     * @return 
      */
     public int getNumResults(){
         return this.numResults;
@@ -86,7 +87,7 @@ public class Pager {
     
 
     /**
-     * set numResults
+     * @param numResults
      */
     public void setNumResults(int numResults){
         this.numResults = numResults;
@@ -95,6 +96,7 @@ public class Pager {
 
     /**
      * get docsPerPage
+     * @return 
      */
     public int getDocsPerPage(){
         return this.docsPerPage;
@@ -102,7 +104,7 @@ public class Pager {
     
 
     /**
-     * set docsPerPage
+     * @param docsPerPage
      */
     public void setDocsPerPage(int docsPerPage){
         this.docsPerPage = docsPerPage;
@@ -111,6 +113,7 @@ public class Pager {
 
     /**
      * get selectedPageNumber
+     * @return 
      */
     public int getSelectedPageNumber(){
         return this.selectedPageNumber;
@@ -118,7 +121,7 @@ public class Pager {
     
 
     /**
-     * set selectedPageNumber
+     * @param selectedPageNumber
      */
     public void setSelectedPageNumber(int selectedPageNumber){
         this.selectedPageNumber = selectedPageNumber;
@@ -127,6 +130,7 @@ public class Pager {
 
     /**
      * get pageCount
+     * @return 
      */
     public int getPageCount(){
         return this.pageCount;
@@ -134,7 +138,7 @@ public class Pager {
     
 
     /**
-     * set pageCount
+     * @param pageCount
      */
     public void setPageCount(int pageCount){
         this.pageCount = pageCount;
@@ -143,6 +147,7 @@ public class Pager {
 
     /**
      * get pageNumberList
+     * @return 
      */
     public int[] getPageNumberList(){
         return this.pageNumberList;
@@ -150,7 +155,7 @@ public class Pager {
     
 
     /**
-     * set pageNumberList
+     * @param pageNumberList
      */
     public void setPageNumberList(int[] pageNumberList){
         this.pageNumberList = pageNumberList;
@@ -159,6 +164,7 @@ public class Pager {
 
     /**
      * get previousPageNumber
+     * @return 
      */
     public int getPreviousPageNumber(){
         return this.previousPageNumber;
@@ -166,7 +172,7 @@ public class Pager {
     
 
     /**
-     * set previousPageNumber
+     * @param previousPageNumber
      */
     public void setPreviousPageNumber(int previousPageNumber){
         this.previousPageNumber = previousPageNumber;
@@ -175,6 +181,7 @@ public class Pager {
 
     /**
      * get nextPageNumber
+     * @return 
      */
     public int getNextPageNumber(){
         return this.nextPageNumber;
@@ -182,7 +189,7 @@ public class Pager {
     
 
     /**
-     * set nextPageNumber
+     * @param nextPageNumber
      */
     public void setNextPageNumber(int nextPageNumber){
         this.nextPageNumber = nextPageNumber;
@@ -191,6 +198,7 @@ public class Pager {
 
     /**
      * get startCardNumber
+     * @return 
      */
     public int getStartCardNumber(){
         return this.startCardNumber;
@@ -198,7 +206,7 @@ public class Pager {
     
 
     /**
-     * set startCardNumber
+     * @param startCardNumber
      */
     public void setStartCardNumber(int startCardNumber){
         this.startCardNumber = startCardNumber;
@@ -207,6 +215,7 @@ public class Pager {
 
     /**
      * get endCardNumber
+     * @return 
      */
     public int getEndCardNumber(){
         return this.endCardNumber;
@@ -214,11 +223,10 @@ public class Pager {
     
 
     /**
-     * set endCardNumber
+     * @param endCardNumber
      */
     public void setEndCardNumber(int endCardNumber){
         this.endCardNumber = endCardNumber;
     }
 
-    
 } 
