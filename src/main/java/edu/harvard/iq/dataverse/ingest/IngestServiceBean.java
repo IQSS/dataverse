@@ -158,8 +158,10 @@ public class IngestServiceBean {
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
+    
     private static final String MIME_TYPE_CSV   = "text/csv";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
+    
     private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
@@ -282,8 +284,10 @@ public class IngestServiceBean {
                 // 1. If the contentType supplied (by the browser, most likely) 
                 // is some form of "unknown", we always discard it in favor of 
                 // whatever our own utilities have determined; 
-                // 2. We should NEVER trust the browser when it comes to 
-                // "ingestable" types (Stata, SPSS, etc.)
+                // 2. We should NEVER trust the browser when it comes to the 
+                // following "ingestable" types: Stata, SPSS, R;
+                // 2a. We are willing to TRUST the browser when it comes to
+                //  the CSV and XSLX ingestable types.
                 // 3. We should ALWAYS trust our utilities when it comes to 
                 // ingestable types. 
                 
@@ -291,7 +295,10 @@ public class IngestServiceBean {
                         || suppliedContentType.equals("")
                         || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
                         || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-                        || ingestableAsTabular(suppliedContentType)
+                        || (ingestableAsTabular(suppliedContentType)
+                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
+                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
+                            && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
                         || ingestableAsTabular(recognizedType)
                         || recognizedType.equals("application/fits-gzipped")
                         || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
