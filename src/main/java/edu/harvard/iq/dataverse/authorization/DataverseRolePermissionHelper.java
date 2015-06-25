@@ -1,3 +1,4 @@
+package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
