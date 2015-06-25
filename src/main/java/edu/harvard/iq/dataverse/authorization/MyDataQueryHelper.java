@@ -31,12 +31,8 @@ public class MyDataQueryHelper {
     private ArrayList<Long> dataverseIds;
     private ArrayList<Long> primaryDatasetIds;
     private ArrayList<Long> primaryFileIds;
-    private ArrayList<Long> secondaryDatasetIds;
-    private ArrayList<Long> secondaryFileIds;
-
-    private MyDataQueryHelperServiceBean myDataQueryHelperService;
-
-
+    private ArrayList<Long> parentIds;
+    private final MyDataQueryHelperServiceBean myDataQueryHelperService;
 
     public MyDataQueryHelper(AuthenticatedUser user, ArrayList<DataverseRole> roles, ArrayList<String> dvObjectTypes, Boolean publishedOnly, String searchTerm, MyDataQueryHelperServiceBean injectedBean) {
         
@@ -59,8 +55,18 @@ public class MyDataQueryHelper {
         initializeDataverseIds();
         initializePrimaryDatasetIds();
         initializePrimaryFileIds();
-        //initializeSecondaryDatasetIds();
-        //initializeSecondaryFileIds();
+        initializeParentIds();
+    }
+    
+    private void initializeParentIds() {
+        parentIds = new ArrayList();
+        if (getTypesClause(this.getDvObjectTypes()).contains("DataFile")) {
+            parentIds.addAll(myDataQueryHelperService.getParentIds("Dataverse", "DataFile", this.roles, this.user));
+            parentIds.addAll(myDataQueryHelperService.getParentIds("Dataset", "DataFile", this.roles, this.user));
+        }
+        if (getTypesClause(this.getDvObjectTypes()).contains("Dataset")) {
+            parentIds.addAll(myDataQueryHelperService.getParentIds("Dataverse", "Dataset", this.roles, this.user));
+        }
     }
 
     private ArrayList<Long> initializeDirectList(String dtype) {
@@ -70,29 +76,6 @@ public class MyDataQueryHelper {
             dvObjectsUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
         }
         return dvObjectsUserHasPermissionOn;
-    }
-
-    private ArrayList<Long> initializeSecondaryList(String indirectParentIds) {
-        List<Integer> dataverseIdsAdd = myDataQueryHelperService.getIndirectQuery(indirectParentIds).getResultList();
-        ArrayList<Long> dvObjectsUserHasPermissionOn = new ArrayList<>();
-        for (int dvIdAsInt : dataverseIdsAdd) {
-            dvObjectsUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
-        }
-        return dvObjectsUserHasPermissionOn;
-    }
-
-    private String convertLongArrayToString(ArrayList<Long> arrayIn) {
-        String retVal = "";
-        boolean first = true;
-        for (Long val : arrayIn) {
-            if (!first) {
-                retVal += ", " + val.toString();
-            } else {
-                retVal = val.toString();
-                first = false;
-            }
-        }
-        return retVal;
     }
 
     private void initializeDataverseIds() {
@@ -111,21 +94,8 @@ public class MyDataQueryHelper {
         }
     }
 
-    private void initializeSecondaryDatasetIds() {
-        setSecondaryDatasetIds(initializeSecondaryList(convertLongArrayToString(getDataverseIds())));
-    }
-
-    private void initializeSecondaryFileIds() {
-        if (getTypesClause(this.getDvObjectTypes()).contains("DataFile")) {
-            setSecondaryFileIds(initializeSecondaryList(convertLongArrayToString(getPrimaryDatasetIds()) + convertLongArrayToString(getSecondaryDatasetIds())));
-        } else {
-            setSecondaryFileIds(new ArrayList());
-        }
-    }
-
     public String getSolrQueryString() {
         /*(entityId:(20 11 592 7 17 24 14 15 21 18 25 19 22 23 12 2 8 3 16 4 9 5 13 6 10))*/
-        System.out.print("in get solr query string");
         String retPrimaryString = "entityId:(";
         boolean firstPrimary = true;
         if (getTypesClause(this.getDvObjectTypes()).contains("Dataverse") && getDataverseIds() != null) {
@@ -164,11 +134,12 @@ public class MyDataQueryHelper {
         retPrimaryString += ")";
         
         boolean firstParent = true;
-        String retParentString = "parentId:(";
-        if (getTypesClause(this.getDvObjectTypes()).contains("Dataset") && getDataverseIds() != null) {
+        String retParentString;
 
-            for (Long id : getDataverseIds()) {
+        if (!getParentIds().isEmpty()) {
+            retParentString = "parentId:(";
 
+            for (Long id : getParentIds()) {
                 if (firstParent) {
                     retParentString += " " + id;
                     firstParent = false;
@@ -176,44 +147,21 @@ public class MyDataQueryHelper {
                     retParentString += " OR " + id;
                 }
             }
-        }
-        if (getTypesClause(this.getDvObjectTypes()).contains("DataFile")) {
-            if (getPrimaryDatasetIds() != null) {
-                for (Long id : getPrimaryDatasetIds()) {
-                    
-                    if (firstParent) {
-                        retParentString += " " + id;
-                        firstParent = false;
-                    } else {
-                        retParentString += " OR " + id;
-                    }
-                }
-            }
-            if (getSecondaryDatasetIds() != null) {
-                for (Long id : getSecondaryDatasetIds()) {
-                    if (firstParent) {
-                        retParentString += " " + id;
-                        firstParent = false;
-                    } else {
-                        retParentString += " OR " + id;
-                    }
-                }
-            }
 
+            retParentString += ")";
+            return "" + retPrimaryString + " OR " + retParentString + "";
         }
-        retParentString += ")";
-        
-        System.out.print("retPrimaryString " + retPrimaryString);
-         System.out.print("retParentString " + retParentString);
-       // return "" + retPrimaryString + " OR " + retParentString + "";
-         return retPrimaryString;
+
+        return "" + retPrimaryString;
+
     }
 
 
 
     private String getTypesClause(List<String> types) {
         boolean firstType = true;
-        String typeString = " dtype in ('Dataverse', 'Dataset')";
+       //String typeString = " dtype in ('Dataverse', 'Dataset', 'DataFile'";
+       String typeString = " dtype in ('Dataverse', 'Dataset'";
         if (types != null && !types.isEmpty()) {
             typeString = " dtype in (";
             for (String type : types) {
@@ -225,30 +173,6 @@ public class MyDataQueryHelper {
             typeString += ") and ";
         }
         return typeString;
-    }
-    
-    private Boolean doesRoleApply(DataverseRole role, String dvObjectType) {
-        Boolean retVal = false;
-        if (dvObjectType != null) {
-
-            switch (dvObjectType) {
-                case "Dataset":
-                    for (Permission permission : role.permissions()) {
-                        if (permission.appliesTo(Dataset.class) || permission.appliesTo(DataFile.class)) {
-                            retVal = true;
-                            break;
-                        }
-                    }
-                    break;
-                case "DataFile":
-                    if (role.permissions().contains(Permission.DownloadFile)){
-                        retVal = true;
-                    }
-                    break;
-            }
-
-        }
-        return retVal;
     }
 
     public AuthenticatedUser getUser() {
@@ -315,28 +239,20 @@ public class MyDataQueryHelper {
         this.primaryFileIds = primaryFileIds;
     }
 
-    public ArrayList<Long> getSecondaryDatasetIds() {
-        return secondaryDatasetIds;
-    }
-
-    public void setSecondaryDatasetIds(ArrayList<Long> secondaryDatasetIds) {
-        this.secondaryDatasetIds = secondaryDatasetIds;
-    }
-
-    public ArrayList<Long> getSecondaryFileIds() {
-        return secondaryFileIds;
-    }
-
-    public void setSecondaryFileIds(ArrayList<Long> secondaryFileIds) {
-        this.secondaryFileIds = secondaryFileIds;
-    }
-    
     public Boolean getPublishedOnly() {
         return publishedOnly;
     }
 
     public void setPublishedOnly(Boolean publishedOnly) {
         this.publishedOnly = publishedOnly;
+    }  
+    
+    public ArrayList<Long> getParentIds() {
+        return parentIds;
+    }
+
+    public void setParentIds(ArrayList<Long> parentIds) {
+        this.parentIds = parentIds;
     }
 
 }
