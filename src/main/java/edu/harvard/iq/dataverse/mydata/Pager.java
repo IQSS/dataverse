@@ -314,8 +314,12 @@ public class Pager {
         obj.put("pageCount", this.pageCount);
         obj.put("pageNumberList", this.pageNumberList);
         
+        obj.put("hasPreviousPageNumber", this.hasPreviousPageNumber());
         obj.put("previousPageNumber", this.previousPageNumber);
+        
+        obj.put("hasNextPageNumber", this.hasNextPageNumber());
         obj.put("nextPageNumber", this.nextPageNumber);
+        
         obj.put("startCardNumber", this.startCardNumber);
         obj.put("endCardNumber", this.endCardNumber);
         

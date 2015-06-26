@@ -10,8 +10,10 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.Access;
 import edu.harvard.iq.dataverse.api.BundleDownloadInstance;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static java.lang.Math.max;
 import java.math.BigDecimal;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -43,10 +45,42 @@ public class MyDataAPITest extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
     
+    
+    private int randInt(int min, int max) {
+        Random rand = new Random();
+        return rand.nextInt((max - min) + 1) + min;
+    }
+    
+    
+    public Pager getRandomPagerPager(Integer selectedPage) throws JSONException{
+        if (selectedPage == null){
+            selectedPage = 1;
+        }
+        
+        int itemsPerPage = 10;
+        int numResults = 108;//randInt(1,200);
+        int numPages =  numResults / itemsPerPage;
+        if ((numResults % itemsPerPage) > 0){
+            numPages++;
+        }
+        int chosenPage = 1;
+        if ((selectedPage > numPages)||(selectedPage < 1)){
+            chosenPage = 1;
+        }else{
+            chosenPage = selectedPage;
+        }
+        //int chosenPage = max(randInt(0, numPages), 1);
+        return new Pager(numResults, itemsPerPage, chosenPage);
+                
+    }
+    
     @Path("test-it2")
     @GET
     @Produces({"application/json"})
-    public String retrieveString(@QueryParam("key") String keyValue) throws JSONException{
+    public String retrieveTestPager(@QueryParam("selectedPage") int selectedPage) throws JSONException{
+        
+        return this.getRandomPagerPager(selectedPage).asJSONString();
+        /*
         JSONObject jsonData = new JSONObject();
         jsonData.put("name", "foo");
         jsonData.put("num", new Integer(100));
@@ -71,7 +105,7 @@ public class MyDataAPITest extends AbstractApiBean {
             }
             
         }
-        return jsonData.toString();
+        return jsonData.toString();*/
     }
     
     //@Produces({"application/zip"})

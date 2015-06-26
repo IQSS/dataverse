@@ -40,15 +40,44 @@
             var pagination_html    = template(pager_info);
             $("#pagination").html(pagination_html);
             // alert(pager_info.pageCount);
+            bindPages();
         }
 
+    }
+
+    function updatePager(newPage){
+         $.getJSON( "/api/mydata/test-it2?selectedPage=" + newPage, function(data) {
+               //alert(data);
+               makePager(data);
+               $("#divPagerJSON").html('<pre>' + JSON.stringify(data) + '</pre>');
+            });
+    }
+
+    function bindPages(){
+        $("a.page_link").click(function(evt) {
+            console.log('script tag');
+
+            evt.preventDefault(); // stop link from using href
+            var page_num = $(this).attr('rel');
+            updatePager(page_num);
+            //alert(page_num);
+             // alert(get_link(variable_name));
+        });
     }
 
     $(document).ready(function() {
             //var json_info = <h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" />;
             var json_info = <h:outputText value="#{RolePermissionHelperPage.getRandomPagerJSON()}" escape="false" />;
-            makePager(json_info);
-            $("#divPagerJSON").html('<pre>' + JSON.stringify(json_info) + '</pre>');
+
+           $.getJSON( "/api/mydata/test-it2", function(data) {
+               //alert(data);
+               makePager(data);
+               $("#divPagerJSON").html('<pre>' + JSON.stringify(data) + '</pre>');
+            });
+
+
+            //makePager(json_info);
+            //$("#divPagerJSON").html('<pre>' + JSON.stringify(json_info) + '</pre>');
     });
     </script>
               
