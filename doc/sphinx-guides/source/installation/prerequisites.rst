@@ -39,9 +39,12 @@ Glassfish Version 4.1 is required.
 PostgreSQL
 ----------------------------
 
+1. Installation
+================
+
 Version 9.3 is recommended. 
 
-- We recommend installing Postgres from the EPEL repository::
+We recommend installing Postgres from the EPEL repository::
 
 	$ wget http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-centos93-9.3-1.noarch.rpm
 	rpm -ivh pgdg-centos93-9.3-1.noarch.rpm
@@ -52,12 +55,31 @@ Version 9.3 is recommended.
 	$ service postgresql-9.3 start
 	$ cd /etc/init.d; mv postgresql-9.3 postgres; chmod +x postgres
 
+2. Configure access to PostgresQL for the installer script
+==========================================================
 
 - The installer script needs to have direct access to the local PostgresQL server via Unix domain sockets. So this needs to be set to either “trust” or “ident”. I.e., your pg_hba.conf must contain *either* of the 2 "local" entries below::
 
 	local all all ident sameuser
 	or
 	local all all trust
+
+3. Configure database access for the Dataverse application
+==========================================================
+
+- The app will be talking to PostgresQL over TCP/IP, using password authentication. If you are running PostgresQL on the same server, modify the localhost entry that's already in the pg_hba.conf to look like this:: 
+
+  	host all all 127.0.0.1/32 password
+
+- If the Dataverse application is running on a different server, you will need to add a new entry to the pg_hba.conf granting it access by the network address ([ADDRESS] should be the numeric IP address of the Glassfish server)::
+
+        host all all [ADDRESS]      255.255.255.255 password
+
+- In some distributions, PostgresQL is pre-configured so that it doesn't accept network connections at all. Check that the "liste_address" line in postgresql.conf is not commented-out and looks like this:: 
+
+        listen_addresses='*' 
+        
+
 
 Solr 
 ---------------------------
