@@ -5,9 +5,18 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
+import org.apache.commons.lang.StringUtils;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -22,27 +31,29 @@ import javax.ejb.EJB;
  * 
  * @author rmp553
  */
-public class DataverseRolePermissionHelper {
+public class DataverseRolePermissionHelper implements java.io.Serializable {
+
+    private static final Logger logger = Logger.getLogger(DataverseRolePermissionHelper.class.getCanonicalName());
     
-    @EJB
-    DataverseRoleServiceBean roleService;
+    //@EJB
+    //DataverseRoleServiceBean roleService;
 
     public Map<Long, Boolean> rolesWithDataversePermissions = new HashMap<>();  // { role id : true }
     public Map<Long, Boolean> rolesWithDatasetPermissions = new HashMap<>();  // { role id : true }
     public Map<Long, Boolean> rolesWithFilePermissions = new HashMap<>();  // { role id : true }
 
     public Map<Long, String> roleNameLookup = new HashMap<>();    // { role id : role name }
-     
-     
+   
+    
     /**
      * Initialize Map objects by iterating over role objects
      * 
      */
-    public void DataverseRolePermissionHelper(){
+    public DataverseRolePermissionHelper(List<DataverseRole> roleList){
          
         // Load Role Information
         //
-        for(DataverseRole role : roleService.findAll()){
+        for(DataverseRole role : roleList){
         
             // Does this role have Dataverse permissions?
             //
@@ -68,7 +79,7 @@ public class DataverseRolePermissionHelper {
         }
          
     }
-    
+   
     /**
      * Check if role contains a permission related to Files (DataFile)
      * 
@@ -150,6 +161,80 @@ public class DataverseRolePermissionHelper {
             return this.roleNameLookup.get(role_id);
         }
         return null;
+    }
+
+    /*
+    entries = new ArrayList<Entry<Integer, String>>(map.entrySet());
+    */
+    private List<Entry<Long, String>> roleNamesAsArrayList;
+    
+    public List<Entry<Long, String>> getRoleNamesAsArrayList(){
+        return new ArrayList<>(roleNameLookup.entrySet()); 
+    }
+    
+    private void msg(String s){
+        System.out.println(s);
+    }
+    
+    private void msgt(String s){
+        msg("-------------------------------");
+        msg(s);
+        msg("-------------------------------");
+    }
+    
+    
+    
+    public String getRoleNameListString(){
+        List<String> outputList = new ArrayList<>();
+        
+        for (Map.Entry pair : roleNameLookup.entrySet()) {
+            outputList.add(pair.getKey() + " --> " + pair.getValue());
+        }
+        return StringUtils.join(outputList, "<br />");
+        
+    }
+    
+    public String getRolesWithDataversePermissionsAsHTML(){
+        
+        List<String> outputList = new ArrayList<>();
+        for (Map.Entry pair : rolesWithDataversePermissions.entrySet()) {
+            String roleName = this.roleNameLookup.get(pair.getKey());
+            outputList.add(roleName);
+        }
+        return StringUtils.join(outputList, "<br />");
+    }
+
+    public String getDatasetRolesAsHTML(){
+        
+        List<String> outputList = new ArrayList<>();
+        for (Map.Entry pair : this.rolesWithDatasetPermissions.entrySet()) {
+            String roleName = this.roleNameLookup.get(pair.getKey());
+            outputList.add(roleName);
+        }
+        return StringUtils.join(outputList, "<br />");
+    }
+    
+     public String getRolesWithFilePermissionsAsHTML(){
+        
+        List<String> outputList = new ArrayList<>();
+        for (Map.Entry pair : this.rolesWithFilePermissions.entrySet()) {
+            String roleName = this.roleNameLookup.get(pair.getKey());
+            outputList.add(roleName);
+        }
+        return StringUtils.join(outputList, "<br />");
+    }
+    
+    
+    
+    
+    public Map<Long, Boolean> getRolesWithDataversePermissions(){
+        return this.rolesWithDataversePermissions;
+    }
+    public Map<Long, Boolean> getRolesWithDatasetPermissions(){
+        return this.rolesWithDatasetPermissions;
+    }
+    public Map<Long, Boolean> getRolesWithFilePermissions(){
+        return this.rolesWithFilePermissions;
     }
     
 }
