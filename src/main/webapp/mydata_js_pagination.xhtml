@@ -12,7 +12,7 @@
     <script>
 
     Handlebars.registerHelper('isSelectedPage', function(lvalue, rvalue, options) {
-        console.log("lvalue:" + lvalue + ":" + rvalue);
+        //console.log("lvalue:" + lvalue + ":" + rvalue);
         if( lvalue!=rvalue ) {
             return options.inverse(this);
         } else {
