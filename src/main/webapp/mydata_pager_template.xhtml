@@ -7,23 +7,23 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
          
-    <ui:remove>
-        <!-- 
-        Handelbars Template to create a pager:
-        
-        * no results: {"isNecessary":false}
-        * example results: {"isNecessary":true
-                    ,"numResults":111
-                    ,"docsPerPage":10
-                    ,"pageCount":12
-                    ,"selectedPageNumber":3
-                    ,"pageNumberList":[1,2,3,4,5,6,7,8,9,10,11,12]
-                    ,"previousPageNumber":2,"nextPageNumber":4
-                    ,"startCardNumber":21,"endCardNumber":30                    
-                    } 
-               
-        -->
-    </ui:remove>
+<ui:remove>
+<!-- 
+Handelbars Template to create a pager:
+
+    * no results: {"isNecessary":false}
+    * example results: {"isNecessary":true
+                ,"numResults":111
+                ,"docsPerPage":10
+                ,"pageCount":12
+                ,"selectedPageNumber":3
+                ,"pageNumberList":[1,2,3,4,5,6,7,8,9,10,11,12]
+                ,"previousPageNumber":2,"nextPageNumber":4
+                ,"startCardNumber":21,"endCardNumber":30                    
+                } 
+
+-->
+</ui:remove>
 <script id="pager-template" type="text/x-handlebars-template">
     <br />Results found: <b>{{ numResults }}</b>, Displaying <b>{{ startCardNumber }}</b> to <b>{{ endCardNumber }}</b>
     <br />

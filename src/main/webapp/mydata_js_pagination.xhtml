@@ -9,47 +9,47 @@
          
       <script src="#{resource['js/handlebars-v3.0.3.js']}?version=#{systemConfig.getVersion()}"></script>
       <ui:include src="mydata_pager_template.xhtml"></ui:include>
-      
-                <script>
-                
-                Handlebars.registerHelper('isSelectedPage', function(lvalue, rvalue, options) {
-                    console.log("lvalue:" + lvalue + ":" + rvalue);
-                    if( lvalue!=rvalue ) {
-                        return options.inverse(this);
-                    } else {
-                        return options.fn(this);
-                    }
-                });
-                //Handlebars.registerHelper('ifSelectedPage', function(pgNum, selectedPage, options) {
-                     
-                //      return 'blah';
-                //});
-                /*
-                 * Example of pager_info:
-                 * no results: {"isNecessary":false}
-                 * results: {"isNecessary":true,"docsPerPage":10,"pageCount":12,"startCardNumber":21,"previousPageNumber":2,"selectedPageNumber":3,"numResults":111,"endCardNumber":30,"nextPageNumber":4,"pageNumberList":[1,2,3,4,5,6,7,8,9,10,11,12]} 
-                 */
-                function makePager(pager_info){
-                    
-                    if (!pager_info.isNecessary){
-                        $("#pagination").html('(no pager)');
-                        return;
-                    }else{
-                        var source   = $("#pager-template").html();
-                        var template = Handlebars.compile(source);
-                        //var context = {title: "My New Post", body: "This is my first post!"};
-                        var pagination_html    = template(pager_info);
-                        $("#pagination").html(pagination_html);
-                        // alert(pager_info.pageCount);
-                    }
-                    
-                }
-                        
-                $(document).ready(function() {
-                        //var json_info = <h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" />;
-                        var json_info = <h:outputText value="#{RolePermissionHelperPage.getRandomPagerJSON()}" escape="false" />;
-                        makePager(json_info);
-                });
-                </script>
+
+    <script>
+
+    Handlebars.registerHelper('isSelectedPage', function(lvalue, rvalue, options) {
+        console.log("lvalue:" + lvalue + ":" + rvalue);
+        if( lvalue!=rvalue ) {
+            return options.inverse(this);
+        } else {
+            return options.fn(this);
+        }
+    });
+    //Handlebars.registerHelper('ifSelectedPage', function(pgNum, selectedPage, options) {
+
+    //      return 'blah';
+    //});
+    /*
+     * Example of pager_info:
+     * no results: {"isNecessary":false}
+     * results: {"isNecessary":true,"docsPerPage":10,"pageCount":12,"startCardNumber":21,"previousPageNumber":2,"selectedPageNumber":3,"numResults":111,"endCardNumber":30,"nextPageNumber":4,"pageNumberList":[1,2,3,4,5,6,7,8,9,10,11,12]} 
+     */
+    function makePager(pager_info){
+
+        if (!pager_info.isNecessary){
+            $("#pagination").html('(no pager)');
+            return;
+        }else{
+            var source   = $("#pager-template").html();
+            var template = Handlebars.compile(source);
+            //var context = {title: "My New Post", body: "This is my first post!"};
+            var pagination_html    = template(pager_info);
+            $("#pagination").html(pagination_html);
+            // alert(pager_info.pageCount);
+        }
+
+    }
+
+    $(document).ready(function() {
+            //var json_info = <h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" />;
+            var json_info = <h:outputText value="#{RolePermissionHelperPage.getRandomPagerJSON()}" escape="false" />;
+            makePager(json_info);
+    });
+    </script>
               
 </ui:composition>

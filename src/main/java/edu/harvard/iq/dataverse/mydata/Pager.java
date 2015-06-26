@@ -291,11 +291,20 @@ public class Pager {
     }
     
     public String asJSONString() throws JSONException{
-        JSONObject obj = new JSONObject();
+        JSONObject obj = new JSONObject("{\"dtype\": \"Dataverse\",\"entityId\":100}");
         
         obj.put("isNecessary", this.isPagerNecessary());
         if (!this.isPagerNecessary()){
             return obj.toString();
+        }
+        
+        Long entityId = obj.getLong("entityId");
+        if (entityId==100){
+            obj.put("HAHAHA", "ADDED it back");
+        }
+        String dtype = obj.getString("dtype");
+        if (dtype.contentEquals("Dataverse")){
+            obj.put("dype", "It's a dataverse");
         }
         
         obj.put("numResults", this.numResults);
