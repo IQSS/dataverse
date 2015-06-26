@@ -8,30 +8,8 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
          
       <script src="#{resource['js/handlebars-v3.0.3.js']}?version=#{systemConfig.getVersion()}"></script>
-                
-                <script id="pagination-template" type="text/x-handlebars-template">
-                    <br />Results found: <b>{{ numResults }}</b>, Displaying <b>{{ startCardNumber }}</b> to <b>{{ endCardNumber }}</b>
-                    <br />
-                    <ul class="pagination">
-                        {{#if previousPageNumber}}
-                            <li><a aria-label="First" class="page_link" rel="1"><span aria-hidden="true">&lt;&lt;</span></a></li>
-                            <li><a aria-label="Previous" class="page_link" rel="{{ previousPageNumber }}"><span aria-hidden="true">&lt; Previous</span></a></li>
-                        {{/if}}
-                        {{#pageNumberList}}
-
-                        {{#isSelectedPage this ../selectedPageNumber }}
-                            <li class="active"><a rel="{{this}}" class="page_link">{{this}}</a></li>
-                        {{/isSelectedPage}}
-                        {{^isSelectedPage this ../selectedPageNumber }}
-                            <li><a rel="{{this}}" class="page_link">{{this}}</a></li>
-                        {{/isSelectedPage}}
-                        {{/pageNumberList}}
-                        {{#if nextPageNumber}}
-                            <li><a href="#" aria-label="Next" class="page_link" rel="{{ nextPageNumber }}"><span aria-hidden="true">Next &gt;</span></a></li>
-                            <li><a href="#" aria-label="Last" class="page_link" rel="{{ pageCount }}"><span aria-hidden="true">&gt;&gt;</span></a></li>
-                        {{/if}}
-                    </ul>
-                </script>
+      <ui:include src="mydata_pager_template.xhtml"></ui:include>
+      
                 <script>
                 
                 Handlebars.registerHelper('isSelectedPage', function(lvalue, rvalue, options) {
@@ -57,7 +35,7 @@
                         $("#pagination").html('(no pager)');
                         return;
                     }else{
-                        var source   = $("#pagination-template").html();
+                        var source   = $("#pager-template").html();
                         var template = Handlebars.compile(source);
                         //var context = {title: "My New Post", body: "This is my first post!"};
                         var pagination_html    = template(pager_info);

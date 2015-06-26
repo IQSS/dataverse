@@ -76,7 +76,7 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     public String getRandomPagerJSON() throws JSONException{
         
         int itemsPerPage = 10;
-        int numResults = randInt(1,3000);
+        int numResults = randInt(1,200);
         int numPages =  numResults / itemsPerPage;
         if ((numResults % itemsPerPage) > 0){
             numPages++;

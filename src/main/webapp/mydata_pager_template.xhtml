@@ -1,0 +1,51 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+         
+    <ui:remove>
+        <!-- 
+        Handelbars Template to create a pager:
+        
+        * no results: {"isNecessary":false}
+        * example results: {"isNecessary":true
+                    ,"numResults":111
+                    ,"docsPerPage":10
+                    ,"pageCount":12
+                    ,"selectedPageNumber":3
+                    ,"pageNumberList":[1,2,3,4,5,6,7,8,9,10,11,12]
+                    ,"previousPageNumber":2,"nextPageNumber":4
+                    ,"startCardNumber":21,"endCardNumber":30                    
+                    } 
+               
+        -->
+    </ui:remove>
+<script id="pager-template" type="text/x-handlebars-template">
+    <br />Results found: <b>{{ numResults }}</b>, Displaying <b>{{ startCardNumber }}</b> to <b>{{ endCardNumber }}</b>
+    <br />
+    <ul class="pagination">
+        {{#if previousPageNumber}}
+            <li><a aria-label="First" class="page_link" rel="1"><span aria-hidden="true">&lt;&lt;</span></a></li>
+            <li><a aria-label="Previous" class="page_link" rel="{{ previousPageNumber }}"><span aria-hidden="true">&lt; Previous</span></a></li>
+        {{/if}}
+        {{#pageNumberList}}
+        {{#isSelectedPage this ../selectedPageNumber }}
+            <li class="active"><a rel="{{this}}" class="page_link">{{this}}</a></li>
+        {{/isSelectedPage}}
+        {{^isSelectedPage this ../selectedPageNumber }}
+            <li><a rel="{{this}}" class="page_link">{{this}}</a></li>
+        {{/isSelectedPage}}
+        {{/pageNumberList}}
+        {{#if nextPageNumber}}
+            <li><a href="#" aria-label="Next" class="page_link" rel="{{ nextPageNumber }}"><span aria-hidden="true">Next &gt;</span></a></li>
+            <li><a href="#" aria-label="Last" class="page_link" rel="{{ pageCount }}"><span aria-hidden="true">&gt;&gt;</span></a></li>
+        {{/if}}
+    </ul>
+</script>
+
+              
+</ui:composition>
