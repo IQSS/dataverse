@@ -6,7 +6,9 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import java.io.IOException;
+import static java.lang.Math.max;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -65,6 +67,24 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         return this.pager;
     }
     
+    private int randInt(int min, int max) {
+        Random rand = new Random();
+        return rand.nextInt((max - min) + 1) + min;
+    }
+    
+    
+    public String getRandomPagerJSON() throws JSONException{
+        
+        int itemsPerPage = 10;
+        int numResults = randInt(1,3000);
+        int numPages =  numResults / itemsPerPage;
+        if ((numResults % itemsPerPage) > 0){
+            numPages++;
+        }
+        int chosenPage = max(randInt(0, numPages), 1);
+        return new Pager(numResults, itemsPerPage, chosenPage).asJSONString();
+                
+    }
     
     public DataverseRolePermissionHelper getRolePermissionHelper(){
         return this.rolePermissionHelper;
