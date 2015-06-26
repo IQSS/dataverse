@@ -49,5 +49,24 @@
 
         </ul>
               </p>
+              
+              <script>
+                    console.log('script tag');
+
+                function set_page_num(page_num){
+                   // return "/summary/{{ filename }}/" + variable_name;
+                }
+
+                $(document).ready(function() {
+                    $("a.page_link").click(function(evt) {
+                                            console.log('script tag');
+
+                          evt.preventDefault(); // stop link from using href
+                          var page_num = $(this).attr('rel');
+                          alert(page_num);
+                         // alert(get_link(variable_name));
+                    });
+                });
+                </script>
         </ui:fragment>
 </ui:composition>

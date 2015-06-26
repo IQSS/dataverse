@@ -5,32 +5,15 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.FileTemplateLoader;
-import com.github.jknack.handlebars.io.ServletContextTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
-import com.google.common.base.Functions;
-import com.google.common.collect.Lists;
-import static edu.harvard.iq.dataverse.DatasetFieldType.FieldType.URL;
-import java.io.File;
-
 import java.io.IOException;
-import java.io.InputStreamReader;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import javax.servlet.ServletContext;
-import static org.atmosphere.di.ServletContextHolder.getServletContext;
+import org.primefaces.json.JSONException;
+import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -307,59 +290,35 @@ public class Pager {
         }
     }
     
-    public static void main(String[] args) throws IOException {
-        /*
-        Handlebars handlebars = new Handlebars();
-
-        Template template = handlebars.compileInline("Hello {{this}}!");
-
-        System.out.println(template.apply("Handlebars.java"));
-       */
-        Pager pager = new Pager(100, 10, 1);
-        //pager.showClasspaths();
-        //Handlebars handlebars = new Handlebars();
-    //final File f = new File(Pager.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-    //System.out.println("path: " + f.getAbsolutePath());
+    public String asJSONString() throws JSONException{
+        JSONObject obj = new JSONObject();
         
-        /* 
-        // servlet context
-        ServletContext servletContext = getServletContext();
-        TemplateLoader loader = new ServletContextTemplateLoader(servletContext,
-  "/WEB-INF/pages", ".html");
-        Handlebars handlebars = new Handlebars(loader);
-        Template template = handlebars.compile("hello"); 
-        System.out.println(template.apply("there"));
-                */
-
-        /*
-        MustacheFactory mf = new DefaultMustacheFactory(); 
-        Mustache fromFile mf.compile(new InputStreamReader(getServletContext().getResourceAsStream("mytemplate")), "mytemplate");
-        */
-        
-        // Template
-        //TemplateLoader loader = new ClassPathTemplateLoader();
-        TemplateLoader loader = new FileTemplateLoader("/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/mydata/",
-  ".hbs");
-        //loader.setPrefix("resources/");
-        //loader.setSuffix(".html");
-        Handlebars handlebars = new Handlebars(loader);
-        
-        Template template = handlebars.compile("mytemplate");
-
-        
-        Map<String, Object> dict = new HashMap<String, Object>();
-        //dict.put("array", new String[]{"s1", "s2" });
-        dict.put("numResults", pager.numResults);
-        dict.put("pager", pager);
-        //dict.put("pager", pager);
-        //new String[]{"s1", "s2" });
-        //assertEquals("s1", template.apply(context));
-        String pageString = template.apply(dict);
-        
-        pager.msgt("pageString: " + pageString);
-        ///System.out.println(template.apply(pager.numResults));
-        
+        obj.put("isNecessary", this.isPagerNecessary());
+        if (!this.isPagerNecessary()){
+            return obj.toString();
         }
+        
+        obj.put("numResults", this.numResults);
+        obj.put("docsPerPage", this.docsPerPage);
+        obj.put("selectedPageNumber", this.selectedPageNumber);
+
+        obj.put("pageCount", this.pageCount);
+        obj.put("pageNumberList", this.pageNumberList);
+        
+        obj.put("previousPageNumber", this.previousPageNumber);
+        obj.put("nextPageNumber", this.nextPageNumber);
+        obj.put("startCardNumber", this.startCardNumber);
+        obj.put("endCardNumber", this.endCardNumber);
+        
+        return obj.toString();
+             
+    }
+    
+    public static void main(String[] args) throws IOException {
+       
+        Pager pager = new Pager(100, 10, 1);
+               
+    }
     
     private void msg(String s){
         System.out.println(s);

@@ -1,25 +1,19 @@
 package edu.harvard.iq.dataverse.mydata;
 
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.FileTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.bean.ManagedBean;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.json.JSONException;
+import org.primefaces.json.JSONObject;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -101,6 +95,18 @@ public class RolePermissionHelperPage implements java.io.Serializable {
 
     public void setTestName(String name){
         this.testName = name;
+    }
+    
+    public String getSomeJSON() throws JSONException{
+        
+      JSONObject obj = new JSONObject();
+
+      obj.put("name", "foo");
+      obj.put("num", new Integer(100));
+      obj.put("balance", new Double(1000.21));
+      obj.put("is_vip", new Boolean(true));
+
+      return obj.toString();
     }
 
     public String getSomeText(){

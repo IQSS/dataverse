@@ -7,6 +7,7 @@
       xmlns:p="http://primefaces.org/ui">
 
   <h:head>
+
   </h:head>
 
   <h:body>
@@ -25,10 +26,16 @@
                     <f:viewAction action="#{RolePermissionHelperPage.init}" />
           </f:metadata>
           <div>
-
+              <div id="pagination"></div>
+              <p> 
+                    <b>getSomeJSON:</b>
+                    <pre><h:outputText value="#{RolePermissionHelperPage.someJSON}" escape="false" /> </pre>
+                    <pre><h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" /> </pre>
+              </p>
               <h4>Related roles for each DvObject type</h4>
     <table class="table table-bordered table-condensed text-center">
-        
+
+
 <!-- start: Iterate through a list of lists -->        
 <ui:repeat value="#{RolePermissionHelperPage.rolePermissionHelper.rolesByDvObjectTable}" var="singleRow">
     <tr>
@@ -46,26 +53,22 @@
 </ui:repeat>
 <!-- end: Iterate through a list of lists -->   
     </table>
-         <ui:include src="mydata_pagination.xhtml"></ui:include>
+         <ui:include src="mydata_js_pagination.xhtml"></ui:include>
 
                         
-             <p>
-                 <h4>roles with dataverse permissions</h4>
-                 
+             <h4>roles with dataverse permissions</h4>
+            <p>
                 <h:outputText value="#{RolePermissionHelperPage.rolePermissionHelper.getRolesWithDataversePermissionsAsHTML()}" escape="false" /> 
-
              </p>
                   
 
-             <p>
                  <h4>roles with dataset permissions</h4>
-                 
+             <p>                 
                 <h:outputText value="#{RolePermissionHelperPage.rolePermissionHelper.getDatasetRolesAsHTML()}" escape="false" /> 
-
              </p>
               
-            <p>
                  <h4>roles with file permissions</h4>
+            <p>
                  
                 <h:outputText value="#{RolePermissionHelperPage.rolePermissionHelper.getRolesWithFilePermissionsAsHTML()}" escape="false" /> 
 
