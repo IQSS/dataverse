@@ -9,7 +9,6 @@
          
       <script src="#{resource['js/handlebars-v3.0.3.js']}?version=#{systemConfig.getVersion()}"></script>
       <ui:include src="mydata_pager_template.xhtml"></ui:include>
-
     <script>
 
     Handlebars.registerHelper('isSelectedPage', function(lvalue, rvalue, options) {
@@ -49,6 +48,7 @@
             //var json_info = <h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" />;
             var json_info = <h:outputText value="#{RolePermissionHelperPage.getRandomPagerJSON()}" escape="false" />;
             makePager(json_info);
+            $("#divPagerJSON").html('<pre>' + JSON.stringify(json_info) + '</pre>');
     });
     </script>
               

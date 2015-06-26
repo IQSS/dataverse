@@ -27,6 +27,37 @@
           </f:metadata>
           <div>
               <div id="pagination"></div>
+              <div id="divPagerJSON">anything here?</div>
+
+              <div class="row">
+                  <div class="col-md-2">
+                      <ul id="id_dvobject_types">
+                          <li><label for="id_dvobject_types_0"><input checked="checked" id="id_dvobject_types_0" name="dvobject_types" type="checkbox" value="dataverses" /> Dataverses</label></li>
+                          <li><label for="id_dvobject_types_1"><input checked="checked" id="id_dvobject_types_1" name="dvobject_types" type="checkbox" value="datasets" /> Datasets</label></li>
+                          <li><label for="id_dvobject_types_2"><input checked="checked" id="id_dvobject_types_2" name="dvobject_types" type="checkbox" value="files" /> Files</label></li>
+                      </ul>
+                  </div>
+                  <script>
+                        function checkDtypes(){
+                            var dype_values = new Array();
+                            $.each($("input[name='dvobject_types']:checked"), function() {
+                                dype_values.push($(this).val());
+                              // or you can do something to the actual checked checkboxes by working directly with  'this'
+                              // something like $(this).hide() (only something useful, probably) :P
+                            });
+                            alert(dype_values);
+                        }
+                        $(document).ready(function() {
+          
+                            $("input[name='dvobject_types']").click(function() {
+                                checkDtypes();
+                              // or you can do something to the actual checked checkboxes by working directly with  'this'
+                              // something like $(this).hide() (only something useful, probably) :P
+                            });
+                         });
+                  </script>
+                  <div class="col-md-2"></div>
+              </div>
               <p> 
                     <b>getSomeJSON:</b>
                     <pre><h:outputText value="#{RolePermissionHelperPage.someJSON}" escape="false" /> </pre>
