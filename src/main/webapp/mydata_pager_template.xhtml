@@ -28,10 +28,15 @@ Handelbars Template to create a pager:
     <br />Results found: <b>{{ numResults }}</b>, Displaying <b>{{ startCardNumber }}</b> to <b>{{ endCardNumber }}</b>
     <br />
     <ul class="pagination">
-        {{#if hasPreviousPageNumber}}
+        {{#hasPreviousPageNumber}}
             <li><a aria-label="First" class="page_link" rel="1"><span aria-hidden="true">&lt;&lt;</span></a></li>
             <li><a aria-label="Previous" class="page_link" rel="{{ previousPageNumber }}"><span aria-hidden="true">&lt; Previous</span></a></li>
-        {{/if}}
+        {{/hasPreviousPageNumber}}
+        {{^hasPreviousPageNumber}}
+            <li class="disabled"><a aria-label="First"><span aria-hidden="true">&lt;&lt;</span></a></li>
+            <li class="disabled"><a aria-label="Previous"><span aria-hidden="true">&lt; Previous</span></a></li>
+        {{/hasPreviousPageNumber}}
+                
         {{#pageNumberList}}
         {{#isSelectedPage this ../selectedPageNumber }}
             <li class="active"><a rel="{{this}}" class="page_link">{{this}}</a></li>
@@ -40,11 +45,14 @@ Handelbars Template to create a pager:
             <li><a rel="{{this}}" class="page_link">{{this}}</a></li>
         {{/isSelectedPage}}
         {{/pageNumberList}}
-        {{#if hasNextPageNumber}}
+        {{#hasNextPageNumber}}
             <li><a href="#" aria-label="Next" class="page_link" rel="{{ nextPageNumber }}"><span aria-hidden="true">Next &gt;</span></a></li>
             <li><a href="#" aria-label="Last" class="page_link" rel="{{ pageCount }}"><span aria-hidden="true">&gt;&gt;</span></a></li>
-        {{/if}}
-    </ul>
+        {{/hasNextPageNumber}}
+        {{^hasNextPageNumber}}
+            <li class="disabled"><a href="#" aria-label="Next"><span aria-hidden="true">Next &gt;</span></a></li>
+            <li class="disabled"><a href="#" aria-label="Last"><span aria-hidden="true">&gt;&gt;</span></a></li>
+        {{/hasNextPageNumber}}    </ul>
 </script>
 
               

@@ -55,8 +55,6 @@
 
     function bindPages(){
         $("a.page_link").click(function(evt) {
-            console.log('script tag');
-
             evt.preventDefault(); // stop link from using href
             var page_num = $(this).attr('rel');
             updatePager(page_num);
