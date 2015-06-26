@@ -44,7 +44,7 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     
     private String testName = "blah";
     private DataverseRolePermissionHelper rolePermissionHelper;// = new DataverseRolePermissionHelper();
-    
+    private Pager pager;
      
     private void msg(String s){
         System.out.println(s);
@@ -61,8 +61,16 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         List<DataverseRole> roleList = roleService.findAll();
         msgt("roles: " + roleList.toString());
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
+
+        
+        pager = new Pager(111, 10, 3);
         return null;
     }
+
+    public Pager getPager(){
+        return this.pager;
+    }
+    
     
     public DataverseRolePermissionHelper getRolePermissionHelper(){
         return this.rolePermissionHelper;

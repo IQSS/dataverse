@@ -1,0 +1,53 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+         
+    <ui:fragment rendered="#{!RolePermissionHelperPage.pager.pagerNecessary}">
+            <p>no results</p>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{RolePermissionHelperPage.pager.pagerNecessary}">
+
+              <b>numResults:</b> #{RolePermissionHelperPage.pager.numResults}<br />
+              <b>Num pages:</b> #{RolePermissionHelperPage.pager.pageCount}<br />
+              <b>selectedPageNumber</b> #{RolePermissionHelperPage.pager.selectedPageNumber}<br />
+              <b>nextPageNumber</b> #{RolePermissionHelperPage.pager.nextPageNumber}<br />
+              <b>previousPageNumber</b> #{RolePermissionHelperPage.pager.previousPageNumber}<br />
+              <b>hasNextPageNumber</b> #{RolePermissionHelperPage.pager.hasNextPageNumber()}<br />
+              <b>hasPreviousPageNumber</b> #{RolePermissionHelperPage.pager.hasPreviousPageNumber()}<br />
+              <p>
+        <ul class="pagination">
+            <ui:fragment rendered="#{RolePermissionHelperPage.pager.hasPreviousPageNumber()}">
+              <li>
+              <a aria-label="First" class="page_link" rel="1"><span aria-hidden="true">&lt;&lt;</span></a>
+            </li>
+            <li>
+              <a aria-label="Previous" class="page_link" rel="#{RolePermissionHelperPage.pager.previousPageNumber}"><span aria-hidden="true">&lt; Previous</span></a>
+            </li>
+            </ui:fragment>
+            <ui:repeat value="#{RolePermissionHelperPage.pager.getPageNumberListAsStringList()}" var="val">  
+                 <ui:fragment rendered="#{val == RolePermissionHelperPage.pager.selectedPageNumber}">
+                   <li class="active"><a rel="#{val}" class="page_link">#{val}</a></li>
+                 </ui:fragment>
+                 <ui:fragment rendered="#{val != RolePermissionHelperPage.pager.selectedPageNumber}">
+                   <li><a rel="#{val}" class="page_link">#{val}</a></li>
+                 </ui:fragment>
+              </ui:repeat>
+            <ui:fragment rendered="#{RolePermissionHelperPage.pager.hasNextPageNumber()}">
+                <li>
+                    <a href="#" aria-label="Next" class="page_link" rel="#{RolePermissionHelperPage.pager.nextPageNumber}"><span aria-hidden="true">Next &gt;</span></a>
+                </li>
+                <li>
+                    <a href="#" aria-label="Last" class="page_link" rel="#{RolePermissionHelperPage.pager.pageCount}"><span aria-hidden="true">&gt;&gt;</span></a>
+                </li>
+            </ui:fragment>
+
+        </ul>
+              </p>
+        </ui:fragment>
+</ui:composition>

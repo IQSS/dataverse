@@ -14,6 +14,8 @@ import com.github.jknack.handlebars.io.TemplateLoader;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import com.google.common.base.Functions;
+import com.google.common.collect.Lists;
 import static edu.harvard.iq.dataverse.DatasetFieldType.FieldType.URL;
 import java.io.File;
 
@@ -23,7 +25,9 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletContext;
 import static org.atmosphere.di.ServletContextHolder.getServletContext;
@@ -197,6 +201,17 @@ public class Pager {
         this.pageCount = pageCount;
     }
     
+    /**
+     * get getPageNumberListAsStringList
+     * @return 
+     */
+    public List<String> getPageNumberListAsStringList(){
+        List<String> newList = new ArrayList<String>(pageNumberList.length);
+        for (int pgNum : pageNumberList) { 
+          newList.add(String.valueOf(pgNum)); 
+        }
+        return newList;
+    }
 
     /**
      * get pageNumberList

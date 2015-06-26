@@ -26,13 +26,14 @@
           </f:metadata>
           <div>
 
-              <h4>Roles that show for a DvObject Card</h4>
+              <h4>Related roles for each DvObject type</h4>
     <table class="table table-bordered table-condensed text-center">
+        
+<!-- start: Iterate through a list of lists -->        
 <ui:repeat value="#{RolePermissionHelperPage.rolePermissionHelper.rolesByDvObjectTable}" var="singleRow">
     <tr>
     <ui:repeat value="#{singleRow}" var="dvValue">
-        <td>
-        
+        <td>        
          <ui:fragment rendered="#{dvValue == 'YES'}">
              <span class="label label-success">Yes</span>
          </ui:fragment>
@@ -40,12 +41,14 @@
               <h:outputText value="#{dvValue}" escape="false" />
          </ui:fragment>
         </td>
-                        
-
     </ui:repeat>
     </tr>
 </ui:repeat>
+<!-- end: Iterate through a list of lists -->   
     </table>
+         <ui:include src="mydata_pagination.xhtml"></ui:include>
+
+                        
              <p>
                  <h4>roles with dataverse permissions</h4>
                  
