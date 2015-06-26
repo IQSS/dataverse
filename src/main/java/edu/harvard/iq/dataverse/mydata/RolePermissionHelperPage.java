@@ -69,7 +69,8 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     }
     
     public String getRoleInfo() throws IOException{
-         TemplateLoader loader = new FileTemplateLoader("/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/mydata/",
+        return "test";
+        /*TemplateLoader loader = new FileTemplateLoader("/Users/rmp553/NetBeansProjects/dataverse/src/main/java/edu/harvard/iq/dataverse/mydata/",
   ".hbs");
         //loader.setPrefix("resources/");
         //loader.setSuffix(".html");
@@ -83,7 +84,7 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         //dict.put("pager", pager);
         String pageString = template.apply(dict);
         
-        return pageString;
+        return pageString;*/
     }
     
     public String getTestName(){

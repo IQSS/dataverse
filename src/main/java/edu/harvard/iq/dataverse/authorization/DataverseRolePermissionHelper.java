@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -12,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -44,6 +46,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
 
     public Map<Long, String> roleNameLookup = new HashMap<>();    // { role id : role name }
    
+    public List<List<String>> rolesByDvObjectTable = Lists.newArrayList();
     
     /**
      * Initialize Map objects by iterating over role objects
@@ -77,9 +80,72 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
             //
             this.roleNameLookup.put(role.getId(), role.getName());                
         }
-         
+        this.loadRolesByDvObjectTable();
     }
    
+    /**
+     * top row: role names
+     *
+     */
+    private void loadRolesByDvObjectTable(){
+        
+        List<String> row = new ArrayList<>();
+        
+        Set<Entry<Long,String>> roleNameSet = roleNameLookup.entrySet();
+                
+        // Row 1: Row Names
+        row.add("");
+        for (Map.Entry pair : roleNameSet) {
+            row.add("<b>" + (String)pair.getValue() + "</b>");
+        }
+        this.rolesByDvObjectTable.add(row);
+        
+        // Row 2: Dataverse role settings
+        //
+        row = new ArrayList<>();
+        row.add("<b>Dataverse</b>");
+        for (Map.Entry pair : roleNameSet) {
+            Long role_id = (Long)pair.getKey();
+            if (this.hasDataversePermissions(role_id)){
+                row.add("YES");
+            }else{
+                row.add("--");
+            }
+        }
+        this.rolesByDvObjectTable.add(row);
+
+        
+        // Row 3: Dataset role settings
+        //
+        row = new ArrayList<>();
+                row.add("<b>Dataset</b>");
+
+        for (Map.Entry pair : roleNameSet) {
+            Long role_id = (Long)pair.getKey();
+            if (this.hasDatasetPermissions(role_id)){
+                row.add("YES");
+            }else{
+                row.add("--");
+            }
+        }
+        this.rolesByDvObjectTable.add(row);
+
+        // Row 4: File role settings
+        //
+        row = new ArrayList<>();
+        row.add("<b>File</b>");
+        for (Map.Entry pair : roleNameSet) {
+            Long role_id = (Long)pair.getKey();
+            if (this.hasFilePermissions(role_id)){
+                row.add("YES");
+            }else{
+                row.add("--");
+            }
+        }
+        this.rolesByDvObjectTable.add(row);
+        
+    }
+  
     /**
      * Check if role contains a permission related to Files (DataFile)
      * 
@@ -224,17 +290,19 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         return StringUtils.join(outputList, "<br />");
     }
     
-    
-    
-    
     public Map<Long, Boolean> getRolesWithDataversePermissions(){
         return this.rolesWithDataversePermissions;
     }
+    
     public Map<Long, Boolean> getRolesWithDatasetPermissions(){
         return this.rolesWithDatasetPermissions;
     }
+    
     public Map<Long, Boolean> getRolesWithFilePermissions(){
         return this.rolesWithFilePermissions;
     }
     
+    public List<List<String>> getRolesByDvObjectTable(){
+         return this.rolesByDvObjectTable;
+    }
 }
