@@ -7,22 +7,9 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
          
-      <script src="#{resource['js/handlebars-v3.0.3.js']}?version=#{systemConfig.getVersion()}"></script>
-      <ui:include src="mydata_pager_template.xhtml"></ui:include>
-    <script>
+<script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
+<script>
 
-    Handlebars.registerHelper('isSelectedPage', function(lvalue, rvalue, options) {
-        //console.log("lvalue:" + lvalue + ":" + rvalue);
-        if( lvalue!=rvalue ) {
-            return options.inverse(this);
-        } else {
-            return options.fn(this);
-        }
-    });
-    //Handlebars.registerHelper('ifSelectedPage', function(pgNum, selectedPage, options) {
-
-    //      return 'blah';
-    //});
     /*
      * Example of pager_info:
      * no results: {"isNecessary":false}
@@ -34,12 +21,11 @@
             $("#pagination").html('(no pager)');
             return;
         }else{
-            var source   = $("#pager-template").html();
-            var template = Handlebars.compile(source);
-            //var context = {title: "My New Post", body: "This is my first post!"};
-            var pagination_html    = template(pager_info);
+            nunjucks.configure({ autoescape: true });
+        //var ts = nunjucks.renderString('Hello {{ username }}', { username: 'James' });
+            var pagination_html =  nunjucks.render('mydata_templates/mydata.html', pager_info);
             $("#pagination").html(pagination_html);
-            // alert(pager_info.pageCount);
+            $("#divPagerJSON").html('<pre>' + JSON.stringify(pager_info) + '</pre>');
             bindPages();
         }
 
@@ -47,16 +33,18 @@
 
     function updatePager(newPage){
          $.getJSON( "/api/mydata/test-it2?selectedPage=" + newPage, function(data) {
-               //alert(data);
-               makePager(data);
-               $("#divPagerJSON").html('<pre>' + JSON.stringify(data) + '</pre>');
-            });
+            //alert(data);
+            makePager(data);
+            $("#divPagerJSON").html('<pre>' + JSON.stringify(data) + '</pre>');
+        });
     }
 
     function bindPages(){
+        console.log("bindpages");
         $("a.page_link").click(function(evt) {
             evt.preventDefault(); // stop link from using href
             var page_num = $(this).attr('rel');
+            console.log("bind: " + page_num);
             updatePager(page_num);
             //alert(page_num);
              // alert(get_link(variable_name));
@@ -65,18 +53,10 @@
 
     $(document).ready(function() {
             //var json_info = <h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" />;
-            var json_info = <h:outputText value="#{RolePermissionHelperPage.getRandomPagerJSON()}" escape="false" />;
-
-           $.getJSON( "/api/mydata/test-it2", function(data) {
-               //alert(data);
-               makePager(data);
-               $("#divPagerJSON").html('<pre>' + JSON.stringify(data) + '</pre>');
-            });
-
-
-            //makePager(json_info);
-            //$("#divPagerJSON").html('<pre>' + JSON.stringify(json_info) + '</pre>');
+        var json_info = <h:outputText value="#{RolePermissionHelperPage.getRandomPagerJSON()}" escape="false" />;
+        makePager(json_info);
+    
     });
-    </script>
-              
+</script>
+
 </ui:composition>

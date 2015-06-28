@@ -21,6 +21,8 @@ import org.primefaces.json.JSONObject;
  */
 public class Pager {
     
+    public int PAGE_BUTTONS_TO_SHOW = 5;
+    
     /* inputs */
     public int numResults;
     public int docsPerPage = 10;
@@ -64,7 +66,7 @@ public class Pager {
        // page count
         this.pageCount = numResults / docsPerPage;
         if ((this.numResults % this.docsPerPage) > 0){
-            this.pageCount += 1;
+            this.pageCount++;
         }
     
         // Sanity check for the selected page
@@ -73,10 +75,11 @@ public class Pager {
         }
     
         // page number list
-        pageNumberList = new int[this.pageCount];
-        for(int i=0; i<this.pageCount; i++){
-            pageNumberList[i] = i + 1;
-         }
+        this.pageNumberList = new int[pageCount];
+            for(int i=0; i<this.pageCount; i++){
+               this.pageNumberList[i] = i + 1;
+        }
+        //makePageNumberList();
 
         // prev/next page numbers
         this.previousPageNumber =  max(this.selectedPageNumber-1, 1); // must be at least 1
@@ -90,9 +93,8 @@ public class Pager {
         }else{
             this.endCardNumber = min(this.startCardNumber + (this.docsPerPage-1), this.numResults );
         }
-         
-
     }
+    
     
     public boolean isPagerNecessary(){
         
