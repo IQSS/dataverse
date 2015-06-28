@@ -110,7 +110,7 @@ public class RoleAssigneeServiceBean {
         
         String qstr = "SELECT r.definitionpoint_id, r.role_id";
         qstr += " FROM RoleAssignment r";
-        qstr += " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier;
+        qstr += " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
         qstr += getRoleIdListClause(roleIdList);
         qstr += "';";
         //msg("qstr: " + qstr);

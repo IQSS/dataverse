@@ -5,25 +5,15 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -39,9 +29,8 @@ public class MyDataFinder {
     private static final Logger logger = Logger.getLogger(MyDataFinder.class.getCanonicalName());
 
     private String userIdentifier;
-    private ArrayList<DataverseRole> roles;
-    private ArrayList<String> dvObjectTypes;
-    private ArrayList<String> publicationStatuses;
+    MyDataFilterParams filterParams;
+    
     private String searchTerm = "*";
     
     // --------------------
@@ -111,6 +100,22 @@ public class MyDataFinder {
         }        
     }
 
+    public void runFindDataSteps(MyDataFilterParams filterParams){
+        this.filterParams = filterParams;
+        this.userIdentifier = this.filterParams.getUserIdentifier();
+        
+        msgt("runFindDataSteps: " + this.userIdentifier);
+        if (!runStep1RoleAssignments()){
+            return;
+        }
+        if (!runStep2DirectAssignments()){
+            return;
+        }
+        if (!fileGrandparentFileIds.isEmpty()){
+            runStep3FilePermsAssignedAtDataverse();
+        }    
+        
+    }
     
     public String getSolrDvObjectFilterQuery(){
 
@@ -257,12 +262,18 @@ public class MyDataFinder {
             return false;
         }
     
+        Integer dvIdAsInteger;
+        Long dvId;
+        String dtype;
+        Long parentId;
+        
          // Iterate through assigned objects
         //for (RoleAssignment ra : results) {
         for (Object[] ra : results) {
-            Long dvId = (Long)ra[0];
-            String dtype = (String)ra[1];
-            Long parentId = (Long)ra[2];
+            dvIdAsInteger = (Integer)ra[0];     // ?? Why?
+            dvId = new Long(dvIdAsInteger);
+            dtype = (String)ra[1];
+            //parentId = (Long)ra[2];
             
             switch(dtype){
                 case(DvObject.DATAVERSE_DTYPE_STRING):
@@ -317,12 +328,25 @@ public class MyDataFinder {
             return false;
         }
     
+        Integer dvIdAsInteger;
+        Long dvId;
+        String dtype;
+        Long parentId;
+        
         // Iterate through object list
         //
         for (Object[] ra : results) {
+            dvIdAsInteger = (Integer)ra[0];     // ?? Why?
+            dvId = new Long(dvIdAsInteger);
+            dtype = (String)ra[1];
+            //parentId = (Long)ra[2];
+                        
+            /*
             Long dvId = (Long)ra[0];
+
             String dtype = (String)ra[1];
             Long parentId = (Long)ra[2];
+            */
             // Should ALWAYS be a Dataset!
             if (dtype.equals(DvObject.DATASET_DTYPE_STRING)){  
                 this.fileParentIds.add(dvId);

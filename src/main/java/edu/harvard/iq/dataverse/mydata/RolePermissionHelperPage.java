@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -10,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import java.io.IOException;
 import static java.lang.Math.max;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -66,11 +68,16 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         msgt("roles: " + roleList.toString());
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
+        String userIdentifier = "dataverseAdmin";
+        MyDataFilterParams filterParams = new MyDataFilterParams(userIdentifier, DvObject.DTYPE_LIST);
+        
+        
         myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
                                         dvObjectServiceBean);
-        String userIdentifier = "dataverseAdmin";
-        myDataFinder.runFindDataSteps(userIdentifier);
+        //myDataFinder.runFindDataSteps(userIdentifier);
+        myDataFinder.runFindDataSteps(filterParams);
+        
         pager = new Pager(111, 10, 3);
         return null;
     }

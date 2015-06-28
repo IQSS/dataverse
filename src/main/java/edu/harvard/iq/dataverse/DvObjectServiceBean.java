@@ -117,7 +117,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
         qstr += " FROM dvobject dv";
         qstr += " WHERE  dv.id IN " + dvObjectClause;
-        qstr += "';";
+        qstr += ";";
 
         return em.createNativeQuery(qstr).getResultList();
         
@@ -143,7 +143,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
         qstr += " FROM dvobject dv";
         qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
-        qstr += "';";
+        qstr += ";";
 
         return em.createNativeQuery(qstr).getResultList();
         
