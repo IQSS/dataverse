@@ -19,6 +19,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * The place to obtain {@link RoleAssignee}s, based on their identifiers.
@@ -61,7 +62,7 @@ public class RoleAssigneeServiceBean {
                 throw new IllegalArgumentException("Unsupported assignee identifier '" + identifier + "'");
         }
     }
-
+    
     public List<RoleAssignment> getAssignmentsFor(String roleAssigneeIdentifier) {
         return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class)
                 .setParameter("assigneeIdentifier", roleAssigneeIdentifier)
@@ -80,6 +81,53 @@ public class RoleAssigneeServiceBean {
         }
 
         return explicitUsers;
-
     }
+    
+    private String getRoleIdListClause(List<Long> roleIdList){
+        if (roleIdList == null){
+            return "";
+        }
+        List<String> outputList = new ArrayList<>();
+        
+        for(Long r : roleIdList){
+            if (r != null){
+                outputList.add(r.toString());
+            }
+        }
+        if (outputList.isEmpty()){
+            return "";
+        }        
+        return " AND r.role_id IN (" + StringUtils.join(outputList, ",") + ")";        
+    }
+    
+    public List<Object[]> getAssigneeAndRoleIdListFor(String roleAssigneeIdentifier, List<Long> roleIdList){
+        //msgt("getAssigneeAndRoleIdListFor");
+
+        if (roleAssigneeIdentifier==null){
+            return null;
+        }
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        
+        String qstr = "SELECT r.definitionpoint_id, r.role_id";
+        qstr += " FROM RoleAssignment r";
+        qstr += " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier;
+        qstr += getRoleIdListClause(roleIdList);
+        qstr += "';";
+        //msg("qstr: " + qstr);
+
+        return em.createNativeQuery(qstr)
+                        .getResultList();
+        
+    }
+    
+    private void msg(String s){
+        //System.out.println(s);
+    }
+    
+    private void msgt(String s){
+        msg("-------------------------------");
+        msg(s);
+        msg("-------------------------------");
+    }
+   
 }
