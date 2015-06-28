@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import java.io.IOException;
 import static java.lang.Math.max;
 import java.util.List;
@@ -36,10 +38,13 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     @Inject DataverseSession session;    
 
     @EJB
-    DataverseRoleServiceBean roleService;
+    DataverseRoleServiceBean dataverseRoleService;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
     
     private String testName = "blah";
     private DataverseRolePermissionHelper rolePermissionHelper;// = new DataverseRolePermissionHelper();
+    private MyDataFinder myDataFinder;
     private Pager pager;
      
     private void msg(String s){
@@ -54,15 +59,29 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     
     public String init() {
         msgt("----------- init() -------------");
-        List<DataverseRole> roleList = roleService.findAll();
+        List<DataverseRole> roleList = dataverseRoleService.findAll();
         msgt("roles: " + roleList.toString());
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
-        
+        myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService);
+        String userIdentifier = "dataverseAdmin";
+        myDataFinder.runFindDataSteps(userIdentifier);
         pager = new Pager(111, 10, 3);
         return null;
     }
+    
+    public MyDataFinder getMyDataFinder(){
+        return this.myDataFinder;
+    }
 
+    public String getMyDataFinderInfo(){
+        if (this.myDataFinder.hasError()){
+            return this.myDataFinder.getErrorMessage();
+        }else{
+            return this.myDataFinder.getTestString();
+        }
+    }
+    
     public Pager getPager(){
         return this.pager;
     }

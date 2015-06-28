@@ -61,7 +61,11 @@
                   <div class="col-md-2"></div>
               </div>
               <p> 
+                    <b>Results from MyDataFinder</b>
+                    <!--pre><h:outputText value="#{RolePermissionHelperPage.getMyDataFinderInfo()}" escape="false" /> </pre-->
+                    <h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /> 
                     <b>getSomeJSON:</b>
+                    
                     <pre><h:outputText value="#{RolePermissionHelperPage.someJSON}" escape="false" /> </pre>
                     <pre><h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" /> </pre>
               </p>
