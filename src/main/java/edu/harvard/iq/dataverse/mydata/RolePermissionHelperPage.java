@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
@@ -41,6 +42,8 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
+    @EJB
+    DvObjectServiceBean dvObjectServiceBean;
     
     private String testName = "blah";
     private DataverseRolePermissionHelper rolePermissionHelper;// = new DataverseRolePermissionHelper();
@@ -63,7 +66,9 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         msgt("roles: " + roleList.toString());
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
-        myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService);
+        myDataFinder = new MyDataFinder(rolePermissionHelper,
+                                        roleAssigneeService,
+                                        dvObjectServiceBean);
         String userIdentifier = "dataverseAdmin";
         myDataFinder.runFindDataSteps(userIdentifier);
         pager = new Pager(111, 10, 3);
