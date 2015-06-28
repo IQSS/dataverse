@@ -112,7 +112,7 @@ public class RoleAssigneeServiceBean {
         qstr += " FROM RoleAssignment r";
         qstr += " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
         qstr += getRoleIdListClause(roleIdList);
-        qstr += "';";
+        qstr += ";";
         //msg("qstr: " + qstr);
 
         return em.createNativeQuery(qstr)
