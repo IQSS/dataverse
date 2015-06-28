@@ -11,8 +11,10 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 
@@ -62,14 +64,14 @@ public class MyDataFinder {
     // ----------------------------
     // POPULATED IN STEP 2 (2nd query)
     // ----------------------------
-    private List<Long> directDataverseIds = new ArrayList<Long>();
-    private List<Long> directDatasetIds = new ArrayList<Long>();
-    private List<Long> directFileIds = new ArrayList<Long>();
+    private List<Long> directDataverseIds = new ArrayList<>();
+    private List<Long> directDatasetIds = new ArrayList<>();
+    private List<Long> directFileIds = new ArrayList<>();
     
-    private List<Long> datasetParentIds = new ArrayList<Long>(); // dataverse has dataset permissions
+    private List<Long> datasetParentIds = new ArrayList<>(); // dataverse has dataset permissions
 
-    private List<Long> fileParentIds = new ArrayList<Long>();   // dataset has file permissions      
-    private List<Long> fileGrandparentFileIds = new ArrayList<Long>();  // dataverse has file permissions
+    private List<Long> fileParentIds = new ArrayList<>();   // dataset has file permissions      
+    private List<Long> fileGrandparentFileIds = new ArrayList<>();  // dataverse has file permissions
 
     
     public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean) {
@@ -123,29 +125,68 @@ public class MyDataFinder {
             throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyData object,first check 'hasError()'");
         }
 
-        List<Long> entityIds = new ArrayList<Long>();
-        List<Long> parentIds = new ArrayList<Long>();
+        // Build lists of Ids
+        List<Long> entityIds = new ArrayList<>();
+        List<Long> parentIds = new ArrayList<>();
 
-        //List<Long> = entity_ids 
-        //parent_ids = []
+        if (this.filterParams.areDataversesIncluded()){
+            entityIds.addAll(this.directDataverseIds); // dv ids
+        }        
+        if (this.filterParams.areDatasetsIncluded()){
+            entityIds.addAll(this.directDatasetIds);  // dataset ids
+            parentIds.addAll(this.datasetParentIds);  // dv ids that are dataset parents
+        }
         
-        /*if self.filter_form.are_dataverses_included():
-            entity_ids += self.all_dataverse_ids
+         if (this.filterParams.areFilesIncluded()){
+            entityIds.addAll(this.directFileIds); // file ids
+            parentIds.addAll(this.fileParentIds); // dataset ids that are file parents
+        }
+        
+        // Remove duplicates by Creating a Set
+        //
+        Set<Long> distinctEntityIds = new HashSet<>(entityIds);
+        Set<Long> distinctParentIds = new HashSet<>(parentIds);
+        
+        SolrQueryFormatter sqf = new SolrQueryFormatter();
 
-        if self.filter_form.are_datasets_included():
-            entity_ids += self.initial_dataset_ids
-            parent_ids += self.all_dataverse_ids
+        // Build clauses
+        String entityIdClause = null;
+        if (distinctEntityIds.size() > 0){
+            entityIdClause = sqf.buildIdQuery(distinctEntityIds, "entityId");
+        }
+        
+        String parentIdClause = null;
+        if (distinctParentIds.size() > 0){
+            parentIdClause = sqf.buildIdQuery(distinctParentIds, "parentId");            
+        }
+        
+        if ((entityIdClause != null) && (parentIdClause != null)){
+            // entityIdClause + parentIdClause
+            return "(" + entityIdClause + " OR " + parentIdClause + ")";
+        
+        } else if (entityIdClause != null){
+            // only entityIdClause
+            return entityIdClause;
+        
+        } else if (parentIdClause != null){
+            // only parentIdClause
+            return parentIdClause;
+        }
 
-        if self.filter_form.are_files_included():
-            entity_ids += self.initial_file_ids
-            parent_ids += self.all_dataset_ids
-
-
-        entity_ids = set(entity_ids)
-        parent_ids = set(parent_ids)
-        */
-        return null;
+        // Shouldn't get here...
+        return null;       
     }
+    
+    /*
+    // Return to set items to a List
+        //
+        entityIds = new ArrayList<Long>(distinctEntityIds);
+        parentIds = new ArrayList<Long>(distinctParentIds);
+        
+      
+    */
+        
+  
     
     
 
@@ -185,19 +226,29 @@ public class MyDataFinder {
             return "rolePermissionHelper is null";
         }
         
-        //if (true)return this.rolePermissionHelper.getDatasetRolesAsHTML();
-        
         List<String> outputList = new ArrayList<>();
+        
+        // ----------------------
+        // idsWithDatasetPermissions
+        // ----------------------
         List<String> idList = new ArrayList<>();
-
         outputList.add("<h2>dataset ids: " + this.idsWithDatasetPermissions.size() + "</h2>");
         for (Map.Entry pair : this.idsWithDatasetPermissions.entrySet()) {          
             idList.add(pair.getKey().toString());
         }
-        outputList.add("<pre>" + StringUtils.join(idList, ", ") + "</pre>");
-        
+        outputList.add("<pre>" + StringUtils.join(idList, ", ") + "</pre>");        
+
+        // ----------------------
+        // datasetParentIds
+        // ----------------------
+        List<String> idList2 = new ArrayList<>();
+        outputList.add("<h2>datasetParentIds ids: " + this.datasetParentIds.size() + "</h2>");
+        for (Long dpId : this.datasetParentIds) {          
+            idList2.add(dpId.toString());
+        }
+        outputList.add("<pre>" + StringUtils.join(idList2, ", ") + "</pre>");
+
         return StringUtils.join(outputList, "<br />");
-        
     }
     
 
@@ -254,10 +305,7 @@ public class MyDataFinder {
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoForMyData(directDvObjectIds);
         msgt("runStep2DirectAssignments results: " + results.toString());
 //List<RoleAssignment> results = this.roleAssigneeService.getAssignmentsFor(this.userIdentifier);
-        if (results == null){
-            this.addErrorMessage("Sorry, there are no directly assigned Dataverses, Datasets, or Files.");
-            return false;
-        }else if (results.isEmpty()){
+        if (results.isEmpty()){
             this.addErrorMessage("Sorry, you have no assigned Dataverses, Datasets, or Files.");
             return false;
         }
@@ -320,10 +368,7 @@ public class MyDataFinder {
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoByParentIdForMyData(this.fileGrandparentFileIds);
         msgt("runStep3FilePermsAssignedAtDataverse results: " + results.toString());
         
-        if (results == null){
-            this.addErrorMessage("Sorry, no Dataset were found with those Ids");
-            return false;
-        }else if (results.isEmpty()){
+       if (results.isEmpty()){
             this.addErrorMessage("Sorry, no Dataset were found with those Ids");
             return false;
         }

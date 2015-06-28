@@ -4,6 +4,9 @@ import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import static edu.harvard.iq.dataverse.DvObject.DATAFILE_DTYPE_STRING;
+import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
+import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -12,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import java.io.IOException;
 import static java.lang.Math.max;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -51,7 +55,8 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     private DataverseRolePermissionHelper rolePermissionHelper;// = new DataverseRolePermissionHelper();
     private MyDataFinder myDataFinder;
     private Pager pager;
-     
+    private MyDataFilterParams filterParams;
+    
     private void msg(String s){
         System.out.println(s);
     }
@@ -69,17 +74,23 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
         String userIdentifier = "dataverseAdmin";
-        MyDataFilterParams filterParams = new MyDataFilterParams(userIdentifier, DvObject.DTYPE_LIST);
+        List<String> dtypes = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING);//, DATAFILE_DTYPE_STRING);
+    
+        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes);
         
         
-        myDataFinder = new MyDataFinder(rolePermissionHelper,
+        this.myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
                                         dvObjectServiceBean);
         //myDataFinder.runFindDataSteps(userIdentifier);
-        myDataFinder.runFindDataSteps(filterParams);
+        this.myDataFinder.runFindDataSteps(filterParams);
         
-        pager = new Pager(111, 10, 3);
+        this.pager = new Pager(111, 10, 3);
         return null;
+    }
+    
+    public String getFilterParams() throws JSONException{
+        return this.filterParams.getDvObjectTypesAsJSON();
     }
     
     public MyDataFinder getMyDataFinder(){

@@ -61,9 +61,16 @@
                   <div class="col-md-2"></div>
               </div>
               <p> 
-                    <b>Results from MyDataFinder</b>
                     <!--pre><h:outputText value="#{RolePermissionHelperPage.getMyDataFinderInfo()}" escape="false" /> </pre-->
+                    <b>Results from FilterParams</b>
+                    <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams()}" escape="false" /> </pre>
+                    <br />
+                    <b>Results from MyDataFinder</b>
                     <h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /> 
+                    <b>solr query</b>
+                    <pre><h:outputText value="#{RolePermissionHelperPage.myDataFinder.solrDvObjectFilterQuery}" escape="false" /></pre>
+
+
                     <b>getSomeJSON:</b>
                     
                     <pre><h:outputText value="#{RolePermissionHelperPage.someJSON}" escape="false" /> </pre>
