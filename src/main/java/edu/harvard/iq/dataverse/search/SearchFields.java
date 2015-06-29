@@ -50,6 +50,9 @@ public class SearchFields {
      * @todo: consider making various dynamic fields (_s) static in schema.xml
      * instead. Should they be stored in the database?
      */
+    public static final int NUM_SOLR_DOCS_TO_RETRIEVE = 10;
+
+    
     // standard fields from example/solr/collection1/conf/schema.xml
     // (but we are getting away from these...)
     public static final String ID = "id";

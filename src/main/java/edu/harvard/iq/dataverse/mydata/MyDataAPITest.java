@@ -11,15 +11,18 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBeanMyData;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.Access;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -27,12 +30,14 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang.StringUtils;
 import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
 
@@ -157,8 +162,7 @@ public class MyDataAPITest extends AbstractApiBean {
         // (3) Make Solr Query
         // ---------------------------------
         int paginationStart = 1;
-            boolean dataRelatedToMe = true;
-            int numResultsPerPage = 10;
+        boolean dataRelatedToMe = true;
         try {
                 solrQueryResponse = searchService.search(
                         null, // no user
@@ -169,7 +173,7 @@ public class MyDataAPITest extends AbstractApiBean {
                         //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         paginationStart,
                         dataRelatedToMe,
-                        10
+                        10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
                 msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
@@ -180,28 +184,70 @@ public class MyDataAPITest extends AbstractApiBean {
                 //String query, 
                 //List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
                 
-            } catch (SearchException ex) {
-                solrQueryResponse = null;
-                Logger.getLogger(RolePermissionHelperPage.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        } catch (SearchException ex) {
+                solrQueryResponse = null;   
+                this.logger.severe("Solr SearchException: " + ex.getMessage());
+        }
+        
+        if (solrQueryResponse==null){
+            jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, false);
+            jsonData.add(MyDataAPITest.JSON_ERROR_MSG_FIELD_NAME, "Sorry!  There was a SOLR Error");
+            return jsonData.build().toString();
+        }
+        
+        //jsonData.add(MyDataAPITest.JSON_DATA_FIELD_NAME, Json.createObjectBuilder()
+        //jsonData.add(MyDataAPITest.JSON_DATA_FIELD_NAME, Json.createObjectBuilder()
+        //jsonData.add("solr_docs", this.formatSolrDocs(solrQueryResponse));
+        
          // ---------------------------------
-        // (x) Add pagingation
+        // (4) Add pagingation
         // ---------------------------------
-        Pager pager = new Pager(111, 10, 3);
+        Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(), 
+                                SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE, 
+                                paginationStart);
         
         jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, true);
-        jsonData.add(MyDataAPITest.JSON_DATA_FIELD_NAME, 
-                        Json.createObjectBuilder().add("pagination", 
-                                    pager.asJsonObjectBuilder()));
-                    
-                //pager.asJsonObjectBuilder());
-
-        //jsonData.add(MyDataAPITest.JSON_DATA_FIELD_NAME, myDataFinder.getSolrDvObjectFilterQuery());
-
+        jsonData.add(MyDataAPITest.JSON_DATA_FIELD_NAME,        
+                        Json.createObjectBuilder()
+                                .add("pagination", pager.asJsonObjectBuilder())
+                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse))
+                                .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
+                                .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
+            );
+                                
         return jsonData.build().toString();
     }
    
     
+    //private String formatSolrDocs(
+    public JsonObjectBuilder formatSolrDocs(SolrQueryResponse solrResponse){
+        
+        if (solrResponse == null){
+            return null;
+        }
+
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        
+        List<String> outputList = new ArrayList<>();
+
+        JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
+
+        for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
+            jsonSolrDocsArrayBuilder.add(doc.toJsonObject(true, true, true));
+            //jsonData.add(JSON_DATA_FIELD_NAME, BigDecimal.ZERO)
+            //outputList.add(doc.toString());
+            //String jsonDoc = doc.toJsonObject(true, true, true).toString();
+            //if (true)return jsonDoc;
+            //outputList.add(doc.toJsonObject(true, true, true).toString());
+            //break;
+        }
+        jsonData.add("solr_docs", jsonSolrDocsArrayBuilder);
+        
+        return jsonData;
+        //return jsonData.toString();
+        //return "{ \"docs\" : [ " + StringUtils.join(outputList, ", ") + "] }";
+
+    }
     
     //@Produces({"application/zip"})
     @Path("test-it")

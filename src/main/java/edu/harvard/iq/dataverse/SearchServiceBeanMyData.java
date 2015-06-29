@@ -521,7 +521,7 @@ public class SearchServiceBeanMyData {
              * should we... let's put into a hash the friendly names of facet
              * categories, indexed by Solr field
              */
-            for (Field fieldObject : staticSearchFields) {
+            /*for (Field fieldObject : staticSearchFields) {
                 String name = fieldObject.getName();
                 String staticSearchField = null;
                 try {
@@ -545,7 +545,7 @@ public class SearchServiceBeanMyData {
                     // stop examining the declared/static fields in the SearchFields object. we found a match
                     break;
                 }
-            }
+            }*/
 
             facetCategory.setFacetLabel(facetLabelList);
             if (!facetLabelList.isEmpty()) {

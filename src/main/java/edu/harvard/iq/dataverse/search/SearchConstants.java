@@ -12,6 +12,11 @@ public class SearchConstants {
     public static final String DATASET = "dataset";
     public static final String FILE = "file";
     
-    
+    // Params used for returning search JSON
+    // See example: http://guides.dataverse.org/en/latest/api/search.html
+    //
+    public static final String SEARCH_API_TOTAL_COUNT = "total_count";
+    public static final String SEARCH_API_START = "start";
+    public static final String SEARCH_API_ITEMS = "items";
 
 }
