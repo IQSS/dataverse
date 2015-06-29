@@ -12,7 +12,13 @@ public class SearchConstants {
     public static final String DATASET = "dataset";
     public static final String FILE = "file";
     
-    // Params used for returning search JSON
+
+    // these are the values we show in the web UI as facets
+    public static final String UI_DATAVERSES = "Dataverses";
+    public static final String UI_DATASETS = "Datasets";
+    public static final String UI_FILES = "Files";
+    
+// Params used for returning search JSON
     // See example: http://guides.dataverse.org/en/latest/api/search.html
     //
     public static final String SEARCH_API_TOTAL_COUNT = "total_count";

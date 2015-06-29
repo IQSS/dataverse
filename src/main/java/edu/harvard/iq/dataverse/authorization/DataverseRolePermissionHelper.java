@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.sql.Array;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,7 +46,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     public Map<Long, Boolean> rolesWithFilePermissions = new HashMap<>();  // { role id : true }
 
     public Map<Long, String> roleNameLookup = new HashMap<>();    // { role id : role name }
-   
+
     public List<List<String>> rolesByDvObjectTable = Lists.newArrayList();
     
     /**
@@ -78,7 +79,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
 
             // Store role name in lookup
             //
-            this.roleNameLookup.put(role.getId(), role.getName());                
+            this.roleNameLookup.put(role.getId(), role.getName());      
         }
         this.loadRolesByDvObjectTable();
     }
@@ -236,6 +237,17 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     
     public List<Entry<Long, String>> getRoleNamesAsArrayList(){
         return new ArrayList<>(roleNameLookup.entrySet()); 
+    }
+    
+    public List<String[]> getRoleInfoForCheckboxes(){
+        
+        List<String[]> roleInfoList = new ArrayList<String[]>();
+        
+        for (Entry entry : roleNameLookup.entrySet()){
+            String[] singleRole = { ((Long)entry.getKey()).toString(), (String)entry.getValue() };
+            roleInfoList.add(singleRole);
+        }
+        return roleInfoList;
     }
     
     private void msg(String s){

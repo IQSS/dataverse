@@ -25,7 +25,9 @@ import static java.lang.Math.max;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -85,6 +87,10 @@ public class MyDataPage implements java.io.Serializable {
             return false;
         }
         return true;
+    }
+    
+    public List<String[]> getRoleInfoForCheckboxes(){
+        return this.rolePermissionHelper.getRoleInfoForCheckboxes();
     }
     
     public String init() {
@@ -214,10 +220,7 @@ public class MyDataPage implements java.io.Serializable {
     public DataverseRolePermissionHelper getRolePermissionHelper(){
         return this.rolePermissionHelper;
     }
-    
-    public String getRoleInfo() throws IOException{
-        return "test";     
-    }
+
     
     public String getTestName(){
         return this.testName;//"blah";

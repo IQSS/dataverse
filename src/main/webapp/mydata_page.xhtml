@@ -4,7 +4,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 
   <h:head>
 
@@ -30,7 +31,14 @@
     <div class="row">
         <!-- start filter column -->
         <div class="col-md-3">
-            <hr />
+            <form id="mydata_filter_form" name="mydata_filter_form">
+            <div>
+    <!--label for="exampleInputEmail1">Email address</label-->
+            <input type="text" class="form-control" name="mydata_q" id="mydata_q" placeholder="Search" />
+            </div>
+            <hr />            
+                       
+
             <!-- start dvobject checkboxes -->
             <div id="div_dvobject_types" style="font-size:110%;font-weight:bold;">
                 <div class="checkbox"><label>
@@ -55,12 +63,24 @@
             <div id="div_published_states">
                 <ui:repeat value="#{MyDataPage.publishedStates}" var="pstate">
                     <div class="checkbox"><label>
-                            <input name="published_state" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked" />
+                        <input name="published_state" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
                         #{pstate}
                     </label></div>                
                 </ui:repeat>
             </div>
             <!-- end: publish states -->
+            <!-- start: role states -->
+            <b>Roles</b>
+            <div id="div_role_states">
+            <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
+                <div class="checkbox"><label>
+                    <input name="published_state" id="id_cbox_#{roleInfoList[1].toLowerCase()}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
+                    #{roleInfoList[1]}
+                </label></div>    
+            </ui:repeat>
+            </div>
+           <!-- end: role states -->
+             </form>
         </div><!-- end: filter column -->
         <div class="col-md-9">
             workspace
@@ -77,15 +97,42 @@
             <ui:fragment rendered="#{MyDataPage.hasFilterParams()}">
             dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
             </ui:fragment>
+    
+            function submitMyDataSearch(){
+                alert($('#mydata_filter_form').serialize());
+            }
+            
           
           $(document).ready(function() {
              // var env = new nunjucks.Environment(new nunjucks.WebLoader('/mydata_templates'), true);
               //nunjucks.configure({ autoescape: true });
-
-              var selected = [];
-              $('#checkboxes input:checked').each(function() {
-                selected.push($(this).attr('name'));
+              
+              // Capture checkbox clicks
+              //
+              $('input:checkbox').on('click',function(){ 
+                  var checkedId=$(this,'input').attr('id');
+                  //alert(checkedId);
+                 submitMyDataSearch();
               });
+              
+              // Capture pressing return in search box
+              $('#mydata_searchbox').keypress(function(e) {
+                if (e.which == '13') {
+                    submitMyDataSearch();
+                }
+              });
+              
+              $( "#mydata_filter_form" ).submit(function( event ) {
+                //alert( "Handler for .submit() called." );
+                event.preventDefault();
+                submitMyDataSearch();
+
+              });
+
+              //var selected = [];
+              //$('#checkboxes input:checked').each(function() {
+              //  selected.push($(this).attr('name'));
+              //});
            });
     </script>
 </ui:define>
