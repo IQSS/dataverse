@@ -138,9 +138,21 @@ public class MyDataFinder {
         }
         
         List<String> filterQueries = new ArrayList<>();
-        
+
+        // FQ by dvObjectType
+        //
         filterQueries.add(this.filterParams.getSolrFragmentForDvObjectType());
+        //fq=dvObjectType:(dataverses+OR+datasets+OR+files)
+        //fq=(dvObjectType:Dataset)
+        //filterQueries.add("dvObjectType:(dataverses OR datasets OR files)");
+        
+        // FQ by Publication Status
+        //
         filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
+        //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
+
+        // FQ by entityId (dvObject id) and parentId (dvObject ownerId)
+        //
         filterQueries.add(this.getSolrDvObjectFilterQuery());
         
         return filterQueries;

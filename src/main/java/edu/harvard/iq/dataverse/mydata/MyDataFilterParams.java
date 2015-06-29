@@ -10,6 +10,7 @@ import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ public class MyDataFilterParams {
     // -----------------------------------
     // Static Reference objects
     // -----------------------------------
-    public static final List<String> defaultDvObjectTypes = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING);
+    public static final List<String> defaultDvObjectTypes = Arrays.asList(DvObject.DATAVERSE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
     
     public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
@@ -37,9 +38,9 @@ public class MyDataFilterParams {
     static
     {
         sqlToSolrSearchMap = new HashMap<>();
-        sqlToSolrSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchConstants.DATAVERSE);
-        sqlToSolrSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.DATASET);
-        sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.FILE);
+        sqlToSolrSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchConstants.DATAVERSES);
+        sqlToSolrSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.DATASETS);
+        sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.FILES);
     }
     
     // -----------------------------------
@@ -50,7 +51,7 @@ public class MyDataFilterParams {
     private List<String> publicationStatuses;
     
     //private ArrayList<DataverseRole> roles;
-    private String searchTerm = "*";
+    private String searchTerm = "*:*";
     
     // -----------------------------------
     // Error checking
@@ -58,7 +59,7 @@ public class MyDataFilterParams {
     private boolean errorFound = false;
     private String errorMessage = null;
     
-   
+
     /**
      * Minimal filter params with defaults set
      * 
@@ -179,13 +180,18 @@ public class MyDataFilterParams {
         if ((this.dvObjectTypes == null)||(this.dvObjectTypes.isEmpty())){
             throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
         }
-
-        String valStr = StringUtils.join(this.dvObjectTypes, " OR ");
+        
+        List<String> solrTypes = new ArrayList<>();
+        for (String dtype : this.dvObjectTypes){
+            solrTypes.add(MyDataFilterParams.sqlToSolrSearchMap.get(dtype));
+        }
+                
+        String valStr = StringUtils.join(solrTypes, " OR ");
         if (this.dvObjectTypes.size() > 1){
             valStr = "(" + valStr + ")";
         }
         
-        return  "(" + SearchConstants.SOLR_DVOBJECT_TYPES + ":" + valStr + ")";
+        return  SearchConstants.SOLR_DVOBJECT_TYPES + ":" + valStr;// + ")";
     }
 
     public String getSolrFragmentForPublicationStatus(){
@@ -219,4 +225,7 @@ public class MyDataFilterParams {
     // end: Convenience methods for dvObjectTypes
     // --------------------------------------------
 
+    public String getSearchTerm(){
+       return this.searchTerm;
+   }
 }

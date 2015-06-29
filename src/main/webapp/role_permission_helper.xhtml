@@ -61,6 +61,17 @@
                   <div class="col-md-2"></div>
               </div>
               <p> 
+                    <b>getSolrDocs</b>
+                    <div class="well"><h:outputText value="#{RolePermissionHelperPage.getSolrDocs()}" escape="false" /> </div>
+                    <script>
+                        var solrDoc = <h:outputText value="#{RolePermissionHelperPage.getSolrDocs()}" escape="false" />;
+                        if (solrDoc.dataset_citation){
+                            alert(solrDoc.dataset_citation);
+                        }else{
+                            alert(solrDoc.name);
+                        }
+                    </script>
+
                     <!--pre><h:outputText value="#{RolePermissionHelperPage.getMyDataFinderInfo()}" escape="false" /> </pre-->
                     <b>Results from FilterParams</b>
                     
@@ -72,20 +83,19 @@
                             <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().solrFragmentForDvObjectType}" escape="false" /> </pre>
                             <b>solrFragmentForPublicationStatus</b>
                             <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().solrFragmentForPublicationStatus}" escape="false" /> </pre>
+                            <b>solrDvObjectFilterQuery</b>
+                            <pre>
+                                <h:outputText rendered="#{!RolePermissionHelperPage.myDataFinder.hasError()}" value="#{RolePermissionHelperPage.myDataFinder.solrDvObjectFilterQuery}" escape="false" />
+                                <h:outputText rendered="#{RolePermissionHelperPage.myDataFinder.hasError()}" value="Error found in earlier step" escape="false" />
+                            </pre>
                         </div>
                     </ui:fragment>
                     <br />
                     <b>Results from MyDataFinder</b>
                     <div style="padding: 10px 30px;">
                         <pre><h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /></pre>
-                        <b>solr query</b>
-
-                        <pre>
-                            <h:outputText rendered="#{!RolePermissionHelperPage.myDataFinder.hasError()}" value="#{RolePermissionHelperPage.myDataFinder.solrDvObjectFilterQuery}" escape="false" />
-                            <h:outputText rendered="#{RolePermissionHelperPage.myDataFinder.hasError()}" value="Error found in earlier step" escape="false" />
-                        </pre>
                     </div>
-
+                    
                     <b>getSomeJSON:</b>
                     
                     <pre><h:outputText value="#{RolePermissionHelperPage.someJSON}" escape="false" /> </pre>
