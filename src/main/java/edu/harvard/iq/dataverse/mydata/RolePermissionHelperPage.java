@@ -81,6 +81,8 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     }
     
     public String init() {
+        msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+
         msgt("----------- init() -------------");
         List<DataverseRole> roleList = dataverseRoleService.findAll();
         msgt("roles: " + roleList.toString());
@@ -117,17 +119,17 @@ public class RolePermissionHelperPage implements java.io.Serializable {
                         //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         paginationStart,
                         dataRelatedToMe,
-                        numResultsPerPage
+                        10
                 );
                 msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
-                /*
-                User user,
-                Dataverse dataverse,
-                String query, 
-                List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-                */
+                
+                //User user,
+                //Dataverse dataverse,
+                //String query, 
+                //List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+                
             } catch (SearchException ex) {
                 solrQueryResponse = null;
                 Logger.getLogger(RolePermissionHelperPage.class.getName()).log(Level.SEVERE, null, ex);

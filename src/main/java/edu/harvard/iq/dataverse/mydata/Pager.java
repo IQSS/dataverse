@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import com.google.gson.JsonArray;
 import java.io.IOException;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -12,6 +13,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonObjectBuilder;
 import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
 
@@ -292,40 +297,45 @@ public class Pager {
         }
     }
     
-    public String asJSONString() throws JSONException{
-        JSONObject obj = new JSONObject("{\"dtype\": \"Dataverse\",\"entityId\":100}");
+    public String asJSONString(){
+        return this.asJsonObjectBuilder().build().toString();
+    }
+    
+    public JsonObjectBuilder asJsonObjectBuilder(){
         
-        obj.put("isNecessary", this.isPagerNecessary());
+        JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
+                
+        jsonPageInfo.add("isNecessary", this.isPagerNecessary());
         if (!this.isPagerNecessary()){
-            return obj.toString();
+            return jsonPageInfo;
         }
-        
-        Long entityId = obj.getLong("entityId");
-        if (entityId==100){
-            //obj.put("HAHAHA", "ADDED it back");
-        }
-        String dtype = obj.getString("dtype");
-        if (dtype.contentEquals("Dataverse")){
-            obj.put("dype", "It's a dataverse");
-        }
-        
-        obj.put("numResults", this.numResults);
-        obj.put("docsPerPage", this.docsPerPage);
-        obj.put("selectedPageNumber", this.selectedPageNumber);
 
-        obj.put("pageCount", this.pageCount);
-        obj.put("pageNumberList", this.pageNumberList);
+        jsonPageInfo.add("numResults", this.numResults);
+        jsonPageInfo.add("docsPerPage", this.docsPerPage);
+        jsonPageInfo.add("selectedPageNumber", this.selectedPageNumber);
+
+        jsonPageInfo.add("pageCount", this.pageCount);
+
+        // --------------------
+        // pageNumberList
+        // --------------------
+        JsonArrayBuilder jsonPageNumberArrayBuilder = Json.createArrayBuilder();
+        for (int pg : this.pageNumberList){
+            jsonPageNumberArrayBuilder.add(pg);
+        }
+        jsonPageInfo.add("pageNumberList", jsonPageNumberArrayBuilder);
+        // --------------------
         
-        obj.put("hasPreviousPageNumber", this.hasPreviousPageNumber());
-        obj.put("previousPageNumber", this.previousPageNumber);
+        jsonPageInfo.add("hasPreviousPageNumber", this.hasPreviousPageNumber());
+        jsonPageInfo.add("previousPageNumber", this.previousPageNumber);
         
-        obj.put("hasNextPageNumber", this.hasNextPageNumber());
-        obj.put("nextPageNumber", this.nextPageNumber);
+        jsonPageInfo.add("hasNextPageNumber", this.hasNextPageNumber());
+        jsonPageInfo.add("nextPageNumber", this.nextPageNumber);
         
-        obj.put("startCardNumber", this.startCardNumber);
-        obj.put("endCardNumber", this.endCardNumber);
+        jsonPageInfo.add("startCardNumber", this.startCardNumber);
+        jsonPageInfo.add("endCardNumber", this.endCardNumber);
         
-        return obj.toString();
+        return jsonPageInfo;
              
     }
     

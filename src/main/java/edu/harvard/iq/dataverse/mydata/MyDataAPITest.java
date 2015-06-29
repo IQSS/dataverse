@@ -5,31 +5,34 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.SearchServiceBeanMyData;
+import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.Access;
-import edu.harvard.iq.dataverse.api.BundleDownloadInstance;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static java.lang.Math.max;
+import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SortBy;
 import java.math.BigDecimal;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
 
@@ -40,11 +43,37 @@ import org.primefaces.json.JSONObject;
 @Path("mydata")
 public class MyDataAPITest extends AbstractApiBean {
 
-    @Inject
-    DataverseSession session;
+    private static final Logger logger = Logger.getLogger(MyDataAPITest.class.getCanonicalName());
 
-    private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
+    @Inject
+    DataverseSession session;    
+
+    @EJB
+    DataverseRoleServiceBean dataverseRoleService;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
+    @EJB
+    DvObjectServiceBean dvObjectServiceBean;
+    @EJB
+    SearchServiceBeanMyData searchService;
     
+    private List<DataverseRole> roleList;
+    private DataverseRolePermissionHelper rolePermissionHelper;
+    private List<String> defaultDvObjectTypes = MyDataFilterParams.defaultDvObjectTypes;
+    private MyDataFinder myDataFinder;
+    private SolrQueryResponse solrQueryResponse;
+
+    public static final String JSON_SUCCESS_FIELD_NAME = "success";
+    public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
+    public static final String JSON_DATA_FIELD_NAME = "data";
+    
+    /**
+     * Constructor
+     * 
+     */
+    public MyDataAPITest(){
+           
+    }
     
     private int randInt(int min, int max) {
         Random rand = new Random();
@@ -80,33 +109,99 @@ public class MyDataAPITest extends AbstractApiBean {
     public String retrieveTestPager(@QueryParam("selectedPage") int selectedPage) throws JSONException{
         
         return this.getRandomPagerPager(selectedPage).asJSONString();
-        /*
-        JSONObject jsonData = new JSONObject();
-        jsonData.put("name", "foo");
-        jsonData.put("num", new Integer(100));
-        jsonData.put("balance", new Double(1000.21));
-        jsonData.put("is_vip", new Boolean(true));
-
-        if (session == null){
-            jsonData.put("has-session", false);
-        } else{
-            jsonData.put("has-session", true);
-            if (session.getUser()==null){
-                jsonData.put("has-user", false);
-            }else{
-                jsonData.put("has-user", true);
-                if (session.getUser().isAuthenticated()){
-                    jsonData.put("auth-status", "AUTHENTICATED");
-                    AuthenticatedUser authUser = (AuthenticatedUser)session.getUser();
-                    jsonData.put("username", authUser.getIdentifier());
-                }else{
-                    jsonData.put("auth-status", "GET OUT - NOT AUTHENTICATED");
-                }
-            }
-            
-        }
-        return jsonData.toString();*/
     }
+    
+    @Path("initial")
+    @GET
+    @Produces({"application/json"})
+    public String retrieveMyDataInitialCall(@QueryParam("user") String userIdentifier) throws JSONException{ //String myDataParams) {
+
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+
+        roleList = dataverseRoleService.findAll();
+        rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
+        
+        // for testing
+        //
+        if (userIdentifier==null){
+            logger.warning("retrieveMyDataInitialCall: ADmin test - REMOVE REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE ");
+            userIdentifier = "dataverseAdmin";  
+        }
+        
+        List<String> dtypes = this.defaultDvObjectTypes;
+
+        // ---------------------------------
+        // (1) Initialize filterParams and check for Errors 
+        // ---------------------------------
+        MyDataFilterParams filterParams = new MyDataFilterParams(userIdentifier, dtypes, null, null);
+        if (filterParams.hasError()){
+            jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, false);
+            jsonData.add(MyDataAPITest.JSON_ERROR_MSG_FIELD_NAME, filterParams.getErrorMessage());
+            return jsonData.build().toString();
+        }
+        
+        // ---------------------------------
+        // (2) Initialize MyDataFinder and check for Errors 
+        // ---------------------------------
+        myDataFinder = new MyDataFinder(rolePermissionHelper,
+                                        roleAssigneeService,
+                                        dvObjectServiceBean);
+        this.myDataFinder.runFindDataSteps(filterParams);
+        if (myDataFinder.hasError()){
+            jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, false);
+            jsonData.add(MyDataAPITest.JSON_ERROR_MSG_FIELD_NAME, myDataFinder.getErrorMessage());
+            return jsonData.build().toString();
+        }
+
+        // ---------------------------------
+        // (3) Make Solr Query
+        // ---------------------------------
+        int paginationStart = 1;
+            boolean dataRelatedToMe = true;
+            int numResultsPerPage = 10;
+        try {
+                solrQueryResponse = searchService.search(
+                        null, // no user
+                        null, // subtree, default it to Dataverse for now
+                        "*", //this.filterParams.getSearchTerm(),
+                        this.myDataFinder.getSolrFilterQueries(),//filterQueries,
+                        SearchFields.NAME_SORT, SortBy.ASCENDING,
+                        //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
+                        paginationStart,
+                        dataRelatedToMe,
+                        10
+                );
+                msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
+                msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
+                msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
+                
+                //User user,
+                //Dataverse dataverse,
+                //String query, 
+                //List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+                
+            } catch (SearchException ex) {
+                solrQueryResponse = null;
+                Logger.getLogger(RolePermissionHelperPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+         // ---------------------------------
+        // (x) Add pagingation
+        // ---------------------------------
+        Pager pager = new Pager(111, 10, 3);
+        
+        jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, true);
+        jsonData.add(MyDataAPITest.JSON_DATA_FIELD_NAME, 
+                        Json.createObjectBuilder().add("pagination", 
+                                    pager.asJsonObjectBuilder()));
+                    
+                //pager.asJsonObjectBuilder());
+
+        //jsonData.add(MyDataAPITest.JSON_DATA_FIELD_NAME, myDataFinder.getSolrDvObjectFilterQuery());
+
+        return jsonData.build().toString();
+    }
+   
+    
     
     //@Produces({"application/zip"})
     @Path("test-it")
@@ -144,5 +239,15 @@ public class MyDataAPITest extends AbstractApiBean {
         
         
         //return okResponse(obj);
+    }
+    
+    private void msg(String s){
+        System.out.println(s);
+    }
+    
+    private void msgt(String s){
+        msg("-------------------------------");
+        msg(s);
+        msg("-------------------------------");
     }
 }        

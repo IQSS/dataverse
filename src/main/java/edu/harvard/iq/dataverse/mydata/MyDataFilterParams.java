@@ -10,6 +10,7 @@ import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -191,7 +192,7 @@ public class MyDataFilterParams {
             valStr = "(" + valStr + ")";
         }
         
-        return  SearchConstants.SOLR_DVOBJECT_TYPES + ":" + valStr;// + ")";
+        return  SearchFields.TYPE + ":" + valStr;// + ")";
     }
 
     public String getSolrFragmentForPublicationStatus(){
@@ -204,7 +205,7 @@ public class MyDataFilterParams {
             valStr = "(" + valStr + ")";
         }
         
-        return  "(" + SearchConstants.SOLR_PUBLICATION_STATUSES + ":" + valStr + ")";
+        return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 
     public String getDvObjectTypesAsJSON() throws JSONException{
