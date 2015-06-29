@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui">
+
+  <h:head>
+
+  </h:head>
+
+  <h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+      <ui:param name="pageTitle" value="Role/Permission Relationships - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+      <ui:param name="showDataverseHeader" value="false"/>
+      <ui:define name="body">
+          <f:metadata>
+                <ui:remove>
+                    <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
+                    <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
+                    <f:viewParam name="version" value="#{DatasetPage.version}"/>
+                    <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
+                    <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
+                </ui:remove>
+                    <f:viewAction action="#{MyDataPage.init}" />
+          </f:metadata>
+
+    <!-- start: row -->
+    <div class="row">
+        <!-- start filter column -->
+        <div class="col-md-3">
+            <hr />
+            <!-- start dvobject checkboxes -->
+            <div id="div_dvobject_types" style="font-size:110%;font-weight:bold;">
+                <div class="checkbox"><label>
+                    <input name="dvobject_types" id="id_cbox_dv_dataverse" type="checkbox" value="Dataverse" checked="checked" />
+                    <i class="icon-dataverse text-icon-inline"></i>
+                    <span class="facetTypeDataverse">Dataverses <span id="idDataverseCount">(58,270)</span></span>
+                </label></div>
+                <div class="checkbox"><label>
+                    <input name="dvobject_types" id="id_cbox_dv_dataset" type="checkbox" value="Dataset" checked="checked" />
+                    <i class="icon-dataset text-icon-inline"></i>
+                    <span class="facetTypeDataset">Datasets <span id="idDatasetCount">(58,270)</span></span>
+                </label></div>
+                <div class="checkbox"><label>
+                    <input name="dvobject_types" id="id_cbox_dv_file" type="checkbox" value="DataFile" />
+                    <i class="icon-file text-icon-inline"></i>
+                        <span class="facetTypeFile">Files <span id="idFileCount">(58,270)</span></span>
+                </label></div>
+            </div>
+            <!-- end dvobject checkboxes -->
+            <!-- start: publish states -->
+            <b>Publication Status</b>
+            <div id="div_published_states">
+                <ui:repeat value="#{MyDataPage.publishedStates}" var="pstate">
+                    <div class="checkbox"><label>
+                            <input name="published_state" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked" />
+                        #{pstate}
+                    </label></div>                
+                </ui:repeat>
+            </div>
+            <!-- end: publish states -->
+        </div><!-- end: filter column -->
+        <div class="col-md-9">
+            workspace
+        </div>
+        
+                <!--
+                <li><label for="id_dvobject_types_0"><input checked="checked" id="id_dvobject_types_0" name="dvobject_types" type="checkbox" value="dataverses" /> Dataverses</label></li>
+                <li><label for="id_dvobject_types_1"><input checked="checked" id="id_dvobject_types_1" name="dvobject_types" type="checkbox" value="datasets" /> Datasets</label></li>
+                <li><label for="id_dvobject_types_2"><input checked="checked" id="id_dvobject_types_2" name="dvobject_types" type="checkbox" value="files" /> Files</label></li>
+                -->
+    </div><!-- end row -->
+    <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script>
+            <ui:fragment rendered="#{MyDataPage.hasFilterParams()}">
+            dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
+            </ui:fragment>
+          
+          $(document).ready(function() {
+             // var env = new nunjucks.Environment(new nunjucks.WebLoader('/mydata_templates'), true);
+              //nunjucks.configure({ autoescape: true });
+
+              var selected = [];
+              $('#checkboxes input:checked').each(function() {
+                selected.push($(this).attr('name'));
+              });
+           });
+    </script>
+</ui:define>
+    </ui:composition>
+  </h:body>
+</html>

@@ -122,7 +122,8 @@ public class MyDataAPITest extends AbstractApiBean {
     public String retrieveMyDataInitialCall(@QueryParam("user") String userIdentifier) throws JSONException{ //String myDataParams) {
 
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
-
+       
+        
         roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
         

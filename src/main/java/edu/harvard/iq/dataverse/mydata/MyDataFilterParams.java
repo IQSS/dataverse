@@ -9,13 +9,18 @@ import edu.harvard.iq.dataverse.DvObject;
 import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
@@ -43,6 +48,16 @@ public class MyDataFilterParams {
         sqlToSolrSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.DATASETS);
         sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.FILES);
     }
+    
+    public static final HashMap<String, String> userInterfaceToSqlSearchMap ;
+    static
+    {
+        userInterfaceToSqlSearchMap = new HashMap<>();
+        userInterfaceToSqlSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchConstants.UI_DATAVERSES);
+        userInterfaceToSqlSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.UI_DATAVERSES);
+        userInterfaceToSqlSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.UI_FILES);
+    }
+    
     
     // -----------------------------------
     // Filter parameters
@@ -208,18 +223,30 @@ public class MyDataFilterParams {
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 
-    public String getDvObjectTypesAsJSON() throws JSONException{
+    public String getDvObjectTypesAsJSONString(){
         
-        Map m1 = new HashMap();     
-        m1.put(MyDataFilterParams.sqlToSolrSearchMap.get(DvObject.DATAVERSE_DTYPE_STRING), this.areDataversesIncluded());
-        m1.put(MyDataFilterParams.sqlToSolrSearchMap.get(DvObject.DATASET_DTYPE_STRING), this.areDatasetsIncluded());
-        m1.put(MyDataFilterParams.sqlToSolrSearchMap.get(DvObject.DATAFILE_DTYPE_STRING), this.areFilesIncluded());
+        return this.getDvObjectTypesAsJSON().build().toString();
+    }
+    
+    public JsonObjectBuilder getDvObjectTypesAsJSON(){
         
-        JSONObject jsonData = new JSONObject();
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
-        jsonData.put("dvobjectTypes", m1);
+        jsonArray.add(Json.createObjectBuilder().add("value", DvObject.DATAVERSE_DTYPE_STRING)
+                            .add("label", SearchConstants.UI_DATAVERSES)
+                            .add("selected", this.areDataversesIncluded()))
+                .add(Json.createObjectBuilder().add("value", DvObject.DATASET_DTYPE_STRING)
+                            .add("label", SearchConstants.UI_DATASETS)
+                            .add("selected", this.areDatasetsIncluded()))
+                .add(Json.createObjectBuilder().add("value", DvObject.DATAFILE_DTYPE_STRING)
+                            .add("label", SearchConstants.UI_FILES)
+                            .add("selected", this.areFilesIncluded())
+                );
         
-        return jsonData.toString();
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        jsonData.add(SearchFields.TYPE, jsonArray);
+        
+        return jsonData;
     }
     
     // --------------------------------------------
