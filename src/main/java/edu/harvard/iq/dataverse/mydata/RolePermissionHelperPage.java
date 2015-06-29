@@ -74,10 +74,10 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
         String userIdentifier = "dataverseAdmin";
-        List<String> dtypes = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING);//, DATAFILE_DTYPE_STRING);
-    
-        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes);
         
+        List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
+        //List<String> dtypes = new ArrayList<>();
+        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes);
         
         this.myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,

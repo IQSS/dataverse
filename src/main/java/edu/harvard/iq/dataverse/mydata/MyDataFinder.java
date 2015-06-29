@@ -88,7 +88,7 @@ public class MyDataFinder {
     private ArrayList<Long> parentIds;
     */
     
-    public void runFindDataSteps(String userIdentifier){
+    /*public void runFindDataSteps(String userIdentifier){
         this.userIdentifier = userIdentifier;
         msgt("runFindDataSteps: " + userIdentifier);
         if (!runStep1RoleAssignments()){
@@ -100,11 +100,18 @@ public class MyDataFinder {
         if (!fileGrandparentFileIds.isEmpty()){
             runStep3FilePermsAssignedAtDataverse();
         }        
-    }
+    }*/
 
     public void runFindDataSteps(MyDataFilterParams filterParams){
+        
+      
         this.filterParams = filterParams;
         this.userIdentifier = this.filterParams.getUserIdentifier();
+        
+        if (this.filterParams.hasError()){
+            this.addErrorMessage(filterParams.getErrorMessage());
+            return;
+        }
         
         msgt("runFindDataSteps: " + this.userIdentifier);
         if (!runStep1RoleAssignments()){
@@ -221,11 +228,10 @@ public class MyDataFinder {
     
     public String getTestString(){
         
-        
-        if (this.rolePermissionHelper == null){
-            return "rolePermissionHelper is null";
+        if (this.hasError()){
+            return this.getErrorMessage();
         }
-        
+                    
         List<String> outputList = new ArrayList<>();
         
         // ----------------------

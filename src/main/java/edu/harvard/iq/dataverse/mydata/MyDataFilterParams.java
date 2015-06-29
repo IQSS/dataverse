@@ -6,7 +6,11 @@
 package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.DvObject;
+import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
+import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +29,22 @@ import org.primefaces.json.JSONObject;
  */
 public class MyDataFilterParams {
  
+    public static final List<String> defaultDvObjectTypes = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING);
+    
+    public static final HashMap<String, String> sqlToSolrSearchMap ;
+    static
+    {
+        sqlToSolrSearchMap = new HashMap<>();
+        sqlToSolrSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchConstants.DATAVERSE);
+        sqlToSolrSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.DATASET);
+        sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.FILE);
+    }
+    
     @NotNull 
     @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "userIdentifier has invalid characters (only letters/numbers)")
     private String userIdentifier;
 
-    @NotEmpty(message = "Please check at least one of Dataverses, Datasets, or Files.")
+    @NotEmpty(message = "Please select one of Dataverses, Datasets, Files.")
     private List<String> dvObjectTypes;
     
     //private ArrayList<DataverseRole> roles;
@@ -40,7 +55,18 @@ public class MyDataFilterParams {
     private boolean errorFound = false;
     private String errorMessage = null;
     
+   
+    
     public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes){
+
+        if (userIdentifier==null){
+            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null");
+        }
+
+        if (dvObjectTypes==null){
+            throw new NullPointerException("MyDataFilterParams constructor: dvObjectTypes cannot be null");
+        }
+        
         this.userIdentifier = userIdentifier;
         //this.roles = roles;
         this.dvObjectTypes = dvObjectTypes;
@@ -49,9 +75,19 @@ public class MyDataFilterParams {
     
     public void checkParams(){
         
+        if ((this.userIdentifier == null)||(this.userIdentifier.isEmpty())){
+            this.addError("Sorry!  No user was found!");
+            return;
+        }
+        
+        if ((this.dvObjectTypes == null)||(this.dvObjectTypes.isEmpty())){
+            this.addError("No results. Please select one of Dataverses, Datasets, Files.");
+            return;
+        }
+        
         for (String dtype : this.dvObjectTypes){
             if (!DvObject.DTYPE_LIST.contains(dtype)){
-                this.addError("Sorry!  The type '" + dtype + "' was not found.");
+                this.addError("Sorry!  The type '" + dtype + "' is not known.");
                 return;
             }               
         }        
@@ -63,6 +99,10 @@ public class MyDataFilterParams {
     
     public String getUserIdentifier(){
         return this.userIdentifier;
+    }
+    
+    public String getErrorMessage(){
+        return this.errorMessage;
     }
     
     public boolean hasError(){
@@ -100,9 +140,9 @@ public class MyDataFilterParams {
     public String getDvObjectTypesAsJSON() throws JSONException{
         
         Map m1 = new HashMap();     
-        m1.put(DvObject.DATAVERSE_DTYPE_STRING, this.areDataversesIncluded());
-        m1.put(DvObject.DATASET_DTYPE_STRING, this.areDatasetsIncluded());
-        m1.put(DvObject.DATAFILE_DTYPE_STRING, this.areFilesIncluded());
+        m1.put(MyDataFilterParams.sqlToSolrSearchMap.get(DvObject.DATAVERSE_DTYPE_STRING), this.areDataversesIncluded());
+        m1.put(MyDataFilterParams.sqlToSolrSearchMap.get(DvObject.DATASET_DTYPE_STRING), this.areDatasetsIncluded());
+        m1.put(MyDataFilterParams.sqlToSolrSearchMap.get(DvObject.DATAFILE_DTYPE_STRING), this.areFilesIncluded());
         
         JSONObject jsonData = new JSONObject();
 

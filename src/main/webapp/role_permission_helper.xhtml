@@ -66,10 +66,15 @@
                     <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams()}" escape="false" /> </pre>
                     <br />
                     <b>Results from MyDataFinder</b>
-                    <h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /> 
-                    <b>solr query</b>
-                    <pre><h:outputText value="#{RolePermissionHelperPage.myDataFinder.solrDvObjectFilterQuery}" escape="false" /></pre>
+                    <pre><h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /></pre>
+                    <div style="padding: 10px 30px;">
+                        <b>solr query</b>
 
+                        <pre>
+                            <h:outputText rendered="#{!RolePermissionHelperPage.myDataFinder.hasError()}" value="#{RolePermissionHelperPage.myDataFinder.solrDvObjectFilterQuery}" escape="false" />
+                            <h:outputText rendered="#{RolePermissionHelperPage.myDataFinder.hasError()}" value="Error found in earlier step" escape="false" />
+                        </pre>
+                    </div>
 
                     <b>getSomeJSON:</b>
                     
