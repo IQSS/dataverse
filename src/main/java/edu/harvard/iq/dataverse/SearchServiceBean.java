@@ -142,7 +142,7 @@ public class SearchServiceBean {
         if (onlyDataRelatedToMe && user instanceof AuthenticatedUser ){
             //AuthenticatedUser user, ArrayList<DataverseRole> roles, ArrayList<String> dvObjectTypes, Boolean publishedOnly, String searchTerm
             AuthenticatedUser au = (AuthenticatedUser) user;
-            MyDataQueryHelper qHelp = new MyDataQueryHelper(au, null, null, false, null, myDataQueryHelperServiceBean);   
+            MyDataQueryHelper qHelp = new MyDataQueryHelper(au, myDataQueryHelperServiceBean);   
            solrQuery.addFilterQuery(qHelp.getSolrQueryString());
         }
         System.out.print("SolrQuery: " + Arrays.toString(solrQuery.getFilterQueries()));
@@ -471,6 +471,10 @@ public class SearchServiceBean {
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
+            if (onlyDataRelatedToMe && user instanceof AuthenticatedUser) {
+                AuthenticatedUser au = (AuthenticatedUser) user;
+                solrSearchResult.setUserRole(initializeCardRoles(entityid, au));
+            }
             /**
              * @todo start using SearchConstants class here
              */
@@ -724,5 +728,9 @@ public class SearchServiceBean {
 
     public String getCapitalizedName(String name) {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+    
+    private List<String> initializeCardRoles(Long entityId, AuthenticatedUser au) {
+        return myDataQueryHelperServiceBean.getRolesOnDVO(au, entityId);
     }
 }

@@ -83,6 +83,7 @@ public class SolrSearchResult {
     //Determine if the search result is owned by any of the dvs in the tree of the DV displayed
     private boolean isInTree;
     private float score;
+    private  List<String> userRole;
 
     public boolean isIsInTree() {
         return isInTree;
@@ -770,6 +771,14 @@ public class SolrSearchResult {
         } else {
             return null;
         }
+    }
+    
+    public List<String> getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(List<String> userRole) {
+        this.userRole = userRole;
     }
 
 }
