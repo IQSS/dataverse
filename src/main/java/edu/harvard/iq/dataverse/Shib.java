@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -215,6 +216,7 @@ public class Shib implements java.io.Serializable {
     private String debugSummary;
 //    private boolean debug = false;
     private String emailAddress;
+    private boolean useHeaders;
 
     public enum State {
 
@@ -226,13 +228,17 @@ public class Shib implements java.io.Serializable {
 
     public void init() {
         state = State.INIT;
+        useHeaders = systemConfig.isShibUseHeaders();
+        if (isDebug()) {
+            printHeaders();
+        }
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
 
         possiblyMutateRequestInDev();
 
         try {
-            shibIdp = getRequiredValueFromAttribute(shibIdpAttribute);
+            shibIdp = getRequiredValueFromAssertion(shibIdpAttribute);
         } catch (Exception ex) {
             /**
              * @todo is in an antipattern to throw exceptions to control flow?
@@ -245,19 +251,19 @@ public class Shib implements java.io.Serializable {
         }
         String shibUserIdentifier;
         try {
-            shibUserIdentifier = getRequiredValueFromAttribute(uniquePersistentIdentifier);
+            shibUserIdentifier = getRequiredValueFromAssertion(uniquePersistentIdentifier);
         } catch (Exception ex) {
             return;
         }
         String firstName;
         try {
-            firstName = getRequiredValueFromAttribute(firstNameAttribute);
+            firstName = getRequiredValueFromAssertion(firstNameAttribute);
         } catch (Exception ex) {
             return;
         }
         String lastName;
         try {
-            lastName = getRequiredValueFromAttribute(lastNameAttribute);
+            lastName = getRequiredValueFromAssertion(lastNameAttribute);
         } catch (Exception ex) {
             return;
         }
@@ -273,7 +279,7 @@ public class Shib implements java.io.Serializable {
             }
         }
         try {
-            emailAddress = getRequiredValueFromAttribute(emailAttribute);
+            emailAddress = getRequiredValueFromAssertion(emailAttribute);
         } catch (Exception ex) {
             String testShibIdpEntityId = "https://idp.testshib.org/idp/shibboleth";
             if (shibIdp.equals(testShibIdpEntityId)) {
@@ -284,7 +290,8 @@ public class Shib implements java.io.Serializable {
                 return;
             }
         }
-        internalUserIdentifer = generateFriendlyLookingUserIdentifer(usernameAttribute, emailAttribute);
+        String usernameAssertion = getValueFromAssertion(usernameAttribute);
+        internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
         logger.info("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
 
         /**
@@ -500,6 +507,9 @@ public class Shib implements java.io.Serializable {
      *
      * curl -X DELETE
      * http://localhost:8080/api/admin/settings/:DebugShibAccountType
+     *
+     * Note that setting ShibUseHeaders to true will make this "dev mode" stop
+     * working.
      */
     private void possiblyMutateRequestInDev() {
         switch (getDevShibAccountType()) {
@@ -526,6 +536,14 @@ public class Shib implements java.io.Serializable {
             default:
                 logger.info("Should never reach here");
                 break;
+        }
+    }
+
+    private void printHeaders() {
+        Enumeration headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = (String) headerNames.nextElement();
+            logger.info(headerName + " = " + request.getHeader(headerName));
         }
     }
 
@@ -611,10 +629,10 @@ public class Shib implements java.io.Serializable {
     /**
      * @return The value of a Shib attribute (if non-empty) or null.
      */
-    private String getValueFromAttribute(String attribute) {
-        Object attributeObject = request.getAttribute(attribute);
-        if (attributeObject != null) {
-            String attributeValue = attributeObject.toString();
+    private String getValueFromAssertion(String key) {
+        Object attributeOrHeader = getAttributeOrHeader(key);
+        if (attributeOrHeader != null) {
+            String attributeValue = attributeOrHeader.toString();
             if (!attributeValue.isEmpty()) {
                 return attributeValue;
             }
@@ -622,102 +640,33 @@ public class Shib implements java.io.Serializable {
         return null;
     }
 
-    private String getRequiredValueFromAttribute(String attribute) throws Exception {
-        Object attributeObject = request.getAttribute(attribute);
-        if (attributeObject == null) {
-            String msg = " the attribute \"" + attribute + "\" was null. Please contact support.";
+    private String getRequiredValueFromAssertion(String key) throws Exception {
+        Object attributeOrHeader = getAttributeOrHeader(key);
+        if (attributeOrHeader == null) {
+            String msg = "The SAML assertion for \"" + key + "\" was null. Please contact support.";
             logger.info(msg);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
             throw new Exception(msg);
         }
-        String attributeValue = attributeObject.toString();
+        String attributeValue = attributeOrHeader.toString();
         if (attributeValue.isEmpty()) {
-            throw new Exception(attribute + " was empty");
+            throw new Exception(key + " was empty");
         }
         return attributeValue;
     }
 
-    /**
-     * @todo Move logic to ShibServiceBean
-     */
-    private String generateFriendlyLookingUserIdentifer(String usernameNameAttribute, String emailAttribute) {
-        Object usernameObject = request.getAttribute(usernameNameAttribute);
-        if (usernameObject != null) {
-            String userIdentifier = usernameObject.toString();
-            if (!userIdentifier.isEmpty()) {
-                return userIdentifier;
-            }
-        } else {
-            logger.info("username attribute not sent by IdP");
-        }
-        Object emailObject = request.getAttribute(emailAttribute);
-        if (emailObject != null) {
-            String email = emailObject.toString();
-            if (!email.isEmpty()) {
-                /**
-                 * @todo Just grab the first part of the email
-                 */
-                String[] parts = email.split("@");
-                try {
-                    String firstPart = parts[0];
-                    return firstPart;
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    logger.info("odd email address. no @ sign: " + email);
-                }
-            }
-        } else {
-            logger.info("email attribute not sent by IdP");
-        }
-        logger.info("the best we can do is generate a random UUID");
-        return UUID.randomUUID().toString();
-    }
-
-    /**
-     * @return The best display name we can retrieve or construct based on
-     * attributes received from Shibboleth. Shouldn't be null, maybe "Unknown"
-     *
-     * @deprecated AuthenticatedUserDisplayInfo has no place for a display name.
-     */
-    @Deprecated
-    private String getDisplayName(String displayNameAttribute, String firstNameAttribute, String lastNameAttribute) {
-        Object displayNameObject = request.getAttribute(displayNameAttribute);
-        if (displayNameObject != null) {
-            String displayName = displayNameObject.toString();
-            if (!displayName.isEmpty()) {
-                return displayName;
-            } else {
-                return getDisplayNameFromFirstNameLastName(firstNameAttribute, lastNameAttribute);
-            }
-        } else {
-            return getDisplayNameFromFirstNameLastName(firstNameAttribute, lastNameAttribute);
-        }
-    }
-
-    /**
-     * @return First name plus last name if available, just first name or just
-     * last name or "Unknown".
-     *
-     * @deprecated AuthenticatedUserDisplayInfo has no place for a display name.
-     */
-    @Deprecated
-    private String getDisplayNameFromFirstNameLastName(String firstNameAttribute, String lastNameAttribute) {
+    private Object getAttributeOrHeader(String attribute) {
         /**
-         * @todo Should the first name attribute be required?
+         * @todo Should the prefix be configurable?
          */
-        String firstName = getValueFromAttribute(firstNameAttribute);
-        /**
-         * @todo Should the last name attribute be required?
-         */
-        String lastName = getValueFromAttribute(lastNameAttribute);
-        if (firstName != null && lastName != null) {
-            return firstName + " " + lastName;
-        } else if (firstName != null) {
-            return firstName;
-        } else if (lastName != null) {
-            return lastName;
+        String prefix = "ajp_";
+        Object attributeOrHeader;
+        if (useHeaders) {
+            attributeOrHeader = request.getHeader(prefix + attribute);
         } else {
-            return "Unknown";
+            attributeOrHeader = request.getAttribute(attribute);
         }
+        return attributeOrHeader;
     }
 
     public String getRootDataverseAlias() {

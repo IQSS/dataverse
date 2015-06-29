@@ -260,6 +260,11 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
     }
 
+    public boolean isShibUseHeaders() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibUseHeaders, safeDefaultIfKeyNotFound);
+    }
+
     public boolean isDebugEnabled() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
