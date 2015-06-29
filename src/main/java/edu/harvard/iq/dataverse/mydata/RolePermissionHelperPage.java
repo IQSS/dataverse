@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.mydata;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -137,18 +139,26 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         return null;
     }
     
-    public String getSolrDocs(){
+    public String getSolrDocs() throws JSONException{
+        
         if (solrQueryResponse == null){
             return "(solrQueryResponse is null)";
         }
 
+        //JsonObject jsonData = new JsonObject();
+        
         List<String> outputList = new ArrayList<>();
 
         for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
-            String jsonDoc = doc.toJsonObject(true, true, true).toString();
-            if (true)return jsonDoc;
+            
+            //outputList.add(doc.toString());
+            //String jsonDoc = doc.toJsonObject(true, true, true).toString();
+            //if (true)return jsonDoc;
             outputList.add(doc.toJsonObject(true, true, true).toString());
+            //break;
         }
+        //jsonData.add("docs", (JsonElement) outputList);
+        //return jsonData.toString();
         return "{ \"docs\" : [ " + StringUtils.join(outputList, ", ") + "] }";
 
     }

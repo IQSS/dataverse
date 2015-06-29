@@ -27,6 +27,7 @@
           </f:metadata>
           <div>
               <div id="pagination"></div>
+              <div id="solr_docs">solr_docs</div>
               <div id="divPagerJSON">anything here?</div>
 
               <div class="row">
@@ -63,14 +64,7 @@
               <p> 
                     <b>getSolrDocs</b>
                     <div class="well"><h:outputText value="#{RolePermissionHelperPage.getSolrDocs()}" escape="false" /> </div>
-                    <script>
-                        var solrDoc = <h:outputText value="#{RolePermissionHelperPage.getSolrDocs()}" escape="false" />;
-                        if (solrDoc.dataset_citation){
-                            alert(solrDoc.dataset_citation);
-                        }else{
-                            alert(solrDoc.name);
-                        }
-                    </script>
+                    
 
                     <!--pre><h:outputText value="#{RolePermissionHelperPage.getMyDataFinderInfo()}" escape="false" /> </pre-->
                     <b>Results from FilterParams</b>
@@ -124,7 +118,7 @@
     </table>
          <!--ui:include src="mydata_js_pagination.xhtml"></ui:include-->
          <ui:include src="mydata_pager_render.xhtml"></ui:include>
-
+         
                         
              <h4>roles with dataverse permissions</h4>
             <p>

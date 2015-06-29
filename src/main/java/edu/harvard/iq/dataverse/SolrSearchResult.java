@@ -15,6 +15,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.math.BigDecimal;
 
 public class SolrSearchResult {
 
@@ -343,6 +344,7 @@ public class SolrSearchResult {
                  * we are only supporting non-public searches.
                  */
                 .add("published_at", getDateTimePublished())
+                .add("date_to_display_on_card", this.dateToDisplayOnCard)
                 /**
                  * @todo Expose MIME Type:
                  * https://github.com/IQSS/dataverse/issues/1595

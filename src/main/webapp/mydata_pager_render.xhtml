@@ -21,7 +21,6 @@
             $("#pagination").html('(no pager)');
             return;
         }else{
-            nunjucks.configure({ autoescape: true });
         //var ts = nunjucks.renderString('Hello {{ username }}', { username: 'James' });
             var pagination_html =  nunjucks.render('mydata_templates/mydata.html', pager_info);
             $("#pagination").html(pagination_html);
@@ -50,12 +49,43 @@
              // alert(get_link(variable_name));
         });
     }
+    
+    function displayDocs(solrDocs){
+        console.log(solrDocs);
+        $("#solr_docs").html('clear solrDocs'); // clear existing docs
+        
+
+        var cards_html = '';
+        // not sure why nunjucks template loop wasn't working before
+        $.each( solrDocs.docs, function( index, doc ) {
+            cards_html += nunjucks.render('mydata_templates/cards.html', doc);
+        });
+        $("#solr_docs").html(cards_html);
+       //nunjucks.render('mydata_templates/cards.html', solrDocs);
+       
+       //var cards_html = nunjucks.render('mydata_templates/cards.html', solrDocs.docs[0]);
+       //var cards2_html = nunjucks.render('mydata_templates/cards.html', solrDocs.docs[2]);
+        //$("#solr_docs").html(cards_html + cards2_html);//cards_html);            
+    }
+    
 
     $(document).ready(function() {
-            //var json_info = <h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" />;
+        var env = new nunjucks.Environment(new nunjucks.WebLoader('/mydata_templates'), true);
+        nunjucks.configure({ autoescape: true });
+        
+        //var json_info = <h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" />;
         var json_info = <h:outputText value="#{RolePermissionHelperPage.getRandomPagerJSON()}" escape="false" />;
         makePager(json_info);
-    
+        
+        // experimenting
+        var solrDocs = <h:outputText value="#{RolePermissionHelperPage.getSolrDocs()}" escape="false" />;
+                        
+        if (solrDocs.docs.length){
+            //alert(solrDocs.docs.length);
+            //alert(solrDocs.docs[0].description);
+            displayDocs(solrDocs);
+        }
+         
     });
 </script>
 

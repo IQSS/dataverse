@@ -1,0 +1,21 @@
+{#
+<!--
+   SolrDocs pagination (Nunjucks template: https://mozilla.github.io/nunjucks/templating.html
+-->
+  #}
+      
+{% if type == "dataset" %}
+<div style="border:1px solid #428bca; padding:4px 10px; margin:20px; width:700px;">
+        <div class="card-title-icon-block"><span class="icon-dataset text-info pull-right" title="Dataset"></span>
+            <a href="/dataset.xhtml?persistentId={{ global_id }}" target="_self"><span style="padding:4px 0;">{{ name }}</span></a>
+        </div>
+        <div class="card-preview-icon-block text-center">
+            <a href="/dataset.xhtml?{{ global_id }}" target="_self"><span class="icon-dataset text-info"></span></a>
+        </div><span class="text-muted">{{ date_to_display_on_card }}</span><span class="resultDatasetCitationBlock bg-citation">{{ citation|safe }}</span>
+        <br />{{ description|safe }}                
+</div>   
+{% endif %}
+{# 
+{% for doc in solrDocs.docs %}{{ doc.dtype }}{% endfor %}
+
+ #}
