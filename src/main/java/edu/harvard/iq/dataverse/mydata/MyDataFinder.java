@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -190,6 +191,7 @@ public class MyDataFinder {
         //  If we have the parent of a distinctEntityId in distinctParentIds,
         //  then we query it via the parent
         //        
+        
         List<Long> finalDirectEntityIds = new ArrayList<>();
         for (Long idToCheck : distinctEntityIds){
             if (this.childToParentIds.containsKey(idToCheck)){  // Do we have the parent in our map?
@@ -214,12 +216,12 @@ public class MyDataFinder {
         // Build clauses
         String entityIdClause = null;
         if (distinctEntityIds.size() > 0){
-            entityIdClause = sqf.buildIdQuery(distinctEntityIds, "entityId");
+            entityIdClause = sqf.buildIdQuery(distinctEntityIds, SearchFields.ENTITY_ID);
         }
         
         String parentIdClause = null;
         if (distinctParentIds.size() > 0){
-            parentIdClause = sqf.buildIdQuery(distinctParentIds, "parentId");            
+            parentIdClause = sqf.buildIdQuery(distinctParentIds, SearchFields.PARENT_ID);            
         }
         
         if ((entityIdClause != null) && (parentIdClause != null)){
@@ -389,7 +391,7 @@ public class MyDataFinder {
             switch(dtype){
                 case(DvObject.DATAVERSE_DTYPE_STRING):
                     if (this.idsWithDataversePermissions.containsKey(dvId)){
-                        this.directDataverseIds.add(dvId);  // Direct dataverse
+                        this.directDataverseIds.add(dvId);  // Direct dataverse (no indirect dataverses)
                     }
                     if (this.idsWithDatasetPermissions.containsKey(dvId)){
                         this.datasetParentIds.add(dvId);    // Parent to dataset
