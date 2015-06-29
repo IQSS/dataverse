@@ -77,7 +77,7 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         
         List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
         //List<String> dtypes = new ArrayList<>();
-        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes);
+        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes, null, null);
         
         this.myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
@@ -89,8 +89,8 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         return null;
     }
     
-    public String getFilterParams() throws JSONException{
-        return this.filterParams.getDvObjectTypesAsJSON();
+    public MyDataFilterParams getFilterParams() throws JSONException{
+        return this.filterParams;
     }
     
     public MyDataFinder getMyDataFinder(){

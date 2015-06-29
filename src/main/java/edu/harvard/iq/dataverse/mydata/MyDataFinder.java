@@ -53,6 +53,7 @@ public class MyDataFinder {
     // ----------------------------
     // POPULATED IN STEP 1 (1st query)
     // ----------------------------
+    public Map<Long, Long> childToParentIds = new HashMap();
     public Map<Long, Boolean> idsWithDataversePermissions = new HashMap<>();  // { role id : true }
     public Map<Long, Boolean> idsWithDatasetPermissions = new HashMap<>();  // { role id : true }
     public Map<Long, Boolean> idsWithFilePermissions = new HashMap<>();  // { role id : true }
@@ -126,10 +127,29 @@ public class MyDataFinder {
         
     }
     
+    /**
+     * Get the final queries for the Solr Search object
+     * 
+     * @return 
+     */
+    public List<String> getSolrFilterQueries(){
+        if (this.hasError()){
+            throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyDataFinder object, first check 'hasError()'");
+        }
+        
+        List<String> filterQueries = new ArrayList<>();
+        
+        filterQueries.add(this.filterParams.getSolrFragmentForDvObjectType());
+        filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
+        filterQueries.add(this.getSolrDvObjectFilterQuery());
+        
+        return filterQueries;
+    }
+    
     public String getSolrDvObjectFilterQuery(){
 
         if (this.hasError()){
-            throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyData object,first check 'hasError()'");
+            throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyDataFinder object,first check 'hasError()'");
         }
 
         // Build lists of Ids
@@ -154,6 +174,29 @@ public class MyDataFinder {
         Set<Long> distinctEntityIds = new HashSet<>(entityIds);
         Set<Long> distinctParentIds = new HashSet<>(parentIds);
         
+        // See if we can trim down the list of distinctEntityIds
+        //  If we have the parent of a distinctEntityId in distinctParentIds,
+        //  then we query it via the parent
+        //        
+        List<Long> finalDirectEntityIds = new ArrayList<>();
+        for (Long idToCheck : distinctEntityIds){
+            if (this.childToParentIds.containsKey(idToCheck)){  // Do we have the parent in our map?
+                
+                // Is the parent also in our list of Ids to query?
+                // No, then let's check this id directly
+                //
+                if (!distinctParentIds.contains(this.childToParentIds.get(idToCheck))){
+                    // we are not checking the parent, so add this explicitly
+                    //
+                    finalDirectEntityIds.add(idToCheck);
+                }
+            }
+        }
+        // Set the distinctEntityIds to the finalDirectEntityIds
+        distinctEntityIds = new HashSet<>(finalDirectEntityIds);
+        
+        // Start up a SolrQueryFormatter for building clauses
+        //
         SolrQueryFormatter sqf = new SolrQueryFormatter();
 
         // Build clauses
@@ -238,7 +281,7 @@ public class MyDataFinder {
         // idsWithDatasetPermissions
         // ----------------------
         List<String> idList = new ArrayList<>();
-        outputList.add("<h2>dataset ids: " + this.idsWithDatasetPermissions.size() + "</h2>");
+        outputList.add("<h4>dataset ids: " + this.idsWithDatasetPermissions.size() + "</h4>");
         for (Map.Entry pair : this.idsWithDatasetPermissions.entrySet()) {          
             idList.add(pair.getKey().toString());
         }
@@ -248,7 +291,7 @@ public class MyDataFinder {
         // datasetParentIds
         // ----------------------
         List<String> idList2 = new ArrayList<>();
-        outputList.add("<h2>datasetParentIds ids: " + this.datasetParentIds.size() + "</h2>");
+        outputList.add("<h4>datasetParentIds ids: " + this.datasetParentIds.size() + "</h4>");
         for (Long dpId : this.datasetParentIds) {          
             idList2.add(dpId.toString());
         }
@@ -309,7 +352,7 @@ public class MyDataFinder {
         msgt("runStep2DirectAssignments");
         
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoForMyData(directDvObjectIds);
-        msgt("runStep2DirectAssignments results: " + results.toString());
+        msgt("runStep2DirectAssignments number of results: " + results.size());
 //List<RoleAssignment> results = this.roleAssigneeService.getAssignmentsFor(this.userIdentifier);
         if (results.isEmpty()){
             this.addErrorMessage("Sorry, you have no assigned Dataverses, Datasets, or Files.");
@@ -327,7 +370,9 @@ public class MyDataFinder {
             dvIdAsInteger = (Integer)ra[0];     // ?? Why?
             dvId = new Long(dvIdAsInteger);
             dtype = (String)ra[1];
-            //parentId = (Long)ra[2];
+            parentId = (Long)ra[2];
+            
+            this.childToParentIds.put(dvId, parentId);
             
             switch(dtype){
                 case(DvObject.DATAVERSE_DTYPE_STRING):
@@ -372,7 +417,7 @@ public class MyDataFinder {
         }
         
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoByParentIdForMyData(this.fileGrandparentFileIds);
-        msgt("runStep3FilePermsAssignedAtDataverse results: " + results.toString());
+        msgt("runStep3FilePermsAssignedAtDataverse results count: " + results.size());
         
        if (results.isEmpty()){
             this.addErrorMessage("Sorry, no Dataset were found with those Ids");
@@ -390,14 +435,10 @@ public class MyDataFinder {
             dvIdAsInteger = (Integer)ra[0];     // ?? Why?
             dvId = new Long(dvIdAsInteger);
             dtype = (String)ra[1];
-            //parentId = (Long)ra[2];
-                        
-            /*
-            Long dvId = (Long)ra[0];
-
-            String dtype = (String)ra[1];
-            Long parentId = (Long)ra[2];
-            */
+            parentId = (Long)ra[2];
+            
+            this.childToParentIds.put(dvId, parentId);
+            
             // Should ALWAYS be a Dataset!
             if (dtype.equals(DvObject.DATASET_DTYPE_STRING)){  
                 this.fileParentIds.add(dvId);

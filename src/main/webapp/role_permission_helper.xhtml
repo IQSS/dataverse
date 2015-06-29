@@ -63,11 +63,21 @@
               <p> 
                     <!--pre><h:outputText value="#{RolePermissionHelperPage.getMyDataFinderInfo()}" escape="false" /> </pre-->
                     <b>Results from FilterParams</b>
-                    <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams()}" escape="false" /> </pre>
+                    
+                    <ui:fragment rendered="#{!RolePermissionHelperPage.filterParams.hasError()}">
+                        <div style="padding: 0px 30px;">
+                            <b>dvObjectTypesAsJSON</b>
+                            <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().dvObjectTypesAsJSON}" escape="false" /> </pre>
+                            <b>solrFragmentForDvObjectType</b>
+                            <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().solrFragmentForDvObjectType}" escape="false" /> </pre>
+                            <b>solrFragmentForPublicationStatus</b>
+                            <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().solrFragmentForPublicationStatus}" escape="false" /> </pre>
+                        </div>
+                    </ui:fragment>
                     <br />
                     <b>Results from MyDataFinder</b>
-                    <pre><h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /></pre>
                     <div style="padding: 10px 30px;">
+                        <pre><h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /></pre>
                         <b>solr query</b>
 
                         <pre>

@@ -8,18 +8,13 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DvObject;
 import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
+import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.apache.commons.lang.StringUtils;
 import org.primefaces.json.JSONException;
 import org.primefaces.json.JSONObject;
 
@@ -29,7 +24,14 @@ import org.primefaces.json.JSONObject;
  */
 public class MyDataFilterParams {
  
+    // -----------------------------------
+    // Static Reference objects
+    // -----------------------------------
     public static final List<String> defaultDvObjectTypes = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING);
+    
+    public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
+                                                    IndexServiceBean.getUNPUBLISHED_STRING(),
+                                                    IndexServiceBean.getDRAFT_STRING());
     
     public static final HashMap<String, String> sqlToSolrSearchMap ;
     static
@@ -40,40 +42,72 @@ public class MyDataFilterParams {
         sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.FILE);
     }
     
-    @NotNull 
-    @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "userIdentifier has invalid characters (only letters/numbers)")
+    // -----------------------------------
+    // Filter parameters
+    // -----------------------------------
     private String userIdentifier;
-
-    @NotEmpty(message = "Please select one of Dataverses, Datasets, Files.")
-    private List<String> dvObjectTypes;
+    private List<String> dvObjectTypes;    
+    private List<String> publicationStatuses;
     
     //private ArrayList<DataverseRole> roles;
-    private Boolean publishedOnly = false;
     private String searchTerm = "*";
     
-    // ---------------------------
+    // -----------------------------------
+    // Error checking
+    // -----------------------------------
     private boolean errorFound = false;
     private String errorMessage = null;
     
    
+    /**
+     * Minimal filter params with defaults set
+     * 
+     * @param userIdentifier 
+     */
+    public MyDataFilterParams(String userIdentifier){
+        
+        if ((userIdentifier==null)||(userIdentifier.isEmpty())){
+            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
+        }
+        this.userIdentifier = userIdentifier;
+        this.dvObjectTypes = MyDataFilterParams.defaultPublishedStates;
+        this.publicationStatuses = MyDataFilterParams.defaultPublishedStates;
+        this.checkParams();
+    }
     
-    public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes){
+    /**
+     * @param userIdentifier
+     * @param dvObjectTypes
+     * @param publicationStatuses 
+     * @param searchTerm 
+     */    
+    public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes, List<String> publicationStatuses, String searchTerm){
 
-        if (userIdentifier==null){
-            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null");
+        if ((userIdentifier==null)||(userIdentifier.isEmpty())){
+            throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
         }
 
         if (dvObjectTypes==null){
             throw new NullPointerException("MyDataFilterParams constructor: dvObjectTypes cannot be null");
         }
-        
+
         this.userIdentifier = userIdentifier;
-        //this.roles = roles;
         this.dvObjectTypes = dvObjectTypes;
+
+        if (publicationStatuses == null){
+            this.publicationStatuses = MyDataFilterParams.defaultPublishedStates;
+        }
+        
+        if (searchTerm != null){
+            this.searchTerm = searchTerm;
+        }
+        
         this.checkParams();
     }
     
-    public void checkParams(){
+    
+    
+    private void checkParams(){
         
         if ((this.userIdentifier == null)||(this.userIdentifier.isEmpty())){
             this.addError("Sorry!  No user was found!");
@@ -85,6 +119,11 @@ public class MyDataFilterParams {
             return;
         }
         
+        if ((this.publicationStatuses == null)||(this.publicationStatuses.isEmpty())){
+            this.addError("No results. Please select one of " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ") + ".");
+            return;
+        }
+
         for (String dtype : this.dvObjectTypes){
             if (!DvObject.DTYPE_LIST.contains(dtype)){
                 this.addError("Sorry!  The type '" + dtype + "' is not known.");
@@ -136,7 +175,32 @@ public class MyDataFilterParams {
         return false;
     }
     
-    
+    public String getSolrFragmentForDvObjectType(){
+        if ((this.dvObjectTypes == null)||(this.dvObjectTypes.isEmpty())){
+            throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
+        }
+
+        String valStr = StringUtils.join(this.dvObjectTypes, " OR ");
+        if (this.dvObjectTypes.size() > 1){
+            valStr = "(" + valStr + ")";
+        }
+        
+        return  "(" + SearchConstants.SOLR_DVOBJECT_TYPES + ":" + valStr + ")";
+    }
+
+    public String getSolrFragmentForPublicationStatus(){
+        if ((this.publicationStatuses == null)||(this.publicationStatuses.isEmpty())){
+            throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
+        }
+
+        String valStr = StringUtils.join(this.publicationStatuses, " OR ");
+        if (this.publicationStatuses.size() > 1){
+            valStr = "(" + valStr + ")";
+        }
+        
+        return  "(" + SearchConstants.SOLR_PUBLICATION_STATUSES + ":" + valStr + ")";
+    }
+
     public String getDvObjectTypesAsJSON() throws JSONException{
         
         Map m1 = new HashMap();     
@@ -150,6 +214,7 @@ public class MyDataFilterParams {
         
         return jsonData.toString();
     }
+    
     // --------------------------------------------
     // end: Convenience methods for dvObjectTypes
     // --------------------------------------------
