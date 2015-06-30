@@ -25,6 +25,17 @@ public class ApiTokenPage implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
 
     ApiToken apiToken;
+    
+    public boolean checkForApiToken() {
+        if (session.getUser().isAuthenticated()){
+            AuthenticatedUser au = (AuthenticatedUser) session.getUser();
+            apiToken = authSvc.findApiTokenByUser(au);
+            if (apiToken != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public String getApiToken() {
 
@@ -48,24 +59,20 @@ public class ApiTokenPage implements java.io.Serializable {
 
             apiToken = authSvc.findApiTokenByUser(au);
             if (apiToken != null) {
-                String logMsg = "An API token has already been generated for authenticated user id " + au.getId();
-                String userMsg = "API token could not be generated.";
-                logger.info(userMsg + " " + logMsg);
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, userMsg);
-            } else {
-                /**
-                 * @todo DRY! Stolen from BuiltinUsers API page
-                 */
-                ApiToken newToken = new ApiToken();
-                newToken.setTokenString(java.util.UUID.randomUUID().toString());
-                newToken.setAuthenticatedUser(au);
-                Calendar c = Calendar.getInstance();
-                newToken.setCreateTime(new Timestamp(c.getTimeInMillis()));
-                c.roll(Calendar.YEAR, 1);
-                newToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
-                authSvc.save(newToken);
+                authSvc.removeApiToken(au);
             }
+            /**
+             * @todo DRY! Stolen from BuiltinUsers API page
+             */
+            ApiToken newToken = new ApiToken();
+            newToken.setTokenString(java.util.UUID.randomUUID().toString());
+            newToken.setAuthenticatedUser(au);
+            Calendar c = Calendar.getInstance();
+            newToken.setCreateTime(new Timestamp(c.getTimeInMillis()));
+            c.roll(Calendar.YEAR, 1);
+            newToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
+            authSvc.save(newToken);
+            
         }
-
     }
 }
