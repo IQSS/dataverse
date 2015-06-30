@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.Access;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -61,6 +62,8 @@ public class MyDataAPITest extends AbstractApiBean {
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
     SearchServiceBeanMyData searchService;
+    @EJB
+    AuthenticationServiceBean authenticationService;
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
@@ -125,41 +128,30 @@ public class MyDataAPITest extends AbstractApiBean {
     public String retrieveMyDataInitialCall(@QueryParam("dvobject_types") List<String> dvobject_types, 
             @QueryParam("published_states") List<String> published_states, 
             @QueryParam("role_ids") List<Long> roleIds, 
-            @QueryParam("user") String userIdentifier) throws JSONException{ //String myDataParams) {
+            @QueryParam("userIdentifier") String userIdentifier) throws JSONException{ //String myDataParams) {
 
         //msgt("types: " + types.toString());
-        
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-       /*
-         if (session == null){
-            jsonData.add("has-session", false);
-        } else{
-            jsonData.add("has-session", true);
-            if (session.getUser()==null){
-                jsonData.add("has-user", false);
-            }else{
-                jsonData.add("has-user", true);
-                if (session.getUser().isAuthenticated()){
-                    jsonData.add("auth-status", "AUTHENTICATED");
-                    AuthenticatedUser authUser = (AuthenticatedUser)session.getUser();
-                    jsonData.add("username", authUser.getIdentifier());
-                }else{
-                    jsonData.add("auth-status", "GET OUT - NOT AUTHENTICATED");
-                }
+        AuthenticatedUser authUser;
+        if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
+             authUser = (AuthenticatedUser)session.getUser();
+        }else{
+            authUser = authenticationService.getAuthenticatedUser(userIdentifier);
+            if (authUser == null){
+                throw new IllegalStateException("User not found!  Shouldn't be using this anyway");
             }
-            
         }
-        */
+             
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
         
         roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
         
         // for testing
         //
-        if (userIdentifier==null){
-            logger.warning("retrieveMyDataInitialCall: ADmin test - REMOVE REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE ");
-            userIdentifier = "dataverseAdmin";  
-        }
+        //if (userIdentifier==null){
+        //    logger.warning("retrieveMyDataInitialCall: ADmin test - REMOVE REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE ");
+        //    userIdentifier = "dataverseAdmin";  
+        //}
         
         List<String> dtypes;
         if (dvobject_types != null){
@@ -177,7 +169,7 @@ public class MyDataAPITest extends AbstractApiBean {
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
         // ---------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(userIdentifier, dtypes, pub_states, roleIds, null);
+        MyDataFilterParams filterParams = new MyDataFilterParams(authUser.getIdentifier(), dtypes, pub_states, roleIds, null);
         if (filterParams.hasError()){
             jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, false);
             jsonData.add(MyDataAPITest.JSON_ERROR_MSG_FIELD_NAME, filterParams.getErrorMessage());
