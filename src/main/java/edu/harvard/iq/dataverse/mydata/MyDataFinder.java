@@ -327,8 +327,13 @@ public class MyDataFinder {
     
     private boolean runStep1RoleAssignments(){
         msgt("runStep1RoleAssignments");
+    
+        msgt(">>>runStep1RoleAssignments: roleIds: " + this.filterParams.getRoleIds());
+
         
-        List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(formatUserIdentifierAsAssigneeIdentifier(this.userIdentifier), null);
+        List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(formatUserIdentifierAsAssigneeIdentifier(this.userIdentifier)
+                                        , this.filterParams.getRoleIds());
+        
         //msgt("runStep1RoleAssignments results: " + results.toString());
 
         if (results == null){

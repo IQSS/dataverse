@@ -108,7 +108,7 @@ public class MyDataPage implements java.io.Serializable {
         //DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAVERSE_DTYPE_STRING
         
         //List<String> dtypes = new ArrayList<>();
-        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes, null, null);
+        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes, null, null, null);
         
         this.myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,

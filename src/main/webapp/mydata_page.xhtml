@@ -64,7 +64,7 @@
             <div id="div_published_states">
                 <ui:repeat value="#{MyDataPage.publishedStates}" var="pstate">
                     <div class="checkbox"><label>
-                        <input name="published_state" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
+                        <input name="published_states" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
                         #{pstate}
                     </label></div>                
                 </ui:repeat>
@@ -75,20 +75,24 @@
             <div id="div_role_states">
             <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
                 <div class="checkbox"><label>
-                    <input name="published_state" id="id_cbox_#{roleInfoList[1].toLowerCase()}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
+                    <input name="role_id" id="id_cbox_#{roleInfoList[1].toLowerCase()}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
                     #{roleInfoList[1]}
                 </label></div>    
             </ui:repeat>
             </div>
            <!-- end: role states -->
              </form>
+            <b>parms sent</b>
+            <div id="div-search-params" class="well"></div>
         </div><!-- end: filter column -->
+        <!-- start: workspace column -->
         <div class="col-md-9">
             <div id="div-paginatioon">(pagination)</div>
             <hr />
+            <div id="div-result-message">workspace</div>
             <div id="div-json-results">workspace</div>
         </div>
-        
+        <!-- end: workspace column -->
                 <!--
                 <li><label for="id_dvobject_types_0"><input checked="checked" id="id_dvobject_types_0" name="dvobject_types" type="checkbox" value="dataverses" /> Dataverses</label></li>
                 <li><label for="id_dvobject_types_1"><input checked="checked" id="id_dvobject_types_1" name="dvobject_types" type="checkbox" value="datasets" /> Datasets</label></li>
@@ -118,20 +122,36 @@
             function submitMyDataSearch(){
                 //alert();
                 var formData = $('#mydata_filter_form').serialize();
+                $("#div-search-params").html(formData);
                 //alert(formData);
                 //return;
                 $.getJSON( "/api/mydata/initial?" + formData, function(data) {
                     //alert(JSON.stringify(data));
                     $("#div-json-results").html(JSON.stringify(data));
                     if (data.success){
-                        var pagination_json = data.data.pagination;
-                          var pagination_html =  nunjucks.render('mydata_templates/mydata.html', pagination_json);
+                        // Render pager
+                        if (data.data.hasOwnProperty('pagination')){
+                            console.log('render pagination');
+                            var pagination_json = data.data.pagination;
+                            var pagination_html =  nunjucks.render('mydata_templates/mydata.html', pagination_json);
                             $("#div-paginatioon").html(pagination_html);
-                            //$("#divPagerJSON").html('<pre>' + JSON.stringify(pager_info) + '</pre>');
                             bindPages();
+                        }
+                        console.log('solr_docs?');
+                        //if (data.data.items.hasOwnProperty('solr_docs"')){
+                        console.log(data.data.items);
+                        //}
+
+                        if (data.hasOwnProperty('items"')){
+                            console.log('items');
+                        }
+                        if (data.data.hasOwnProperty('items"')){
+                            console.log('data.items');
+                        }
                         //alert(JSON.stringify(pagination_json));
                     }else{
-                        alert('no');
+                        $('#div-result-message').html(data.error_message);
+                        //alert('no');
                     }
             //alert(data);
             //makePager(data);

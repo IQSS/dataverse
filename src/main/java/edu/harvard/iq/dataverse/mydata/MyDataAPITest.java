@@ -116,13 +116,40 @@ public class MyDataAPITest extends AbstractApiBean {
         return this.getRandomPagerPager(selectedPage).asJSONString();
     }
     
+    //private String getUserIdentifier()
+    
+    
     @Path("initial")
     @GET
     @Produces({"application/json"})
-    public String retrieveMyDataInitialCall(@QueryParam("user") String userIdentifier) throws JSONException{ //String myDataParams) {
+    public String retrieveMyDataInitialCall(@QueryParam("dvobject_types") List<String> dvobject_types, 
+            @QueryParam("published_states") List<String> published_states, 
+            @QueryParam("role_ids") List<Long> roleIds, 
+            @QueryParam("user") String userIdentifier) throws JSONException{ //String myDataParams) {
 
+        //msgt("types: " + types.toString());
+        
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
-       
+       /*
+         if (session == null){
+            jsonData.add("has-session", false);
+        } else{
+            jsonData.add("has-session", true);
+            if (session.getUser()==null){
+                jsonData.add("has-user", false);
+            }else{
+                jsonData.add("has-user", true);
+                if (session.getUser().isAuthenticated()){
+                    jsonData.add("auth-status", "AUTHENTICATED");
+                    AuthenticatedUser authUser = (AuthenticatedUser)session.getUser();
+                    jsonData.add("username", authUser.getIdentifier());
+                }else{
+                    jsonData.add("auth-status", "GET OUT - NOT AUTHENTICATED");
+                }
+            }
+            
+        }
+        */
         
         roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
@@ -134,12 +161,23 @@ public class MyDataAPITest extends AbstractApiBean {
             userIdentifier = "dataverseAdmin";  
         }
         
-        List<String> dtypes = this.defaultDvObjectTypes;
-
+        List<String> dtypes;
+        if (dvobject_types != null){
+            dtypes = dvobject_types;
+        }else{
+            dtypes = MyDataFilterParams.defaultDvObjectTypes;
+        }
+        List<String> pub_states = null;
+        if (published_states != null){
+            pub_states = published_states;
+        }
+        
+        msgt(">>>roleIds: " + roleIds);
+        
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
         // ---------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(userIdentifier, dtypes, null, null);
+        MyDataFilterParams filterParams = new MyDataFilterParams(userIdentifier, dtypes, pub_states, roleIds, null);
         if (filterParams.hasError()){
             jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, false);
             jsonData.add(MyDataAPITest.JSON_ERROR_MSG_FIELD_NAME, filterParams.getErrorMessage());

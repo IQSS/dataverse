@@ -65,6 +65,7 @@ public class MyDataFilterParams {
     private String userIdentifier;
     private List<String> dvObjectTypes;    
     private List<String> publicationStatuses;
+    private List<Long> roleIds;
     
     //private ArrayList<DataverseRole> roles;
     private String searchTerm = "*:*";
@@ -98,7 +99,7 @@ public class MyDataFilterParams {
      * @param publicationStatuses 
      * @param searchTerm 
      */    
-    public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes, List<String> publicationStatuses, String searchTerm){
+    public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
 
         if ((userIdentifier==null)||(userIdentifier.isEmpty())){
             throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
@@ -113,13 +114,24 @@ public class MyDataFilterParams {
 
         if (publicationStatuses == null){
             this.publicationStatuses = MyDataFilterParams.defaultPublishedStates;
+        }else{
+            this.publicationStatuses = publicationStatuses;
         }
+        
+        // Do something here if none chosen!
+        this.roleIds = roleIds;
         
         if (searchTerm != null){
             this.searchTerm = searchTerm;
         }
         
         this.checkParams();
+    }
+    
+    
+    public List<Long> getRoleIds(){
+        
+        return this.roleIds;
     }
     
     
