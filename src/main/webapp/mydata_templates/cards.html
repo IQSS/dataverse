@@ -1,21 +1,32 @@
-{#
-<!--
-   SolrDocs pagination (Nunjucks template: https://mozilla.github.io/nunjucks/templating.html
--->
-  #}
-      
-{% if type == "dataset" %}
-<div style="border:1px solid #428bca; padding:4px 10px; margin:20px; width:700px;">
-        <div class="card-title-icon-block"><span class="icon-dataset text-info pull-right" title="Dataset"></span>
-            <a href="/dataset.xhtml?persistentId={{ global_id }}" target="_self"><span style="padding:4px 0;">{{ name }}</span></a>
+{% for sdoc in solr_docs -%}
+
+ {% if sdoc.type == "dataverse" %}
+
+    <div style="border:1px solid #c55b28;padding:4px 10px; margin:20px; width:700px;">
+        <div class="card-title-icon-block">
+            <span class="icon-dataverse text-brand pull-right" title="Dataverse"></span>
+            <a href="/dataverse/{{ sdoc.identifier }}"><span style="padding:4px 0;">{{ sdoc.name }}</span></a>
+            <span class="text-muted" style="margin-left: .5em;">(affiliation?)</span>
         </div>
         <div class="card-preview-icon-block text-center">
-            <a href="/dataset.xhtml?{{ global_id }}" target="_self"><span class="icon-dataset text-info"></span></a>
-        </div><span class="text-muted">{{ date_to_display_on_card }}</span><span class="resultDatasetCitationBlock bg-citation">{{ citation|safe }}</span>
-        <br />{{ description|safe }}                
-</div>   
-{% endif %}
-{# 
-{% for doc in solrDocs.docs %}{{ doc.dtype }}{% endfor %}
+            <a href="/dataverse/{{ sdoc.identifier }}"><span class="icon-dataverse text-brand"></span></a>
+            {# <a href="/dataverse/{{ sdoc.identifier }}"><img src="{{ sdoc.image_url | replace("https://RAD-rprasad", "")  }}" alt="icon image" /></a> #}
+        </div>
+        <span class="text-muted" style="margin-right:.5em;">{{ sdoc.date_to_display_on_card }}</span>
+        <a href="/dataverse/(parent date_to_display_on_card)">(parent dataverse)</a>
+        <hr style="margin:.5em;border:0;" />{{ sdoc.description }}
 
- #}
+    </div>   
+ {% elif sdoc.type == "dataset" %}
+    <div style="border:1px solid #428bca; padding:4px 10px; margin:20px; width:700px;">
+            <div class="card-title-icon-block"><span class="icon-dataset text-info pull-right" title="Dataset"></span>
+                <a href="/dataset.xhtml?persistentId={{ sdoc.global_id }}"><span style="padding:4px 0;">{{ sdoc.name }}</span></a>
+            </div>
+            <div class="card-preview-icon-block text-center">
+                <a href="/dataset.xhtml?{{ sdoc.global_id }}"><span class="icon-dataset text-info"></span></a>
+            </div><span class="text-muted">{{ sdoc.date_to_display_on_card }}</span><span class="resultDatasetCitationBlock bg-citation">{{ sdoc.citation|safe }}</span>
+            <br />{{ sdoc.description|safe }}                
+    </div>   
+{% endif %}
+
+{%- endfor %}
