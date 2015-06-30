@@ -270,7 +270,7 @@ public class MyDataAPITest extends AbstractApiBean {
             if( authUser!= null){
                 doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId())); 
             }
-            jsonSolrDocsArrayBuilder.add(doc.toJsonObject(true, true, true));
+            jsonSolrDocsArrayBuilder.add(doc.getJsonForMyData());
             //jsonData.add(JSON_DATA_FIELD_NAME, BigDecimal.ZERO)
             //outputList.add(doc.toString());
             //String jsonDoc = doc.toJsonObject(true, true, true).toString();
