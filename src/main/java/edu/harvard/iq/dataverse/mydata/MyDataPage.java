@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -101,6 +102,31 @@ public class MyDataPage implements java.io.Serializable {
         msgt("roles: " + roleList.toString());
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
+       
+        AuthenticatedUser authUser = null;
+        if (session != null){
+            if (session.getUser()==null){
+                authUser = (AuthenticatedUser)session.getUser();
+            }
+        } 
+        
+        /*else{
+            jsonData.add("has-session", true);
+            if (session.getUser()==null){
+                jsonData.add("has-user", false);
+            }else{
+                jsonData.add("has-user", true);
+                if (session.getUser().isAuthenticated()){
+                    jsonData.add("auth-status", "AUTHENTICATED");
+                    AuthenticatedUser authUser = (AuthenticatedUser)session.getUser();
+                    jsonData.add("username", authUser.getIdentifier());
+                }else{
+                    jsonData.add("auth-status", "GET OUT - NOT AUTHENTICATED");
+                }
+            }
+            
+        }*/
+        //if (authUser )
         String userIdentifier = "dataverseAdmin";
         
         List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
@@ -115,7 +141,7 @@ public class MyDataPage implements java.io.Serializable {
                                         dvObjectServiceBean);
         //myDataFinder.runFindDataSteps(userIdentifier);
         this.myDataFinder.runFindDataSteps(filterParams);
-        
+        /*
         if (!this.myDataFinder.hasError()){
 
             int paginationStart = 1;
@@ -149,11 +175,12 @@ public class MyDataPage implements java.io.Serializable {
             }
             
         }
-        
         this.pager = new Pager(111, 10, 3);
+        */
+        
         return null;
     }
-    
+    /*
     public String getSolrDocs() throws JSONException{
         
         if (solrQueryResponse == null){
@@ -177,7 +204,7 @@ public class MyDataPage implements java.io.Serializable {
         return "{ \"docs\" : [ " + StringUtils.join(outputList, ", ") + "] }";
 
     }
-    
+    */
     public MyDataFilterParams getFilterParams() throws JSONException{
         return this.filterParams;
     }
@@ -194,28 +221,6 @@ public class MyDataPage implements java.io.Serializable {
         }
     }
     
-    public Pager getPager(){
-        return this.pager;
-    }
-    
-    private int randInt(int min, int max) {
-        Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
-    }
-    
-    
-    public String getRandomPagerJSON() throws JSONException{
-        
-        int itemsPerPage = 10;
-        int numResults = randInt(1,200);
-        int numPages =  numResults / itemsPerPage;
-        if ((numResults % itemsPerPage) > 0){
-            numPages++;
-        }
-        int chosenPage = max(randInt(0, numPages), 1);
-        return new Pager(numResults, itemsPerPage, chosenPage).asJSONString();
-                
-    }
     
     public DataverseRolePermissionHelper getRolePermissionHelper(){
         return this.rolePermissionHelper;
