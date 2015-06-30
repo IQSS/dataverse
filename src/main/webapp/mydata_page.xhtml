@@ -75,7 +75,7 @@
             <div id="div_role_states">
             <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
                 <div class="checkbox"><label>
-                    <input name="role_id" id="id_cbox_#{roleInfoList[1].toLowerCase()}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
+                    <input name="role_ids" id="id_cbox_#{roleInfoList[1].toLowerCase()}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
                     #{roleInfoList[1]}
                 </label></div>    
             </ui:repeat>
@@ -89,6 +89,7 @@
         <div class="col-md-9">
             <div id="div-paginatioon">(pagination)</div>
             <hr />
+            
             <div id="div-result-message">workspace</div>
             <div id="div-json-results">workspace</div>
         </div>
@@ -105,6 +106,13 @@
             dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
             </ui:fragment>
     
+            function clearWarningAlert(){
+                $('#div-result-message').html('');
+            }
+            function setWarningAlert(msg){
+                var alert_html = '<div class="alert alert-warning" role="alert">' + msg + '</div>';
+                $('#div-result-message').html(alert_html);
+            }
     
             function bindPages(){
                console.log("bindpages");
@@ -121,6 +129,8 @@
             
             function submitMyDataSearch(){
                 //alert();
+                clearWarningAlert();
+                
                 var formData = $('#mydata_filter_form').serialize();
                 $("#div-search-params").html(formData);
                 //alert(formData);
@@ -150,7 +160,8 @@
                         }
                         //alert(JSON.stringify(pagination_json));
                     }else{
-                        $('#div-result-message').html(data.error_message);
+                        setWarningAlert(data.error_message);
+                        //$('#div-result-message').html(getWarningAlert(data.error_message));
                         //alert('no');
                     }
             //alert(data);

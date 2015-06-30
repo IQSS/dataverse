@@ -142,7 +142,12 @@ public class MyDataFilterParams {
             this.addError("Sorry!  No user was found!");
             return;
         }
-        
+
+        if ((this.roleIds == null)||(this.roleIds.isEmpty())){
+            this.addError("No results. Please select at least one Role.");
+            return;
+        }
+
         if ((this.dvObjectTypes == null)||(this.dvObjectTypes.isEmpty())){
             this.addError("No results. Please select one of Dataverses, Datasets, Files.");
             return;

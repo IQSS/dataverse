@@ -317,4 +317,17 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
     public List<List<String>> getRolesByDvObjectTable(){
          return this.rolesByDvObjectTable;
     }
+    
+    public List<String> getRoleNamesByIdList(List<Long> idList){
+        if ((idList==null)||(idList.isEmpty())){
+            return null;
+        }
+        List<String> roleNameList = new ArrayList<>();
+        for (Long roleId : idList){
+            if (this.roleNameLookup.containsKey(roleId)){
+                roleNameList.add(this.roleNameLookup.get(roleId));
+            }
+        }
+        return roleNameList;
+    }
 }

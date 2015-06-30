@@ -101,7 +101,6 @@ public class RoleAssigneeServiceBean {
     }
     
     public List<Object[]> getAssigneeAndRoleIdListFor(String roleAssigneeIdentifier, List<Long> roleIdList){
-        //msgt("getAssigneeAndRoleIdListFor");
 
         if (roleAssigneeIdentifier==null){
             return null;
@@ -113,7 +112,7 @@ public class RoleAssigneeServiceBean {
         qstr += " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
         qstr += getRoleIdListClause(roleIdList);
         qstr += ";";
-        //msg("qstr: " + qstr);
+        msg("qstr: " + qstr);
 
         return em.createNativeQuery(qstr)
                         .getResultList();
@@ -121,7 +120,7 @@ public class RoleAssigneeServiceBean {
     }
     
     private void msg(String s){
-        //System.out.println(s);
+        System.out.println(s);
     }
     
     private void msgt(String s){

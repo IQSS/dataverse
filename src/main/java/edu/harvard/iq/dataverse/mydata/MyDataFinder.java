@@ -340,7 +340,16 @@ public class MyDataFinder {
             this.addErrorMessage("Sorry, the EntityManager isn't working (still).");
             return false;
         }else if (results.isEmpty()){
-            this.addErrorMessage("Sorry, you have no assigned roles.");
+            List<String> roleNames = this.rolePermissionHelper.getRoleNamesByIdList(this.filterParams.getRoleIds());
+            if ((roleNames == null)||(roleNames.isEmpty())){
+                this.addErrorMessage("Sorry, you have no assigned roles.");
+            }else{
+                if (roleNames.size()==1){
+                    this.addErrorMessage("Sorry, nothing was found for this role: " + StringUtils.join(roleNames, ", "));                
+                }else{
+                    this.addErrorMessage("Sorry, nothing was found for these roles: " + StringUtils.join(roleNames, ", "));                
+                }
+            }
             return false;
         }
     
