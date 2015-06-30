@@ -111,28 +111,32 @@
             dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
             </ui:fragment>
     
-            function clearForNextSearch(){
+            function clearForNewSearchResults(){
                 clearWarningAlert();
                 clearCardResults();
                 clearPaginationResults();
+                clearJsonResults();
             }
-    
+            function clearJsonResults(){
+                $("#div-json-results").html('');
+            }
             function clearWarningAlert(){
-                $('#div-result-message').html();
+                $('#div-result-message').html('');
             }
             function clearCardResults(){
-                $('#div-card-results').html();
+                $('#div-card-results').html('');
             }
             function clearPaginationResults(){
                 console.log('clearPaginationResults');
-                $("#div-pagination").html();
+                $("#div-pagination").html('');
             }
             
-            function setWarningAlert(msg){
+            function setWarningAlert(alert_msg){
                 console.log('setWarningAlert');
                 clearCardResults();
                 clearPaginationResults();
-                var alert_html = '<div class="alert alert-warning" role="alert">' + msg + '</div>';
+                var alert_html = '<div class="alert alert-warning" role="alert">' + alert_msg + '</div>';
+                console.log(alert_html);
                 $('#div-result-message').html(alert_html);
             }
     
@@ -151,7 +155,7 @@
             
             function submitMyDataSearch(){
                 //alert();
-                clearForNextSearch();
+                clearForNewSearchResults();
                 
                 var formData = $('#mydata_filter_form').serialize();
                 $("#div-search-params").html(formData);
@@ -177,6 +181,7 @@
                         //alert(card_html);
                         //alert(JSON.stringify(pagination_json));
                     }else{
+                        //clearForNextSearch();
                         setWarningAlert(data.error_message);
                     }
             //alert(data);
