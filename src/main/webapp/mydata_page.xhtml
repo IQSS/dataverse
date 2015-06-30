@@ -177,6 +177,11 @@
                         //$("#div-test-json").html(JSON.stringify(data.data.items));
                         var card_html =  nunjucks.render('mydata_templates/cards.html', data.data.items);
                         $("#div-card-results").html(card_html);
+                        $.each(data.data.items.solr_docs, function( index, value ) {
+                             //alert( index + ": " + value );
+                            $("#div-card-results").append('<div class="well">' + JSON.stringify(value) + '</div>');
+                        });
+                        
 
                         //alert(card_html);
                         //alert(JSON.stringify(pagination_json));

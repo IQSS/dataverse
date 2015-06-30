@@ -106,6 +106,8 @@ public class SolrSearchResult {
     public void setUnpublishedState(boolean unpublishedState) {
         this.unpublishedState = unpublishedState;
     }
+    
+    
 
     public boolean isDraftState() {
         return draftState;
@@ -278,6 +280,29 @@ public class SolrSearchResult {
         return json(showRelevance, showEntityIds, showApiUrls).build();
     }
 
+    
+    /**
+     * Add additional fields for the MyData page
+     * 
+     * @return 
+     */
+    public JsonObjectBuilder getJsonForMyData() {
+        JsonObjectBuilder myDataJson =  json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls) 
+
+        myDataJson.add("is_draft_state", this.isDraftState())
+                  .add("is_unpublished_state", this.isUnpublishedState())
+                  .add("date_to_display_on_card", this.dateToDisplayOnCard)
+                ;
+        
+        String globalId = this.getFileParentIdentifier();
+        if (globalId != null){
+            myDataJson.add("parent_identifier", globalId)
+                      .add("parent_url", "/dataset.xhtml?persistentId=" + globalId);
+        }
+
+        return myDataJson;
+    } //getJsonForMydata
+    
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
 
         if (this.type == null) {
@@ -345,7 +370,6 @@ public class SolrSearchResult {
                  * we are only supporting non-public searches.
                  */
                 .add("published_at", getDateTimePublished())
-                .add("date_to_display_on_card", this.dateToDisplayOnCard)
                 /**
                  * @todo Expose MIME Type:
                  * https://github.com/IQSS/dataverse/issues/1595
@@ -707,6 +731,18 @@ public class SolrSearchResult {
             logger.info("Dataset identifier/globalId was null. Returning failsafe URL: " + failSafeUrl);
             return failSafeUrl;
         }
+    }
+    
+    public String getFileParentIdentifier(){
+        if (entity==null){
+            return null;
+        }
+        if (entity instanceof DataFile){
+            return parent.get(PARENT_IDENTIFIER);   // Dataset globalID
+        }
+        
+        return null;
+        //if (entity)
     }
 
     public String getFileUrl() {
