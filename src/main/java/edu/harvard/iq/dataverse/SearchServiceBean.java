@@ -636,6 +636,8 @@ public class SearchServiceBean {
                     Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IllegalAccessException ex) {
                     Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassCastException ex){
+                    System.out.print("Name " + fieldObject.getName());
                 }
                 if (staticSearchField != null && facetField.getName().equals(staticSearchField)) {
                     String[] parts = name.split("_");

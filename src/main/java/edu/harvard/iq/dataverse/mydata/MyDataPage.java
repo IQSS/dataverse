@@ -65,6 +65,8 @@ public class MyDataPage implements java.io.Serializable {
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
     SearchServiceBeanMyData searchService;
+    @EJB
+    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     
     private String testName = "blah";
     private DataverseRolePermissionHelper rolePermissionHelper;// = new DataverseRolePermissionHelper();
@@ -72,6 +74,7 @@ public class MyDataPage implements java.io.Serializable {
     private Pager pager;
     private MyDataFilterParams filterParams;
     private SolrQueryResponse solrQueryResponse;
+    private AuthenticatedUser authUser = null;
     
     private void msg(String s){
         System.out.println(s);
@@ -103,7 +106,7 @@ public class MyDataPage implements java.io.Serializable {
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
        
-        AuthenticatedUser authUser = null;
+
         if (session != null){
             if (session.getUser()==null){
                 authUser = (AuthenticatedUser)session.getUser();
@@ -180,7 +183,7 @@ public class MyDataPage implements java.io.Serializable {
         
         return null;
     }
-    /*
+
     public String getSolrDocs() throws JSONException{
         
         if (solrQueryResponse == null){
@@ -196,6 +199,9 @@ public class MyDataPage implements java.io.Serializable {
             //outputList.add(doc.toString());
             //String jsonDoc = doc.toJsonObject(true, true, true).toString();
             //if (true)return jsonDoc;
+            if( authUser!= null){
+                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId())); 
+            }
             outputList.add(doc.toJsonObject(true, true, true).toString());
             //break;
         }
@@ -204,7 +210,7 @@ public class MyDataPage implements java.io.Serializable {
         return "{ \"docs\" : [ " + StringUtils.join(outputList, ", ") + "] }";
 
     }
-    */
+
     public MyDataFilterParams getFilterParams() throws JSONException{
         return this.filterParams;
     }

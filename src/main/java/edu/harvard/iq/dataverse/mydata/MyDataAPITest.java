@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.api.Access;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
@@ -64,12 +65,15 @@ public class MyDataAPITest extends AbstractApiBean {
     SearchServiceBeanMyData searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
+        @EJB
+    MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
     private List<String> defaultDvObjectTypes = MyDataFilterParams.defaultDvObjectTypes;
     private MyDataFinder myDataFinder;
     private SolrQueryResponse solrQueryResponse;
+    private AuthenticatedUser authUser = null;
 
     public static final String JSON_SUCCESS_FIELD_NAME = "success";
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
@@ -131,7 +135,7 @@ public class MyDataAPITest extends AbstractApiBean {
             @QueryParam("userIdentifier") String userIdentifier) throws JSONException{ //String myDataParams) {
 
         //msgt("types: " + types.toString());
-        AuthenticatedUser authUser;
+
         if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
              authUser = (AuthenticatedUser)session.getUser();
         }else{
@@ -163,7 +167,6 @@ public class MyDataAPITest extends AbstractApiBean {
         if (published_states != null){
             pub_states = published_states;
         }
-        
         msgt(">>>roleIds: " + roleIds);
         
         // ---------------------------------
@@ -234,7 +237,7 @@ public class MyDataAPITest extends AbstractApiBean {
         // (4) Add pagingation
         // ---------------------------------
         Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(), 
-                                SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE, 
+                                10, 
                                 paginationStart);
         
         jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, true);
@@ -264,6 +267,9 @@ public class MyDataAPITest extends AbstractApiBean {
         JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
 
         for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
+            if( authUser!= null){
+                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId())); 
+            }
             jsonSolrDocsArrayBuilder.add(doc.toJsonObject(true, true, true));
             //jsonData.add(JSON_DATA_FIELD_NAME, BigDecimal.ZERO)
             //outputList.add(doc.toString());
