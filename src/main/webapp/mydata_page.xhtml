@@ -35,6 +35,7 @@
             <div>
     <!--label for="exampleInputEmail1">Email address</label-->
             <input type="text" class="form-control" name="mydata_q" id="mydata_q" placeholder="Search" />
+            <input type="hidden" name="selected_page" id="selected_page" value="1" />
             </div>
             <hr />            
                        
@@ -83,7 +84,9 @@
              </form>
         </div><!-- end: filter column -->
         <div class="col-md-9">
-            workspace
+            <div id="div-paginatioon">(pagination)</div>
+            <hr />
+            <div id="div-json-results">workspace</div>
         </div>
         
                 <!--
@@ -98,8 +101,42 @@
             dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
             </ui:fragment>
     
+    
+            function bindPages(){
+               console.log("bindpages");
+               $("a.page_link").click(function(evt) {
+                   evt.preventDefault(); // stop link from using href
+                   var page_num = $(this).attr('rel');
+                   $("#selected_page").val(page_num);  // update the selected page in the form
+                   //console.log("bind: " + page_num);
+                   submitMyDataSearch();    // run search
+                   //alert(page_num);
+                    // alert(get_link(variable_name));
+               });
+            }
+            
             function submitMyDataSearch(){
-                alert($('#mydata_filter_form').serialize());
+                //alert();
+                var formData = $('#mydata_filter_form').serialize();
+                //alert(formData);
+                //return;
+                $.getJSON( "/api/mydata/initial?" + formData, function(data) {
+                    //alert(JSON.stringify(data));
+                    $("#div-json-results").html(JSON.stringify(data));
+                    if (data.success){
+                        var pagination_json = data.data.pagination;
+                          var pagination_html =  nunjucks.render('mydata_templates/mydata.html', pagination_json);
+                            $("#div-paginatioon").html(pagination_html);
+                            //$("#divPagerJSON").html('<pre>' + JSON.stringify(pager_info) + '</pre>');
+                            bindPages();
+                        //alert(JSON.stringify(pagination_json));
+                    }else{
+                        alert('no');
+                    }
+            //alert(data);
+            //makePager(data);
+               //     $("#divPagerJSON").html('<pre>' + JSON.stringify(data) + '</pre>');
+                });
             }
             
           
@@ -110,9 +147,9 @@
               // Capture checkbox clicks
               //
               $('input:checkbox').on('click',function(){ 
-                  var checkedId=$(this,'input').attr('id');
+                  //var checkedId=$(this,'input').attr('id');
                   //alert(checkedId);
-                 submitMyDataSearch();
+                  submitMyDataSearch();
               });
               
               // Capture pressing return in search box
