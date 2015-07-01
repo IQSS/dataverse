@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.FacetCategory;
+import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBeanMyData;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
@@ -99,7 +101,7 @@ public class DataRetriever extends AbstractApiBean {
         return DataRetriever.retrieveDataFullAPIPath;
     }
     
-    public Pager getRandomPagerPager(Integer selectedPage) throws JSONException{
+    public Pager getRandomPagerPager(Integer selectedPage){
         if (selectedPage == null){
             selectedPage = 1;
         }
@@ -124,7 +126,7 @@ public class DataRetriever extends AbstractApiBean {
     @Path("test-it2")
     @GET
     @Produces({"application/json"})
-    public String retrieveTestPager(@QueryParam("selectedPage") int selectedPage) throws JSONException{
+    public String retrieveTestPager(@QueryParam("selectedPage") int selectedPage){
         
         return this.getRandomPagerPager(selectedPage).asJSONString();
     }
@@ -135,26 +137,30 @@ public class DataRetriever extends AbstractApiBean {
     @Path(retrieveDataPartialAPIPath)
     @GET
     @Produces({"application/json"})
-    public String retrieveMyDataInitialCall(@QueryParam("dvobject_types") List<String> dvobject_types, 
+    public String retrieveMyDataAsJsonString(@QueryParam("dvobject_types") List<String> dvobject_types, 
             @QueryParam("published_states") List<String> published_states, 
             @QueryParam("selected_page") Integer selectedPage, 
             @QueryParam("mydata_search_term") String searchTerm,             
             @QueryParam("role_ids") List<Long> roleIds, 
             @QueryParam("userIdentifier") String userIdentifier) { //String myDataParams) {
 
+        msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+
         //msgt("types: " + types.toString());
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
 
         if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
              authUser = (AuthenticatedUser)session.getUser();
         }else{
             authUser = authenticationService.getAuthenticatedUser(userIdentifier);
             if (authUser == null){
-                throw new IllegalStateException("User not found!  Shouldn't be using this anyway");
+                logger.severe("retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");
+                jsonData.add(DataRetriever.JSON_SUCCESS_FIELD_NAME, false);
+                jsonData.add(DataRetriever.JSON_ERROR_MSG_FIELD_NAME, "Requires authentication");
+                return jsonData.build().toString();
             }
         }
-             
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-        
+                     
         roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
         
@@ -224,13 +230,24 @@ public class DataRetriever extends AbstractApiBean {
                 
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
-                //msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
+                msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
                 if (this.solrQueryResponse.getNumResultsFound()==0){
                     jsonData.add(DataRetriever.JSON_SUCCESS_FIELD_NAME, false);
                     jsonData.add(DataRetriever.JSON_ERROR_MSG_FIELD_NAME, "Sorry, no results were found.");
                     return jsonData.build().toString();
                 }
-                                
+                 msgt("getFilterQueriesActual: " + solrQueryResponse.getFilterQueriesActual());
+                 msgt("getFacetCategoryList: " + solrQueryResponse.getFacetCategoryList());
+                 msgt("getTypeFacetCategories: " + solrQueryResponse.getTypeFacetCategories().toString());
+                 for (FacetCategory fc : solrQueryResponse.getTypeFacetCategories()){
+                      for (FacetLabel fl : fc.getFacetLabel()) {
+                          
+                          msg("name: | " + fl.getName()+ " | count: " + fl.getCount());
+                            //previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
+                        }
+                 }
+                 //solrQueryResponse.get();
+                         
         } catch (SearchException ex) {
                 solrQueryResponse = null;   
                 this.logger.severe("Solr SearchException: " + ex.getMessage());
@@ -247,7 +264,12 @@ public class DataRetriever extends AbstractApiBean {
         //jsonData.add("solr_docs", this.formatSolrDocs(solrQueryResponse));
         
          // ---------------------------------
-        // (4) Add pagingation
+        // (4) Build JSON document including:
+        //      - Pager
+        //      - Formatted solr docs
+        //      - Num results found
+        //      - Search term
+        //      - DvObject counts
         // ---------------------------------
         Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(), 
                                 10, 
@@ -261,21 +283,35 @@ public class DataRetriever extends AbstractApiBean {
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
                                 .add("search_term",  filterParams.getSearchTerm())
+                                .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
             );
                                 
         return jsonData.build().toString();
     }
    
+    private JsonObjectBuilder getDvObjectTypeCounts(SolrQueryResponse solrResponse){
+        
+        if (solrQueryResponse==null){
+            logger.severe("DataRetriever.getDvObjectTypeCounts: solrQueryResponse should not be null");
+            return null;
+        }
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        for (FacetCategory fc : solrResponse.getTypeFacetCategories()){
+            for (FacetLabel fl : fc.getFacetLabel()) {  
+                jsonData.add(fl.getName() + "_count", fl.getCount());
+                //msg("name: | " + fl.getName()+ " | count: " + fl.getCount());
+            }
+        }
+        return jsonData;
+    }
     
     //private JsonObjectBuilder formatSolrDocs(SolrQueryResponse solrResponse){
     private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse){
         
         if (solrResponse == null){
+            logger.severe("DataRetriever.getDvObjectTypeCounts: formatSolrDocs should not be null");
             return null;
         }
-
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-        
         JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
 
         for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
@@ -286,48 +322,19 @@ public class DataRetriever extends AbstractApiBean {
             jsonSolrDocsArrayBuilder.add(doc.getJsonForMyData());
         }
         return jsonSolrDocsArrayBuilder;
-        //jsonData.add("solr_docs", jsonSolrDocsArrayBuilder);
-        //return jsonData;
         
     }
     
-    //@Produces({"application/zip"})
     @Path("test-it")
+    @Produces({"application/json"})
     @GET
-    public Response retrieveMyData(@QueryParam("key") String keyValue) throws JSONException{ //String myDataParams) {
+    public String retrieveMyData(@QueryParam("key") String keyValue){ //String myDataParams) {
         
         final JsonObjectBuilder jsonData = Json.createObjectBuilder();
         jsonData.add("name", keyValue);
-        
-        if (session == null){
-            jsonData.add("has-session", false);
-        } else{
-            jsonData.add("has-session", true);
-            if (session.getUser()==null){
-                jsonData.add("has-user", false);
-            }else{
-                jsonData.add("has-user", true);
-                if (session.getUser().isAuthenticated()){
-                    jsonData.add("auth-status", "AUTHENTICATED");
-                    AuthenticatedUser authUser = (AuthenticatedUser)session.getUser();
-                    jsonData.add("username", authUser.getIdentifier());
-                }else{
-                    jsonData.add("auth-status", "GET OUT - NOT AUTHENTICATED");
-                }
-            }
-            
-        }
-        JSONObject obj = new JSONObject();
-        obj.put("name", "foo");
-        obj.put("num", new Integer(100));
-        obj.put("balance", new Double(1000.21));
-        obj.put("is_vip", new Boolean(true));
-        
-        return okResponse(jsonData);
-        
-        
-        //return okResponse(obj);
+        return jsonData.build().toString();
     }
+    
     
     private void msg(String s){
         System.out.println(s);

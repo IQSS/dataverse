@@ -71,7 +71,7 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     private SolrQueryResponse solrQueryResponse;
     
     private void msg(String s){
-        System.out.println(s);
+        //System.out.println(s);
     }
     
     private void msgt(String s){
@@ -81,11 +81,9 @@ public class RolePermissionHelperPage implements java.io.Serializable {
     }
     
     public String init() {
-        msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+       // msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
-        msgt("----------- init() -------------");
         List<DataverseRole> roleList = dataverseRoleService.findAll();
-        msgt("roles: " + roleList.toString());
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
         String userIdentifier = "dataverseAdmin";

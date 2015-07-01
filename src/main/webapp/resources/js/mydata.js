@@ -2,6 +2,7 @@ var MYDATA_DEBUG_ON = true;
 var APPEND_CARDS_TO_BOTTOM = false;
 
 function clearForNewSearchResults(){
+    reset_dvobject_counts();
     clearWarningAlert();
     clearCardResults();
     clearPaginationResults();
@@ -59,6 +60,33 @@ function regular_search(){
     submit_my_data_search();
 }
 
+
+var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];
+// --------------------------------
+// (5) Reset the item counts
+// --------------------------------
+function reset_dvobject_counts(){
+     $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
+          $('#id_' + attr_name).html('');
+     });
+}
+
+// --------------------------------
+// (5) Update the item counts
+// --------------------------------
+// Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
+function update_dvobject_count(json_info){
+    
+    var dcounts = json_info.data.dvobject_counts;
+    $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
+        console.log('attr_name: ' + attr_name);
+        if(attr_name in dcounts){                    
+            $('#id_' + attr_name).html('(' + dcounts[attr_name] + ')');                    
+        }else{
+            $('#id_' + attr_name).html('');
+        }
+    });
+}
 
 function submit_my_data_search(){
 
@@ -146,7 +174,13 @@ function submit_my_data_search(){
                 // Only show new cards
                 $("#div-card-results").html(card_html);                            
             }
-//
+            
+            // --------------------------------
+            // (5) Update the item counts
+            // --------------------------------
+            // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
+            update_dvobject_count(data);
+    
             //$.each(data.data.items.solr_docs, function( index, value ) {
                  //alert( index + ": " + value );
             //    $("#div-card-results").append('<div class="well">' + JSON.stringify(value) + '</div>');
