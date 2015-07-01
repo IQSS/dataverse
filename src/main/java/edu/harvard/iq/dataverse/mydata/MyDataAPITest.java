@@ -265,8 +265,8 @@ public class MyDataAPITest extends AbstractApiBean {
     }
    
     
-    //private String formatSolrDocs(
-    public JsonObjectBuilder formatSolrDocs(SolrQueryResponse solrResponse){
+    //private JsonObjectBuilder formatSolrDocs(SolrQueryResponse solrResponse){
+    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse){
         
         if (solrResponse == null){
             return null;
@@ -274,30 +274,19 @@ public class MyDataAPITest extends AbstractApiBean {
 
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
         
-        List<String> outputList = new ArrayList<>();
-
         JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
 
         for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
-                msgt("authUser :" + authUser);
+
             if( authUser!= null){
-                msg("getRolesOnDVO: " + myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId()));
                 doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId())); 
             }
             jsonSolrDocsArrayBuilder.add(doc.getJsonForMyData());
-            //jsonData.add(JSON_DATA_FIELD_NAME, BigDecimal.ZERO)
-            //outputList.add(doc.toString());
-            //String jsonDoc = doc.toJsonObject(true, true, true).toString();
-            //if (true)return jsonDoc;
-            //outputList.add(doc.toJsonObject(true, true, true).toString());
-            //break;
         }
-        jsonData.add("solr_docs", jsonSolrDocsArrayBuilder);
+        return jsonSolrDocsArrayBuilder;
+        //jsonData.add("solr_docs", jsonSolrDocsArrayBuilder);
+        //return jsonData;
         
-        return jsonData;
-        //return jsonData.toString();
-        //return "{ \"docs\" : [ " + StringUtils.join(outputList, ", ") + "] }";
-
     }
     
     //@Produces({"application/zip"})

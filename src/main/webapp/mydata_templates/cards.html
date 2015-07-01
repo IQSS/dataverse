@@ -1,5 +1,5 @@
 {% set card_bg_color = cycler("", "background-color:#f7f7f7;") %}
-{% for sdoc in solr_docs -%}
+{% for sdoc in data.items -%}
  {# set border color #}
  {% if sdoc.type == "dataverse" %}
     {% set card_border_color = "#c55b28" %}
@@ -16,7 +16,7 @@
         {% if sdoc.is_published %} <span class="label label-success">Published</span> {% endif %}
         <!-- roles -->
         {% for role_name in sdoc.user_roles %}
-            <span class="label label-default">{{ role_name }}</span>
+            <span class="label label-info">{{ role_name }}</span>
         {% endfor %}
         
  {% if sdoc.type == "dataverse" %}       
