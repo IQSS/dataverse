@@ -20,9 +20,9 @@ By default installer pre-sets the Admin credentials as follows:
     Position: Admin
     Email: dataverse@mailinator.com
 
-Log in as the user dataverseAdmin and change these values to suit your installation. 
+Log in as the user dataverseAdmin with the password "admin" and change these values to suit your installation.
 
-(Alteratively, you can modify the file ``dvinstall/data/user-admin.json`` in the installer bundle **before** you run the installer). 
+(Alteratively, you can modify the file ``dvinstall/data/user-admin.json`` in the installer bundle **before** you run the installer. The password is in ``dvinstall/setup-all.sh``, which references this JSON file.)
 
 Solr Configuration
 ++++++++++++++++++
