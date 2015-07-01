@@ -214,9 +214,15 @@ public class MyDataAPITest extends AbstractApiBean {
                         dataRelatedToMe,
                         10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
+                
                 msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
+                if (this.solrQueryResponse.getNumResultsFound()==0){
+                    jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, false);
+                    jsonData.add(MyDataAPITest.JSON_ERROR_MSG_FIELD_NAME, "Sorry, no results were found.");
+                    return jsonData.build().toString();
+                }
                 
                 //User user,
                 //Dataverse dataverse,

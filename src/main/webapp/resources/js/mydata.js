@@ -38,6 +38,8 @@ function bindPages(){
        $("#selected_page").val(page_num);  // update the selected page in the form
        regular_search();    // run search
    });
+   
+   $( "#lnk_add_more_cards").unbind( "click" );
    $("#lnk_add_more_cards").click(function(evt){
        evt.preventDefault(); // stop link from using href
        var page_num = $(this).attr('rel');
@@ -132,7 +134,13 @@ function submit_my_data_search(){
             if (APPEND_CARDS_TO_BOTTOM){
                 console.log('add cards to bottom results');
                 // Add new cards after existing cards
-                $("#div-card-results").append('<hr /><hr />' + card_html);
+                var newCardsDiv = $('<div></div>', { css: { 'display': 'none' }});
+                newCardsDiv.html(card_html);
+                
+                $("#div-card-results").append(newCardsDiv);
+                newCardsDiv.slideDown('slow');;
+                
+                //$("#div-card-results").append('<hr /><hr />' + card_html).show('slow');;
             }else{
                 console.log('regular search results');
                 // Only show new cards

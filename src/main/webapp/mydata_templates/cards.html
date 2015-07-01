@@ -10,7 +10,7 @@
  {% endif %}
 
     <div style="border:1px solid {{ card_border_color }};padding:4px 10px; margin:20px; width:700px;{{ card_bg_color.next() }}">
-        ({{ loop.index }}) {% if sdoc.is_draft_state %}<span class="label label-primary">Draft</span> {% endif %}
+        {#({{ loop.index }})#} {% if sdoc.is_draft_state %}<span class="label label-primary">Draft</span> {% endif %}
         {% if sdoc.is_unpublished_state %}<span class="label label-primary">Unpublished</span> {% endif %}
         {% if sdoc.is_published %} <span class="label label-success">Published</span> {% endif %}
 
