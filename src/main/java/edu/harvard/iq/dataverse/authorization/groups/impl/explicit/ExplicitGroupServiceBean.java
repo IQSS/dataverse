@@ -117,7 +117,7 @@ public class ExplicitGroupServiceBean {
     /**
      * Finds all the groups {@code ra} belongs to in the context of {@code o}. In effect,
      * collects all the groups {@code ra} belongs to and that are defined at {@code o}
-     * or one of its ancestors.
+     * or one of its ancestors. Does not take group containment into account.
      * 
      * @param ra The role assignee that belongs to the groups
      * @param o the DvObject that defines the context of the search.
