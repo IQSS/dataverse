@@ -97,6 +97,12 @@ public class MyDataPage implements java.io.Serializable {
         return this.rolePermissionHelper.getRoleInfoForCheckboxes();
     }
     
+        
+    public String getRetrieveDataFullAPIPath(){
+        return DataRetriever.retrieveDataFullAPIPath;
+    }
+    
+    
     public String init() {
         msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 

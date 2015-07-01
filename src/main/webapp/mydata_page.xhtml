@@ -109,12 +109,17 @@
                 -->
     </div><!-- end row -->
     <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script> 
+        <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
+        var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
+    </script>
     <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
     <script>
             <ui:fragment rendered="#{MyDataPage.hasFilterParams()}">
             dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
             </ui:fragment>
            
+         
           
           $(document).ready(function() {
               $('#div-more-cards-link').hide();

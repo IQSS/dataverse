@@ -86,7 +86,7 @@ function submit_my_data_search(){
     // --------------------------------
     // (2) submit the form
     // --------------------------------
-    $.getJSON( "/api/mydata/initial?" + formData, function(data) {
+    $.getJSON( RETRIEVE_DATA_API_PATH + '?' + formData, function(data) {
 
         //  For debugging, show the returned JSON
         if (MYDATA_DEBUG_ON){

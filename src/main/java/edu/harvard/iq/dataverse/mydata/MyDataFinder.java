@@ -326,11 +326,7 @@ public class MyDataFinder {
     }
     
     private boolean runStep1RoleAssignments(){
-        msgt("runStep1RoleAssignments");
-    
-        msgt(">>>runStep1RoleAssignments: roleIds: " + this.filterParams.getRoleIds());
-
-        
+                
         List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(formatUserIdentifierAsAssigneeIdentifier(this.userIdentifier)
                                         , this.filterParams.getRoleIds());
         
@@ -377,7 +373,7 @@ public class MyDataFinder {
         if (this.hasError()){
             throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyData object,first check 'hasError()'");
         }
-        msgt("runStep2DirectAssignments");
+        //msgt("runStep2DirectAssignments");
         
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoForMyData(directDvObjectIds);
         msgt("runStep2DirectAssignments number of results: " + results.size());
@@ -445,7 +441,7 @@ public class MyDataFinder {
         }
         
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoByParentIdForMyData(this.fileGrandparentFileIds);
-        msgt("runStep3FilePermsAssignedAtDataverse results count: " + results.size());
+        msg("runStep3FilePermsAssignedAtDataverse results count: " + results.size());
         
        if (results.isEmpty()){
             this.addErrorMessage("Sorry, no Dataset were found with those Ids");
