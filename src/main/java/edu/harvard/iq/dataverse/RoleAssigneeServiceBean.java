@@ -106,10 +106,15 @@ public class RoleAssigneeServiceBean {
             return null;
         }
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));
+        String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
+        if (userGroups != null && !userGroups.isEmpty()){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        } 
         
         String qstr = "SELECT r.definitionpoint_id, r.role_id";
         qstr += " FROM RoleAssignment r";
-        qstr += " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
+        qstr += identifierClause;
         qstr += getRoleIdListClause(roleIdList);
         qstr += ";";
         msg("qstr: " + qstr);
@@ -117,6 +122,40 @@ public class RoleAssigneeServiceBean {
         return em.createNativeQuery(qstr)
                         .getResultList();
         
+    }
+    
+    private String getGroupIdentifierClause(String roleAssigneeIdentifier, List<String> userGroups) {
+
+        if (userGroups == null) {
+            return "";
+        }
+        List<String> outputList = new ArrayList<>();
+
+        for (String r : userGroups) {
+            if (r != null) {
+                outputList.add(r);
+            }
+        }
+        if (outputList.isEmpty()) {
+            return "";
+        }
+        return " WHERE r.assigneeIdentifier in ( '" + roleAssigneeIdentifier + "', '&explicit/" + StringUtils.join(outputList, "','&explicit/") + "')";
+
+    }
+
+
+    
+    private List<String> getUserGroups(String roleAssigneeIdentifier){
+        
+        String qstr = "select  groupalias from explicitgroup";
+        qstr += " where id = ";
+        qstr += " (select explicitgroup_id from explicitgroup_authenticateduser where containedauthenticatedusers_id = ";
+        qstr += " (select id from authenticateduser where useridentifier ='" + roleAssigneeIdentifier + "'";
+        qstr += "));";
+        msg("qstr: " + qstr);
+
+        return em.createNativeQuery(qstr)
+                        .getResultList();  
     }
     
     private void msg(String s){
