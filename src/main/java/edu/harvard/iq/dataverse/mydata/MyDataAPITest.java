@@ -279,7 +279,9 @@ public class MyDataAPITest extends AbstractApiBean {
         JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
 
         for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
+                msgt("authUser :" + authUser);
             if( authUser!= null){
+                msg("getRolesOnDVO: " + myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId()));
                 doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId())); 
             }
             jsonSolrDocsArrayBuilder.add(doc.getJsonForMyData());

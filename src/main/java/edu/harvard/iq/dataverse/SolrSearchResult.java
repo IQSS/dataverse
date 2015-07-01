@@ -292,6 +292,7 @@ public class SolrSearchResult {
         myDataJson.add("is_draft_state", this.isDraftState())
                   .add("is_unpublished_state", this.isUnpublishedState())
                   .add("date_to_display_on_card", this.dateToDisplayOnCard)
+                  .add("user_roles", this.getUserRolesAsJson());
                 ;
 
         if ((!this.isDraftState())&&(!this.isUnpublishedState())){
@@ -825,6 +826,17 @@ public class SolrSearchResult {
             return null;
         }
     }
+    
+    public JsonArrayBuilder getUserRolesAsJson() {
+        
+        
+        JsonArrayBuilder jsonRoleStrings = Json.createArrayBuilder();
+        for (String role : this.getUserRole()){
+            jsonRoleStrings.add(role);
+        }
+        return jsonRoleStrings;
+    }
+
     
     public List<String> getUserRole() {
         return userRole;
