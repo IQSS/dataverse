@@ -293,13 +293,30 @@ public class SolrSearchResult {
                   .add("is_unpublished_state", this.isUnpublishedState())
                   .add("date_to_display_on_card", this.dateToDisplayOnCard)
                 ;
-        
-        String globalId = this.getFileParentIdentifier();
-        if (globalId != null){
-            myDataJson.add("parent_identifier", globalId)
-                      .add("parent_url", "/dataset.xhtml?persistentId=" + globalId);
-        }
 
+        if ((!this.isDraftState())&&(!this.isUnpublishedState())){
+            myDataJson.add("is_published", true);
+        }else{
+            myDataJson.add("is_published", false);            
+        }
+        
+        // If this is a file, add the parent_idntifier
+        //
+        if (this.entity.isInstanceofDataFile()){
+            String globalId = this.getFileParentIdentifier();
+            if (globalId != null){
+                myDataJson.add("parent_identifier", globalId);
+                //          .add("parent_url", "/dataset.xhtml?persistentId=" + globalId);
+            }
+        }else if (this.entity.isInstanceofDataverse()){
+            String parentDataverseAlias = this.getDataverseParentAlias();
+            if (parentDataverseAlias==null){
+                myDataJson.add("parent_alias", "no parent");
+            }else{
+                myDataJson.add("parent_alias", parentDataverseAlias);                
+            }
+        }
+    
         return myDataJson;
     } //getJsonForMydata
     

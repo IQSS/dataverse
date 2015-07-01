@@ -68,6 +68,7 @@ public class MyDataFilterParams {
     private List<Long> roleIds;
     
     //private ArrayList<DataverseRole> roles;
+    public static final String defaultSearchTerm = "*:*";
     private String searchTerm = "*:*";
     
     // -----------------------------------
@@ -121,7 +122,9 @@ public class MyDataFilterParams {
         // Do something here if none chosen!
         this.roleIds = roleIds;
         
-        if (searchTerm != null){
+        if ((searchTerm == null)||(searchTerm.trim().isEmpty())){
+            this.searchTerm = MyDataFilterParams.defaultSearchTerm;
+        }else{
             this.searchTerm = searchTerm;
         }
         

@@ -131,8 +131,10 @@ public class MyDataAPITest extends AbstractApiBean {
     @Produces({"application/json"})
     public String retrieveMyDataInitialCall(@QueryParam("dvobject_types") List<String> dvobject_types, 
             @QueryParam("published_states") List<String> published_states, 
+            @QueryParam("selected_page") Integer selectedPage, 
+            @QueryParam("mydata_search_term") String searchTerm,             
             @QueryParam("role_ids") List<Long> roleIds, 
-            @QueryParam("userIdentifier") String userIdentifier) throws JSONException{ //String myDataParams) {
+            @QueryParam("userIdentifier") String userIdentifier) { //String myDataParams) {
 
         //msgt("types: " + types.toString());
 
@@ -172,13 +174,13 @@ public class MyDataAPITest extends AbstractApiBean {
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
         // ---------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(authUser.getIdentifier(), dtypes, pub_states, roleIds, null);
+        MyDataFilterParams filterParams = new MyDataFilterParams(authUser.getIdentifier(), dtypes, pub_states, roleIds, searchTerm);
         if (filterParams.hasError()){
             jsonData.add(MyDataAPITest.JSON_SUCCESS_FIELD_NAME, false);
             jsonData.add(MyDataAPITest.JSON_ERROR_MSG_FIELD_NAME, filterParams.getErrorMessage());
             return jsonData.build().toString();
         }
-        
+       
         // ---------------------------------
         // (2) Initialize MyDataFinder and check for Errors 
         // ---------------------------------
@@ -196,12 +198,15 @@ public class MyDataAPITest extends AbstractApiBean {
         // (3) Make Solr Query
         // ---------------------------------
         int paginationStart = 1;
+        if (selectedPage != null){
+            paginationStart = selectedPage;
+        }
         boolean dataRelatedToMe = true;
         try {
                 solrQueryResponse = searchService.search(
                         null, // no user
                         null, // subtree, default it to Dataverse for now
-                        "*", //this.filterParams.getSearchTerm(),
+                        filterParams.getSearchTerm(),  //"*", //
                         this.myDataFinder.getSolrFilterQueries(),//filterQueries,
                         SearchFields.NAME_SORT, SortBy.ASCENDING,
                         //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
@@ -247,6 +252,7 @@ public class MyDataAPITest extends AbstractApiBean {
                                 .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse))
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
+                                .add("search_term",  filterParams.getSearchTerm())
             );
                                 
         return jsonData.build().toString();
