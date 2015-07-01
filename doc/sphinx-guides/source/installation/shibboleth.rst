@@ -57,7 +57,7 @@ In order for the Dataverse "download as zip" feature to work well with large fil
 
 For more background on the patch, please see https://java.net/jira/browse/GRIZZLY-1787 and https://github.com/IQSS/dataverse/issues/2180 and https://github.com/payara/Payara/issues/350
 
-This problem has been reported to Glassfish at https://java.net/projects/glassfish/lists/users/archive/2015-06/message/13 and when Glassfish 4.2 ships the Dataverse team plans to evaulate if the version of Grizzly included is new enough to include the bug fix, obviating the need for the patch.
+This problem has been reported to Glassfish at https://java.net/projects/glassfish/lists/users/archive/2015-07/message/1 and when Glassfish 4.2 ships the Dataverse team plans to evaulate if the version of Grizzly included is new enough to include the bug fix, obviating the need for the patch.
 
 Glassfish HTTP and HTTPS ports
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
