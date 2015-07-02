@@ -26,6 +26,7 @@ import org.primefaces.json.JSONObject;
  */
 public class Pager {
     
+    public final int NUM_VISIBLE_PAGES_BUTTONS = 5;
     public int PAGE_BUTTONS_TO_SHOW = 5;
     
     /* inputs */
@@ -80,11 +81,11 @@ public class Pager {
         }
     
         // page number list
-        this.pageNumberList = new int[pageCount];
+        /*this.pageNumberList = new int[pageCount];
             for(int i=0; i<this.pageCount; i++){
                this.pageNumberList[i] = i + 1;
-        }
-        //makePageNumberList();
+        }*/
+        makePageNumberList();
 
         // prev/next page numbers
         this.previousPageNumber =  max(this.selectedPageNumber-1, 1); // must be at least 1
@@ -337,6 +338,55 @@ public class Pager {
         
         return jsonPageInfo;
              
+    }
+    
+    private void makePageNumberList(){
+       msgt("makePageNumberList");
+       msg("numResults:" + numResults);
+        if (this.numResults <  1){
+            return;
+        }
+                        
+        // In this case, there are 1 to 5 pages
+        //
+        if ((this.pageCount <= NUM_VISIBLE_PAGES_BUTTONS)||(this.selectedPageNumber <= 3)){
+            
+            int numButtons = min(this.pageCount, NUM_VISIBLE_PAGES_BUTTONS);
+            msg("numButtons:" + numButtons);
+            this.pageNumberList = new int[numButtons];
+        
+            for(int i=0; i < numButtons; i++){
+                msg("Loop 1. Add page: " + (i+1));
+                this.pageNumberList[i] = i + 1;
+            }
+            return;
+        }
+        
+        // In this case, there are more than 5 pages
+        //        
+        // Example:  page 7 of 8
+        //
+        int defaultButtonsToRight = 2;
+        this.pageNumberList = new int[NUM_VISIBLE_PAGES_BUTTONS];
+
+        // 8 - 7 = 1
+        int buttonsToRight = this.pageCount - this.selectedPageNumber;
+        if (buttonsToRight < 0){
+            throw new IllegalStateException("Page count cannot be less than the selected page");
+        }
+        int startPage;
+        if (buttonsToRight >= defaultButtonsToRight){
+            startPage = this.selectedPageNumber - defaultButtonsToRight;
+            msg("startPage (a): " + startPage +" buttons to right: " + buttonsToRight);
+        }else{
+            // 7 -2 -1 = 4 - start on page 4
+            startPage = this.selectedPageNumber - (defaultButtonsToRight-buttonsToRight) - defaultButtonsToRight;           
+            msg("startPage (b): " + startPage +" buttons to right: " + buttonsToRight);
+        }
+        for(int i=0; i< NUM_VISIBLE_PAGES_BUTTONS; i++){
+            msg("Loop 2. Add page: " + (i+startPage));
+            this.pageNumberList[i] = i + startPage;
+        }        
     }
     
     public static void main(String[] args) throws IOException {

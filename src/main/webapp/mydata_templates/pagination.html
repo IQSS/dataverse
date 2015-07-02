@@ -3,9 +3,12 @@
    MyData pagination (Nunjucks template: https://mozilla.github.io/nunjucks/templating.html
 -->
 #}
-<br />Results found: <b>{{ numResults }}</b>, Displaying <b>{{ startCardNumber }}</b> to <b>{{ endCardNumber }}</b>
-    <br />
-    <ul class="pagination">
+<div class="row">
+    <div class="col-xs-12 col-md-3">
+        Results found: <b>{{ numResults }}</b>, Displaying <b>{{ startCardNumber }}</b> to <b>{{ endCardNumber }}</b>
+    </div>
+    <div class="col-xs-12 col-md-9">
+        <ul class="pagination">
         <!-- first page | previous page -->
         {% if hasPreviousPageNumber %}
             <li><a aria-label="First" class="page_link" rel="1"><span aria-hidden="true">&lt;&lt;</span></a></li>
@@ -33,3 +36,5 @@
             <li class="disabled"><a href="#" aria-label="Last"><span aria-hidden="true">&gt;&gt;</span></a></li>
         {% endif %}    
     </ul>
+    </div>
+</div>

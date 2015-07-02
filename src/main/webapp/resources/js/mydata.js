@@ -1,4 +1,4 @@
-var MYDATA_DEBUG_ON = true;
+var MYDATA_DEBUG_ON = false;
 var APPEND_CARDS_TO_BOTTOM = false;
 
 function clearForNewSearchResults(){
