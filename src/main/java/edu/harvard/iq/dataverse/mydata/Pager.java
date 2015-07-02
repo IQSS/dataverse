@@ -307,9 +307,9 @@ public class Pager {
         JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
                 
         jsonPageInfo.add("isNecessary", this.isPagerNecessary());
-        if (!this.isPagerNecessary()){
+        /*if (!this.isPagerNecessary()){
             return jsonPageInfo;
-        }
+        }*/
 
         jsonPageInfo.add("numResults", this.numResults);
         jsonPageInfo.add("docsPerPage", this.docsPerPage);

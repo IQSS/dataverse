@@ -5,9 +5,20 @@
 #}
 <div class="row">
     <div class="col-xs-12 col-md-3">
-        Results found: <b>{{ numResults }}</b>, Displaying <b>{{ startCardNumber }}</b> to <b>{{ endCardNumber }}</b>
+        <br />
+        {% if numResults > 1 %}
+            Found: <b>{{ numResults }} results</b>
+        
+        {% elif numResults == 1 %}
+        Found: <b>1 result</b>
+        
+        {% endif %}
+        {% if endCardNumber > startCardNumber  %}
+            Displaying: <b>{{ startCardNumber }} to {{ endCardNumber }}</b>
+        {% endif %}
     </div>
     <div class="col-xs-12 col-md-9">
+    {% if isNecessary %}
         <ul class="pagination">
         <!-- first page | previous page -->
         {% if hasPreviousPageNumber %}
@@ -35,6 +46,7 @@
             <li class="disabled"><a href="#" aria-label="Next"><span aria-hidden="true">Next &gt;</span></a></li>
             <li class="disabled"><a href="#" aria-label="Last"><span aria-hidden="true">&gt;&gt;</span></a></li>
         {% endif %}    
-    </ul>
+        </ul>
+    {% endif %}
     </div>
 </div>

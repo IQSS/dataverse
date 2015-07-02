@@ -1,4 +1,4 @@
-var MYDATA_DEBUG_ON = false;
+var MYDATA_DEBUG_ON = true;
 var APPEND_CARDS_TO_BOTTOM = false;
 
 function clearForNewSearchResults(){
@@ -140,7 +140,7 @@ function submit_my_data_search(){
             if (data.data.hasOwnProperty('pagination')){
                 console.log('render pagination');
                 var pagination_json = data.data.pagination;
-                var pagination_html =  nunjucks.render('mydata_templates/mydata.html', pagination_json);
+                var pagination_html =  nunjucks.render('mydata_templates/pagination.html', pagination_json);
                 $("#div-pagination").html(pagination_html);
 
                 // --------------------------------
@@ -171,6 +171,13 @@ function submit_my_data_search(){
                 //$("#div-card-results").append('<hr /><hr />' + card_html).show('slow');;
             }else{
                 console.log('regular search results');
+                // slow down showing of new cards
+                /*var newCardsDiv = $('<div></div>', { css: { 'display': 'none' }});
+                newCardsDiv.html(card_html);
+                
+                $("#div-card-results").html(newCardsDiv);
+                newCardsDiv.slideDown('slow');
+                */
                 // Only show new cards
                 $("#div-card-results").html(card_html);                            
             }
