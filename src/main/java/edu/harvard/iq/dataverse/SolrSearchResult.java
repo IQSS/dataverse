@@ -300,24 +300,20 @@ public class SolrSearchResult {
         }else{
             myDataJson.add("is_published", false);            
         }
-        
-        // If this is a file, add the parent_idntifier
-        //
-        if (this.entity.isInstanceofDataFile()){
-            String globalId = this.getFileParentIdentifier();
-            if (globalId != null){
-                myDataJson.add("parent_identifier", globalId);
-                //          .add("parent_url", "/dataset.xhtml?persistentId=" + globalId);
-            }
-        }else if (this.entity.isInstanceofDataverse()){
-            String parentDataverseAlias = this.getDataverseParentAlias();
-            if (parentDataverseAlias==null){
-                myDataJson.add("parent_alias", "no parent");
+
+        if ((this.getParent() != null)&&(!this.getParent().isEmpty())){
+            System.out.println("keys:" + parent.keySet().toString());
+            if (this.entity.isInstanceofDataFile()){
+                myDataJson.add("parentIdentifier", this.getParent().get(SolrSearchResult.PARENT_IDENTIFIER)) 
+                          .add("parentName", this.getParent().get("name"));   
+
             }else{
-                myDataJson.add("parent_alias", parentDataverseAlias);                
+                // for Dataverse and Dataset, get parent which is a Dataverse
+                myDataJson.add("parentId", this.getParent().get("id"))
+                          .add("parentName", this.getParent().get("name"));   
             }
         }
-    
+
         return myDataJson;
     } //getJsonForMydata
     
