@@ -341,8 +341,6 @@ public class Pager {
     }
     
     private void makePageNumberList(){
-       msgt("makePageNumberList");
-       msg("numResults:" + numResults);
         if (this.numResults <  1){
             return;
         }
@@ -352,11 +350,9 @@ public class Pager {
         if ((this.pageCount <= NUM_VISIBLE_PAGES_BUTTONS)||(this.selectedPageNumber <= 3)){
             
             int numButtons = min(this.pageCount, NUM_VISIBLE_PAGES_BUTTONS);
-            msg("numButtons:" + numButtons);
             this.pageNumberList = new int[numButtons];
         
             for(int i=0; i < numButtons; i++){
-                msg("Loop 1. Add page: " + (i+1));
                 this.pageNumberList[i] = i + 1;
             }
             return;
@@ -377,14 +373,11 @@ public class Pager {
         int startPage;
         if (buttonsToRight >= defaultButtonsToRight){
             startPage = this.selectedPageNumber - defaultButtonsToRight;
-            msg("startPage (a): " + startPage +" buttons to right: " + buttonsToRight);
         }else{
             // 7 -2 -1 = 4 - start on page 4
             startPage = this.selectedPageNumber - (defaultButtonsToRight-buttonsToRight) - defaultButtonsToRight;           
-            msg("startPage (b): " + startPage +" buttons to right: " + buttonsToRight);
         }
         for(int i=0; i< NUM_VISIBLE_PAGES_BUTTONS; i++){
-            msg("Loop 2. Add page: " + (i+startPage));
             this.pageNumberList[i] = i + startPage;
         }        
     }
@@ -396,7 +389,7 @@ public class Pager {
     }
     
     private void msg(String s){
-        System.out.println(s);
+        //System.out.println(s);
     }
     
     private void msgt(String s){
