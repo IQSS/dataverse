@@ -139,100 +139,10 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         return null;
     }
     
-    public String getSolrDocs() throws JSONException{
-        
-        if (solrQueryResponse == null){
-            return "(solrQueryResponse is null)";
-        }
-
-        //JsonObject jsonData = new JsonObject();
-        
-        List<String> outputList = new ArrayList<>();
-
-        for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
-            
-            //outputList.add(doc.toString());
-            //String jsonDoc = doc.toJsonObject(true, true, true).toString();
-            //if (true)return jsonDoc;
-            outputList.add(doc.toJsonObject(true, true, true).toString());
-            //break;
-        }
-        //jsonData.add("docs", (JsonElement) outputList);
-        //return jsonData.toString();
-        return "{ \"docs\" : [ " + StringUtils.join(outputList, ", ") + "] }";
-
-    }
     
-    public MyDataFilterParams getFilterParams() throws JSONException{
-        return this.filterParams;
-    }
-    
-    public MyDataFinder getMyDataFinder(){
-        return this.myDataFinder;
-    }
-
-    public String getMyDataFinderInfo(){
-        if (this.myDataFinder.hasError()){
-            return this.myDataFinder.getErrorMessage();
-        }else{
-            return this.myDataFinder.getTestString();
-        }
-    }
-    
-    public Pager getPager(){
-        return this.pager;
-    }
-    
-    private int randInt(int min, int max) {
-        Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
-    }
-    
-    
-    public String getRandomPagerJSON() throws JSONException{
-        
-        int itemsPerPage = 10;
-        int numResults = randInt(1,200);
-        int numPages =  numResults / itemsPerPage;
-        if ((numResults % itemsPerPage) > 0){
-            numPages++;
-        }
-        int chosenPage = max(randInt(0, numPages), 1);
-        return new Pager(numResults, itemsPerPage, chosenPage).asJSONString();
-                
-    }
     
     public DataverseRolePermissionHelper getRolePermissionHelper(){
         return this.rolePermissionHelper;
     }
     
-    public String getRoleInfo() throws IOException{
-        return "test";     
-    }
-    
-    public String getTestName(){
-        return this.testName;//"blah";
-    }
-
-    public void setTestName(String name){
-        this.testName = name;
-    }
-    
-    public String getSomeJSON() throws JSONException{
-        
-      JSONObject obj = new JSONObject();
-
-      obj.put("name", "foo");
-      obj.put("num", new Integer(100));
-      obj.put("balance", new Double(1000.21));
-      obj.put("is_vip", new Boolean(true));
-
-      return obj.toString();
-    }
-
-    public String getSomeText(){
-        //System.out.println(this.rolePermissionHelper.getRoleNameListString());;
-        return "pigletz";
-        //return this.rolePermissionHelper.getRoleNameListString();
-    }
 }

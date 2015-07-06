@@ -182,42 +182,7 @@ public class MyDataPage implements java.io.Serializable {
                                         dvObjectServiceBean);
         //myDataFinder.runFindDataSteps(userIdentifier);
         this.myDataFinder.runFindDataSteps(filterParams);
-        /*
-        if (!this.myDataFinder.hasError()){
-
-            int paginationStart = 1;
-            boolean dataRelatedToMe = true;
-            int numResultsPerPage = 10;
-            msgt("getSolrFilterQueries: " + this.myDataFinder.getSolrFilterQueries().toString());
-            try {
-                solrQueryResponse = searchService.search(
-                        null, // no user
-                        null, // subtree, default it to Dataverse for now
-                        "*", //this.filterParams.getSearchTerm(),
-                        this.myDataFinder.getSolrFilterQueries(),//filterQueries,
-                        SearchFields.NAME_SORT, SortBy.ASCENDING,
-                        //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
-                        paginationStart,
-                        dataRelatedToMe,
-                        10
-                );
-                msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
-                msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
-                msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
-                
-                //User user,
-                //Dataverse dataverse,
-                //String query, 
-                //List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-                
-            } catch (SearchException ex) {
-                solrQueryResponse = null;
-                Logger.getLogger(RolePermissionHelperPage.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
-        }
-        this.pager = new Pager(111, 10, 3);
-        */
+      
         
         return null;
     }

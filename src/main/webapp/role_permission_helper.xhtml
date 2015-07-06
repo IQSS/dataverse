@@ -26,75 +26,7 @@
                     <f:viewAction action="#{RolePermissionHelperPage.init}" />
           </f:metadata>
           <div>
-              <div id="pagination"></div>
-              <div id="solr_docs">solr_docs</div>
-              <div id="divPagerJSON">anything here?</div>
-
-              <div class="row">
-                  <div class="col-md-2">
-                      <ul id="id_dvobject_types">
-                          <li><label for="id_dvobject_types_0"><input checked="checked" id="id_dvobject_types_0" name="dvobject_types" type="checkbox" value="dataverses" /> Dataverses</label></li>
-                          <li><label for="id_dvobject_types_1"><input checked="checked" id="id_dvobject_types_1" name="dvobject_types" type="checkbox" value="datasets" /> Datasets</label></li>
-                          <li><label for="id_dvobject_types_2"><input checked="checked" id="id_dvobject_types_2" name="dvobject_types" type="checkbox" value="files" /> Files</label></li>
-                      </ul>
-                  </div>
-                  <script>
-                        function checkDtypes(){
-                            var dype_values = new Array();
-                            $.each($("input[name='dvobject_types']:checked"), function() {
-                                dype_values.push($(this).val());
-                              // or you can do something to the actual checked checkboxes by working directly with  'this'
-                              // something like $(this).hide() (only something useful, probably) :P
-                            });
-                            alert(dype_values);
-                        }
-                        $(document).ready(function() {
-          
-                            $("input[name='dvobject_types']").click(function() {
-                                checkDtypes();
-                              // or you can do something to the actual checked checkboxes by working directly with  'this'
-                              // something like $(this).hide() (only something useful, probably) :P
-                            });
-                     
-                            
-                         });
-                  </script>
-                  <div class="col-md-2"></div>
-              </div>
-              <p> 
-                    <b>getSolrDocs</b>
-                    <div class="well"><h:outputText value="#{RolePermissionHelperPage.getSolrDocs()}" escape="false" /> </div>
-                    
-
-                    <!--pre><h:outputText value="#{RolePermissionHelperPage.getMyDataFinderInfo()}" escape="false" /> </pre-->
-                    <b>Results from FilterParams</b>
-                    
-                    <ui:fragment rendered="#{!RolePermissionHelperPage.filterParams.hasError()}">
-                        <div style="padding: 0px 30px;">
-                            <b>dvObjectTypesAsJSON</b>
-                            <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().dvObjectTypesAsJSON}" escape="false" /> </pre>
-                            <b>solrFragmentForDvObjectType</b>
-                            <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().solrFragmentForDvObjectType}" escape="false" /> </pre>
-                            <b>solrFragmentForPublicationStatus</b>
-                            <pre><h:outputText value="#{RolePermissionHelperPage.getFilterParams().solrFragmentForPublicationStatus}" escape="false" /> </pre>
-                            <b>solrDvObjectFilterQuery</b>
-                            <pre>
-                                <h:outputText rendered="#{!RolePermissionHelperPage.myDataFinder.hasError()}" value="#{RolePermissionHelperPage.myDataFinder.solrDvObjectFilterQuery}" escape="false" />
-                                <h:outputText rendered="#{RolePermissionHelperPage.myDataFinder.hasError()}" value="Error found in earlier step" escape="false" />
-                            </pre>
-                        </div>
-                    </ui:fragment>
-                    <br />
-                    <b>Results from MyDataFinder</b>
-                    <div style="padding: 10px 30px;">
-                        <pre><h:outputText value="#{RolePermissionHelperPage.myDataFinder.getTestString()}" escape="false" /></pre>
-                    </div>
-                    
-                    <b>getSomeJSON:</b>
-                    
-                    <pre><h:outputText value="#{RolePermissionHelperPage.someJSON}" escape="false" /> </pre>
-                    <pre><h:outputText value="#{RolePermissionHelperPage.pager.asJSONString()}" escape="false" /> </pre>
-              </p>
+        
               <h4>Related roles for each DvObject type</h4>
     <table class="table table-bordered table-condensed text-center">
 
@@ -116,9 +48,6 @@
 </ui:repeat>
 <!-- end: Iterate through a list of lists -->   
     </table>
-         <!--ui:include src="mydata_js_pagination.xhtml"></ui:include-->
-         <ui:include src="mydata_pager_render.xhtml"></ui:include>
-         
                         
              <h4>roles with dataverse permissions</h4>
             <p>
@@ -139,8 +68,8 @@
              </p><ui:remove> 
             <ui:repeat value="#{RolePermissionHelperPage.rolePermissionHelper.rolesWithDataversePermissions}" var="info">
    <li> 
-  <h:inputText value="#{info.getKey()}" />
-  <h:inputText value="#{info.getValue()}" />
+        <h:inputText value="#{info.getKey()}" />
+        <h:inputText value="#{info.getValue()}" />
    </li> 
   </ui:repeat>     
              <hr />

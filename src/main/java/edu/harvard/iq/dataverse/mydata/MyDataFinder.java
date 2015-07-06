@@ -10,13 +10,17 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -187,6 +191,9 @@ public class MyDataFinder {
         Set<Long> distinctEntityIds = new HashSet<>(entityIds);
         Set<Long> distinctParentIds = new HashSet<>(parentIds);
         
+        msg("distinctEntityIds (1): " + distinctEntityIds.size());
+        msg("distinctParentIds: " + distinctEntityIds.size());
+        
         // See if we can trim down the list of distinctEntityIds
         //  If we have the parent of a distinctEntityId in distinctParentIds,
         //  then we query it via the parent
@@ -209,6 +216,8 @@ public class MyDataFinder {
         // Set the distinctEntityIds to the finalDirectEntityIds
         distinctEntityIds = new HashSet<>(finalDirectEntityIds);
         
+        msg("distinctEntityIds (2): " + distinctEntityIds.size());
+
         // Start up a SolrQueryFormatter for building clauses
         //
         SolrQueryFormatter sqf = new SolrQueryFormatter();
@@ -225,7 +234,13 @@ public class MyDataFinder {
         }
         
         if ((entityIdClause != null) && (parentIdClause != null)){
-            // entityIdClause + parentIdClause
+            try {
+                // entityIdClause + parentIdClause
+                FileUtils.writeStringToFile(new File("/Users/rmp553/Desktop/solr-fds.txt"),
+                        "(" + entityIdClause + " OR " + parentIdClause + ")");
+            } catch (IOException ex) {
+                Logger.getLogger(MyDataFinder.class.getName()).log(Level.SEVERE, null, ex);
+            }
             return "(" + entityIdClause + " OR " + parentIdClause + ")";
         
         } else if (entityIdClause != null){
