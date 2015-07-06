@@ -75,6 +75,7 @@ public class MyDataPage implements java.io.Serializable {
     private MyDataFilterParams filterParams;
     private SolrQueryResponse solrQueryResponse;
     private AuthenticatedUser authUser = null;
+    private Boolean isSuperuserLoggedIn = null;
     
     private void msg(String s){
         System.out.println(s);
@@ -99,7 +100,38 @@ public class MyDataPage implements java.io.Serializable {
     
         
     public String getRetrieveDataFullAPIPath(){
-        return DataRetriever.retrieveDataFullAPIPath;
+        return DataRetrieverAPI.retrieveDataFullAPIPath;
+    }
+    
+    public boolean isSuperuser(){
+        
+        if (this.isSuperuserLoggedIn == null){
+            this.setIsSuperUserLoggedIn();
+        }
+        return this.isSuperuserLoggedIn;
+        
+    }
+    
+    private void setIsSuperUserLoggedIn(){
+        
+        // Is this an authenticated user?
+        //
+        if ((session.getUser() == null)||(!session.getUser().isAuthenticated())){ 
+             this.isSuperuserLoggedIn = false;             
+             return;
+        }
+         
+        // Is this a user?
+        //
+        authUser =  (AuthenticatedUser)session.getUser();
+        if (authUser==null){
+            this.isSuperuserLoggedIn = false;
+            return;
+        }
+        
+        // Is this a superuser?
+        //
+        this.isSuperuserLoggedIn = authUser.isSuperuser();
     }
     
     
