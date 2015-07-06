@@ -64,7 +64,8 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_facets") boolean showFacets,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
-            @QueryParam("show_api_urls") boolean showApiUrls
+            @QueryParam("show_api_urls") boolean showApiUrls,
+            @QueryParam("show_my_data") boolean showMyData
     ) {
 
         User user;
@@ -101,7 +102,7 @@ public class Search extends AbstractApiBean {
             }
 
             // users can't change these (yet anyway)
-            boolean dataRelatedToMe = getDataRelatedToMe();
+            boolean dataRelatedToMe = showMyData; //getDataRelatedToMe();
 
             SolrQueryResponse solrQueryResponse;
             try {

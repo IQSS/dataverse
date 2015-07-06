@@ -193,7 +193,7 @@ public class Guestbook implements Serializable {
         for (CustomQuestion cq : this.getCustomQuestions()){
             if(cq.isRequired()){
             if(retVal.isEmpty()){
-               retVal = "Required Custom Qustions<br/>&#160; &#8226; " + cq.getQuestionString(); 
+               retVal = "Required Custom Questions<br/>&#160; &#8226; " + cq.getQuestionString(); 
             } else { 
                retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
             }
@@ -207,7 +207,7 @@ public class Guestbook implements Serializable {
         for (CustomQuestion cq : this.getCustomQuestions()){
             if(!cq.isRequired()){
             if(retVal.isEmpty()){
-               retVal = "Optional Custom Qustions<br/>&#160; &#8226; " + cq.getQuestionString(); 
+               retVal = "Optional Custom Questions<br/>&#160; &#8226; " + cq.getQuestionString(); 
             } else { 
                retVal += "<br/>&#160; &#8226; " + cq.getQuestionString();
             }

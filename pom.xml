@@ -130,6 +130,12 @@
             <version>0.3m</version>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>16.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
@@ -306,6 +312,7 @@
             <version>2.4.0</version>
             <scope>test</scope>
         </dependency>
+        
     </dependencies>
 
     <build>

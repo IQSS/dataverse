@@ -496,7 +496,7 @@
                                                 value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
                                                 rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
                                                 rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}" rowKey="#{guestbook}">
-                                       <p:column selectionMode="single" class="col-select-width text-center" rendered="true"/>
+                                       <p:column  selectionMode="single" class="col-select-width text-center" rendered="true"  />
                                        <p:column>
                                            <p class="form-control-static pull-left">
                                                <h:outputText value="#{guestbook.name}" />

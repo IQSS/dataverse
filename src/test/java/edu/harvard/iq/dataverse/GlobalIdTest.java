@@ -67,6 +67,22 @@ public class GlobalIdTest {
         // TODO review the generated test code and remove the default call to fail.
     }
     
+    @Test
+    public void testContructFromDataset(){
+        Dataset testDS = new Dataset();
+        
+        testDS.setProtocol("doi");
+        testDS.setAuthority("10.5072/FK2");
+        testDS.setIdentifier("BYM3IW");
+        
+        GlobalId instance = new GlobalId(testDS);
+            
+        assertEquals("doi", instance.getProtocol());
+        assertEquals("10.5072/FK2", instance.getAuthority());
+        assertEquals("BYM3IW", instance.getIdentifier());
+        
+    }
+    
 
     @Test
     public void testInject(){

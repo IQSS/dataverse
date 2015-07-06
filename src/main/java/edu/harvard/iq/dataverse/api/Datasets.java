@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -52,6 +53,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
+    
+    @EJB
+    DOIEZIdServiceBean doiEZIdServiceBean;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -223,7 +227,21 @@ public class Datasets extends AbstractApiBean {
         }
 
     }
-    
+    /*
+    @GET
+    @Path("{id}/modifyIdentifierStatus")
+    public Response updateEZIDIdentifierStatus(@PathParam("id") Long id, @QueryParam("key") String apiKey) {
+
+        try {
+            execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), findUserOrDie(apiKey)), "Update Target url " + id);
+            return okResponse("Dataset " + id + " target url updated");
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+    }
+    */
     @PUT
 	@Path("{id}/versions/{versionId}")
 	public Response updateDraftVersion( String jsonBody, @PathParam("id") Long id,  @PathParam("versionId") String versionId ){

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
@@ -31,6 +32,11 @@ import javax.persistence.*;
 		, @Index(columnList="creator_id")
 		, @Index(columnList="releaseuser_id")})
 public abstract class DvObject implements java.io.Serializable {
+    
+    public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
+    public static final String DATASET_DTYPE_STRING = "Dataset";
+    public static final String DATAFILE_DTYPE_STRING = "DataFile";
+    public static final List<String> DTYPE_LIST = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING, DATAFILE_DTYPE_STRING);
     
     public static final Visitor<String> NamePrinter = new Visitor<String>(){
 

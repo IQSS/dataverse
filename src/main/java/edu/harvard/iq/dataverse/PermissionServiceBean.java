@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -24,6 +25,8 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import javax.persistence.Query;
 
@@ -288,6 +291,118 @@ public class PermissionServiceBean {
         }
         
         return usersHasPermissionOn;
-    }     
+    } 
+    
+    public List<Long> getDvObjectsUserHasRoleOn(User user) {
+        return getDvObjectIdsUserHasRoleOn(user, null, null, false);
+    }
+
+    public List<Long> getDvObjectIdsUserHasRoleOn(User user, List<DataverseRole> roles) {
+        return getDvObjectIdsUserHasRoleOn(user, roles, null, false);
+    }
+
+    /*
+    Method takes in a user and optional list of roles and dvobject type
+    queries the role assigment table filtering by optional roles and dv
+    returns dvobject ids
+    */
+    
+    private String getRolesClause(List<DataverseRole> roles) {
+        String roleString = "";
+        if (roles != null && !roles.isEmpty()) {
+            roleString = " and role_id in (";
+            boolean first = true;
+            for (DataverseRole role : roles) {
+                if (!first) {
+                    roleString += ",";
+                }
+                roleString += role.getId();
+                first = false;
+            }
+            roleString += ")";
+        }
+        return roleString;
+    }
+
+    private String getTypesClause(List<String> types) {
+        boolean firstType = true;
+        String typeString = "";
+        if (types != null && !types.isEmpty()) {
+            typeString = " dtype in (";
+            for (String type : types) {
+                if (!firstType) {
+                    typeString += ",";
+                }
+                typeString += "'" + type + "'";
+            }
+            typeString += ") and ";
+        }
+        return typeString;
+    }
+    
+       
+    public List<Long> getDvObjectIdsUserHasRoleOn(User user, List<DataverseRole> roles, List<String> types, boolean indirect) {
+
+
+        String roleString = getRolesClause (roles);
+        String typeString = getTypesClause(types);
+
+        Query nativeQuery = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+                + typeString + " id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
+                + roleString + ");");
+        List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
+        List<Long> dataversesUserHasPermissionOn = new LinkedList<>();
+        String indirectParentIds = "";
+        Boolean indirectFirst = true;
+        for (int dvIdAsInt : dataverseIdsToCheck) {
+            dataversesUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
+            if (indirect) {
+                if (indirectFirst) {
+                    indirectParentIds = "(" + Integer.toString(dvIdAsInt);
+                    indirectFirst = false;
+                } else {
+                    indirectParentIds += ", " + Integer.toString(dvIdAsInt);
+                }
+            }
+        }
+        
+        /*
+        Get child datasets and files
+        */
+
+        if (indirect) {
+            indirectParentIds += ") ";
+            Query nativeQueryIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+                    + " owner_id in " + indirectParentIds + " and dType = 'Dataset'; ");
+
+            List<Integer> childDatasetIds = nativeQueryIndirect.getResultList();
+
+            String indirectDatasetParentIds = "";
+            Boolean indirectFileFirst = true;
+            for (int dvIdAsInt : childDatasetIds) {
+                dataversesUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
+                if (indirect) {
+                    if (indirectFileFirst) {
+                        indirectDatasetParentIds = "(" + Integer.toString(dvIdAsInt);
+                        indirectFileFirst = false;
+                    } else {
+                        indirectDatasetParentIds += ", " + Integer.toString(dvIdAsInt);
+                    }
+                }
+            }
+            Query nativeQueryFileIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+                    + " owner_id in " + indirectDatasetParentIds + " and dType = 'DataFile'; ");
+
+            List<Integer> childFileIds = nativeQueryFileIndirect.getResultList();
+
+            for (int dvIdAsInt : childFileIds) {
+                dataversesUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
+
+            }
+        }
+        return dataversesUserHasPermissionOn;
+    }
+    
+    
     
 }

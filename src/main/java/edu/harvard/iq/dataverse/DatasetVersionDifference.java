@@ -52,17 +52,20 @@ public class DatasetVersionDifference {
         }
         for (DatasetField dsfn : newVersion.getDatasetFields()) {
             boolean added = true;
-            if (dsfn.getDatasetFieldType().isPrimitive()) {
-                for (DatasetField dsfo : originalVersion.getDatasetFields()) {
-                    if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
-                        added = false;
-                        break;
-                    }
+            for (DatasetField dsfo : originalVersion.getDatasetFields()) {
+                if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
+                    added = false;
+                    break;
                 }
-                if (added && !dsfn.isEmpty()) {
-                    updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
-                    addToSummary(null, dsfn);
+            }
+
+            if (added && !dsfn.isEmpty()) {
+                if (dsfn.getDatasetFieldType().isPrimitive()){
+                   updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
+                } else {
+                   updateBlockSummary(dsfn, dsfn.getDatasetFieldCompoundValues().size(), 0, 0);
                 }
+                addToSummary(null, dsfn);
             }
         }
 
