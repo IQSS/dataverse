@@ -128,11 +128,6 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	}
         
-        @Override
-	public LinkedDvObjectServiceBean dvoLinking() {
-		return null;
-	}
-        
          @Override
 	public AuthenticationServiceBean authentication() {
 		return null;

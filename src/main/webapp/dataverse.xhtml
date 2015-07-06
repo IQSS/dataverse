@@ -193,9 +193,10 @@
                         <hr class="margin-top-half margin-bottom-half"/>
                         
                         <!-- Metadata Panel -->
-                        <p:panel styleClass="panelLayoutBlock"  widgetVar="optionBlock">   
-                            
-                            <p:commandButton id="hiddenRefresh" value="back" style="display:none"  />
+                        <p:panel styleClass="panelLayoutBlock"  widgetVar="optionBlock">                            
+                            <p:commandButton id="hiddenRefresh" value="back" style="display:none" 
+                                             actionListener="#{DataversePage.refresh}"
+                                             update="@widgetVar(optionBlock)" />
 
                             <div class="row">
                                 <div class="col-sm-12 form-group">
@@ -262,14 +263,14 @@
                                                 <div class="panel panel-default">
                                                     <div id="metadataFieldOptionsPanel-Body" class="panel-body">
                                                         <table id="metadataFieldOptions" class="table table-striped">
-                                                            <tbody>                                                                
-                                                                <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">                                                                    
+                                                            <tbody>
+                                                                <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">
                                                                     <tr>
                                                                         <td>
                                                                             <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
                                                                                                       onchange="#{DataversePage.updateInclude(mdb.id, dsft.id)}"                                                 
                                                                                                      disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or DataversePage.editInputLevel == false }">
-                                                                                <p:ajax update="@widgetVar(optionBlock)" />
+                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id}), @widgetVar(optionBlock)" />
                                                                             </p:selectBooleanCheckbox>
                                                                             <div class="checkbox child-field" jsf:rendered="#{dsft.hasParent}">
                                                                                 <label>
@@ -278,23 +279,20 @@
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptionsRadio#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}"
-                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}"                                                                                              
-                                                                                              valueChangeListener="#{DataversePage.toggleInputLevel(mdb.id, dsft.id)}"                                                                                              
-                                                                                                  >                                                                               
-                                                                               <f:ajax  event="click" listener="#{DataversePage.toggleInputLevel(mdb.id, dsft.id)}"/>                                                                                 
-                                                                               <!-- <p:ajax update="@widgetVar(OptButton#{dsft.id})"/>  -->
-                                                                                <f:selectItems value="#{dsft.optionSelectItems}" />                                                                                
+                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}"
+                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}">
+                                                                                <f:selectItems value="#{dsft.optionSelectItems}"/>
+                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})"/>
                                                                             </p:selectOneRadio>
 
                                                                             <span class="text-muted" jsf:rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
                                                                                 #{bundle['dataverse.field.requiredByDataverse']}
                                                                             </span>
                                                                         </td>
-                                                                    </tr>                                                                       
-                                                                </ui:repeat>                                                                  
+                                                                    </tr>
+                                                                </ui:repeat>
                                                             </tbody>
-                                                        </table>                                                         
+                                                        </table>
                                                     </div>
                                                 </div>
                                                 <p:commandLink id="hideDSFT" styleClass="btn btn-default" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes}">
