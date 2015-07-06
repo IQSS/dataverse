@@ -192,7 +192,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
-        boolean DEUBG_MODE = true;
+        boolean DEUBG_MODE = false;
         boolean OTHER_USER = false;
         //msgt("types: " + types.toString());
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
