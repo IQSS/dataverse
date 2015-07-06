@@ -154,6 +154,32 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return authUser.isSuperuser();
     }
     
+    private AuthenticatedUser getUserFromIdentifier(String userIdentifier){
+        
+        if ((userIdentifier==null)||(userIdentifier.isEmpty())){
+            return null;
+        }
+        return authenticationService.getAuthenticatedUser(userIdentifier);
+    }
+    
+    private String getJSONErrorString(String jsonMsg, String optionalLoggerMsg){
+        
+        if (jsonMsg == null){
+            throw new NullPointerException("jsonMsg cannot be null");
+        }
+        if (optionalLoggerMsg != null){
+            logger.severe(optionalLoggerMsg);
+        }
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        
+        jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
+        jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, jsonMsg);
+        
+        return jsonData.build().toString();
+        
+    }
+    
+    
     @Path(retrieveDataPartialAPIPath)
     @GET
     @Produces({"application/json"})
@@ -166,19 +192,28 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
+        boolean DEUBG_MODE = true;
+        boolean OTHER_USER = false;
         //msgt("types: " + types.toString());
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
 
-        if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
-             authUser = (AuthenticatedUser)session.getUser();
-        }else{
-            authUser = authenticationService.getAuthenticatedUser(userIdentifier);
+        if (DEUBG_MODE==true){      // DEBUG: use userIdentifier
+            authUser = getUserFromIdentifier(userIdentifier);
             if (authUser == null){
-                logger.severe("retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");
-                jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
-                jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, "Requires authentication");
-                return jsonData.build().toString();
+                return this.getJSONErrorString("Requires authentication", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
             }
+        }else if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
+             authUser = (AuthenticatedUser)session.getUser();
+       
+             // If person is a superuser, see if a userIdentifier has been specified 
+             // and use that instead
+             if ((authUser.isSuperuser())&&(userIdentifier != null)){
+                 AuthenticatedUser otherUser = getUserFromIdentifier(userIdentifier);
+                 if (otherUser != null){
+                     authUser = otherUser;
+                     OTHER_USER = true;
+                 }
+             }       
         }
                      
         roleList = dataverseRoleService.findAll();
@@ -305,6 +340,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 .add("search_term",  filterParams.getSearchTerm())
                                 .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
             );
+        if (OTHER_USER==true){
+            jsonData.add("other_user", authUser.getIdentifier());
+        }
                                 
         return jsonData.build().toString();
     }
