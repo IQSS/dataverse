@@ -357,6 +357,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
                                 .add("search_term",  filterParams.getSearchTerm())
                                 .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
+                                .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
                                 .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
             );
         if (OTHER_USER==true){
@@ -366,17 +367,33 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return jsonData.build().toString();
     }
    
-    private JsonObjectBuilder getDvObjectTypeCounts(SolrQueryResponse solrResponse){
-        
-        if (solrQueryResponse==null){
+    private JsonObjectBuilder getDvObjectTypeCounts(SolrQueryResponse solrResponse) {
+
+        if (solrQueryResponse == null) {
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: solrQueryResponse should not be null");
             return null;
         }
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
-        for (FacetCategory fc : solrResponse.getTypeFacetCategories()){
-            for (FacetLabel fl : fc.getFacetLabel()) {  
+        for (FacetCategory fc : solrResponse.getTypeFacetCategories()) {
+            for (FacetLabel fl : fc.getFacetLabel()) {
                 jsonData.add(fl.getName() + "_count", fl.getCount());
-                //msg("name: | " + fl.getName()+ " | count: " + fl.getCount());
+            }
+        }
+        return jsonData;
+    }
+    
+    private JsonObjectBuilder getPublicationStatusCounts(SolrQueryResponse solrResponse) {
+
+        if (solrQueryResponse == null) {
+            logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: solrQueryResponse should not be null");
+            return null;
+        }
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        for (FacetCategory fc : solrResponse.getFacetCategoryList()) {
+            for (FacetLabel fl : fc.getFacetLabel()) {
+                if (fl.getName().equals("Published") || fl.getName().equals("Draft") || fl.getName().equals("Unpublished")) {
+                    jsonData.add(fl.getName() + "_count", fl.getCount());
+                }
             }
         }
         return jsonData;
