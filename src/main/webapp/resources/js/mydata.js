@@ -54,7 +54,7 @@ function init_mydata_page(){
 // clear page elements before displaying new results
 //-----------------------------------------
 function clearForNewSearchResults(){
-    reset_dvobject_counts();
+    reset_filter_counts();
     clearWarningAlert();
     clearCardResults();
     clearPaginationResults();
@@ -135,23 +135,39 @@ function regular_search(){
 // Reset the counts for Dataverses, Datasets, Files
 // --------------------------------
 var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];
-function reset_dvobject_counts(){
+var PUB_TYPE_COUNT_VARS = ["published_count", "unpublished_count", "draft_count"];
+
+function reset_filter_counts(){
      $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
           $('#id_' + attr_name).html('');
      });
+    $.each( PUB_TYPE_COUNT_VARS, function( key, attr_name ) {
+          $('#id_' + attr_name).html('');
+     });
+     
 }
 
 // --------------------------------
 // Update the counts for Dataverses, Datasets, Files
 // --------------------------------
 // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
-function update_dvobject_count(json_info){
+function update_filter_counts(json_info){
     
     var dcounts = json_info.data.dvobject_counts;
     $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
         //console.log('attr_name: ' + attr_name);
         if(attr_name in dcounts){                    
             $('#id_' + attr_name).html('(' + dcounts[attr_name] + ')');                    
+        }else{
+            $('#id_' + attr_name).html('');
+        }
+    });
+    
+    var pub_counts = json_info.data.pubstatus_counts;
+    $.each( PUB_TYPE_COUNT_VARS, function( key, attr_name ) {
+        //console.log('attr_name: ' + attr_name);
+        if(attr_name in pub_counts){                    
+            $('#id_' + attr_name).html('(' + pub_counts[attr_name] + ')');                    
         }else{
             $('#id_' + attr_name).html('');
         }
@@ -262,7 +278,7 @@ function submit_my_data_search(){
             // (4) Let's render the cards
             // --------------------------------
             // Pass the solr docs to the cards template
-            var card_html =  nunjucks.render('mydata_templates/cards.html', data);
+            var card_html =  nunjucks.render('mydata_templates/cards_minimum.html', data);
             if (APPEND_CARDS_TO_BOTTOM){
                 //console.log('add cards to bottom results');
                 // Add new cards after existing cards
@@ -282,7 +298,7 @@ function submit_my_data_search(){
             // (5) Update the item counts
             // --------------------------------
             // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
-            update_dvobject_count(data);
+            update_filter_counts(data);
             bind_filter_remove_tags();
         }
     });

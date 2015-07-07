@@ -30,7 +30,7 @@
     <!-- start: row -->
     <div class="row">
         <!-- start filter column -->
-        <div class="col-md-3">
+        <div class="col-xs-3">
             <form id="mydata_filter_form" name="mydata_filter_form">
             <div>
     <!--label for="exampleInputEmail1">Email address</label-->
@@ -67,7 +67,7 @@
                 <ui:repeat value="#{MyDataPage.publishedStates}" var="pstate">
                     <div class="checkbox"><label>
                         <input name="published_states" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
-                        #{pstate}
+                        #{pstate} <span id="id_#{pstate.toLowerCase()}_count">#{pstate.toLowerCase()}</span>
                     </label></div>                
                 </ui:repeat>
             </div>
@@ -88,7 +88,7 @@
             <div id="div-search-params" class="well"></div>
         </div><!-- end: filter column -->
         <!-- start: workspace column -->
-        <div class="col-md-9">
+        <div class="col-xs-9">
             <div id="div-pagination" style="height:60px;"> </div>
             <hr />
             <!--<div id="div-test-json" class="well">(pagination)</div>-->

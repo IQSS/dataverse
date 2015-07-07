@@ -392,7 +392,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         for (FacetCategory fc : solrResponse.getFacetCategoryList()) {
             for (FacetLabel fl : fc.getFacetLabel()) {
                 if (fl.getName().equals("Published") || fl.getName().equals("Draft") || fl.getName().equals("Unpublished")) {
-                    jsonData.add(fl.getName() + "_count", fl.getCount());
+                    jsonData.add(fl.getName().toLowerCase() + "_count", fl.getCount());
                 }
             }
         }
