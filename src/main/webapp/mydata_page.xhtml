@@ -36,9 +36,9 @@
     <!--label for="exampleInputEmail1">Email address</label-->
             <input type="text" class="form-control" name="mydata_search_term" id="mydata_search_term" placeholder="Search" />
             <input type="hidden" name="selected_page" id="selected_page" value="1" />
-            <ui:fragment rendered="#{MyDataPage.isSuperuser()}"><p>superuser:)</p></ui:fragment>
-            <ui:fragment rendered="#{!MyDataPage.isSuperuser()}"><p>not a superuser, box below should be hidden :(</p></ui:fragment>
+            <ui:fragment rendered="#{MyDataPage.isSuperuser()}"><p>superuser:)</p>
             <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" />
+            </ui:fragment>
             </div>
             <hr />            
                        
@@ -115,59 +115,14 @@
     </script>
     <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
     <script>
+            <ui:remove>
             <ui:fragment rendered="#{MyDataPage.hasFilterParams()}">
             dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
             </ui:fragment>
-           
-         
-          
-          $(document).ready(function() {
-              $('#div-more-cards-link').hide();
-             // var env = new nunjucks.Environment(new nunjucks.WebLoader('/mydata_templates'), true);
-              //nunjucks.configure({ autoescape: true });
-              
-              // Capture checkbox clicks
-              //
-              $('input:checkbox').on('click',function(){ 
-                  //var checkedId=$(this,'input').attr('id');
-                  //alert(checkedId);
-                  $("#selected_page").val('1');
-                  regular_search();
-              });
-              
-              // Capture pressing return in search box
-              $('#mydata_search_term').keypress(function(e) {
-                if (e.which == '13') {
-                    $("#selected_page").val('1');
-                    regular_search();
-                }
-              });
-              
-            <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
-            </ui:fragment>
-            // Capture pressing return in user identifier box
-            // superuser's only
-              $('#userIdentifier').keypress(function(e) {
-                if (e.which == '13') {
-                    regular_search();
-                }
-              });
-              
-              
-              
-              $( "#mydata_filter_form" ).submit(function( event ) {
-                //alert( "Handler for .submit() called." );
-                event.preventDefault();
-                $("#selected_page").val('1');
-                regular_search();
+            </ui:remove>
 
-              });
-              
-              regular_search(); // run initial search
-              //var selected = [];
-              //$('#checkboxes input:checked').each(function() {
-              //  selected.push($(this).attr('name'));
-              //});
+          $(document).ready(function() {
+             init_mydata_page(); // source: mydata.js
            });
     </script>
 </ui:define>

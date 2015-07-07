@@ -1,5 +1,55 @@
 var MYDATA_DEBUG_ON = true;
 var APPEND_CARDS_TO_BOTTOM = false;
+var SHOW_PAGINATION = true;
+
+      
+          
+function init_mydata_page(){
+
+   $('#div-more-cards-link').hide();
+   // var env = new nunjucks.Environment(new nunjucks.WebLoader('/mydata_templates'), true);
+    //nunjucks.configure({ autoescape: true });
+
+    // Capture checkbox clicks
+    //
+    $('input:checkbox').on('click',function(){ 
+        //var checkedId=$(this,'input').attr('id');
+        //alert(checkedId);
+        $("#selected_page").val('1');
+        regular_search();
+    });
+
+    // Capture pressing return in search box
+    $('#mydata_search_term').keypress(function(e) {
+      if (e.which == '13') {
+          $("#selected_page").val('1');
+          regular_search();
+      }
+    });
+
+  // Capture pressing return in user identifier box
+  // superuser's only
+    $('#userIdentifier').keypress(function(e) {
+      if (e.which == '13') {
+          regular_search();
+      }
+    });
+
+    $( "#mydata_filter_form" ).submit(function( event ) {
+      //alert( "Handler for .submit() called." );
+      event.preventDefault();
+      $("#selected_page").val('1');
+      regular_search();
+
+    });
+
+    regular_search(); // run initial search
+    //var selected = [];
+    //$('#checkboxes input:checked').each(function() {
+    //  selected.push($(this).attr('name'));
+    //});
+} // end init_mydata_page
+
 
 function clearForNewSearchResults(){
     reset_dvobject_counts();
@@ -18,6 +68,9 @@ function clearCardResults(){
     $('#div-card-results').html('');
 }
 function clearPaginationResults(){
+    if (!SHOW_PAGINATION){
+        return;
+    }
     console.log('clearPaginationResults');
     $("#div-pagination").html('');
 }
@@ -63,7 +116,7 @@ function regular_search(){
 
 var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];
 // --------------------------------
-// (5) Reset the item counts
+// Reset the counts for Dataverses, Datasets, Files
 // --------------------------------
 function reset_dvobject_counts(){
      $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
@@ -72,7 +125,7 @@ function reset_dvobject_counts(){
 }
 
 // --------------------------------
-// (5) Update the item counts
+// (5) Update the counts for Dataverses, Datasets, Files
 // --------------------------------
 // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
 function update_dvobject_count(json_info){
@@ -88,6 +141,48 @@ function update_dvobject_count(json_info){
     });
 }
 
+/**
+ * Create the pager inside the pagination div
+ * 
+ * Example pagination data:
+ * 
+ * {"isNecessary":true,"numResults":361,"docsPerPage":10,"selectedPageNumber":4,
+ * "pageCount":37,"pageNumberList":[2,3,4,5,6],"hasPreviousPageNumber":true,
+ * "previousPageNumber":3,"hasNextPageNumber":true,"nextPageNumber":5,
+ * "startCardNumber":31,"endCardNumber":40}
+ * 
+ **/
+function updatePagination(json_data){
+
+    
+    if (json_data.data.hasOwnProperty('pagination')){
+        //console.log('render pagination');
+        var pagination_json = json_data.data.pagination;
+        
+        
+        if (SHOW_PAGINATION){
+            // Use nunjucks to create the pagination HTML
+            //
+            var pagination_html =  nunjucks.render('mydata_templates/pagination.html', pagination_json);
+        
+            // Put the pagination HTML into the div
+            //
+            $("#div-pagination").html(pagination_html);
+        }
+   
+        // --------------------------------
+        // (3b) If this isn't the last page, show
+        //  a "more results" link after the last card
+        // --------------------------------
+        if (pagination_json.hasNextPageNumber){
+            $('#lnk_add_more_cards').attr("rel", pagination_json.nextPageNumber);
+            console.log("update link to: " + pagination_json.nextPageNumber);
+            $('#div-more-cards-link').show();
+        }
+        bindPages();
+    }
+}            
+            
 function submit_my_data_search(){
 
 
@@ -137,23 +232,8 @@ function submit_my_data_search(){
             // --------------------------------
             // (3a) If JSON has pagination info, make a pager
             // --------------------------------
-            if (data.data.hasOwnProperty('pagination')){
-                console.log('render pagination');
-                var pagination_json = data.data.pagination;
-                var pagination_html =  nunjucks.render('mydata_templates/pagination.html', pagination_json);
-                $("#div-pagination").html(pagination_html);
-
-                // --------------------------------
-                // (3b) If this isn't the last page, show
-                //  a "more results" link after the last card
-                // --------------------------------
-                if (pagination_json.hasNextPageNumber){
-                    $('#lnk_add_more_cards').attr("rel", pagination_json.nextPageNumber);
-                    console.log("update link to: " + pagination_json.nextPageNumber);
-                    $('#div-more-cards-link').show();
-                }
-                bindPages();
-            }
+            updatePagination(data);
+            
             // --------------------------------
             // (4) Let's render the cards
             // --------------------------------
