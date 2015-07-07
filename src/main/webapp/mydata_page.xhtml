@@ -102,25 +102,14 @@
             <div id="div-json-results">workspace</div>
         </div>
         <!-- end: workspace column -->
-                <!--
-                <li><label for="id_dvobject_types_0"><input checked="checked" id="id_dvobject_types_0" name="dvobject_types" type="checkbox" value="dataverses" /> Dataverses</label></li>
-                <li><label for="id_dvobject_types_1"><input checked="checked" id="id_dvobject_types_1" name="dvobject_types" type="checkbox" value="datasets" /> Datasets</label></li>
-                <li><label for="id_dvobject_types_2"><input checked="checked" id="id_dvobject_types_2" name="dvobject_types" type="checkbox" value="files" /> Files</label></li>
-                -->
-    </div><!-- end row -->
+              </div><!-- end row -->
     <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
     <script> 
         <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
         var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
     </script>
     <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
-    <script>
-            <ui:remove>
-            <ui:fragment rendered="#{MyDataPage.hasFilterParams()}">
-            dtype_info =  <h:outputText value="#{MyDataPage.getFilterParams().dvObjectTypesAsJSONString}" escape="false" />;                        
-            </ui:fragment>
-            </ui:remove>
-
+    <script>            
           $(document).ready(function() {
              init_mydata_page(); // source: mydata.js
            });
