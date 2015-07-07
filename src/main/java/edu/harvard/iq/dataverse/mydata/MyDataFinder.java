@@ -158,6 +158,11 @@ public class MyDataFinder {
 
         // FQ by entityId (dvObject id) and parentId (dvObject ownerId)
         //
+        String dvObjectFQ = this.getSolrDvObjectFilterQuery();
+        if (dvObjectFQ ==null){
+            this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
+            return null;
+        }
         filterQueries.add(this.getSolrDvObjectFilterQuery());
         
         return filterQueries;
@@ -190,6 +195,11 @@ public class MyDataFinder {
         //
         Set<Long> distinctEntityIds = new HashSet<>(entityIds);
         Set<Long> distinctParentIds = new HashSet<>(parentIds);
+        
+        if ((distinctEntityIds.size()==0)&&(distinctParentIds.size()==0)){
+            this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
+            return null;
+        }
         
         msg("distinctEntityIds (1): " + distinctEntityIds.size());
         msg("distinctParentIds: " + distinctEntityIds.size());

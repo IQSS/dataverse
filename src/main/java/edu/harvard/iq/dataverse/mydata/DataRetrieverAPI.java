@@ -84,6 +84,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
     public static final String JSON_DATA_FIELD_NAME = "data";
     
+    public static final String MSG_NO_RESULTS_FOUND = "Sorry, no results were found.";
+    
     /**
      * Constructor
      * 
@@ -191,8 +193,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("userIdentifier") String userIdentifier) { //String myDataParams) {
 
         msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-
-        boolean DEUBG_MODE = false;
+        msg("Selected page: " + selectedPage);
+        boolean DEBUG_MODE = true;
         boolean OTHER_USER = false;
 
 
@@ -202,7 +204,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         AuthenticatedUser searchUser = null;  
         
 
-        if (DEUBG_MODE==true){      // DEBUG: use userIdentifier
+        if (DEBUG_MODE==true){      // DEBUG: use userIdentifier
             authUser = getUserFromIdentifier(userIdentifier);
             if (authUser == null){
                 return this.getJSONErrorString("Requires authentication", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
@@ -268,8 +270,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             paginationStart = selectedPage;
         }
         boolean dataRelatedToMe = true;
-        msgt("myDataFinder.getSolrFilterQueries(): " + myDataFinder.getSolrFilterQueries().toString());
-        
+       
 
         // Default the searchUser to the authUser.
         // The exception: for logged-in superusers, the searchUser may differ from the authUser
@@ -278,13 +279,21 @@ public class DataRetrieverAPI extends AbstractApiBean {
             searchUser = authUser;
         }
 
+        msg("search with user: " + searchUser.getIdentifier());
+
+        List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
+        if (filterQueries==null){
+            msg("No ids found for this search");
+            return this.getJSONErrorString(DataRetrieverAPI.MSG_NO_RESULTS_FOUND, null);
+        }
+        msgt("myDataFinder.getSolrFilterQueries(): " + myDataFinder.getSolrFilterQueries().toString());
         
         try {
                 solrQueryResponse = searchService.search(
                         searchUser, // 
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
-                        this.myDataFinder.getSolrFilterQueries(),//filterQueries,
+                        filterQueries,//filterQueries,
                         SearchFields.NAME_SORT, SortBy.ASCENDING,
                         //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         paginationStart,
@@ -296,7 +305,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                 msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
                 if (this.solrQueryResponse.getNumResultsFound()==0){
-                    return this.getJSONErrorString("Sorry, no results were found.", null);
+                    return this.getJSONErrorString(DataRetrieverAPI.MSG_NO_RESULTS_FOUND, null);
                 }
                  msgt("getFilterQueriesActual: " + solrQueryResponse.getFilterQueriesActual());
                  msgt("getFacetCategoryList: " + solrQueryResponse.getFacetCategoryList());
