@@ -3,7 +3,10 @@ var APPEND_CARDS_TO_BOTTOM = false;
 var SHOW_PAGINATION = true;
 
       
-          
+//-----------------------------------------
+//  Called when mydata_page loads
+//  Binds checkboxes, buttons, etc
+//-----------------------------------------
 function init_mydata_page(){
 
    $('#div-more-cards-link').hide();
@@ -13,8 +16,6 @@ function init_mydata_page(){
     // Capture checkbox clicks
     //
     $('input:checkbox').on('click',function(){ 
-        //var checkedId=$(this,'input').attr('id');
-        //alert(checkedId);
         $("#selected_page").val('1');
         regular_search();
     });
@@ -27,14 +28,14 @@ function init_mydata_page(){
       }
     });
 
-  // Capture pressing return in user identifier box
-  // superuser's only
+    // Capture pressing return in user identifier box
     $('#userIdentifier').keypress(function(e) {
       if (e.which == '13') {
           regular_search();
       }
     });
 
+    // Normal form submit
     $( "#mydata_filter_form" ).submit(function( event ) {
       //alert( "Handler for .submit() called." );
       event.preventDefault();
@@ -43,14 +44,15 @@ function init_mydata_page(){
 
     });
 
+    // Run the initial search after user loads .xhtml page
     regular_search(); // run initial search
-    //var selected = [];
-    //$('#checkboxes input:checked').each(function() {
-    //  selected.push($(this).attr('name'));
-    //});
+
 } // end init_mydata_page
 
 
+//-----------------------------------------
+// clear page elements before displaying new results
+//-----------------------------------------
 function clearForNewSearchResults(){
     reset_dvobject_counts();
     clearWarningAlert();
@@ -58,42 +60,36 @@ function clearForNewSearchResults(){
     clearPaginationResults();
     clearJsonResults();
 }
-function clearJsonResults(){
-    $("#div-json-results").html('');
-}
-function clearWarningAlert(){
-    $('#div-result-message').html('');
-}
-function clearCardResults(){
-    $('#div-card-results').html('');
-}
+function clearJsonResults(){ $("#div-json-results").html('');}
+function clearWarningAlert(){ $('#div-result-message').html('');}
+function clearCardResults(){ $('#div-card-results').html('');}
 function clearPaginationResults(){
-    if (!SHOW_PAGINATION){
-        return;
-    }
-    console.log('clearPaginationResults');
-    $("#div-pagination").html('');
+    if (SHOW_PAGINATION){  $("#div-pagination").html(''); }
 }
 
+//-----------------------------------------
+// Show alert with error message
+//-----------------------------------------
 function setWarningAlert(alert_msg){
-    console.log('setWarningAlert');
     clearCardResults();
     clearPaginationResults();
     var alert_html = '<div class="alert alert-warning" role="alert">' + alert_msg + '</div>';
-    console.log(alert_html);
     $('#div-result-message').html(alert_html);
 }
 
+//-----------------------------------------
+// Bind pager buttons and "more" scroll button
+//-----------------------------------------
 function bindPages(){
-   console.log("bindpages");
-   $("a.page_link").click(function(evt) {
+    // bind pager buttons
+    $("a.page_link").click(function(evt) {
        evt.preventDefault(); // stop link from using href
        var page_num = $(this).attr('rel');
        $("#selected_page").val(page_num);  // update the selected page in the form
        regular_search();    // run search
    });
-   
-   $( "#lnk_add_more_cards").unbind( "click" );
+   // bind the "more" button
+   $( "#lnk_add_more_cards").unbind( "click" ); // undo last bind
    $("#lnk_add_more_cards").click(function(evt){
        evt.preventDefault(); // stop link from using href
        var page_num = $(this).attr('rel');
@@ -102,11 +98,17 @@ function bindPages(){
    });
 }
 
+//-----------------------------------------
+// Search activated by "more" scroll button
+//-----------------------------------------
 function search_add_more_cards(){
-    console.log('search_add_more_cards init');
+    //console.log('search_add_more_cards init');
     APPEND_CARDS_TO_BOTTOM = true;
     submit_my_data_search();
 }
+//-----------------------------------------
+// Fresh search from checkboxes, pagers, search box, etc
+//-----------------------------------------
 function regular_search(){
     console.log('regular_search init');
     APPEND_CARDS_TO_BOTTOM = false;
@@ -114,10 +116,10 @@ function regular_search(){
 }
 
 
-var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];
 // --------------------------------
 // Reset the counts for Dataverses, Datasets, Files
 // --------------------------------
+var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];
 function reset_dvobject_counts(){
      $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
           $('#id_' + attr_name).html('');
@@ -125,7 +127,7 @@ function reset_dvobject_counts(){
 }
 
 // --------------------------------
-// (5) Update the counts for Dataverses, Datasets, Files
+// Update the counts for Dataverses, Datasets, Files
 // --------------------------------
 // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
 function update_dvobject_count(json_info){
@@ -154,24 +156,18 @@ function update_dvobject_count(json_info){
  **/
 function updatePagination(json_data){
 
-    
     if (json_data.data.hasOwnProperty('pagination')){
-        //console.log('render pagination');
-        var pagination_json = json_data.data.pagination;
-        
-        
+        var pagination_json = json_data.data.pagination;        
         if (SHOW_PAGINATION){
             // Use nunjucks to create the pagination HTML
-            //
             var pagination_html =  nunjucks.render('mydata_templates/pagination.html', pagination_json);
         
             // Put the pagination HTML into the div
-            //
             $("#div-pagination").html(pagination_html);
         }
    
         // --------------------------------
-        // (3b) If this isn't the last page, show
+        //  If this isn't the last page, show
         //  a "more results" link after the last card
         // --------------------------------
         if (pagination_json.hasNextPageNumber){
@@ -183,8 +179,10 @@ function updatePagination(json_data){
     }
 }            
             
+// --------------------------------
+// Run the actual search!
+// --------------------------------
 function submit_my_data_search(){
-
 
     // --------------------------------
     // Prelims: 
@@ -230,7 +228,7 @@ function submit_my_data_search(){
         // --------------------------------
         if (data.success){
             // --------------------------------
-            // (3a) If JSON has pagination info, make a pager
+            // (3) If JSON has pagination info, make a pager
             // --------------------------------
             updatePagination(data);
             
@@ -240,7 +238,7 @@ function submit_my_data_search(){
             // Pass the solr docs to the cards template
             var card_html =  nunjucks.render('mydata_templates/cards.html', data);
             if (APPEND_CARDS_TO_BOTTOM){
-                console.log('add cards to bottom results');
+                //console.log('add cards to bottom results');
                 // Add new cards after existing cards
                 var newCardsDiv = $('<div></div>', { css: { 'display': 'none' }});
                 newCardsDiv.html(card_html);
@@ -248,16 +246,8 @@ function submit_my_data_search(){
                 $("#div-card-results").append(newCardsDiv);
                 newCardsDiv.slideDown('slow');;
                 
-                //$("#div-card-results").append('<hr /><hr />' + card_html).show('slow');;
             }else{
-                console.log('regular search results');
-                // slow down showing of new cards
-                /*var newCardsDiv = $('<div></div>', { css: { 'display': 'none' }});
-                newCardsDiv.html(card_html);
-                
-                $("#div-card-results").html(newCardsDiv);
-                newCardsDiv.slideDown('slow');
-                */
+                //console.log('regular search results');
                 // Only show new cards
                 $("#div-card-results").html(card_html);                            
             }
@@ -268,17 +258,6 @@ function submit_my_data_search(){
             // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
             update_dvobject_count(data);
     
-            //$.each(data.data.items.solr_docs, function( index, value ) {
-                 //alert( index + ": " + value );
-            //    $("#div-card-results").append('<div class="well">' + JSON.stringify(value) + '</div>');
-            //});
-
-
-            //alert(card_html);
-            //alert(JSON.stringify(pagination_json));
         }
-//alert(data);
-//makePager(data);
-   //     $("#divPagerJSON").html('<pre>' + JSON.stringify(data) + '</pre>');
     });
 }
