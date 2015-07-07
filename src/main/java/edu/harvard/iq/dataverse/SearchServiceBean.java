@@ -188,9 +188,11 @@ public class SearchServiceBean {
          * if advancedSearchField is true or false
          *
          */
-        for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-            DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
-            solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+        if (dataverse != null){
+            for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
+                DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
+                solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+            }
         }
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
@@ -644,7 +646,7 @@ public class SearchServiceBean {
     private String getPermissionFilterQuery(User user, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe){
         
         if (user==null){
-            throw new NullPointerException("user cannot be null");
+             throw new NullPointerException("user cannot be null");
         }
         if (solrQuery==null){
             throw new NullPointerException("solrQuery cannot be null");

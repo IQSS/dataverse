@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.SearchServiceBeanMyData;
+import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
@@ -67,7 +67,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
-    SearchServiceBeanMyData searchService;
+    SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
         @EJB
@@ -194,38 +194,41 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         boolean DEUBG_MODE = false;
         boolean OTHER_USER = false;
-        //msgt("types: " + types.toString());
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+
+
+        
+        // For, superusers, the searchUser may differ from the authUser
+        //
+        AuthenticatedUser searchUser = null;  
+        
 
         if (DEUBG_MODE==true){      // DEBUG: use userIdentifier
             authUser = getUserFromIdentifier(userIdentifier);
             if (authUser == null){
                 return this.getJSONErrorString("Requires authentication", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
             }
+            
         }else if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
              authUser = (AuthenticatedUser)session.getUser();
        
              // If person is a superuser, see if a userIdentifier has been specified 
              // and use that instead
              if ((authUser.isSuperuser())&&(userIdentifier != null)){
-                 AuthenticatedUser otherUser = getUserFromIdentifier(userIdentifier);
-                 if (otherUser != null){
-                     authUser = otherUser;
+                 searchUser = getUserFromIdentifier(userIdentifier);
+                 if (searchUser != null){
                      OTHER_USER = true;
+                 }else{
+                    return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);              
                  }
              }       
+        }else{
+            return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
         }
                      
         roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
         
-        // for testing
-        //
-        //if (userIdentifier==null){
-        //    logger.warning("retrieveMyDataInitialCall: ADmin test - REMOVE REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE  REMOVE REMOVE ");
-        //    userIdentifier = "dataverseAdmin";  
-        //}
-        
+       
         List<String> dtypes;
         if (dvobject_types != null){
             dtypes = dvobject_types;
@@ -243,9 +246,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // ---------------------------------
         MyDataFilterParams filterParams = new MyDataFilterParams(authUser.getIdentifier(), dtypes, pub_states, roleIds, searchTerm);
         if (filterParams.hasError()){
-            jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
-            jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, filterParams.getErrorMessage());
-            return jsonData.build().toString();
+            return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }
        
         // ---------------------------------
@@ -256,9 +257,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                         dvObjectServiceBean);
         this.myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()){
-            jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
-            jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, myDataFinder.getErrorMessage());
-            return jsonData.build().toString();
+            return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
         }
 
         // ---------------------------------
@@ -270,9 +269,19 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         boolean dataRelatedToMe = true;
         msgt("myDataFinder.getSolrFilterQueries(): " + myDataFinder.getSolrFilterQueries().toString());
+        
+
+        // Default the searchUser to the authUser.
+        // The exception: for logged-in superusers, the searchUser may differ from the authUser
+        //
+        if (searchUser == null){
+            searchUser = authUser;
+        }
+
+        
         try {
                 solrQueryResponse = searchService.search(
-                        null, // no user
+                        searchUser, // 
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
                         this.myDataFinder.getSolrFilterQueries(),//filterQueries,
@@ -287,9 +296,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                 msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
                 if (this.solrQueryResponse.getNumResultsFound()==0){
-                    jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
-                    jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, "Sorry, no results were found.");
-                    return jsonData.build().toString();
+                    return this.getJSONErrorString("Sorry, no results were found.", null);
                 }
                  msgt("getFilterQueriesActual: " + solrQueryResponse.getFilterQueriesActual());
                  msgt("getFacetCategoryList: " + solrQueryResponse.getFacetCategoryList());
@@ -304,14 +311,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
                  //solrQueryResponse.get();
                          
         } catch (SearchException ex) {
-                solrQueryResponse = null;   
-                this.logger.severe("Solr SearchException: " + ex.getMessage());
+            solrQueryResponse = null;   
+            this.logger.severe("Solr SearchException: " + ex.getMessage());
         }
         
         if (solrQueryResponse==null){
-            jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, false);
-            jsonData.add(DataRetrieverAPI.JSON_ERROR_MSG_FIELD_NAME, "Sorry!  There was a SOLR Error");
-            return jsonData.build().toString();
+            return this.getJSONErrorString("Sorry!  There was an error with the search service.", "Sorry!  There was a SOLR Error");
         }
         
         //jsonData.add(DataRetrieverAPI.JSON_DATA_FIELD_NAME, Json.createObjectBuilder()
@@ -326,6 +331,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //      - Search term
         //      - DvObject counts
         // ---------------------------------
+
+        // Initialize JSON response
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+
         Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(), 
                                 10, 
                                 paginationStart);
