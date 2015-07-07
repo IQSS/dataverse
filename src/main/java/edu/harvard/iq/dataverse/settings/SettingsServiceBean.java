@@ -33,6 +33,11 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /**
+         * Override Solr highlighting "fragsize"
+         * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
+         */
+        SearchHighlightFragmentSize,
        /**
         * Domain name specific code for Google Analytics
         *//**

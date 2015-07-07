@@ -60,6 +60,13 @@ Set ``SolrHostColonPort`` to override ``localhost:8983``.
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
 
+SearchHighlightFragmentSize
+---------------------------
+
+Set ``SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
+
+``curl -X PUT -d 320 http://localhost:8080/api/admin/settings/:SearchHighlightFragmentSize``
+
 ShibEnabled
 -----------
 
