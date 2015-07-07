@@ -345,7 +345,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
 
         Pager pager = new Pager(solrQueryResponse.getNumResultsFound().intValue(), 
-                                10, 
+                                SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, 
                                 paginationStart);
         
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true);
