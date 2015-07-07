@@ -97,7 +97,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         // Row 1: Row Names
         row.add("");
         for (Map.Entry pair : roleNameSet) {
-            row.add("<b>" + (String)pair.getValue() + "</b>");
+            row.add("<b>" + (String)pair.getValue() +  "</b> (" + pair.getKey() + ")");
         }
         this.rolesByDvObjectTable.add(row);
         
