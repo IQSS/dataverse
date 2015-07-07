@@ -1,40 +1,17 @@
 package edu.harvard.iq.dataverse.mydata;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DvObject;
-import static edu.harvard.iq.dataverse.DvObject.DATAFILE_DTYPE_STRING;
-import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
-import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.SearchServiceBean;
-import edu.harvard.iq.dataverse.SolrQueryResponse;
-import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
-import edu.harvard.iq.dataverse.search.SearchException;
-import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SortBy;
-import java.io.IOException;
-import static java.lang.Math.max;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
-import org.primefaces.json.JSONException;
-import org.primefaces.json.JSONObject;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
