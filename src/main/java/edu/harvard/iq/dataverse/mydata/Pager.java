@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.mydata;
 
 import com.google.gson.JsonArray;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import java.io.IOException;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -31,7 +32,7 @@ public class Pager {
     
     /* inputs */
     public int numResults;
-    public int docsPerPage = 10;
+    public int docsPerPage = SearchConstants.NUM_DOCS_TO_RETRIEVE;
     public int selectedPageNumber = 1;
 
     /* calculated */

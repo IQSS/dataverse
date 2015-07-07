@@ -24,5 +24,10 @@ public class SearchConstants {
     public static final String SEARCH_API_TOTAL_COUNT = "total_count";
     public static final String SEARCH_API_START = "start";
     public static final String SEARCH_API_ITEMS = "items";
+    
+    // Number of SOLR rows/docs to retrieve
+    //
+    public static final int NUM_DOCS_TO_RETRIEVE = 10;
+
 
 }
