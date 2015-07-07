@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -188,6 +187,8 @@ public class MyDataFilterParams {
         this.errorMessage = s;
     }
 
+    
+    
     // --------------------------------------------
     // start: Convenience methods for dvObjectTypes
     // --------------------------------------------
@@ -245,6 +246,23 @@ public class MyDataFilterParams {
         
         return this.getDvObjectTypesAsJSON().build().toString();
     }
+    
+     /**
+     * "publication_statuses" : [ name 1, name 2, etc.]
+     * 
+     * @return 
+     */
+    public JsonArrayBuilder getListofSelectedPublicationStatuses(){
+        
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        
+        for (String pubStatus : this.publicationStatuses){
+            jsonArray.add(pubStatus);            
+        }
+        return jsonArray;
+                
+    }
+    
     
     public JsonObjectBuilder getDvObjectTypesAsJSON(){
         

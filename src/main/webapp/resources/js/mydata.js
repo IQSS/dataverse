@@ -98,6 +98,22 @@ function bindPages(){
 }
 
 //-----------------------------------------
+// Bind filter tags to (a) uncheck checkbox 
+//  + (b) submit search
+//-----------------------------------------
+function bind_filter_remove_tags(){
+    console.log('bind_filter_remove_tags');
+     $("a.lnk_cbox_remove").click(function(evt) {
+       evt.preventDefault(); // stop link from using href
+       var cbox_id = $(this).attr('rel');
+        console.log('cbox_id: ' + cbox_id);
+       
+       $("#" + cbox_id).attr('checked', false);
+       regular_search();    // run search
+   });  
+}
+
+//-----------------------------------------
 // Search activated by "more" scroll button
 //-----------------------------------------
 function search_add_more_cards(){
@@ -267,7 +283,7 @@ function submit_my_data_search(){
             // --------------------------------
             // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
             update_dvobject_count(data);
-    
+            bind_filter_remove_tags();
         }
     });
 }

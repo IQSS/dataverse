@@ -9,9 +9,11 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -349,6 +354,39 @@ public class MyDataFinder {
         }
         return "@" + userIdentifier;
     }
+    
+    
+    /**
+     * "publication_statuses" : [ name 1, name 2, etc.]
+     * 
+     * @return 
+     */
+     public JsonObjectBuilder getSelectedFilterParamsAsJSON(){
+                
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        jsonData.add("publication_statuses", this.filterParams.getListofSelectedPublicationStatuses())
+                .add("role_names", this.getListofSelectedRoles());
+        
+        return jsonData;
+    }
+    
+    
+     
+    /**
+     * "publication_statuses" : [ name 1, name 2, etc.]
+     * 
+     * @return 
+     */
+    public JsonArrayBuilder getListofSelectedRoles(){
+        
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+        
+        for (Long roleId : this.filterParams.getRoleIds()){
+            jsonArray.add(this.rolePermissionHelper.getRoleName(roleId));            
+        }
+        return jsonArray;                
+    }
+    
     
     private boolean runStep1RoleAssignments(){
                 

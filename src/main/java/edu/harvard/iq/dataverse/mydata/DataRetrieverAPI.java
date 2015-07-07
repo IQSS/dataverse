@@ -357,6 +357,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
                                 .add("search_term",  filterParams.getSearchTerm())
                                 .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
+                                .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
             );
         if (OTHER_USER==true){
             jsonData.add("other_user", authUser.getIdentifier());
