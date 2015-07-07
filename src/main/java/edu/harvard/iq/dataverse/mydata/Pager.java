@@ -32,7 +32,7 @@ public class Pager {
     
     /* inputs */
     public int numResults;
-    public int docsPerPage = SearchConstants.NUM_DOCS_TO_RETRIEVE;
+    public int docsPerPage = SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE;
     public int selectedPageNumber = 1;
 
     /* calculated */

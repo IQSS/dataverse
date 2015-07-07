@@ -27,7 +27,7 @@ public class SearchConstants {
     
     // Number of SOLR rows/docs to retrieve
     //
-    public static final int NUM_DOCS_TO_RETRIEVE = 10;
+    public static final int NUM_SOLR_DOCS_TO_RETRIEVE = 10;
 
 
 }

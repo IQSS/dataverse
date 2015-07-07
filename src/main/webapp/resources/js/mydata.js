@@ -91,6 +91,7 @@ function bindPages(){
    $("#lnk_add_more_cards").click(function(evt){
        evt.preventDefault(); // stop link from using href
        var page_num = $(this).attr('rel');
+       console.log('use page: ' + page_num);
        $("#selected_page").val(page_num);  // update the selected page in the form
        search_add_more_cards();    // run search
    });
@@ -132,7 +133,7 @@ function update_dvobject_count(json_info){
     
     var dcounts = json_info.data.dvobject_counts;
     $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
-        console.log('attr_name: ' + attr_name);
+        //console.log('attr_name: ' + attr_name);
         if(attr_name in dcounts){                    
             $('#id_' + attr_name).html('(' + dcounts[attr_name] + ')');                    
         }else{
@@ -188,7 +189,7 @@ function updatePagination(json_data){
 // Run the actual search!
 // --------------------------------
 function submit_my_data_search(){
-
+   console.log('submit_my_data_search');
     // --------------------------------
     // Prelims: 
     // --------------------------------
@@ -212,6 +213,8 @@ function submit_my_data_search(){
     // --------------------------------
     // (2) submit the form
     // --------------------------------
+       console.log('formData: ' + formData);
+
     $.getJSON( RETRIEVE_DATA_API_PATH + '?' + formData, function(data) {
 
         //  For debugging, show the returned JSON
@@ -223,6 +226,8 @@ function submit_my_data_search(){
         // (2a) Does the result look good?
         // --------------------------------
         // No, show error messsage and get out of here
+               console.log('results: ' + data);
+
         if (!data.success){
             setWarningAlert(data.error_message);
             return;
