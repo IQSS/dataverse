@@ -1,6 +1,9 @@
+
+{# <!-- Iterate through and render cards --> #}
+
 {% set card_bg_color = cycler("", "background-color:#f7f7f7;") %}
 {% for sdoc in data.items -%}
- {# set border color #}
+ {# <!-- set border color --> #}
  {% if sdoc.type == "dataverse" %}
     {% set card_border_color = "#c55b28" %}
  {% elif sdoc.type == "dataset" %}

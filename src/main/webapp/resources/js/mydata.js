@@ -1,6 +1,6 @@
 var MYDATA_DEBUG_ON = true;
 var APPEND_CARDS_TO_BOTTOM = false;
-var SHOW_PAGINATION = true;
+var SHOW_PAGINATION = false;
 
       
 //-----------------------------------------
@@ -63,9 +63,7 @@ function clearForNewSearchResults(){
 function clearJsonResults(){ $("#div-json-results").html('');}
 function clearWarningAlert(){ $('#div-result-message').html('');}
 function clearCardResults(){ $('#div-card-results').html('');}
-function clearPaginationResults(){
-    if (SHOW_PAGINATION){  $("#div-pagination").html(''); }
-}
+function clearPaginationResults(){ $("#div-pagination").html(''); }
 
 //-----------------------------------------
 // Show alert with error message
@@ -164,6 +162,13 @@ function updatePagination(json_data){
         
             // Put the pagination HTML into the div
             $("#div-pagination").html(pagination_html);
+        }else{
+            // Use nunjucks to create the pagination HTML
+            var result_msg_html =  nunjucks.render('mydata_templates/result_message_only.html', json_data);
+        
+            // Put the pagination HTML into the div
+            $("#div-pagination").html(result_msg_html);
+            
         }
    
         // --------------------------------

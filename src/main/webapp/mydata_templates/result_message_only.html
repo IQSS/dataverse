@@ -1,0 +1,12 @@
+{# <!-- Handle result message here --> #}
+{% set pagination_data = data.pagination %}
+{% if pagination_data.numResults > 1 %}
+    Found: <b>{{ pagination_data.numResults }} results</b>
+
+{% elif pagination_data.numResults == 1 %}
+Found: <b>1 result</b>
+
+{% endif %}
+{% if pagination_data.endCardNumber > pagination_data.startCardNumber  %}
+    Displaying: <b>{{ pagination_data.startCardNumber }} to {{ pagination_data.endCardNumber }}</b>
+{% endif %}
