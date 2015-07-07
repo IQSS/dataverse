@@ -84,7 +84,6 @@ public class MyDataFilterParams {
      * @param userIdentifier 
      */
     public MyDataFilterParams(String userIdentifier){
-        
         if ((userIdentifier==null)||(userIdentifier.isEmpty())){
             throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
         }
@@ -101,7 +100,6 @@ public class MyDataFilterParams {
      * @param searchTerm 
      */    
     public MyDataFilterParams(String userIdentifier, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
-
         if ((userIdentifier==null)||(userIdentifier.isEmpty())){
             throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
         }

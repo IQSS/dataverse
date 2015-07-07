@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers;
@@ -39,6 +40,9 @@ public class RoleAssigneeServiceBean {
 
     @EJB
     GroupServiceBean groupSvc;
+    
+    @EJB
+    DataverseRoleServiceBean dataverseRoleService;
 
     Map<String, RoleAssignee> predefinedRoleAssignees = new TreeMap<>();
 
@@ -99,6 +103,36 @@ public class RoleAssigneeServiceBean {
         }        
         return " AND r.role_id IN (" + StringUtils.join(outputList, ",") + ")";        
     }
+    
+    public List<DataverseRole> getAssigneeDataverseRoleFor(String roleAssigneeIdentifier){
+
+        if (roleAssigneeIdentifier==null){
+            return null;
+        }
+        List <DataverseRole> retList = new ArrayList();
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));
+        String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
+        if (userGroups != null && !userGroups.isEmpty()){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        } 
+        
+        String qstr = "SELECT distinct r.role_id";
+        qstr += " FROM RoleAssignment r";
+        qstr += identifierClause;
+        qstr += ";";
+        msg("qstr: " + qstr);
+
+        
+        for (Object o :em.createNativeQuery(qstr).getResultList()){
+           retList.add(dataverseRoleService.find((Long) o));
+        }
+        return retList;
+    }
+    
+    
+    
+    
     
     public List<Object[]> getAssigneeAndRoleIdListFor(String roleAssigneeIdentifier, List<Long> roleIdList){
 

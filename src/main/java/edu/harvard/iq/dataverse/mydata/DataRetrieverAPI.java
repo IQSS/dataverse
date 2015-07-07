@@ -352,7 +352,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         jsonData.add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,        
                         Json.createObjectBuilder()
                                 .add("pagination", pager.asJsonObjectBuilder())
-                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse))
+                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams))
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
                                 .add("search_term",  filterParams.getSearchTerm())
@@ -382,7 +382,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     }
     
     //private JsonObjectBuilder formatSolrDocs(SolrQueryResponse solrResponse){
-    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse){
+    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, MyDataFilterParams filterParams ){
         
         if (solrResponse == null){
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: formatSolrDocs should not be null");
@@ -393,7 +393,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
 
             if( authUser!= null){
-                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId())); 
+                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId(), filterParams.getRoleIds())); 
             }
             jsonSolrDocsArrayBuilder.add(doc.getJsonForMyData());
         }

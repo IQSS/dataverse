@@ -139,17 +139,25 @@ public class MyDataPage implements java.io.Serializable {
         msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
         msgt("----------- init() -------------");
-        List<DataverseRole> roleList = dataverseRoleService.findAll();
+
+        if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
+            authUser = (AuthenticatedUser) session.getUser();
+        } else {
+            return "/loginpage.xhtml";
+	// redirect to login OR give some type ‘you must be logged in message'
+        }
+        List<DataverseRole> roleList = new ArrayList();
+
+        List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
+        this.filterParams = new MyDataFilterParams(authUser.getIdentifier(), dtypes, null, null, null);
+        roleList = roleAssigneeService.getAssigneeDataverseRoleFor(this.filterParams.getUserIdentifier());
+        if (roleList.isEmpty()) {
+
+            roleList = dataverseRoleService.findAll();
+        }
+
         msgt("roles: " + roleList.toString());
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
-
-       
-
-        if (session != null){
-            if (session.getUser()==null){
-                authUser = (AuthenticatedUser)session.getUser();
-            }
-        } 
         
         /*else{
             jsonData.add("has-session", true);
@@ -168,14 +176,14 @@ public class MyDataPage implements java.io.Serializable {
             
         }*/
         //if (authUser )
-        String userIdentifier = "dataverseAdmin";
+
         
-        List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
+
         //List<String> dtypes = Arrays.asList(DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
         //DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAVERSE_DTYPE_STRING
         
         //List<String> dtypes = new ArrayList<>();
-        this.filterParams = new MyDataFilterParams(userIdentifier, dtypes, null, null, null);
+
         
         this.myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
@@ -203,7 +211,7 @@ public class MyDataPage implements java.io.Serializable {
             //String jsonDoc = doc.toJsonObject(true, true, true).toString();
             //if (true)return jsonDoc;
             if( authUser!= null){
-                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId())); 
+                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId(), null)); 
             }
             outputList.add(doc.toJsonObject(true, true, true).toString());
             //break;

@@ -14,6 +14,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -70,47 +71,70 @@ public class MyDataQueryHelperServiceBean {
         return retVal;
     }
     
-    public List<String> getRolesOnDVO(AuthenticatedUser user, Long dvoId) {
+     private String getRoleIdListClause(List<Long> roleIdList){
+        if (roleIdList == null){
+            return "";
+        }
+        List<String> outputList = new ArrayList<>();
+        
+        for(Long r : roleIdList){
+            if (r != null){
+                outputList.add(r.toString());
+            }
+        }
+        if (outputList.isEmpty()){
+            return "";
+        }        
+        return " AND role.role_id IN (" + StringUtils.join(outputList, ",") + ")";        
+    }
+    
+    public List<String> getRolesOnDVO(AuthenticatedUser user, Long dvoId, List<Long> roleIdList) {
         List<String> retVal = new ArrayList();
+        String roleClause = getRoleIdListClause(roleIdList);
         List<Object> results = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
                 + " role.definitionpoint_id = " + dvoId + " "
                 + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
-                + ");").getResultList();
+                + ")"
+                + roleClause
+                + ";").getResultList();
         if (results != null && !results.isEmpty()) {
             for (Object result : results) {
                 Long role_id = (Long) result;
                 DataverseRole role = roleService.find(role_id);
                 retVal.add(role.getName());
             }
-        } else {
-            Object parentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + dvoId).getSingleResult();
-            Long parentId = (Long) parentObj;
-            List<Object> resultsParent = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
-                    + " role.definitionpoint_id = " + parentId + " "
-                    + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
-                    + ");").getResultList();
-            if (resultsParent != null && !resultsParent.isEmpty()) {
-                for (Object result : resultsParent) {
-                    Long role_id = (Long) result;
-                    DataverseRole role = roleService.find(role_id);
-                    retVal.add(role.getName());
-                }
-            } else {
-                Object GrandParentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + parentId).getSingleResult();
-                Long grandParentId = (Long) GrandParentObj;
-                List<Object> resultsGrandParent = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
-                        + " role.definitionpoint_id = " + grandParentId + " "
-                        + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
-                        + ");").getResultList();
-                if (resultsGrandParent != null && !resultsGrandParent.isEmpty()) {
-                    for (Object result : resultsGrandParent) {
-                        Long role_id = (Long) result;
-                        DataverseRole role = roleService.find(role_id);
-                        retVal.add(role.getName());
-                    }
-                }
+        }
+        Object parentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + dvoId).getSingleResult();
+        Long parentId = (Long) parentObj;
+        List<Object> resultsParent = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
+                + " role.definitionpoint_id = " + parentId + " "
+                + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
+                + ")"
+                + roleClause
+                + ";").getResultList();
+        if (resultsParent != null && !resultsParent.isEmpty()) {
+            for (Object result : resultsParent) {
+                Long role_id = (Long) result;
+                DataverseRole role = roleService.find(role_id);
+                retVal.add(role.getName());
             }
         }
+        Object GrandParentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + parentId).getSingleResult();
+        Long grandParentId = (Long) GrandParentObj;
+        List<Object> resultsGrandParent = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
+                + " role.definitionpoint_id = " + grandParentId + " "
+                + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
+                + ")"
+                + roleClause
+                + ";").getResultList();
+        if (resultsGrandParent != null && !resultsGrandParent.isEmpty()) {
+            for (Object result : resultsGrandParent) {
+                Long role_id = (Long) result;
+                DataverseRole role = roleService.find(role_id);
+                retVal.add(role.getName());
+            }
+        }
+
         return retVal;
     }
 
