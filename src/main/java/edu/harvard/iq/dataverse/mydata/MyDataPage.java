@@ -11,7 +11,7 @@ import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.SearchServiceBeanMyData;
+import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -64,7 +64,7 @@ public class MyDataPage implements java.io.Serializable {
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
     @EJB
-    SearchServiceBeanMyData searchService;
+    SearchServiceBean searchService;
     @EJB
     MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     
