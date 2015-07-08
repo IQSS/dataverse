@@ -45,6 +45,8 @@ public class Pager {
     public int startCardNumber = 0;
     public int endCardNumber = 0;
     
+    public int remainingCards = 0;
+    public int numberNextResults =0;
     
     public Pager(int numResults, int docsPerPage, int selectedPageNumber) {
         
@@ -100,6 +102,17 @@ public class Pager {
         }else{
             this.endCardNumber = min(this.startCardNumber + (this.docsPerPage-1), this.numResults );
         }
+        
+        this.remainingCards = this.numResults - this.endCardNumber;
+        this.remainingCards = max(this.remainingCards, 0);
+        
+        if (this.remainingCards > 0){
+            if (this.remainingCards < this.docsPerPage){
+                this.numberNextResults = this.remainingCards;
+            }else{
+                this.numberNextResults = this.docsPerPage;
+            }
+        }        
     }
     
     
@@ -307,17 +320,21 @@ public class Pager {
         
         JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
                 
-        jsonPageInfo.add("isNecessary", this.isPagerNecessary());
-        /*if (!this.isPagerNecessary()){
-            return jsonPageInfo;
-        }*/
-
-        jsonPageInfo.add("numResults", this.numResults);
-        jsonPageInfo.add("docsPerPage", this.docsPerPage);
-        jsonPageInfo.add("selectedPageNumber", this.selectedPageNumber);
-
-        jsonPageInfo.add("pageCount", this.pageCount);
-
+       
+        jsonPageInfo.add("isNecessary", this.isPagerNecessary())
+                    .add("numResults", this.numResults)
+                    .add("docsPerPage", this.docsPerPage)
+                    .add("selectedPageNumber", this.selectedPageNumber)
+                    .add("pageCount", this.pageCount)
+                    .add("hasPreviousPageNumber", this.hasPreviousPageNumber())
+                    .add("previousPageNumber", this.previousPageNumber)
+                    .add("hasNextPageNumber", this.hasNextPageNumber())
+                    .add("nextPageNumber", this.nextPageNumber)
+                    .add("startCardNumber", this.startCardNumber)
+                    .add("endCardNumber", this.endCardNumber)
+                    .add("remainingCards", this.remainingCards)
+                    .add("numberNextResults", this.numberNextResults);
+        
         // --------------------
         // pageNumberList
         // --------------------
@@ -327,16 +344,7 @@ public class Pager {
         }
         jsonPageInfo.add("pageNumberList", jsonPageNumberArrayBuilder);
         // --------------------
-        
-        jsonPageInfo.add("hasPreviousPageNumber", this.hasPreviousPageNumber());
-        jsonPageInfo.add("previousPageNumber", this.previousPageNumber);
-        
-        jsonPageInfo.add("hasNextPageNumber", this.hasNextPageNumber());
-        jsonPageInfo.add("nextPageNumber", this.nextPageNumber);
-        
-        jsonPageInfo.add("startCardNumber", this.startCardNumber);
-        jsonPageInfo.add("endCardNumber", this.endCardNumber);
-        
+   
         return jsonPageInfo;
              
     }

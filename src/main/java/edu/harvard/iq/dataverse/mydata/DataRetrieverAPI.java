@@ -193,7 +193,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("userIdentifier") String userIdentifier) { //String myDataParams) {
 
         msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-        msg("Selected page: " + selectedPage);
         boolean DEBUG_MODE = false;
         boolean OTHER_USER = false;
 
@@ -269,9 +268,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (selectedPage != null){
             paginationStart = selectedPage;
         }
-        boolean dataRelatedToMe = true;
+        int solrCardStart = (paginationStart - 1) * SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE;
        
-
         // Default the searchUser to the authUser.
         // The exception: for logged-in superusers, the searchUser may differ from the authUser
         //
@@ -288,6 +286,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         msgt("myDataFinder.getSolrFilterQueries(): " + myDataFinder.getSolrFilterQueries().toString());
         
+        msg("Selected paginationStart: " + paginationStart);
+
         try {
                 solrQueryResponse = searchService.search(
                         searchUser, // 
@@ -296,8 +296,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         filterQueries,//filterQueries,
                         SearchFields.NAME_SORT, SortBy.ASCENDING,
                         //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
-                        paginationStart,
-                        dataRelatedToMe,
+                        solrCardStart, //paginationStart,
+                        true, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
                 );
                 

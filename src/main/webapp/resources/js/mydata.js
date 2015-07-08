@@ -250,10 +250,16 @@ function updatePagination(json_data){
         //  If this isn't the last page, show
         //  a "more results" link after the last card
         // --------------------------------
-        if (pagination_json.hasNextPageNumber){
+        if (pagination_json.hasNextPageNumber === true){
             $('#lnk_add_more_cards').attr("rel", pagination_json.nextPageNumber);
             console.log("update link to: " + pagination_json.nextPageNumber);
             $('#div-more-cards-link').show();
+           
+            var result_label = 'results';
+            if (pagination_json.numberNextResults == 1){
+                result_label = 'result';
+            }
+            $('#lnk_add_more_cards').html('View next ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' more)');
         }
         bindPages();
     }
