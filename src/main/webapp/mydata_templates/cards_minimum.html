@@ -12,7 +12,7 @@
        {% set card_border_color = "#ccc" %}
     {% endif %}
 
-    <div style="border:1px solid {{ card_border_color }};padding:4px 10px; margin:20px; xwidth:700px;{{ card_bg_color.next() }}">
+    <div style="border:1px solid {{ card_border_color }};padding:4px 10px; margin-bottom:20px; {{ card_bg_color.next() }}">
         <!-- publication status -->
         {#({{ loop.index }})#} {% if card_info.is_draft_state %}<span class="label label-primary">Draft</span> {% endif %}
         {% if card_info.is_unpublished_state %}<span class="label label-primary">Unpublished</span> {% endif %}

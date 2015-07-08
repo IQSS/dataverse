@@ -9,21 +9,21 @@
 
 
     <div class="row" id="my_data_filter_column2">
-        <div class="col-sm-6"  style="padding:10px 30px;">
+        <div class="col-xs-7"  style="padding:10px 30px;">
             <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="Search this data..." />
             
-            &#160; <a class="btn btn-sm btn-default"><span class="glyphicon glyphicon-search"></span>Find </a>
+            &#160; <a class="btn btn-default"><span class="glyphicon glyphicon-search"></span>Find </a>
             &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a>
         </div>
         <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
-        <div class="col-sm-6 well">Superuser:) Enter a username:
-            <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" />
+        <div class="col-xs-4 pull-right text-right" style="margin-right:30px;margin-bottom:0;padding:8px 6px;background:none;">
+            Results by Username
+            <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" />
         </div>
         </ui:fragment>
     </div>
 <!-- start: panel --><div class="panel panel-default">
 <!-- start: panel body --><div class="panel-body clearfix">
-        
     
     <!-- start: row -->
     <div class="row">
@@ -87,8 +87,7 @@
         </div><!-- end: filter column -->
         <!-- start: workspace column -->
         <div class="col-xs-9">
-            <div id="div-pagination" style="xheight:60px;"> </div>
-            <hr />
+            <div id="div-pagination"></div>
             <!--<div id="div-test-json" class="well">(pagination)</div>-->
             <div id="div-result-message">workspace</div>
             <div id="div-card-results">(card results?)</div>
@@ -96,11 +95,10 @@
                 <a id="lnk_add_more_cards" class="btn btn-primary btn-xs" style="color:#fff;">View more results</a>
             </div> 
             
-            
             <div id="div-json-results">workspace</div>
         </div>
         <!-- end: workspace column -->
-              </div><!-- end row -->
+    </div><!-- end row -->
     <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
     <script> 
         <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
