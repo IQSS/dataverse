@@ -13,7 +13,7 @@ import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
 /**
- *
+ * Defines the meaning and constraints of a metadata field and its values.
  * @author Stephen Kraffmiller
  */
 @NamedQueries({
@@ -28,6 +28,9 @@ import javax.persistence.*;
 @Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
 
+    /**
+     * The set of possible metatypes of the field. Used for validation and layout.
+     */
     public enum FieldType {
         TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
     };    
@@ -48,17 +51,37 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return id.toString();
     }
 
+    /**
+     * The internal, DDI-like name, no spaces, etc.
+     */
     @Column(name = "name", columnDefinition = "TEXT", nullable = false)
-    private String name;    // This is the internal, DDI-like name, no spaces, etc.
+    private String name;
+
+    /**
+     * A longer, human-friendlier name. Punctuation allowed.
+     */
     @Column(name = "title", columnDefinition = "TEXT")
-    private String title;   // A longer, human-friendlier name - punctuation allowed
+    private String title;
+
+    /**
+     * A user-friendly Description; will be used for
+     * mouse-overs, etc.
+     */
     @Column(name = "description", columnDefinition = "TEXT")
-    private String description; // A user-friendly Description; will be used for 
-    // mouse-overs, etc. 
+    private String description;
+    /**
+     * Metatype of the field.
+     */
     @Enumerated(EnumType.STRING)
     @Column( nullable=false )
     private FieldType fieldType;
+    /**
+     * Whether the value must be taken from a controlled vocabulary.
+     */
     private boolean allowControlledVocabulary;
+    /**
+     * A watermark to be displayed in the UI.
+     */
     private String watermark;
 
     @OneToMany(mappedBy = "datasetFieldType")
@@ -175,6 +198,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.allowControlledVocabulary = allowControlledVocabulary;
     }
 
+    /**
+     * Determines whether an instance of this field type may have multiple
+     * values.
+     */
     private boolean allowMultiples;
 
     public boolean isAllowMultiples() {
@@ -200,6 +227,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setWatermark(String watermark) {
         this.watermark = watermark;
     }
+    /**
+     * Determines whether this field type may be used as a facet.
+     */
     private boolean facetable;
 
     public boolean isFacetable() {
@@ -210,6 +240,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.facetable = facetable;
     }
 
+    /**
+     * Determines whether this field type is displayed in the form when creating
+     * the Dataset (or only later when editing after the initial creation).
+     */
     private boolean displayOnCreate;
 
     public boolean isDisplayOnCreate() {
@@ -224,6 +258,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty();
     }
 
+    /**
+     * The {@code MetadataBlock} this field type belongs to.
+     */
     @ManyToOne(cascade = CascadeType.MERGE)
     private MetadataBlock metadataBlock;
 
@@ -234,7 +271,11 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setMetadataBlock(MetadataBlock metadataBlock) {
         this.metadataBlock = metadataBlock;
     }
-    
+
+    /**
+     * The list of controlled vocabulary terms that may be used as values for
+     * fields of this field type.
+     */
    @OneToMany(mappedBy = "datasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
    @OrderBy("displayOrder ASC")
     private Collection<ControlledVocabularyValue> controlledVocabularyValues;
@@ -259,8 +300,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         }
         return controlledVocabularyValuesByStrValue.get(strValue);
     }
-       
 
+    /**
+     * Collection of field types that are children of this field type.
+     * A field type may consist of one or more child field types, but only one
+     * parent.
+     */
     @OneToMany(mappedBy = "parentDatasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
     private Collection<DatasetFieldType> childDatasetFieldTypes;
@@ -316,7 +361,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setListValues(List<String> listValues) {
         this.listValues = listValues;
     }
-    
+    /**
+     * Determines whether fields of this field type are always required. A
+     * dataverse may set some fields required, but only if this is false.
+     */
     private boolean required;
 
     public boolean isRequired() {
@@ -390,6 +438,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return true;
     }
 
+    /**
+     * List of fields that use this field type. If this field type is removed,
+     * these fields will be removed too.
+     */
     @OneToMany(mappedBy = "datasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetField> datasetFields;
 
