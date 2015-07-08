@@ -284,6 +284,8 @@ public class SearchServiceBean {
         } catch (SolrServerException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
+        
+       
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
@@ -632,6 +634,10 @@ public class SearchServiceBean {
         solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);
         solrQueryResponse.setStaticSolrFieldFriendlyNamesBySolrField(staticSolrFieldFriendlyNamesBySolrField);
         solrQueryResponse.setFilterQueriesActual(Arrays.asList(solrQuery.getFilterQueries()));
+        
+        solrQueryResponse.setDvObjectCounts(queryResponse.getFacetField("dvObjectType"));
+        solrQueryResponse.setPublicationStatusCounts(queryResponse.getFacetField("publicationStatus"));
+
         return solrQueryResponse;
     }
 

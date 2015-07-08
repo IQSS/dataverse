@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.api.Access;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
@@ -25,11 +24,8 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -40,10 +36,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import org.apache.commons.lang.StringUtils;
-import org.primefaces.json.JSONException;
-import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -373,20 +365,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: solrQueryResponse should not be null");
             return null;
         }
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-
-        // Initialize counts to 0; Solr may not return all 3 objects
-        //
-        jsonData.add("dataverses_count", 0)
-                .add("datasets_count", 0)
-                .add("files_count", 0);
-
-        for (FacetCategory fc : solrResponse.getTypeFacetCategories()) {
-            for (FacetLabel fl : fc.getFacetLabel()) {
-                jsonData.add(fl.getName() + "_count", fl.getCount());
-            }
-        }
-        return jsonData;
+        return solrResponse.getDvObjectCountsAsJSON();
     }
     
     private JsonObjectBuilder getPublicationStatusCounts(SolrQueryResponse solrResponse) {
@@ -395,23 +374,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: solrQueryResponse should not be null");
             return null;
         }
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-        
-        // Initialize counts to 0; Solr may not return all of the counts
-        //
-        jsonData.add("published_count", 0)
-                .add("unpublished_count", 0)
-                .add("draft_count", 0);
-
-        for (FacetCategory fc : solrResponse.getFacetCategoryList()) {
-            for (FacetLabel fl : fc.getFacetLabel()) {
-                msg("FACET!: " + fl.getName());
-                if (fl.getName().equals("Published") || fl.getName().equals("Draft") || fl.getName().equals("Unpublished")) {
-                    jsonData.add(fl.getName().toLowerCase() + "_count", fl.getCount());
-                }
-            }
-        }
-        return jsonData;
+        return solrResponse.getPublicationStatusCountsAsJSON();
     }
     
     //private JsonObjectBuilder formatSolrDocs(SolrQueryResponse solrResponse){
