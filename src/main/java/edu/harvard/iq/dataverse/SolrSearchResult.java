@@ -302,7 +302,7 @@ public class SolrSearchResult {
         }
 
         if ((this.getParent() != null)&&(!this.getParent().isEmpty())){
-            System.out.println("keys:" + parent.keySet().toString());
+            //System.out.println("keys:" + parent.keySet().toString());
             if (this.entity.isInstanceofDataFile()){
                 myDataJson.add("parentIdentifier", this.getParent().get(SolrSearchResult.PARENT_IDENTIFIER)) 
                           .add("parentName", this.getParent().get("name"));   
