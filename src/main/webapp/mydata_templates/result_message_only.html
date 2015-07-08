@@ -1,3 +1,4 @@
+{#
 {% if data.selected_filters %}
 <div id="resultsFacetsTopBlock">
     {% for pub_stat in data.selected_filters.publication_statuses %}
@@ -12,7 +13,7 @@
     {% endfor %}
 </div>    
 {% endif %}
-
+#}
 <div id="resultsCountPaginatorBlock" class="clearfix">
 
 {# <!-- Handle result message here --> #}
