@@ -2,7 +2,84 @@ var MYDATA_DEBUG_ON = true;
 var APPEND_CARDS_TO_BOTTOM = false;
 var SHOW_PAGINATION = false;
 
-      
+function bind_checkbox_labels(){
+    // This should be generalized to one function....once css is set
+ 
+    // ----------------------------------
+    // action: Click label next to checkbox; 
+    // events: (a) check adjacent checkbox 
+    //         (b) unclick other checkboxes in group; and 
+    //         (c) submit form
+    // ----------------------------------
+    bind_checkbox_labels_by_names('mydata_dvobject_label', 'div_dvobject_types');
+    bind_checkbox_labels_by_names('mydata_pubstate_label', 'div_published_states');
+    bind_checkbox_labels_by_names('mydata_role_label', 'div_role_states');
+
+/*
+    // dvobject types
+    $('a.mydata_dvobject_label').on('click',function(){ 
+        $("#selected_page").val('1');
+        // Locate the closest checkbox
+        var selected_checkbox = $(this).parent().closest('div').find('input[type=checkbox]');       
+        $("#div_dvobject_types input[type=checkbox]").each(function(){
+            if ($(this).prop('id')== selected_checkbox.prop('id')){
+                $(this).prop('checked', true);
+           } else{
+               $(this).prop('checked', false);
+           }       
+        });
+       regular_search();
+    });
+    
+    // pub states
+    $('a.mydata_pubstate_label').on('click',function(){ 
+        $("#selected_page").val('1');
+        // Locate the closest checkbox
+        var selected_checkbox = $(this).parent().closest('div').find('input[type=checkbox]');       
+        $("#div_published_states input[type=checkbox]").each(function(){
+            if ($(this).prop('id')== selected_checkbox.prop('id')){
+                $(this).prop('checked', true);
+           } else{
+               $(this).prop('checked', false);
+           }       
+        });
+       regular_search();
+    });
+    // roles
+    
+    $('a.mydata_role_label').on('click',function(){ 
+        $("#selected_page").val('1');
+        // Locate the closest checkbox
+        var selected_checkbox = $(this).parent().closest('div').find('input[type=checkbox]');       
+        $("#div_role_states input[type=checkbox]").each(function(){
+            if ($(this).prop('id')== selected_checkbox.prop('id')){
+                $(this).prop('checked', true);
+           } else{
+               $(this).prop('checked', false);
+           }       
+        });
+       regular_search();
+    });*/
+}
+
+function bind_checkbox_labels_by_names(link_class_name, div_id_name){
+    // roles
+    $('a.' + link_class_name).on('click',function(){ 
+        $("#selected_page").val('1');
+        // Locate the closest checkbox
+        var selected_checkbox = $(this).parent().closest('div').find('input[type=checkbox]');       
+        $("#" + div_id_name + " input[type=checkbox]").each(function(){
+            if ($(this).prop('id')== selected_checkbox.prop('id')){
+                $(this).prop('checked', true);
+           } else{
+               $(this).prop('checked', false);
+           }       
+        });
+       regular_search();
+    });
+}
+
+
 //-----------------------------------------
 //  Called when mydata_page loads
 //  Binds checkboxes, buttons, etc
@@ -19,6 +96,16 @@ function init_mydata_page(){
         $("#selected_page").val('1');
         regular_search();
     });
+    
+    bind_checkbox_labels();
+    
+    // Find button next to search box
+    $('#btn_find_my_data').on('click',function(){ 
+        $("#selected_page").val('1');
+        regular_search();
+    });
+
+    
 
     // Capture pressing return in search box
     $('#mydata_search_term').keypress(function(e) {
@@ -108,7 +195,7 @@ function bind_filter_remove_tags(){
        var cbox_id = $(this).attr('rel');
         console.log('cbox_id: ' + cbox_id);
        
-       $("#" + cbox_id).attr('checked', false);
+       $("#" + cbox_id).prop('checked', false);
        regular_search();    // run search
    });  
 }

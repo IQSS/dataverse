@@ -12,7 +12,7 @@
         <div class="col-sm-6"  style="padding:10px 30px;">
             <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="Search this data..." />
             
-            &#160; <a class="btn btn-sm btn-default"><span class="glyphicon glyphicon-search"></span>Find </a>
+            &#160; <a class="btn btn-sm btn-default" id="btn_find_my_data"><span class="glyphicon glyphicon-search"></span>Find </a>
             &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a>
         </div>
         <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
@@ -33,43 +33,61 @@
             <input type="hidden" name="selected_page" id="selected_page" value="1" />
                        
             <!-- start dvobject checkboxes -->
-            <div id="div_dvobject_types" style="font-size:110%;font-weight:bold;">
-                <div class="checkbox"><label>
+            <div id="div_dvobject_types" style="font-size:110%;font-weight:bold;padding-bottom:10px;">
+                <div xclass="checkbox">
                     <input name="dvobject_types" id="id_cbox_dv_dataverse" type="checkbox" value="Dataverse" checked="checked" />
                     <i class="icon-dataverse text-icon-inline"></i>
-                    <span class="facetTypeDataverse">Dataverses <span id="id_dataverses_count"></span></span>
-                </label></div>
-                <div class="checkbox"><label>
+                    <label>
+                        <a class="mydata_dvobject_label"><span class="facetTypeDataverse">Dataverses</span></a>
+                    </label>
+                    <span id="id_dataverses_count"></span>
+                </div>
+                <div xclass="checkbox">
                     <input name="dvobject_types" id="id_cbox_dv_dataset" type="checkbox" value="Dataset" checked="checked" />
                     <i class="icon-dataset text-icon-inline"></i>
-                    <span class="facetTypeDataset">Datasets <span id="id_datasets_count"></span></span>
-                </label></div>
-                <div class="checkbox"><label>
+                    <label>
+                        <a class="mydata_dvobject_label"><span class="facetTypeDataset">Datasets</span></a>
+                    </label>
+                    <span id="id_datasets_count"></span>
+                </div>
+                <div xclass="checkbox">
                     <input name="dvobject_types" id="id_cbox_dv_file" type="checkbox" value="DataFile" />
                     <i class="icon-file text-icon-inline"></i>
-                        <span class="facetTypeFile">Files <span id="id_files_count"></span></span>
-                </label></div>
+                    <label>
+                        <a class="mydata_dvobject_label"><span class="facetTypeFile">Files</span></a>
+                    </label>
+                    <span id="id_files_count"></span>
+                </div>
             </div>
             <!-- end dvobject checkboxes -->
             <!-- start: publish states -->
             <b>Publication Status</b>
-            <div id="div_published_states">
+            <div id="div_published_states" style="padding:5px 0;">
                 <ui:repeat value="#{MyDataPage.publishedStates}" var="pstate">
-                    <div class="checkbox"><label>
+                    <div>
                         <input name="published_states" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
-                        #{pstate} <span id="id_#{pstate.toLowerCase()}_count"></span>
-                    </label></div>                
+                        <label style="font-weight:normal; font-size:90%;">
+                            &#160; <a class="mydata_pubstate_label">#{pstate}</a>
+                            <span id="id_#{pstate.toLowerCase()}_count"></span>
+                        </label>
+                    </div>                
                 </ui:repeat>
             </div>
             <!-- end: publish states -->
             <!-- start: role states -->
             <b>Roles</b>
-            <div id="div_role_states">
+            <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
+                <br /><small>(superuser: show all roles)</small>
+            </ui:fragment>
+
+            <div id="div_role_states" style="padding:5px 0;">
             <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
-                <div class="checkbox"><label>
+                <div>
                     <input name="role_ids" id="id_cbox_#{roleInfoList[2]}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
-                    #{roleInfoList[1]}
-                </label></div>    
+                    <label style="font-weight:normal; font-size:90%;">
+                       &#160;  <a class="mydata_role_label">#{roleInfoList[1]}</a>
+                    </label>
+                </div>    
             </ui:repeat>
             </div>
            <!-- end: role states -->
