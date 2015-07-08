@@ -1,4 +1,4 @@
-var MYDATA_DEBUG_ON = true;
+var MYDATA_DEBUG_ON = false;
 var APPEND_CARDS_TO_BOTTOM = false;
 var SHOW_PAGINATION = false;
 
@@ -349,7 +349,7 @@ function submit_my_data_search(){
             // --------------------------------
             // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
             update_filter_counts(data);
-            bind_filter_remove_tags();
+            //bind_filter_remove_tags();
         }
     });
 }
