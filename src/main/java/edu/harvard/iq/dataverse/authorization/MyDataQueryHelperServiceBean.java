@@ -101,7 +101,9 @@ public class MyDataQueryHelperServiceBean {
             for (Object result : results) {
                 Long role_id = (Long) result;
                 DataverseRole role = roleService.find(role_id);
-                retVal.add(role.getName());
+                if (!retVal.contains(role.getName())) {
+                    retVal.add(role.getName());
+                }
             }
         }
         Object parentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + dvoId).getSingleResult();
@@ -116,7 +118,9 @@ public class MyDataQueryHelperServiceBean {
             for (Object result : resultsParent) {
                 Long role_id = (Long) result;
                 DataverseRole role = roleService.find(role_id);
-                retVal.add(role.getName());
+                if (!retVal.contains(role.getName())) {
+                    retVal.add(role.getName());
+                }
             }
         }
         Object GrandParentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + parentId).getSingleResult();
@@ -131,7 +135,9 @@ public class MyDataQueryHelperServiceBean {
             for (Object result : resultsGrandParent) {
                 Long role_id = (Long) result;
                 DataverseRole role = roleService.find(role_id);
-                retVal.add(role.getName());
+                if (!retVal.contains(role.getName())) {
+                    retVal.add(role.getName());
+                }
             }
         }
 
