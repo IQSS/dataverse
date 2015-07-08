@@ -10,3 +10,14 @@ Found: <b>1 result</b>
 {% if pagination_data.endCardNumber > pagination_data.startCardNumber  %}
     Displaying: <b>{{ pagination_data.startCardNumber }} to {{ pagination_data.endCardNumber }}</b>
 {% endif %}
+
+{% if data.selected_filters %}
+<div class="hidden-xs">
+    {% for pub_stat in data.selected_filters.publication_statuses %}
+        <a class="lnk_cbox_remove btn btn-primary btn-xs" rel="id_cbox_{{ pub_stat|lower }}" style="color:#fff;">Status: {{ pub_stat }} <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+    {% endfor %}
+    {% for role_name in data.selected_filters.role_names %}
+     <a class="lnk_cbox_remove btn btn-info btn-xs" rel="id_cbox_{{ role_name|lower }}" style="color:#fff;">Role: {{ role_name }} <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>    
+    {% endfor %}
+</div>    
+{% endif %}

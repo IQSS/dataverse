@@ -6,14 +6,16 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
-     <f:metadata>
-         <ui:remove></ui:remove>        <f:viewAction action="#{MyDataPage.init}" />
+    <ui:remove>
+    <f:metadata>
+         <f:viewAction action="#{MyDataPage.init}" />
     </f:metadata>
+    </ui:remove>
     <!-- start: row -->
     <div class="row">
         <!-- start filter column -->
-        <div class="col-xs-3">
-            <form id="mydata_filter_form" name="mydata_filter_form">
+        <div class="col-xs-3" id="my_data_filter_column">
+            <!--form id="mydata_filter_form" name="mydata_filter_form"-->
             <div>
     <!--label for="exampleInputEmail1">Email address</label-->
             <input type="text" class="form-control" name="mydata_search_term" id="mydata_search_term" placeholder="Search" />
@@ -65,7 +67,7 @@
             </ui:repeat>
             </div>
            <!-- end: role states -->
-             </form>
+             <!--/form>-->
             <b>parms sent</b>
             <div id="div-search-params" class="well"></div>
         </div><!-- end: filter column -->

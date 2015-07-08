@@ -16,15 +16,8 @@
       <ui:param name="pageTitle" value="Role/Permission Relationships - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
       <ui:param name="showDataverseHeader" value="false"/>
       <ui:define name="body">
-          <f:metadata>
-                <ui:remove>
-                    <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
-                    <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
-                    <f:viewParam name="version" value="#{DatasetPage.version}"/>
-                    <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
-                    <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
-                </ui:remove>
-                    <f:viewAction action="#{MyDataPage.init}" />
+          <f:metadata>               
+                <f:viewAction action="#{MyDataPage.init}" />
           </f:metadata>
           <ui:include src="mydata_fragment.xhtml"></ui:include>
     </ui:define>

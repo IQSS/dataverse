@@ -136,9 +136,9 @@ public class MyDataPage implements java.io.Serializable {
     
     
     public String init() {
-        msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        //msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
-        msgt("----------- init() -------------");
+        //msgt("----------- init() -------------");
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
             authUser = (AuthenticatedUser) session.getUser();
@@ -146,131 +146,54 @@ public class MyDataPage implements java.io.Serializable {
             return "/loginpage.xhtml";
 	// redirect to login OR give some type ‘you must be logged in message'
         }
-        List<DataverseRole> roleList = new ArrayList();
 
-        List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
-        this.filterParams = new MyDataFilterParams(authUser.getIdentifier(), dtypes, null, null, null);
-        roleList = roleAssigneeService.getAssigneeDataverseRoleFor(this.filterParams.getUserIdentifier());
-        if (roleList.isEmpty()) {
-
-            roleList = dataverseRoleService.findAll();
-        }
-
-        msgt("roles: " + roleList.toString());
-        rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
+        // Initialize a filterParams object to buid the Publication Status checkboxes
+        //
+        this.filterParams = new MyDataFilterParams(authUser.getIdentifier(),  MyDataFilterParams.defaultDvObjectTypes, null, null, null);
         
-        /*else{
-            jsonData.add("has-session", true);
-            if (session.getUser()==null){
-                jsonData.add("has-user", false);
-            }else{
-                jsonData.add("has-user", true);
-                if (session.getUser().isAuthenticated()){
-                    jsonData.add("auth-status", "AUTHENTICATED");
-                    AuthenticatedUser authUser = (AuthenticatedUser)session.getUser();
-                    jsonData.add("username", authUser.getIdentifier());
-                }else{
-                    jsonData.add("auth-status", "GET OUT - NOT AUTHENTICATED");
-                }
-            }
-            
-        }*/
-        //if (authUser )
-
         
-
-        //List<String> dtypes = Arrays.asList(DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
-        //DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAVERSE_DTYPE_STRING
-        
-        //List<String> dtypes = new ArrayList<>();
-
-        
-        this.myDataFinder = new MyDataFinder(rolePermissionHelper,
-                                        roleAssigneeService,
-                                        dvObjectServiceBean);
-        //myDataFinder.runFindDataSteps(userIdentifier);
-        this.myDataFinder.runFindDataSteps(filterParams);
-      
-        
+        // Temp DataverseRolePermissionHelper -- not in its normal role but for creating initial checkboxes
+        //
+        rolePermissionHelper = new DataverseRolePermissionHelper(getRolesUsedToCreateCheckboxes(authUser));
+       
         return null;
     }
-
-    public String getSolrDocs() throws JSONException{
-        
-        if (solrQueryResponse == null){
-            return "(solrQueryResponse is null)";
-        }
-
-        //JsonObject jsonData = new JsonObject();
-        
-        List<String> outputList = new ArrayList<>();
-
-        for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
-            
-            //outputList.add(doc.toString());
-            //String jsonDoc = doc.toJsonObject(true, true, true).toString();
-            //if (true)return jsonDoc;
-            if( authUser!= null){
-                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId(), null)); 
-            }
-            outputList.add(doc.toJsonObject(true, true, true).toString());
-            //break;
-        }
-        //jsonData.add("docs", (JsonElement) outputList);
-        //return jsonData.toString();
-        return "{ \"docs\" : [ " + StringUtils.join(outputList, ", ") + "] }";
-
-    }
-
-    public MyDataFilterParams getFilterParams() throws JSONException{
-        return this.filterParams;
-    }
     
-    public MyDataFinder getMyDataFinder(){
-        return this.myDataFinder;
-    }
+    
+    private List<DataverseRole> getRolesUsedToCreateCheckboxes(AuthenticatedUser authUser){
 
-    public String getMyDataFinderInfo(){
-        if (this.myDataFinder.hasError()){
-            return this.myDataFinder.getErrorMessage();
+        if (authUser==null){
+            throw new NullPointerException("authUser cannot be null");
+        }
+        // Initialize the role checboxes
+        //
+        List<DataverseRole> roleList = new ArrayList();
+        
+        // (1) For a superuser, show all the roles--in case they want to
+        //    see another user's "My Data"
+        if (authUser.isSuperuser()){
+            roleList = dataverseRoleService.findAll();
         }else{
-            return this.myDataFinder.getTestString();
+            // (2) For a regular users
+            roleList = roleAssigneeService.getAssigneeDataverseRoleFor(this.filterParams.getUserIdentifier());
+        
+            // If there are no assigned roles, show them all?
+            // This may not make sense
+            if (roleList.isEmpty()) {
+                roleList = dataverseRoleService.findAll();
+            }
         }
+        return roleList;
     }
-    
-    
+        
     public DataverseRolePermissionHelper getRolePermissionHelper(){
         return this.rolePermissionHelper;
     }
 
     
-    public String getTestName(){
-        return this.testName;//"blah";
-    }
-
-    public void setTestName(String name){
-        this.testName = name;
-    }
     
     public List<String> getPublishedStates(){
         return MyDataFilterParams.defaultPublishedStates;
     }
     
-    public String getSomeJSON() throws JSONException{
-        
-      JSONObject obj = new JSONObject();
-
-      obj.put("name", "foo");
-      obj.put("num", new Integer(100));
-      obj.put("balance", new Double(1000.21));
-      obj.put("is_vip", new Boolean(true));
-
-      return obj.toString();
-    }
-
-    public String getSomeText(){
-        //System.out.println(this.rolePermissionHelper.getRoleNameListString());;
-        return "pigletz";
-        //return this.rolePermissionHelper.getRoleNameListString();
-    }
 }

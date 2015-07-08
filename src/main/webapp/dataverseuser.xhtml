@@ -21,6 +21,8 @@
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
+                    <f:viewAction action="#{MyDataPage.init}" />
+                    <ui:remove>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                     <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
@@ -38,6 +40,7 @@
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search(true)}" />
+                    </ui:remove>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
                 <h:form id="dataverseUserForm">
@@ -78,11 +81,19 @@
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
-
+                    
+                        
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
+                        <p:tab id="myData" title="My Data">
+                            <ui:include src="mydata_fragment.xhtml"></ui:include>
+                            <!--ui:include src="mydata_page.xhtml"></ui:include-->
+                        </p:tab>
+
+                        <ui:remove>
                         <p:tab id="dataRelatedToMe" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:fragment>
+
                                 <ui:include src="search-include-fragment.xhtml">
                                     <ui:param name="showFacets" value="true"/>
                                     <ui:param name="showSearch" value="true"/>
@@ -90,6 +101,7 @@
                                 </ui:include>
                             </ui:fragment>
                         </p:tab>
+                        </ui:remove>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <div class="table-container">
                                 <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
