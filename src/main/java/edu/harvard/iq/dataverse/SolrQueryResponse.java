@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import org.apache.solr.client.solrj.response.FacetField;
 
 public class SolrQueryResponse {
 
@@ -20,11 +23,72 @@ public class SolrQueryResponse {
     private Map<String, String> staticSolrFieldFriendlyNamesBySolrField;
     private List<String> filterQueriesActual = new ArrayList<String>();
     private String error;
+    private Map<String, Long> dvObjectCounts = new HashMap<>();
+    private Map<String, Long> publicationStatusCounts = new HashMap<>();
 
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
     }
 
+    public void setPublicationStatusCounts(FacetField facetField){        
+        setFacetFieldCounts(facetField, this.publicationStatusCounts);
+    }
+    
+    public Map<String, Long> getPublicationStatusCounts(){
+        return this.publicationStatusCounts;
+    }
+    
+    public void setDvObjectCounts(FacetField facetField){
+        setFacetFieldCounts(facetField, this.dvObjectCounts);
+      
+    }
+    
+    public Map<String, Long> getDvObjectCounts(){
+        return this.dvObjectCounts;
+    }
+    
+        
+    private void setFacetFieldCounts(FacetField facetField,  Map<String, Long> countMap){
+        if ((facetField ==null)||(countMap==null)){
+            return;
+        }
+        
+        for (FacetField.Count fcnt :  facetField.getValues()){
+            countMap.put(fcnt.getName().toLowerCase() + "_count", fcnt.getCount());
+        }
+    }
+ 
+    public JsonObjectBuilder getPublicationStatusCountsAsJSON(){
+        
+        if (this.publicationStatusCounts == null){
+            return null;
+        }
+        return this.getMapCountsAsJSON(publicationStatusCounts);
+    }
+       
+    
+    public JsonObjectBuilder getDvObjectCountsAsJSON(){
+        
+        if (this.dvObjectCounts == null){
+            return null;
+        }
+        return this.getMapCountsAsJSON(dvObjectCounts);
+    }
+    
+    public JsonObjectBuilder getMapCountsAsJSON(Map<String, Long> countMap){
+        
+        if (countMap == null){
+            return null;
+        }
+        JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        
+        for (Map.Entry<String, Long>  entry : countMap.entrySet()) {
+            jsonData.add(entry.getKey(), entry.getValue());
+        }
+        return jsonData;
+    }
+    
+    
     public void setSolrSearchResults(List<SolrSearchResult> solrSearchResults) {
         this.solrSearchResults = solrSearchResults;
     }
