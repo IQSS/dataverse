@@ -264,47 +264,7 @@ public class MyDataFinder {
         return null;       
     }
     
-    /*
-    // Return to set items to a List
-        //
-        entityIds = new ArrayList<Long>(distinctEntityIds);
-        parentIds = new ArrayList<Long>(distinctParentIds);
-        
-      
-    */
-        
-  
     
-    
-
-    /*
-    public MyDataFinder(String userIdentifier, ArrayList<DataverseRole> roles, 
-            ArrayList<String> dvObjectTypes, ArrayList<String> publicationStatuses, 
-            String searchTerm, MyDataQueryHelperServiceBean injectedBean,  DataverseRoleServiceBean roleService) {
-        
-        this.userIdentifier = userIdentifier;
-        this.roles = roles;
-        this.dvObjectTypes = dvObjectTypes;
-        this.publicationStatuses = publicationStatuses;
-        
-        if (searchTerm != null && !searchTerm.isEmpty()) {
-            this.searchTerm = searchTerm;
-        }
-        initServices(injectedBean, roleService);        
-        runSteps();
-
-        //initializeLists();
-    }
-    */
-    /*
-    private void initServices(MyDataQueryHelperServiceBean injectedBean, DataverseRoleServiceBean roleService){
-        myDataQueryHelperService = injectedBean;
-        List<DataverseRole> roleList = roleService.findAll();
-        msgt("roles: " + roleList.toString());
-        rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
-        
-    }
-    */
     
     public String getTestString(){
         
