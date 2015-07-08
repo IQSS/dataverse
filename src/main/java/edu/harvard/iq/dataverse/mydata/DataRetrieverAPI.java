@@ -215,7 +215,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
        
              // If person is a superuser, see if a userIdentifier has been specified 
              // and use that instead
-             if ((authUser.isSuperuser())&&(userIdentifier != null)){
+             if ((authUser.isSuperuser())&&(userIdentifier != null)&&(!userIdentifier.isEmpty())){
                  searchUser = getUserFromIdentifier(userIdentifier);
                  if (searchUser != null){
                      OTHER_USER = true;
@@ -361,7 +361,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
             );
         if (OTHER_USER==true){
-            jsonData.add("other_user", authUser.getIdentifier());
+            jsonData.add("other_user", searchUser.getIdentifier());
         }
                                 
         return jsonData.build().toString();
@@ -391,6 +391,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
         for (FacetCategory fc : solrResponse.getFacetCategoryList()) {
             for (FacetLabel fl : fc.getFacetLabel()) {
+                //msg("FACET!: " + fl.getName());
                 if (fl.getName().equals("Published") || fl.getName().equals("Draft") || fl.getName().equals("Unpublished")) {
                     jsonData.add(fl.getName().toLowerCase() + "_count", fl.getCount());
                 }

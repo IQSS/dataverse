@@ -244,7 +244,10 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         List<String[]> roleInfoList = new ArrayList<String[]>();
         
         for (Entry entry : roleNameLookup.entrySet()){
-            String[] singleRole = { ((Long)entry.getKey()).toString(), (String)entry.getValue() };
+            String idName = ((String)entry.getValue()).toLowerCase().replace(" + ", "").replace(" ", "");
+            // triplet:   key, name, id_name
+            // Examples:  { 1, Admin, admin }, {2, File Downloader, filedownloader}
+            String[] singleRole = { ((Long)entry.getKey()).toString(), (String)entry.getValue(), idName };
             roleInfoList.add(singleRole);
         }
         return roleInfoList;

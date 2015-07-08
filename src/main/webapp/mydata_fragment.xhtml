@@ -6,25 +6,31 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
-    <ui:remove>
-    <f:metadata>
-         <f:viewAction action="#{MyDataPage.init}" />
-    </f:metadata>
-    </ui:remove>
+
+
+    <div class="row" id="my_data_filter_column2">
+        <div class="col-sm-6"  style="padding:10px 30px;">
+            <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="Search this data..." />
+            
+            &#160; <a class="btn btn-sm btn-default"><span class="glyphicon glyphicon-search"></span>Find </a>
+            &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a>
+        </div>
+        <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
+        <div class="col-sm-6 well">Superuser:) Enter a username:
+            <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" />
+        </div>
+        </ui:fragment>
+    </div>
+<!-- start: panel --><div class="panel panel-default">
+<!-- start: panel body --><div class="panel-body clearfix">
+        
+    
     <!-- start: row -->
     <div class="row">
         <!-- start filter column -->
         <div class="col-xs-3" id="my_data_filter_column">
             <!--form id="mydata_filter_form" name="mydata_filter_form"-->
-            <div>
-    <!--label for="exampleInputEmail1">Email address</label-->
-            <input type="text" class="form-control" name="mydata_search_term" id="mydata_search_term" placeholder="Search" />
             <input type="hidden" name="selected_page" id="selected_page" value="1" />
-            <ui:fragment rendered="#{MyDataPage.isSuperuser()}"><p>superuser:)</p>
-            </ui:fragment>
-            <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" />
-            </div>
-            <hr />            
                        
             <!-- start dvobject checkboxes -->
             <div id="div_dvobject_types" style="font-size:110%;font-weight:bold;">
@@ -61,7 +67,7 @@
             <div id="div_role_states">
             <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
                 <div class="checkbox"><label>
-                    <input name="role_ids" id="id_cbox_#{roleInfoList[1].toLowerCase()}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
+                    <input name="role_ids" id="id_cbox_#{roleInfoList[2]}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
                     #{roleInfoList[1]}
                 </label></div>    
             </ui:repeat>
@@ -73,7 +79,7 @@
         </div><!-- end: filter column -->
         <!-- start: workspace column -->
         <div class="col-xs-9">
-            <div id="div-pagination" style="height:60px;"> </div>
+            <div id="div-pagination" style="xheight:60px;"> </div>
             <hr />
             <!--<div id="div-test-json" class="well">(pagination)</div>-->
             <div id="div-result-message">workspace</div>
@@ -98,4 +104,6 @@
              init_mydata_page(); // source: mydata.js
            });
     </script>
+</div><!-- end panel body -->
+</div><!-- ebd panel -->
 </ui:composition>
