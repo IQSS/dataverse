@@ -374,6 +374,13 @@ public class DataRetrieverAPI extends AbstractApiBean {
             return null;
         }
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
+
+        // Initialize counts to 0; Solr may not return all 3 objects
+        //
+        jsonData.add("dataverses_count", 0)
+                .add("datasets_count", 0)
+                .add("files_count", 0);
+
         for (FacetCategory fc : solrResponse.getTypeFacetCategories()) {
             for (FacetLabel fl : fc.getFacetLabel()) {
                 jsonData.add(fl.getName() + "_count", fl.getCount());
@@ -389,9 +396,16 @@ public class DataRetrieverAPI extends AbstractApiBean {
             return null;
         }
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
+        
+        // Initialize counts to 0; Solr may not return all of the counts
+        //
+        jsonData.add("published_count", 0)
+                .add("unpublished_count", 0)
+                .add("draft_count", 0);
+
         for (FacetCategory fc : solrResponse.getFacetCategoryList()) {
             for (FacetLabel fl : fc.getFacetLabel()) {
-                //msg("FACET!: " + fl.getName());
+                msg("FACET!: " + fl.getName());
                 if (fl.getName().equals("Published") || fl.getName().equals("Draft") || fl.getName().equals("Unpublished")) {
                     jsonData.add(fl.getName().toLowerCase() + "_count", fl.getCount());
                 }
