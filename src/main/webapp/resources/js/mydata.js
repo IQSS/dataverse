@@ -1,4 +1,4 @@
-var MYDATA_DEBUG_ON = false;
+var MYDATA_DEBUG_ON = true;
 var APPEND_CARDS_TO_BOTTOM = false;
 var SHOW_PAGINATION = false;
 
