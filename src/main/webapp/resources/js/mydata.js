@@ -15,51 +15,6 @@ function bind_checkbox_labels(){
     bind_checkbox_labels_by_names('mydata_pubstate_label', 'div_published_states');
     bind_checkbox_labels_by_names('mydata_role_label', 'div_role_states');
 
-/*
-    // dvobject types
-    $('a.mydata_dvobject_label').on('click',function(){ 
-        $("#selected_page").val('1');
-        // Locate the closest checkbox
-        var selected_checkbox = $(this).parent().closest('div').find('input[type=checkbox]');       
-        $("#div_dvobject_types input[type=checkbox]").each(function(){
-            if ($(this).prop('id')== selected_checkbox.prop('id')){
-                $(this).prop('checked', true);
-           } else{
-               $(this).prop('checked', false);
-           }       
-        });
-       regular_search();
-    });
-    
-    // pub states
-    $('a.mydata_pubstate_label').on('click',function(){ 
-        $("#selected_page").val('1');
-        // Locate the closest checkbox
-        var selected_checkbox = $(this).parent().closest('div').find('input[type=checkbox]');       
-        $("#div_published_states input[type=checkbox]").each(function(){
-            if ($(this).prop('id')== selected_checkbox.prop('id')){
-                $(this).prop('checked', true);
-           } else{
-               $(this).prop('checked', false);
-           }       
-        });
-       regular_search();
-    });
-    // roles
-    
-    $('a.mydata_role_label').on('click',function(){ 
-        $("#selected_page").val('1');
-        // Locate the closest checkbox
-        var selected_checkbox = $(this).parent().closest('div').find('input[type=checkbox]');       
-        $("#div_role_states input[type=checkbox]").each(function(){
-            if ($(this).prop('id')== selected_checkbox.prop('id')){
-                $(this).prop('checked', true);
-           } else{
-               $(this).prop('checked', false);
-           }       
-        });
-       regular_search();
-    });*/
 }
 
 function bind_checkbox_labels_by_names(link_class_name, div_id_name){

@@ -40,7 +40,7 @@
                     <label>
                         <a class="mydata_dvobject_label"><span class="facetTypeDataverse">Dataverses</span></a>
                     </label>
-                    <span id="id_dataverses_count"></span>
+                    <span id="id_dataverses_count" style="font-weight:normal;"></span>
                 </div>
                 <div xclass="checkbox">
                     <input name="dvobject_types" id="id_cbox_dv_dataset" type="checkbox" value="Dataset" checked="checked" />
@@ -48,7 +48,7 @@
                     <label>
                         <a class="mydata_dvobject_label"><span class="facetTypeDataset">Datasets</span></a>
                     </label>
-                    <span id="id_datasets_count"></span>
+                    <span id="id_datasets_count" style="font-weight:normal;"></span>
                 </div>
                 <div xclass="checkbox">
                     <input name="dvobject_types" id="id_cbox_dv_file" type="checkbox" value="DataFile" />
@@ -56,7 +56,7 @@
                     <label>
                         <a class="mydata_dvobject_label"><span class="facetTypeFile">Files</span></a>
                     </label>
-                    <span id="id_files_count"></span>
+                    <span id="id_files_count" style="font-weight:normal;"></span>
                 </div>
             </div>
             <!-- end dvobject checkboxes -->
@@ -68,7 +68,7 @@
                         <input name="published_states" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
                         <label style="font-weight:normal; font-size:90%;">
                             &#160; <a class="mydata_pubstate_label">#{pstate}</a>
-                            <span id="id_#{pstate.toLowerCase()}_count"></span>
+                            <span id="id_#{pstate.toLowerCase()}_count"  style="font-weight:normal;"></span>
                         </label>
                     </div>                
                 </ui:repeat>
