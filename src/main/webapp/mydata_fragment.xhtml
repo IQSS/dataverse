@@ -12,7 +12,7 @@
         <div class="col-sm-6"  style="padding:10px 30px;">
             <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="Search this data..." />
             
-            &#160; <a class="btn btn-sm btn-default" id="btn_find_my_data"><span class="glyphicon glyphicon-search"></span>Find </a>
+            &#160; <a class="btn btn-sm btn-default"><span class="glyphicon glyphicon-search"></span>Find </a>
             &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a>
         </div>
         <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
@@ -62,32 +62,23 @@
             <!-- end dvobject checkboxes -->
             <!-- start: publish states -->
             <b>Publication Status</b>
-            <div id="div_published_states" style="padding:5px 0;">
+            <div id="div_published_states">
                 <ui:repeat value="#{MyDataPage.publishedStates}" var="pstate">
-                    <div>
+                    <div class="checkbox"><label>
                         <input name="published_states" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
-                        <label style="font-weight:normal; font-size:90%;">
-                            &#160; <a class="mydata_pubstate_label">#{pstate}</a>
-                            <span id="id_#{pstate.toLowerCase()}_count"  style="font-weight:normal;"></span>
-                        </label>
-                    </div>                
+                        #{pstate} <span id="id_#{pstate.toLowerCase()}_count"></span>
+                    </label></div>                
                 </ui:repeat>
             </div>
             <!-- end: publish states -->
             <!-- start: role states -->
             <b>Roles</b>
-            <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
-                <br /><small>(superuser: show all roles)</small>
-            </ui:fragment>
-
-            <div id="div_role_states" style="padding:5px 0;">
+            <div id="div_role_states">
             <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
-                <div>
+                <div class="checkbox"><label>
                     <input name="role_ids" id="id_cbox_#{roleInfoList[2]}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
-                    <label style="font-weight:normal; font-size:90%;">
-                       &#160;  <a class="mydata_role_label">#{roleInfoList[1]}</a>
-                    </label>
-                </div>    
+                    #{roleInfoList[1]}
+                </label></div>    
             </ui:repeat>
             </div>
            <!-- end: role states -->
@@ -102,7 +93,7 @@
             <div id="div-result-message">workspace</div>
             <div id="div-card-results">(card results?)</div>
             <div id="div-more-cards-link" class="text-center" style="display:none;">
-                <a id="lnk_add_more_cards" class="btn btn-primary btn-xs" style="color:#fff;">View more results</a>
+                <a id="lnk_add_more_cards" class="btn btn-primary btn-xs">View more results</a>
             </div> 
             
             
@@ -122,5 +113,5 @@
            });
     </script>
 </div><!-- end panel body -->
-</div><!-- ebd panel -->
+</div><!-- end panel -->
 </ui:composition>

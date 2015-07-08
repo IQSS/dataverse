@@ -12,8 +12,8 @@ function bind_checkbox_labels(){
     //         (c) submit form
     // ----------------------------------
     bind_checkbox_labels_by_names('mydata_dvobject_label', 'div_dvobject_types');
-    bind_checkbox_labels_by_names('mydata_pubstate_label', 'div_published_states');
-    bind_checkbox_labels_by_names('mydata_role_label', 'div_role_states');
+    //bind_checkbox_labels_by_names('mydata_pubstate_label', 'div_published_states');
+    //bind_checkbox_labels_by_names('mydata_role_label', 'div_role_states');
 
 }
 
@@ -51,16 +51,15 @@ function init_mydata_page(){
         $("#selected_page").val('1');
         regular_search();
     });
-    
-    bind_checkbox_labels();
-    
+        
     // Find button next to search box
     $('#btn_find_my_data').on('click',function(){ 
         $("#selected_page").val('1');
         regular_search();
     });
-
-    
+   
+    // DvObject checkbox labels have different action
+    bind_checkbox_labels();
 
     // Capture pressing return in search box
     $('#mydata_search_term').keypress(function(e) {
