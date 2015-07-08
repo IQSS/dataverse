@@ -62,8 +62,13 @@ where dv1.dataset_id = dv2.dataset_id
 and dv1.versionnumber < dv2.versionnumber
 and dv2.versionstate  = 'DEACCESSIONED');
 
--- update the globalidcreatetime to be equal to the publicationdate
-update dataset set globalidcreatetime = publicationdate
+-- update the globalidcreatetime to be equal to the createdate,
+-- as it should have been registered when the draft was created in 3.6
+update dataset set globalidcreatetime = createdate
 from dvobject dvo
 where dataset.id = dvo.id;
+
+-- set the license for all versions to be NONE by default
+-- TODO: once create commands are done, this can be done in the code.
+update datasetversion set license = 'NONE';
 
