@@ -96,6 +96,13 @@ public class SearchServiceBean {
      * @throws SearchException 
      */
     public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        if (paginationStart < 0){
+            throw new IllegalArgumentException("paginationStart must be 0 or greater");
+        }
+        if (numResultsPerPage < 1){
+            throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
+        }
+        
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
