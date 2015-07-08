@@ -21,13 +21,13 @@
     <div class="results-count pull-left">
 <strong>
 {% if pagination_data.endCardNumber > pagination_data.startCardNumber  %}
-{{ pagination_data.startCardNumber }} to {{ pagination_data.endCardNumber }} of 
+  {# {{ pagination_data.startCardNumber }} to {{ pagination_data.endCardNumber }} of #}
+    1 to {{ pagination_data.endCardNumber }} of 
 {% endif %}
 {% if pagination_data.numResults > 1 %}
-{{ pagination_data.numResults }} Results
-
+    {{ pagination_data.numResults }} Results
 {% elif pagination_data.numResults == 1 %}
-1 Result 
+    1 Result 
 {% endif %}
 </strong>
     </div>
