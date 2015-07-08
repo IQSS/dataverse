@@ -61,34 +61,44 @@ public class MarkupCheckerTest {
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(sanitized.equals(""));
 
+        /**
+         * @todo If you change this unsafeStr value the test still passes but it
+         * should fail. Other tests should be checked as well.
+         */
         String unsafeStr = "<map name=\"rtdcCO\">";
         safeStr = "<map name=\"rtdcCO\"></map>";
-        sanitized = MarkupChecker.sanitizeBasicHTML(safeStr);
+        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));
 
         unsafeStr = "<area shape=\"rect\" coords=\"42,437,105,450\" href=\"/dvn/dv/rtdc/faces/study/StudyPage.xhtml?globalId=hdl:10904/10006\" title=\"Galactic Center (DHT02)\" alt=\"Galactic Center (DHT02)\">";
         safeStr = unsafeStr;//"<map name=\"rtdcCO\"></map>";
-        sanitized = MarkupChecker.sanitizeBasicHTML(safeStr);
+        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));
 
         
         unsafeStr = "<map name=\"rtdcCO\"><area shape=\"rect\" coords=\"42,437,105,450\" href=\"/dvn/dv/rtdc/faces/study/StudyPage.xhtml?globalId=hdl:10904/10006\" title=\"Galactic Center (DHT02)\" alt=\"Galactic Center (DHT02)\"></map>";
         safeStr = unsafeStr;//"<map name=\"rtdcCO\"></map>";
-        sanitized = MarkupChecker.sanitizeBasicHTML(safeStr);
+        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));
 
         unsafeStr = "<p>hello</";
-        safeStr = "hello";//"<map name=\"rtdcCO\"></map>";
-        sanitized = MarkupChecker.sanitizeBasicHTML(safeStr);
+        safeStr = "<p>hello&lt;/</p>";
+        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));
 
         unsafeStr = "<h1>hello</h2>";
-        safeStr = "hello";//"<map name=\"rtdcCO\"></map>";
-        sanitized = MarkupChecker.sanitizeBasicHTML(safeStr);
+        safeStr = "<h1>hello</h1>";
+        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
+        this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
+        assertTrue(safeStr.equals(sanitized));
+
+        unsafeStr = "the <a href=\"http://dataverse.org\" target=\"_blank\">Dataverse project</a> in a new window";
+        safeStr = "the \n<a href=\"http://dataverse.org\" target=\"_blank\" rel=\"nofollow\">Dataverse project</a> in a new window";
+        sanitized = MarkupChecker.sanitizeBasicHTML(unsafeStr);
         this.msgu("safeStr: " + safeStr + "\nsanitized: " + sanitized);
         assertTrue(safeStr.equals(sanitized));
 
