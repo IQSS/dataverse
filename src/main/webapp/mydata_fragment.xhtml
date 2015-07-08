@@ -10,10 +10,10 @@
 
     <div class="row" id="my_data_filter_column2">
         <div class="col-xs-7"  style="padding:10px 30px;">
-            <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="Search this data..." />
+            <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="Filter this data..." />
             
-            &#160; <a class="btn btn-default"><span class="glyphicon glyphicon-search"></span>Find </a>
-            &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a>
+            &#160; <a id="btn_find_my_data" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>Filter</a>
+            <!-- &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a> -->
         </div>
         <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
         <div class="col-xs-4 pull-right text-right" style="margin-right:30px;margin-bottom:0;padding:8px 6px;background:none;">
@@ -89,13 +89,13 @@
         <div class="col-xs-9">
             <div id="div-pagination"></div>
             <!--<div id="div-test-json" class="well">(pagination)</div>-->
-            <div id="div-result-message">workspace</div>
-            <div id="div-card-results">(card results?)</div>
+            <div id="div-result-message"></div>
+            <div id="resultsTable"><div id="div-card-results"></div></div>
             <div id="div-more-cards-link" class="text-center" style="display:none;">
-                <a id="lnk_add_more_cards" class="btn btn-primary btn-xs" style="color:#fff;">View more results</a>
+                <a id="lnk_add_more_cards" class="btn btn-default">View More Results</a>
             </div> 
             
-            <div id="div-json-results">workspace</div>
+            <div id="div-json-results"></div>
         </div>
         <!-- end: workspace column -->
     </div><!-- end row -->

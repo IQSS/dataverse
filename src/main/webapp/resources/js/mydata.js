@@ -254,11 +254,11 @@ function updatePagination(json_data){
             console.log("update link to: " + pagination_json.nextPageNumber);
             $('#div-more-cards-link').show();
            
-            var result_label = 'results';
+            var result_label = 'Results';
             if (pagination_json.numberNextResults == 1){
-                result_label = 'result';
+                result_label = 'Result';
             }
-            $('#lnk_add_more_cards').html('View next ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' more)');
+            $('#lnk_add_more_cards').html('View Next ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' More)');
         }
         bindPages();
     }
@@ -296,6 +296,8 @@ function submit_my_data_search(){
     // (2) submit the form
     // --------------------------------
        console.log('formData: ' + formData);
+       
+       $('#ajaxStatusPanel_start').show();
 
     $.getJSON( RETRIEVE_DATA_API_PATH + '?' + formData, function(data) {
 
@@ -349,7 +351,8 @@ function submit_my_data_search(){
             // --------------------------------
             // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
             update_filter_counts(data);
-            //bind_filter_remove_tags();
+            // bind_filter_remove_tags();
+            $('#ajaxStatusPanel_start').hide();
         }
     });
 }
