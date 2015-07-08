@@ -241,6 +241,7 @@ function submit_my_data_search(){
 
     // For debugging, show the search params
     if (MYDATA_DEBUG_ON){
+        $("#div-search-params").show();
         $("#div-search-params").html(formData);
     }
 
