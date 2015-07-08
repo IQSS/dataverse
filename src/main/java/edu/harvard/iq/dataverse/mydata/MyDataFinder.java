@@ -249,13 +249,6 @@ public class MyDataFinder {
         }
         
         if ((entityIdClause != null) && (parentIdClause != null)){
-            try {
-                // entityIdClause + parentIdClause
-                FileUtils.writeStringToFile(new File("/Users/rmp553/Desktop/solr-fds.txt"),
-                        "(" + entityIdClause + " OR " + parentIdClause + ")");
-            } catch (IOException ex) {
-                Logger.getLogger(MyDataFinder.class.getName()).log(Level.SEVERE, null, ex);
-            }
             return "(" + entityIdClause + " OR " + parentIdClause + ")";
         
         } else if (entityIdClause != null){
