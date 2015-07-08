@@ -194,7 +194,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         msg("Selected page: " + selectedPage);
-        boolean DEBUG_MODE = true;
+        boolean DEBUG_MODE = false;
         boolean OTHER_USER = false;
 
 
