@@ -64,11 +64,14 @@
  {% elif card_info.type == "file" %}
             <div class="card-preview-icon-block text-center">
                 <a href="/dataset.xhtml?persistentId={{ card_info.parentIdentifier }}">
+                        
+                    <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="" class="file_card_img" />
+                    <span class="icon-dataset text-info" style="display:none;"></span>    
                     {#{% if card_info.image_url %}
                         <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="" />
-                    {% else %}#}
+                    {% else %}
                         <span class="icon-dataset text-info"></span>
-                    {#{% endif %}#}
+                    {% endif %}#}
                 </a>
             </div>
             <span class="text-muted">{{ card_info.date_to_display_on_card }}

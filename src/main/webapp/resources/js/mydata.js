@@ -264,6 +264,21 @@ function updatePagination(json_data){
     }
 }            
             
+// If an image failed to load, then display the default icon 
+//
+function check_card_images(){
+    $("img").error(function () {
+        if ($(this).hasClass('file_card_img')){
+            $(this).next("span").show();
+            $(this).hide();
+            $(this).unbind("error");
+            console.log('show fix');
+        }
+//        $(this).unbind("error").attr("src", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdjrNFMQn7tYxyOv-qkdiG3c0ipoBjJfK7XGJvef3ChQpIq7bBpQ");
+    });
+    
+}
+            
 // --------------------------------
 // Run the actual search!
 // --------------------------------
@@ -352,6 +367,7 @@ function submit_my_data_search(){
             // --------------------------------
             // Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
             update_filter_counts(data);
+            check_card_images();
             // bind_filter_remove_tags();
             $('#ajaxStatusPanel_start').hide();
         }
