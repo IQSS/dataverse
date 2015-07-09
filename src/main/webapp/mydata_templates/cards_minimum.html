@@ -66,11 +66,11 @@
                 <a href="/dataset.xhtml?persistentId={{ card_info.parentIdentifier }}">
                         
                     <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="" class="file_card_img" />
-                    <span class="icon-dataset text-info" style="display:none;"></span>    
+                    <span class="icon-file text-muted" style="display:none;"></span>    
                     {#{% if card_info.image_url %}
                         <img src="{{ card_info.image_url | replace("https://localhost", "")  }}?pfdrid_c=true" alt="" />
                     {% else %}
-                        <span class="icon-dataset text-info"></span>
+                        <span class="icon-file text-muted"></span>
                     {% endif %}#}
                 </a>
             </div>
