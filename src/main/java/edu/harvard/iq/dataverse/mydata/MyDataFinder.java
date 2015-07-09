@@ -427,9 +427,9 @@ public class MyDataFinder {
                     }
                     break;
                 case(DvObject.DATASET_DTYPE_STRING):
-                    //if (this.idsWithDatasetPermissions.containsKey(dvId)){
+                    if (this.idsWithDatasetPermissions.containsKey(dvId)){
                         this.directDatasetIds.add(dvId); // Direct dataset
-                    //}
+                    }
                     if (this.idsWithFilePermissions.containsKey(dvId)){
                         this.fileParentIds.add(dvId);   // Parent to file
                     }
