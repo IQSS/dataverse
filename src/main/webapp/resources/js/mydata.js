@@ -314,6 +314,7 @@ function submit_my_data_search(){
 
         if (!data.success){
             setWarningAlert(data.error_message);
+            $('#ajaxStatusPanel_start').hide();
             return;
         }
 
