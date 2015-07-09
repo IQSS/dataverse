@@ -200,20 +200,20 @@ public class MyDataFinder {
         //
         Set<Long> distinctEntityIds = new HashSet<>(entityIds);
         Set<Long> distinctParentIds = new HashSet<>(parentIds);
-        
-        if ((distinctEntityIds.size()==0)&&(distinctParentIds.size()==0)){
+
+        if ((distinctEntityIds.size() == 0) && (distinctParentIds.size() == 0)) {
             this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
             return null;
         }
-        
+
         msg("distinctEntityIds (1): " + distinctEntityIds.size());
         msg("distinctParentIds: " + distinctEntityIds.size());
-        
+
         // See if we can trim down the list of distinctEntityIds
         //  If we have the parent of a distinctEntityId in distinctParentIds,
         //  then we query it via the parent
         //        
-        
+
         List<Long> finalDirectEntityIds = new ArrayList<>();
         for (Long idToCheck : distinctEntityIds){
             if (this.childToParentIds.containsKey(idToCheck)){  // Do we have the parent in our map?
@@ -458,12 +458,13 @@ public class MyDataFinder {
         
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoByParentIdForMyData(this.fileGrandparentFileIds);
         msg("runStep3FilePermsAssignedAtDataverse results count: " + results.size());
-        
+        /*  SEK 07/09 Ticket 2329
+        Removed failure for empty results - if there are none let it go
        if (results.isEmpty()){
             this.addErrorMessage("Sorry, no Dataset were found with those Ids");
             return false;
         }
-    
+    */
         Integer dvIdAsInteger;
         Long dvId;
         String dtype;
