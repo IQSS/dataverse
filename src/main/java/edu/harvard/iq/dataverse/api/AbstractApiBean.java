@@ -54,6 +54,7 @@ import javax.ws.rs.core.Response.Status;
  */
 public abstract class AbstractApiBean {
     
+    private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     
     /**
@@ -141,10 +142,6 @@ public abstract class AbstractApiBean {
     @Context
     HttpServletRequest request;
 	
-    @QueryParam("key") 
-    private String queryParamApiKey;
-            
-    
     /**
      * For pretty printing (indenting) of JSON output.
      */
@@ -176,6 +173,7 @@ public abstract class AbstractApiBean {
     
     protected String getRequestApiKey() {
         String headerParamApiKey = request.getHeader(DATAVERSE_KEY_HEADER_NAME);
+        String queryParamApiKey = request.getParameter("key");
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
     
@@ -185,9 +183,10 @@ public abstract class AbstractApiBean {
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse iff there is an api key present, but it is invalid.
      */
     protected User findUserOrDie() throws WrappedResponse {
-        return ( getRequestApiKey() == null )
+        final String requestApiKey = getRequestApiKey();
+        return ( requestApiKey == null )
                 ? new GuestUser()
-                : findAuthenticatedUserOrDie();
+                : findAuthenticatedUserOrDie(requestApiKey);
     }
     
     /**
@@ -271,7 +270,8 @@ public abstract class AbstractApiBean {
             throw new WrappedResponse( ex, errorResponse(Response.Status.BAD_REQUEST, ex.getMessage() ) );
           
         } catch (PermissionException ex) {
-            throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, ex.getMessage()) );
+            throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, 
+                                                    "User " + cmd.getUser().getIdentifier() + " is not permitted to perform requested action.") );
             
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);

@@ -214,9 +214,7 @@ public class Dataverses extends AbstractApiBean {
 	@Path("{identifier}")
 	public Response viewDataverse( @PathParam("identifier") String idtf ) {
         try {
-            Dataverse d = findDataverseOrDie(idtf);
-            User u = findUserOrDie();
-			Dataverse retrieved = execCommand( new GetDataverseCommand(u, d) );
+			Dataverse retrieved = execCommand( new GetDataverseCommand( findUserOrDie(), findDataverseOrDie(idtf)) );
 			return okResponse( json(retrieved) );
 		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
@@ -227,9 +225,7 @@ public class Dataverses extends AbstractApiBean {
 	@Path("{identifier}")
 	public Response deleteDataverse( @PathParam("identifier") String idtf ) {
 		try {
-            Dataverse d = findDataverseOrDie(idtf);
-            User u = findUserOrDie();
-			execCommand( new DeleteDataverseCommand(u, d)  );
+			execCommand( new DeleteDataverseCommand(findUserOrDie(), findDataverseOrDie(idtf))  );
 			return okResponse( "Dataverse " + idtf  +" deleted");
 		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
@@ -240,11 +236,8 @@ public class Dataverses extends AbstractApiBean {
 	@Path("{identifier}/metadatablocks")
 	public Response listMetadataBlocks( @PathParam("identifier") String dvIdtf ) {
         try {
-            User u = findUserOrDie();
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            for ( MetadataBlock blk : execCommand( new ListMetadataBlocksCommand(u, dataverse) )){
+            for ( MetadataBlock blk : execCommand( new ListMetadataBlocksCommand(findUserOrDie(), findDataverseOrDie(dvIdtf)) )){
                 jab.add( brief.json(blk) );
             }
             
@@ -524,12 +517,10 @@ public class Dataverses extends AbstractApiBean {
     public Response createExplicitGroup( ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf) {
         try {
             
-            Dataverse dv = findDataverseOrDie(dvIdtf);
-            
             ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
             ExplicitGroup newGroup = dto.apply(prv.makeGroup());
             
-            newGroup = execCommand( new CreateExplicitGroupCommand(findUserOrDie(), dv, newGroup));
+            newGroup = execCommand( new CreateExplicitGroupCommand(findUserOrDie(), findDataverseOrDie(dvIdtf), newGroup));
             
             String groupUri = String.format("%s/groups/%s", dvIdtf, newGroup.getGroupAliasInOwner());
             return createdResponse( groupUri, json(newGroup) );
@@ -543,11 +534,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/groups/") 
     public Response listGroups( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
         try {
-            
-            Dataverse dv = findDataverseOrDie(dvIdtf);
-            
-            return okResponse( json(execCommand(new ListExplicitGroupsCommand(findUserOrDie(), dv) )));
-            
+            return okResponse( json(execCommand(new ListExplicitGroupsCommand(findUserOrDie(), findDataverseOrDie(dvIdtf)) )));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -559,7 +546,6 @@ public class Dataverses extends AbstractApiBean {
                                                     @PathParam("aliasInOwner") String grpAliasInOwner )
     {
         try {
-            
             ExplicitGroup eg = findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
                                                       findUserOrDie(),
                                                       grpAliasInOwner);
