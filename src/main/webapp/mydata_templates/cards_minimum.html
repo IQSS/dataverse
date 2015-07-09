@@ -17,7 +17,7 @@
  {% if card_info.type == "dataverse" %}
             <span class="icon-dataverse text-brand pull-right" title="Dataverse"></span>
             <a href="/dataverse/{{ card_info.identifier }}"><span style="padding:4px 0;">{{ card_info.name }} Dataverse</span></a>
-            <span class="text-muted">(<em>Affiliation</em>)</span>
+           {# <span class="text-muted">(<em>Affiliation</em>)</span>#}
  {% elif card_info.type == "dataset" %}
             <span class="icon-dataset text-info pull-right" title="Dataset"></span>
             <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
