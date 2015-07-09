@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -76,6 +77,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @Inject
+    MyDataPage mydatapage;
     
     @EJB
     AuthenticationServiceBean authSvc;
@@ -205,6 +208,9 @@ public class BuiltinUserPage implements java.io.Serializable {
                 case "notifications":
                     activeIndex = 1;
                     displayNotification();
+                    break;
+                case "dataRelatedToMe":
+                    mydatapage.init();
                     break;
                 // case "groupsRoles":
                     // activeIndex = 2;
@@ -447,8 +453,13 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void onTabChange(TabChangeEvent event) {
+        System.out.print("tab change event?");
         if (event.getTab().getId().equals("notifications")) {
             displayNotification();
+        }
+        if (event.getTab().getId().equals("dataRelatedToMe")){
+            System.out.print("is this happenign?");
+            mydatapage.init();
         }
     }
 
