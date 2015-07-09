@@ -416,9 +416,9 @@ public class MyDataFinder {
             
             switch(dtype){
                 case(DvObject.DATAVERSE_DTYPE_STRING):
-                    if (this.idsWithDataversePermissions.containsKey(dvId)){
+                    //if (this.idsWithDataversePermissions.containsKey(dvId)){
                         this.directDataverseIds.add(dvId);  // Direct dataverse (no indirect dataverses)
-                    }
+                    //}
                     if (this.idsWithDatasetPermissions.containsKey(dvId)){
                         this.datasetParentIds.add(dvId);    // Parent to dataset
                     }
@@ -427,9 +427,9 @@ public class MyDataFinder {
                     }
                     break;
                 case(DvObject.DATASET_DTYPE_STRING):
-                    if (this.idsWithDatasetPermissions.containsKey(dvId)){
+                    //if (this.idsWithDatasetPermissions.containsKey(dvId)){
                         this.directDatasetIds.add(dvId); // Direct dataset
-                    }
+                    //}
                     if (this.idsWithFilePermissions.containsKey(dvId)){
                         this.fileParentIds.add(dvId);   // Parent to file
                     }
