@@ -10,6 +10,7 @@ import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
+import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
@@ -34,11 +35,15 @@ public class MyDataFilterParams {
     // Static Reference objects
     // -----------------------------------
     public static final List<String> defaultDvObjectTypes = Arrays.asList(DvObject.DATAVERSE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
+    public static final List<String> allDvObjectTypes = Arrays.asList(DvObject.DATAVERSE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAFILE_DTYPE_STRING);
     
     public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
                                                     IndexServiceBean.getDRAFT_STRING());
-    
+    public static final List<String> allPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
+                                                    IndexServiceBean.getUNPUBLISHED_STRING(),
+                                                    IndexServiceBean.getDRAFT_STRING());
+            
     public static final HashMap<String, String> sqlToSolrSearchMap ;
     static
     {
@@ -77,19 +82,25 @@ public class MyDataFilterParams {
     private String errorMessage = null;
     
 
+    
+    
     /**
-     * Minimal filter params with defaults set
+     * Constructor used to get total counts
      * 
      * @param userIdentifier 
      */
-    public MyDataFilterParams(String userIdentifier){
-        if ((userIdentifier==null)||(userIdentifier.isEmpty())){
+    public MyDataFilterParams(String userIdentifier, DataverseRolePermissionHelper roleHelper){
+         if ((userIdentifier==null)||(userIdentifier.isEmpty())){
             throw new NullPointerException("MyDataFilterParams constructor: userIdentifier cannot be null or an empty string");
         }
+         if (roleHelper==null){
+            throw new NullPointerException("MyDataFilterParams constructor: roleHelper cannot be null");
+        }
         this.userIdentifier = userIdentifier;
-        this.dvObjectTypes = MyDataFilterParams.defaultPublishedStates;
-        this.publicationStatuses = MyDataFilterParams.defaultPublishedStates;
-        this.checkParams();
+        this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
+        this.publicationStatuses = MyDataFilterParams.allPublishedStates;
+        this.searchTerm = MyDataFilterParams.defaultSearchTerm;
+        this.roleIds = roleHelper.getRoleIdList();
     }
     
     /**

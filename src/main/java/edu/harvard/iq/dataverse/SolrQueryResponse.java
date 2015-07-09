@@ -78,6 +78,14 @@ public class SolrQueryResponse {
         if (this.dvObjectCounts == null){
             return null;
         }
+        
+        String[] requiredVars = { "dataverses_count", "datasets_count", "files_count"};
+        for (String var : requiredVars){
+            if (!dvObjectCounts.containsKey(var)){
+                dvObjectCounts.put(var, new Long(0));
+            }
+        }
+        
         return this.getMapCountsAsJSON(dvObjectCounts);
     }
     

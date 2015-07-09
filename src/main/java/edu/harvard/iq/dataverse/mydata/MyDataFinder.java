@@ -9,23 +9,17 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -43,7 +37,7 @@ public class MyDataFinder {
     private String userIdentifier;
     MyDataFilterParams filterParams;
     
-    private String searchTerm = "*";
+    //private String searchTerm = "*";
     
     // --------------------
     private DataverseRolePermissionHelper rolePermissionHelper;
@@ -92,6 +86,33 @@ public class MyDataFinder {
         this.dvObjectServiceBean = dvObjectServiceBean;
     }
 
+   public void initFields(){
+        // ----------------------------
+        // POPULATED IN STEP 1 (1st query)
+        // ----------------------------
+        this.childToParentIds = new HashMap();
+        this.idsWithDataversePermissions = new HashMap<>();  // { role id : true }
+        this.idsWithDatasetPermissions = new HashMap<>();  // { role id : true }
+        this.idsWithFilePermissions = new HashMap<>();  // { role id : true }
+
+        this.directDvObjectIds = new ArrayList<Long>();
+
+        // Lists later used to format Solr Queries
+        // 
+        // ----------------------------
+        // POPULATED IN STEP 2 (2nd query)
+        // ----------------------------
+        this.directDataverseIds = new ArrayList<>();
+        this.directDatasetIds = new ArrayList<>();
+        this.directFileIds = new ArrayList<>();
+
+        this.datasetParentIds = new ArrayList<>(); // dataverse has dataset permissions
+
+        this.fileParentIds = new ArrayList<>();   // dataset has file permissions      
+        this.fileGrandparentFileIds = new ArrayList<>();  // dataverse has file permissions
+    
+    }
+   
     /*
     private ArrayList<Long> dataverseIds;
     private ArrayList<Long> primaryDatasetIds;
@@ -137,41 +158,69 @@ public class MyDataFinder {
         
     }
     
+    public List<String> getSolrFilterQueriesForTotalCounts(){
+        
+        return this.getSolrFilterQueries(true);
+    }
+    
+    
+    public List<String> getSolrFilterQueries(){
+        
+        return this.getSolrFilterQueries(false);
+    }
+    
     /**
      * Get the final queries for the Solr Search object
      * 
      * @return 
      */
-    public List<String> getSolrFilterQueries(){
+    private List<String> getSolrFilterQueries(boolean totalCountsOnly){
         if (this.hasError()){
             throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyDataFinder object, first check 'hasError()'");
         }
         
+        // init filterQueries list
         List<String> filterQueries = new ArrayList<>();
 
-        // FQ by dvObjectType
-        //
-        filterQueries.add(this.filterParams.getSolrFragmentForDvObjectType());
-        //fq=dvObjectType:(dataverses+OR+datasets+OR+files)
-        //fq=(dvObjectType:Dataset)
-        //filterQueries.add("dvObjectType:(dataverses OR datasets OR files)");
-        
-        // FQ by Publication Status
-        //
-        filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
-        //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
-
-        // FQ by entityId (dvObject id) and parentId (dvObject ownerId)
-        //
+        // -----------------------------------------------------------------
+        // (1) Add entityId/parentId FQ 
+        //  - by entityId (dvObject id) and parentId (dvObject ownerId)
+        // -----------------------------------------------------------------
         String dvObjectFQ = this.getSolrDvObjectFilterQuery();
         if (dvObjectFQ ==null){
             this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
             return null;
         }
         filterQueries.add(this.getSolrDvObjectFilterQuery());
-        
+                
+        // -----------------------------------------------------------------
+        // For total counts, don't filter by publicationStatus or DvObjectType
+        // -----------------------------------------------------------------
+        if (totalCountsOnly == true){
+            return filterQueries;
+        }
+
+        // -----------------------------------------------------------------
+        // (2) FQ by dvObjectType
+        // -----------------------------------------------------------------
+        filterQueries.add(this.filterParams.getSolrFragmentForDvObjectType());
+        //fq=dvObjectType:(dataverses+OR+datasets+OR+files)
+        //fq=(dvObjectType:Dataset)
+        //filterQueries.add("dvObjectType:(dataverses OR datasets OR files)");
+
+        // -----------------------------------------------------------------
+        // (3) FQ by Publication Status
+        // -----------------------------------------------------------------
+        filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
+        //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
+                
         return filterQueries;
     }
+    
+    
+    
+    
+    
     
     public String getSolrDvObjectFilterQuery(){
 
@@ -510,7 +559,7 @@ public class MyDataFinder {
     }
    
     private void msg(String s){
-        System.out.println(s);
+        //System.out.println(s);
     }
     
     private void msgt(String s){

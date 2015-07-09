@@ -195,10 +195,17 @@ function reset_filter_counts(){
 function update_filter_counts(json_info){
     
     var dcounts = json_info.data.dvobject_counts;
+    
+    // "total_dvobject_counts":{"files_count":13,"dataverses_count":25,"datasets_count":324},
+    var total_dcounts = json_info.total_dvobject_counts;
+    
     $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
         //console.log('attr_name: ' + attr_name);
+  //      if ((attr_name in dcounts)&&(attr_name in total_dcounts)){
+    //    }else 
         if(attr_name in dcounts){                    
-            $('#id_' + attr_name).html('(' + dcounts[attr_name] + ')');                    
+            $('#id_' + attr_name).html('(' + dcounts[attr_name] + '/' +  total_dcounts[attr_name] +')');                    
+//            $('#id_' + attr_name).html('(' + dcounts[attr_name]  +')');                    
         }else{
             $('#id_' + attr_name).html('');
         }
@@ -269,14 +276,11 @@ function updatePagination(json_data){
 function check_card_images(){
     $("img").error(function () {
         if ($(this).hasClass('file_card_img')){
-            $(this).next("span").show();
-            $(this).hide();
-            $(this).unbind("error");
-            console.log('show fix');
+            $(this).next("span").show(); // show default icon in adjacent span
+            $(this).hide(); // hide the actual image
+            $(this).unbind("error"); 
         }
-//        $(this).unbind("error").attr("src", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdjrNFMQn7tYxyOv-qkdiG3c0ipoBjJfK7XGJvef3ChQpIq7bBpQ");
-    });
-    
+    });    
 }
             
 // --------------------------------
