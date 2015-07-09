@@ -209,6 +209,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
              if ((authUser.isSuperuser())&&(userIdentifier != null)&&(!userIdentifier.isEmpty())){
                  searchUser = getUserFromIdentifier(userIdentifier);
                  if (searchUser != null){
+                     authUser = searchUser;
                      OTHER_USER = true;
                  }else{
                     return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);              
