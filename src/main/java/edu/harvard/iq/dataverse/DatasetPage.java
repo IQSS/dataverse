@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -1616,8 +1617,13 @@ public class DatasetPage implements java.io.Serializable {
         LinkDatasetCommand cmd = new LinkDatasetCommand(session.getUser(), linkingDataverse, dataset);
         try {
             commandEngine.submit(cmd);
-            JsfHelper.addFlashMessage("This dataset is now linked to " + linkingDataverse.getDisplayName());
-            //JsfHelper.addSuccessMessage(JH.localize("dataset.message.linkSuccess")+ linkingDataverse.getDisplayName());
+            //JsfHelper.addFlashMessage(JH.localize("dataset.message.linkSuccess")  + linkingDataverse.getDisplayName());
+            List<String> arguments = new ArrayList();
+            arguments.add(dataset.getDisplayName());
+            arguments.add(systemConfig.getDataverseSiteUrl());
+            arguments.add(linkingDataverse.getAlias());
+            arguments.add(linkingDataverse.getDisplayName());
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", arguments));
             //return "";
 
         } catch (CommandException ex) {

@@ -193,14 +193,15 @@ public class DataversePage implements java.io.Serializable {
         linkingDVSelectItems = new ArrayList();
         
         //Since only a super user function add all dvs
-        //dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
+        dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
         
+        /*
         List<DataverseRole> roles = dataverseRoleServiceBean.getDataverseRolesByPermission(Permission.PublishDataverse, dataverse.getId());
         List<String> types = new ArrayList();
         types.add("Dataverse");
         for (Long dvIdAsInt : permissionService.getDvObjectIdsUserHasRoleOn(session.getUser(), roles, types, false)) {
             dataversesForLinking.add(dataverseService.find(dvIdAsInt));
-        }
+        }*/
         
         //for linking - make sure the link hasn't occurred and its not int the tree
         if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
@@ -459,7 +460,6 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public void toggleInputLevel( Long mdbId, long dsftId){
-        System.out.print("in toggle: "+ dsftId);
         for (MetadataBlock mdb : allMetadataBlocks) {
             if (mdb.getId().equals(mdbId)) {
                 for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
@@ -755,6 +755,7 @@ public class DataversePage implements java.io.Serializable {
                 //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName());               
                 List<String> arguments = new ArrayList();
                 arguments.add(dataverse.getDisplayName());
+                arguments.add(systemConfig.getDataverseSiteUrl());                
                 arguments.add(linkingDataverse.getAlias());
                 arguments.add(linkingDataverse.getDisplayName());
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success", arguments));               
@@ -764,6 +765,7 @@ public class DataversePage implements java.io.Serializable {
                 List<String> arguments = new ArrayList();
                 arguments.add(dataverse.getDisplayName());
                 arguments.add(linkingDataverse.getAlias());
+                arguments.add(systemConfig.getDataverseSiteUrl());
                 arguments.add(linkingDataverse.getDisplayName());
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.linked.internalerror", arguments));
                 String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
@@ -776,6 +778,7 @@ public class DataversePage implements java.io.Serializable {
             //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
             List<String> arguments = new ArrayList();
             arguments.add(dataverse.getDisplayName());
+            arguments.add(systemConfig.getDataverseSiteUrl());
             arguments.add(linkingDataverse.getAlias());
             arguments.add(linkingDataverse.getDisplayName());
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", arguments));
