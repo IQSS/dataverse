@@ -2,9 +2,14 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -66,8 +71,106 @@ public class SystemConfig {
      * @todo Reconcile with getApplicationVersion on DataverseServiceBean.java
      * which we'd like to move to this class.
      */
+    private static String appVersionString = null; 
+    private static String buildNumberString = null; 
+    
     public String getVersion() {
-        return BundleUtil.getStringFromBundle("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
+        return getVersion(false);
+    }
+    
+    public String getVersion(boolean withBuildNumber) {
+        
+        if (appVersionString == null) {
+
+            // The Version Number is no longer supplied in a .properties file - so
+            // we can't just do 
+            //  return BundleUtil.getStringFromBundle("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
+            //
+            // Instead, we'll rely on Maven placing the version number into the
+            // Manifest, and getting it from there:
+            // (this is considered a better practice, and will also allow us
+            // to maintain this number in only one place - the pom.xml file)
+            // -- L.A. 4.0.2
+            
+            // One would assume, that once the version is in the MANIFEST.MF, 
+            // as Implementation-Version:, it would be possible to obtain 
+            // said version simply as 
+            //    appVersionString = getClass().getPackage().getImplementationVersion();
+            // alas - that's not working, for whatever reason. (perhaps that's 
+            // only how it works with jar-ed packages; not with .war files).
+            // People on the interwebs suggest that one should instead 
+            // open the Manifest as a resource, then extract its attributes. 
+            // There were some complications with that too. Plus, relying solely 
+            // on the MANIFEST.MF would NOT work for those of the developers who 
+            // are using "in place deployment" (i.e., where 
+            // Netbeans runs their builds directly from the local target 
+            // directory, bypassing the war file deployment; and the Manifest 
+            // is only available in the .war file). For that reason, I am 
+            // going to rely on the pom.properties file - it is placed into the
+            // application directory before the war file is built; thus this 
+            // scheme will work both setups.
+            // So, long story short, I'm resorting to the convoluted steps below. 
+            // It may look hacky, but it should actually be pretty solid and 
+            // reliable. 
+            
+            
+            // First, find the absolute path url of the application persistence file
+            // always supplied with the Dataverse app:
+            java.net.URL fileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
+            String filePath = null;
+
+
+            if (fileUrl != null) {
+                filePath = fileUrl.getFile();
+                if (filePath != null) {
+                    filePath = filePath.replaceFirst("/[^/]*$", "/");
+                    // Using a relative path, find the location of the maven pom.properties file:
+                    filePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse/pom.properties");
+                    // (this will work for both local, in-place runs and war file deployments!)
+                    
+                    try {
+                        InputStream mavenPropertiesInputStream = new FileInputStream(filePath);
+                        
+                        Properties mavenProperties = new Properties();
+                        mavenProperties.load(mavenPropertiesInputStream);
+                        appVersionString = mavenProperties.getProperty("version");                        
+                    } catch (IOException ioex) {
+                        logger.warning("caught IOException trying to read the Manifest");
+                    }
+                    
+                } else {
+                    logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
+                }
+            } else {
+                logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
+            }
+
+            
+            if (appVersionString == null) {
+                // still null? - defaulting to 4.0:    
+                appVersionString = "4.UNKNOWN";
+            }
+        }
+            
+        if (withBuildNumber) {
+            if (buildNumberString == null) {
+                // (build number is still in a .properties file in the source tree; it only 
+                // contains a real build number if this war file was built by 
+                // Jenkins) 
+                        
+                try {
+                    buildNumberString = ResourceBundle.getBundle("BuildNumber").getString("build.number");
+                } catch (MissingResourceException ex) {
+                    buildNumberString = null; 
+                }
+            }
+            
+            if (buildNumberString != null && !buildNumberString.equals("")) {
+                return appVersionString + " build " + buildNumberString; 
+            } 
+        }        
+        
+        return appVersionString; 
     }
 
     public String getSolrHostColonPort() {

@@ -349,10 +349,29 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+		    <archive>                   
+		      <manifest>
+			<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+			<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+		      </manifest>
+		    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+		    <archive>                   
+		      <manifest>
+			<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+			<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+		      </manifest>
+		    </archive>
                 </configuration>
             </plugin>
             <plugin>

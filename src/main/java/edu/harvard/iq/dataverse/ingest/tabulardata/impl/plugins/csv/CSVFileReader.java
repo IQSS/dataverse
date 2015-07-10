@@ -135,13 +135,13 @@ public class CSVFileReader extends TabularDataFileReader {
             throw new IOException("Failed to read first, variable name line of the CSV file.");
         }
 
-        int varQnty = valueTokens.length;
+        int variableCount = valueTokens.length;
         
         // Create variables: 
         
         List<DataVariable> variableList = new ArrayList<DataVariable>();
         
-        for (int i = 0; i < varQnty; i++) {
+        for (int i = 0; i < variableCount; i++) {
             String varName = valueTokens[i];
             
             if (varName == null || varName.equals("")) {
@@ -166,15 +166,15 @@ public class CSVFileReader extends TabularDataFileReader {
             dv.setDataTable(dataTable);
         }
         
-        dataTable.setVarQuantity(new Long(varQnty));
+        dataTable.setVarQuantity(new Long(variableCount));
         dataTable.setDataVariables(variableList);
         
-        boolean[] isNumericVariable = new boolean[varQnty];
-        boolean[] isIntegerVariable = new boolean[varQnty];
-        boolean[] isTimeVariable = new boolean[varQnty];
-        boolean[] isDateVariable = new boolean[varQnty];
+        boolean[] isNumericVariable = new boolean[variableCount];
+        boolean[] isIntegerVariable = new boolean[variableCount];
+        boolean[] isTimeVariable = new boolean[variableCount];
+        boolean[] isDateVariable = new boolean[variableCount];
         
-        for (int i = 0; i < varQnty; i++) {
+        for (int i = 0; i < variableCount; i++) {
             // OK, let's assume that every variable is numeric; 
             // but we'll go through the file and examine every value; the 
             // moment we find a value that's not a legit numeric one, we'll 
@@ -188,8 +188,8 @@ public class CSVFileReader extends TabularDataFileReader {
         // First, "learning" pass.
         // (we'll save the incoming stream in another temp file:)
         
-        SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[varQnty]; 
-        SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[varQnty];
+        SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[variableCount]; 
+        SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[variableCount];
 
         
         File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
@@ -205,12 +205,61 @@ public class CSVFileReader extends TabularDataFileReader {
                 throw new IOException("Failed to read line " + (lineCounter + 1) + " of the Data file.");
             }
 
-            if (valueTokens.length != varQnty) {
+            int tokenCount = valueTokens.length;
+            
+            if (tokenCount > variableCount) {
+                
+                // we'll make another attempt to parse the fields - there could be commas 
+                // inside character strings. The only way to disambiguate this situation
+                // we are going to support, for now, is to allow commas inside tokens 
+                // wrapped in double quotes. We may potentially add other mechanisms, 
+                // such as allowing to specify a custom string wrapper character (something other
+                // than the double quote), or maybe recognizing escaped commas ("\,") as 
+                // non-separating ones. 
+                // -- L.A. 4.0.2
+                
+                valueTokens = null; 
+                valueTokens = new String[variableCount];
+                
+                int tokenStart = 0;
+                boolean quotedStringMode = false; 
+                
+                for (int i = 0; i < line.length(); i++) {
+                    if (tokenCount > variableCount) {
+                        throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " of the data file contains more than "
+                        + variableCount + " comma-delimited values.");
+                    }
+                    
+                    char c = line.charAt(i);
+                    
+                    if (tokenStart == i && c == '"') {
+                        quotedStringMode = true; 
+                    }
+                    
+                    if (c == ',' && !quotedStringMode) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, i);
+                        
+                        tokenCount++; 
+                        tokenStart = i+1; 
+                    } else if (i == line.length() - 1) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, line.length());
+                        tokenCount++; 
+                    } else if (quotedStringMode && c == '"') {
+                        quotedStringMode = false; 
+                    }
+                        
+                }
+            }
+            
+            // final token count check: 
+            
+            if (tokenCount != variableCount) {
+                
                 throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " of the Data file: "
-                        + varQnty + " delimited values expected, " + valueTokens.length + " found.");
+                        + variableCount + " delimited values expected, " + tokenCount + " found.");
             }
 
-            for (int i = 0; i < varQnty; i++) {
+            for (int i = 0; i < variableCount; i++) {
                 if (isNumericVariable[i]) {
                     // If we haven't given up on the "numeric" status of this 
                     // variable, let's perform some tests on it, and see if 
@@ -361,7 +410,7 @@ public class CSVFileReader extends TabularDataFileReader {
             
         // Re-type the variables that we've determined are numerics:
         
-        for (int i = 0; i < varQnty; i++) {
+        for (int i = 0; i < variableCount; i++) {
             if (isNumericVariable[i]) {
                 dataTable.getDataVariables().get(i).setTypeNumeric();
 
@@ -388,7 +437,7 @@ public class CSVFileReader extends TabularDataFileReader {
         
         BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile));
         lineCounter = 0;
-        String[] caseRow = new String[varQnty];
+        String[] caseRow = new String[variableCount];
 
         
         while ((line = secondPassReader.readLine()) != null) {
@@ -400,12 +449,12 @@ public class CSVFileReader extends TabularDataFileReader {
                 throw new IOException("Failed to read line " + (lineCounter + 1) + " during the second pass.");
             }
 
-            if (valueTokens.length != varQnty) {
+            if (valueTokens.length != variableCount) {
                 throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " during the second pass: "
-                        + varQnty + " delimited values expected, " + valueTokens.length + " found.");
+                        + variableCount + " delimited values expected, " + valueTokens.length + " found.");
             }
         
-            for (int i = 0; i < varQnty; i++) {
+            for (int i = 0; i < variableCount; i++) {
                 if (isNumericVariable[i]) {
                     if (valueTokens[i] == null || valueTokens[i].equalsIgnoreCase("") || valueTokens[i].equalsIgnoreCase("NA")) {
                         // Missing value - represented as an empty string in 
