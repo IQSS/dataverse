@@ -121,6 +121,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                 
     }
     
+    /*
     @Path("test-it2")
     @GET
     @Produces({"application/json"})
@@ -128,7 +129,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         
         return this.getRandomPagerPager(selectedPage).asJSONString();
     }
-    
+    */
     //private String getUserIdentifier()
     
     
@@ -480,7 +481,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return jsonSolrDocsArrayBuilder;
         
     }
-    
+    /*
     @Path("test-it")
     @Produces({"application/json"})
     @GET
@@ -490,10 +491,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
         jsonData.add("name", keyValue);
         return jsonData.build().toString();
     }
-    
+    */
     
     private void msg(String s){
-        System.out.println(s);
+        //System.out.println(s);
     }
     
     private void msgt(String s){
