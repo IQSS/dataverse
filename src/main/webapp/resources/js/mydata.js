@@ -206,7 +206,7 @@ function update_filter_counts(json_info){
     var dcounts = json_info.data.dvobject_counts;
     
     // "total_dvobject_counts":{"files_count":13,"dataverses_count":25,"datasets_count":324},
-    var total_dcounts = json_info.total_dvobject_counts;
+    //var total_dcounts = json_info.total_dvobject_counts;
     
     $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
         //console.log('attr_name: ' + attr_name);
