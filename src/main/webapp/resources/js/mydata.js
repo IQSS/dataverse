@@ -18,7 +18,7 @@ function bind_checkbox_labels(){
 }
 
 function bind_checkbox_labels_by_names(link_class_name, div_id_name){
-    // roles
+    // result type
     $('a.' + link_class_name).on('click',function(){ 
         $("#selected_page").val('1');
         // Locate the closest checkbox
@@ -34,6 +34,15 @@ function bind_checkbox_labels_by_names(link_class_name, div_id_name){
     });
 }
 
+function bold_checkbox_labels(){
+    $("#my_data_filter_column input[type=checkbox]").each(function(){
+        if ($(this).prop('checked')){
+            $(this).parent().addClass('facetSelected');
+       } else{
+           $(this).parent().removeClass('facetSelected');
+       }       
+    });
+}
 
 //-----------------------------------------
 //  Called when mydata_page loads
@@ -204,8 +213,8 @@ function update_filter_counts(json_info){
   //      if ((attr_name in dcounts)&&(attr_name in total_dcounts)){
     //    }else 
         if(attr_name in dcounts){                    
-            $('#id_' + attr_name).html('(' + dcounts[attr_name] + '/' +  total_dcounts[attr_name] +')');                    
-//            $('#id_' + attr_name).html('(' + dcounts[attr_name]  +')');                    
+//            $('#id_' + attr_name).html('(' + dcounts[attr_name] + '/' +  total_dcounts[attr_name] +')');                    
+            $('#id_' + attr_name).html('(' + dcounts[attr_name]  +')');                    
         }else{
             $('#id_' + attr_name).html('');
         }
@@ -297,6 +306,9 @@ function submit_my_data_search(){
     if (!APPEND_CARDS_TO_BOTTOM){
         clearForNewSearchResults();
     }
+    
+    // Style lables
+    bold_checkbox_labels();
 
     // --------------------------------
     // (1) Get the form parameters
