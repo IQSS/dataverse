@@ -633,7 +633,14 @@ public class SearchServiceBean {
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);
         solrQueryResponse.setStaticSolrFieldFriendlyNamesBySolrField(staticSolrFieldFriendlyNamesBySolrField);
-        solrQueryResponse.setFilterQueriesActual(Arrays.asList(solrQuery.getFilterQueries()));
+        String[] filterQueriesArray = solrQuery.getFilterQueries();
+        if (filterQueriesArray != null) {
+            // null check added because these tests were failing: mvn test -Dtest=SearchIT
+            solrQueryResponse.setFilterQueriesActual(Arrays.asList(filterQueriesArray));
+        } else {
+            // how often is this null?
+            logger.info("solrQuery.getFilterQueries() was null");
+        }
         
         solrQueryResponse.setDvObjectCounts(queryResponse.getFacetField("dvObjectType"));
         solrQueryResponse.setPublicationStatusCounts(queryResponse.getFacetField("publicationStatus"));
