@@ -113,6 +113,9 @@ public class MyDataFinder {
     
     }
    
+    public DataverseRolePermissionHelper getRolePermissionHelper(){
+        return this.rolePermissionHelper;
+    }
     /*
     private ArrayList<Long> dataverseIds;
     private ArrayList<Long> primaryDatasetIds;
