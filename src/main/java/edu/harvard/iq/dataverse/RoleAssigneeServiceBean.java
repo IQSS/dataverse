@@ -193,7 +193,7 @@ public class RoleAssigneeServiceBean {
     }
     
     private void msg(String s){
-        System.out.println(s);
+        //System.out.println(s);
     }
     
     private void msgt(String s){
