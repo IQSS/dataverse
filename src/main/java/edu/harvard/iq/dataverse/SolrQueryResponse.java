@@ -26,6 +26,11 @@ public class SolrQueryResponse {
     private Map<String, Long> dvObjectCounts = new HashMap<>();
     private Map<String, Long> publicationStatusCounts = new HashMap<>();
 
+    public static String DATAVERSES_COUNT_KEY = "dataverses_count";
+    public static String DATASETS_COUNT_KEY = "datasets_count";
+    public static String FILES_COUNT_KEY = "files_count";
+    public static String[] DVOBJECT_COUNT_KEYS = { DATAVERSES_COUNT_KEY, DATASETS_COUNT_KEY, FILES_COUNT_KEY};
+    
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
     }
@@ -79,8 +84,8 @@ public class SolrQueryResponse {
             return null;
         }
         
-        String[] requiredVars = { "dataverses_count", "datasets_count", "files_count"};
-        for (String var : requiredVars){
+        //String[] requiredVars = { "dataverses_count", "datasets_count", "files_count"};
+        for (String var : SolrQueryResponse.DVOBJECT_COUNT_KEYS){
             if (!dvObjectCounts.containsKey(var)){
                 dvObjectCounts.put(var, new Long(0));
             }
