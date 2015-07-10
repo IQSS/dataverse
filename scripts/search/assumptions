@@ -8,7 +8,7 @@ export SPRUCE_DATAVERSE=`grep '"alias":"spruce"' /tmp/tree-dvs1 | jq .data.id`
 export SPRUCE_USERNAME='@spruce'
 export FINCH_USERNAME='@finch'
 
-export SPRUCE_ADMIN_ON_BIRDS=`curl -s "http://localhost:8080/api/dataverses/$BIRDS_DATAVERSE/assignments?key=$FINCHKEY" | jq .data[1].id`
+export SPRUCE_ADMIN_ON_BIRDS=`curl -s "http://localhost:8080/api/dataverses/$BIRDS_DATAVERSE/assignments?key=$FINCHKEY" | jq ".data[] | select(.assignee==\"$SPRUCE_USERNAME\") | .id"`
 
 export FINCH_ADMIN_ON_SPRUCE=`curl -s "http://localhost:8080/api/dataverses/$SPRUCE_DATAVERSE/assignments?key=$SPRUCEKEY" | jq .data[1].id`
 
