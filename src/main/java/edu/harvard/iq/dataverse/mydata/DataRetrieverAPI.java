@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -159,8 +160,30 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return authenticationService.getAuthenticatedUser(userIdentifier);
     }
     
-    private JsonObjectBuilder getTotalCountsFromSolr(AuthenticatedUser searchUser, MyDataFinder myDataFinder, DataverseRolePermissionHelper rolePermissionHelper){
-        
+    public Map<String, Long> getTotalCountsFromSolrAsJavaMap(AuthenticatedUser searchUser, MyDataFinder myDataFinder ){
+        //msgt("getTotalCountsFromSolrAsJavaMap: " + searchUser.getIdentifier());
+        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(searchUser, myDataFinder);
+        if (solrQueryResponseForCounts == null){
+            logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
+            return null;
+        }
+        return solrQueryResponseForCounts.getDvObjectCounts();
+    }
+    
+    public JsonObjectBuilder getTotalCountsFromSolrAsJSON(AuthenticatedUser searchUser, MyDataFinder myDataFinder ){
+    
+        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(searchUser, myDataFinder);
+        if (solrQueryResponseForCounts == null){
+            logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
+            return null;
+        }
+        return solrQueryResponseForCounts.getDvObjectCountsAsJSON();
+    }
+    
+    
+    private SolrQueryResponse getTotalCountsFromSolr(AuthenticatedUser searchUser, MyDataFinder myDataFinder){
+        //msgt("getTotalCountsFromSolr: " + searchUser.getIdentifier());
+
         if (myDataFinder == null){
             throw new NullPointerException("myDataFinder cannot be null");
         }
@@ -171,7 +194,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // -------------------------------------------------------
         // Create new filter params that only check by the User 
         // -------------------------------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(authUser.getIdentifier(), rolePermissionHelper);
+        MyDataFilterParams filterParams = new MyDataFilterParams(searchUser.getIdentifier(), myDataFinder.getRolePermissionHelper());
         if (filterParams.hasError()){
             logger.severe("getTotalCountsFromSolr. filterParams error: " + filterParams.getErrorMessage());           
             return null;
@@ -195,14 +218,15 @@ public class DataRetrieverAPI extends AbstractApiBean {
             logger.severe("getTotalCountsFromSolr. filterQueries was null!");
             return null;
         }
-        msgt("getTotalCountsFromSolr");
-        msgt(StringUtils.join(filterQueries, " AND "));
+        //msgt("getTotalCountsFromSolr");
+        //msgt(StringUtils.join(filterQueries, " AND "));
         
         // -------------------------------------------------------
         // Run Solr
         // -------------------------------------------------------
+        SolrQueryResponse solrQueryResponseForCounts;
         try {
-            solrQueryResponse = searchService.search(
+            solrQueryResponseForCounts = searchService.search(
                     searchUser, //
                     null, // subtree, default it to Dataverse for now
                     "*",  //    Get everything--always
@@ -218,7 +242,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             logger.severe("filterQueries: " + StringUtils.join(filterQueries, "(separator)"));
             return null;
         }
-        return solrQueryResponse.getDvObjectCountsAsJSON();
+        return solrQueryResponseForCounts;
     }
     
     private String getJSONErrorString(String jsonMsg, String optionalLoggerMsg){
@@ -409,7 +433,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // We're doing ~another~ solr query here
         // NOTE!  Do not reuse this.myDataFinder after this step!! It is being passed new filterParams
         // ---------------------------------------------------------
-        jsonData.add("total_dvobject_counts", getTotalCountsFromSolr(searchUser, this.myDataFinder, rolePermissionHelper));
+        //jsonData.add("total_dvobject_counts", getTotalCountsFromSolrAsJSON(searchUser, this.myDataFinder));
 
         
         if (OTHER_USER==true){
