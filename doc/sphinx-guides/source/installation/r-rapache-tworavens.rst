@@ -19,7 +19,22 @@ Disable SELinux on httpd:
 
 ``getenforce``
 
-https strongly recommended (required?); signed cert recommended. 
+https strongly recommended; signed certificate (as opposed to self-signed) is recommended. 
+
+Directory listing needs to be disabled on the web documents folder served by Apache: 
+
+In the main Apache configuration file (``/etc/httpd/conf/httpd.conf`` in the default setup), find the section that configures your web directory. For example, if the ``DocumentRoot``, defined elsewhere in the file, is set to the default ``"/var/www/html"``, the opening line of the section will look like this:
+
+``<Directory "/var/www/html">`` 
+
+Find the ``Options`` line in that section, and make sure that it doesn't contain the ``Indexes`` statement. 
+For example, if the options line in your configuration is 
+
+``Options Indexes FollowSymLinks``
+
+change it to 
+
+``Options FollowSymLinks``
 
 b. R:
 -----
