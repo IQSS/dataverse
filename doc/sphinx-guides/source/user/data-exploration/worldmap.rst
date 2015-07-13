@@ -11,24 +11,17 @@ To get started, you will need to create a dataset in Dataverse. For more detaile
 
 Dataverse recognizes ZIP files that contain the components of a shapefile and will ingest them as a ZIP.
 
-(insert images of uploading zip files here)
-
 Once you have uploaded your ZIP files comprising a shapefile, a Map Data button will appear next to the file in the dataset.
 
-(insert image of map data button here)
+Mapping your data with Geoconnect
+======================================
 
 In order to use the WorldMap and Dataverse integration, your dataset will need to be published. Once it has been published, you will be able to use the MapData button. Click on the Map Data button to be brought to GeoConnect, the portal between Dataverse and WorldMap that will process your shapefile and send it to WorldMap. 
-
-(insert image of GeoConnect)
 
 To get started with visualizing your shapefile, click on the blue Visualize on WorldMap button in GeoConnect. It may take 30 seconds or longer for the data to be sent to WorldMap and then back to GeoConnect
 
 Once the visualizing has finished, you will be able to style your map through Attribute, Classification Method, Number of Intervals, and Colors. At any time, you can view the map on WorldMap if you would like to see how it will be displayed there.
 
-(insert style map image)
-
 After styling your map, you can delete it or return to Dataverse. If you decide to delete the map, it will no longer appear on WorldMap. By returning to Dataverse, you will send the styled map layer to WorldMap as well as to Dataverse where a preview will be available of the map layer you styled using GeoConnect.
-
-(insert preview image here)
 
 To map the shapefile again, all you will need to do is click the Map Data button again. 
