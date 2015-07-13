@@ -5,3 +5,6 @@
 
 ALTER TABLE datasetversion
 ADD CONSTRAINT uq_datasetversion UNIQUE(dataset_id, versionnumber, minorversionnumber);
+
+-- make sure Member role has DownloadFilePermission
+update dataverserole set permissionbits=28 where alias='member';
