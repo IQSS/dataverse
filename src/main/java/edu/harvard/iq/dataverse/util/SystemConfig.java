@@ -106,9 +106,12 @@ public class SystemConfig {
             // Netbeans runs their builds directly from the local target 
             // directory, bypassing the war file deployment; and the Manifest 
             // is only available in the .war file). For that reason, I am 
-            // going to rely on the pom.properties file - it is placed into the
-            // application directory before the war file is built; thus this 
-            // scheme will work both setups.
+            // going to rely on the pom.properties file, and use java.util.Properties 
+            // to read it. We have to look for this file in 2 different places
+            // depending on whether this is a .war file deployment, or a 
+            // developers build. (the app-level META-INF is only populated when
+            // a .war file is built; the "maven-archiver" directory, on the other 
+            // hand, is only available when it's a local build deployment).
             // So, long story short, I'm resorting to the convoluted steps below. 
             // It may look hacky, but it should actually be pretty solid and 
             // reliable. 
@@ -123,19 +126,43 @@ public class SystemConfig {
             if (fileUrl != null) {
                 filePath = fileUrl.getFile();
                 if (filePath != null) {
+                    InputStream mavenPropertiesInputStream = null;
+                    String mavenPropertiesFilePath; 
+                    Properties mavenProperties = new Properties();
+
+                    
                     filePath = filePath.replaceFirst("/[^/]*$", "/");
-                    // Using a relative path, find the location of the maven pom.properties file:
-                    filePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse/pom.properties");
-                    // (this will work for both local, in-place runs and war file deployments!)
+                    // Using a relative path, find the location of the maven pom.properties file. 
+                    // First, try to look for it in the app-level META-INF. This will only be 
+                    // available if it's a war file deployment: 
+                    mavenPropertiesFilePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse/pom.properties");                                     
                     
                     try {
-                        InputStream mavenPropertiesInputStream = new FileInputStream(filePath);
-                        
-                        Properties mavenProperties = new Properties();
-                        mavenProperties.load(mavenPropertiesInputStream);
-                        appVersionString = mavenProperties.getProperty("version");                        
+                        mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
                     } catch (IOException ioex) {
-                        logger.warning("caught IOException trying to read the Manifest");
+                        // OK, let's hope this is a local dev. build. 
+                        // In that case the properties file should be available in 
+                        // the maven-archiver directory: 
+                        
+                        mavenPropertiesFilePath = filePath.concat("../../../../maven-archiver/pom.properties");
+                        
+                        // try again: 
+                        
+                        try {
+                            mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
+                        } catch (IOException ioex2) {
+                            logger.warning("Failed to find and/or open for reading the pom.properties file.");
+                            mavenPropertiesInputStream = null; 
+                        }
+                    }
+                    
+                    if (mavenPropertiesInputStream != null) {
+                        try {
+                            mavenProperties.load(mavenPropertiesInputStream);
+                            appVersionString = mavenProperties.getProperty("version");                        
+                        } catch (IOException ioex) {
+                            logger.warning("caught IOException trying to read and parse the pom properties file.");
+                        }
                     }
                     
                 } else {
@@ -148,7 +175,7 @@ public class SystemConfig {
             
             if (appVersionString == null) {
                 // still null? - defaulting to 4.0:    
-                appVersionString = "4.UNKNOWN";
+                appVersionString = "4.0";
             }
         }
             
