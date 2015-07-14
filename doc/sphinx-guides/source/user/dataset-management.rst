@@ -40,7 +40,7 @@ click on the "Download" button found next to a relevant tabular file
 and select "Data Subset" in the dropdown menu. You will then be able
 to create your subset using the interface opened in a new window (this
 functionality is also provided by the `TwoRavens
-<../user/data-exploration/tworavens.html>`_ project. See the `TwoRavens
+<../user/data-exploration/tworavens.html>`_ project). See the `TwoRavens
 documentation section <../user/data-exploration/tworavens.html>`_ for
 more information.
 
