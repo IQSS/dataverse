@@ -147,7 +147,7 @@ Note: Featured Dataverses can only be used with published dataverses.
 
 Linked Dataverses + Linked Datasets
 ======================================================
-Coming soon in 4.0.2!
+Coming soon!
 
 Publish Your Dataverse
 =================================================================
