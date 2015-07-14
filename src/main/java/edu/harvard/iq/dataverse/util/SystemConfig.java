@@ -417,5 +417,49 @@ public class SystemConfig {
         }
         return null;
     }
+    
+    public long getTabularIngestSizeLimit() {
+        // This method will return the blanket ingestable size limit, if 
+        // set on the system. I.e., the universal limit that applies to all 
+        // tabular ingests, regardless of fromat: 
+        
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.TabularIngestSizeLimit); 
+        
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set; 
+        // 0 on the other hand would mean that ingest is fully disabled for 
+        // tabular data. 
+        return -1; 
+    }
+    
+    public long getTabularIngestSizeLimit(String formatName) {
+        // This method returns the size limit set specifically for this format name,
+        // if available, otherwise - the blanket limit that applies to all tabular 
+        // ingests regardless of a format. 
+        
+        if (formatName == null || formatName.equals("")) {
+            return getTabularIngestSizeLimit(); 
+        }
+        
+        String limitEntry = settingsService.get(SettingsServiceBean.Key.TabularIngestSizeLimit.toString() + ":" + formatName); 
+        
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
+            }
+        }
+        
+        return getTabularIngestSizeLimit();        
+    }
 
 }
