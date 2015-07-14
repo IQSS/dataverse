@@ -51,7 +51,7 @@ In Dataverse, browsing happens when a user hasn't entered a search term or query
 
 Saved Search
 --------------------
-Coming soon in 4.0.2!
+Coming soon!
 
 Using Data
 =============
