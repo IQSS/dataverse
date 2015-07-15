@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +24,20 @@ import org.apache.commons.lang.StringUtils;
  */
 @Stateless
 public class MyDataQueryHelperServiceBean {
-
+    
+    private DataverseRolePermissionHelper rolePermissionHelper;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
     @EJB
     DataverseRoleServiceBean roleService;
+    
+    @EJB
+    DvObjectServiceBean dvObjectService;
+    
+    @EJB
+    DataverseRoleServiceBean dataverseRoleService;
     
     public Query getDirectQuery( AuthenticatedUser user) {
         return em.createNativeQuery("SELECT id FROM dvobject WHERE "
@@ -89,8 +99,28 @@ public class MyDataQueryHelperServiceBean {
     }
     
     public List<String> getRolesOnDVO(AuthenticatedUser user, Long dvoId, List<Long> roleIdList) {
+
         List<String> retVal = new ArrayList();
+
+        DvObject objectIn = dvObjectService.findDvObject(dvoId);
+        List idsForSelect = new ArrayList();
+        /*
+        for (Long roleId : roleIdList) {
+
+            if (objectIn.isInstanceofDataverse() &&   this.rolePermissionHelper.hasDataversePermissions(roleId)){
+                idsForSelect.add(roleId);
+            }
+            if (objectIn.isInstanceofDataset() &&   this.rolePermissionHelper.hasDatasetPermissions(roleId)){
+                idsForSelect.add(roleId);
+            }
+            if (objectIn.isInstanceofDataFile() &&  this.rolePermissionHelper.hasFilePermissions(roleId)){
+                idsForSelect.add(roleId);
+            }
+
+        }*/
         String roleClause = getRoleIdListClause(roleIdList);
+        
+        
         List<Object> results = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
                 + " role.definitionpoint_id = " + dvoId + " "
                 + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "

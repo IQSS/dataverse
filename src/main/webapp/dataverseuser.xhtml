@@ -194,6 +194,13 @@
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>  
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                </ui:fragment>
                                             </ui:fragment>
                                             <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
                                         </div>

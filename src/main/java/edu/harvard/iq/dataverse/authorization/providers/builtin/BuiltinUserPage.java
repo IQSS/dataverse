@@ -12,12 +12,16 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseHeaderFragment;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
@@ -30,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +82,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     BuiltinUserServiceBean builtinUserService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB
+    GroupServiceBean groupService;
     @Inject
     MyDataPage mydatapage;
     
@@ -462,11 +469,28 @@ public class BuiltinUserPage implements java.io.Serializable {
             mydatapage.init();
         }
     }
+    
+    private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
+        // Find user's role(s) for given dataverse/dataset
+        Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
+        List<String> roleNames = new ArrayList();
+
+        // Include roles derived from a user's groups
+        Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
+        for (Group g : groupsUserBelongsTo) {
+            roles.addAll(permissionService.assignmentsFor(g, dvObj));
+        }
+
+        for (RoleAssignment ra : roles) {
+            roleNames.add(ra.getRole().getName());
+        }
+        return StringUtils.join(roleNames, "/");
+    }
 
     public void displayNotification() {
         for (UserNotification userNotification : notificationsList) {
             switch (userNotification.getType()) {
-                case ASSIGNROLE:
+                case ASSIGNROLE:                   
                 case REVOKEROLE:
                     // Can either be a dataverse or dataset, so search both
                     Dataverse dataverse = dataverseService.find(userNotification.getObjectId());

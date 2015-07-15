@@ -234,6 +234,8 @@ public class MyDataFinder {
         // Build lists of Ids
         List<Long> entityIds = new ArrayList<>();
         List<Long> parentIds = new ArrayList<>();
+        List<Long> datasetParentIdsForFQ = new ArrayList<>();
+        List<Long> fileParentIdsForFQ = new ArrayList<>();
 
         if (this.filterParams.areDataversesIncluded()){
             entityIds.addAll(this.directDataverseIds); // dv ids
@@ -241,11 +243,13 @@ public class MyDataFinder {
         if (this.filterParams.areDatasetsIncluded()){
             entityIds.addAll(this.directDatasetIds);  // dataset ids
             parentIds.addAll(this.datasetParentIds);  // dv ids that are dataset parents
+            datasetParentIdsForFQ.addAll(this.datasetParentIds);
         }
         
          if (this.filterParams.areFilesIncluded()){
             entityIds.addAll(this.directFileIds); // file ids
             parentIds.addAll(this.fileParentIds); // dataset ids that are file parents
+            fileParentIdsForFQ.addAll(this.fileParentIds);
         }
         
         // Remove duplicates by Creating a Set
@@ -253,19 +257,21 @@ public class MyDataFinder {
         Set<Long> distinctEntityIds = new HashSet<>(entityIds);
         Set<Long> distinctParentIds = new HashSet<>(parentIds);
 
+
         if ((distinctEntityIds.size() == 0) && (distinctParentIds.size() == 0)) {
             this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
             return null;
         }
 
         msg("distinctEntityIds (1): " + distinctEntityIds.size());
-        msg("distinctParentIds: " + distinctEntityIds.size());
+        msg("distinctParentIds: " + distinctParentIds.size());
 
         // See if we can trim down the list of distinctEntityIds
         //  If we have the parent of a distinctEntityId in distinctParentIds,
         //  then we query it via the parent
         //        
-
+        // SEK 07/15 getting rid of this - we will use all direct
+        // because child dataverses with direct assignments are being lost.
         List<Long> finalDirectEntityIds = new ArrayList<>();
         for (Long idToCheck : distinctEntityIds){
             if (this.childToParentIds.containsKey(idToCheck)){  // Do we have the parent in our map?
@@ -281,7 +287,7 @@ public class MyDataFinder {
             }
         }
         // Set the distinctEntityIds to the finalDirectEntityIds
-        distinctEntityIds = new HashSet<>(finalDirectEntityIds);
+        distinctEntityIds = new HashSet<>(distinctEntityIds);
         
         msg("distinctEntityIds (2): " + distinctEntityIds.size());
 
@@ -292,12 +298,14 @@ public class MyDataFinder {
         // Build clauses
         String entityIdClause = null;
         if (distinctEntityIds.size() > 0){
-            entityIdClause = sqf.buildIdQuery(distinctEntityIds, SearchFields.ENTITY_ID);
+            entityIdClause = sqf.buildIdQuery(distinctEntityIds, SearchFields.ENTITY_ID, null);
+            System.out.print(" entityIdClause: " + entityIdClause);
         }
         
         String parentIdClause = null;
         if (distinctParentIds.size() > 0){
-            parentIdClause = sqf.buildIdQuery(distinctParentIds, SearchFields.PARENT_ID);            
+            parentIdClause = sqf.buildIdQuery(distinctParentIds, SearchFields.PARENT_ID, DvObject.DATASET_DTYPE_STRING);  
+            System.out.print(" parentIdClause: " + parentIdClause);
         }
         
         if ((entityIdClause != null) && (parentIdClause != null)){

@@ -47,6 +47,10 @@ public class UserNotification implements Serializable {
 
     @Transient
     private boolean displayAsRead;
+    
+    @Transient 
+    String roleString;
+    
     private boolean emailed;
 
     public Long getId() {
@@ -122,5 +126,13 @@ public class UserNotification implements Serializable {
 
     public void setEmailed(boolean emailed) {
         this.emailed = emailed;
-    }        
+    }    
+    
+    public String getRoleString() {
+        return roleString;
+    }
+
+    public void setRoleString(String roleString) {
+        this.roleString = roleString;
+    }
 }

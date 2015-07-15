@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.mydata;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class SolrQueryFormatter {
      * @param paramName
      * @return
      */
-    private String formatIdsForSolrClause(List<Long> sliceOfIds, String paramName){ //='entityId'):
+    private String formatIdsForSolrClause(List<Long> sliceOfIds, String paramName,  String dvObjectType){ //='entityId'):
         if (paramName == null){
             throw new NullPointerException("paramName cannot be null");
         }
@@ -42,15 +43,19 @@ public class SolrQueryFormatter {
             throw new IllegalStateException("sliceOfIds must have at least 1 value");
         }
         
-        List<String> idList = new ArrayList<>();
+        List<String> idList = new ArrayList<>();        
         for (Long id : sliceOfIds) {          
             if (id != null){
                 idList.add("" + id);
             }
         }
         String orClause = StringUtils.join(idList, " ");
-        
-        String qPart = "(" + paramName  + ":(" + orClause + "))";
+                            String qPart = "(" + paramName  + ":(" + orClause + "))";
+        if (dvObjectType != null){
+             qPart = "(" + paramName  + ":(" + orClause + ") AND " + SearchFields.TYPE + ":(" +  dvObjectType + "))";
+             //valStr;
+        }
+
         return qPart;
     }
     
@@ -62,7 +67,7 @@ public class SolrQueryFormatter {
      * @param paramName
      * @return 
      */    
-    public String buildIdQuery(Set<Long> idListSet, String paramName){
+    public String buildIdQuery(Set<Long> idListSet, String paramName, String dvObjectType){
         if (paramName == null){
             throw new NullPointerException("paramName cannot be null");
         }
@@ -92,7 +97,7 @@ public class SolrQueryFormatter {
             
             // format ids into solr OR clause
             //
-            queryClauseParts.add(this.formatIdsForSolrClause(sliceOfIds, paramName));
+            queryClauseParts.add(this.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));
         }
 
         // -------------------------------------------
@@ -107,7 +112,7 @@ public class SolrQueryFormatter {
             
             // format ids into solr OR clause
             //
-            queryClauseParts.add(this.formatIdsForSolrClause(sliceOfIds, paramName));        
+            queryClauseParts.add(this.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));        
         }
         
         return StringUtils.join(queryClauseParts, " OR ");
