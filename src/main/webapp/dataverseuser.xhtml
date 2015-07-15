@@ -201,6 +201,62 @@
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>  
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'ASSIGNROLE'}">
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.dataverse']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.dataset']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.datafile']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'REVOKEROLE'}">
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.dataverse']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.dataset']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.datafile']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                </ui:fragment>
                                             </ui:fragment>
                                             <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
                                         </div>

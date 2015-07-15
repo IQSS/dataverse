@@ -104,6 +104,8 @@ public class MyDataQueryHelperServiceBean {
 
         DvObject objectIn = dvObjectService.findDvObject(dvoId);
         List idsForSelect = new ArrayList();
+        
+
         /*
         for (Long roleId : roleIdList) {
 

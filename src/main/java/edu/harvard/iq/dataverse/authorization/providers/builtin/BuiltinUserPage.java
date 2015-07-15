@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
@@ -74,6 +76,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean fileService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
@@ -490,15 +494,23 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void displayNotification() {
         for (UserNotification userNotification : notificationsList) {
             switch (userNotification.getType()) {
-                case ASSIGNROLE:                   
+                case ASSIGNROLE:   
                 case REVOKEROLE:
                     // Can either be a dataverse or dataset, so search both
                     Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
                     if (dataverse != null) {
+                        userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataverse ));
                         userNotification.setTheObject(dataverse);
                     } else {
                         Dataset dataset = datasetService.find(userNotification.getObjectId());
-                        userNotification.setTheObject(dataset);
+                        if (dataset != null){
+                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataset ));
+                            userNotification.setTheObject(dataset);
+                        } else {
+                            DataFile datafile = fileService.find(userNotification.getObjectId());
+                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), datafile ));
+                            userNotification.setTheObject(datafile);
+                        }
                     }
                     break;
                 case CREATEDV:

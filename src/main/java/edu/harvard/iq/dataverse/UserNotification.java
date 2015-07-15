@@ -111,6 +111,7 @@ public class UserNotification implements Serializable {
     public void setTheObject(Object theObject) {
         this.theObject = theObject;
     }
+    
         
     public boolean isDisplayAsRead() {
         return displayAsRead;
