@@ -114,7 +114,7 @@ public class SolrQueryFormatterTest {
         Long[] idList = this.getListOfLongs(numIds);
         Set<Long> idListSet = new HashSet<>(Arrays.asList(idList));                 
                 
-        String queryClause = sqf.buildIdQuery(idListSet, paramName);
+        String queryClause = sqf.buildIdQuery(idListSet, paramName, null);
         msgt("query clause: " + queryClause);
         assertEquals(StringUtils.countMatches(queryClause, paramName), numParamOccurrences);
     }
@@ -124,7 +124,7 @@ public class SolrQueryFormatterTest {
         Long[] idList = this.getListOfLongs(numIds);
         Set<Long> idListSet = new HashSet<>(Arrays.asList(idList));                 
                 
-        String queryClause = sqf.buildIdQuery(idListSet, paramName);
+        String queryClause = sqf.buildIdQuery(idListSet, paramName, null);
         msgt("query clause: " + queryClause);
         assertEquals(queryClause, expectedQuery);
     }
