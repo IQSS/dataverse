@@ -299,13 +299,11 @@ public class MyDataFinder {
         String entityIdClause = null;
         if (distinctEntityIds.size() > 0){
             entityIdClause = sqf.buildIdQuery(distinctEntityIds, SearchFields.ENTITY_ID, null);
-            System.out.print(" entityIdClause: " + entityIdClause);
         }
         
         String parentIdClause = null;
         if (distinctParentIds.size() > 0){
             parentIdClause = sqf.buildIdQuery(distinctParentIds, SearchFields.PARENT_ID, DvObject.DATASET_DTYPE_STRING);  
-            System.out.print(" parentIdClause: " + parentIdClause);
         }
         
         if ((entityIdClause != null) && (parentIdClause != null)){

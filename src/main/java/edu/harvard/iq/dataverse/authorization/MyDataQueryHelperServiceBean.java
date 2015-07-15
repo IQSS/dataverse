@@ -8,7 +8,9 @@ package edu.harvard.iq.dataverse.authorization;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.mydata.MyDataFinder;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -25,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 @Stateless
 public class MyDataQueryHelperServiceBean {
     
-    private DataverseRolePermissionHelper rolePermissionHelper;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -38,6 +39,9 @@ public class MyDataQueryHelperServiceBean {
     
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
+    
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
     
     public Query getDirectQuery( AuthenticatedUser user) {
         return em.createNativeQuery("SELECT id FROM dvobject WHERE "
@@ -98,39 +102,37 @@ public class MyDataQueryHelperServiceBean {
         return " AND role.role_id IN (" + StringUtils.join(outputList, ",") + ")";        
     }
     
-    public List<String> getRolesOnDVO(AuthenticatedUser user, Long dvoId, List<Long> roleIdList) {
+    public List<String> getRolesOnDVO(AuthenticatedUser user, Long dvoId, List<Long> roleIdList, MyDataFinder finder) {
 
         List<String> retVal = new ArrayList();
 
         DvObject objectIn = dvObjectService.findDvObject(dvoId);
         List idsForSelect = new ArrayList();
         
-
-        /*
         for (Long roleId : roleIdList) {
 
-            if (objectIn.isInstanceofDataverse() &&   this.rolePermissionHelper.hasDataversePermissions(roleId)){
+            if (objectIn.isInstanceofDataverse() &&   finder.getRolePermissionHelper().hasDataversePermissions(roleId)){
                 idsForSelect.add(roleId);
             }
-            if (objectIn.isInstanceofDataset() &&   this.rolePermissionHelper.hasDatasetPermissions(roleId)){
+            if (objectIn.isInstanceofDataset() &&   finder.getRolePermissionHelper().hasDatasetPermissions(roleId)){
                 idsForSelect.add(roleId);
             }
-            if (objectIn.isInstanceofDataFile() &&  this.rolePermissionHelper.hasFilePermissions(roleId)){
+            if (objectIn.isInstanceofDataFile() &&  finder.getRolePermissionHelper().hasFilePermissions(roleId)){
                 idsForSelect.add(roleId);
             }
 
-        }*/
-        String roleClause = getRoleIdListClause(roleIdList);
+        }
         
+        List<Long> roles = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user.getIdentifier(), idsForSelect, dvoId);
         
-        List<Object> results = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
+       /* List<Object> results = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
                 + " role.definitionpoint_id = " + dvoId + " "
                 + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
                 + ")"
                 + roleClause
-                + ";").getResultList();
-        if (results != null && !results.isEmpty()) {
-            for (Object result : results) {
+                + ";").getResultList();*/
+        if (roles != null && !roles.isEmpty()) {
+            for (Object result : roles) {
                 Long role_id = (Long) result;
                 DataverseRole role = roleService.find(role_id);
                 if (!retVal.contains(role.getName())) {
@@ -138,14 +140,17 @@ public class MyDataQueryHelperServiceBean {
                 }
             }
         }
+        
         Object parentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + dvoId).getSingleResult();
         Long parentId = (Long) parentObj;
+        /*
         List<Object> resultsParent = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
                 + " role.definitionpoint_id = " + parentId + " "
                 + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
                 + ")"
                 + roleClause
-                + ";").getResultList();
+                + ";").getResultList();*/
+        List<Long> resultsParent = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user.getIdentifier(), idsForSelect, parentId);
         if (resultsParent != null && !resultsParent.isEmpty()) {
             for (Object result : resultsParent) {
                 Long role_id = (Long) result;
@@ -157,12 +162,15 @@ public class MyDataQueryHelperServiceBean {
         }
         Object GrandParentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + parentId).getSingleResult();
         Long grandParentId = (Long) GrandParentObj;
+        /*
         List<Object> resultsGrandParent = em.createNativeQuery("Select distinct role.role_id FROM roleassignment role WHERE  "
                 + " role.definitionpoint_id = " + grandParentId + " "
                 + " and role.role_id in (select role_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
                 + ")"
                 + roleClause
                 + ";").getResultList();
+                */
+        List<Long> resultsGrandParent = roleAssigneeService.getRoleIdListForGivenAssigneeDvObject(user.getIdentifier(), idsForSelect, grandParentId);
         if (resultsGrandParent != null && !resultsGrandParent.isEmpty()) {
             for (Object result : resultsGrandParent) {
                 Long role_id = (Long) result;

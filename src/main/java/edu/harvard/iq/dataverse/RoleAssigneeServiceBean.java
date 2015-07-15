@@ -158,6 +158,31 @@ public class RoleAssigneeServiceBean {
         
     }
     
+    public List<Long> getRoleIdListForGivenAssigneeDvObject(String roleAssigneeIdentifier, List<Long> roleIdList, Long defPointId){
+
+        if (roleAssigneeIdentifier==null){
+            return null;
+        }
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));
+        String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
+        if (userGroups != null && !userGroups.isEmpty()){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        } 
+        
+        String qstr = "SELECT r.role_id";
+        qstr += " FROM RoleAssignment r";
+        qstr += identifierClause;
+        qstr += getRoleIdListClause(roleIdList);
+        qstr += " and r.definitionpoint_id = " +  defPointId;
+        qstr += ";";
+        msg("qstr: " + qstr);
+
+        return em.createNativeQuery(qstr)
+                        .getResultList();
+        
+    }
+    
     private String getGroupIdentifierClause(String roleAssigneeIdentifier, List<String> userGroups) {
 
         if (userGroups == null) {
