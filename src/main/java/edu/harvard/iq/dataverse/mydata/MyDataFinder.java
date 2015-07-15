@@ -307,17 +307,14 @@ public class MyDataFinder {
         }
         
         if ((entityIdClause != null) && (parentIdClause != null)){
-            System.out.print("(" + entityIdClause + " OR " + parentIdClause + ")");
             return "(" + entityIdClause + " OR " + parentIdClause + ")";
         
         } else if (entityIdClause != null){
             // only entityIdClause
-            System.out.print("Entity only" + entityIdClause);
             return entityIdClause;
         
         } else if (parentIdClause != null){
             // only parentIdClause
-            System.out.print("parent only" + parentIdClause);
             return parentIdClause;
         }
 
