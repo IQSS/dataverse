@@ -6,6 +6,8 @@ Thank you for your interest in contributing to Dataverse! We welcome contributio
 
 The [Dataverse roadmap][] might already capture your idea or feature request but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mentioning [@dataverseorg][] on Twitter.
 
+![feature request process](doc/sphinx-guides/source/img/feature-request-process.png)
+
 See also our [Community and Support][] page.
 
 [#dataverse IRC channel]: http://webchat.freenode.net/?channels=dataverse
