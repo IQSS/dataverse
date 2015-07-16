@@ -47,7 +47,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         /**
          * @todo what should we do with the indexRespose?
          */
-        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataverse.getId());
+        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataverse);
         return savedDataverse;
 
     }
