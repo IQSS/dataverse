@@ -303,7 +303,7 @@ public class MyDataFinder {
         
         String parentIdClause = null;
         if (distinctParentIds.size() > 0){
-            parentIdClause = sqf.buildIdQuery(distinctParentIds, SearchFields.PARENT_ID, DvObject.DATASET_DTYPE_STRING);  
+            parentIdClause = sqf.buildIdQuery(distinctParentIds, SearchFields.PARENT_ID, "datasets");  
         }
         
         if ((entityIdClause != null) && (parentIdClause != null)){
