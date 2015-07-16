@@ -519,6 +519,9 @@ public class BuiltinUserPage implements java.io.Serializable {
                     break;
  
                 case REQUESTFILEACCESS:
+                    DataFile file = fileService.find(userNotification.getObjectId());
+                    userNotification.setTheObject(file.getOwner());
+                    break;
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
