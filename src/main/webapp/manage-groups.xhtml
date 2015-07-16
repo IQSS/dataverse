@@ -61,16 +61,13 @@
                             <p:column width="31%" sortBy="name" headerText="#{bundle['dataverse.manageGroups.tab.header.name']}">
                                 <h:outputText value="#{explicitGroup.displayName}" />
                             </p:column>
-                            <p:column width="13%" sortBy="createDate" headerText="#{bundle['dataverse.manageGroups.tab.header.date']}">
-                                <h:outputText value="temp" />
-                            </p:column>
                             <p:column width="8%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataverse.manageGroups.tab.header.userCount']}">
                                 <h:outputText value="#{manageGroupsPage.getGroupAuthenticatedUserCount(explicitGroup)}" />
                             </p:column>
-                            <p:column width="10%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataverse.manageGroups.tab.header.responses']}">
-                                <h:outputText value="#temp" />
+                            <p:column width="8%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataverse.manageGroups.tab.header.groupCount']}">
+                                <h:outputText value="#{manageGroupsPage.getGroupGroupCount(explicitGroup)}" />
                             </p:column>
-                            <p:column width="38%" class="col-manage-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
+                            <p:column width="8%" class="col-manage-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
                                 <div class="button-block">
                                     <div class="btn-group" role="group">
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
@@ -106,8 +103,8 @@
                         <div class="form-horizontal">
                             <div class="form-group">
                                 <label for="select_DatasetTemplate" class="col-sm-3 control-label">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.datasetGuestbook.title']}">
-                                        #{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.datasetGuestbook']}
+                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.group']}">
+                                        #{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.group']}
                                     </span>
                                 </label>
                                 <div class="col-sm-7">
@@ -140,7 +137,8 @@
                                     headerText="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.type']}">
                             <h:outputText value="#{manageGroupsPage.getRoleAssigneeTypeString(groupMember)}" />
                           </p:column>
-                          <p:column width = "13%"
+                          <!-- Action  -->
+<!--                          <p:column width = "13%"
                                     headerText="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.action']}">
                             <p:commandLink type="button"
                                            styleClass="btn btn-default bootstrap-button-tooltip"
@@ -150,30 +148,9 @@
                               <span class="glyphicon glyphicon-trash"></span>
                             </p:commandLink>
                           </p:column>>
-                          
+                          -->
                         </p:dataTable>
-                        <label for="addUserForm" class="col-sm-2 control-label">
-                            #{bundle['dataverse.permissions.explicitGroupEditDialog.roleAssigneeNames']}
-                        </label>
-                        <div class="col-sm-9">
-                            <p:autoComplete id="addUserForm" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
-                                            multiple="true" scrollHeight="180" forceSelection="true" emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
-                                            value="#{manageGroupsPage.newExplicitGroupRoleAssignees}"
-                                            completeMethod="#{manageGroupsPage.completeRoleAssignee}"
-                                            var="roleAssignee"
-                                            itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
-                                <p:column>
-                                    <h:outputText value="#{roleAssignee.displayInfo.title}"/>
-                                    <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputText value="#{roleAssignee.identifier}"/>
-                                </p:column>
-                                <p:ajax process="@this" event="itemSelect" />
-                                <p:ajax process="@this" event="itemUnselect" />
-                            </p:autoComplete>
-                            <!-- <p:message for="roleAssigneeName" display="text"/> -->
-                        </div>
+                        
                         <!-- TODO Add user -->
                         <div class="button-block">
                         <p:commandLink type="button"
