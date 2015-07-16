@@ -486,6 +486,9 @@ public class BuiltinUserPage implements java.io.Serializable {
         for (RoleAssignment ra : roles) {
             roleNames.add(ra.getRole().getName());
         }
+        if (roleNames.isEmpty()){
+            return "[Unknown]";
+        }
         return StringUtils.join(roleNames, "/");
     }
 
