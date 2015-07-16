@@ -111,10 +111,10 @@ public class MyDataQueryHelperServiceBean {
         
         for (Long roleId : roleIdList) {
 
-            if (objectIn.isInstanceofDataverse() &&   finder.getRolePermissionHelper().hasDataversePermissions(roleId)){
+            if (objectIn.isInstanceofDataverse()){
                 idsForSelect.add(roleId);
             }
-            if (objectIn.isInstanceofDataset() &&   finder.getRolePermissionHelper().hasDatasetPermissions(roleId)){
+            if (objectIn.isInstanceofDataset() && (finder.getRolePermissionHelper().hasDatasetPermissions(roleId) || finder.getRolePermissionHelper().hasFilePermissions(roleId))){
                 idsForSelect.add(roleId);
             }
             if (objectIn.isInstanceofDataFile() &&  finder.getRolePermissionHelper().hasFilePermissions(roleId)){

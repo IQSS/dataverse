@@ -252,21 +252,6 @@ public class Index extends AbstractApiBean {
     }
 
     /**
-     * Note that this method is best used in a migration scenario because it
-     * skips the normal Solr doc cleanup of deleting drafts and other versions
-     * from Solr.
-     */
-    @GET
-    @Path("missing")
-    public Response indexMissing() {
-        /**
-         * @todo How can we display the result?
-         */
-        Future<String> result = solrIndexService.indexMissing();
-        return okResponse("index missing started, Solr doc cleanup operations will be skipped");
-    }
-
-    /**
      * This is just a demo of the modular math logic we use for indexAll.
      */
     @GET
@@ -295,8 +280,13 @@ public class Index extends AbstractApiBean {
     @GET
     @Path("perms/{id}")
     public Response indexPermissions(@PathParam("id") Long id) {
-        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(id);
-        return okResponse(indexResponse.getMessage());
+        DvObject dvObject = dvObjectService.findDvObject(id);
+        if (dvObject == null) {
+            return errorResponse(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
+        } else {
+            IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dvObject);
+            return okResponse(indexResponse.getMessage());
+        }
     }
 
     @GET
@@ -543,7 +533,11 @@ public class Index extends AbstractApiBean {
             return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
         }
 
-        List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectId);
+        DvObject dvObjectToLookUp = dvObjectService.findDvObject(dvObjectId);
+        if (dvObjectToLookUp == null) {
+            return errorResponse(Status.BAD_REQUEST, "Could not find DvObject based on id " + dvObjectId);
+        }
+        List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectToLookUp);
 
         JsonObjectBuilder data = Json.createObjectBuilder();
 
