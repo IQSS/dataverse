@@ -464,12 +464,10 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void onTabChange(TabChangeEvent event) {
-        System.out.print("tab change event?");
         if (event.getTab().getId().equals("notifications")) {
             displayNotification();
         }
         if (event.getTab().getId().equals("dataRelatedToMe")){
-            System.out.print("is this happenign?");
             mydatapage.init();
         }
     }
