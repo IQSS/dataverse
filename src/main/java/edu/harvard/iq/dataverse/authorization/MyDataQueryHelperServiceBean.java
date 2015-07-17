@@ -140,6 +140,11 @@ public class MyDataQueryHelperServiceBean {
                 }
             }
         }
+        //If there are roles on the object return
+        //else continue to parent
+        if (!retVal.isEmpty()){
+            return retVal;
+        }
         
         Object parentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + dvoId).getSingleResult();
         Long parentId = (Long) parentObj;
@@ -160,6 +165,12 @@ public class MyDataQueryHelperServiceBean {
                 }
             }
         }
+        //If there are roles on the parent return
+        //else continue to grandparent
+        if (!retVal.isEmpty()){
+            return retVal;
+        }
+        
         Object GrandParentObj = em.createNativeQuery("Select owner_id from dvobject where id = " + parentId).getSingleResult();
         Long grandParentId = (Long) GrandParentObj;
         /*
