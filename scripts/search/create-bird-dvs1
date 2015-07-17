@@ -1,8 +1,9 @@
 #!/bin/sh
 DIR='scripts/search/data/in/dv-birds1'
 USERDIR=/tmp/searchusers
+ROOT_DV=root
 FINCHKEY=`cat $USERDIR/1 | jq .data.apiToken | tr -d \"`
-curl -s -H "Content-type:application/json" -X POST -d @$DIR/1 "http://localhost:8080/api/dataverses/root?key=$FINCHKEY"
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/1 "http://localhost:8080/api/dataverses/$ROOT_DV?key=$FINCHKEY"
 echo
 
 #PARENT=`xsltproc scripts/search/data/mkpaths.xsl scripts/search/data/nodes.xml | grep '/sparrows$' | tr / " " |  awk '{print $(NF-1)}'`
