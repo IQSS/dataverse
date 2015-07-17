@@ -206,16 +206,13 @@ public class DataversePage implements java.io.Serializable {
         //for linking - make sure the link hasn't occurred and its not int the tree
         if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
         
-            dataversesForLinking.remove(dataverseService.findRootDataverse());
+            // remove this and it's parent tree
             dataversesForLinking.remove(dataverse);
-            
-            if (dataverse.getOwner() != null ){
-               Dataverse testDV = dataverse;
-               while(testDV.getOwner() != null){
-                   dataversesForLinking.remove(testDV.getOwner());
-                   testDV = testDV.getOwner();
-               }                
-            }
+            Dataverse testDV = dataverse;
+            while(testDV.getOwner() != null){
+                dataversesForLinking.remove(testDV.getOwner());
+                testDV = testDV.getOwner();
+            }                
             
             for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
                 dataversesForLinking.remove(removeLinked);
