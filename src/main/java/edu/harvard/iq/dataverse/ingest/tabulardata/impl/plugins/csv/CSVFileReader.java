@@ -223,6 +223,7 @@ public class CSVFileReader extends TabularDataFileReader {
                 
                 int tokenStart = 0;
                 boolean quotedStringMode = false; 
+                tokenCount = 0; 
                 
                 for (int i = 0; i < line.length(); i++) {
                     if (tokenCount > variableCount) {
@@ -234,11 +235,8 @@ public class CSVFileReader extends TabularDataFileReader {
                     
                     if (tokenStart == i && c == '"') {
                         quotedStringMode = true; 
-                    }
-                    
-                    if (c == ',' && !quotedStringMode) {
+                    } else if (c == ',' && !quotedStringMode) {
                         valueTokens[tokenCount] = line.substring(tokenStart, i);
-                        
                         tokenCount++; 
                         tokenStart = i+1; 
                     } else if (i == line.length() - 1) {
@@ -250,7 +248,7 @@ public class CSVFileReader extends TabularDataFileReader {
                         
                 }
             }
-            
+                        
             // final token count check: 
             
             if (tokenCount != variableCount) {
@@ -449,7 +447,53 @@ public class CSVFileReader extends TabularDataFileReader {
                 throw new IOException("Failed to read line " + (lineCounter + 1) + " during the second pass.");
             }
 
-            if (valueTokens.length != variableCount) {
+            int tokenCount = valueTokens.length;
+            
+            if (tokenCount > variableCount) {
+                
+                // again, similar check for quote-encased strings that contain 
+                // commas inside them. 
+                // -- L.A. 4.0.2
+                
+                valueTokens = null; 
+                valueTokens = new String[variableCount];
+                
+                int tokenStart = 0;
+                boolean quotedStringMode = false; 
+                tokenCount = 0; 
+                
+                for (int i = 0; i < line.length(); i++) {
+                    if (tokenCount > variableCount) {
+                        throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " of the data file contains more than "
+                        + variableCount + " comma-delimited values.");
+                    }
+                    
+                    char c = line.charAt(i);
+                    
+                    if (tokenStart == i && c == '"') {
+                        quotedStringMode = true; 
+                    } else if (c == ',' && !quotedStringMode) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, i);
+                        tokenCount++; 
+                        tokenStart = i+1; 
+                    } else if (i == line.length() - 1) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, line.length());
+                        tokenCount++; 
+                    } else if (quotedStringMode && c == '"') {
+                        quotedStringMode = false; 
+                    }
+                        
+                }
+            }
+            
+            // TODO: 
+            // isolate CSV parsing into its own method/class, to avoid
+            // code duplication in the 2 passes, above;
+            // do not save the result of the 1st pass - simply reopen the 
+            // original file (?). 
+            // -- L.A. 4.0.2/4.1
+            
+            if (tokenCount != variableCount) {
                 throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " during the second pass: "
                         + variableCount + " delimited values expected, " + valueTokens.length + " found.");
             }
