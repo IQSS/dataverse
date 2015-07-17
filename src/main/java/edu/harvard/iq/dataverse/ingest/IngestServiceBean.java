@@ -1485,6 +1485,8 @@ public class IngestServiceBean {
                     
                     // Replace contents of the file with the tab-delimited data produced:
                     dataAccess.copyPath(Paths.get(tabFile.getAbsolutePath()));
+                    // Reset the file size: 
+                    dataFile.setFilesize(dataAccess.getSize());
 
                     // delete the temp tab-file:
                     tabFile.delete();
