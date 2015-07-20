@@ -65,7 +65,7 @@ For Theme, you can decide either to use the customization from the dataverse abo
 There are two options for Widgets, a Dataverse Search box widget and a Dataverse Listing widget. The Dataverse Search Box will add a search box to your website that when someone enters a search term in and clicks Find, will bring them to Dataverse to see the results. The Dataverse Listing widget will provide a listing of all your dataverses and datasets. When someone clicks on a dataverse or dataset in the widget, it will bring them to your dataverse to see the actual data. Within the Widgets page, you can copy and paste the code for the widget you would like to have on your website. 
 
 Adding Widgets to an OpenScholar Website
-===========================================
+********************************************
 #. Log in to your OpenScholar website
 #. Either build a new page or navigate to the page you would like to use to show the Dataverse widgets.
 #. Click on the Settings Cog and select Layout
