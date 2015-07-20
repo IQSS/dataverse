@@ -265,7 +265,7 @@
                                         </div>
                                         <div class="notification-item-cell">
                                             <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip"
-                                                           action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}"
+                                                           action="#{DataverseUserPage.remove(item.id)}" update="@form"
                                                            oncomplete="bind_bsui_components();">
                                                 <span class="glyphicon glyphicon-remove"></span>
                                             </p:commandLink>
