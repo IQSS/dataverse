@@ -25,10 +25,10 @@ Glassfish Version 4.1 is required.
 	$ unzip glassfish-4.1.zip
 	$ mv glassfish4 /usr/local
 
-- Download WELD v2.2.10.SP1 and install it in the modules folder::
+- Remove the stock WELD jar; download WELD v2.2.10.SP1 and install it in the modules folder::
 
 	$ cd /usr/local/glassfish4/glassfish/modules
-	$ mv weld-osgi-bundle.jar weld-osgi-bundle.jar.2.2
+	$ /bin/rm weld-osgi-bundle.jar
 	$ wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
 	$ /usr/local/glassfish4/bin/asadmin start-domain domain1
 

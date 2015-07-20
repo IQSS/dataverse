@@ -140,6 +140,7 @@ public abstract class DataFileIO {
     // this is a convenience method for copying a local Path (for ex., a
     // temp file, into this DataAccess location):
     public void copyPath(Path fileSystemPath) throws IOException {
+        long newFileSize = -1; 
         // if this is a local fileystem file, we'll use a 
         // quick Files.copy method: 
         if (isLocalFile()) {
@@ -151,7 +152,9 @@ public abstract class DataFileIO {
             }
             if (outputPath != null) {
                 Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
+                newFileSize = outputPath.toFile().length();
             }
+            
         } else {
             // otherwise we'll open a writable byte channel and 
             // copy the source file bytes using Channel.transferTo():
@@ -172,6 +175,7 @@ public abstract class DataFileIO {
                     readChannel.transferTo(start, bytesPerIteration, writeChannel);
                     start += bytesPerIteration;
                 }
+                newFileSize = readChannel.size(); 
 
             } catch (IOException ioex) {
                 failureMsg = ioex.getMessage();
@@ -191,6 +195,10 @@ public abstract class DataFileIO {
                 throw new IOException(failureMsg);
             }
         }
+        
+        // if it has worked successfully, we also need to reset the size
+        // of the object. 
+        setSize(newFileSize);
     }
 
     // getters:

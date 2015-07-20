@@ -255,6 +255,11 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         dataversesForLinking.remove(dataset.getOwner());
+        Dataverse testDV = dataset.getOwner();
+        while(testDV.getOwner() != null){
+            dataversesForLinking.remove(testDV.getOwner());
+            testDV = testDV.getOwner();
+        }                      
         
         for (Dataverse removeLinked : dsLinkingService.findLinkingDataverses(dataset.getId())) {
             dataversesForLinking.remove(removeLinked);

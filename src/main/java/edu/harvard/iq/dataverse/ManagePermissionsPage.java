@@ -66,6 +66,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB
+    ExplicitGroupServiceBean explicitGroupService;
     @EJB 
     GroupServiceBean groupService;
     @EJB
@@ -332,7 +334,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         for ( Group g : groupService.findGlobalGroups() ) {
             roleAssigneeList.add( g );
         }
-        roleAssigneeList.addAll( explicitGroupSvc.findAvailableFor(dvObject) );
+        roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dvObject) );
         
         List<RoleAssignee> filteredList = new LinkedList();
         for (RoleAssignee ra : roleAssigneeList) {
@@ -485,138 +487,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
         showRoleMessages();
     }
 
-
-    /* 
-    ============================================================================
-    Explicit Group dialogs
-    ============================================================================
-    */
-    
-    String explicitGroupIdentifier = "";
-    String explicitGroupName = "";
-    String newExplicitGroupDescription = "";
-    UIInput explicitGroupIdentifierField;
-    
-    @EJB
-    ExplicitGroupServiceBean explicitGroupSvc;
-    
-    List<RoleAssignee> newExplicitGroupRoleAssignees = new LinkedList<>();
-    
-    public void initExplicitGroupDialog(ActionEvent ae) {
-        showNoMessages();
-        setExplicitGroupName("");
-        setExplicitGroupIdentifier("");
-        setNewExplicitGroupDescription("");
-        setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
-        FacesContext context = FacesContext.getCurrentInstance();
-        
-    }
-
-    public void saveExplicitGroup(ActionEvent ae) {
-        
-        ExplicitGroup eg = explicitGroupSvc.getProvider().makeGroup();
-        eg.setDisplayName( getExplicitGroupName() );
-        eg.setGroupAliasInOwner( getExplicitGroupIdentifier() );
-        eg.setDescription( getNewExplicitGroupDescription() );
-        
-        if ( getNewExplicitGroupRoleAssignees()!= null ) {
-            try {
-                for ( RoleAssignee ra : getNewExplicitGroupRoleAssignees() ) {
-                    eg.add( ra );
-                }
-            } catch ( GroupException ge ) {
-                JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                        "Group Creation failed.", 
-                                        ge.getMessage());
-                return;
-            }
-        }
-        try {
-            logger.info( "Attempting to create group " + eg.getGroupAliasInOwner() ); // TODO MBS remove
-            eg = commandEngine.submit( new CreateExplicitGroupCommand(session.getUser(), (Dataverse) getDvObject(), eg));
-            JsfHelper.addSuccessMessage("Succesfully created group " + eg.getDisplayName());
-        
-        } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
-            logger.info( "Got me then message " + gaee.getMessage() ); // TODO MBS remove
-            explicitGroupIdentifierField.setValid( false );
-            FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
-                           new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));
-            
-        } catch (CommandException ex) {
-            logger.log(Level.WARNING, "Group creation failed", ex);
-            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                    "Group Creation failed.", 
-                                    ex.getMessage());
-        } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be saved.");
-             logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
-        }
-        showAssignmentMessages();
-    }
-
-    public void setExplicitGroupName(String explicitGroupFriendlyName) {
-        this.explicitGroupName = explicitGroupFriendlyName;
-    }
-
-    public String getExplicitGroupName() {
-        return explicitGroupName;
-    }
-
-    public void setExplicitGroupIdentifier(String explicitGroupName) {
-        this.explicitGroupIdentifier = explicitGroupName;
-    }
-
-    public String getExplicitGroupIdentifier() {
-        return explicitGroupIdentifier;
-    }
-
-    public UIInput getExplicitGroupIdentifierField() {
-        return explicitGroupIdentifierField;
-    }
-
-    public void setExplicitGroupIdentifierField(UIInput explicitGroupIdentifierField) {
-        this.explicitGroupIdentifierField = explicitGroupIdentifierField;
-    }
-    
-    public void validateGroupIdentifier(FacesContext context, UIComponent toValidate, Object rawValue) {
-        String value = (String) rawValue;
-        UIInput input = (UIInput) toValidate;
-        input.setValid(true); // Optimistic approach
-        
-        if ( context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null 
-                && !StringUtils.isEmpty(value) ) {
-            
-            // cheap test - regex
-            if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
-                input.setValid(false);
-                context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
-            
-            } else if ( explicitGroupSvc.findInOwner(getDvObject().getId(), value) != null ) {
-                // Ok, see that the alias is not taken
-                input.setValid(false);
-                context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken")));
-            }
-        }
-    }
-
-    public void setNewExplicitGroupRoleAssignees(List<RoleAssignee> newExplicitGroupRoleAssignees) {
-        this.newExplicitGroupRoleAssignees = newExplicitGroupRoleAssignees;
-    }
-
-    public List<RoleAssignee> getNewExplicitGroupRoleAssignees() {
-        return newExplicitGroupRoleAssignees;
-    }
-
-    public String getNewExplicitGroupDescription() {
-        return newExplicitGroupDescription;
-    }
-
-    public void setNewExplicitGroupDescription(String newExplicitGroupDescription) {
-        this.newExplicitGroupDescription = newExplicitGroupDescription;
-    }
-    
     /* 
     ============================================================================
     Internal methods

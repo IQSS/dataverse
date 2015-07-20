@@ -26,9 +26,9 @@ Generate Your API Token
 #. On the top right of your account page, click on the "Edit Account" button and click on API Token in the list.
 #. Your API Token is located on that page. 
 
-My Unpublished Data
+My Data
 ========================
-The My Unpublished Data section of your account page displays a listing of all the unpublished dataverses, datasets, and files you have either created or uploaded or that you have access to edit.  
+The My Data section of your account page displays a listing of all the dataverses, datasets, and files you have either created, uploaded or that you have access to edit. You are able to filter through all the dataverses, datasets, and files listed there using the filter box or use the facets on the left side to only view a specific Publication Status or Role.  
 
 Notifications: Setup & Maintainance
 ===================================

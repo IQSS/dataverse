@@ -1087,15 +1087,30 @@ public class IngestServiceBean {
                 // gotten from the loop, the roles assignment added at create is removed
                 // (switching to refinding via id resolves that)                
                 dataFile = fileService.find(dataFile.getId());
-                dataFile.SetIngestInProgress();               
-                dataFile = fileService.save(dataFile);
-
-                scheduledFiles.add(dataFile);
                 
-                logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
-                // temp dbug line
-                System.out.println("QUEUEING INGEST FOR FILE: " + dataFile.getFileMetadata().getLabel() + "; for dataset: " + dataset.getGlobalId());  
-                count++;
+                long ingestSizeLimit = -1; 
+                try {
+                    systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
+                } catch (IOException ioex) {
+                    logger.warning("IO Exception trying to retrieve the ingestable format identifier from the plugin for type "+dataFile.getContentType()+" (non-fatal);");
+                }
+                
+                if (ingestSizeLimit == -1 || dataFile.getFilesize() < ingestSizeLimit) {
+                    dataFile.SetIngestInProgress();               
+                    dataFile = fileService.save(dataFile);
+
+                    scheduledFiles.add(dataFile);
+                
+                    logger.fine("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest, for dataset: " + dataset.getGlobalId());
+                    count++;
+                } else {
+                    dataFile.setIngestDone();
+                    dataFile = fileService.save(dataFile);
+                    
+                    logger.info("Skipping tabular ingest of the file " + dataFile.getFileMetadata().getLabel() + ", because of the size limit (set to "+ ingestSizeLimit +" bytes).");
+                    // TODO: (urgent!)
+                    // send notification to the user!
+                }
             }
         }
 
@@ -1470,6 +1485,8 @@ public class IngestServiceBean {
                     
                     // Replace contents of the file with the tab-delimited data produced:
                     dataAccess.copyPath(Paths.get(tabFile.getAbsolutePath()));
+                    // Reset the file size: 
+                    dataFile.setFilesize(dataAccess.getSize());
 
                     // delete the temp tab-file:
                     tabFile.delete();

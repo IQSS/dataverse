@@ -1027,8 +1027,8 @@
                             <label for="reasonForDeaccession">
                                 #{bundle['file.deaccessionDialog.enterInfo']}
                             </label>
-                            <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40"
-                                             onkeyup="updateHiddenReason(this);"   value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
+                            <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" autoResize="false" rows="2" cols="40"
+                                             onkeyup="updateHiddenReason(this);" value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
                             <p:message for="reasonForDeaccession"/>
                         </div>
                         <div class="form-group">
@@ -1674,7 +1674,7 @@
                                         </span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfAccess}" rows="5" styleClass="form-control" />
+                                        <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
                                     </div>
                                 </div>
                                 <div class="form-group">

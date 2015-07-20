@@ -122,10 +122,17 @@ public class MyDataPage implements java.io.Serializable {
     }
     
     public List<String[]> getRoleInfoForCheckboxes(){
-        return this.rolePermissionHelper.getRoleInfoForCheckboxes();
+        if (this.rolePermissionHelper == null){
+            init();
+        }
+        List<String[]> retVal = this.rolePermissionHelper.getRoleInfoForCheckboxes();
+        if (retVal != null){
+            return retVal;
+        } else {
+            return new ArrayList();
+        }
     }
-    
-        
+           
     public String getRetrieveDataFullAPIPath(){
         return DataRetrieverAPI.retrieveDataFullAPIPath;
     }

@@ -19,7 +19,22 @@ Disable SELinux on httpd:
 
 ``getenforce``
 
-https strongly recommended (required?); signed cert recommended. 
+https strongly recommended; signed certificate (as opposed to self-signed) is recommended. 
+
+Directory listing needs to be disabled on the web documents folder served by Apache: 
+
+In the main Apache configuration file (``/etc/httpd/conf/httpd.conf`` in the default setup), find the section that configures your web directory. For example, if the ``DocumentRoot``, defined elsewhere in the file, is set to the default ``"/var/www/html"``, the opening line of the section will look like this:
+
+``<Directory "/var/www/html">`` 
+
+Find the ``Options`` line in that section, and make sure that it doesn't contain the ``Indexes`` statement. 
+For example, if the options line in your configuration is 
+
+``Options Indexes FollowSymLinks``
+
+change it to 
+
+``Options FollowSymLinks``
 
 b. R:
 -----
@@ -54,24 +69,11 @@ R is used both by the Dataverse application, directly, and the TwoRavens compani
 
 Two distinct interfaces are used to access R: Dataverse uses Rserve; and TwoRavens sends jobs to R running under rApache using Rook interface. 
 
-We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree; you will need the other 3 files in that directory as well - `https://github.com/IQSS/dataverse/conf/R/r-setup.sh <https://github.com/IQSS/dataverseconf/R/r-setup.sh>`__) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
+We provide a shell script (``conf/R/r-setup.sh`` in the Dataverse source tree; you will need the other 3 files in that directory as well - `https://github.com/IQSS/dataverse/conf/R/ <https://github.com/IQSS/dataverseconf/R/>`__) that will attempt to install the required 3rd party packages; it will also configure Rserve and rserve user. rApache configuration will be addressed in its own section.
 
 The script will attempt to download the packages from CRAN (or a mirror) and GitHub, so the system must have access to the internet. On a server fully firewalled from the world, packages can be installed from downloaded sources. This is left as an exercise for the reader. Consult the script for insight.
 
-TwoRavens requires the following R packages and versions to be installed:
-
-=============== ================
-R Package       Version Number
-=============== ================
-Zelig           5.0.5
-Rook            1.1.1
-rjson           0.2.13
-jsonlite        0.9.16
-DescTools       0.99.11
-=============== ================
-
-Note that some of these packages have their own dependencies, and additional installations are likely necessary. TwoRavens is not compatible with older versions of these R packages.
-
+See the Appendix for the information on the specific packages, and versions that the script will attempt to install. 
 
 2. Install the TwoRavens Application
 ++++++++++++++++++++++++++++++++++++
@@ -116,13 +118,44 @@ Dataverse URL                                       URL of the Dataverse from wh
 ===================  =============================  =========== 
 
 
-This should be it!
+Once everything is installed and configured, the installer script will print out a confirmation message with the URL of the TwoRavens application. For example: 
+
+The application URL is 
+https://server.dataverse.edu:8181/dataexplore
+
+Make sure this is the URL configured in the settings of your Dataverse application.
+
+To configure the TwoRavens URL, issue the following settings API call: 
+
+curl -X PUT -d "{TWORAVENS_URL}" http://localhost:8080/admin/settings/:TwoRavensUrl
+
+where "{TWORAVENS_URL}" is the URL reported by the installer script. 
 
 
 Appendix
 ++++++++
 
-Explained below are the steps needed to manually configure TwoRavens to run under rApache (these are performed by the ``install.pl`` script above).  Provided for reference. 
+Explained below are the steps needed to manually install and configure the required R packages, and to configure TwoRavens to run under rApache (these are performed by the ``r-setup.sh`` and ``install.pl`` scripts above).  Provided for reference. 
+
+r-setup.sh script:
+++++++++++++++++++
+
+TwoRavens requires the following R packages and versions to be installed:
+
+=============== ================
+R Package       Version Number
+=============== ================
+Zelig           5.0.5
+Rook            1.1.1
+rjson           0.2.13
+jsonlite        0.9.16
+DescTools       0.99.11
+=============== ================
+
+Note that some of these packages have their own dependencies, and additional installations are likely necessary. TwoRavens is not compatible with older versions of these R packages.
+
+install.pl script:
+++++++++++++++++++
 
 I. Configure the TwoRavens web (Javascript) application.
 -------------------------------------------------------

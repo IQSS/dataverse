@@ -24,13 +24,15 @@ public class DeleteExplicitGroupCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
+        ExplicitGroup merged = ctxt.em().merge(explicitGroup);
+
         // Remove this group from all explicit groups it belongs to.
         ctxt.em().createNativeQuery(
                 "DELETE FROM explicitgroup_explicitgroup "
-              + "WHERE containedexplicitgroups_id=" + explicitGroup.getId()
+              + "WHERE containedexplicitgroups_id=" + merged.getId()
         ).executeUpdate();
-        
-        ctxt.explicitGroups().removeGroup( explicitGroup );
+
+        ctxt.explicitGroups().removeGroup( merged );
         
     }
     

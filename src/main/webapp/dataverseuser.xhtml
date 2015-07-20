@@ -84,7 +84,7 @@
                     
                         
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
-                        <p:ajax event="tabChange" listener="#{MyDataPage.init}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
+                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
                         <p:tab id="myData" title="My Data">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                             <!--ui:include src="mydata_page.xhtml"></ui:include-->
@@ -114,7 +114,10 @@
                                                 <ui:fragment rendered="#{item.type == 'CREATEACC'}">
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>                                        
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
-                                                        <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                                        <f:param value="#{dataverseServiceBean.findRootDataverse().name}"/>
+                                                        <f:param value="#{bundle.dataverse}"/>
+                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                        <f:param value="#{systemConfig.version}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
@@ -193,6 +196,69 @@
                                                         <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>  
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'ASSIGNROLE'}">
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.dataverse']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.dataset']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.datafile']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'REVOKEROLE'}">
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.dataverse']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.dataset']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.datafile']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>

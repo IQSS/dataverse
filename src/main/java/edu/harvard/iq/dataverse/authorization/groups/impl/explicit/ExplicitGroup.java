@@ -122,7 +122,15 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         containedExplicitGroups = new HashSet<>();
         containedRoleAssignees = new TreeSet<>();
     }
-    
+
+    public Set<AuthenticatedUser> getContainedAuthenticatedUsers() {
+        return containedAuthenticatedUsers;
+    }
+
+    public Set<ExplicitGroup> getContainedExplicitGroups() {
+        return containedExplicitGroups;
+    }
+
     /**
      * Constructor for JPA.
      */

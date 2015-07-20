@@ -1,3 +1,4 @@
 #!/bin/sh
 sed -i -e "s/postgres/$USER/" /tmp/dataverse_db.sql
 sed -i -e 's/dvnapp/dataverse_app/' /tmp/dataverse_db.sql
+sed -i -e 's/dvn-vm7.hmdc.harvard.edu:8983/localhost:8983/' /tmp/dataverse_db.sql

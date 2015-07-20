@@ -147,7 +147,11 @@ Note: Featured Dataverses can only be used with published dataverses.
 
 Linked Dataverses + Linked Datasets
 ======================================================
-Coming soon in 4.0.2!
+Coming soon!
+
+Currently, the ability to link a dataverse to another dataverse or a dataset to a dataverse is a super user only feature. 
+
+If you need to have a dataverse or dataset linked in the Harvard Dataverse installation, please contact support@dataverse.org. 
 
 Publish Your Dataverse
 =================================================================

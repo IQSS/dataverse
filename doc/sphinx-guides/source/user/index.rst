@@ -15,5 +15,6 @@ Contents:
   find-use-data
   dataverse-management
   dataset-management
+  tabulardataingest/index
   data-exploration/index
   appendix

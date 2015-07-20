@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.IndexServiceBean;
+import org.apache.solr.common.SolrInputDocument;
+
 public class SearchUtil {
 
     /**
@@ -35,6 +38,18 @@ public class SearchUtil {
             }
         }
         return query;
+    }
+
+    public static SolrInputDocument createSolrDoc(DvObjectSolrDoc dvObjectSolrDoc) {
+        if (dvObjectSolrDoc == null) {
+            return null;
+        }
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField(SearchFields.ID, dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
+        solrInputDocument.addField(SearchFields.DEFINITION_POINT, dvObjectSolrDoc.getSolrId());
+        solrInputDocument.addField(SearchFields.DEFINITION_POINT_DVOBJECT_ID, dvObjectSolrDoc.getDvObjectId());
+        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions());
+        return solrInputDocument;
     }
 
 }

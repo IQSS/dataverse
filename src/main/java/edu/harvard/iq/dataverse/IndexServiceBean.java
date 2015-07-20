@@ -207,7 +207,7 @@ public class IndexServiceBean {
         }
 
         dvObjectService.updateContentIndexTime(dataverse);
-        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse.getId());
+        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
 
