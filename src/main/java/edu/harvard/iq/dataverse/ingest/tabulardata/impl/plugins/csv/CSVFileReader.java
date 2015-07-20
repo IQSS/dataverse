@@ -148,7 +148,7 @@ public class CSVFileReader extends TabularDataFileReader {
                 // TODO: 
                 // Add a sensible variable name validation algorithm.
                 // -- L.A. 4.0 alpha 1
-                throw new IOException ("Invalid variable names in the first line!");
+                throw new IOException ("Invalid variable names in the first line! - First line of a CSV file must contain a comma-separated list of the names of the variables.");
             }
             
             DataVariable dv = new DataVariable();
