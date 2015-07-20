@@ -135,6 +135,10 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public void setEditMode(EditMode editMode) {
         this.editMode = editMode;
+        
+        if (editMode == EditMode.CREATE) {
+            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("user.signup.tip"));
+        }
     }
 
     public String getInputPassword() {
