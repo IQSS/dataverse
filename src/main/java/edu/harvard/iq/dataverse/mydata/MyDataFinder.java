@@ -50,6 +50,8 @@ public class MyDataFinder {
     public String errorMessage = null;
     // --------------------
 
+    public Map<Long, Boolean> harvestedDataverseIds = new HashMap();
+
     // Populated in initial query.  DvObject ids -- regardless of Dtype,
     // are sorted into respective buckets in regard to permissions.
     // The same id may appear in multiple lists--and more than once
@@ -84,9 +86,19 @@ public class MyDataFinder {
         this.rolePermissionHelper = rolePermissionHelper;
         this.roleAssigneeService = roleAssigneeService;
         this.dvObjectServiceBean = dvObjectServiceBean;
+        this.loadHarvestedDataverseIds();
     }
 
-   public void initFields(){
+    private void loadHarvestedDataverseIds(){
+        
+        for (Long id : dvObjectServiceBean.getAllHarvestedDataverseIds()){
+            harvestedDataverseIds.put(id, true);
+        }
+        
+    }
+    
+    
+    public void initFields(){
         // ----------------------------
         // POPULATED IN STEP 1 (1st query)
         // ----------------------------
@@ -427,11 +439,24 @@ public class MyDataFinder {
             return false;
         }
     
-        // Iterate through assigned objects
-        //for (RoleAssignment ra : results) {
+        // Iterate through assigned objects, a single object may end up in 
+        // multiple "buckets"
         for (Object[] ra : results) {
             Long dvId = (Long)ra[0];
             Long roleId = (Long)ra[1];
+            
+            //----------------------------------
+            // Is this is a harvested Dataverse?
+            // If so, skip it.
+            //----------------------------------
+            if (this.harvestedDataverseIds.containsKey(dvId)){
+                continue;
+            }
+            
+            //----------------------------------
+            // Put dvId in 1 or more buckets, depending pn if role
+            // applies to a Dataverse, Dataset, and/or File
+            //----------------------------------
             if (this.rolePermissionHelper.hasDataversePermissions(roleId)){
                 this.idsWithDataversePermissions.put(dvId, true);
             }
@@ -466,13 +491,22 @@ public class MyDataFinder {
         String dtype;
         Long parentId;
         
-         // Iterate through assigned objects
-        //for (RoleAssignment ra : results) {
+        // -----------------------------------------------
+        // Iterate through assigned objects
+        // -----------------------------------------------
         for (Object[] ra : results) {
             dvIdAsInteger = (Integer)ra[0];     // ?? Why?
             dvId = new Long(dvIdAsInteger);
             dtype = (String)ra[1];
             parentId = (Long)ra[2];
+            
+            
+            // -----------------------------------------------
+            // If this object is harvested, then skip it...
+            // -----------------------------------------------
+            if ((this.harvestedDataverseIds.containsKey(dvId))||(this.harvestedDataverseIds.containsKey(parentId))){
+                continue;
+            }
             
             this.childToParentIds.put(dvId, parentId);
             
@@ -572,7 +606,7 @@ public class MyDataFinder {
     }
    
     private void msg(String s){
-        //System.out.println(s);
+        System.out.println(s);
     }
     
     private void msgt(String s){

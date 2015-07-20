@@ -148,4 +148,17 @@ public class DvObjectServiceBean implements java.io.Serializable {
         
     }
     
+    /**
+     * Used to exclude Harvested Data from the Mydata page
+     * 
+     * @return 
+     */
+    public List<Long> getAllHarvestedDataverseIds(){
+        
+        String qstr = "SELECT h.dataverse_id FROM harvestingdataverseconfig h;";
+
+        return em.createNativeQuery(qstr)
+                        .getResultList();
+        
+    }
 }
