@@ -194,7 +194,7 @@ public class MyDataFinder {
             this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
             return null;
         }
-        filterQueries.add(this.getSolrDvObjectFilterQuery());
+        filterQueries.add(dvObjectFQ);
                 
         // -----------------------------------------------------------------
         // For total counts, don't filter by publicationStatus or DvObjectType
@@ -270,24 +270,28 @@ public class MyDataFinder {
         //  If we have the parent of a distinctEntityId in distinctParentIds,
         //  then we query it via the parent
         //        
-        // SEK 07/15 getting rid of this - we will use all direct
-        // because child dataverses with direct assignments are being lost.
         List<Long> finalDirectEntityIds = new ArrayList<>();
         for (Long idToCheck : distinctEntityIds){
             if (this.childToParentIds.containsKey(idToCheck)){  // Do we have the parent in our map?
-                
-                // Is the parent also in our list of Ids to query?
-                // No, then let's check this id directly
+
+                // we are not checking the parent of dataverses, so add this explicitly
+                // Similar to SEK 7/015 - all direct dataverse ids are used because child dataverses with direct assignments are being lost.
                 //
-                if (!distinctParentIds.contains(this.childToParentIds.get(idToCheck))){
-                    // we are not checking the parent, so add this explicitly
+                if (this.directDataverseIds.contains(idToCheck)){
+                    // Add all dataverse ids explicitly
+                    finalDirectEntityIds.add(idToCheck);
+                    
+                } else if (!distinctParentIds.contains(this.childToParentIds.get(idToCheck))){
+                    // Is the parent also in our list of Ids to query?
+                    // No, then let's check this id directly
                     //
                     finalDirectEntityIds.add(idToCheck);
-                }
+                } 
             }
         }
         // Set the distinctEntityIds to the finalDirectEntityIds
-        distinctEntityIds = new HashSet<>(distinctEntityIds);
+        //distinctEntityIds = new HashSet<>(distinctEntityIds);
+        distinctEntityIds = new HashSet<>(finalDirectEntityIds);            
         
         msg("distinctEntityIds (2): " + distinctEntityIds.size());
 
@@ -518,11 +522,11 @@ public class MyDataFinder {
         msg("runStep3FilePermsAssignedAtDataverse results count: " + results.size());
         /*  SEK 07/09 Ticket 2329
         Removed failure for empty results - if there are none let it go
-       if (results.isEmpty()){
-            this.addErrorMessage("Sorry, no Dataset were found with those Ids");
-            return false;
+        */
+        if (results.isEmpty()){
+            return true;        // RMP, shouldn't throw an error if no results           
         }
-    */
+        
         Integer dvIdAsInteger;
         Long dvId;
         String dtype;

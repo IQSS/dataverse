@@ -295,6 +295,12 @@ public class SolrSearchResult {
                   .add("user_roles", this.getUserRolesAsJson());
                 ;
 
+        // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
+        //
+        if ((this.getDeaccessionReason() != null)&&(!this.getDeaccessionReason().isEmpty())){
+            myDataJson.add("is_deaccesioned", true);
+        }
+                
         if ((!this.isDraftState())&&(!this.isUnpublishedState())){
             myDataJson.add("is_published", true);
         }else{
