@@ -223,6 +223,7 @@ public class CSVFileReader extends TabularDataFileReader {
                 
                 int tokenStart = 0;
                 boolean quotedStringMode = false; 
+                boolean potentialDoubleDoubleQuote = false;
                 tokenCount = 0; 
                 
                 for (int i = 0; i < line.length(); i++) {
@@ -244,11 +245,26 @@ public class CSVFileReader extends TabularDataFileReader {
                         tokenCount++; 
                     } else if (quotedStringMode && c == '"') {
                         quotedStringMode = false; 
+                        //unless this is a double double quote in the middle of a quoted
+                        // string; apparently a standard notation for encoding double
+                        // quotes inside quoted strings (??)
+                        potentialDoubleDoubleQuote = true; 
+                    } else if (potentialDoubleDoubleQuote && c == '"') {
+                        // OK, that was a "double double" quote.
+                        // going back into the quoted mode:
+                        quotedStringMode = true; 
+                        potentialDoubleDoubleQuote = false; 
+                        // TODO: figure out what we do with such double double quote
+                        // sequences in the final tab file. Do we want to convert 
+                        // them back to a "single double" quote?
+                        // -- L.A. 4.0.2/4.1
                     }
                         
                 }
             }
                         
+            //dbglog.info("Number of CSV tokens in the line number " + lineCounter + " : "+tokenCount);
+            
             // final token count check: 
             
             if (tokenCount != variableCount) {
@@ -314,35 +330,35 @@ public class CSVFileReader extends TabularDataFileReader {
                             boolean isTime = false;
 
                             if (selectedDateTimeFormat[i] != null) {
-                                dbglog.info("will try selected format " + selectedDateTimeFormat[i].toPattern());
+                                dbglog.fine("will try selected format " + selectedDateTimeFormat[i].toPattern());
                                 ParsePosition pos = new ParsePosition(0);
                                 dateResult = selectedDateTimeFormat[i].parse(valueTokens[i], pos);
 
                                 if (dateResult == null) {
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": null result.");
+                                    dbglog.fine(selectedDateTimeFormat[i].toPattern() + ": null result.");
                                 } else if (pos.getIndex() != valueTokens[i].length()) {
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": didn't parse to the end - bad time zone?");
+                                    dbglog.fine(selectedDateTimeFormat[i].toPattern() + ": didn't parse to the end - bad time zone?");
                                 } else {
                                     // OK, successfully parsed a value!
                                     isTime = true;
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + " worked!");
+                                    dbglog.fine(selectedDateTimeFormat[i].toPattern() + " worked!");
                                 }
                             } else {
                                 for (SimpleDateFormat format : TIME_FORMATS) {
-                                    dbglog.info("will try format " + format.toPattern());
+                                    dbglog.fine("will try format " + format.toPattern());
                                     ParsePosition pos = new ParsePosition(0);
                                     dateResult = format.parse(valueTokens[i], pos);
                                     if (dateResult == null) {
-                                        dbglog.info(format.toPattern() + ": null result.");
+                                        dbglog.fine(format.toPattern() + ": null result.");
                                         continue;
                                     }
                                     if (pos.getIndex() != valueTokens[i].length()) {
-                                        dbglog.info(format.toPattern() + ": didn't parse to the end - bad time zone?");
+                                        dbglog.fine(format.toPattern() + ": didn't parse to the end - bad time zone?");
                                         continue;
                                     }
                                     // OK, successfully parsed a value!
                                     isTime = true;
-                                    dbglog.info(format.toPattern() + " worked!");
+                                    dbglog.fine(format.toPattern() + " worked!");
                                     selectedDateTimeFormat[i] = format;
                                     break;
                                 }
@@ -377,16 +393,16 @@ public class CSVFileReader extends TabularDataFileReader {
                                 // Strict parsing - it will throw an 
                                 // exception if it doesn't parse!
                                 format.setLenient(false);
-                                dbglog.info("will try format " + format.toPattern());
+                                dbglog.fine("will try format " + format.toPattern());
                                 try {
                                     dateResult = format.parse(valueTokens[i]);
-                                    dbglog.info("format " + format.toPattern() + " worked!");
+                                    dbglog.fine("format " + format.toPattern() + " worked!");
                                     isDate = true;
                                     selectedDateFormat[i] = format;
                                     break;
                                 } catch (ParseException ex) {
                                     //Do nothing                                      
-                                    dbglog.info("format " + format.toPattern() + " didn't work.");
+                                    dbglog.fine("format " + format.toPattern() + " didn't work.");
                                 }
                             }
                             if (!isDate) {
@@ -459,7 +475,8 @@ public class CSVFileReader extends TabularDataFileReader {
                 valueTokens = new String[variableCount];
                 
                 int tokenStart = 0;
-                boolean quotedStringMode = false; 
+                boolean quotedStringMode = false;
+                boolean potentialDoubleDoubleQuote = false;
                 tokenCount = 0; 
                 
                 for (int i = 0; i < line.length(); i++) {
@@ -481,6 +498,10 @@ public class CSVFileReader extends TabularDataFileReader {
                         tokenCount++; 
                     } else if (quotedStringMode && c == '"') {
                         quotedStringMode = false; 
+                        potentialDoubleDoubleQuote = true; 
+                    } else if (potentialDoubleDoubleQuote && c == '"') {
+                        quotedStringMode = true; 
+                        potentialDoubleDoubleQuote = false; 
                     }
                         
                 }
