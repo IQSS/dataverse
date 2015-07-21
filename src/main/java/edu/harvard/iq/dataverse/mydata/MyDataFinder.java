@@ -37,6 +37,8 @@ public class MyDataFinder {
     private String userIdentifier;
     MyDataFilterParams filterParams;
     
+    // !! RMP - Excluded by default; don't have cases yet to make this true
+    private boolean excludeHarvestedData = true;    
     //private String searchTerm = "*";
     
     // --------------------
@@ -97,6 +99,31 @@ public class MyDataFinder {
         
     }
     
+    public void setExcludeHarvestedData(boolean val){
+        
+        this.excludeHarvestedData = val;
+    }
+            
+    public boolean isHarvestedDataExcluded(){
+        return excludeHarvestedData;
+    }
+            
+    /**
+     * Check if a dvobject id is in the Harvested Id dict
+     * @param id
+     * @return 
+     */
+    private boolean isHarvesteDataverseId(Long id){
+        
+        if (id == null){
+            return false;
+        }
+    
+        if (this.harvestedDataverseIds.containsKey(id)){
+            return true;
+        }
+        return false;
+    }
     
     public void initFields(){
         // ----------------------------
@@ -449,7 +476,7 @@ public class MyDataFinder {
             // Is this is a harvested Dataverse?
             // If so, skip it.
             //----------------------------------
-            if (this.harvestedDataverseIds.containsKey(dvId)){
+            if ((this.isHarvestedDataExcluded())&&(this.isHarvesteDataverseId(dvId))){
                 continue;
             }
             
@@ -504,8 +531,10 @@ public class MyDataFinder {
             // -----------------------------------------------
             // If this object is harvested, then skip it...
             // -----------------------------------------------
-            if ((this.harvestedDataverseIds.containsKey(dvId))||(this.harvestedDataverseIds.containsKey(parentId))){
-                continue;
+            if (this.isHarvestedDataExcluded()){
+                if ((this.isHarvesteDataverseId(dvId))||(this.isHarvesteDataverseId(parentId))){
+                    continue;
+                }
             }
             
             this.childToParentIds.put(dvId, parentId);
