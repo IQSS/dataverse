@@ -79,9 +79,10 @@ public class UserNotificationServiceBean {
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
-        save(userNotification);
-        if (mailService.sendNotificationEmail(userNotification)){
+        if (mailService.sendNotificationEmail(userNotification)) {
             userNotification.setEmailed(true);
+            save(userNotification);
+        } else {
             save(userNotification);
         }
     }
