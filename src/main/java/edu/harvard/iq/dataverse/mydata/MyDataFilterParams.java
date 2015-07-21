@@ -39,10 +39,12 @@ public class MyDataFilterParams {
     
     public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
-                                                    IndexServiceBean.getDRAFT_STRING());
+                                                    IndexServiceBean.getDRAFT_STRING(),
+                                                    IndexServiceBean.getDEACCESSIONED_STRING());
     public static final List<String> allPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
-                                                    IndexServiceBean.getDRAFT_STRING());
+                                                    IndexServiceBean.getDRAFT_STRING(),
+                                                    IndexServiceBean.getDEACCESSIONED_STRING());
             
     public static final HashMap<String, String> sqlToSolrSearchMap ;
     static

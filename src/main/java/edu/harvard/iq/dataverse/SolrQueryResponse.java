@@ -68,7 +68,7 @@ public class SolrQueryResponse {
         if (this.publicationStatusCounts == null){
             return null;
         }
-        String[] requiredVars = { "unpublished_count", "published_count", "draft_count"};
+        String[] requiredVars = { "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
         for (String var : requiredVars){
             if (!publicationStatusCounts.containsKey(var)){
                 publicationStatusCounts.put(var, new Long(0));
