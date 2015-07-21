@@ -496,6 +496,7 @@ public class SearchServiceBean {
         boolean hidePublicationStatusFacet = true;
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
+        boolean deaccessionedAvailable = false;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
@@ -514,6 +515,8 @@ public class SearchServiceBean {
                             unpublishedAvailable = true;
                         } else if (facetLabel.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
                             draftsAvailable = true;
+                        } else if (facetLabel.getName().equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
+                            deaccessionedAvailable = true;
                         }
                     }
                 }
@@ -580,7 +583,7 @@ public class SearchServiceBean {
                     // the "type" facet is special, these are not
                     typeFacetCategories.add(facetCategory);
                 } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
-                    if (unpublishedAvailable || draftsAvailable) {
+                    if (unpublishedAvailable || draftsAvailable || deaccessionedAvailable) {
                         hidePublicationStatusFacet = false;
                     }
                     if (!hidePublicationStatusFacet) {
