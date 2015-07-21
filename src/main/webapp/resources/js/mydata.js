@@ -1,4 +1,4 @@
-var MYDATA_DEBUG_ON = false;
+var MYDATA_DEBUG_ON = true;
 var APPEND_CARDS_TO_BOTTOM = false;
 var SHOW_PAGINATION = false;
 
@@ -185,7 +185,7 @@ function regular_search(){
 // Reset the counts for Dataverses, Datasets, Files
 // --------------------------------
 var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];
-var PUB_TYPE_COUNT_VARS = ["published_count", "unpublished_count", "draft_count"];
+var PUB_TYPE_COUNT_VARS = ["published_count", "unpublished_count", "draft_count", "deaccessioned_count"];
 
 function reset_filter_counts(){
      $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
@@ -197,36 +197,72 @@ function reset_filter_counts(){
      
 }
 
-// --------------------------------
-// Update the counts for Dataverses, Datasets, Files
-// --------------------------------
-// Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}            
+/* ----------------------------------------------------
+ Update the counts for Dataverses, Datasets, Files
+ Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}         
+ ---------------------------------------------------- */
 function update_filter_counts(json_info){
-    
+   
+    /* ----------------------------------------------------
+      (1) Update dvobject counts        
+     ---------------------------------------------------- */
+    // Example: "total_dvobject_counts": {"files_count":10,"dataverses_count":25,"datasets_count":324}
+    // --------------------------------------------------
     var dcounts = json_info.data.dvobject_counts;
-    
-    // "total_dvobject_counts":{"files_count":13,"dataverses_count":25,"datasets_count":324},
-    //var total_dcounts = json_info.total_dvobject_counts;
-    
+        
+    // Iterate through dvobject count variables ["datasets_count", "dataverses_count", "files_count"];
+    //
     $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
-        //console.log('attr_name: ' + attr_name);
-  //      if ((attr_name in dcounts)&&(attr_name in total_dcounts)){
-    //    }else 
-        if(attr_name in dcounts){                    
-//            $('#id_' + attr_name).html('(' + dcounts[attr_name] + '/' +  total_dcounts[attr_name] +')');                    
-            $('#id_' + attr_name).html('(' + dcounts[attr_name]  +')');                    
+        
+        var cnt_span_obj = $('#id_' + attr_name);   // Select the span that holds the count
+        var cbox_obj = cnt_span_obj.parent().parent().prev('input');  // Select the associated checkbox
+        var is_cbox_checked = cbox_obj.prop('checked'); // Is checkbox checked?
+        
+        if(attr_name in dcounts){     // Is the count variable available in the JSON?
+            
+            var facet_count = dcounts[attr_name];    // YES, get the count
+
+            if (is_cbox_checked){       // Is the checkbox selected?                
+                cnt_span_obj.html('(' + facet_count  +')'); // Yes, show the count, even if 0                
+            }else{                      
+                // Checkbox not selected
+                if (facet_count > 0){   // But count is above 0, so show it
+                    cnt_span_obj.html('(' + facet_count  +')'); 
+                }else{                   
+                    cnt_span_obj.html('');   // Unchecked + no count,  blank it out
+                }
+            }               
         }else{
-            $('#id_' + attr_name).html('');
+            cnt_span_obj.html('');  // Attribute name not returned, blank it out
         }
     });
     
+    /* ----------------------------------------------------
+     (2) Update publication status counts        
+    ---------------------------------------------------- */    
     var pub_counts = json_info.data.pubstatus_counts;
     $.each( PUB_TYPE_COUNT_VARS, function( key, attr_name ) {
-        //console.log('attr_name: ' + attr_name);
-        if(attr_name in pub_counts){                    
-            $('#id_' + attr_name).html('(' + pub_counts[attr_name] + ')');                    
+                
+        var pub_cnt_span_obj = $('#id_' + attr_name);   // Select the span that holds the count        
+        var cbox_pub_obj = pub_cnt_span_obj.prev('input');  // Select the associated checkbox
+        var is_pub_cbox_checked = cbox_pub_obj.prop('checked');  // Is checkbox checked?
+        
+        if(attr_name in pub_counts){     // Is the count variable available in the JSON?               
+            
+            var pub_count = pub_counts[attr_name];    // YES, get the count
+
+            if (is_pub_cbox_checked){       // Is the checkbox selected?
+                pub_cnt_span_obj.html('(' + pub_count  +')'); // Yes, show the count, even if 0
+            }else{
+                // Checkbox not selected
+                if (pub_count > 0){
+                    pub_cnt_span_obj.html('(' + pub_count  +')'); // But count is above 0, so show it
+                }else{
+                    pub_cnt_span_obj.html('');  // Unchecked + no count,  blank it out
+                }
+            }                                    
         }else{
-            $('#id_' + attr_name).html('');
+            cnt_span_obj.html('');  // Attribute name not returned, blank it out
         }
     });
 }
@@ -386,6 +422,13 @@ function submit_my_data_search(){
             check_card_images();
             // bind_filter_remove_tags();
             $('#ajaxStatusPanel_start').hide();
+            
+            // --------------------------------
+            // (6) Update address bar
+            // --------------------------------
+            /*if (history.pushState){
+                window.history.pushState("object or string", "MyData", "/dataverseuser.xhtml?selectTab=dataRelatedToMe&" + formData);
+            }*/
         }
     });
 }
