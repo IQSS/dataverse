@@ -34,6 +34,12 @@ function bind_checkbox_labels_by_names(link_class_name, div_id_name){
     });
 }
 
+function select_all_mydata_checkboxes(){
+    $("#my_data_filter_column input[type=checkbox]").each(function(){
+        $(this).prop('checked', true);
+    });
+}
+
 function bold_checkbox_labels(){
     $("#my_data_filter_column input[type=checkbox]").each(function(){
         if ($(this).prop('checked')){
@@ -61,20 +67,23 @@ function init_mydata_page(){
         regular_search();
     });
         
-    // Find button next to search box
-    $('#btn_find_my_data').on('click',function(){ 
-        $("#selected_page").val('1');
-        regular_search();
-    });
-   
+    
     // DvObject checkbox labels have different action
     bind_checkbox_labels();
 
+    // Search button next to search box
+    $('#btn_find_my_data').on('click',function(){ 
+        $("#selected_page").val('1');
+        select_all_mydata_checkboxes();
+        regular_search();
+    });
+   
     // Capture pressing return in search box
     $('#mydata_search_term').keypress(function(e) {
       if (e.which == '13') {
           $("#selected_page").val('1');
-          regular_search();
+            select_all_mydata_checkboxes();
+            regular_search();
       }
     });
 
