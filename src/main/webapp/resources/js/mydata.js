@@ -220,7 +220,7 @@ function update_filter_counts(json_info){
         
         if(attr_name in dcounts){     // Is the count variable available in the JSON?
             
-            var facet_count = dcounts[attr_name];    // YES, get the count
+            var facet_count = commaSeparateNumber(dcounts[attr_name]);    // YES, get the count
 
             if (is_cbox_checked){       // Is the checkbox selected?                
                 cnt_span_obj.html('(' + facet_count  +')'); // Yes, show the count, even if 0                
@@ -249,7 +249,7 @@ function update_filter_counts(json_info){
         
         if(attr_name in pub_counts){     // Is the count variable available in the JSON?               
             
-            var pub_count = pub_counts[attr_name];    // YES, get the count
+            var pub_count = commaSeparateNumber(pub_counts[attr_name]);    // YES, get the count
 
             if (is_pub_cbox_checked){       // Is the checkbox selected?
                 pub_cnt_span_obj.html('(' + pub_count  +')'); // Yes, show the count, even if 0
@@ -315,7 +315,15 @@ function updatePagination(json_data){
         bindPages();
     }
 }            
-            
+
+// stackoverflow: http://stackoverflow.com/questions/3883342/add-commas-to-a-number-in-jquery
+function commaSeparateNumber(val){
+    while (/(\d+)(\d{3})/.test(val.toString())){
+      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+    }
+    return val;
+}
+  
 // If an image failed to load, then display the default icon 
 //
 function check_card_images(){
