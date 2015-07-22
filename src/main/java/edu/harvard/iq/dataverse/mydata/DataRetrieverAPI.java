@@ -377,8 +377,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
                         null, // subtree, default it to Dataverse for now
                         filterParams.getSearchTerm(),  //"*", //
                         filterQueries,//filterQueries,
-                        SearchFields.NAME_SORT, SortBy.ASCENDING,
-                        //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
+                        //SearchFields.NAME_SORT, SortBy.ASCENDING,
+                        SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                         solrCardStart, //paginationStart,
                         true, // dataRelatedToMe
                         SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
