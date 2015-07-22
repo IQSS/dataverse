@@ -73,7 +73,7 @@ function init_mydata_page(){
     bind_checkbox_labels();
 
     // Search button next to search box
-    $('#btn_find_my_data').on('click',function(){ 
+    $('#btn_find_my_data').on('click',function(e){ 
         e.preventDefault();
         $("#selected_page").val('1');
         select_all_mydata_checkboxes();
