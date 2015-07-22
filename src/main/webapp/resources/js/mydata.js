@@ -1,6 +1,6 @@
-var MYDATA_DEBUG_ON = false;
-var APPEND_CARDS_TO_BOTTOM = false;
-var SHOW_PAGINATION = false;
+var MYDATA_DEBUG_ON = false; // activate to show json, form info, etc
+var SHOW_PAGINATION = false; // pagination is available
+var APPEND_CARDS_TO_BOTTOM = false;  // always starts as false
 
 function bind_checkbox_labels(){
     // This should be generalized to one function....once css is set
@@ -12,8 +12,8 @@ function bind_checkbox_labels(){
     //         (c) submit form
     // ----------------------------------
     bind_checkbox_labels_by_names('mydata_dvobject_label', 'div_dvobject_types');
-    //bind_checkbox_labels_by_names('mydata_pubstate_label', 'div_published_states');
-    //bind_checkbox_labels_by_names('mydata_role_label', 'div_role_states');
+    bind_checkbox_labels_by_names('mydata_pubstate_label', 'div_published_states');
+    bind_checkbox_labels_by_names('mydata_role_label', 'div_role_states');
 
 }
 
@@ -56,6 +56,7 @@ function bold_checkbox_labels(){
 //-----------------------------------------
 function init_mydata_page(){
 
+   //console.log('init_mydata_page');
    $('#div-more-cards-link').hide();
    // var env = new nunjucks.Environment(new nunjucks.WebLoader('/mydata_templates'), true);
     //nunjucks.configure({ autoescape: true });
@@ -73,6 +74,7 @@ function init_mydata_page(){
 
     // Search button next to search box
     $('#btn_find_my_data').on('click',function(){ 
+        e.preventDefault();
         $("#selected_page").val('1');
         select_all_mydata_checkboxes();
         regular_search();
@@ -81,6 +83,7 @@ function init_mydata_page(){
     // Capture pressing return in search box
     $('#mydata_search_term').keypress(function(e) {
       if (e.which == '13') {
+          e.preventDefault();
           $("#selected_page").val('1');
             select_all_mydata_checkboxes();
             regular_search();
@@ -95,6 +98,7 @@ function init_mydata_page(){
     });
 
     // Normal form submit
+    /*   mydata_filter_form removed b/c of JSF conflict (ahh..)
     $( "#mydata_filter_form" ).submit(function( event ) {
       //alert( "Handler for .submit() called." );
       event.preventDefault();
@@ -102,7 +106,7 @@ function init_mydata_page(){
       regular_search();
 
     });
-
+    */
     // Run the initial search after user loads .xhtml page
     regular_search(); // run initial search
 
@@ -150,22 +154,25 @@ function bindPages(){
    $("#lnk_add_more_cards").click(function(evt){
        evt.preventDefault(); // stop link from using href
        var page_num = $(this).attr('rel');
-       console.log('use page: ' + page_num);
+       //console.log('use page: ' + page_num);
        $("#selected_page").val(page_num);  // update the selected page in the form
        search_add_more_cards();    // run search
    });
 }
 
-//-----------------------------------------
-// Bind filter tags to (a) uncheck checkbox 
-//  + (b) submit search
-//-----------------------------------------
+/*-----------------------------------------
+  These were "flags" at the top of the page
+  showing selected categories--they have been removed
+
+  Bind filter tags to (a) uncheck checkbox 
+   + (b) submit search
+ ----------------------------------------- */
 function bind_filter_remove_tags(){
-    console.log('bind_filter_remove_tags');
+    //console.log('bind_filter_remove_tags');
      $("a.lnk_cbox_remove").click(function(evt) {
        evt.preventDefault(); // stop link from using href
        var cbox_id = $(this).attr('rel');
-        console.log('cbox_id: ' + cbox_id);
+        //console.log('cbox_id: ' + cbox_id);
        
        $("#" + cbox_id).prop('checked', false);
        regular_search();    // run search
@@ -184,31 +191,35 @@ function search_add_more_cards(){
 // Fresh search from checkboxes, pagers, search box, etc
 //-----------------------------------------
 function regular_search(){
-    console.log('regular_search init');
+    //console.log('regular_search init');
     APPEND_CARDS_TO_BOTTOM = false;
     submit_my_data_search();
 }
 
 
 // --------------------------------
-// Reset the counts for Dataverses, Datasets, Files
+// Reset the counts for DvObject and Publication Status facets 
 // --------------------------------
-var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];
-var PUB_TYPE_COUNT_VARS = ["published_count", "unpublished_count", "draft_count", "deaccessioned_count"];
+var DTYPE_COUNT_VARS = ["datasets_count", "dataverses_count", "files_count"];   // matches variables in JSON
+var PUB_STATUS_COUNT_VARS = ["published_count", "unpublished_count", "draft_count", "deaccessioned_count"];   // matches variables in JSON
 
 function reset_filter_counts(){
      $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
           $('#id_' + attr_name).html('');
      });
-    $.each( PUB_TYPE_COUNT_VARS, function( key, attr_name ) {
+    $.each( PUB_STATUS_COUNT_VARS, function( key, attr_name ) {
           $('#id_' + attr_name).html('');
-     });
-     
+     });    
 }
 
 /* ----------------------------------------------------
- Update the counts for Dataverses, Datasets, Files
- Expected JSON:    {"datasets_count":568,"dataverses_count":26,"files_count":11}}         
+ Update the counts for DvObject and Publication Status facets 
+ 
+ Expected JSON for Dataverses, Datasets, Files:    
+    "dvobject_counts":{"datasets_count":568,"dataverses_count":26,"files_count":11}}         
+
+ Expected JSON for Publication Statuses:    
+    "pubstatus_counts":{"draft_count":439,"deaccessioned_count":2,"unpublished_count":441,"published_count":25}, 
  ---------------------------------------------------- */
 function update_filter_counts(json_info){
    
@@ -218,56 +229,45 @@ function update_filter_counts(json_info){
     // Example: "total_dvobject_counts": {"files_count":10,"dataverses_count":25,"datasets_count":324}
     // --------------------------------------------------
     var dcounts = json_info.data.dvobject_counts;
-        
-    // Iterate through dvobject count variables ["datasets_count", "dataverses_count", "files_count"];
-    //
-    $.each( DTYPE_COUNT_VARS, function( key, attr_name ) {
-        
-        var cnt_span_obj = $('#id_' + attr_name);   // Select the span that holds the count
-        var cbox_obj = cnt_span_obj.parent().parent().prev('input');  // Select the associated checkbox
-        var is_cbox_checked = cbox_obj.prop('checked'); // Is checkbox checked?
-        
-        if(attr_name in dcounts){     // Is the count variable available in the JSON?
-            
-            var facet_count = commaSeparateNumber(dcounts[attr_name]);    // YES, get the count
-
-            if (is_cbox_checked){       // Is the checkbox selected?                
-                cnt_span_obj.html('(' + facet_count  +')'); // Yes, show the count, even if 0                
-            }else{                      
-                // Checkbox not selected
-                if (facet_count > 0){   // But count is above 0, so show it
-                    cnt_span_obj.html('(' + facet_count  +')'); 
-                }else{                   
-                    cnt_span_obj.html('');   // Unchecked + no count,  blank it out
-                }
-            }               
-        }else{
-            cnt_span_obj.html('');  // Attribute name not returned, blank it out
-        }
-    });
+    really_update_filter_counts(DTYPE_COUNT_VARS, dcounts);
+    
     
     /* ----------------------------------------------------
      (2) Update publication status counts        
     ---------------------------------------------------- */    
     var pub_counts = json_info.data.pubstatus_counts;
-    $.each( PUB_TYPE_COUNT_VARS, function( key, attr_name ) {
-                
-        var pub_cnt_span_obj = $('#id_' + attr_name);   // Select the span that holds the count        
-        var cbox_pub_obj = pub_cnt_span_obj.prev('input');  // Select the associated checkbox
-        var is_pub_cbox_checked = cbox_pub_obj.prop('checked');  // Is checkbox checked?
-        
-        if(attr_name in pub_counts){     // Is the count variable available in the JSON?               
-            
-            var pub_count = commaSeparateNumber(pub_counts[attr_name]);    // YES, get the count
+    really_update_filter_counts(PUB_STATUS_COUNT_VARS, pub_counts);
+   
+}
 
-            if (is_pub_cbox_checked){       // Is the checkbox selected?
-                pub_cnt_span_obj.html('(' + pub_count  +')'); // Yes, show the count, even if 0
+/* ----------------------------------------------------
+  Example values:
+  
+  attr_name_list = ["datasets_count", "dataverses_count", "files_count"]; 
+  json_counts = {"datasets_count":568,"dataverses_count":26,"files_count":11}        
+ ---------------------------------------------------- */
+function really_update_filter_counts(attr_name_list, json_counts){
+    
+    // Iterate through the attributes
+    //
+    $.each( attr_name_list, function( key, attr_name ) {
+                
+        var cnt_span_obj = $('#id_' + attr_name);   // Select the span that holds the count        
+        var cbox_obj = cnt_span_obj.parent().parent().prev('input');  // Select the associated checkbox
+        var is_cbox_checked = cbox_obj.prop('checked');  // Is checkbox checked?
+        
+        if (attr_name in json_counts){     // Is the count variable available in the JSON?               
+            
+            var facet_count = commaSeparateNumber(json_counts[attr_name]);    // YES, get the count
+
+            if (is_cbox_checked){       // Is the checkbox selected?
+                cnt_span_obj.html('(' + facet_count  +')'); // Yes, show the count, even if 0
             }else{
                 // Checkbox not selected
-                if (pub_count > 0){
-                    pub_cnt_span_obj.html('(' + pub_count  +')'); // But count is above 0, so show it
+                if (facet_count > 0){
+                    cnt_span_obj.html('(' + facet_count  +')'); // But count is above 0, so show it
                 }else{
-                    pub_cnt_span_obj.html('');  // Unchecked + no count,  blank it out
+                    cnt_span_obj.html('');  // Unchecked + no count,  blank it out
                 }
             }                                    
         }else{
@@ -312,7 +312,7 @@ function updatePagination(json_data){
         // --------------------------------
         if (pagination_json.hasNextPageNumber === true){
             $('#lnk_add_more_cards').attr("rel", pagination_json.nextPageNumber);
-            console.log("update link to: " + pagination_json.nextPageNumber);
+            //console.log("update link to: " + pagination_json.nextPageNumber);
             $('#div-more-cards-link').show();
            
             var result_label = 'Results';
@@ -349,7 +349,7 @@ function check_card_images(){
 // Run the actual search!
 // --------------------------------
 function submit_my_data_search(){
-   console.log('submit_my_data_search');
+    //console.log('submit_my_data_search');
     // --------------------------------
     // Prelims: 
     // --------------------------------
@@ -360,7 +360,7 @@ function submit_my_data_search(){
         clearForNewSearchResults();
     }
     
-    // Style lables
+    // Style labels
     bold_checkbox_labels();
 
     // --------------------------------
@@ -379,7 +379,7 @@ function submit_my_data_search(){
     // --------------------------------
     // (2) submit the form
     // --------------------------------
-       console.log('formData: ' + formData);
+       //console.log('formData: ' + formData);
        
        $('#ajaxStatusPanel_start').show();
 
@@ -394,7 +394,7 @@ function submit_my_data_search(){
         // (2a) Does the result look good?
         // --------------------------------
         // No, show error messsage and get out of here
-               console.log('results: ' + data);
+        //console.log('results: ' + data);
 
         if (!data.success){
             setWarningAlert(data.error_message);
