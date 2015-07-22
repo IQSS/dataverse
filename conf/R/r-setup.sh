@@ -21,7 +21,9 @@ CRANREPO="http://cran.r-project.org"; export CRANREPO
 # Set this to your local R Library directory, if different:
 RLIBDIR=/usr/lib64/R/library; export RLIBDIR
 
-for RPACK in R2HTML Rserve VGAM AER dplyr quantreg geepack maxLik Amelia Rook jsonlite rjson devtools
+
+
+for RPACK in R2HTML Rserve VGAM AER dplyr quantreg geepack maxLik Amelia Rook jsonlite rjson devtools DescTools
   do
   LOG="RINSTALL.$RPACK.LOG"
   echo
