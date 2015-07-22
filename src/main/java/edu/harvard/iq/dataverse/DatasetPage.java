@@ -1024,7 +1024,11 @@ public class DatasetPage implements java.io.Serializable {
            //  > Go to the Login page
            //
            if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
-               return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+               if(!session.getUser().isAuthenticated()){
+                   return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+               } else {
+                   return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+               }               
            }
          
            if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()){
@@ -1056,7 +1060,11 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.getOwner() == null) {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                if(!session.getUser().isAuthenticated()){
+                   return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+               } else {
+                   return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+               }
             }
 
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();

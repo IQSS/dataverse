@@ -288,7 +288,13 @@ public class DataversePage implements java.io.Serializable {
                 return "/404.xhtml";
             }
             if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                System.out.print(" session.getUser().isAuthenticated() " + session.getUser().isAuthenticated());
+                if (!session.getUser().isAuthenticated()){
+                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                } else {
+                    return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+                }
+
             }
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
@@ -298,7 +304,11 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getOwner() == null) {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                if (!session.getUser().isAuthenticated()){
+                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                } else {
+                    return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+                }              
             }
 
             // set defaults - contact e-mail and affiliation from user
