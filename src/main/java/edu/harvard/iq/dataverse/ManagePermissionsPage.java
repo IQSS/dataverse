@@ -340,8 +340,9 @@ public class ManagePermissionsPage implements java.io.Serializable {
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
             // @todo maybe add some solr/lucene style searching, did-you-mean style?
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) && 
-                    (roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))) {
+            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
+                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
+                    && (roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))) {
                 filteredList.add(ra);
             }
         }
