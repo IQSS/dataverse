@@ -69,6 +69,7 @@ public class SearchIT {
 
         String xmlIn = getDatasetXml(homer.getUsername(), homer.getUsername(), homer.getUsername());
         Response createDataset1Response = createDataset(xmlIn, dataverseToCreateDataset1In, homer.getApiToken());
+//        System.out.println(createDataset1Response.prettyPrint());
         assertEquals(201, createDataset1Response.getStatusCode());
 
         dataset1 = getGlobalId(createDataset1Response);
@@ -81,13 +82,20 @@ public class SearchIT {
         assertEquals(null, idNedFoundBeforeBecomingAdmin);
 
         Response grantNedAdminOnRoot = grantRole(dataverseToCreateDataset1In, roleToAssign, ned.getUsername(), homer.getApiToken());
+//        System.out.println(grantNedAdminOnRoot.prettyPrint());
         assertEquals(200, grantNedAdminOnRoot.getStatusCode());
 
         Integer idNedFoundAfterBecomingAdmin = printDatasetId(dataset1, ned);
+//        Response contentDocResponse = querySolr("entityId:" + idHomerFound);
+//        System.out.println(contentDocResponse.prettyPrint());
+//        Response permDocResponse = querySolr("definitionPointDvObjectId:" + idHomerFound);
+//        System.out.println(idHomerFound + " was found by homer (user id " + homer.getId() + ")");
+//        System.out.println(idNedFoundAfterBecomingAdmin + " was found by ned (user id " + ned.getId() + ")");
         assertEquals(idHomerFound, idNedFoundAfterBecomingAdmin);
 
         nedAdminOnRootAssignment = getRoleAssignmentId(grantNedAdminOnRoot);
         Response revokeNedAdminOnRoot = revokeRole(dataverseToCreateDataset1In, nedAdminOnRootAssignment, homer.getApiToken());
+//        System.out.println(revokeNedAdminOnRoot.prettyPrint());
         assertEquals(200, revokeNedAdminOnRoot.getStatusCode());
 
         Integer idNedFoundAfterNoLongerAdmin = printDatasetId(dataset1, ned);
@@ -145,6 +153,7 @@ public class SearchIT {
          * "DELETE FROM roleassignment WHERE assigneeidentifier='@ned';"
          */
         Response revokeNedAdminOnRoot = revokeRole(dataverseToCreateDataset1In, nedAdminOnRootAssignment, homer.getApiToken());
+//        System.out.println(revokeNedAdminOnRoot.prettyPrint());
         System.out.println("cleanup - status code revoking admin on root from ned: " + revokeNedAdminOnRoot.getStatusCode());
         Response deleteDataset1Response = deleteDataset(dataset1, homer.getApiToken());
         assertEquals(204, deleteDataset1Response.getStatusCode());
@@ -197,9 +206,15 @@ public class SearchIT {
         return createDatasetResponse;
     }
 
+    private Response querySolr(String query) {
+        Response querySolrResponse = given().get("http://localhost:8983/solr/collection1/select?wt=json&indent=true&q=" + query);
+        return querySolrResponse;
+    }
+
     private static JsonObject createUser(String jsonStr) {
         JsonObjectBuilder createdUser = Json.createObjectBuilder();
         Response response = createUserViaApi(jsonStr, getPassword(jsonStr));
+//        System.out.println(response.prettyPrint());
         Assert.assertEquals(200, response.getStatusCode());
         JsonPath jsonPath = JsonPath.from(response.body().asString());
         createdUser.add(idKey, jsonPath.getInt("data.user." + idKey));
