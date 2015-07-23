@@ -72,7 +72,7 @@ public class DataFileCategory implements Serializable {
     /* 
      * DataFiles which belong to this category: 
      */
-    @ManyToMany (mappedBy="fileCategories", cascade = {CascadeType.REMOVE})
+    @ManyToMany (mappedBy="fileCategories")
     private Collection<FileMetadata> fileMetadatas = null; 
     
     public Collection<FileMetadata> getFileMetadatas() {
