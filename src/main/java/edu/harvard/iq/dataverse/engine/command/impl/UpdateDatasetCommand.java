@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -128,6 +129,12 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getUser()));
                 theDataset.getFiles().remove(fmd.getDataFile());
                 theDataset.getEditVersion().getFileMetadatas().remove(fmd);
+                // added this check to handle issue where you could not deleter a file that shared a category with a new file
+                // the relation ship does not seem to cascade, yet somehow it was trying to merge the filemetadata
+                // todo: clean this up some when we clean the create / update dataset methods
+                for (DataFileCategory cat : theDataset.getCategories()) {
+                    cat.getFileMetadatas().remove(fmd);
+                }
             } else {
                 FileMetadata mergedFmd = ctxt.em().merge(fmd);
                 ctxt.em().remove(mergedFmd);
@@ -135,7 +142,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 theDataset.getEditVersion().getFileMetadatas().remove(fmd);
             }      
         }        
-
+        
         String nonNullDefaultIfKeyNotFound = "";
         String doiProvider = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
 
