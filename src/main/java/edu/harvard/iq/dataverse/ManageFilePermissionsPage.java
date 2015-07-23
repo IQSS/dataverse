@@ -321,7 +321,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         List<RoleAssignee> returnList = new ArrayList();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) && (selectedRoleAssignees == null || !selectedRoleAssignees.contains(ra))) {
+            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
+                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
+                    && (selectedRoleAssignees == null || !selectedRoleAssignees.contains(ra))) {
                 returnList.add(ra);
             }
         }
