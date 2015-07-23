@@ -99,7 +99,7 @@ public class FileMetadata implements Serializable {
     /* 
      * File Categories to which this version of the DataFile belongs: 
      */
-    @ManyToMany (cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     private List<DataFileCategory> fileCategories;
     
