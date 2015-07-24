@@ -125,7 +125,7 @@ Dataverse URL                                       URL of the Dataverse from wh
 Once everything is installed and configured, the installer script will print out a confirmation message with the URL of the TwoRavens application. For example: 
 
 The application URL is 
-https://server.dataverse.edu:8181/dataexplore
+https://server.dataverse.edu:8181/dataexplore/gui.html
 
 Make sure this is the URL configured in the settings of your Dataverse application.
 
@@ -133,8 +133,7 @@ To configure the TwoRavens URL, issue the following settings API call:
 
 curl -X PUT -d "{TWORAVENS_URL}" http://localhost:8080/admin/settings/:TwoRavensUrl
 
-where "{TWORAVENS_URL}" is the URL reported by the installer script. 
-
+where "{TWORAVENS_URL}" is the URL reported by the installer script (as in the example above).
 
 Appendix
 ++++++++
