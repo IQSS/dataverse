@@ -1,6 +1,10 @@
 #!/bin/sh
 SERVER=http://localhost:8080
-DATAVERSE=togo
+if [ -z "$1" ]; then
+  DATAVERSE=togo
+else
+  DATAVERSE=$1
+fi
 USERID="@pdurbin"
 ROLE=admin
 
