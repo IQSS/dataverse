@@ -2670,9 +2670,15 @@ public class DatasetPage implements java.io.Serializable {
             // configuration service, it must mean that TwoRavens is sitting 
             // on some remote server. And that in turn means that we must use 
             // full URLs to pass data and metadata to it. 
+            // update: actually, no we don't want to use this "dataurl" notation.
+            // switching back to the dfId=:
+            // -- L.A. 4.1
+            /*
             String tabularDataURL = getTabularDataFileURL(fileid);
             String tabularMetaURL = getVariableMetadataURL(fileid);
             return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL + "&" + getApiTokenKey();
+            */
+            return TwoRavensUrl + "?dfId=" + fileid + "&" + getApiTokenKey();
         }
 
         // For a local TwoRavens setup it's enough to call it with just 
