@@ -368,15 +368,9 @@ public class SearchServiceBean {
              */
             List<String> states = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
             if (states != null) {
-                for (String state : states) {
-                    if (state.equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
-                        solrSearchResult.setUnpublishedState(true);
-                    } else if (state.equals(IndexServiceBean.getDRAFT_STRING())) {
-                        solrSearchResult.setDraftState(true);
-//                    } else if (state.equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
-//                        solrSearchResult.setDeaccessionedState(true);
-                    }
-                }
+                // set list of all statuses
+                // this method also sets booleans for individual statuses
+                solrSearchResult.setPublicationStatuses(states);               
             }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
