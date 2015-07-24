@@ -95,6 +95,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
     }
 
+
     public void setSelectedGroup(ExplicitGroup selectedGroup) {
         this.selectedGroup = selectedGroup;
     }
@@ -142,9 +143,32 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
     }
 
+    private List<RoleAssignee> selectedGroupRoleAssignees = new LinkedList<>();
+
+    public void setSelectedGroupRoleAssignees(List<RoleAssignee> newSelectedGroupRoleAssignees) {
+        this.selectedGroupRoleAssignees = newSelectedGroupRoleAssignees;
+    }
+
+    public List<RoleAssignee> getSelectedGroupRoleAssignees() {
+        return this.selectedGroupRoleAssignees;
+    }
+
+    private List<RoleAssignee> selectedGroupAddRoleAssignees;
+
+    public void setSelectedGroupAddRoleAssignees(List<RoleAssignee> ras) {
+        this.selectedGroupAddRoleAssignees = ras;
+    }
+
+    public List<RoleAssignee> getSelectedGroupAddRoleAssignees() {
+        return this.selectedGroupAddRoleAssignees;
+    }
+
     public void viewSelectedGroup(ExplicitGroup selectedGroup) {
         this.selectedGroup = selectedGroup;
-        // guestbookPage.setGuestbook(selectedGuestbook);
+
+        // initialize member list for autocomplete interface
+        setSelectedGroupAddRoleAssignees(new LinkedList<RoleAssignee>());
+        setSelectedGroupRoleAssignees(getExplicitGroupMembers(selectedGroup));
     }
 
     /**
@@ -192,13 +216,13 @@ public class ManageGroupsPage implements java.io.Serializable {
         String memberString = "";
         if (userCount == 1) {
             memberString = "1 user";
-        } else if (userCount > 1) {
+        } else if (userCount != 1) {
             memberString = Long.toString(userCount) + " users";
         }
 
         if (groupCount == 1) {
             memberString = memberString + ", 1 group";
-        } else if (groupCount > 1) {
+        } else if (groupCount != 1) {
             memberString = memberString + ", " + Long.toString(groupCount) + " groups";
         }
 
@@ -252,7 +276,15 @@ public class ManageGroupsPage implements java.io.Serializable {
             }
         }
         // Remove assignees already assigned to this group
-        filteredList.removeAll(this.getNewExplicitGroupRoleAssignees());
+        if (this.getNewExplicitGroupRoleAssignees() != null) {
+            filteredList.removeAll(this.getNewExplicitGroupRoleAssignees());
+        }
+        if (this.getSelectedGroupRoleAssignees() != null) {
+            filteredList.removeAll(this.getSelectedGroupRoleAssignees());
+        }
+        if (this.getSelectedGroupAddRoleAssignees() != null) {
+            filteredList.removeAll(this.getSelectedGroupAddRoleAssignees());
+        }
         return filteredList;
     }
 
@@ -276,7 +308,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         setNewExplicitGroupDescription("");
         setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
         FacesContext context = FacesContext.getCurrentInstance();
-
+        setSelectedGroupRoleAssignees(null);
     }
 
     public void createExplicitGroup(ActionEvent ae) {
@@ -323,6 +355,24 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     public void saveExplicitGroup(ActionEvent ae) {
         ExplicitGroup eg = selectedGroup;
+            System.out.println("1111111111");
+
+        if ( getSelectedGroupAddRoleAssignees() != null ) {
+            System.out.println("is this shit empty thos");
+
+            try {
+                for ( RoleAssignee ra : getSelectedGroupAddRoleAssignees() ) {
+                    System.out.println("some stuff yo that's been added");
+                    eg.add( ra );
+                }
+            } catch ( GroupException ge ) {
+                JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                                        "Group edit failed.",
+                                        ge.getMessage());
+                return;
+            }
+        }
+
         try {
             eg = engineService.submit( new UpdateExplicitGroupCommand(session.getUser(), eg));
             JsfHelper.addSuccessMessage("Succesfully saved group " + eg.getDisplayName());
