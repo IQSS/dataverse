@@ -46,10 +46,14 @@ yum install R R-devel
 c. rApache: 
 -----------
 
-rpm distribution from the HMDC systems group is recommended; 
-download and install the latest available rpm (1.2.6, as of writing this): 
+rpm distribution from the HMDC systems group is recommended (latest available version is 1.2.6, as of writing this). The rpm requires Apache libapreq2, that should be available via yum. 
 
-http://mirror.hmdc.harvard.edu/HMDC-Public/RedHat-6/rapache-1.2.6-rpm0.x86_64.rpm
+install rApache as follows:: 
+
+	yum install libapreq2
+	rpm -ivh http://mirror.hmdc.harvard.edu/HMDC-Public/RedHat-6/rapache-1.2.6-rpm0.x86_64.rpm
+
+
 
 d. Install libcurl-devel:
 -------------------------
