@@ -103,9 +103,11 @@ c. run the installer
 --------------------
 
 a scripted, interactive installer is provided at the top level of the TwoRavens 
-distribution (`https://github.com/IQSS/TwoRavens/blob/master/install.pl <https://github.com/IQSS/TwoRavens/blob/master/install.pl>`__). Run it as 
+distribution. Run it as::
 
-   ``./install.pl``
+   cd /var/www/html/dataexplore
+   chmod +x install.pl
+   ./install.pl
 
 The installer will ask you to provide the following:
 
