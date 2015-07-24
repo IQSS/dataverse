@@ -64,7 +64,7 @@
                             <p:column width="8%" sortBy="identifier" headerText="#{bundle['dataverse.manageGroups.tab.header.id']}">
                                 <h:outputText value="#{explicitGroup.getIdentifier()}" />
                             </p:column>
-                            <p:column width="8%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataverse.manageGroups.tab.header.membership']}">
+                            <p:column width="8%" class="text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.membership']}">
                                 <h:outputText value="#{manageGroupsPage.getMembershipString(explicitGroup)}" />
                             </p:column>
                             <p:column width="8%" class="col-manage-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
