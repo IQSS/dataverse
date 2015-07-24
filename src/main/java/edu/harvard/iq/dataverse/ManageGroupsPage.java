@@ -251,6 +251,8 @@ public class ManageGroupsPage implements java.io.Serializable {
                 filteredList.add(ra);
             }
         }
+        // Remove assignees already assigned to this group
+        filteredList.removeAll(this.getNewExplicitGroupRoleAssignees());
         return filteredList;
     }
 
