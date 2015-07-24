@@ -181,6 +181,30 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
     }
 
+    public String getMembershipString(ExplicitGroup eg) {
+        long userCount = getGroupAuthenticatedUserCount(eg);
+        long groupCount = getGroupGroupCount(eg);
+
+        if (userCount == 0 && groupCount == 0) {
+            return "No members";
+        }
+        
+        String memberString = "";
+        if (userCount == 1) {
+            memberString = "1 user";
+        } else if (userCount > 1) {
+            memberString = Long.toString(userCount) + " users";
+        }
+
+        if (groupCount == 1) {
+            memberString = memberString + ", 1 group";
+        } else if (groupCount > 1) {
+            memberString = memberString + ", " + Long.toString(groupCount) + " groups";
+        }
+
+        return memberString;
+    }
+
     /**
      * Returns the number of authenticated users in an {@code ExplicitGroup}.
      * Does not traverse subgroups.

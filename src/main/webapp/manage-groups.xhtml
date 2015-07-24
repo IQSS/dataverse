@@ -58,14 +58,14 @@
 
                         <p:dataTable id="allGroups" var="explicitGroup" value="#{manageGroupsPage.explicitGroups}"
                                      rendered="#{!empty manageGroupsPage.explicitGroups}">
-                            <p:column width="31%" sortBy="name" headerText="#{bundle['dataverse.manageGroups.tab.header.name']}">
+                            <p:column width="31%" sortBy="displayName" headerText="#{bundle['dataverse.manageGroups.tab.header.name']}">
                                 <h:outputText value="#{explicitGroup.displayName}" />
                             </p:column>
-                            <p:column width="8%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataverse.manageGroups.tab.header.userCount']}">
-                                <h:outputText value="#{manageGroupsPage.getGroupAuthenticatedUserCount(explicitGroup)}" />
+                            <p:column width="8%" sortBy="identifier" headerText="#{bundle['dataverse.manageGroups.tab.header.id']}">
+                                <h:outputText value="#{explicitGroup.getIdentifier()}" />
                             </p:column>
-                            <p:column width="8%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataverse.manageGroups.tab.header.groupCount']}">
-                                <h:outputText value="#{manageGroupsPage.getGroupGroupCount(explicitGroup)}" />
+                            <p:column width="8%" class="text-center" sortBy="usageCount" headerText="#{bundle['dataverse.manageGroups.tab.header.membership']}">
+                                <h:outputText value="#{manageGroupsPage.getMembershipString(explicitGroup)}" />
                             </p:column>
                             <p:column width="8%" class="col-manage-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
                                 <div class="button-block">
