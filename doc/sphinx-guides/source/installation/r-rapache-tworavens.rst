@@ -133,7 +133,7 @@ Make sure this is the URL configured in the settings of your Dataverse applicati
 
 To configure the TwoRavens URL, issue the following settings API call: 
 
-curl -X PUT -d "{TWORAVENS_URL}" http://localhost:8080/admin/settings/:TwoRavensUrl
+curl -X PUT -d "{TWORAVENS_URL}" http://localhost:8080/api/admin/settings/:TwoRavensUrl
 
 where "{TWORAVENS_URL}" is the URL reported by the installer script (as in the example above).
 
