@@ -95,11 +95,6 @@
                                         </div>
                                     </p:fragment>
                                     <div class="button-block pull-right">
-                                        <p:commandLink type="button" id="createGroup" styleClass="btn btn-default"
-                                                       actionListener="#{managePermissionsPage.initExplicitGroupDialog}"
-                                                       update="explicitGroupNewDialog" oncomplete="explicitGroupForm.show();handleResizeDialog('explicitGroupNewDialog');bind_bsui_components();">
-                                            <span class="glyphicon glyphicon-plus-sign"/> #{bundle['dataverse.permissions.usersOrGroups.createGroupBtn']}
-                                        </p:commandLink>
                                         <p:commandLink type="button" id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
@@ -206,8 +201,6 @@
                     <ui:include src="roles-assign.xhtml"/>
                     <!-- Roles Edit Popup -->
                     <ui:include src="roles-edit.xhtml"/>
-                    <!-- Explicit Group Edit Popup -->
-                    <ui:include src="explicitGroup-new-dialog.xhtml"/>
                     
                     <p:dialog header="#{bundle['dataverse.permissions.usersOrGroups.removeBtn']}" widgetVar="confirmation" modal="true">
                         <p class="help-block">
