@@ -92,12 +92,7 @@ b. unzip
 --------
 
 and **rename the resulting directory** ``dataexplore``.
-Place it in the web root directory of your apache server; so that
-it is visible from the outside at 
-
-``https://<rapache server>:<rapache port>/dataexplore``
-
-We'll assume ``/var/www/html/dataexplore`` in the examples below. 
+Place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` in the examples below. 
 
 c. run the installer
 --------------------
@@ -111,31 +106,42 @@ distribution. Run it as::
 
 The installer will ask you to provide the following:
 
-===================  =============================  ===========  
-Setting              default                        Comment
-===================  =============================  ===========  
-TwoRavens directory  ``/var/www/html/dataexplore``  File directory where TwoRavens is installed.
-Apache config dir.   ``/etc/httpd``                 rApache config file for TwoRavens will be placed under ``conf.d/`` there.
+===================  ================================    ===========  
+Setting              default                             Comment
+===================  ================================    ===========  
+TwoRavens directory  ``/var/www/html/dataexplore``       File directory where TwoRavens is installed.
+Apache config dir.   ``/etc/httpd``                      rApache config file for TwoRavens will be placed under ``conf.d/`` there.
 Apache web dir.      ``/var/www/html``
-Apache host address  local hostname             
-Apache host port     ``443``
-Apache web protocol  ``https``                      http or https (https recommended)
-Dataverse URL                                       URL of the Dataverse from which TwoRavens will be receiving metadata and data files. For example, ``https://thedata.harvard.edu``.
-===================  =============================  =========== 
+Apache host address  local hostname                      rApache host
+Apache host port     ``80``                              rApache port (**see the next section** for the discussion on ports!)
+Apache web protocol  ``http``                            http or https for rApache (https recommended)
+Dataverse URL        ``http://{local hostname}:8080``    URL of the Dataverse from which TwoRavens will be receiving metadata and data files.
+===================  ================================    =========== 
 
 
 Once everything is installed and configured, the installer script will print out a confirmation message with the URL of the TwoRavens application. For example: 
 
 The application URL is 
-https://server.dataverse.edu:8181/dataexplore/gui.html
+https://server.dataverse.edu/dataexplore/gui.html
 
-Make sure this is the URL configured in the settings of your Dataverse application.
+This URL **must** be configured in the settings of your Dataverse application!
+This can be done by issuing the following settings API call: 
 
-To configure the TwoRavens URL, issue the following settings API call: 
-
-curl -X PUT -d "{TWORAVENS_URL}" http://localhost:8080/api/admin/settings/:TwoRavensUrl
+``curl -X PUT -d {TWORAVENS_URL} http://localhost:8080/api/admin/settings/:TwoRavensUrl``
 
 where "{TWORAVENS_URL}" is the URL reported by the installer script (as in the example above).
+
+d. Ports configuration
+-----------------------
+
+By default, Glassfish will install itself on ports 8080 and 8181 (for http and https, respectively), and Apache - on port 80 (the default port for http). Under this configuration, your Dataverse will be accessible at http://{your host}:8080 and https://{your host}:8181; and rApache - at http://{your host}/. The TwoRavens installer, above, will default to these values (and assume you are running both the Dataverse and TwoRavens/rApache on the same host). 
+
+This configuration may be the easiest to set up if you are simply trying out/testing the Dataverse and TwoRavens. Accept all the defaults, and you should have a working installation in no time. However, if you are planning to use this installation to actually serve data to real users, you'll probably want to run Glassfish on ports 80 and 443. This way, there will be no non-standard ports in the Dataverse url visible to the users. Then you'll need to configure the Apache to run on some other port - for example, 8080, instead of 80. This port will only appear in the URL for the TwoRavens app. If you want to use this configuration - or any other that is not the default one described above! - it is your job to reconfigure Glassfish and Apache to run on the desired ports **before** you run the TwoRavens installer. 
+
+Furthermore, while the default setup assumes http as the default protocol for both the Dataverse and TwoRavens, https is strongly recommended for a real production system. Again, this will be your responsibility, to configure https in both Glassfish and Apache. Glassfih comes pre-configured to run https on port 8181, with a *self-signed certificiate*. For a production system, you will most certainly will want to obtain a properly signed certificate and configure Glassfish to use it. Apache does not use https out of the box at all. Again, it is the responsibility of the installing user, to configure Apache to run https, and, providing you are planning to run rApache on the same host as the Dataverse, use the same SSL certificate as your Glassfish instance. Again, it will need to be done before you run the installer script above. All of this may involve some non-trivial steps and will most likely require help from your local network administrator - unless you happen to be your local sysadmin. Unfortunately, we cannot provide step-by-step instructions for these tasks. As the actual steps required will likely depend on the specifics of how your institution obtains signed SSL certificates, the format in which you receive these certificates, etc. **Good luck!**
+
+Finally... If you would like to have your Dataverse support secure Shibboleth authentication, this would require a server configuration more complex still. That would involve having your Glassfish instance "hidden" behind Apache; with the latter accepting and proxying the incoming connections to Glassfish, running on a high local port unaccessible from the outside. This would involve some changes in the TwoRavens configuration as well. All of this will eventually be described in the Shibboleth configuration guide. 
+
 
 Appendix
 ++++++++

@@ -1090,7 +1090,7 @@ public class IngestServiceBean {
                 
                 long ingestSizeLimit = -1; 
                 try {
-                    systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
+                    ingestSizeLimit = systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
                 } catch (IOException ioex) {
                     logger.warning("IO Exception trying to retrieve the ingestable format identifier from the plugin for type "+dataFile.getContentType()+" (non-fatal);");
                 }

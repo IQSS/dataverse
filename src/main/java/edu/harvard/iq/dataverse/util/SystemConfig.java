@@ -449,7 +449,7 @@ public class SystemConfig {
         }
         
         String limitEntry = settingsService.get(SettingsServiceBean.Key.TabularIngestSizeLimit.toString() + ":" + formatName); 
-        
+                
         if (limitEntry != null) {
             try {
                 Long sizeOption = new Long(limitEntry);
