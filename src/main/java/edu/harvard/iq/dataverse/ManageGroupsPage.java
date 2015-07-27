@@ -333,6 +333,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         try {
             logger.info( "Attempting to create group " + eg.getGroupAliasInOwner() ); // TODO MBS remove
             eg = engineService.submit( new CreateExplicitGroupCommand(session.getUser(), this.dataverse, eg));
+            explicitGroups.add(eg);
             JsfHelper.addSuccessMessage("Succesfully created group " + eg.getDisplayName() + ". Refresh to update your page.");
 
         } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
