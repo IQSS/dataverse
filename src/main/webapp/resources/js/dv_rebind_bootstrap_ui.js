@@ -15,6 +15,9 @@ function bind_bsui_components(){
     $('div[id^="panelCollapse"]').on('hidden.bs.collapse', function () {
       $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
+    
+    // Hide open tooltips
+    $('div.tooltip').hide();
 
     // Tooltip + popover functionality
     bind_tooltip_popover();
