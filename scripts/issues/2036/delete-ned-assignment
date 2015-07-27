@@ -1,0 +1,7 @@
+#!/bin/sh
+~/.homebrew/bin/psql -c "
+select * from roleassignment where assigneeidentifier = '@ned'
+" dataverse_db
+~/.homebrew/bin/psql -c "
+delete from roleassignment where assigneeidentifier = '@ned'
+" dataverse_db

@@ -551,6 +551,7 @@ public class Index extends AbstractApiBean {
             for (String perm : solrDoc.getPermissions()) {
                 perms.add(perm);
             }
+            dataDoc.add(SearchFields.DISCOVERABLE_BY, perms);
             permissionsData.add(dataDoc);
         }
         data.add("perms", permissionsData);
