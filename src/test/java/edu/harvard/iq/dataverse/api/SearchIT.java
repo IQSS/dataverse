@@ -9,14 +9,12 @@ import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -97,8 +95,11 @@ public class SearchIT {
         dataset1 = getGlobalId(createDataset1Response);
 //        String zipFileName = "1000files.zip";
         String zipFileName = "trees.zip";
-        Process uploadProcess = uploadZipFile(dataset1, zipFileName, homer.getApiToken());
-//        printCommandOutput(uploadProcess);
+        try {
+            Response uploadZipFileResponse = uploadZipFile(dataset1, zipFileName, homer.getApiToken());
+        } catch (FileNotFoundException ex) {
+            System.out.println("Problem uploading " + zipFileName + ": " + ex.getMessage());
+        }
 
         Integer idHomerFound = printDatasetId(dataset1, homer);
         assertEquals(true, idHomerFound != null);
@@ -160,11 +161,14 @@ public class SearchIT {
 //        String zipFileName = "1000files.zip";
 
         timer = Stopwatch.createStarted();
-        Process uploadProcess = uploadZipFile(dataset2, zipFileName, homer.getApiToken());
+        Response uploadZipFileResponse;
+        try {
+            uploadZipFileResponse = uploadZipFile(dataset2, zipFileName, homer.getApiToken());
+        } catch (FileNotFoundException ex) {
+            System.out.println("Problem uploading " + zipFileName + ": " + ex.getMessage());
+        }
         System.out.println("Method took: " + timer.stop());
-//        printCommandOutput(uploadProcess);
 
-//
         Integer idHomerFound = printDatasetId(dataset2, homer);
         List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset2, idHomerFound, homer.getApiToken());
         System.out.println("file ids found: " + idsOfFilesUploaded);
@@ -473,40 +477,15 @@ public class SearchIT {
                 );
     }
 
-    private Process uploadZipFile(String globalId, String zipfilename, String apiToken) {
-        System.out.println("uploading zip...");
-        Process p = null;
-        try {
-            p = Runtime.getRuntime().exec(new String[]{"bash", "-c", "curl -s --insecure --data-binary @scripts/search/data/binary/" + zipfilename + " -H \"Content-Disposition: filename=trees.zip\" -H \"Content-Type: application/zip\" -H \"Packaging: http://purl.org/net/sword/package/SimpleZip\" -u " + apiToken + ": https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/" + globalId});
-        } catch (IOException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return p;
-    }
-
-    private void printCommandOutput(Process p) {
-        boolean actuallyPrint = true;
-        try {
-            p.waitFor();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        if (actuallyPrint) {
-            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            try {
-                while ((line = input.readLine()) != null) {
-                    System.out.println(line);
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            try {
-                input.close();
-            } catch (IOException ex) {
-                Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+    private Response uploadZipFile(String persistentId, String zipFileName, String apiToken) throws FileNotFoundException {
+        String pathToFileName = "scripts/search/data/binary/" + zipFileName;
+        Response swordStatementResponse = given()
+                .multiPart(new File(pathToFileName))
+                .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
+                .header("Content-Disposition", "filename=" + zipFileName)
+                .auth().basic(apiToken, EMPTY_STRING)
+                .post("/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/" + persistentId);
+        return swordStatementResponse;
     }
 
     private List<Integer> getIdsOfFilesUploaded(String persistentId, Integer datasetId, String apiToken) {
