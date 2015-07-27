@@ -79,7 +79,7 @@
             <div class="button-block">
                 <p:commandLink type="button" styleClass="btn btn-default" 
                                value="#{bundle['dataverse.permissions.explicitGroupEditDialog.createGroup']}"
-                               update="explicitGroupNewDialogContent @([id$=Messages])"
+                               update="explicitGroupNewDialogContent allGroups :messagePanel"
                                actionListener="#{manageGroupsPage.createExplicitGroup}"
                                oncomplete="if (args &amp;&amp; !args.validationFailed) explicitGroupForm.hide();">
                     <f:param name="DO_GROUP_VALIDATION" value="true"/>
