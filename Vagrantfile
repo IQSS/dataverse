@@ -7,19 +7,9 @@
 # $ vagrant up         # to create and run the machine
 # $ vagrant provision  # to install new packages or configuration with puppet
 #
-# Puppet is included in the client distribution. That also means you can use hieradata to override the dataverse module
-# default settings. A working example is /conf/puppet/hieradata/my_environment.json whose settings are identical to the
-# defaults. For each environment you can add a new hieradata document. E.g.
-# export ENVIRONMENT=my_environment
-#
-#
 #
 # Environment variables
 # ---------------------
-#
-# ENVIRONMENT
-# $ export ENVIRONMENT=development:default)|*
-# You can set any environment, but only 'development' has hieradata. Change the value to try out alternative settings.
 #
 # OPERATING_SYSTEM
 # $ export OPERATING_SYSTEM=centos-6:default|ubuntu-12|ubuntu-14
@@ -28,8 +18,23 @@
 # 'ubuntu-14' will install Ubuntu 14.04 lts (trusty)
 #
 #
-# Post installation setup
-# -----------------------
+# PROVISIONER
+# $ export PROVISIONER=dataverse:default:fallback|puppet
+# 'puppet' will let the client puppet distribution do the installation. 'dataverse' or an empty or any other value will
+# use the available setup scripts that are part of the dataverse code do the installation. With puppet you can
+# use hieradata to override the Puppet Dataverse module default settings. A working example is
+# /conf/puppet/hieradata/my_environment.json whose
+# settings are identical to the defaults. For each environment you can add a new hieradata document. E.g.
+# export ENVIRONMENT=my_environment
+#
+#
+# # ENVIRONMENT
+# $ export ENVIRONMENT=development:default)|*
+# You can set any environment, but only 'my_environment' has hieradata in /conf/puppet. Change the value to try out alternative settings.
+#
+#
+# Post installation setup when provisioning with puppet
+# -----------------------------------------------------
 # You need to run the final database and api scripts to populate your dataverse instance:
 # $ sudo -u dvnApp psql dvndb -f /opt/dataverse/scripts/database/reference_data.sql
 # $ /opt/dataverse/scripts/api/setup-all.sh
@@ -76,7 +81,7 @@
 # $ vagrant provision
 #
 #
-# 5. On Centos the Error: Execution of '/usr/bin/yum -d 0 -e 0 -y install ...' returned 1: Error: Nothing to do
+# 5. Using puppet provisioning: on Centos the Error: Execution of '/usr/bin/yum -d 0 -e 0 -y install ...' returned 1: Error: Nothing to do
 # yum reports an error when the package is in fact installed. Should this happen then repeat the
 # provisioning once:
 # $ vagrant provision
@@ -87,7 +92,10 @@ VAGRANTFILE_API_VERSION = '2'
 HOSTNAME = 'standalone'
 DEFAULT_ENVIRONMENT = 'development'
 DEFAULT_OPERATING_SYSTEM = 'centos-6'
+DEFAULT_PROVISIONER='dataverse'
 
+provisioner = if ENV['PROVISIONER'].nil? or ENV['PROVISIONER'] == 'default' then DEFAULT_PROVISIONER else ENV['PROVISIONER'] end
+puts "Provisioning by #{provisioner}"
 
 environment = if ENV['ENVIRONMENT'].nil? or ENV['ENVIRONMENT'] == 'default' then DEFAULT_ENVIRONMENT else ENV['ENVIRONMENT'] end
 puts "Target environment #{environment}"
@@ -112,6 +120,13 @@ else
 end
 puts "Running on box #{box}"
 
+    mailserver = "localhost"
+    if ENV['MAIL_SERVER'].nil?
+      puts "MAIL_SERVER environment variable not specified. Using #{mailserver} by default.\nTo specify it in bash: export MAIL_SERVER=localhost"
+    else
+      mailserver = ENV['MAIL_SERVER']
+      puts "MAIL_SERVER environment variable found, using #{mailserver}"
+    end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = HOSTNAME
@@ -130,7 +145,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.network "private_network", type: "dhcp"
     config.vm.network "forwarded_port", guest: 80, host: 8888
     config.vm.network "forwarded_port", guest: 443, host: 9999
-    config.vm.network "forwarded_port", guest: 8983, host: 8983
+    config.vm.network "forwarded_port", guest: 8983, host: 8993
     config.vm.network "forwarded_port", guest: 8080, host: 8088
     config.vm.network "forwarded_port", guest: 8181, host: 8188
 
@@ -144,21 +159,24 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
 
-  # Enable these shell lines if you want to setup dataverse with it's own setup scripts.
-  #config.vm.provision "shell", path: "scripts/vagrant/setup.sh"
-  #config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
-  #config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: mailserver
-
-  # Disable this shell line and the provision block if you do not want to provision with puppet.
-  config.vm.provision 'shell', path: 'scripts/puppet/setup.sh', args: [operating_system, environment]
-  # Vagrant/Puppet docs:
-  #   http://docs.vagrantup.com/v2/provisioning/puppet_apply.html
-  config.vm.provision :puppet do |puppet|
-    puppet.hiera_config_path = 'scripts/puppet/hiera.yaml'
-    puppet.manifest_file = 'default.pp'
-    puppet.manifests_path = 'scripts/puppet/manifests'
-    puppet.options = "--verbose --debug --environment #{environment} --reports none"
+  if provisioner == 'puppet'
+    config.vm.provision 'shell', path: 'scripts/puppet/setup.sh', args: [operating_system, environment]
+    # Vagrant/Puppet docs:
+    #   http://docs.vagrantup.com/v2/provisioning/puppet_apply.html
+    config.vm.provision :puppet do |puppet|
+      puppet.hiera_config_path = 'scripts/puppet/hiera.yaml'
+      puppet.manifest_file = 'default.pp'
+      puppet.manifests_path = 'scripts/puppet/manifests'
+      puppet.options = "--verbose --debug --environment #{environment} --reports none"
+    end
+  else
+    config.vm.provision "shell", path: "scripts/vagrant/setup.sh"
+    config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
+    config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: mailserver
+    # FIXME: get tests working and re-enable them!
+    #config.vm.provision "shell", path: "scripts/vagrant/test.sh"
   end
+
 
   config.vm.define "solr", autostart: false do |solr|
     config.vm.hostname = "solr"
@@ -173,6 +191,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     test.vm.box = box
     config.vm.synced_folder ".", "/dataverse"
     config.vm.network "private_network", type: "dhcp"
-end
+  end
 
 end
