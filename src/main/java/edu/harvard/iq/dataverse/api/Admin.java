@@ -188,7 +188,17 @@ public class Admin extends AbstractApiBean {
             + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : ""));
     }
-    
+
+    @GET
+    @Path("authenticatedUsers/{identifier}/")
+    public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
+        if (authenticatedUser != null) {
+            return okResponse(jsonForAuthUser(authenticatedUser));
+        }
+        return errorResponse(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+
     @DELETE
     @Path("authenticatedUsers/{identifier}/")
     public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
