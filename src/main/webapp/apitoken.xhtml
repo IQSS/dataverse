@@ -34,8 +34,7 @@
                             </div>
                             <div>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
-                                    #{bundle['apitoken.generateBtn']}
-                                </button>
+                                    #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
                             </div>
                         </p:tab>
                     </p:tabView>

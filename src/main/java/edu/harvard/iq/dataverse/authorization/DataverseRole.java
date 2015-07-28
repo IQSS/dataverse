@@ -188,4 +188,52 @@ public class DataverseRole implements Serializable  {
 		}
 		return true;
 	}
+        
+        /**
+         * Given a DvObject object, see if this role contains a Permission 
+         * applicable to that object
+         * 
+         * @param dvObject
+         * @return 
+         */
+        public boolean doesDvObjectHavePermissionForObject(DvObject dvObject){
+            
+            if (dvObject == null){
+                return false;
+            }
+            
+            return this.doesDvObjectClassHavePermissionForObject(dvObject.getClass());
+            
+        } // doesDvObjectHavePermissionForObject   
+        
+        
+         /**
+         * Given a DvObject object class, see if this role contains a Permission 
+         * applicable to that object
+         *          
+         * Initial user is for MyData page and displaying role tags
+         * 
+         * @param dvObjectClass
+         * @return 
+         */
+        public boolean doesDvObjectClassHavePermissionForObject(Class<? extends DvObject> dvObjectClass){
+            
+            if (dvObjectClass == null){
+                return false;
+            }
+            
+            // Iterate through permissions.  If one applies to this class, return true
+            //
+            for (Permission perm : this.permissions()) {
+               if (perm.appliesTo(dvObjectClass)){
+                   return true;
+               }
+            }
+            
+            return false;
+            
+        } // doesDvObjectClassHavePermissionForObject   
+        
+        
+        
 }

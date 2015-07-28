@@ -28,6 +28,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -39,7 +40,8 @@ import javax.validation.ValidatorFactory;
  * @author skraffmiller
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataset_id")} )
+@Table(indexes = {@Index(columnList="dataset_id")},
+        uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
 public class DatasetVersion implements Serializable {
 
     /**

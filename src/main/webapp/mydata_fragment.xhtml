@@ -1,0 +1,121 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+
+    <div class="row">
+        <div class="col-xs-12">
+            <p class="help-block">
+                <span class="glyphicon glyphicon-info-sign"></span> Here are all the dataverses, datasets, and files you have access to. You can filter through them by publication status and roles.
+            </p>
+        </div>
+    </div>
+    
+    <div class="row" id="my_data_filter_column2">
+        <div class="col-xs-7"  style="padding:10px 30px;">
+            <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="Search my data..." />
+            
+            &#160; <a id="btn_find_my_data" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>Find</a>
+            <!-- &#160; <a target="_self" href="/dataverse/root/search" >Advanced Search </a> -->
+        </div>
+        <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
+        <div class="col-xs-4 pull-right text-right" style="margin-right:30px;margin-bottom:0;padding:8px 6px;background:none;">
+            Results by Username
+            <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" />
+        </div>
+        </ui:fragment>
+    </div>
+<!-- start: panel --><div class="panel panel-default">
+<!-- start: panel body --><div class="panel-body clearfix">
+    
+    <!-- start: row -->
+    <div class="row">
+        <!-- start filter column -->
+        <div class="col-xs-3" id="my_data_filter_column">
+            <!--form id="mydata_filter_form" name="mydata_filter_form"-->
+            <input type="hidden" name="selected_page" id="selected_page" value="1" />
+                       
+            <!-- start dvobject checkboxes -->
+            <div id="div_dvobject_types" style="padding-bottom:10px;">
+                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
+                    <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataverse" type="checkbox" value="Dataverse" checked="checked" />
+                    <label class="facetTypeLabel">
+                        <a class="mydata_dvobject_label"><i class="icon-dataverse text-icon-inline"></i><span class="facetTypeDataverse">Dataverses</span> <span id="id_dataverses_count"></span></a>
+                    </label>
+                </div>
+                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
+                    <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_dataset" type="checkbox" value="Dataset" checked="checked" />
+                    <label class="facetTypeLabel">
+                        <a class="mydata_dvobject_label"><i class="icon-dataset text-icon-inline"></i><span class="facetTypeDataset">Datasets</span> <span id="id_datasets_count"></span></a>
+                    </label>
+                </div>
+                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
+                    <input style="margin-left:0;" name="dvobject_types" id="id_cbox_dv_file" type="checkbox" value="DataFile" />
+                    <label class="facetTypeLabel">
+                        <a class="mydata_dvobject_label"><i class="icon-file text-icon-inline"></i><span class="facetTypeFile">Files</span> <span id="id_files_count"></span></a>
+                    </label>
+                </div>
+            </div>
+            <!-- end dvobject checkboxes -->
+            <!-- start: publish states -->
+            <b>Publication Status</b>
+            <div id="div_published_states" style="border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:0.5em;">
+                <ui:repeat value="#{MyDataPage.publishedStates}" var="pstate">
+                     <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
+                            <input style="margin-left:0;" name="published_states" id="id_cbox_#{pstate.toLowerCase()}" type="checkbox" value="#{pstate}" checked="checked"  />
+                        <label>
+                            <a class="mydata_pubstate_label"> #{pstate} <span id="id_#{pstate.toLowerCase()}_count"></span></a>
+                        </label>
+                    </div>                   
+                </ui:repeat>
+            </div>
+            <!-- end: publish states -->
+            <!-- start: role states -->
+            <b>Roles</b>
+            <div id="div_role_states" style="border-bottom:1px solid #ddd; padding-bottom:8px; margin-bottom:0.5em;">
+            <ui:repeat value="#{MyDataPage.roleInfoForCheckboxes}" var="roleInfoList">
+                <div class="checkbox" style="margin-top:3px;margin-bottom:0;">
+                    <input style="margin-left:0;" name="role_ids" id="id_cbox_#{roleInfoList[2]}" type="checkbox" value="#{roleInfoList[0]}" checked="checked" />
+                    <label>
+                        <a class="mydata_role_label">#{roleInfoList[1]}</a>
+                    </label>                    
+                </div>    
+            </ui:repeat>
+            </div>
+           <!-- end: role states -->
+             <!--/form>-->
+            <div id="div-search-params" class="well" style="display:none;"></div>
+        </div><!-- end: filter column -->
+        <!-- start: workspace column -->
+        <div class="col-xs-9">
+            <div id="div-pagination"></div>
+            <!--<div id="div-test-json" class="well">(pagination)</div>-->
+            <div id="div-result-message"></div>
+            <div id="resultsTable"><div id="div-card-results"></div></div>
+            <div id="div-more-cards-link" class="text-center" style="display:none;">
+                <a id="lnk_add_more_cards" class="btn btn-default">View More Results</a>
+            </div> 
+            
+            <div id="div-json-results"></div>
+        </div>
+        <!-- end: workspace column -->
+    </div><!-- end row -->
+    <script src="#{resource['js/nunjucks.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script> 
+        <ui:remove>This variable is needed by mydata.js to make the ajax call</ui:remove>
+        var RETRIEVE_DATA_API_PATH = '#{MyDataPage.retrieveDataFullAPIPath}';
+    </script>
+    <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}b"></script>
+    <script>            
+          $(document).ready(function() {
+             init_mydata_page(); // source: mydata.js 
+           });
+    </script>
+</div><!-- end panel body -->
+</div><!-- end panel -->
+</ui:composition>

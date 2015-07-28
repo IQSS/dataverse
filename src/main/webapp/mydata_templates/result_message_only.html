@@ -1,0 +1,35 @@
+{#
+{% if data.selected_filters %}
+<div id="resultsFacetsTopBlock">
+    {% for pub_stat in data.selected_filters.publication_statuses %}
+        <a class="lnk_cbox_remove facetLink facetSelected" rel="id_cbox_{{ pub_stat|lower }}">
+            Status: {{ pub_stat }} <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </a>
+    {% endfor %}
+    {% for role_name in data.selected_filters.role_names %}
+        <a class="lnk_cbox_remove facetLink facetSelected" rel="id_cbox_{{ role_name|lower|replace(" + ", "")|replace(" ", "") }}">
+            Role: {{ role_name }} <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </a>
+    {% endfor %}
+</div>    
+{% endif %}
+#}
+<div id="resultsCountPaginatorBlock" class="clearfix">
+
+{# <!-- Handle result message here --> #}
+{% set pagination_data = data.pagination %}
+    <div class="results-count pull-left">
+<strong>
+{% if pagination_data.endCardNumber > pagination_data.startCardNumber  %}
+  {# {{ pagination_data.startCardNumber }} to {{ pagination_data.endCardNumber }} of #}
+    1 to {{ pagination_data.endCardNumber }} of 
+{% endif %}
+{% if pagination_data.numResults > 1 %}
+    {{ pagination_data.numResults }} Results
+{% elif pagination_data.numResults == 1 %}
+    1 Result 
+{% endif %}
+</strong>
+    </div>
+
+</div>

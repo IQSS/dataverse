@@ -1,0 +1,22 @@
+#!/bin/sh
+SERVER=http://localhost:8080
+if [ -z "$1" ]; then
+  DATAVERSE=togo
+else
+  DATAVERSE=$1
+fi
+USERID="@pdurbin"
+ROLE=admin
+
+echo "Assigning $ROLE to $USERID on $DATAVERSE..."
+OUT_ASSIGN=`time curl -s -X POST -H "Content-type:application/json" -d "{\"assignee\": \"$USERID\",\"role\": \"$ROLE\"}" "$SERVER/api/dataverses/$DATAVERSE/assignments?key=$API_TOKEN"`
+echo $OUT_ASSIGN | jq '.data | {assignee,_roleAlias}'
+
+echo "Retrieving ID of role to revoke..."
+ASSIGNMENTS=`time curl -s "$SERVER/api/dataverses/$DATAVERSE/assignments?key=$API_TOKEN"`
+echo $ASSIGNMENTS | jq ".data[] | select(.assignee==\"$USERID\") | ."
+
+echo "Revoking $ROLE from $USERID on $DATAVERSE..."
+ID_TO_REVOKE=`echo $ASSIGNMENTS | jq ".data[] | select(.assignee==\"$USERID\") | .id"`
+OUT_REVOKE=`time curl -s -X DELETE "$SERVER/api/dataverses/$DATAVERSE/assignments/$ID_TO_REVOKE?key=$API_TOKEN"`
+echo $OUT_REVOKE | jq '.data.message'

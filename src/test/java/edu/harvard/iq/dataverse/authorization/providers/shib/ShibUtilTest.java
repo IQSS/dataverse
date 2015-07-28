@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
@@ -119,4 +120,15 @@ public class ShibUtilTest {
         assertEquals(expected8.getLastName(), actual8.getLastName());
     }
 
+    @Test
+    public void testGenerateFriendlyLookingUserIdentifer() {
+        int lengthOfUuid = UUID.randomUUID().toString().length();
+        assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", null));
+        assertEquals("uid1", ShibUtil.generateFriendlyLookingUserIdentifer("uid1", "email1@example.com"));
+        assertEquals("email1", ShibUtil.generateFriendlyLookingUserIdentifer(null, "email1@example.com"));
+        assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, null).length());
+        assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "").length());
+        assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer("", null).length());
+        assertEquals(lengthOfUuid, ShibUtil.generateFriendlyLookingUserIdentifer(null, "junkEmailAddress").length());
+    }
 }

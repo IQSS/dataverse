@@ -9,6 +9,7 @@ If you find a typo or a small error in the documentation you can easily fix it u
 
 - Fork the repository
 - Go to [your GitHub username]/dataverse/doc/sphinx-guides/source and access the file you would like to fix
+- Switch to the branch that is currently under development
 - Click the Edit button in the upper-right corner and fix the error
 - Submit a pull request
 

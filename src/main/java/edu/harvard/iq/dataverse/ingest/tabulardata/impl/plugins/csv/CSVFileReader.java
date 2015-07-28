@@ -135,20 +135,20 @@ public class CSVFileReader extends TabularDataFileReader {
             throw new IOException("Failed to read first, variable name line of the CSV file.");
         }
 
-        int varQnty = valueTokens.length;
+        int variableCount = valueTokens.length;
         
         // Create variables: 
         
         List<DataVariable> variableList = new ArrayList<DataVariable>();
         
-        for (int i = 0; i < varQnty; i++) {
+        for (int i = 0; i < variableCount; i++) {
             String varName = valueTokens[i];
             
             if (varName == null || varName.equals("")) {
                 // TODO: 
                 // Add a sensible variable name validation algorithm.
                 // -- L.A. 4.0 alpha 1
-                throw new IOException ("Invalid variable names in the first line!");
+                throw new IOException ("Invalid variable names in the first line! - First line of a CSV file must contain a comma-separated list of the names of the variables.");
             }
             
             DataVariable dv = new DataVariable();
@@ -166,15 +166,15 @@ public class CSVFileReader extends TabularDataFileReader {
             dv.setDataTable(dataTable);
         }
         
-        dataTable.setVarQuantity(new Long(varQnty));
+        dataTable.setVarQuantity(new Long(variableCount));
         dataTable.setDataVariables(variableList);
         
-        boolean[] isNumericVariable = new boolean[varQnty];
-        boolean[] isIntegerVariable = new boolean[varQnty];
-        boolean[] isTimeVariable = new boolean[varQnty];
-        boolean[] isDateVariable = new boolean[varQnty];
+        boolean[] isNumericVariable = new boolean[variableCount];
+        boolean[] isIntegerVariable = new boolean[variableCount];
+        boolean[] isTimeVariable = new boolean[variableCount];
+        boolean[] isDateVariable = new boolean[variableCount];
         
-        for (int i = 0; i < varQnty; i++) {
+        for (int i = 0; i < variableCount; i++) {
             // OK, let's assume that every variable is numeric; 
             // but we'll go through the file and examine every value; the 
             // moment we find a value that's not a legit numeric one, we'll 
@@ -188,8 +188,8 @@ public class CSVFileReader extends TabularDataFileReader {
         // First, "learning" pass.
         // (we'll save the incoming stream in another temp file:)
         
-        SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[varQnty]; 
-        SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[varQnty];
+        SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[variableCount]; 
+        SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[variableCount];
 
         
         File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
@@ -205,12 +205,75 @@ public class CSVFileReader extends TabularDataFileReader {
                 throw new IOException("Failed to read line " + (lineCounter + 1) + " of the Data file.");
             }
 
-            if (valueTokens.length != varQnty) {
+            int tokenCount = valueTokens.length;
+            
+            if (tokenCount > variableCount) {
+                
+                // we'll make another attempt to parse the fields - there could be commas 
+                // inside character strings. The only way to disambiguate this situation
+                // we are going to support, for now, is to allow commas inside tokens 
+                // wrapped in double quotes. We may potentially add other mechanisms, 
+                // such as allowing to specify a custom string wrapper character (something other
+                // than the double quote), or maybe recognizing escaped commas ("\,") as 
+                // non-separating ones. 
+                // -- L.A. 4.0.2
+                
+                valueTokens = null; 
+                valueTokens = new String[variableCount];
+                
+                int tokenStart = 0;
+                boolean quotedStringMode = false; 
+                boolean potentialDoubleDoubleQuote = false;
+                tokenCount = 0; 
+                
+                for (int i = 0; i < line.length(); i++) {
+                    if (tokenCount > variableCount) {
+                        throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " of the data file contains more than "
+                        + variableCount + " comma-delimited values.");
+                    }
+                    
+                    char c = line.charAt(i);
+                    
+                    if (tokenStart == i && c == '"') {
+                        quotedStringMode = true; 
+                    } else if (c == ',' && !quotedStringMode) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, i);
+                        tokenCount++; 
+                        tokenStart = i+1; 
+                    } else if (i == line.length() - 1) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, line.length());
+                        tokenCount++; 
+                    } else if (quotedStringMode && c == '"') {
+                        quotedStringMode = false; 
+                        //unless this is a double double quote in the middle of a quoted
+                        // string; apparently a standard notation for encoding double
+                        // quotes inside quoted strings (??)
+                        potentialDoubleDoubleQuote = true; 
+                    } else if (potentialDoubleDoubleQuote && c == '"') {
+                        // OK, that was a "double double" quote.
+                        // going back into the quoted mode:
+                        quotedStringMode = true; 
+                        potentialDoubleDoubleQuote = false; 
+                        // TODO: figure out what we do with such double double quote
+                        // sequences in the final tab file. Do we want to convert 
+                        // them back to a "single double" quote?
+                        // -- L.A. 4.0.2/4.1
+                    }
+                        
+                }
+            }
+                        
+            //dbglog.info("Number of CSV tokens in the line number " + lineCounter + " : "+tokenCount);
+            
+            // final token count check: 
+            
+            if (tokenCount != variableCount) {
+                
                 throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " of the Data file: "
-                        + varQnty + " delimited values expected, " + valueTokens.length + " found.");
+                        + variableCount + " delimited values expected, " + tokenCount + " found.");
             }
 
-            for (int i = 0; i < varQnty; i++) {
+            for (int i = 0; i < variableCount; i++) {
                 if (isNumericVariable[i]) {
                     // If we haven't given up on the "numeric" status of this 
                     // variable, let's perform some tests on it, and see if 
@@ -267,35 +330,35 @@ public class CSVFileReader extends TabularDataFileReader {
                             boolean isTime = false;
 
                             if (selectedDateTimeFormat[i] != null) {
-                                dbglog.info("will try selected format " + selectedDateTimeFormat[i].toPattern());
+                                dbglog.fine("will try selected format " + selectedDateTimeFormat[i].toPattern());
                                 ParsePosition pos = new ParsePosition(0);
                                 dateResult = selectedDateTimeFormat[i].parse(valueTokens[i], pos);
 
                                 if (dateResult == null) {
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": null result.");
+                                    dbglog.fine(selectedDateTimeFormat[i].toPattern() + ": null result.");
                                 } else if (pos.getIndex() != valueTokens[i].length()) {
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": didn't parse to the end - bad time zone?");
+                                    dbglog.fine(selectedDateTimeFormat[i].toPattern() + ": didn't parse to the end - bad time zone?");
                                 } else {
                                     // OK, successfully parsed a value!
                                     isTime = true;
-                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + " worked!");
+                                    dbglog.fine(selectedDateTimeFormat[i].toPattern() + " worked!");
                                 }
                             } else {
                                 for (SimpleDateFormat format : TIME_FORMATS) {
-                                    dbglog.info("will try format " + format.toPattern());
+                                    dbglog.fine("will try format " + format.toPattern());
                                     ParsePosition pos = new ParsePosition(0);
                                     dateResult = format.parse(valueTokens[i], pos);
                                     if (dateResult == null) {
-                                        dbglog.info(format.toPattern() + ": null result.");
+                                        dbglog.fine(format.toPattern() + ": null result.");
                                         continue;
                                     }
                                     if (pos.getIndex() != valueTokens[i].length()) {
-                                        dbglog.info(format.toPattern() + ": didn't parse to the end - bad time zone?");
+                                        dbglog.fine(format.toPattern() + ": didn't parse to the end - bad time zone?");
                                         continue;
                                     }
                                     // OK, successfully parsed a value!
                                     isTime = true;
-                                    dbglog.info(format.toPattern() + " worked!");
+                                    dbglog.fine(format.toPattern() + " worked!");
                                     selectedDateTimeFormat[i] = format;
                                     break;
                                 }
@@ -330,16 +393,16 @@ public class CSVFileReader extends TabularDataFileReader {
                                 // Strict parsing - it will throw an 
                                 // exception if it doesn't parse!
                                 format.setLenient(false);
-                                dbglog.info("will try format " + format.toPattern());
+                                dbglog.fine("will try format " + format.toPattern());
                                 try {
                                     dateResult = format.parse(valueTokens[i]);
-                                    dbglog.info("format " + format.toPattern() + " worked!");
+                                    dbglog.fine("format " + format.toPattern() + " worked!");
                                     isDate = true;
                                     selectedDateFormat[i] = format;
                                     break;
                                 } catch (ParseException ex) {
                                     //Do nothing                                      
-                                    dbglog.info("format " + format.toPattern() + " didn't work.");
+                                    dbglog.fine("format " + format.toPattern() + " didn't work.");
                                 }
                             }
                             if (!isDate) {
@@ -361,7 +424,7 @@ public class CSVFileReader extends TabularDataFileReader {
             
         // Re-type the variables that we've determined are numerics:
         
-        for (int i = 0; i < varQnty; i++) {
+        for (int i = 0; i < variableCount; i++) {
             if (isNumericVariable[i]) {
                 dataTable.getDataVariables().get(i).setTypeNumeric();
 
@@ -388,7 +451,7 @@ public class CSVFileReader extends TabularDataFileReader {
         
         BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile));
         lineCounter = 0;
-        String[] caseRow = new String[varQnty];
+        String[] caseRow = new String[variableCount];
 
         
         while ((line = secondPassReader.readLine()) != null) {
@@ -400,12 +463,63 @@ public class CSVFileReader extends TabularDataFileReader {
                 throw new IOException("Failed to read line " + (lineCounter + 1) + " during the second pass.");
             }
 
-            if (valueTokens.length != varQnty) {
+            int tokenCount = valueTokens.length;
+            
+            if (tokenCount > variableCount) {
+                
+                // again, similar check for quote-encased strings that contain 
+                // commas inside them. 
+                // -- L.A. 4.0.2
+                
+                valueTokens = null; 
+                valueTokens = new String[variableCount];
+                
+                int tokenStart = 0;
+                boolean quotedStringMode = false;
+                boolean potentialDoubleDoubleQuote = false;
+                tokenCount = 0; 
+                
+                for (int i = 0; i < line.length(); i++) {
+                    if (tokenCount > variableCount) {
+                        throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " of the data file contains more than "
+                        + variableCount + " comma-delimited values.");
+                    }
+                    
+                    char c = line.charAt(i);
+                    
+                    if (tokenStart == i && c == '"') {
+                        quotedStringMode = true; 
+                    } else if (c == ',' && !quotedStringMode) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, i);
+                        tokenCount++; 
+                        tokenStart = i+1; 
+                    } else if (i == line.length() - 1) {
+                        valueTokens[tokenCount] = line.substring(tokenStart, line.length());
+                        tokenCount++; 
+                    } else if (quotedStringMode && c == '"') {
+                        quotedStringMode = false; 
+                        potentialDoubleDoubleQuote = true; 
+                    } else if (potentialDoubleDoubleQuote && c == '"') {
+                        quotedStringMode = true; 
+                        potentialDoubleDoubleQuote = false; 
+                    }
+                        
+                }
+            }
+            
+            // TODO: 
+            // isolate CSV parsing into its own method/class, to avoid
+            // code duplication in the 2 passes, above;
+            // do not save the result of the 1st pass - simply reopen the 
+            // original file (?). 
+            // -- L.A. 4.0.2/4.1
+            
+            if (tokenCount != variableCount) {
                 throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " during the second pass: "
-                        + varQnty + " delimited values expected, " + valueTokens.length + " found.");
+                        + variableCount + " delimited values expected, " + valueTokens.length + " found.");
             }
         
-            for (int i = 0; i < varQnty; i++) {
+            for (int i = 0; i < variableCount; i++) {
                 if (isNumericVariable[i]) {
                     if (valueTokens[i] == null || valueTokens[i].equalsIgnoreCase("") || valueTokens[i].equalsIgnoreCase("NA")) {
                         // Missing value - represented as an empty string in 

@@ -4,7 +4,13 @@ Thank you for your interest in contributing to Dataverse! We welcome contributio
 
 ## Ideas/Feature Requests
 
-The [Dataverse roadmap][] might already capture your idea or feature request but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mentioning [@dataverseorg][] on Twitter.
+The [Dataverse roadmap][] might already capture your idea or feature request but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mention [@dataverseorg][] on Twitter.
+
+Once an idea/feature request has been received by the Dataverse Development Team the process outlined in the image below happens.
+
+![feature request process](doc/sphinx-guides/source/img/feature-request-process.png)
+
+A [Functional Requirements Document (FRD for short)] [] is where we outline the use cases, requirements, user interface workflows, and any questions we have before development of a feature begins. All FRDs are publicly available through a link that is added to the github issue for the idea/feature request. Once an FRD has been completed and reviewed, low fidelity mockups are created using [Balsamiq] [] so we know what the user interface and user experience will be once the feature is developed. The mockups are also publicly available through a link added to the github issue for the idea/feature request. Please feel free to comment on any FRDs and mockups!  
 
 See also our [Community and Support][] page.
 
@@ -12,6 +18,8 @@ See also our [Community and Support][] page.
 [Dataverse roadmap]: http://roadmap.datascience.iq.harvard.edu
 [@dataverseorg]: http://twitter.com/dataverseorg
 [Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
+[Functional Requirements Document (FRD for short)]: https://docs.google.com/document/d/1PRyAlP6zlUlUuHfgyUezzuaVQ4JnapvgtGWo0o7tLEs/edit?usp=sharing
+[Balsamiq]: https://iqssharvard.mybalsamiq.com/projects
 
 ## Bug Reports/Issues
 

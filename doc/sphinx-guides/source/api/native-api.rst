@@ -1,7 +1,7 @@
 Native API
 ==========
 
-Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some API calls do not require authentication. Calls that do require authentication take an extra query parameter, ``key``, which should contain the API key of the user issuing the command.
+Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some API calls do not require authentication. Calls that do require authentication require the user's API key. That key can be passed either via an extra query parameter, ``key``, as in ``ENPOINT?key=API_KEY``, or via the HTTP header ``X-Dataverse-key``. Note that while the header option normally requires more work on client side, it is considered safer, as the API key is not logged in the server access logs.
 
 .. warning:: Dataverse 4.0's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address//api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
 
@@ -10,7 +10,7 @@ Dataverse 4.0 exposes most of its GUI functionality via a REST-based API. Some A
 Endpoints
 ---------
 
-Dataverses 
+Dataverses
 ~~~~~~~~~~~
 Generates a new dataverse under ``$id``. Expects a json content describing the dataverse.
 If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
@@ -32,6 +32,10 @@ Lists all the DvObjects under dataverse ``id``. ::
 All the roles defined directly in the dataverse identified by ``id``::
 
   GET http://$SERVER/api/dataverses/$id/roles?key=$apiKey
+
+List all the facets for a given dataverse ``id``. ::
+
+  GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
 
 Creates a new role under dataverse ``id``. Needs a json file with the role description::
 
@@ -108,7 +112,7 @@ List versions of the dataset::
   GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
 
 Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
-  
+
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
 
 Lists all the file metadata, for the given dataset and version::
@@ -154,7 +158,7 @@ Roles
 ~~~~~
 
 Creates a new role in dataverse object whose Id is ``dataverseIdtf`` (that's an id/alias)::
-  
+
   POST http://$SERVER/api/roles?dvo=$dataverseIdtf&key=$apiKey
 
 Shows the role with ``id``::
@@ -170,9 +174,9 @@ Explicit Groups
 ~~~~~~~~~~~~~~~
 Explicit groups list their members explicitly. These groups are defined in dataverses, which is why their API endpoint is under ``api/dvn/$id/``, where ``$id`` is the id of the dataverse.
 
-  
+
 Create a new explicit group under dataverse ``$id``::
-  
+
   POST http://$server/api/dataverses/$id/groups
 
 Data being POSTed is json-formatted description of the group::
@@ -208,7 +212,7 @@ Add a single role assignee to a group. Request body is ignored::
   PUT http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
 Remove a single role assignee from an explicit group::
-  
+
   DELETE http://$server/api/dataverses/$dv/groups/$groupAlias/roleAssignees/$roleAssigneeIdentifier
 
 
@@ -225,7 +229,7 @@ Return data about the block whose ``identifier`` is passed. ``identifier`` can e
   GET http://$SERVER/api/metadatablocks/$identifier
 
 
-Admin 
+Admin
 ~~~~~~~~~~~~~~~~
 This is the administrative part of the API. It is probably a good idea to block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details.
 
@@ -255,7 +259,7 @@ List all the authentication providers in the system (both enabled and disabled):
 
 Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's ``GET`` counterpart. ::
 
-  POST http://$SERVER/api/admin/authenticationProviders 
+  POST http://$SERVER/api/admin/authenticationProviders
 
 Show data about an authentication provider::
 
@@ -303,4 +307,3 @@ Returns a the group in a JSON format. ``groupIdtf`` can either be the group id i
 Deletes the group specified by ``groupIdtf``. ``groupIdtf`` can either be the group id in the database (in case it is numeric), or the group alias. Note that a group can be deleted only if there are no roles assigned to it. ::
 
   DELETE http://$SERVER/api/admin/groups/ip/$groupIdtf
-

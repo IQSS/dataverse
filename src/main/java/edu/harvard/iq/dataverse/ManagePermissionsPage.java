@@ -22,9 +22,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -64,11 +66,15 @@ public class ManagePermissionsPage implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB
+    ExplicitGroupServiceBean explicitGroupService;
     @EJB 
     GroupServiceBean groupService;
     @EJB
     EjbDataverseEngine commandEngine;
-    
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -163,6 +169,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
         try {
             commandEngine.submit(new RevokeRoleCommand(ra, session.getUser()));
             JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
+            RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
+            notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE);
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role assignment was not able to be removed.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
@@ -326,14 +334,15 @@ public class ManagePermissionsPage implements java.io.Serializable {
         for ( Group g : groupService.findGlobalGroups() ) {
             roleAssigneeList.add( g );
         }
-        roleAssigneeList.addAll( explicitGroupSvc.findAvailableFor(dvObject) );
+        roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dvObject) );
         
         List<RoleAssignee> filteredList = new LinkedList();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
             // @todo maybe add some solr/lucene style searching, did-you-mean style?
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) && 
-                    (roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))) {
+            if ((StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query) 
+                    || StringUtils.containsIgnoreCase(ra.getIdentifier(), query))
+                    && (roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))) {
                 filteredList.add(ra);
             }
         }
@@ -387,10 +396,32 @@ public class ManagePermissionsPage implements java.io.Serializable {
         }
     }
 
+    /**
+     * Notify a {@code RoleAssignee} that a role was either assigned or revoked.
+     * Will notify all members of a group.
+     * @param ra The {@code RoleAssignee} to be notified.
+     * @param type The type of notification.
+     */
+    private void notifyRoleChange(RoleAssignee ra, UserNotification.Type type) {
+        if (ra instanceof AuthenticatedUser) {
+                userNotificationService.sendNotification((AuthenticatedUser) ra, new Timestamp(new Date().getTime()), type, dvObject.getId());
+        } else if (ra instanceof ExplicitGroup) {
+            ExplicitGroup eg = (ExplicitGroup) ra;
+            Set<String> explicitGroupMembers = eg.getContainedRoleAssgineeIdentifiers();
+            for (String id : explicitGroupMembers) {
+                RoleAssignee explicitGroupMember = roleAssigneeService.getRoleAssignee(id);
+                if (explicitGroupMember instanceof AuthenticatedUser) {
+                    userNotificationService.sendNotification((AuthenticatedUser) explicitGroupMember, new Timestamp(new Date().getTime()), type, dvObject.getId());
+                }
+            }
+        }
+    }
+
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, session.getUser()));
             JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + dvObject.getDisplayName() + ".");
+            notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
@@ -457,138 +488,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
         showRoleMessages();
     }
 
-
-    /* 
-    ============================================================================
-    Explicit Group dialogs
-    ============================================================================
-    */
-    
-    String explicitGroupIdentifier = "";
-    String explicitGroupName = "";
-    String newExplicitGroupDescription = "";
-    UIInput explicitGroupIdentifierField;
-    
-    @EJB
-    ExplicitGroupServiceBean explicitGroupSvc;
-    
-    List<RoleAssignee> newExplicitGroupRoleAssignees = new LinkedList<>();
-    
-    public void initExplicitGroupDialog(ActionEvent ae) {
-        showNoMessages();
-        setExplicitGroupName("");
-        setExplicitGroupIdentifier("");
-        setNewExplicitGroupDescription("");
-        setNewExplicitGroupRoleAssignees(new LinkedList<RoleAssignee>());
-        FacesContext context = FacesContext.getCurrentInstance();
-        
-    }
-
-    public void saveExplicitGroup(ActionEvent ae) {
-        
-        ExplicitGroup eg = explicitGroupSvc.getProvider().makeGroup();
-        eg.setDisplayName( getExplicitGroupName() );
-        eg.setGroupAliasInOwner( getExplicitGroupIdentifier() );
-        eg.setDescription( getNewExplicitGroupDescription() );
-        
-        if ( getNewExplicitGroupRoleAssignees()!= null ) {
-            try {
-                for ( RoleAssignee ra : getNewExplicitGroupRoleAssignees() ) {
-                    eg.add( ra );
-                }
-            } catch ( GroupException ge ) {
-                JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                        "Group Creation failed.", 
-                                        ge.getMessage());
-                return;
-            }
-        }
-        try {
-            logger.info( "Attempting to create group " + eg.getGroupAliasInOwner() ); // TODO MBS remove
-            eg = commandEngine.submit( new CreateExplicitGroupCommand(session.getUser(), (Dataverse) getDvObject(), eg));
-            JsfHelper.addSuccessMessage("Succesfully created group " + eg.getDisplayName());
-        
-        } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
-            logger.info( "Got me then message " + gaee.getMessage() ); // TODO MBS remove
-            explicitGroupIdentifierField.setValid( false );
-            FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
-                           new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));
-            
-        } catch (CommandException ex) {
-            logger.log(Level.WARNING, "Group creation failed", ex);
-            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                    "Group Creation failed.", 
-                                    ex.getMessage());
-        } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "The role was not able to be saved.");
-             logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
-        }
-        showAssignmentMessages();
-    }
-
-    public void setExplicitGroupName(String explicitGroupFriendlyName) {
-        this.explicitGroupName = explicitGroupFriendlyName;
-    }
-
-    public String getExplicitGroupName() {
-        return explicitGroupName;
-    }
-
-    public void setExplicitGroupIdentifier(String explicitGroupName) {
-        this.explicitGroupIdentifier = explicitGroupName;
-    }
-
-    public String getExplicitGroupIdentifier() {
-        return explicitGroupIdentifier;
-    }
-
-    public UIInput getExplicitGroupIdentifierField() {
-        return explicitGroupIdentifierField;
-    }
-
-    public void setExplicitGroupIdentifierField(UIInput explicitGroupIdentifierField) {
-        this.explicitGroupIdentifierField = explicitGroupIdentifierField;
-    }
-    
-    public void validateGroupIdentifier(FacesContext context, UIComponent toValidate, Object rawValue) {
-        String value = (String) rawValue;
-        UIInput input = (UIInput) toValidate;
-        input.setValid(true); // Optimistic approach
-        
-        if ( context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null 
-                && !StringUtils.isEmpty(value) ) {
-            
-            // cheap test - regex
-            if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
-                input.setValid(false);
-                context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
-            
-            } else if ( explicitGroupSvc.findInOwner(getDvObject().getId(), value) != null ) {
-                // Ok, see that the alias is not taken
-                input.setValid(false);
-                context.addMessage(toValidate.getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", JH.localize("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.taken")));
-            }
-        }
-    }
-
-    public void setNewExplicitGroupRoleAssignees(List<RoleAssignee> newExplicitGroupRoleAssignees) {
-        this.newExplicitGroupRoleAssignees = newExplicitGroupRoleAssignees;
-    }
-
-    public List<RoleAssignee> getNewExplicitGroupRoleAssignees() {
-        return newExplicitGroupRoleAssignees;
-    }
-
-    public String getNewExplicitGroupDescription() {
-        return newExplicitGroupDescription;
-    }
-
-    public void setNewExplicitGroupDescription(String newExplicitGroupDescription) {
-        this.newExplicitGroupDescription = newExplicitGroupDescription;
-    }
-    
     /* 
     ============================================================================
     Internal methods

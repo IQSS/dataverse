@@ -192,7 +192,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         boolean DEBUG = false;
 
         if (DEBUG) {
-            out.println("applying the dta test\n");
+            dbgLog.info("applying the dta test\n");
         }
 
         // -----------------------------------------
@@ -232,7 +232,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             //return result;
         } else {
             if (DEBUG) {
-                out.println("this file is stata-dta type: " +
+                dbgLog.info("this file is stata-dta type: " +
                     IngestableDataChecker.stataReleaseNumber.get(hdr4[0]) +
                     "(No in HEX=" + hdr4[0] + ")");
             }

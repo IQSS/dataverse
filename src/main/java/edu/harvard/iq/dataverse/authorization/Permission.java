@@ -55,6 +55,17 @@ public enum Permission implements java.io.Serializable {
         return humanName;
     }
 
+    /*
+    RMP - need to test
+    public static boolean isViewUnpublishedPermission(Permission perm){
+        
+        if ((perm == ViewUnpublishedDataverse)||(perm == ViewUnpublishedDataset)){
+            return true;
+        }
+        return false;
+    }
+    */
+    
     public boolean appliesTo(Class<? extends DvObject> aClass) {
         for (Class c : appliesTo) {
             if (c.isAssignableFrom(aClass)) {

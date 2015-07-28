@@ -41,27 +41,29 @@
                         </div>
                     </div>
                     <div>
-                        <div id="no-templates-message" jsf:rendered="#{empty manageTemplatesPage.templates}">
-                            <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.why.header']}</span>
-                            <ul>
-                                <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.why.reason1']}" escape="false"/></li>
-                                <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.why.reason2']}" escape="false"/></li>
-                            </ul>
-                            <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.how.header']}</span>
-                            <ul>
-                                <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.how.tip1']}" escape="false"/></li>
-                                <li>
-                                    <h:outputFormat value="#{bundle['dataset.manageTemplates.noTemplates.how.tip2']}" escape="false">
-                                        <f:param value="#{manageTemplatesPage.dataverse.alias}"/>
+                        <div id="no-templates-message" class="panel panel-default" jsf:rendered="#{empty manageTemplatesPage.templates}">
+                            <div class="panel-body">
+                                <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.why.header']}</span>
+                                <ul>
+                                    <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.why.reason1']}" escape="false"/></li>
+                                    <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.why.reason2']}" escape="false"/></li>
+                                </ul>
+                                <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.how.header']}</span>
+                                <ul>
+                                    <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.how.tip1']}" escape="false"/></li>
+                                    <li>
+                                        <h:outputFormat value="#{bundle['dataset.manageTemplates.noTemplates.how.tip2']}" escape="false">
+                                            <f:param value="#{manageTemplatesPage.dataverse.alias}"/>
+                                        </h:outputFormat>
+                                    </li>
+                                </ul>
+                                <p>
+                                    <h:outputFormat value="#{bundle['dataset.manageTemplates.noTemplates.getStarted']}" escape="false">
+                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                        <f:param value="#{systemConfig.version}"/>
                                     </h:outputFormat>
-                                </li>
-                            </ul>
-                            <p>
-                                <h:outputFormat value="#{bundle['dataset.manageTemplates.noTemplates.getStarted']}" escape="false">
-                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                    <f:param value="#{systemConfig.version}"/>
-                                </h:outputFormat>
-                            </p>
+                                </p>
+                            </div>
                         </div>
                         <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates"
                                      rendered="#{!empty manageTemplatesPage.templates}">

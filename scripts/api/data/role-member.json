@@ -4,6 +4,7 @@
     "description":"A person who can view both unpublished dataverses and datasets.",
     "permissions":[
         "ViewUnpublishedDataset",
-        "ViewUnpublishedDataverse" 
+        "ViewUnpublishedDataverse",
+         "DownloadFile"
     ]
 }

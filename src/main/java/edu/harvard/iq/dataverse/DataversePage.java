@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -31,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -90,6 +92,7 @@ public class DataversePage implements java.io.Serializable {
     SavedSearchServiceBean savedSearchService;
     @EJB
     SystemConfig systemConfig;
+    @EJB DataverseRoleServiceBean dataverseRoleServiceBean;
     @Inject
     SearchIncludeFragment searchIncludeFragment;
 
@@ -192,19 +195,24 @@ public class DataversePage implements java.io.Serializable {
         //Since only a super user function add all dvs
         dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
         
+        /*
+        List<DataverseRole> roles = dataverseRoleServiceBean.getDataverseRolesByPermission(Permission.PublishDataverse, dataverse.getId());
+        List<String> types = new ArrayList();
+        types.add("Dataverse");
+        for (Long dvIdAsInt : permissionService.getDvObjectIdsUserHasRoleOn(session.getUser(), roles, types, false)) {
+            dataversesForLinking.add(dataverseService.find(dvIdAsInt));
+        }*/
+        
         //for linking - make sure the link hasn't occurred and its not int the tree
         if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
         
-            dataversesForLinking.remove(dataverseService.findRootDataverse());
+            // remove this and it's parent tree
             dataversesForLinking.remove(dataverse);
-            
-            if (dataverse.getOwner() != null ){
-               Dataverse testDV = dataverse;
-               while(testDV.getOwner() != null){
-                   dataversesForLinking.remove(testDV.getOwner());
-                   testDV = testDV.getOwner();
-               }                
-            }
+            Dataverse testDV = dataverse;
+            while(testDV.getOwner() != null){
+                dataversesForLinking.remove(testDV.getOwner());
+                testDV = testDV.getOwner();
+            }                
             
             for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
                 dataversesForLinking.remove(removeLinked);
@@ -280,7 +288,13 @@ public class DataversePage implements java.io.Serializable {
                 return "/404.xhtml";
             }
             if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                System.out.print(" session.getUser().isAuthenticated() " + session.getUser().isAuthenticated());
+                if (!session.getUser().isAuthenticated()){
+                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                } else {
+                    return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+                }
+
             }
 
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
@@ -290,7 +304,11 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getOwner() == null) {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                if (!session.getUser().isAuthenticated()){
+                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                } else {
+                    return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+                }              
             }
 
             // set defaults - contact e-mail and affiliation from user
@@ -307,7 +325,7 @@ public class DataversePage implements java.io.Serializable {
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
         featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
-        featuredSource.addAll(linkingService.findLinkedDataverses(dataverse.getId()));
+        featuredSource.addAll(linkingService.findLinkingDataverses(dataverse.getId()));
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();
@@ -447,6 +465,18 @@ public class DataversePage implements java.io.Serializable {
         }
         setEditInputLevel(false);
     }
+    
+    public void toggleInputLevel( Long mdbId, long dsftId){
+        for (MetadataBlock mdb : allMetadataBlocks) {
+            if (mdb.getId().equals(mdbId)) {
+                for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
+                    if (dsftTest.getId().equals(dsftId)) {
+                            dsftTest.setRequiredDV(!dsftTest.isRequiredDV());                           
+                    }
+                }
+            }
+        }        
+    }
 
     public void updateInclude(Long mdbId, long dsftId) {
         List<DatasetFieldType> childDSFT = new ArrayList();
@@ -583,7 +613,7 @@ public class DataversePage implements java.io.Serializable {
                 create = Boolean.TRUE;
                 cmd = new CreateDataverseCommand(dataverse, (AuthenticatedUser) session.getUser(), facets.getTarget(), listDFTIL);
             } else {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataverse.create.authenticatedUsersOnly"));
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.create.authenticatedUsersOnly"));
                 return null;
             }
         } else {
@@ -607,7 +637,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(editMode.FEATURED)) {
                 message = "The featured dataverses for this dataverse have been updated.";
             } else {
-                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getVersion())) : JH.localize("dataverse.update.success");
+                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
             JsfHelper.addSuccessMessage(message);
             
@@ -617,12 +647,12 @@ public class DataversePage implements java.io.Serializable {
 
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
-            String errMsg = create ? JH.localize("dataverse.create.failure") : JH.localize("dataverse.update.failure");
+            String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", e);
-            String errMsg = create ? JH.localize("dataverse.create.failure") : JH.localize("dataverse.update.failure");
+            String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
         }
@@ -711,8 +741,9 @@ public class DataversePage implements java.io.Serializable {
         linkingDataverse = dataverseService.find(linkingDataverseId);
 
         LinkDataverseCommand cmd = new LinkDataverseCommand(session.getUser(), linkingDataverse, dataverse);
+        //LinkDvObjectCommand cmd = new LinkDvObjectCommand (session.getUser(), linkingDataverse, dataverse);
         try {
-            DataverseLinkingDataverse linkedDataverse = commandEngine.submit(cmd);
+            commandEngine.submit(cmd);
         } catch (CommandException ex) {
             String msg = "Unable to link " + dataverse.getDisplayName() + " to " + linkingDataverse.getDisplayName() + ". An internal error occurred.";
             logger.severe(msg + " " + ex);
@@ -728,18 +759,36 @@ public class DataversePage implements java.io.Serializable {
                 // create links (does indexing) right now (might be expensive)
                 boolean debug = false;
                 savedSearchService.makeLinksForSingleSavedSearch(savedSearchOfChildren, debug);
-                JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName());
+                //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName());               
+                List<String> arguments = new ArrayList();
+                arguments.add(dataverse.getDisplayName());
+                arguments.add(systemConfig.getDataverseSiteUrl());                
+                arguments.add(linkingDataverse.getAlias());
+                arguments.add(linkingDataverse.getDisplayName());
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success", arguments));               
                 return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
             } catch (SearchException | CommandException ex) {
                 // error: solr is down, etc. can't link children right now
+                List<String> arguments = new ArrayList();
+                arguments.add(dataverse.getDisplayName());
+                arguments.add(linkingDataverse.getAlias());
+                arguments.add(systemConfig.getDataverseSiteUrl());
+                arguments.add(linkingDataverse.getDisplayName());
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.linked.internalerror", arguments));
                 String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
                 logger.severe(msg + " " + ex);
-                JsfHelper.addErrorMessage(msg);
+                //JsfHelper.addErrorMessage(msg);
                 return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
             }
         } else {
             // defer: please wait for the next timer/cron job
-            JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
+            //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
+            List<String> arguments = new ArrayList();
+            arguments.add(dataverse.getDisplayName());
+            arguments.add(systemConfig.getDataverseSiteUrl());
+            arguments.add(linkingDataverse.getAlias());
+            arguments.add(linkingDataverse.getDisplayName());
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", arguments));
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
     }
@@ -768,9 +817,9 @@ public class DataversePage implements java.io.Serializable {
         return savedSearchCreated;
     }
 
-    public String saveSavedSearch() {
+     public String saveSavedSearch() {
         if (linkingDataverseId == null) {
-            JsfHelper.addSuccessMessage("You must select a linking dataverse.");
+            JsfHelper.addErrorMessage("You must select a linking dataverse.");
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
@@ -800,18 +849,17 @@ public class DataversePage implements java.io.Serializable {
         CreateSavedSearchCommand cmd = new CreateSavedSearchCommand(session.getUser(), linkingDataverse, savedSearch);
         try {
             commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage("This search is now linked to " + linkingDataverse.getDisplayName());
-            //return "";
+
+            List<String> arguments = new ArrayList();
+            arguments.add(linkingDataverse.getAlias());
+            arguments.add(linkingDataverse.getDisplayName());
+            String successMessageString = BundleUtil.getStringFromBundle("dataverse.saved.search.success", arguments);
+            JsfHelper.addSuccessMessage(successMessageString);
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String msg = "There was a problem linking this search to yours: " + ex;
             logger.severe(msg);
-            /**
-             * @todo how do we get this message to show up in the GUI?
-             */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotLinked", msg);
-            FacesContext.getCurrentInstance().addMessage(null, message);
-            //return "";
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.failure") + " " +  ex);
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
     }
@@ -830,16 +878,15 @@ public class DataversePage implements java.io.Serializable {
             PublishDataverseCommand cmd = new PublishDataverseCommand((AuthenticatedUser) session.getUser(), dataverse);
             try {
                 commandEngine.submit(cmd);
-                JsfHelper.addSuccessMessage(JH.localize("dataverse.publish.success"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addErrorMessage(JH.localize("dataverse.publish.failure"));
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
 
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", "Only authenticated users can release a dataverse.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.not.authorized"));            
         }
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
 
@@ -849,10 +896,10 @@ public class DataversePage implements java.io.Serializable {
         DeleteDataverseCommand cmd = new DeleteDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
-            JsfHelper.addSuccessMessage(JH.localize("dataverse.delete.success"));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success"));
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling  delete dataverse command", ex);
-            JsfHelper.addErrorMessage(JH.localize("dataverse.delete.failure"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.delete.failure"));
         }
         return "/dataverse.xhtml?alias=" + dataverse.getOwner().getAlias() + "&faces-redirect=true";
     }

@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class ShibUtil {
@@ -81,4 +82,28 @@ public class ShibUtil {
         }
         return name;
     }
+
+    public static String generateFriendlyLookingUserIdentifer(String usernameAssertion, String email) {
+        if (usernameAssertion != null && !usernameAssertion.isEmpty()) {
+            return usernameAssertion;
+        }
+        if (email != null && !email.isEmpty()) {
+            if (email.contains("@")) {
+                String[] parts = email.split("@");
+                try {
+                    String firstPart = parts[0];
+                    return firstPart;
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    logger.info(ex + " parsing " + email);
+                }
+            } else {
+                logger.info("Odd email address. No @ sign: " + email);
+            }
+        } else {
+            logger.info("email attribute not sent by IdP");
+        }
+        logger.info("the best we can do is generate a random UUID");
+        return UUID.randomUUID().toString();
+    }
+
 }

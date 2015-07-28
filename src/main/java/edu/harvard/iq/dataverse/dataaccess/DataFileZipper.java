@@ -78,7 +78,7 @@ public class DataFileZipper {
             DataFile file = (DataFile) iter.next();
 
             DataAccessRequest daReq = new DataAccessRequest();
-            DataAccessObject accessObject = DataAccess.createDataAccessObject(file, daReq);
+            DataFileIO accessObject = DataAccess.createDataAccessObject(file, daReq);
 
             if (accessObject != null) {
                 accessObject.open();

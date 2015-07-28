@@ -24,17 +24,35 @@ All file formats are supported, up to 10GB per file for the Harvard Dataverse. P
 The file types listed below are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration 
 through data visualization and analysis. 
 
-Tabular
+Tabular Data Files
 --------------------
 
-Tabular files of recognized formats (Stata, SPSS, RData, Excel, CSV) can be further explored and manipulated through 
-`TwoRavens <../user/data-exploration/tworavens.html>`_ (a statistical data exploration application integrated with Dataverse) by performing various statistical analyses and downloading subsets of variables.
-To perform various statistical analyses on the data (including summary statistics) click on the "Explore" button, found next to 
-each relevant tabular file and this will take you to the `TwoRavens <../user/data-exploration/tworavens.html>`_ application in a new window. To download subsets of variables click on the "Download" button found next
-to a relevant tabular file and select "Data Subset" in the dropdown menu, which will open a new window that is powered by 
-TwoRavens for you to create your subset. For more information on `TwoRavens <../user/data-exploration/tworavens.html>`_ please read their `documentation <../user/data-exploration/tworavens.html>`_. Furthermore,
-within the "Download" button for tabular data you will find additional options including downloading: in the original file format,
-RDATA Format, Variable Metadata (`DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file), Data Subset (as described earlier) and Data File Citation (currently in either RIS format or EndNote XML).
+Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may
+be ingested as tabular data (see "Tabular Data Ingest" section for
+details). Tabular data files can be further explored and manipulated
+with `TwoRavens <../user/data-exploration/tworavens.html>`_ - a
+statistical data exploration application integrated with Dataverse. It
+allows the user to run statistical models, view summary statistics,
+download subsets of variable vectors and more. To start, click on the "Explore"
+button, found next to each relevant tabular file (the application
+will be opened in a new window). To download subsets of variables
+click on the "Download" button found next to a relevant tabular file
+and select "Data Subset" in the dropdown menu. You will then be able
+to create your subset using the interface opened in a new window (this
+functionality is also provided by the `TwoRavens
+<../user/data-exploration/tworavens.html>`_ project). See the `TwoRavens
+documentation section <../user/data-exploration/tworavens.html>`_ for
+more information.
+
+Additional download options available for tabular data (found
+in the same drop-down menu under the "Download" button): 
+
+- As tab-delimited data (with the variable names in the first row); 
+- The original file uploaded by the user; 
+- Saved as R data (if the original file was not in R format); 
+- Variable Metadata (as a `DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
+- Data File Citation (currently in either RIS or EndNote XML format); 
+- All of the above, as a zipped bundle. 
 
 |image2|
 

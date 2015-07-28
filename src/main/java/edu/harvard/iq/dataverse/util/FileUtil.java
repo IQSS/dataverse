@@ -55,7 +55,7 @@ public class FileUtil implements java.io.Serializable  {
     
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
     
-    private static Map<String, String> STATISTICAL_SYNTAX_FILE_EXTENSION = new HashMap<String, String>();
+    private static Map<String, String> STATISTICAL_FILE_EXTENSION = new HashMap<String, String>();
    
     /*
      * The following are Stata, SAS and SPSS syntax/control cards: 
@@ -68,9 +68,10 @@ public class FileUtil implements java.io.Serializable  {
     */
     
     static {
-        STATISTICAL_SYNTAX_FILE_EXTENSION.put("do",  "application/x-stata-syntax");
-        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sas", "application/x-sas-syntax");
-        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
+        STATISTICAL_FILE_EXTENSION.put("do",  "application/x-stata-syntax");
+        STATISTICAL_FILE_EXTENSION.put("sas", "application/x-sas-syntax");
+        STATISTICAL_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
+        STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
     }
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
@@ -230,13 +231,13 @@ public class FileUtil implements java.io.Serializable  {
         if ( fileExtension != null) {
             logger.fine("fileExtension="+fileExtension);
 
-            if (fileType != null && fileType.startsWith("text/plain")){
-                if (( fileExtension != null) && (STATISTICAL_SYNTAX_FILE_EXTENSION.containsKey(fileExtension))) {
-                    // replace the mime type with the value of the HashMap
-                    fileType = STATISTICAL_SYNTAX_FILE_EXTENSION.get(fileExtension);
+            if (fileType == null || fileType.startsWith("text/plain") || "application/octet-stream".equals(fileType)) {
+                if (fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
+                    fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
+                } else {
+                    fileType = determineFileTypeByExtension(fileName);
                 }
-            } else if ("application/octet-stream".equals(fileType)) {
-                fileType = determineFileType(fileName);
+                
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
@@ -285,7 +286,8 @@ public class FileUtil implements java.io.Serializable  {
         return fileType;
     }
     
-    public static String determineFileType(String fileName) {
+    public static String determineFileTypeByExtension(String fileName) {
+        logger.info("Type by extension, for "+fileName+": "+MIME_TYPE_MAP.getContentType(fileName));
         return MIME_TYPE_MAP.getContentType(fileName);
     }
     

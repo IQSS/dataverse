@@ -173,6 +173,14 @@ public class AuthenticationServiceBean {
         return em.find(AuthenticatedUser.class, pk);
     }
 
+    public void removeApiToken(AuthenticatedUser user){
+        if (user!=null) {
+            ApiToken apiToken = findApiTokenByUser(user);
+            if (apiToken != null) {
+                em.remove(apiToken);
+            }
+        }
+    }   
     /**
      * Use with care! This method was written primarily for developers
      * interested in API testing who want to:
@@ -353,6 +361,7 @@ public class AuthenticationServiceBean {
             return aToken;
         } else { 
             return em.merge( aToken );
+            
         }
     }
 

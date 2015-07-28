@@ -32,7 +32,7 @@ public class MarkupChecker {
         //Whitelist wl = Whitelist.basic().addTags("img", "h1", "h2", "h3", "kbd", "hr", "s", "del");  
 
         Whitelist wl = Whitelist.basicWithImages().addTags( "h1", "h2", "h3", "kbd", "hr", "s", "del","map","area").addAttributes("img", "usemap")
-                .addAttributes("map", "name").addAttributes("area", "shape","coords","href","title","alt");  
+                .addAttributes("map", "name").addAttributes("area", "shape","coords","href","title","alt").addAttributes("a", "target");
 
         return Jsoup.clean(unsafe, wl);
         

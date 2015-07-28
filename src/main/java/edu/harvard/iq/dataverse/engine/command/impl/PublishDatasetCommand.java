@@ -153,7 +153,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         /**
          * @todo what should we do with the indexRespose?
          */
-        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset.getId());
+        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataset);
 
         // set the subject of the parent (all the way up) Dataverses
         DatasetField subject = null;

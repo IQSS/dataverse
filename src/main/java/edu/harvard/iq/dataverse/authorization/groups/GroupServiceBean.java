@@ -95,6 +95,7 @@ public class GroupServiceBean {
         while ( ! perimeter.isEmpty() ) {
             ExplicitGroup g = perimeter.iterator().next();
             perimeter.remove(g);
+            groups.add(g);
             
             Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
             discovered.removeAll(visited); // Ideally the conjunction is always empty, as we don't allow cycles.

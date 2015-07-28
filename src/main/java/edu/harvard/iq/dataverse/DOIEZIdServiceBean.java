@@ -260,22 +260,24 @@ public class DOIEZIdServiceBean  {
     }
     
 
-    public void publicizeIdentifier(Dataset studyIn) {
-        updateIdentifierStatus(studyIn, "public");
+    public boolean publicizeIdentifier(Dataset studyIn) {        
+        return updateIdentifierStatus(studyIn, "public");
     }
     
-    private void updateIdentifierStatus(Dataset dataset, String statusIn){
+    private boolean updateIdentifierStatus(Dataset dataset, String statusIn){
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getUpdateMetadataFromDataset(dataset);
         metadata.put("_status", statusIn);
        try {
                ezidService.setMetadata(identifier, metadata);
+               return true;
             }  catch (EZIDException e){                
             logger.log(Level.INFO, "modifyMetadata failed");
             logger.log(Level.INFO, "String " + e.toString() );
             logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
             logger.log(Level.INFO, "cause " + e.getCause());
-            logger.log(Level.INFO, "message " + e.getMessage());    
+            logger.log(Level.INFO, "message " + e.getMessage()); 
+            return false;
         }
         
     }

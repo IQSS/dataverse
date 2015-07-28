@@ -75,7 +75,34 @@ public class SearchServiceBean {
 
     public static final JsfHelper JH = new JsfHelper();
 
+    /**
+     * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
+     *     access to Private Data for the correct user
+     *   
+     * In other words "onlyDatatRelatedToMe", negates other filter Queries related
+     * to permissions
+     * 
+     * 
+     * @param user
+     * @param dataverse
+     * @param query
+     * @param filterQueries
+     * @param sortField
+     * @param sortOrder
+     * @param paginationStart
+     * @param onlyDatatRelatedToMe
+     * @param numResultsPerPage
+     * @return
+     * @throws SearchException 
+     */
     public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        if (paginationStart < 0){
+            throw new IllegalArgumentException("paginationStart must be 0 or greater");
+        }
+        if (numResultsPerPage < 1){
+            throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
+        }
+        
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
@@ -89,6 +116,10 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
+        Integer fragSize = systemConfig.getSearchHighlightFragmentSize();
+        if (fragSize != null) {
+            solrQuery.setHighlightFragsize(fragSize);
+        }
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
         Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
@@ -136,119 +167,18 @@ public class SearchServiceBean {
             solrQuery.addFilterQuery(filterQuery);
         }
 
-        /**
-         * @todo For people who are not logged in, should we show stuff indexed
-         * with "AllUsers" group or not? If so, uncomment the allUsersString
-         * stuff below.
-         */
-//        String allUsersString = IndexServiceBean.getGroupPrefix() + AllUsers.get().getAlias();
-//        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + allUsersString + ")";
-        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
-//        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
-        // initialize to public only to be safe
-        String permissionFilterQuery = publicOnly;
-        if (user instanceof GuestUser) {
-            permissionFilterQuery = publicOnly;
-        } else if (user instanceof AuthenticatedUser) {
-            // Non-guests might get more than public stuff with an OR or two
-            AuthenticatedUser au = (AuthenticatedUser) user;
-            solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
-
-            /**
-             * @todo all this code needs cleanup and clarification.
-             */
-            /**
-             * Every AuthenticatedUser is part of a "User Private Group" (UGP),
-             * a concept we borrow from RHEL:
-             * https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/ch-Managing_Users_and_Groups.html#s2-users-groups-private-groups
-             */
-            /**
-             * @todo rename this from publicPlusUserPrivateGroup. Confusing
-             */
-            // safe default: public only
-            String publicPlusUserPrivateGroup = publicOnly;
-//                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
-//                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
-
-//            /**
-//             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
-//             * before enabling it.
-//             */
-            String groupsFromProviders = "";
-            /**
-             * @todo What should the value be? Is null ok? From a search
-             * perspective, we don't care about if the group was created within
-             * one dataverse or another. We just want a list of all the groups
-             * the user is part of. A JOIN on "permission documents" will
-             * determine if the user can find a given "content document"
-             * (dataset version, etc) in Solr.
-             */
-//            DvObject groupsForDvObjectParamNull = null;
-//            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamNull);
-            /**
-             * @todo What is the expected behavior when you pass in a dataverse?
-             * It seems like no matter what you pass in you always get the
-             * following types of groups:
-             *
-             * - BuiltIn Groups
-             *
-             * - IP Groups
-             *
-             * - Shibboleth Groups
-             *
-             * If you pass in the root dataverse it seems like you get all
-             * groups that you're part of.
-             *
-             * If you pass in a non-root dataverse, it seems like you get groups
-             * that you're part of for that dataverse. It's unclear if there is
-             * any inheritance of groups.
-             */
-            DvObject groupsForDvObjectParamCurrentDataverse = dataverse;
-            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamCurrentDataverse);
-            StringBuilder sb = new StringBuilder();
-            for (Group group : groups) {
-                logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
-                String groupAlias = group.getAlias();
-                if (groupAlias != null && !groupAlias.isEmpty()) {
-                    sb.append(" OR ");
-                    // i.e. group_shib/2
-                    sb.append(IndexServiceBean.getGroupPrefix() + groupAlias);
-                }
-                groupsFromProviders = sb.toString();
-            }
-
-            logger.fine(groupsFromProviders);
-            if (true) {
-                /**
-                 * @todo get rid of "experimental" in name
-                 */
-                String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
-                if (onlyDatatRelatedToMe) {
-                    /**
-                     * @todo make this a variable called "String
-                     * dataRelatedToMeFilterQuery" or something
-                     */
-                    experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
-                }
-                publicPlusUserPrivateGroup = experimentalJoin;
-            }
-
-            permissionFilterQuery = publicPlusUserPrivateGroup;
-            logger.fine(permissionFilterQuery);
-
-            if (au.isSuperuser()) {
-                // dangerous because this user will be able to see
-                // EVERYTHING in Solr with no regard to permissions!
-                String dangerZoneNoSolrJoin = null;
-                permissionFilterQuery = dangerZoneNoSolrJoin;
-            }
-
-        } else {
-            logger.info("Should never reach here. A User must be an AuthenticatedUser or a Guest");
+        // -----------------------------------
+        // PERMISSION FILTER QUERY
+        // -----------------------------------
+        String permissionFilterQuery = this.getPermissionFilterQuery(user, solrQuery, dataverse, onlyDatatRelatedToMe);
+        if (permissionFilterQuery != null){
+                solrQuery.addFilterQuery(permissionFilterQuery);
         }
-
-        solrQuery.addFilterQuery(permissionFilterQuery);
-
+        
+        // -----------------------------------
+        // Facets to Retrieve
+        // -----------------------------------
+        
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
@@ -269,9 +199,11 @@ public class SearchServiceBean {
          * if advancedSearchField is true or false
          *
          */
-        for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-            DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
-            solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+        if (dataverse != null){
+            for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
+                DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
+                solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
+            }
         }
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
@@ -316,6 +248,9 @@ public class SearchServiceBean {
         solrQuery.setRows(numResultsPerPage);
         logger.fine("Solr query:" + solrQuery);
 
+        // -----------------------------------  
+        // Make the solr query
+        // -----------------------------------
         QueryResponse queryResponse;
         try {
             queryResponse = solrServer.query(solrQuery);
@@ -349,6 +284,8 @@ public class SearchServiceBean {
         } catch (SolrServerException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
+        
+       
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
@@ -431,15 +368,9 @@ public class SearchServiceBean {
              */
             List<String> states = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
             if (states != null) {
-                for (String state : states) {
-                    if (state.equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
-                        solrSearchResult.setUnpublishedState(true);
-                    } else if (state.equals(IndexServiceBean.getDRAFT_STRING())) {
-                        solrSearchResult.setDraftState(true);
-//                    } else if (state.equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
-//                        solrSearchResult.setDeaccessionedState(true);
-                    }
-                }
+                // set list of all statuses
+                // this method also sets booleans for individual statuses
+                solrSearchResult.setPublicationStatuses(states);               
             }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
@@ -559,6 +490,7 @@ public class SearchServiceBean {
         boolean hidePublicationStatusFacet = true;
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
+        boolean deaccessionedAvailable = false;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
@@ -577,6 +509,8 @@ public class SearchServiceBean {
                             unpublishedAvailable = true;
                         } else if (facetLabel.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
                             draftsAvailable = true;
+                        } else if (facetLabel.getName().equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
+                            deaccessionedAvailable = true;
                         }
                     }
                 }
@@ -643,7 +577,7 @@ public class SearchServiceBean {
                     // the "type" facet is special, these are not
                     typeFacetCategories.add(facetCategory);
                 } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
-                    if (unpublishedAvailable || draftsAvailable) {
+                    if (unpublishedAvailable || draftsAvailable || deaccessionedAvailable) {
                         hidePublicationStatusFacet = false;
                     }
                     if (!hidePublicationStatusFacet) {
@@ -696,7 +630,18 @@ public class SearchServiceBean {
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);
         solrQueryResponse.setStaticSolrFieldFriendlyNamesBySolrField(staticSolrFieldFriendlyNamesBySolrField);
-        solrQueryResponse.setFilterQueriesActual(Arrays.asList(solrQuery.getFilterQueries()));
+        String[] filterQueriesArray = solrQuery.getFilterQueries();
+        if (filterQueriesArray != null) {
+            // null check added because these tests were failing: mvn test -Dtest=SearchIT
+            solrQueryResponse.setFilterQueriesActual(Arrays.asList(filterQueriesArray));
+        } else {
+            // how often is this null?
+            logger.info("solrQuery.getFilterQueries() was null");
+        }
+        
+        solrQueryResponse.setDvObjectCounts(queryResponse.getFacetField("dvObjectType"));
+        solrQueryResponse.setPublicationStatusCounts(queryResponse.getFacetField("publicationStatus"));
+
         return solrQueryResponse;
     }
 
@@ -713,4 +658,157 @@ public class SearchServiceBean {
     public String getCapitalizedName(String name) {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
+    
+    /**
+     * Moved this logic out of the "search" function
+     * 
+     * @return 
+     */
+    private String getPermissionFilterQuery(User user, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe){
+        
+        if (user==null){
+             throw new NullPointerException("user cannot be null");
+        }
+        if (solrQuery==null){
+            throw new NullPointerException("solrQuery cannot be null");
+        }
+         /**
+         * @todo For people who are not logged in, should we show stuff indexed
+         * with "AllUsers" group or not? If so, uncomment the allUsersString
+         * stuff below.
+         */
+//        String allUsersString = IndexServiceBean.getGroupPrefix() + AllUsers.get().getAlias();
+//        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + allUsersString + ")";
+        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
+//        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
+        // initialize to public only to be safe
+        String dangerZoneNoSolrJoin = null;
+        
+        // ----------------------------------------------------
+        // (1) Is this a GuestUser?  
+        // Yes, all set, give back "publicOnly" filter string
+        // ----------------------------------------------------
+        if (user instanceof GuestUser) {
+            return publicOnly;    
+        } 
+
+        // ----------------------------------------------------
+        // (2) Retrieve Authenticated User
+        // ----------------------------------------------------
+         if (!(user instanceof AuthenticatedUser)){
+            logger.severe("Should never reach here. A User must be an AuthenticatedUser or a Guest");
+            throw new IllegalStateException("A User must be an AuthenticatedUser or a Guest");
+         }
+     
+         AuthenticatedUser au = (AuthenticatedUser) user;
+         
+        // Logged in user, has publication status facet
+        //
+        solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
+
+        // ----------------------------------------------------
+        // (3) Is this a Super User?  
+        //      Yes, give back everything
+        // ----------------------------------------------------        
+        if (au.isSuperuser()) {
+            // dangerous because this user will be able to see
+            // EVERYTHING in Solr with no regard to permissions!
+            
+            return dangerZoneNoSolrJoin;
+        }
+
+        
+        // ----------------------------------------------------
+        // (4) User is logged in AND onlyDatatRelatedToMe == true
+        // Yes, give back everything -> the settings will be in
+        //          the filterqueries given to search
+        // ----------------------------------------------------    
+        if (onlyDatatRelatedToMe == true){
+            return dangerZoneNoSolrJoin;
+        }
+        
+        
+        // ----------------------------------------------------
+        // (5) Work with Authenticated User who is not a Superuser
+        // ----------------------------------------------------
+        
+        /**
+         * @todo all this code needs cleanup and clarification.
+         */
+        /**
+         * Every AuthenticatedUser is part of a "User Private Group" (UGP),
+         * a concept we borrow from RHEL:
+         * https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/ch-Managing_Users_and_Groups.html#s2-users-groups-private-groups
+         */
+        /**
+         * @todo rename this from publicPlusUserPrivateGroup. Confusing
+         */
+        // safe default: public only
+        String publicPlusUserPrivateGroup = publicOnly;
+//                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
+//                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+
+//            /**
+//             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
+//             * before enabling it.
+//             */
+        String groupsFromProviders = "";
+        /**
+         * @todo What should the value be? Is null ok? From a search
+         * perspective, we don't care about if the group was created within
+         * one dataverse or another. We just want a list of all the groups
+         * the user is part of. A JOIN on "permission documents" will
+         * determine if the user can find a given "content document"
+         * (dataset version, etc) in Solr.
+         */
+//            DvObject groupsForDvObjectParamNull = null;
+//            Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamNull);
+        /**
+         * @todo What is the expected behavior when you pass in a dataverse?
+         * It seems like no matter what you pass in you always get the
+         * following types of groups:
+         *
+         * - BuiltIn Groups
+         *
+         * - IP Groups
+         *
+         * - Shibboleth Groups
+         *
+         * If you pass in the root dataverse it seems like you get all
+         * groups that you're part of.
+         *
+         * If you pass in a non-root dataverse, it seems like you get groups
+         * that you're part of for that dataverse. It's unclear if there is
+         * any inheritance of groups.
+         */
+        DvObject groupsForDvObjectParamCurrentDataverse = dataverse;
+        Set<Group> groups = groupService.groupsFor(au, groupsForDvObjectParamCurrentDataverse);
+        StringBuilder sb = new StringBuilder();
+        for (Group group : groups) {
+            logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
+            String groupAlias = group.getAlias();
+            if (groupAlias != null && !groupAlias.isEmpty()) {
+                sb.append(" OR ");
+                // i.e. group_shib/2
+                sb.append(IndexServiceBean.getGroupPrefix() + groupAlias);
+            }
+            groupsFromProviders = sb.toString();
+        }
+
+        logger.fine(groupsFromProviders);
+        if (true) {
+            /**
+             * @todo get rid of "experimental" in name
+             */
+            String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";         
+            publicPlusUserPrivateGroup = experimentalJoin;
+        }
+
+        //permissionFilterQuery = publicPlusUserPrivateGroup;
+        logger.fine(publicPlusUserPrivateGroup);
+
+        return publicPlusUserPrivateGroup;
+        
+    }
+
 }

@@ -7,16 +7,24 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -48,6 +56,9 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
+    
+    @EJB
+    SystemConfig systemConfig;
 
     @Inject
     DataverseSession session;
@@ -206,32 +217,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     private String appVersionString;
 
     /**
-     * @todo Move this method to SystemConfig.java and reconcile with the
-     * getVersion method you find there.
+     * @todo Remove this method, and make all the (a couple of) xhtml pages 
+     * call the SystemConfig.getVersion method directly 
+     * (I don't have time to do it now -- L.A. 4.0.2)
      */
-    public String getApplicationVersion() {        
-        if (appVersionString == null) {
-
-            try {
-                appVersionString = ResourceBundle.getBundle("VersionNumber").getString("version.number");
-            } catch (MissingResourceException ex) {
-                appVersionString = "4.0";
-            }
-            
-            String buildNumber; 
-            
-            try {
-                buildNumber = ResourceBundle.getBundle("BuildNumber").getString("build.number");
-            } catch (MissingResourceException ex) {
-                buildNumber = null; 
-            }
-            
-            if (buildNumber != null && !buildNumber.equals("")) {
-                appVersionString = appVersionString + " build " + buildNumber; 
-            }
-        }        
-        
-        return appVersionString; 
+    public String getApplicationVersion() { 
+        return systemConfig.getVersion(true);
     }
            
     public boolean isDataverseCardImageAvailable(Dataverse dataverse, User user) {    

@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -157,40 +158,49 @@ public class MapLayerMetadataServiceBean {
         // Retrieve the data file
         //
         DataFile df = mapLayerMetadata.getDataFile();
+        
+        try {
+            DataFileIO dataAccess = df.getAccessObject();
 
-        // Get the parent directory
-        //
-        Path fileDirname = df.getFileSystemLocation().getParent();
-        if (fileDirname == null){
-            logger.warning("DataFile directory has null path.  Directory path: " + df.getFileSystemLocation().toString());
-            return false;
-        }
+            if (dataAccess == null || !dataAccess.isLocalFile()) {
+                return false;
+            }
+            // Get the parent directory
+            //
+            Path fileDirname = dataAccess.getFileSystemPath().getParent();
+            if (fileDirname == null){
+                logger.warning("DataFile directory has null path.  Directory path: " + dataAccess.getFileSystemPath().toString());
+                return false;
+            }
         
-        // Verify that the directory exists
-        //
-        File fileDirectory = new File(fileDirname.normalize().toString());
-        if (!(fileDirectory.isDirectory())){
-            logger.warning("DataFile directory is not actuall a directory.  Directory path: " + fileDirectory.toString());
-            return false;            
-        }
+            // Verify that the directory exists
+            //
+            File fileDirectory = new File(fileDirname.normalize().toString());
+            if (!(fileDirectory.isDirectory())){
+                logger.warning("DataFile directory is not actuall a directory.  Directory path: " + fileDirectory.toString());
+                return false;            
+            }
         
-        /* Iterate through directory and delete any ".img" files for this DataFile
+            /* Iterate through directory and delete any ".img" files for this DataFile
            
-            Example:
-              Datafile name: 14a5e4abf7d-e7eebfb6474d
-              Types of files that would be deleted (if they exist):
+                Example:
+                Datafile name: 14a5e4abf7d-e7eebfb6474d
+                Types of files that would be deleted (if they exist):
                     14a5e4abf7d-e7eebfb6474d.img
                     14a5e4abf7d-e7eebfb6474d.img.thumb64
                     14a5e4abf7d-e7eebfb6474d.img.thumb400
-        */
-        String iconBaseFilename = df.getFileSystemLocation().toString() +  ".img";
+            */
+            String iconBaseFilename = dataAccess.getFileSystemPath().toString() +  ".img";
         
-        for (File singleFile : fileDirectory.listFiles()) {
-            if (singleFile.toString().startsWith(iconBaseFilename)) {
-                //logger.info("file found: " + singleFile.toString());
-                singleFile.delete();
-                //results.add(file.getName());
+            for (File singleFile : fileDirectory.listFiles()) {
+                if (singleFile.toString().startsWith(iconBaseFilename)) {
+                    //logger.info("file found: " + singleFile.toString());
+                    singleFile.delete();
+                    //results.add(file.getName());
+                }
             }
+        } catch (IOException ioEx) {
+            return false; 
         }
                 
         return true;
@@ -238,8 +248,18 @@ public class MapLayerMetadataServiceBean {
         imageUrl = imageUrl.replace("https:", "http:");
         logger.info("Attempt to retrieve map image: " + imageUrl);
         
-        String destinationFile = mapLayerMetadata.getDataFile().getFileSystemLocation().toString() +  ".img";
-        logger.info("destinationFile: getFileSystemLocation()" + mapLayerMetadata.getDataFile().getFileSystemLocation());
+        DataFileIO dataAccess = null;
+        try {
+            dataAccess = mapLayerMetadata.getDataFile().getAccessObject();
+        } catch (IOException ioEx) {
+            dataAccess = null;
+        }
+
+        if (dataAccess == null || !dataAccess.isLocalFile()) {
+            return false;
+        }
+        String destinationFile = dataAccess.getFileSystemPath().toString() +  ".img";
+        logger.info("destinationFile: getFileSystemLocation()" + dataAccess.getFileSystemPath().toString());
         logger.info("destinationFile: " + destinationFile);
         
         URL url = new URL(imageUrl);

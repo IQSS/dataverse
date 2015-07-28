@@ -50,6 +50,15 @@ Configuration
 Configure Glassfish
 ~~~~~~~~~~~~~~~~~~~
 
+Apply GRIZZLY-1787 Patch
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1, you should stop Glassfish, with ``asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from `here <../_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>`_ (the md5 is in the `README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`_), and start Glassfish again with ``asadmin start-domain domain1``.
+
+For more background on the patch, please see https://java.net/jira/browse/GRIZZLY-1787 and https://github.com/IQSS/dataverse/issues/2180 and https://github.com/payara/Payara/issues/350
+
+This problem has been reported to Glassfish at https://java.net/projects/glassfish/lists/users/archive/2015-07/message/1 and when Glassfish 4.2 ships the Dataverse team plans to evaulate if the version of Grizzly included is new enough to include the bug fix, obviating the need for the patch.
+
 Glassfish HTTP and HTTPS ports
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

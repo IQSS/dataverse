@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncrypti
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -56,7 +57,7 @@ public class TestApi extends AbstractApiBean {
             return notFound("DvObject " + dvo + " not found");
         }
         try {
-            AuthenticatedUser au = findUserOrDie(key);
+            User au = findUserOrDie();
             return okResponse(json(permissionSvc.permissionsFor(au, dvObj)));
 
         } catch (WrappedResponse wr) {
@@ -190,5 +191,15 @@ public class TestApi extends AbstractApiBean {
         response.add("value to overwrite old email address", overwriteEmail);
         response.add("problems", problems);
         return okResponse(response);
+    }
+    
+    @Path("apikey")
+    @GET
+    public Response testUserLookup() {
+        try {
+            return okResponse( json(findAuthenticatedUserOrDie()) );
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
     }
 }

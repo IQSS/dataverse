@@ -6,14 +6,16 @@
 package edu.harvard.iq.dataverse;
 
 import com.sun.mail.smtp.SMTPSendFailedException;
-import com.sun.mail.smtp.SMTPSenderFailedException;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
@@ -21,6 +23,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -32,6 +35,7 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -45,6 +49,8 @@ public class MailServiceBean implements java.io.Serializable {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
+    DataFileServiceBean dataFileService;
+    @EJB
     DatasetServiceBean datasetService;
     @EJB
     DatasetVersionServiceBean versionService; 
@@ -52,6 +58,10 @@ public class MailServiceBean implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    PermissionServiceBean permissionService;
+    @EJB
+    GroupServiceBean groupService;
     
     private static final Logger logger = Logger.getLogger(MailServiceBean.class.getCanonicalName());
     
@@ -188,6 +198,10 @@ public class MailServiceBean implements java.io.Serializable {
         
     private String getSubjectTextBasedOnNotification(UserNotification userNotification) {
         switch (userNotification.getType()) {
+            case ASSIGNROLE:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.assign.role.subject");
+            case REVOKEROLE:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.revoke.role.subject");
             case CREATEDV:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.create.dataverse.subject");
             case REQUESTFILEACCESS:
@@ -212,8 +226,8 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
     
-    private String getDatasetManagePermissionsLink(Dataset dataset){        
-        return  systemConfig.getDataverseSiteUrl() + "/permissions-manage.xhtml?id=" + dataset.getId();
+    private String getDatasetManageFileAccessLink(DataFile datafile){
+        return  systemConfig.getDataverseSiteUrl() + "/permissions-manage-files.xhtml?id=" + datafile.getOwner().getId();
     } 
     
     private String getDatasetLink(Dataset dataset){        
@@ -223,15 +237,99 @@ public class MailServiceBean implements java.io.Serializable {
     private String getDataverseLink(Dataverse dataverse){       
         return  systemConfig.getDataverseSiteUrl() + "/dataverse/" + dataverse.getAlias();
     }
-   
+
+    /**
+     * Returns a '/'-separated string of roles that are effective for {@code au}
+     * over {@code dvObj}. Traverses the containment hierarchy of the {@code d}.
+     * Takes into consideration all groups that {@code au} is part of.
+     * @param au The authenticated user whose role assignments we look for.
+     * @param dvObj The Dataverse object over which the roles are assigned
+     * @return A set of all the role assignments for {@code ra} over {@code d}.
+     */
+    private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
+        // Find user's role(s) for given dataverse/dataset
+        Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
+        List<String> roleNames = new ArrayList();
+
+        // Include roles derived from a user's groups
+        Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
+        for (Group g : groupsUserBelongsTo) {
+            roles.addAll(permissionService.assignmentsFor(g, dvObj));
+        }
+
+        for (RoleAssignment ra : roles) {
+            roleNames.add(ra.getRole().getName());
+        }
+        return StringUtils.join(roleNames, "/");
+    }
+
+    /**
+     * Returns the URL to a given {@code DvObject} {@code d}. If {@code d} is a
+     * {@code DataFile}, return a link to its {@code DataSet}.
+     * @param d The Dataverse object to get a link for.
+     * @return A string with a URL to the given Dataverse object.
+     */
+    private String getDvObjectLink(DvObject d) {
+        if (d instanceof Dataverse) {
+            return getDataverseLink((Dataverse) d);
+        } else if (d instanceof Dataset) {
+            return getDatasetLink((Dataset) d);
+        } else if (d instanceof DataFile) {
+            return getDatasetLink(((DataFile) d).getOwner());
+        }
+        return "";
+    }
+
+    /**
+     * Returns string representation of the type of {@code DvObject} {@code d}.
+     * @param d The Dataverse object to get the string for
+     * @return A string that represents the type of a given Dataverse object.
+     */
+    private String getDvObjectTypeString(DvObject d) {
+        if (d instanceof Dataverse) {
+            return "dataverse";
+        } else if (d instanceof Dataset) {
+            return "dataset";
+        } else if (d instanceof DataFile) {
+            return "data file";
+        }
+        return "";
+    }
+
     private String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject){       
         
         String messageText = ResourceBundle.getBundle("Bundle").getString("notification.email.greeting");
         DatasetVersion version = null;
         Dataset dataset = null;
+        DvObject dvObj = null;
+        String dvObjURL = null;
+        String dvObjTypeStr = null;
         String pattern ="";
 
         switch (userNotification.getType()) {
+            case ASSIGNROLE:
+                AuthenticatedUser au = userNotification.getUser();
+                dvObj = (DvObject) targetObject;
+
+                String joinedRoleNames = getRoleStringFromUser(au, dvObj);
+
+                dvObjURL = getDvObjectLink(dvObj);
+                dvObjTypeStr = getDvObjectTypeString(dvObj);
+
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.assignRole");
+                String[] paramArrayAssignRole = {joinedRoleNames, dvObjTypeStr, dvObj.getDisplayName(), dvObjURL};
+                messageText += MessageFormat.format(pattern, paramArrayAssignRole);
+                return messageText;
+            case REVOKEROLE:
+                dvObj = (DvObject) targetObject;
+
+                dvObjURL = getDvObjectLink(dvObj);
+                dvObjTypeStr = getDvObjectTypeString(dvObj);
+
+                pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.revokeRole");
+                String[] paramArrayRevokeRole = {dvObjTypeStr, dvObj.getDisplayName(), dvObjURL};
+                messageText += MessageFormat.format(pattern, paramArrayRevokeRole);
+                return messageText;
             case CREATEDV:
                 Dataverse dataverse = (Dataverse) targetObject;
                 Dataverse parentDataverse = dataverse.getOwner();
@@ -252,9 +350,9 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.fine(dataverseCreatedMessage);
                 return messageText += dataverseCreatedMessage;
             case REQUESTFILEACCESS:
-                dataset = (Dataset) targetObject;
+                DataFile datafile = (DataFile) targetObject;
                 pattern = ResourceBundle.getBundle("Bundle").getString("notification.email.requestFileAccess");
-                String[] paramArrayRequestFileAccess = {dataset.getDisplayName(), getDatasetManagePermissionsLink(dataset)};
+                String[] paramArrayRequestFileAccess = {datafile.getOwner().getDisplayName(), getDatasetManageFileAccessLink(datafile)};
                 messageText += MessageFormat.format(pattern, paramArrayRequestFileAccess);
                 return messageText;
             case GRANTFILEACCESS:
@@ -318,9 +416,18 @@ public class MailServiceBean implements java.io.Serializable {
     
     private Object getObjectOfNotification (UserNotification userNotification){
         switch (userNotification.getType()) {
+            case ASSIGNROLE:
+            case REVOKEROLE:
+                // Can either be a dataverse or dataset, so search both
+                Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
+                if (dataverse != null) return dataverse;
+
+                Dataset dataset = datasetService.find(userNotification.getObjectId());
+                return dataset;
             case CREATEDV:
                 return dataverseService.find(userNotification.getObjectId());
             case REQUESTFILEACCESS:
+                return dataFileService.find(userNotification.getObjectId());
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
                 return datasetService.find(userNotification.getObjectId());

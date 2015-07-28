@@ -390,6 +390,14 @@
                                                     </h:link>
                                                 </li>
                                             </ui:fragment>
+                                            <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DataversePage.dataverse)}">
+                                                <li>
+                                                    <h:link id="manageGroups" styleClass="ui-commandlink ui-widget" outcome="manage-groups">
+                                                        <h:outputText value="#{bundle['dataverse.option.dataverseGroups']}" />
+                                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                                    </h:link>
+                                                </li>
+                                            </ui:fragment>
                                             <li>
                                                 <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
                                                     <h:outputText value="#{bundle['dataverse.option.datasetTemplates']}" />

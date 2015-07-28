@@ -130,7 +130,7 @@ public class TestIngest {
                     DataTable dataTable = tabDataIngest.getDataTable();
                     
                     DataFile dataFile = new DataFile();
-                    dataFile.setFileSystemName(tabFilename);
+                    dataFile.setStorageIdentifier(tabFilename);
                     
                     FileMetadata fileMetadata = new FileMetadata();
                     fileMetadata.setLabel(fileName);

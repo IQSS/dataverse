@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -13,10 +13,12 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.validation.ConstraintViolation;
 
 /**
@@ -25,6 +27,8 @@ import javax.validation.ConstraintViolation;
  */
 @RequiredPermissions( Permission.AddDataset )
 public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
+    
+    private static final Logger logger = Logger.getLogger(CreateDatasetVersionCommand.class.getName());
     
     final DatasetVersion newVersion;
     final Dataset dataset;
@@ -47,7 +51,7 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
-          newVersion.setDatasetFields(newVersion.initDatasetFields());
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
      
         Set<ConstraintViolation> constraintViolations = newVersion.validate();
         if (!constraintViolations.isEmpty()) {
@@ -69,6 +73,14 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
             dsfItSort.next().setValueDisplayOrder();
         }
         
+        List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
+        for ( FileMetadata fmd : latest.getFileMetadatas() ) {
+            FileMetadata fmdCopy = fmd.createCopy();
+            fmdCopy.setDatasetVersion(newVersion);
+            newVersionMetadatum.add( fmdCopy );
+            logger.info( "added file metadata " + fmdCopy );
+        }
+        newVersion.setFileMetadatas(newVersionMetadatum);
         
         
         Timestamp now = new Timestamp(new Date().getTime());

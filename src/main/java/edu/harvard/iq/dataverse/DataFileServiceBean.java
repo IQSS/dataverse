@@ -183,7 +183,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public void generateStorageIdentifier(DataFile dataFile) {
-        dataFile.setFileSystemName(generateStorageIdentifier());
+        dataFile.setStorageIdentifier(generateStorageIdentifier());
     }
     
     public String generateStorageIdentifier() {

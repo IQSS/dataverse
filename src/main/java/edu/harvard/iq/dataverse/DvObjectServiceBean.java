@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -12,6 +13,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Your goto bean for everything {@link DvObject}, that's not tied to any
@@ -73,9 +75,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
          * dvObject before we try to set this timestamp? See
          * https://github.com/IQSS/dataverse/commit/6ad0ebb272c8cb46368cb76784b55dbf33eea947
          */
-        DvObject dvObjectToModify = findDvObject(dvObject.getId());
-        dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObjectToModify);
+        dvObject.setPermissionIndexTime(new Timestamp(new Date().getTime()));
+        DvObject savedDvObject = em.merge(dvObject);
         return savedDvObject;
     }
 
@@ -86,4 +87,78 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return numRowsUpdated;
     }
 
+    
+    private String getDvObjectIdListClause(List<Long> dvObjectIdList){
+        if (dvObjectIdList == null){
+            return null;
+        }
+        List<String> outputList = new ArrayList<>();
+        
+        for(Long id : dvObjectIdList){
+            if (id != null){
+                outputList.add(id.toString());
+            }
+        }
+        if (outputList.isEmpty()){
+            return null;
+        }        
+        return " (" + StringUtils.join(outputList, ",") + ")";        
+    }
+    
+    public List<Object[]> getDvObjectInfoForMyData(List<Long> dvObjectIdList){
+        //msgt("getAssigneeAndRoleIdListFor");
+
+        String dvObjectClause = getDvObjectIdListClause(dvObjectIdList);
+        if (dvObjectClause==null){
+            return null;
+        }
+        
+        String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
+        qstr += " FROM dvobject dv";
+        qstr += " WHERE  dv.id IN " + dvObjectClause;
+        qstr += ";";
+
+        return em.createNativeQuery(qstr).getResultList();
+        
+    }
+    
+    /**
+     * Used for retrieving DvObject based on a list of parent Ids
+     *  MyData use case: The Dataverse has file permissions and we want to know 
+     *  the Datasets under that Dataverse (and subsequently query files by
+     *  their parent id--but in solr)
+     * 
+     * @param dvObjectParentIdList
+     * @return 
+     */
+    public List<Object[]> getDvObjectInfoByParentIdForMyData(List<Long> dvObjectParentIdList){
+        //msgt("getAssigneeAndRoleIdListFor");
+
+        String dvObjectClause = getDvObjectIdListClause(dvObjectParentIdList);
+        if (dvObjectClause==null){
+            return null;
+        }
+        
+        String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
+        qstr += " FROM dvobject dv";
+        qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
+        qstr += ";";
+
+        return em.createNativeQuery(qstr).getResultList();
+        
+    }
+    
+    /**
+     * Used to exclude Harvested Data from the Mydata page
+     * 
+     * @return 
+     */
+    public List<Long> getAllHarvestedDataverseIds(){
+        
+        String qstr = "SELECT h.dataverse_id FROM harvestingdataverseconfig h;";
+
+        return em.createNativeQuery(qstr)
+                        .getResultList();
+        
+    }
 }

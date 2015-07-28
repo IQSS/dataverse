@@ -1,1 +1,1 @@
-"Please provide a key query parameter (?key=XXX)"
+"Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"

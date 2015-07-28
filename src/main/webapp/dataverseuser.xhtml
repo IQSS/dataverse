@@ -21,6 +21,8 @@
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
+
+                    <ui:remove>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                     <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
@@ -38,6 +40,7 @@
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search(true)}" />
+                    </ui:remove>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
                 <h:form id="dataverseUserForm">
@@ -78,11 +81,19 @@
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
-
+                    
+                        
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:dataverseuser_page_rebind();" />
+                        <p:tab id="myData" title="My Data">
+                            <ui:include src="mydata_fragment.xhtml"></ui:include>
+                            <!--ui:include src="mydata_page.xhtml"></ui:include-->
+                        </p:tab>
+
+                        <ui:remove>
                         <p:tab id="dataRelatedToMe" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:fragment>
+
                                 <ui:include src="search-include-fragment.xhtml">
                                     <ui:param name="showFacets" value="true"/>
                                     <ui:param name="showSearch" value="true"/>
@@ -90,6 +101,7 @@
                                 </ui:include>
                             </ui:fragment>
                         </p:tab>
+                        </ui:remove>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <div class="table-container">
                                 <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
@@ -102,7 +114,10 @@
                                                 <ui:fragment rendered="#{item.type == 'CREATEACC'}">
                                                     <i class="icon-dataverse text-icon-inline text-muted"></i>                                        
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
-                                                        <f:param value="#{dataverseServiceBean.applicationVersion}"/>
+                                                        <f:param value="#{dataverseServiceBean.findRootDataverse().name}"/>
+                                                        <f:param value="#{bundle.dataverse}"/>
+                                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                        <f:param value="#{systemConfig.version}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
@@ -182,12 +197,75 @@
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>  
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'ASSIGNROLE'}">
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.dataverse']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.dataset']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.granted.datafile']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'REVOKEROLE'}">
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataverse()}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.dataverse']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getAlias()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataset()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.dataset']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{item.theObject.isInstanceofDataFile()}">
+                                                    <f:param value="#{item.roleString}"/>
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.access.revoked.datafile']}" escape="false">
+                                                        <f:param value="#{item.roleString}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getOwner().getDisplayName()}"/>
+                                                    </h:outputFormat>  
+                                                    </ui:fragment>
+                                                </ui:fragment>
                                             </ui:fragment>
                                             <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
                                         </div>
                                         <div class="notification-item-cell">
                                             <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip"
-                                                           action="#{DataverseUserPage.remove(item.id)}" update=":#{p:component('notifications')}"
+                                                           action="#{DataverseUserPage.remove(item.id)}" update="@form"
                                                            oncomplete="bind_bsui_components();">
                                                 <span class="glyphicon glyphicon-remove"></span>
                                             </p:commandLink>

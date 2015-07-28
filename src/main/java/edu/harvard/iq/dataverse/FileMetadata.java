@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +52,24 @@ public class FileMetadata implements Serializable {
     @JoinColumn(nullable=false)
     private DataFile dataFile;
 
+    /**
+     * Creates a copy of {@code this}, with identical business logic fields.
+     * E.g., {@link #label} would be duplicated; {@link #version} will not.
+     * 
+     * @return A copy of {@code this}, except for the DB-related data.
+     */
+    public FileMetadata createCopy() {
+        FileMetadata fmd = new FileMetadata();
+        fmd.setCategories(new LinkedList<>(getCategories()) );
+        fmd.setDataFile( getDataFile() );
+        fmd.setDatasetVersion( getDatasetVersion() );
+        fmd.setDescription( getDescription() );
+        fmd.setLabel( getLabel() );
+        fmd.setRestricted( isRestricted() );
+        
+        return fmd;
+    }
+    
     public String getLabel() {
         return label;
     }
@@ -68,15 +87,6 @@ public class FileMetadata implements Serializable {
         this.description = description;
     }
 
-    // TODO: remove the following 2 methods: -- L.A. beta 10
-    //public String getCategory() {
-    //    return category;
-    //}
-
-    //public void setCategory(String category) {
-    //    this.category = category;
-    //}
-
     public boolean isRestricted() {
         return restricted;
     }
@@ -89,7 +99,7 @@ public class FileMetadata implements Serializable {
     /* 
      * File Categories to which this version of the DataFile belongs: 
      */
-    @ManyToMany (cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToMany
     @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
     private List<DataFileCategory> fileCategories;
     

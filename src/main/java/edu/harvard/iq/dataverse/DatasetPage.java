@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -253,6 +255,11 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         dataversesForLinking.remove(dataset.getOwner());
+        Dataverse testDV = dataset.getOwner();
+        while(testDV.getOwner() != null){
+            dataversesForLinking.remove(testDV.getOwner());
+            testDV = testDV.getOwner();
+        }                      
         
         for (Dataverse removeLinked : dsLinkingService.findLinkingDataverses(dataset.getId())) {
             dataversesForLinking.remove(removeLinked);
@@ -1017,7 +1024,11 @@ public class DatasetPage implements java.io.Serializable {
            //  > Go to the Login page
            //
            if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
-               return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+               if(!session.getUser().isAuthenticated()){
+                   return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+               } else {
+                   return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+               }               
            }
          
            if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()){
@@ -1049,7 +1060,11 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.getOwner() == null) {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
-                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+                if(!session.getUser().isAuthenticated()){
+                   return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+               } else {
+                   return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+               }
             }
 
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
@@ -1615,8 +1630,13 @@ public class DatasetPage implements java.io.Serializable {
         LinkDatasetCommand cmd = new LinkDatasetCommand(session.getUser(), linkingDataverse, dataset);
         try {
             commandEngine.submit(cmd);
-            JsfHelper.addFlashMessage("This dataset is now linked to " + linkingDataverse.getDisplayName());
-            //JsfHelper.addSuccessMessage(JH.localize("dataset.message.linkSuccess")+ linkingDataverse.getDisplayName());
+            //JsfHelper.addFlashMessage(JH.localize("dataset.message.linkSuccess")  + linkingDataverse.getDisplayName());
+            List<String> arguments = new ArrayList();
+            arguments.add(dataset.getDisplayName());
+            arguments.add(systemConfig.getDataverseSiteUrl());
+            arguments.add(linkingDataverse.getAlias());
+            arguments.add(linkingDataverse.getDisplayName());
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", arguments));
             //return "";
 
         } catch (CommandException ex) {
@@ -1723,7 +1743,7 @@ public class DatasetPage implements java.io.Serializable {
                 Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
                     FileMetadata fmd = (FileMetadata) fmit.next();
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(fmd.getDataFile().getFileSystemName())) {
+                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                         fmit.remove();
                         break;
                     }
@@ -1732,7 +1752,7 @@ public class DatasetPage implements java.io.Serializable {
                 Iterator<DataFile> dfIt = dataset.getFiles().iterator();
                 while (dfIt.hasNext()) {
                     DataFile dfn = dfIt.next();
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                         
                         // Before we remove the file from the list and forget about 
                         // it:
@@ -1750,10 +1770,10 @@ public class DatasetPage implements java.io.Serializable {
                         // local filesystem: 
 
                         try {
-                            Files.delete(Paths.get(ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName()));
+                            Files.delete(Paths.get(ingestService.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier()));
                         } catch (IOException ioEx) {
                             // safe to ignore - it's just a temp file. 
-                            logger.warning("Failed to delete temporary file " + ingestService.getFilesTempDirectory() + "/" + dfn.getFileSystemName());
+                            logger.warning("Failed to delete temporary file " + ingestService.getFilesTempDirectory() + "/" + dfn.getStorageIdentifier());
                         }
                         
                         dfIt.remove();
@@ -1766,7 +1786,7 @@ public class DatasetPage implements java.io.Serializable {
                 Iterator<DataFile> nfIt = newFiles.iterator();
                 while (nfIt.hasNext()) {
                     DataFile dfn = nfIt.next();
-                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
+                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                         nfIt.remove();
                     }
                 }                
@@ -2179,7 +2199,7 @@ public class DatasetPage implements java.io.Serializable {
                     Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmIt.hasNext()) {
                         FileMetadata fm = fmIt.next();
-                        if (fm.getId() == null && dFile.getFileSystemName().equals(fm.getDataFile().getFileSystemName())) {
+                        if (fm.getId() == null && dFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
                             fmIt.remove();
                             break;
                         }
@@ -2188,7 +2208,7 @@ public class DatasetPage implements java.io.Serializable {
                     Iterator<DataFile> dfIt = dataset.getFiles().iterator();
                     while (dfIt.hasNext()) {
                         DataFile dfn = dfIt.next();
-                        if (dfn.getId() == null && dFile.getFileSystemName().equals(dfn.getFileSystemName())) {
+                        if (dfn.getId() == null && dFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                             dfIt.remove();
                             break;
                         }
@@ -2650,9 +2670,15 @@ public class DatasetPage implements java.io.Serializable {
             // configuration service, it must mean that TwoRavens is sitting 
             // on some remote server. And that in turn means that we must use 
             // full URLs to pass data and metadata to it. 
+            // update: actually, no we don't want to use this "dataurl" notation.
+            // switching back to the dfId=:
+            // -- L.A. 4.1
+            /*
             String tabularDataURL = getTabularDataFileURL(fileid);
             String tabularMetaURL = getVariableMetadataURL(fileid);
             return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL + "&" + getApiTokenKey();
+            */
+            return TwoRavensUrl + "?dfId=" + fileid + "&" + getApiTokenKey();
         }
 
         // For a local TwoRavens setup it's enough to call it with just 
@@ -3123,7 +3149,7 @@ public class DatasetPage implements java.io.Serializable {
 
         // create notifications
         for (AuthenticatedUser au : permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset)) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, dataset.getId());
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, file.getId());
         }
     }
 }

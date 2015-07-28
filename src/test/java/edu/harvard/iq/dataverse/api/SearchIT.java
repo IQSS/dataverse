@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.common.base.Stopwatch;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
@@ -8,8 +9,12 @@ import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -34,9 +39,15 @@ public class SearchIT {
     private static TestUser homer;
     private static TestUser ned;
     private static final String dv1 = "dv1";
+    private static final String dv2 = "dv2";
     private static String dataset1;
+    private static String dataset2;
     private static long nedAdminOnRootAssignment;
-    private static final String dataverseToCreateDataset1In = "root";
+    private static String dataverseToCreateDataset1In = "root";
+    private static final String dataverseToCreateDataset2In = "dv2";
+    private static final boolean homerGivesNedPermissionAtRootTestDisabled = false;
+    private static final boolean homerGivesNedPermissionAtNewDvDisabled = false;
+    private Stopwatch timer;
 
     public SearchIT() {
     }
@@ -54,24 +65,41 @@ public class SearchIT {
         JsonObject homerJsonObject = createUser(getUserAsJsonString("homer", "Homer", "Simpson"));
         homer = new TestUser(homerJsonObject);
 
+        Response makeSuperUserResponse = makeSuperuser(homer.getUsername());
+        assertEquals(200, makeSuperUserResponse.getStatusCode());
+
         JsonObject nedJsonObject = createUser(getUserAsJsonString("ned", "Ned", "Flanders"));
         ned = new TestUser(nedJsonObject);
     }
 
     @Test
     public void homerGivesNedPermissionAtRoot() {
+        if (homerGivesNedPermissionAtRootTestDisabled) {
+            return;
+        }
 
         Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
         assertEquals(200, enableNonPublicSearch.getStatusCode());
 
-        Response makeSuperUserResponse = makeSuperuser(homer.getUsername());
-        assertEquals(200, makeSuperUserResponse.getStatusCode());
+        long rootDataverseId = 1;
+        String rootDataverseAlias = getDataverseAlias(rootDataverseId, homer.getApiToken());
+        if (rootDataverseAlias != null) {
+            dataverseToCreateDataset1In = rootDataverseAlias;
+        }
 
         String xmlIn = getDatasetXml(homer.getUsername(), homer.getUsername(), homer.getUsername());
         Response createDataset1Response = createDataset(xmlIn, dataverseToCreateDataset1In, homer.getApiToken());
+//        System.out.println(createDataset1Response.prettyPrint());
         assertEquals(201, createDataset1Response.getStatusCode());
 
         dataset1 = getGlobalId(createDataset1Response);
+//        String zipFileName = "1000files.zip";
+        String zipFileName = "trees.zip";
+        try {
+            Response uploadZipFileResponse = uploadZipFile(dataset1, zipFileName, homer.getApiToken());
+        } catch (FileNotFoundException ex) {
+            System.out.println("Problem uploading " + zipFileName + ": " + ex.getMessage());
+        }
 
         Integer idHomerFound = printDatasetId(dataset1, homer);
         assertEquals(true, idHomerFound != null);
@@ -80,18 +108,99 @@ public class SearchIT {
         String roleToAssign = "admin";
         assertEquals(null, idNedFoundBeforeBecomingAdmin);
 
+        timer = Stopwatch.createStarted();
         Response grantNedAdminOnRoot = grantRole(dataverseToCreateDataset1In, roleToAssign, ned.getUsername(), homer.getApiToken());
+//        System.out.println(grantNedAdminOnRoot.prettyPrint());
+        System.out.println("Method took: " + timer.stop());
         assertEquals(200, grantNedAdminOnRoot.getStatusCode());
 
         Integer idNedFoundAfterBecomingAdmin = printDatasetId(dataset1, ned);
+//        Response contentDocResponse = querySolr("entityId:" + idHomerFound);
+//        System.out.println(contentDocResponse.prettyPrint());
+//        Response permDocResponse = querySolr("definitionPointDvObjectId:" + idHomerFound);
+//        System.out.println(idHomerFound + " was found by homer (user id " + homer.getId() + ")");
+//        System.out.println(idNedFoundAfterBecomingAdmin + " was found by ned (user id " + ned.getId() + ")");
         assertEquals(idHomerFound, idNedFoundAfterBecomingAdmin);
 
         nedAdminOnRootAssignment = getRoleAssignmentId(grantNedAdminOnRoot);
+        timer = Stopwatch.createStarted();
         Response revokeNedAdminOnRoot = revokeRole(dataverseToCreateDataset1In, nedAdminOnRootAssignment, homer.getApiToken());
+//        System.out.println(revokeNedAdminOnRoot.prettyPrint());
+        System.out.println("Method took: " + timer.stop());
         assertEquals(200, revokeNedAdminOnRoot.getStatusCode());
 
         Integer idNedFoundAfterNoLongerAdmin = printDatasetId(dataset1, ned);
         assertEquals(null, idNedFoundAfterNoLongerAdmin);
+
+        Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, disableNonPublicSearch.getStatusCode());
+
+    }
+
+    @Test
+    public void homerGivesNedPermissionAtNewDv() {
+        if (homerGivesNedPermissionAtNewDvDisabled) {
+            return;
+        }
+
+        Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, enableNonPublicSearch.getStatusCode());
+
+        TestDataverse dataverseToCreate = new TestDataverse(dv2, dv2, Dataverse.DataverseType.ORGANIZATIONS_INSTITUTIONS);
+        Response createDvResponse = createDataverse(dataverseToCreate, homer);
+        assertEquals(201, createDvResponse.getStatusCode());
+
+        String xmlIn = getDatasetXml(homer.getUsername(), homer.getUsername(), homer.getUsername());
+        Response createDataset1Response = createDataset(xmlIn, dataverseToCreateDataset2In, homer.getApiToken());
+        assertEquals(201, createDataset1Response.getStatusCode());
+
+        dataset2 = getGlobalId(createDataset1Response);
+//        String zipFileName = "noSuchFile.zip";
+        String zipFileName = "trees.zip";
+//        String zipFileName = "100files.zip";
+//        String zipFileName = "1000files.zip";
+
+        timer = Stopwatch.createStarted();
+        Response uploadZipFileResponse;
+        try {
+            uploadZipFileResponse = uploadZipFile(dataset2, zipFileName, homer.getApiToken());
+        } catch (FileNotFoundException ex) {
+            System.out.println("Problem uploading " + zipFileName + ": " + ex.getMessage());
+        }
+        System.out.println("Method took: " + timer.stop());
+
+        Integer idHomerFound = printDatasetId(dataset2, homer);
+        List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset2, idHomerFound, homer.getApiToken());
+        System.out.println("file ids found: " + idsOfFilesUploaded);
+        if (!idsOfFilesUploaded.isEmpty()) {
+            int firstFileId = idsOfFilesUploaded.get(0);
+            checkPermissionsOnDvObject(firstFileId, homer.getApiToken());
+        }
+        assertEquals(true, idHomerFound != null);
+//
+//        Integer idNedFoundBeforeBecomingAdmin = printDatasetId(dataset1, ned);
+        String roleToAssign = "admin";
+//        assertEquals(null, idNedFoundBeforeBecomingAdmin);
+
+        timer = Stopwatch.createStarted();
+        Response grantNedAdmin = grantRole(dataverseToCreateDataset2In, roleToAssign, ned.getUsername(), homer.getApiToken());
+//        System.out.println(grantNedAdmin.prettyPrint());
+        System.out.println("Method took: " + timer.stop());
+//        assertEquals(200, grantNedAdmin.getStatusCode());
+
+        Integer idNedFoundAfterBecomingAdmin = printDatasetId(dataset2, ned);
+
+        if (!idsOfFilesUploaded.isEmpty()) {
+            int firstFileId = idsOfFilesUploaded.get(0);
+            checkPermissionsOnDvObject(firstFileId, homer.getApiToken());
+            Response solrQueryPerms = querySolr(SearchFields.DEFINITION_POINT_DVOBJECT_ID + ":" + firstFileId);
+//            solrQueryPerms.prettyPrint();
+            Response solrQueryContent = querySolr(SearchFields.ENTITY_ID + ":" + firstFileId);
+//            solrQueryContent.prettyPrint();
+        }
+
+        System.out.println(idHomerFound + " was found by homer (user id " + homer.getId() + ")");
+        System.out.println(idNedFoundAfterBecomingAdmin + " was found by ned (user id " + ned.getId() + ")");
 
         Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
         assertEquals(200, disableNonPublicSearch.getStatusCode());
@@ -145,12 +254,26 @@ public class SearchIT {
          * "DELETE FROM roleassignment WHERE assigneeidentifier='@ned';"
          */
         Response revokeNedAdminOnRoot = revokeRole(dataverseToCreateDataset1In, nedAdminOnRootAssignment, homer.getApiToken());
+//        System.out.println(revokeNedAdminOnRoot.prettyPrint());
         System.out.println("cleanup - status code revoking admin on root from ned: " + revokeNedAdminOnRoot.getStatusCode());
-        Response deleteDataset1Response = deleteDataset(dataset1, homer.getApiToken());
-        assertEquals(204, deleteDataset1Response.getStatusCode());
+
+        if (!homerGivesNedPermissionAtRootTestDisabled) {
+            Response deleteDataset1Response = deleteDataset(dataset1, homer.getApiToken());
+            assertEquals(204, deleteDataset1Response.getStatusCode());
+        }
+
+        if (!homerGivesNedPermissionAtNewDvDisabled) {
+            Response deleteDataset2Response = deleteDataset(dataset2, homer.getApiToken());
+            assertEquals(204, deleteDataset2Response.getStatusCode());
+        }
 
         Response deleteDv1Response = deleteDataverse(dv1, homer);
         assertEquals(200, deleteDv1Response.getStatusCode());
+
+        if (!homerGivesNedPermissionAtNewDvDisabled) {
+            Response deleteDv2Response = deleteDataverse(dv2, homer);
+            assertEquals(200, deleteDv2Response.getStatusCode());
+        }
 
         deleteUser(homer.getUsername());
         deleteUser(ned.getUsername());
@@ -169,6 +292,14 @@ public class SearchIT {
     private Response checkSetting(SettingsServiceBean.Key settingKey) {
         Response response = given().when().get("/api/admin/settings/" + settingKey);
         return response;
+    }
+
+    private static String getDataverseAlias(long dataverseId, String apiToken) {
+        Response getDataverse = given()
+                .get("api/dataverses/" + dataverseId + "?key=" + apiToken);
+        JsonPath jsonPath = JsonPath.from(getDataverse.body().asString());
+        String dataverseAlias = jsonPath.get("data.alias");
+        return dataverseAlias;
     }
 
     private static Response createDataverse(TestDataverse dataverseToCreate, TestUser creator) {
@@ -197,9 +328,15 @@ public class SearchIT {
         return createDatasetResponse;
     }
 
+    private Response querySolr(String query) {
+        Response querySolrResponse = given().get("http://localhost:8983/solr/collection1/select?wt=json&indent=true&q=" + query);
+        return querySolrResponse;
+    }
+
     private static JsonObject createUser(String jsonStr) {
         JsonObjectBuilder createdUser = Json.createObjectBuilder();
         Response response = createUserViaApi(jsonStr, getPassword(jsonStr));
+//        System.out.println(response.prettyPrint());
         Assert.assertEquals(200, response.getStatusCode());
         JsonPath jsonPath = JsonPath.from(response.body().asString());
         createdUser.add(idKey, jsonPath.getInt("data.user." + idKey));
@@ -305,6 +442,7 @@ public class SearchIT {
     }
 
     private static Response deleteDataverse(String doomed, TestUser user) {
+//        System.out.println("deletingn dataverse " + doomed);
         return given().delete("/api/dataverses/" + doomed + "?key=" + user.getApiToken());
     }
 
@@ -337,6 +475,60 @@ public class SearchIT {
                         + "&q=" + query.getQuery()
                         + "&show_facets=" + true
                 );
+    }
+
+    private Response uploadZipFile(String persistentId, String zipFileName, String apiToken) throws FileNotFoundException {
+        String pathToFileName = "scripts/search/data/binary/" + zipFileName;
+        Response swordStatementResponse = given()
+                .multiPart(new File(pathToFileName))
+                .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
+                .header("Content-Disposition", "filename=" + zipFileName)
+                .auth().basic(apiToken, EMPTY_STRING)
+                .post("/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/" + persistentId);
+        return swordStatementResponse;
+    }
+
+    private List<Integer> getIdsOfFilesUploaded(String persistentId, Integer datasetId, String apiToken) {
+        getSwordStatement(persistentId, apiToken);
+        if (datasetId != null) {
+            List fileList = getFilesFromDatasetEndpoint(datasetId, apiToken);
+            if (!fileList.isEmpty()) {
+                return fileList;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private Response getSwordStatement(String persistentId, String apiToken) {
+        Response swordStatementResponse = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .get("/dvn/api/data-deposit/v1.1/swordv2/statement/study/" + persistentId);
+        return swordStatementResponse;
+    }
+
+    private List getFilesFromDatasetEndpoint(Integer datasetId, String apiToken) {
+        List<Integer> fileList = new ArrayList<>();
+        Response getDatasetFilesResponse = given()
+                .get("api/datasets/" + datasetId + "/versions/:latest/files?key=" + apiToken);
+        JsonPath jsonPath = JsonPath.from(getDatasetFilesResponse.body().asString());
+//        Integer fileId = jsonPath.get("data[0].datafile.id");
+        Map dataFiles = jsonPath.get("data[0]");
+        if (dataFiles != null) {
+            Map datafile = (Map) dataFiles.get("datafile");
+            if (datafile != null) {
+                Integer fileId = (Integer) datafile.get("id");
+                if (fileId != null) {
+                    fileList.add(fileId);
+                }
+            }
+        }
+        return fileList;
+    }
+
+    private void checkPermissionsOnDvObject(int dvObjectId, String apiToken) {
+        Response debugPermsResponse = given()
+                .get("api/admin/index/permsDebug/?id=" + dvObjectId + "&key=" + apiToken);
+//        debugPermsResponse.prettyPrint();
     }
 
     private static class TestUser {

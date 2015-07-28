@@ -6,7 +6,7 @@ Prerequisites
 
 Java
 ----------------------------
-Oracle JDK 1.7.x. Use the latest available. OpenJDK should also work but we are recommending using the Oracle distribution. ::
+Oracle JDK or OpenJDK 1.7.x. Use the latest available. MacOS X comes with the JDK (but make sure you keep it updated). On a RedHat and similar Linux distributions, install it with something like ::
 
 	$ yum install java-1.7.0-openjdk-devel
 
@@ -14,54 +14,97 @@ Oracle JDK 1.7.x. Use the latest available. OpenJDK should also work but we are 
 Glassfish
 ----------------------------
 
-Required Glassfish Versiion 4.1 is with weld v.2.2.4 module.
+Glassfish Version 4.1 is required. 
+
+**Important**: once Glassfish is installed, a new version of the WELD library (v2.2.10.SP1) must be downloaded and installed. This fixes a serious issue in the library supplied with Glassfish 4.1. 
 
 
-- Download Glassfish::
+- Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
 
 	$ wget http://dlc-cdn.sun.com/glassfish/4.1/release/glassfish-4.1.zip
-	$ rsync -auv glassfish4 /usr/local
+	$ unzip glassfish-4.1.zip
+	$ mv glassfish4 /usr/local
+
+- Remove the stock WELD jar; download WELD v2.2.10.SP1 and install it in the modules folder::
+
 	$ cd /usr/local/glassfish4/glassfish/modules
-	$ mv weld-osgi-bundle.jar weld-osgi-bundle.jar.2.2
-
-- Download weld v.2.2.4 and copy in the modules folder::
-
-	$ wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.4.Final/weld-osgi-bundle-2.2.4.Final.jar
-	$ cp weld-osgi-bundle-2.2.4.Final.jar /usr/local/glassfish4/glassfish/modules/
-	$ service glassfish start
+	$ /bin/rm weld-osgi-bundle.jar
+	$ wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
+	$ /usr/local/glassfish4/bin/asadmin start-domain domain1
 
 - Verify Weld version::
 
-	$./asadmin osgi lb | grep 'Weld OSGi Bundle'
+	$ /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
 PostgreSQL
 ----------------------------
 
-- Install Postgres the EPEL repository. ::
+1. Installation
+================
+
+Version 9.3 is recommended. 
+
+1A. RedHat and similar systems:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We recommend installing Postgres from the EPEL repository::
 
 	$ wget http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-centos93-9.3-1.noarch.rpm
 	rpm -ivh pgdg-centos93-9.3-1.noarch.rpm
-
-- Install PostgreSQL::
 
 	$ yum install postgresql93-server.x86_64
 	$ chkconfig postgresql-9.3 on
 	$ service postgresql-9.3 initdb 
 	$ service postgresql-9.3 start
-	$ cd /etc/init.d; mv postgresql-9.3 postgres; chmod +x postgres
 
+1B. MacOS X:
+~~~~~~~~~~~~~
 
-- The installer script needs to have direct access to the local PostgresQL server via Unix domain sockets. So this needs to be set to either “trust” or “ident”. 
-I.e., your pg_hba.conf must contain either of the 2 lines below::
-	local all all ident sameuser
-	or
-	local all all trust
+A distribution from `http://www.enterprisedb.com <http://www.enterprisedb.com/products-services-training/pgdownload#osx>`__ is recommended. Fink and MacPorts distributions are also readily available. See `http://www.postgresql.org/download/macosx/ <http://www.postgresql.org/download/macosx/>`__ for more information.
+
+2. Configure access to PostgresQL for the installer script
+==========================================================
+
+- The installer script needs to have direct access to the local PostgresQL server via Unix domain sockets. This is configured by the line that starts with "local all all" in the pg_hba.conf file. The location of this file may vary depending on the distribution. But if you followed the suggested installtion instructions above, it will be ``/var/lib/pgsql/9.3/data/pg_hba.conf`` on RedHat (and similar) and ``/Library/PostgreSQL/9.3/data/pg_hba.conf`` on MacOS. Make sure the line looks like this (it will likely be pre-configured like this already)::
+
+	local all all       peer
+
+- If the installer still fails to connect to the databse, we recommend changing this configuration entry to ``trust``::
+
+     	 local all all      trust
+
+  This is a security risk, as it opens your database to anyone with a shell on your server. It does not however compromise remote access to your system. Plus you only need this configuration in place to run the installer. After it's done, you can safely reset it to how it was configured before.
+
+3. Configure database access for the Dataverse application
+==========================================================
+
+- The application will be talking to PostgresQL over TCP/IP, using password authentication. If you are running PostgresQL on the same server as Glassfish, we strongly recommend that you use the localhost interface to connect to the databse. Make you sure you accept the default value ``localhost`` when the installer asks you for the PostgresQL server address. Then find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this:: 
+
+  	host all all 127.0.0.1/32 password
+
+- If the Dataverse application is running on a different server, you will need to add a new entry to the ``pg_hba.conf`` granting it access by its network address::
+
+        host all all [ADDRESS]      255.255.255.255 password
+
+  (``[ADDRESS]`` should be the numeric IP address of the Glassfish server).
+
+- In some distributions, PostgresQL is pre-configured so that it doesn't accept network connections at all. Check that the ``listen_address`` line in the configuration file ``postgresql.conf`` is not commented-out and looks like this:: 
+
+        listen_addresses='*' 
+
+  The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
+
+- **Important: you must restart Postgres** for the configuration changes to take effect! On RedHat and similar (provided you installed Postgres as instructed above)::
+        
+        $ service postgresql-9.3 restart
+
+  (On MacOS, you may need to restart your system, to be sure).
+
 
 Solr 
 ---------------------------
 
 - Download and Install Solr::
-
 	$ wget https://archive.apache.org/dist/lucene/solr/4.6.0/solr-4.6.0.tgz
 	$ tar xvzf solr-4.6.0.tgz 
 	$ rsync -auv solr-4.6.0 /usr/local/
@@ -69,6 +112,7 @@ Solr
 	$ mv schema.xml schema.xml.backup
 	$ wget -q --no-check-certificate https://github.com/IQSS/dataverse/raw/master/conf/solr/4.6.0/schema.xml
 	
+  In order to start Solr, you will need a customized schema file that is supplied in the Dataverse distribution bundle. 
 
 Start Up Scripts
 ------------------
@@ -88,20 +132,13 @@ Start Up Scripts
         	# the amount of memory glassfish is already using)
         	echo 1 > /proc/sys/vm/overcommit_memory
 
-        	#echo
-        	#echo "GLASSFISH IS UNDER MAINTENANCE;"
-        	#echo "PLEASE DO NOT USE service init script."
-        	#echo
-			LANG=en_US.UTF-8; export LANG
+		# Set UTF8 as the default encoding:
+		LANG=en_US.UTF-8; export LANG
         	$ASADMIN start-domain domain1
         	echo "."
         	;;
   		  stop)
         	echo -n "Stopping GlassFish server: glassfish"
-        	#echo
-        	#echo "GLASSFISH IS UNDER MAINTENANCE;"
-        	#echo "PLEASE DO NOT USE service init script."
-        	#echo
 
         	$ASADMIN stop-domain domain1
         	echo "."

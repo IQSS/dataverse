@@ -20,11 +20,11 @@
                     <div class="col-sm-9">
                         <p:panelGrid columns="2" styleClass="noBorders">
                             <p:inputText id="explicitGroupIdentifier" styleClass="form-control"
-										 value="#{managePermissionsPage.explicitGroupIdentifier}"
+										 value="#{manageGroupsPage.explicitGroupIdentifier}"
                                          required="#{param['DO_GROUP_VALIDATION']}"
                                          requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.required']}"
-                                         validator="#{managePermissionsPage.validateGroupIdentifier}"
-										binding="#{managePermissionsPage.explicitGroupIdentifierField}"/>
+                                         validator="#{manageGroupsPage.validateGroupIdentifier}"
+										binding="#{manageGroupsPage.explicitGroupIdentifierField}"/>
                             <p:message for="explicitGroupIdentifier"/>
                         </p:panelGrid>
                         <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.helpText']}</p>
@@ -36,7 +36,7 @@
                     </label>
                     <div class="col-sm-9">
                         <p:panelGrid columns="2" styleClass="noBorders">
-                            <p:inputText id="explicitGroupName" styleClass="form-control" value="#{managePermissionsPage.explicitGroupName}"
+                            <p:inputText id="explicitGroupName" styleClass="form-control" value="#{manageGroupsPage.explicitGroupName}"
                                          required="#{param['DO_GROUP_VALIDATION']}"
                                          requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupName.required']}"/>
                             <p:message for="explicitGroupName"/>
@@ -48,7 +48,7 @@
                         #{bundle['dataverse.permissions.explicitGroupEditDialog.groupDescription']}
                     </label>
                     <div class="col-sm-5">
-                        <h:inputTextarea id="newExplicitGroupDescription" styleClass="form-control" value="#{managePermissionsPage.newExplicitGroupDescription}"/>
+                        <h:inputTextarea id="newExplicitGroupDescription" styleClass="form-control" value="#{manageGroupsPage.newExplicitGroupDescription}"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -58,8 +58,8 @@
                     <div class="col-sm-9">
                         <p:autoComplete id="roleAssigneeName" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
                                         multiple="true" scrollHeight="180" forceSelection="true" emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
-                                        value="#{managePermissionsPage.newExplicitGroupRoleAssignees}"  
-                                        completeMethod="#{managePermissionsPage.completeRoleAssignee}"
+                                        value="#{manageGroupsPage.newExplicitGroupRoleAssignees}"
+                                        completeMethod="#{manageGroupsPage.completeRoleAssignee}"
                                         var="roleAssignee" 
                                         itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                             <p:column>
@@ -72,15 +72,15 @@
                             <p:ajax process="@this" event="itemSelect" />
                             <p:ajax process="@this" event="itemUnselect" />
                         </p:autoComplete>
-                        <p:message for="userGroupNameAssign" display="text"/>
+                        <!-- <p:message for="roleAssigneeName" display="text"/> -->
                     </div>
                 </div>
             </div>
             <div class="button-block">
                 <p:commandLink type="button" styleClass="btn btn-default" 
                                value="#{bundle['dataverse.permissions.explicitGroupEditDialog.createGroup']}"
-                               update="explicitGroupNewDialogContent @([id$=Messages])"
-                               actionListener="#{managePermissionsPage.saveExplicitGroup}" 
+                               update="explicitGroupNewDialogContent allGroups :messagePanel"
+                               actionListener="#{manageGroupsPage.createExplicitGroup}"
                                oncomplete="if (args &amp;&amp; !args.validationFailed) explicitGroupForm.hide();">
                     <f:param name="DO_GROUP_VALIDATION" value="true"/>
                 </p:commandLink>

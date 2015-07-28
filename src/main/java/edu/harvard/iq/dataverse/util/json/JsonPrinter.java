@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -338,7 +339,7 @@ public class JsonPrinter {
 				.add("id", df.getId() )
 				.add("name", fileName)
 				.add("contentType", df.getContentType())
-				.add("filename", df.getFilename())
+				.add("filename", df.getStorageIdentifier())
 				.add("originalFileFormat", df.getOriginalFileFormat())
 				.add("originalFormatLabel", df.getOriginalFormatLabel())
 				.add("UNF", df.getUnf())
@@ -427,25 +428,33 @@ public class JsonPrinter {
                 ;
     }
     
-    public static JsonObjectBuilder json(ExplicitGroup eg ) {
-        JsonArrayBuilder ras = Json.createArrayBuilder();
-        for ( String u : eg.getContainedRoleAssgineeIdentifiers() ) {
-            ras.add(u);
+    public static <T> JsonObjectBuilder json(T j ) {
+        if (j instanceof ExplicitGroup) {
+            ExplicitGroup eg = (ExplicitGroup) j;
+            JsonArrayBuilder ras = Json.createArrayBuilder();
+            for ( String u : eg.getContainedRoleAssgineeIdentifiers() ) {
+                ras.add(u);
+            }
+            return jsonObjectBuilder()
+                    .add("identifier", eg.getIdentifier() )
+                    .add("groupAliasInOwner", eg.getGroupAliasInOwner() )
+                    .add("owner",eg.getOwner().getId())
+                    .add("description", eg.getDescription())
+                    .add("displayName", eg.getDisplayName())
+                    .add("containedRoleAssignees", ras);
+
+        } else { // implication: (j instanceof DataverseFacet)
+            DataverseFacet f = (DataverseFacet) j;
+            return jsonObjectBuilder()
+                    .add("id", String.valueOf(f.getId())) // TODO should just be id I think
+                    .add("name", f.getDatasetFieldType().getDisplayName());
         }
-        return jsonObjectBuilder()
-                .add("identifier", eg.getIdentifier() )
-                .add("groupAliasInOwner", eg.getGroupAliasInOwner() )
-                .add("owner",eg.getOwner().getId())
-                .add("description", eg.getDescription())
-                .add("displayName", eg.getDisplayName())
-                .add("containedRoleAssignees", ras);
-                
     }
     
-    public static JsonArrayBuilder json( Collection<ExplicitGroup> egc ) {
+    public static <T> JsonArrayBuilder json( Collection<T> jc ) {
         JsonArrayBuilder bld = Json.createArrayBuilder();
-        for ( ExplicitGroup eg : egc ) {
-            bld.add( json(eg) );
+        for ( T j : jc ) {
+            bld.add( json(j) );
         }
         return bld;
     }

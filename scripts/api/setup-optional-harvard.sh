@@ -9,8 +9,9 @@ curl -s -X PUT -d 'Dataverse is currently being upgraded. You can see the featur
 echo  "- Harvard Privacy Policy"
 curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html $SERVER/admin/settings/:ApplicationPrivacyPolicyUrl
 curl -s -X PUT -d http://best-practices.dataverse.org/harvard-policies/harvard-api-tou.html $SERVER/admin/settings/:ApiTermsOfUse
+echo "- Adjust Solr frag size"
+curl -s -X PUT -d 320 $SERVER/admin/settings/:SearchHighlightFragmentSize
 echo  "- Google Analytics setting"
-curl -s -X PUT -d UA-61753334-1 $SERVER/admin/settings/:GoogleAnalyticsCode
 curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
 curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled

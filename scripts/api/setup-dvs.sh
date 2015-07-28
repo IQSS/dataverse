@@ -23,14 +23,12 @@ echo
 
 echo Uma
 echo Pete creates top-level for Uma
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-top.json "$SERVER/dataverses/root?key=$1"
+curl -s -H "Content-type:application/json" -H "X-Dataverse-key:$1" -X POST -d @data/dv-uma-top.json "$SERVER/dataverses/root"
 echo
 echo Pete makes Uma an admin on her own DV
-curl -s -H "Content-type:application/json" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"admin\"}" $SERVER/dataverses/umaTop/assignments/?key=$1
+curl -s -H "Content-type:application/json" -H "X-Dataverse-key:$1" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"admin\"}" $SERVER/dataverses/umaTop/assignments/
 echo
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub1.json "$SERVER/dataverses/umaTop?key=$2"
+curl -s -H "Content-type:application/json" -H "X-Dataverse-key:$2" -X POST -d @data/dv-uma-sub1.json "$SERVER/dataverses/umaTop"
 echo
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub2.json "$SERVER/dataverses/umaTop?key=$2"
+curl -s -H "Content-type:application/json" -H "X-Dataverse-key:$2" -X POST -d @data/dv-uma-sub2.json "$SERVER/dataverses/umaTop"
 echo
-
-

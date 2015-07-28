@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+    echo "No custom build number specified (pass in quotes as an argument)."
+else
+    echo "build.number=$@" > src/main/java/BuildNumber.properties
+fi

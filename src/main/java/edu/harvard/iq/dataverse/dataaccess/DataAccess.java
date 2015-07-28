@@ -26,7 +26,7 @@ import java.io.IOException;
 
 /**
  *
- * @author landreev
+ * @author Leonid Andreev
  */
 
 public class DataAccess {
@@ -34,25 +34,30 @@ public class DataAccess {
 
     }
 
-    public static DataAccessObject createDataAccessObject (DataFile df) throws IOException {
+    public static DataFileIO createDataAccessObject (DataFile df) throws IOException {
         return createDataAccessObject (df, null);
     }
 
-    public static DataAccessObject createDataAccessObject (DataFile df, DataAccessRequest req) throws IOException {
+    public static DataFileIO createDataAccessObject (DataFile df, DataAccessRequest req) throws IOException {
 
         if (df == null ||
-                df.getFileSystemLocation() == null ||
-                df.getFileSystemLocation().equals("")) {
-            throw new IOException ("createDataAccessObject: null or invalid study file.");
+                df.getStorageIdentifier() == null ||
+                df.getStorageIdentifier().equals("")) {
+            throw new IOException ("createDataAccessObject: null or invalid datafile.");
         }
 
-        /*if (!sf.isRemote()) {*/
-            return new FileAccessObject (df, req);
-        /*} else if (sf.getFileSystemLocation().matches(".*census\\.gov.*")) {
-                return new CensusAccessObject (sf, req);
+        if (df.getStorageIdentifier().startsWith("file://")
+                || (!df.getStorageIdentifier().matches("^[a-z][a-z]*://.*"))) {
+            return new FileAccessIO (df, req);
         }
-
-        return new HttpAccessObject (sf, req);
-                */
+        
+        // No other storage methods are supported as of now! -- 4.0.1
+        // TODO: 
+        // This code will need to be extended with a system of looking up 
+        // available storage plugins by the storage tag embedded in the 
+        // "storage identifier". 
+        // -- L.A. 4.0.2
+        
+        throw new IOException ("createDataAccessObject: Unsupported storage method.");
     }
 }

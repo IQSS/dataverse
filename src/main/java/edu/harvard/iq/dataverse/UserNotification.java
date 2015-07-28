@@ -25,7 +25,7 @@ import javax.persistence.Transient;
 
 public class UserNotification implements Serializable {
     public enum Type {
-        CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS
+        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, MAPLAYERUPDATED, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS
     };
     
     private static final long serialVersionUID = 1L;
@@ -47,6 +47,10 @@ public class UserNotification implements Serializable {
 
     @Transient
     private boolean displayAsRead;
+    
+    @Transient 
+    String roleString;
+    
     private boolean emailed;
 
     public Long getId() {
@@ -107,6 +111,7 @@ public class UserNotification implements Serializable {
     public void setTheObject(Object theObject) {
         this.theObject = theObject;
     }
+    
         
     public boolean isDisplayAsRead() {
         return displayAsRead;
@@ -122,5 +127,13 @@ public class UserNotification implements Serializable {
 
     public void setEmailed(boolean emailed) {
         this.emailed = emailed;
-    }        
+    }    
+    
+    public String getRoleString() {
+        return roleString;
+    }
+
+    public void setRoleString(String roleString) {
+        this.roleString = roleString;
+    }
 }

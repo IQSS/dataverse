@@ -33,6 +33,11 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /**
+         * Override Solr highlighting "fragsize"
+         * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
+         */
+        SearchHighlightFragmentSize,
        /**
         * Domain name specific code for Google Analytics
         *//**
@@ -106,6 +111,8 @@ public class SettingsServiceBean {
         MaxFileUploadSizeInBytes,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
+        /** Key for if Shibboleth is enabled or disabled. */
+        ShibUseHeaders,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
         /** Key for the url to send users who want to sign up to. */
@@ -143,7 +150,15 @@ public class SettingsServiceBean {
         /* full text of status message, to appear in popup */
         StatusMessageText,
         /* return email address for system emails such as notifications */
-        SystemEmail;
+        SystemEmail, 
+        /* size limit for Tabular data file ingests */
+        /* (can be set separately for specific ingestable formats; in which 
+        case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
+        where {FORMAT_NAME} is the format identification tag returned by the 
+        getFormatName() method in the format-specific plugin; "sav" for the 
+        SPSS/sav format, "RData" for R, etc.
+        for example: :TabularIngestSizeLimit:RData */
+        TabularIngestSizeLimit;
         
         @Override
         public String toString() {
@@ -228,7 +243,7 @@ public class SettingsServiceBean {
     public String getValueForKey( Key key, String defaultValue ) {
         return get( key.toString(), defaultValue );
     }
-    
+     
     public Setting set( String name, String content ) {
         Setting s = new Setting( name, content );
         s = em.merge(s);

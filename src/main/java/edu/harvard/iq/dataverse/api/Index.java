@@ -252,21 +252,6 @@ public class Index extends AbstractApiBean {
     }
 
     /**
-     * Note that this method is best used in a migration scenario because it
-     * skips the normal Solr doc cleanup of deleting drafts and other versions
-     * from Solr.
-     */
-    @GET
-    @Path("missing")
-    public Response indexMissing() {
-        /**
-         * @todo How can we display the result?
-         */
-        Future<String> result = solrIndexService.indexMissing();
-        return okResponse("index missing started, Solr doc cleanup operations will be skipped");
-    }
-
-    /**
      * This is just a demo of the modular math logic we use for indexAll.
      */
     @GET
@@ -295,8 +280,13 @@ public class Index extends AbstractApiBean {
     @GET
     @Path("perms/{id}")
     public Response indexPermissions(@PathParam("id") Long id) {
-        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(id);
-        return okResponse(indexResponse.getMessage());
+        DvObject dvObject = dvObjectService.findDvObject(id);
+        if (dvObject == null) {
+            return errorResponse(Status.BAD_REQUEST, "Could not find DvObject based on id " + id);
+        } else {
+            IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dvObject);
+            return okResponse(indexResponse.getMessage());
+        }
     }
 
     @GET
@@ -476,12 +466,21 @@ public class Index extends AbstractApiBean {
             }
 
             // <copyField source="*_i" dest="text" maxChars="3000"/>
-            sb.append("   <copyField source=\"" + nameSearchable + "\" dest=\"text\" maxChars=\"3000\"/>\n");
+            sb.append("   <copyField source=\"").append(nameSearchable).append("\" dest=\"text\" maxChars=\"3000\"/>\n");
         }
 
         return sb.toString();
     }
 
+    static String error( String message ) {
+		JsonObjectBuilder response = Json.createObjectBuilder();
+		response.add("status", "ERROR");
+		response.add("message", message);
+		
+		return "{\n\t\"status\":\"ERROR\"\n\t\"message\":\"" + message.replaceAll("\"", "\\\\\"").replaceAll("\n","\\\\n") + "\"\n}" ;
+	}
+
+    
     /**
      * This method is for integration tests of search.
      */
@@ -534,7 +533,11 @@ public class Index extends AbstractApiBean {
             return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
         }
 
-        List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectId);
+        DvObject dvObjectToLookUp = dvObjectService.findDvObject(dvObjectId);
+        if (dvObjectToLookUp == null) {
+            return errorResponse(Status.BAD_REQUEST, "Could not find DvObject based on id " + dvObjectId);
+        }
+        List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectToLookUp);
 
         JsonObjectBuilder data = Json.createObjectBuilder();
 
@@ -548,6 +551,7 @@ public class Index extends AbstractApiBean {
             for (String perm : solrDoc.getPermissions()) {
                 perms.add(perm);
             }
+            dataDoc.add(SearchFields.DISCOVERABLE_BY, perms);
             permissionsData.add(dataDoc);
         }
         data.add("perms", permissionsData);

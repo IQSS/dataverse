@@ -59,25 +59,26 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             
             
             DataFile sf = di.getDownloadInfo().getDataFile();
-            DataAccessObject accessObject = DataAccess.createDataAccessObject(sf, daReq);
+            DataFileIO accessObject = DataAccess.createDataAccessObject(sf, daReq);
                         
             if (accessObject != null) {
                 accessObject.open();
                 
                 if (di.getConversionParam() != null) {
-                    // Image Thumbnail conversion: 
+                    // Image Thumbnail and Tabular data conversion: 
+                    // NOTE: only supported on local files, as of 4.0.2!
                     
-                    if (di.getConversionParam().equals("imageThumb")) {
+                    if (di.getConversionParam().equals("imageThumb") && accessObject.isLocalFile()) {
                         if ("".equals(di.getConversionParamValue())) {
-                            accessObject = ImageThumbConverter.getImageThumb(sf, (FileAccessObject)accessObject); 
+                            accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject); 
                         } else {
                             try {
                                 int size = new Integer(di.getConversionParamValue()).intValue();
                                 if (size > 0) {
-                                    accessObject = ImageThumbConverter.getImageThumb(sf, (FileAccessObject)accessObject, size);
+                                    accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject, size);
                                 }
                             } catch (java.lang.NumberFormatException ex) {
-                                accessObject = ImageThumbConverter.getImageThumb(sf, (FileAccessObject)accessObject);
+                                accessObject = ImageThumbConverter.getImageThumb((FileAccessIO)accessObject);
                             }
                         }
                     }
@@ -87,10 +88,16 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (di.getConversionParam().equals("noVarHeader")) {
                             accessObject.setNoVarHeader(Boolean.TRUE);
                             accessObject.setVarHeader(null);
-                        } else if (di.getConversionParam().equals("format")) {
+                        } else if (di.getConversionParam().equals("format")  && accessObject.isLocalFile()) {
                             
                             if ("original".equals(di.getConversionParamValue())) {
-                                accessObject = StoredOriginalFile.retrieve(sf, (FileAccessObject)accessObject);
+                                DataFileIO storedOrigDataAccess = StoredOriginalFile.retreive(accessObject);
+                                if (storedOrigDataAccess != null) {
+                                    accessObject = storedOrigDataAccess;
+                                } else {
+                                    // Leaving this code here for backward compatibility, for now:
+                                    accessObject = StoredOriginalFile.retrieve(sf, (FileAccessIO)accessObject);
+                                }
                             } else {
                                 // Other format conversions: 
                                 String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue()); 
@@ -102,7 +109,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 accessObject = 
                                         DataFileConverter.performFormatConversion(
                                         sf, 
-                                        (FileAccessObject)accessObject, 
+                                        (FileAccessIO)accessObject, 
                                         di.getConversionParamValue(), requestedMimeType);
                             } 
                         } else if (di.getConversionParam().equals("subset")) {
@@ -255,7 +262,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
     }
     
-    private long getContentSize(DataAccessObject accessObject) {
+    private long getContentSize(DataFileIO accessObject) {
         long contentSize = 0; 
         
         if (accessObject.getSize() > -1) {

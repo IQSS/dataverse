@@ -207,7 +207,7 @@ public class IndexServiceBean {
         }
 
         dvObjectService.updateContentIndexTime(dataverse);
-        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse.getId());
+        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
 
@@ -597,8 +597,7 @@ public class IndexServiceBean {
             if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.WORKING_COPY)) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             } else if (indexableDataset.getDatasetState().equals(IndexableDataset.DatasetState.DEACCESSIONED)) {
-                // uncomment this if we change our mind and want a deaccessioned facet after all
-//                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DEACCESSIONED_STRING);
+                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DEACCESSIONED_STRING);
             }
             Date createDate = dataset.getCreateDate();
             if (createDate != null) {
