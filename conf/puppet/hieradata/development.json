@@ -1,0 +1,5 @@
+{
+    "note": "Put all the settings here targeted for the 'development' environment. For example set the iqss::globals::apache2_purge_configs to false will not empty the default and custom settings inside apache. Note that this may have unforseen consequences and you need to remove conflicting libraries manually before apache can start.",
+    "iqss::globals::apache2_purge_configs": true  ,
+    "iqss::tworavens::package" :"https://github.com/IQSS/TwoRavens/archive/a85c35192e3b5da05b511f9368dc0fa6d92a6e58.zip"
+}
