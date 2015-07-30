@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.IndexServiceBean;
 import org.apache.solr.common.SolrInputDocument;
 
 public class SearchUtil {

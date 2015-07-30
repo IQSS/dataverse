@@ -1,9 +1,9 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
-import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.Highlight;
-import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
 import java.util.Date;

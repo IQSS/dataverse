@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.search.SolrField;
 import java.util.Collection;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

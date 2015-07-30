@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;

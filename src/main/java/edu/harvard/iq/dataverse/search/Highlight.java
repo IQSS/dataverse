@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.SolrField;
 import java.util.List;
 import javax.inject.Named;
 

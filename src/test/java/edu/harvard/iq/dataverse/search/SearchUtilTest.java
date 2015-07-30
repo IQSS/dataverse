@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.IndexServiceBean;
 import java.util.Arrays;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.After;

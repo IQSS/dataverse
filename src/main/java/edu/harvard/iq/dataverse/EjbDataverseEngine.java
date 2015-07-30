@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;

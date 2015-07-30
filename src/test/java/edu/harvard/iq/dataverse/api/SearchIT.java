@@ -7,7 +7,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.BufferedReader;
