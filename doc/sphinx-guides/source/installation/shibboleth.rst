@@ -100,7 +100,7 @@ Edit Apache Config Files
 ^^^^^^^^^^^^^^^^^^^^^^^^
 ``/etc/httpd/conf.d/ssl.conf`` should contain the FQDN of your hostname like this: ``ServerName shibtest.dataverse.org:443``
 
-At the bottom of ``/etc/httpd/conf.d/ssl.conf`` add the following:
+Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</VirtualHost>`` directive add the following:
 
 .. code-block:: text
 
