@@ -55,7 +55,7 @@ public class SearchPermissionsServiceBean {
 
     LinkedHashMap<String, RoleAssignee> roleAssigneeCache = new LinkedHashMap<>(100, 0.7f, true);
     private static final int MAX_CACHE_SIZE = 2000;
-    
+
     /**
      * @todo Should we make a PermStrings object? Probably.
      *
@@ -100,20 +100,20 @@ public class SearchPermissionsServiceBean {
         resetRoleAssigneeCache();
         return permStrings;
     }
-    
+
     private void resetRoleAssigneeCache() {
         roleAssigneeCache.clear();
     }
-    
-    private RoleAssignee getRoleAssignee( String idtf ) {
+
+    private RoleAssignee getRoleAssignee(String idtf) {
         RoleAssignee ra = roleAssigneeCache.get(idtf);
-        if ( ra != null ) {
+        if (ra != null) {
             return ra;
         }
         ra = roleAssigneeService.getRoleAssignee(idtf);
-        roleAssigneeCache.put( idtf, ra );
-        if ( roleAssigneeCache.size() > MAX_CACHE_SIZE ) {
-            roleAssigneeCache.remove( roleAssigneeCache.keySet().iterator().next() );
+        roleAssigneeCache.put(idtf, ra);
+        if (roleAssigneeCache.size() > MAX_CACHE_SIZE) {
+            roleAssigneeCache.remove(roleAssigneeCache.keySet().iterator().next());
         }
         return ra;
     }
@@ -137,7 +137,7 @@ public class SearchPermissionsServiceBean {
         List<RoleAssignee> emptyList = new ArrayList<>();
         List<RoleAssignee> peopleWhoCanSearch = emptyList;
         resetRoleAssigneeCache();
-        
+
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dvObject);
         for (RoleAssignment roleAssignment : assignmentsOn) {
             if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {

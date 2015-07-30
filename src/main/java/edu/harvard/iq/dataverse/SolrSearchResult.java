@@ -15,7 +15,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
 
 public class SolrSearchResult {
 
@@ -85,7 +84,7 @@ public class SolrSearchResult {
     //Determine if the search result is owned by any of the dvs in the tree of the DV displayed
     private boolean isInTree;
     private float score;
-    private  List<String> userRole;
+    private List<String> userRole;
 
     public boolean isIsInTree() {
         return isInTree;
@@ -108,7 +107,7 @@ public class SolrSearchResult {
     public void setPublishedState(boolean publishedState) {
         this.publishedState = publishedState;
     }
-    
+
     public boolean isUnpublishedState() {
         return unpublishedState;
     }
@@ -116,56 +115,56 @@ public class SolrSearchResult {
     public void setUnpublishedState(boolean unpublishedState) {
         this.unpublishedState = unpublishedState;
     }
-    
-    public void setPublicationStatuses(List<String> statuses){
-        
-        if (statuses == null){
+
+    public void setPublicationStatuses(List<String> statuses) {
+
+        if (statuses == null) {
             this.publicationStatuses = new ArrayList<>();
             return;
         }
         this.publicationStatuses = statuses;
-        
+
         // set booleans for individual statuses
         //
         for (String status : this.publicationStatuses) {
-            
+
             if (status.equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
                 this.setUnpublishedState(true);
-                
-            }else if (status.equals(IndexServiceBean.getPUBLISHED_STRING())) {
+
+            } else if (status.equals(IndexServiceBean.getPUBLISHED_STRING())) {
                 this.setPublishedState(true);
-                
-            }else if (status.equals(IndexServiceBean.getDRAFT_STRING())) {
+
+            } else if (status.equals(IndexServiceBean.getDRAFT_STRING())) {
                 this.setDraftState(true);
-                
-            }else if (status.equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
+
+            } else if (status.equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
                 this.setDeaccessionedState(true);
             }
-        }                
+        }
     } // setPublicationStatuses
-    
+
     /**
      * Never return null, return an empty list instead
-     * 
-     * @return 
+     *
+     * @return
      */
-    public List<String> getPublicationStatuses(){
-        
-        if (this.publicationStatuses == null){
-            this.publicationStatuses = new ArrayList<>(); 
+    public List<String> getPublicationStatuses() {
+
+        if (this.publicationStatuses == null) {
+            this.publicationStatuses = new ArrayList<>();
         }
         return this.publicationStatuses;
     }
 
-    public JsonArrayBuilder getPublicationStatusesAsJSON(){
-     
+    public JsonArrayBuilder getPublicationStatusesAsJSON() {
+
         JsonArrayBuilder statuses = Json.createArrayBuilder();
         for (String status : this.getPublicationStatuses()) {
             statuses.add(status);
         }
         return statuses;
     }
-    
+
     public boolean isDraftState() {
         return draftState;
     }
@@ -337,47 +336,45 @@ public class SolrSearchResult {
         return json(showRelevance, showEntityIds, showApiUrls).build();
     }
 
-    
     /**
      * Add additional fields for the MyData page
-     * 
-     * @return 
+     *
+     * @return
      */
     public JsonObjectBuilder getJsonForMyData() {
-                        
-        JsonObjectBuilder myDataJson =  json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls) 
-        
+
+        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls) 
+
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
-                  .add("is_draft_state", this.isDraftState())
-                  .add("is_unpublished_state", this.isUnpublishedState())
-                  .add("is_published", this.isPublishedState())
-                  .add("is_deaccesioned", this.isDeaccessionedState())
-                  .add("date_to_display_on_card", this.dateToDisplayOnCard)
-                  .add("user_roles", this.getUserRolesAsJson())                  
-                ;
+                .add("is_draft_state", this.isDraftState())
+                .add("is_unpublished_state", this.isUnpublishedState())
+                .add("is_published", this.isPublishedState())
+                .add("is_deaccesioned", this.isDeaccessionedState())
+                .add("date_to_display_on_card", this.dateToDisplayOnCard)
+                .add("user_roles", this.getUserRolesAsJson());
 
         // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
         //
-        if ((this.isDeaccessionedState())&&(this.getPublicationStatuses().size()==1)){            
-            myDataJson.add("deaccesioned_is_only_pubstatus", true);            
+        if ((this.isDeaccessionedState()) && (this.getPublicationStatuses().size() == 1)) {
+            myDataJson.add("deaccesioned_is_only_pubstatus", true);
         }
 
-        if ((this.getParent() != null)&&(!this.getParent().isEmpty())){
+        if ((this.getParent() != null) && (!this.getParent().isEmpty())) {
             //System.out.println("keys:" + parent.keySet().toString());
-            if (this.entity.isInstanceofDataFile()){
-                myDataJson.add("parentIdentifier", this.getParent().get(SolrSearchResult.PARENT_IDENTIFIER)) 
-                          .add("parentName", this.getParent().get("name"));   
+            if (this.entity.isInstanceofDataFile()) {
+                myDataJson.add("parentIdentifier", this.getParent().get(SolrSearchResult.PARENT_IDENTIFIER))
+                        .add("parentName", this.getParent().get("name"));
 
-            }else{
+            } else {
                 // for Dataverse and Dataset, get parent which is a Dataverse
                 myDataJson.add("parentId", this.getParent().get("id"))
-                          .add("parentName", this.getParent().get("name"));   
+                        .add("parentName", this.getParent().get("name"));
             }
         }
 
         return myDataJson;
     } //getJsonForMydata
-    
+
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
 
         if (this.type == null) {
@@ -807,15 +804,15 @@ public class SolrSearchResult {
             return failSafeUrl;
         }
     }
-    
-    public String getFileParentIdentifier(){
-        if (entity==null){
+
+    public String getFileParentIdentifier() {
+        if (entity == null) {
             return null;
         }
-        if (entity instanceof DataFile){
+        if (entity instanceof DataFile) {
             return parent.get(PARENT_IDENTIFIER);   // Dataset globalID
         }
-        
+
         return null;
         //if (entity)
     }
@@ -883,18 +880,16 @@ public class SolrSearchResult {
             return null;
         }
     }
-    
+
     public JsonArrayBuilder getUserRolesAsJson() {
-        
-        
+
         JsonArrayBuilder jsonRoleStrings = Json.createArrayBuilder();
-        for (String role : this.getUserRole()){
+        for (String role : this.getUserRole()) {
             jsonRoleStrings.add(role);
         }
         return jsonRoleStrings;
     }
 
-    
     public List<String> getUserRole() {
         return userRole;
     }

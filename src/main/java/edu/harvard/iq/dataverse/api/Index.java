@@ -74,16 +74,16 @@ public class Index extends AbstractApiBean {
 
     @GET
     public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
-        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, false, previewOnly); 
+        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, false, previewOnly);
     }
-    
+
     @GET
     @Path("continue")
     public Response indexAllOrSubsetContinue(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
-        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, true, previewOnly); 
+        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, true, previewOnly);
     }
-    
-    private Response indexAllOrSubset(Long numPartitionsSelected, Long partitionIdToProcess, boolean skipIndexed, boolean previewOnly) {          
+
+    private Response indexAllOrSubset(Long numPartitionsSelected, Long partitionIdToProcess, boolean skipIndexed, boolean previewOnly) {
         try {
             long numPartitions = 1;
             if (numPartitionsSelected != null) {
@@ -177,7 +177,7 @@ public class Index extends AbstractApiBean {
             }
         }
     }
-    
+
     @GET
     @Path("{type}/{id}")
     public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
@@ -472,15 +472,14 @@ public class Index extends AbstractApiBean {
         return sb.toString();
     }
 
-    static String error( String message ) {
-		JsonObjectBuilder response = Json.createObjectBuilder();
-		response.add("status", "ERROR");
-		response.add("message", message);
-		
-		return "{\n\t\"status\":\"ERROR\"\n\t\"message\":\"" + message.replaceAll("\"", "\\\\\"").replaceAll("\n","\\\\n") + "\"\n}" ;
-	}
+    static String error(String message) {
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        response.add("status", "ERROR");
+        response.add("message", message);
 
-    
+        return "{\n\t\"status\":\"ERROR\"\n\t\"message\":\"" + message.replaceAll("\"", "\\\\\"").replaceAll("\n", "\\\\n") + "\"\n}";
+    }
+
     /**
      * This method is for integration tests of search.
      */

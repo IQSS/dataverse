@@ -19,20 +19,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 
 @Named
@@ -466,18 +460,14 @@ public class SolrIndexServiceBean {
                     // we don't index the rootDv
                     indexingRequired.add(dvObject.getId());
                 }
-            } else {
-                if (permissionModificationTime == null) {
-                    /**
-                     * @todo What should we do here? Permissions should always
-                     * be there. They are assigned at create time.
-                     */
-                    logger.info("no permission modification time for dvobject id " + dvObject.getId());
-                } else {
-                    if (permissionIndexTime.before(permissionModificationTime)) {
-                        indexingRequired.add(dvObject.getId());
-                    }
-                }
+            } else if (permissionModificationTime == null) {
+                /**
+                 * @todo What should we do here? Permissions should always be
+                 * there. They are assigned at create time.
+                 */
+                logger.info("no permission modification time for dvobject id " + dvObject.getId());
+            } else if (permissionIndexTime.before(permissionModificationTime)) {
+                indexingRequired.add(dvObject.getId());
             }
         }
         return indexingRequired;
