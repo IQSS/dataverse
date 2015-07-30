@@ -107,7 +107,7 @@ At the bottom of ``/etc/httpd/conf.d/ssl.conf`` add the following:
     # don't pass paths used by rApache and TwoRavens to Glassfish
     ProxyPassMatch ^/RApacheInfo$ !
     ProxyPassMatch ^/custom !
-    ProxyPassMatch ^/rookzelig !
+    ProxyPassMatch ^/dataexplore !
     # don't pass paths used by Shibboleth to Glassfish
     ProxyPassMatch ^/Shibboleth.sso !
     ProxyPassMatch ^/shibboleth-ds !
