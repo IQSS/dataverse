@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.api.Util;
+import java.sql.Timestamp;
 import org.apache.solr.common.SolrInputDocument;
 
 public class SearchUtil {
@@ -49,6 +51,16 @@ public class SearchUtil {
         solrInputDocument.addField(SearchFields.DEFINITION_POINT_DVOBJECT_ID, dvObjectSolrDoc.getDvObjectId());
         solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions());
         return solrInputDocument;
+    }
+
+    public static String getTimestampOrNull(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        /**
+         * @todo Is seconds enough precision?
+         */
+        return Util.getDateTimeFormat().format(timestamp);
     }
 
 }

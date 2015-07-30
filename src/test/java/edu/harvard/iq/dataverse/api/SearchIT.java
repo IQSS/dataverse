@@ -185,6 +185,16 @@ public class SearchIT {
         assertEquals(201, createDataset1Response.getStatusCode());
 
         dataset2 = getGlobalId(createDataset1Response);
+
+        Integer datasetIdHomerFound = printDatasetId(dataset2, homer);
+        assertEquals(true, datasetIdHomerFound != null);
+
+        Map<String, String> datasetTimestampsAfterCreate = checkPermissionsOnDvObject(datasetIdHomerFound, homer.apiToken).jsonPath().getMap("data.timestamps", String.class, String.class);
+        assertEquals(true, datasetTimestampsAfterCreate.get(Index.contentChanged) != null);
+        assertEquals(true, datasetTimestampsAfterCreate.get(Index.contentIndexed) != null);
+        assertEquals(true, datasetTimestampsAfterCreate.get(Index.permsChanged) != null);
+        assertEquals(true, datasetTimestampsAfterCreate.get(Index.permsIndexed) != null);
+
 //        String zipFileName = "noSuchFile.zip";
         String zipFileName = "trees.zip";
 //        String zipFileName = "100files.zip";
@@ -204,10 +214,7 @@ public class SearchIT {
         }
         System.out.println("Uploading zip file took " + timer.stop());
 
-        Integer idHomerFound = printDatasetId(dataset2, homer);
-        assertEquals(true, idHomerFound != null);
-
-        List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset2, idHomerFound, homer.getApiToken());
+        List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset2, datasetIdHomerFound, homer.getApiToken());
         int numFilesFound = idsOfFilesUploaded.size();
         System.out.println("num files found: " + numFilesFound);
 
@@ -222,7 +229,21 @@ public class SearchIT {
         assertEquals(200, grantNedAdmin.getStatusCode());
 
         Integer idNedFoundAfterRoleGranted = printDatasetId(dataset2, ned);
-        assertEquals(idHomerFound, idNedFoundAfterRoleGranted);
+        assertEquals(datasetIdHomerFound, idNedFoundAfterRoleGranted);
+
+        clearIndexTimesOnDvObject(datasetIdHomerFound);
+        reindexDataset(datasetIdHomerFound);
+        Map<String, String> datasetTimestampsAfterReindex = checkPermissionsOnDvObject(datasetIdHomerFound, homer.apiToken).jsonPath().getMap("data.timestamps", String.class, String.class);
+        assertEquals(true, datasetTimestampsAfterReindex.get(Index.contentChanged) != null);
+        /**
+         * @todo Fix this and change to true. After reindexing the timestamp for
+         * content being indexed should be updated for dataverses and datasets
+         * (and we should consider updating it for files). See
+         * https://github.com/IQSS/dataverse/issues/2421
+         */
+        assertEquals(false, datasetTimestampsAfterReindex.get(Index.contentIndexed) != null);
+        assertEquals(true, datasetTimestampsAfterReindex.get(Index.permsChanged) != null);
+        assertEquals(true, datasetTimestampsAfterReindex.get(Index.permsIndexed) != null);
 
         if (!idsOfFilesUploaded.isEmpty()) {
             Random random = new Random();
@@ -231,7 +252,7 @@ public class SearchIT {
 
             int randomFileId = idsOfFilesUploaded.get(randomFileIndex);
 
-            Set<String> expectedSet = new HashSet();
+            Set<String> expectedSet = new HashSet<>();
             expectedSet.add(IndexServiceBean.getGroupPerUserPrefix() + homer.getId());
             expectedSet.add(IndexServiceBean.getGroupPerUserPrefix() + ned.getId());
 
@@ -239,9 +260,15 @@ public class SearchIT {
 //            checkPermsReponse.prettyPrint();
             // [0] because there's only one "permissions" Solr doc (a draft)
             List<String> permListFromDebugEndpoint = JsonPath.from(checkPermsReponse.getBody().asString()).get("data.perms[0]." + SearchFields.DISCOVERABLE_BY);
-            Set<String> setFoundFromPermsDebug = new TreeSet();
+            Set<String> setFoundFromPermsDebug = new TreeSet<>();
             for (String perm : permListFromDebugEndpoint) {
                 setFoundFromPermsDebug.add(perm);
+            }
+            Map<String, String> timeStamps = JsonPath.from(checkPermsReponse.getBody().asString()).get("data.timestamps");
+            for (Map.Entry<String, String> entry : timeStamps.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                System.out.println(key + ":" + value);
             }
 
             assertEquals(expectedSet, setFoundFromPermsDebug);
@@ -249,14 +276,10 @@ public class SearchIT {
             Response solrQueryPerms = querySolr(SearchFields.DEFINITION_POINT_DVOBJECT_ID + ":" + randomFileId);
 //            solrQueryPerms.prettyPrint();
 
-            List<Map> docs = JsonPath.from(solrQueryPerms.getBody().asString()).get("response.docs");
-            Set<String> setFoundFromSolr = new TreeSet();
-            for (Map doc : docs) {
-                System.out.println("id: " + doc.get(SearchFields.ID));
-                List<String> perms = (List<String>) doc.get(SearchFields.DISCOVERABLE_BY);
-                for (String perm : perms) {
-                    setFoundFromSolr.add(perm);
-                }
+            Set<String> setFoundFromSolr = new TreeSet<>();
+            List<String> perms = JsonPath.from(solrQueryPerms.getBody().asString()).getList("response.docs[0]." + SearchFields.DISCOVERABLE_BY);
+            for (String perm : perms) {
+                setFoundFromSolr.add(perm);
             }
             System.out.println(setFoundFromSolr + " found");
             assertEquals(expectedSet, setFoundFromSolr);
@@ -613,7 +636,7 @@ public class SearchIT {
         Response swordStatentResponse = getSwordStatement(persistentId, apiToken);
 //        swordStatentResponse.prettyPrint();
         if (datasetId != null) {
-            List fileList = getFilesFromDatasetEndpoint(datasetId, apiToken);
+            List<Integer> fileList = getFilesFromDatasetEndpoint(datasetId, apiToken);
             if (!fileList.isEmpty()) {
                 return fileList;
             }
@@ -628,7 +651,7 @@ public class SearchIT {
         return swordStatementResponse;
     }
 
-    private List getFilesFromDatasetEndpoint(Integer datasetId, String apiToken) {
+    private List<Integer> getFilesFromDatasetEndpoint(Integer datasetId, String apiToken) {
         List<Integer> fileList = new ArrayList<>();
         Response getDatasetFilesResponse = given()
                 .get("api/datasets/" + datasetId + "/versions/:latest/files?key=" + apiToken);
@@ -646,6 +669,16 @@ public class SearchIT {
         Response debugPermsResponse = given()
                 .get("api/admin/index/permsDebug/?id=" + dvObjectId + "&key=" + apiToken);
         return debugPermsResponse;
+    }
+
+    private Response clearIndexTimesOnDvObject(int dvObjectId) {
+        Response debugPermsResponse = given()
+                .delete("api/admin/index/timestamps/" + dvObjectId);
+        return debugPermsResponse;
+    }
+
+    private Response reindexDataset(int datasetId) {
+        return given().get("api/admin/index/datasets/" + datasetId);
     }
 
     private static class TestUser {

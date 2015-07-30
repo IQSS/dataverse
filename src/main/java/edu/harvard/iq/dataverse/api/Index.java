@@ -23,8 +23,11 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +42,9 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -71,6 +76,11 @@ public class Index extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+
+    public static String contentChanged = "contentChanged";
+    public static String contentIndexed = "contentIndexed";
+    public static String permsChanged = "permsChanged";
+    public static String permsIndexed = "permsIndexed";
 
     @GET
     public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
@@ -556,14 +566,27 @@ public class Index extends AbstractApiBean {
         data.add("perms", permissionsData);
 
         DvObject dvObject = dvObjectService.findDvObject(dvObjectId);
+        NullSafeJsonBuilder timestamps = jsonObjectBuilder();
+        timestamps.add(contentChanged, SearchUtil.getTimestampOrNull(dvObject.getModificationTime()));
+        timestamps.add(contentIndexed, SearchUtil.getTimestampOrNull(dvObject.getIndexTime()));
+        timestamps.add(permsChanged, SearchUtil.getTimestampOrNull(dvObject.getPermissionModificationTime()));
+        timestamps.add(permsIndexed, SearchUtil.getTimestampOrNull(dvObject.getPermissionIndexTime()));
         Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
         JsonArrayBuilder roleAssignmentsData = Json.createArrayBuilder();
         for (RoleAssignment roleAssignment : roleAssignments) {
             roleAssignmentsData.add(roleAssignment.getRole() + " has been granted to " + roleAssignment.getAssigneeIdentifier() + " on " + roleAssignment.getDefinitionPoint());
         }
+        data.add("timestamps", timestamps);
         data.add("roleAssignments", roleAssignmentsData);
 
         return okResponse(data);
+    }
+
+    @DELETE
+    @Path("timestamps/{dvObjectId}")
+    public Response deleteTimestamp(@PathParam("dvObjectId") long dvObjectId) {
+        int numItemsCleared = dvObjectService.clearIndexTimes(dvObjectId);
+        return okResponse("cleared: " + numItemsCleared);
     }
 
 }

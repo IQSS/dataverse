@@ -87,6 +87,12 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return numRowsUpdated;
     }
 
+    public int clearIndexTimes(long dvObjectId) {
+        Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL WHERE o.id =:dvObjectId");
+        clearIndexTimes.setParameter("dvObjectId", dvObjectId);
+        int numRowsUpdated = clearIndexTimes.executeUpdate();
+        return numRowsUpdated;
+    }
     
     private String getDvObjectIdListClause(List<Long> dvObjectIdList){
         if (dvObjectIdList == null){
