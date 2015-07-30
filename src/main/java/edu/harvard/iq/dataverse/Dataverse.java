@@ -163,14 +163,14 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     @OrderBy("displayOrder")
     @NotEmpty(message="At least one contact is required.")
-    private List<DataverseContact> dataverseContacts = new ArrayList();
+    private List<DataverseContact> dataverseContacts = new ArrayList<>();
     
     @ManyToMany(cascade = {CascadeType.MERGE})
-    private List<MetadataBlock> metadataBlocks = new ArrayList();
+    private List<MetadataBlock> metadataBlocks = new ArrayList<>();
 
     @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     @OrderBy("displayOrder")
-    private List<DataverseFacet> dataverseFacets = new ArrayList();
+    private List<DataverseFacet> dataverseFacets = new ArrayList<>();
     
     @ManyToMany
     @JoinTable(name = "dataversesubjects",
@@ -243,7 +243,7 @@ public class Dataverse extends DvObjectContainer {
 
     
     @OneToMany(mappedBy = "dataverse")
-    private List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels = new ArrayList();
+    private List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels = new ArrayList<>();
     
     @ManyToOne
     @JoinColumn(nullable = true)
@@ -291,7 +291,7 @@ public class Dataverse extends DvObjectContainer {
     
     
     public List<Guestbook> getParentGuestbooks() {
-        List<Guestbook> retList = new ArrayList();
+        List<Guestbook> retList = new ArrayList<>();
         Dataverse testDV = this;
         while (testDV.getOwner() != null){   
            retList.addAll(testDV.getOwner().getGuestbooks());          
@@ -300,14 +300,14 @@ public class Dataverse extends DvObjectContainer {
            }           
            testDV = testDV.getOwner();
         }
-            return  retList;
+        return  retList;
     }
     
     public List<Guestbook> getAvailableGuestbooks() {
         //get all guestbooks
-        List<Guestbook> retList = new ArrayList();
+        List<Guestbook> retList = new ArrayList<>();
         Dataverse testDV = this;
-        List<Guestbook> allGbs = new ArrayList();
+        List<Guestbook> allGbs = new ArrayList<>();
         if (!this.guestbookRoot){
                     while (testDV.getOwner() != null){   
           
@@ -367,7 +367,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Template> getParentTemplates() {
-        List<Template> retList = new ArrayList();
+        List<Template> retList = new ArrayList<>();
         Dataverse testDV = this;
         while (testDV.getOwner() != null){   
             
@@ -548,7 +548,7 @@ public class Dataverse extends DvObjectContainer {
     public List<DataverseContact> getDataverseContacts() {
         return dataverseContacts;
     }
-    
+
     public String getContactEmails() {
         return "";
     }
@@ -624,7 +624,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Dataverse> getOwners() {
-        List owners = new ArrayList();
+        List<Dataverse> owners = new ArrayList<>();
         if (getOwner() != null) {
             owners.addAll(getOwner().getOwners());
             owners.add(getOwner());

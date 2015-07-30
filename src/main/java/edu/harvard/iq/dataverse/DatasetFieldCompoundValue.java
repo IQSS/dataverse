@@ -64,7 +64,7 @@ public class DatasetFieldCompoundValue implements Serializable {
 
     @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("datasetFieldType ASC")
-    private List<DatasetField> childDatasetFields = new ArrayList();
+    private List<DatasetField> childDatasetFields = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -134,7 +134,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     public Map<DatasetField,String> getDisplayValueMap() {
         // todo - this currently only supports child datasetfields with single values
         // need to determine how we would want to handle multiple
-        Map fieldMap = new LinkedHashMap();
+        Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
 
         for (DatasetField childDatasetField : childDatasetFields) {
             // skip the value if it is empty or N/A

@@ -21,6 +21,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -118,7 +119,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
     
     public DataFile find(Object pk) {
-        return (DataFile) em.find(DataFile.class, pk);
+        return em.find(DataFile.class, pk);
     }   
     
     /*public DataFile findByMD5(String md5Value){
@@ -136,14 +137,14 @@ public class DataFileServiceBean implements java.io.Serializable {
            Sure, we don't have *studies* any more, in 4.0; it's a tribute 
            to the past. -- L.A.
         */
-        Query query = em.createQuery("select o from DataFile o where o.owner.id = :studyId order by o.id");
+        TypedQuery<DataFile> query = em.createQuery("select o from DataFile o where o.owner.id = :studyId order by o.id", DataFile.class);
         query.setParameter("studyId", studyId);
         return query.getResultList();
     }  
 
     public List<DataFile> findIngestsInProgress() {
         if ( em.isOpen() ) {
-            Query query = em.createQuery("select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id");
+            TypedQuery<DataFile> query = em.createQuery("select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id", DataFile.class);
             query.setParameter("scheduledStatusCode", DataFile.INGEST_STATUS_SCHEDULED);
             query.setParameter("progressStatusCode", DataFile.INGEST_STATUS_INPROGRESS);
             return query.getResultList();
@@ -160,7 +161,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public List<DataFile> findAll() {
-        return em.createQuery("select object(o) from DataFile as o order by o.id").getResultList();
+        return em.createQuery("select object(o) from DataFile as o order by o.id", DataFile.class).getResultList();
     }
     
     public DataFile save(DataFile dataFile) {
@@ -170,9 +171,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public Boolean isPreviouslyPublished(Long fileId){
-        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
+        TypedQuery<FileMetadata> query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId", FileMetadata.class);
         query.setParameter("fileId", fileId);
-        List retList = query.getResultList();
+        List<FileMetadata> retList = query.getResultList();
         return (retList.size() > 1);
     }
     
@@ -331,6 +332,9 @@ public class DataFileServiceBean implements java.io.Serializable {
          * main code base, so we can just go through a hard-coded list of mime 
          * types. -- L.A. 
          */
+        if (dataFile == null) {
+            return false;
+        }
         
         String mimeType = dataFile.getContentType();
         
@@ -372,6 +376,10 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public String getFileClass (DataFile file) {
+        if (file == null) {
+            return null;
+        }
+
         if (isFileClassImage(file)) {
             return FILE_CLASS_IMAGE;
         }
