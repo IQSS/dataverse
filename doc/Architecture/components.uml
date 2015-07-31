@@ -1,0 +1,22 @@
+//http://plantuml.com/component.html#Component
+@startuml
+
+node "Glassfish1" {
+} 
+
+node "Glassfish2" {
+} 
+
+database "PostgreSQL" {
+}
+
+node "Solr" {
+}
+
+Glassfish1 --> PostgreSQL
+Glassfish2 --> PostgreSQL
+
+Glassfish1 --> Solr
+Glassfish2 --> Solr
+
+@enduml
