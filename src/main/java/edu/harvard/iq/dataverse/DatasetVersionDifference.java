@@ -16,14 +16,14 @@ public class DatasetVersionDifference {
 
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
-    private List<List> detailDataByBlock = new ArrayList<>();
+    private List<List<DatasetField[]>> detailDataByBlock = new ArrayList<>();
     private List<datasetFileDifferenceItem> datasetFilesDiffList;
-    private List<FileMetadata> addedFiles = new ArrayList();
-    private List<FileMetadata> removedFiles = new ArrayList();
-    private List<FileMetadata> changedFileMetadata = new ArrayList();
-    private List<List> changedTermsAccess = new ArrayList();
-    private List<Object[]> summaryDataForNote = new ArrayList();
-    private List<Object[]> blockDataForNote = new ArrayList();
+    private List<FileMetadata> addedFiles = new ArrayList<>();
+    private List<FileMetadata> removedFiles = new ArrayList<>();
+    private List<FileMetadata> changedFileMetadata = new ArrayList<>();
+    private List<String[]> changedTermsAccess = new ArrayList<>();
+    private List<SummaryData> summaryDataForNote = new ArrayList<>();
+    private List<BlockData> blockDataForNote = new ArrayList<>();
     String noFileDifferencesFoundLabel = "";
 
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
@@ -101,7 +101,7 @@ public class DatasetVersionDifference {
 
         //Sort within blocks by datasetfieldtype dispaly order then....
         //sort via metadatablock order - citation first...
-        for (List blockList : detailDataByBlock) {
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
             Collections.sort(blockList, new Comparator<DatasetField[]>() {
                 public int compare(DatasetField[] l1, DatasetField[] l2) {
                     DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
@@ -112,10 +112,10 @@ public class DatasetVersionDifference {
                 }
             });
         }
-        Collections.sort(detailDataByBlock, new Comparator<List>() {
-            public int compare(List l1, List l2) {
-                DatasetField dsfa[] = (DatasetField[]) l1.get(0);
-                DatasetField dsfb[] = (DatasetField[]) l2.get(0);
+        Collections.sort(detailDataByBlock, new Comparator<List<DatasetField[]>>() {
+            public int compare(List<DatasetField[]> l1, List<DatasetField[]> l2) {
+                DatasetField dsfa[] = l1.get(0);
+                DatasetField dsfb[] = l2.get(0);
                 int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
                 int b = dsfb[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
                 return Integer.valueOf(a).compareTo(Integer.valueOf(b));
@@ -128,7 +128,7 @@ public class DatasetVersionDifference {
     
     private void getTermsDifferences() {
 
-        changedTermsAccess = new ArrayList();
+        changedTermsAccess = new ArrayList<>();
         if (!StringUtil.nullToEmpty(newVersion.getTermsOfUse()).equals(StringUtil.nullToEmpty(originalVersion.getTermsOfUse()))) {
             String diffLabel = ResourceBundle.getBundle("Bundle").getString("file.dataFilesTab.terms.list.termsOfUse.header");
             changedTermsAccess = addToTermsChangedList(changedTermsAccess, diffLabel, StringUtil.nullToEmpty(originalVersion.getTermsOfUse()), StringUtil.nullToEmpty(newVersion.getTermsOfUse()));
@@ -195,7 +195,7 @@ public class DatasetVersionDifference {
 
     }
 
-    private List addToTermsChangedList(List listIn, String label, String origVal, String newVal) {
+    private List<String[]> addToTermsChangedList(List<String[]> listIn, String label, String origVal, String newVal) {
         String[] diffArray;
         diffArray = new String[3];
         diffArray[0] = label;
@@ -206,7 +206,7 @@ public class DatasetVersionDifference {
     }
 
 
-    private void addToList(List listIn, DatasetField dsfo, DatasetField dsfn) {
+    private void addToList(List<DatasetField[]> listIn, DatasetField dsfo, DatasetField dsfn) {
         DatasetField[] dsfArray;
         dsfArray = new DatasetField[2];
         dsfArray[0] = dsfo;
@@ -224,8 +224,8 @@ public class DatasetVersionDifference {
             dsfn.setDatasetFieldType(dsfo.getDatasetFieldType());
         }
         boolean addedToAll = false;
-        for (List blockList : detailDataByBlock) {
-            DatasetField dsft[] = (DatasetField[]) blockList.get(0);
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
+            DatasetField dsft[] = blockList.get(0);
             if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
                 addToList(blockList, dsfo, dsfn);
                 addedToAll = true;
@@ -241,33 +241,25 @@ public class DatasetVersionDifference {
     private void updateBlockSummary(DatasetField dsf, int added, int deleted, int changed) {
 
         boolean addedToAll = false;
-        for (Object[] blockList : blockDataForNote) {
-            DatasetField dsft = (DatasetField) blockList[0];
+        for (BlockData blockList : blockDataForNote) {
+            DatasetField dsft = blockList.getDatasetField();
             if (dsft.getDatasetFieldType().getMetadataBlock().equals(dsf.getDatasetFieldType().getMetadataBlock())) {
-                blockList[1] = (Integer) blockList[1] + added;
-                blockList[2] = (Integer) blockList[2] + deleted;
-                blockList[3] = (Integer) blockList[3] + changed;
+                blockList.increaseAdded(added);
+                blockList.increaseDeleted(deleted);
+                blockList.increaseChanged(changed);
                 addedToAll = true;
             }
         }
         if (!addedToAll) {
-            Object[] newArray = new Object[4];
-            newArray[0] = dsf;
-            newArray[1] = added;
-            newArray[2] = deleted;
-            newArray[3] = changed;
-            blockDataForNote.add(newArray);
+            BlockData bn = new BlockData(dsf, added, deleted, changed);
+            blockDataForNote.add(bn);
         }
 
     }
 
     private void addToNoteSummary(DatasetField dsfo, int added, int deleted, int changed) {
-        Object[] noteArray = new Object[4];
-        noteArray[0] = dsfo;
-        noteArray[1] = added;
-        noteArray[2] = deleted;
-        noteArray[3] = changed;
-        summaryDataForNote.add(noteArray);
+        SummaryData note = new SummaryData(dsfo, added, deleted, changed);
+        summaryDataForNote.add(note);
     }
 
     private boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
@@ -396,11 +388,11 @@ public class DatasetVersionDifference {
         return retString;
     }
 
-    public List<List> getDetailDataByBlock() {
+    public List<List<DatasetField[]>> getDetailDataByBlock() {
         return detailDataByBlock;
     }
 
-    public void setDetailDataByBlock(List<List> detailDataByBlock) {
+    public void setDetailDataByBlock(List<List<DatasetField[]>> detailDataByBlock) {
         this.detailDataByBlock = detailDataByBlock;
     }
 
@@ -444,28 +436,28 @@ public class DatasetVersionDifference {
         this.changedFileMetadata = changedFileMetadata;
     }
 
-    public List<Object[]> getSummaryDataForNote() {
+    public List<SummaryData> getSummaryDataForNote() {
         return summaryDataForNote;
     }
 
-    public List<Object[]> getBlockDataForNote() {
+    public List<BlockData> getBlockDataForNote() {
         return blockDataForNote;
     }
 
-    public void setSummaryDataForNote(List<Object[]> summaryDataForNote) {
+    public void setSummaryDataForNote(List<SummaryData> summaryDataForNote) {
         this.summaryDataForNote = summaryDataForNote;
     }
 
-    public void setBlockDataForNote(List<Object[]> blockDataForNote) {
+    public void setBlockDataForNote(List<BlockData> blockDataForNote) {
         this.blockDataForNote = blockDataForNote;
     }
     
     
-    public List<List> getChangedTermsAccess() {
+    public List<String[]> getChangedTermsAccess() {
         return changedTermsAccess;
     }
 
-    public void setChangedTermsAccess(List<List> changedTermsAccess) {
+    public void setChangedTermsAccess(List<String[]> changedTermsAccess) {
         this.changedTermsAccess = changedTermsAccess;
     }
 
@@ -991,5 +983,113 @@ public class DatasetVersionDifference {
 
     public void setNoFileDifferencesFoundLabel(String noFileDifferencesFoundLabel) {
         this.noFileDifferencesFoundLabel = noFileDifferencesFoundLabel;
+    }
+
+    /**
+     * Representation of a version difference summary.
+     */
+    public class SummaryData {
+        private DatasetField dsf;
+        private int added, deleted, changed;
+
+        private SummaryData(DatasetField dsfo, int added, int deleted, int changed) {
+            this.dsf = dsfo;
+            this.added = added;
+            this.deleted = deleted;
+            this.changed = changed;
+        }
+
+        public DatasetField getDatasetField() {
+            return dsf;
+        }
+
+        public void setDatasetField(DatasetField dsf) {
+            this.dsf = dsf;
+        }
+
+        public int getAdded() {
+            return added;
+        }
+
+        public void setAdded(int added) {
+            this.added = added;
+        }
+
+        public int getDeleted() {
+            return deleted;
+        }
+
+        public void setDeleted(int deleted) {
+            this.deleted = deleted;
+        }
+
+        public int getChanged() {
+            return changed;
+        }
+
+        public void setChanged(int changed) {
+            this.changed = changed;
+        }
+
+    }
+
+    /**
+     * Representation of a version difference of a value in a metadata block.
+     */
+    public class BlockData {
+        private DatasetField dsf;
+        private int added, deleted, changed;
+
+        private BlockData(DatasetField dsfo, int added, int deleted, int changed) {
+            this.dsf = dsfo;
+            this.added = added;
+            this.deleted = deleted;
+            this.changed = changed;
+        }
+
+        public DatasetField getDatasetField() {
+            return dsf;
+        }
+
+        public void setDatasetField(DatasetField dsf) {
+            this.dsf = dsf;
+        }
+
+        public int getAdded() {
+            return added;
+        }
+
+        public void setAdded(int added) {
+            this.added = added;
+        }
+
+        public int getDeleted() {
+            return deleted;
+        }
+
+        public void setDeleted(int deleted) {
+            this.deleted = deleted;
+        }
+
+        public int getChanged() {
+            return changed;
+        }
+
+        public void setChanged(int changed) {
+            this.changed = changed;
+        }
+
+        private void increaseAdded(int added) {
+            this.added += added;
+        }
+
+        private void increaseDeleted(int deleted) {
+            this.deleted += deleted;
+        }
+
+        private void increaseChanged(int changed) {
+            this.changed += changed;
+        }
+
     }
 }
