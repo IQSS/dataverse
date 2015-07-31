@@ -77,7 +77,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }    
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
-        List<Dataset> retList = new ArrayList();
+        List<Dataset> retList = new ArrayList<>();
         TypedQuery<Dataset>  query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id", Dataset.class);
         query.setParameter("ownerId", ownerId);
         if (!onlyPublished) {
@@ -93,7 +93,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findAll() {
-        return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
+        return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
 
     /**
@@ -394,7 +394,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public List<DatasetLock> getDatasetLocks() {
         String query = "SELECT sl FROM DatasetLock sl";
-        return (List<DatasetLock>) em.createQuery(query).getResultList();
+        return em.createQuery(query, DatasetLock.class).getResultList();
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -410,7 +410,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
             lock.setUser(user);
             if (user.getDatasetLocks() == null) {
-                user.setDatasetLocks(new ArrayList());
+                user.setDatasetLocks(new ArrayList<DatasetLock>());
             }
             user.getDatasetLocks().add(lock);
         }
