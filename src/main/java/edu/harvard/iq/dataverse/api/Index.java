@@ -44,7 +44,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -258,6 +257,27 @@ public class Index extends AbstractApiBean {
                 }
             }
             return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
+        }
+    }
+
+    @GET
+    @Path("dataset")
+    public Response indexDatasetByPersistentId(@QueryParam("persistentId") String persistentId) {
+        if (persistentId == null) {
+            return errorResponse(Status.BAD_REQUEST, "No persistent id given.");
+        }
+        Dataset dataset = null;
+        try {
+            dataset = datasetService.findByGlobalId(persistentId);
+        } catch (Exception ex) {
+            return errorResponse(Status.BAD_REQUEST, "Problem looking up dataset with persistent id \"" + persistentId + "\". Error: " + ex.getMessage());
+        }
+        if (dataset != null) {
+            boolean doNormalSolrDocCleanUp = true;
+            Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
+            return okResponse("Reindexed dataset " + persistentId + " (id " + dataset.getId() + ").");
+        } else {
+            return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
     }
 

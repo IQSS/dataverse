@@ -16,8 +16,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -200,8 +202,8 @@ public class SolrIndexServiceBean {
         return datafileSolrDocs;
     }
 
-    private List<DatasetVersion> datasetVersionsToBuildCardsFor(Dataset dataset) {
-        List<DatasetVersion> datasetVersions = new ArrayList<>();
+    private Set<DatasetVersion> datasetVersionsToBuildCardsFor(Dataset dataset) {
+        Set<DatasetVersion> datasetVersions = new HashSet<>();
         DatasetVersion latest = dataset.getLatestVersion();
         if (latest != null) {
             datasetVersions.add(latest);
