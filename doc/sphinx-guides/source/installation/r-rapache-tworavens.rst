@@ -155,7 +155,7 @@ the same port - 443 (the default port for https). So when running the
 installer script above, and providing you are planning to run both on
 the same server, enter "https", your host name and "443" for the
 rApache protocol, host and port, respectively. The base URL of the
-Dataverse app will be simply https://{your host name}/.
+Dataverse app will be simply ./script_chksql_advanced.pl  -q "UPDATE datafile SET ingeststatus='A' WHERE ingeststatus = 'C'"https://{your host name}/.
 
 
 Appendix
