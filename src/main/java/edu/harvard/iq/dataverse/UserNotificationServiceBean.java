@@ -16,6 +16,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -30,19 +31,19 @@ public class UserNotificationServiceBean {
     private EntityManager em;
     
     public List<UserNotification> findByUser(Long userId) {
-        Query query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc");
+        TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
     
     public List<UserNotification> findByDvObject(Long dvObjId) {
-        Query query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc");
+        TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc", UserNotification.class);
         query.setParameter("dvObjId", dvObjId);
         return query.getResultList();
     }
     
     public List<UserNotification> findUnreadByUser(Long userId) {
-        Query query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc");
+        TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
@@ -56,12 +57,12 @@ public class UserNotificationServiceBean {
     }
     
     public List<UserNotification> findUnemailed() {
-        Query query = em.createQuery("select object(o) from UserNotification as o where o.readNotification = 'false' and o.emailed = 'false'");
+        TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.readNotification = 'false' and o.emailed = 'false'", UserNotification.class);
         return query.getResultList();
     }
     
     public UserNotification find(Object pk) {
-        return (UserNotification) em.find(UserNotification.class, pk);
+        return em.find(UserNotification.class, pk);
     }
 
     public UserNotification save(UserNotification userNotification) {
