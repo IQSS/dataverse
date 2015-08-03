@@ -142,7 +142,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
-    private List<DataFile> newFiles = new ArrayList();
+    private List<DataFile> newFiles = new ArrayList<>();
     private DatasetVersion workingVersion;
     private int releaseRadio = 1;
     private int deaccessionRadio = 0;
@@ -154,7 +154,7 @@ public class DatasetPage implements java.io.Serializable {
     private String displayCitation;
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
-    private List<Template> dataverseTemplates = new ArrayList();
+    private List<Template> dataverseTemplates = new ArrayList<>();
     private Template defaultTemplate;
     private Template selectedTemplate;
     private String globalId;
@@ -168,14 +168,14 @@ public class DatasetPage implements java.io.Serializable {
 
     private boolean noDVsRemaining = false;
 
-    private List<Dataverse> dataversesForLinking = new ArrayList();
+    private List<Dataverse> dataversesForLinking = new ArrayList<>();
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     
     // Version tab lists
-    private List<DatasetVersion> versionTabList = new ArrayList();
-    private List<DatasetVersion> versionTabListForPostLoad = new ArrayList();
+    private List<DatasetVersion> versionTabList = new ArrayList<>();
+    private List<DatasetVersion> versionTabListForPostLoad = new ArrayList<>();
 
     
     // Used to store results of permissions checks
@@ -244,8 +244,8 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void updateLinkableDataverses() {
-        dataversesForLinking = new ArrayList();
-        linkingDVSelectItems = new ArrayList();
+        dataversesForLinking = new ArrayList<>();
+        linkingDVSelectItems = new ArrayList<>();
         
         //Since this is a super user we are getting all dataverses
         dataversesForLinking = dataverseService.findAll();
@@ -626,7 +626,7 @@ public class DatasetPage implements java.io.Serializable {
         this.defaultTemplate = defaultTemplate;
     }
 
-    public Template getSelectedTemplate() {;
+    public Template getSelectedTemplate() {
         return selectedTemplate;
     }
 
@@ -701,7 +701,7 @@ public class DatasetPage implements java.io.Serializable {
             Retrieve List of DataverseFieldTypeInputLevel objects
             Use the DatasetFieldType id's which are the Map's keys
          --------------------------------------------------------- */
-        List<Long> idList = new ArrayList<Long>(mapDatasetFields.keySet());
+        List<Long> idList = new ArrayList<>(mapDatasetFields.keySet());
         List<DataverseFieldTypeInputLevel> dsFieldTypeInputLevels = dataverseFieldTypeInputLevelService.findByDataverseIdAndDatasetFieldTypeIdList(dvIdForInputLevel, idList);
         
         /* ---------------------------------------------------------
@@ -1147,7 +1147,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
             
-        Command cmd;
+        Command<Void> cmd;
         try {
             if (this.guestbookResponse != null) {
                 if (!type.equals("multiple")) {
@@ -1567,7 +1567,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDataset() {
 
-        Command cmd;
+        Command<Void> cmd;
         try {
             cmd = new DestroyDatasetCommand(dataset, session.getUser());
             commandEngine.submit(cmd);
@@ -1585,7 +1585,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String deleteDatasetVersion() {
-        Command cmd;
+        Command<Void> cmd;
         try {
             cmd = new DeleteDatasetVersionCommand(session.getUser(), dataset);
             commandEngine.submit(cmd);
@@ -1631,7 +1631,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             commandEngine.submit(cmd);
             //JsfHelper.addFlashMessage(JH.localize("dataset.message.linkSuccess")  + linkingDataverse.getDisplayName());
-            List<String> arguments = new ArrayList();
+            List<String> arguments = new ArrayList<>();
             arguments.add(dataset.getDisplayName());
             arguments.add(systemConfig.getDataverseSiteUrl());
             arguments.add(linkingDataverse.getAlias());
@@ -1674,7 +1674,7 @@ public class DatasetPage implements java.io.Serializable {
         // since we are restricted files, first set the previously restricted file list, so we can compare for
         // determinin whether to show the access popup
         if (previouslyRestrictedFiles == null) {
-            previouslyRestrictedFiles = new ArrayList();
+            previouslyRestrictedFiles = new ArrayList<>();
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 if (fmd.isRestricted()) {
                     previouslyRestrictedFiles.add(fmd);
@@ -1714,7 +1714,7 @@ public class DatasetPage implements java.io.Serializable {
         return restrictedFileCount;
     }
 
-    private List<FileMetadata> filesToBeDeleted = new ArrayList();
+    private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public void deleteFiles() {
 
@@ -1740,9 +1740,9 @@ public class DatasetPage implements java.io.Serializable {
                 // the file was just added during this step, so in addition to 
                 // removing it from the fileMetadatas (for display), we also remove it from 
                 // the newFiles list and the dataset's files, so it won't get uploaded at all
-                Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+                Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
-                    FileMetadata fmd = (FileMetadata) fmit.next();
+                    FileMetadata fmd = fmit.next();
                     if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                         fmit.remove();
                         break;
@@ -2318,7 +2318,7 @@ public class DatasetPage implements java.io.Serializable {
         this.versionTabList = versionTabList;
     }
 
-    private List<DatasetVersion> releasedVersionTabList = new ArrayList();
+    private List<DatasetVersion> releasedVersionTabList = new ArrayList<>();
 
     public List<DatasetVersion> getReleasedVersionTabList() {
         return releasedVersionTabList;
@@ -2358,7 +2358,7 @@ public class DatasetPage implements java.io.Serializable {
     
    private void createSilentGuestbookEntry(FileMetadata fileMetadata, String format){
         initGuestbookResponse(fileMetadata, format);
-        Command cmd;
+        Command<Void> cmd;
         try {
             if (this.guestbookResponse != null) {
                 cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
@@ -2468,7 +2468,7 @@ public class DatasetPage implements java.io.Serializable {
             }          
         }
         if (this.dataset.getGuestbook() != null && !this.dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            this.guestbookResponse.setCustomQuestionResponses(new ArrayList());
+            this.guestbookResponse.setCustomQuestionResponses(new ArrayList<CustomQuestionResponse>());
             for (CustomQuestion cq : this.dataset.getGuestbook().getCustomQuestions()) {
                 CustomQuestionResponse cqr = new CustomQuestionResponse();
                 cqr.setGuestbookResponse(guestbookResponse);
@@ -2496,7 +2496,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<SelectItem> setResponseUISelectItems(CustomQuestion cq) {
-        List<SelectItem> retList = new ArrayList();
+        List<SelectItem> retList = new ArrayList<>();
         for (CustomQuestionValue cqv : cq.getCustomQuestionValues()) {
             SelectItem si = new SelectItem(cqv.getValueString(), cqv.getValueString());
             retList.add(si);
@@ -2531,7 +2531,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private List<DatasetVersion> resetVersionTabList() {
         //if (true)return null;
-        List<DatasetVersion> retList = new ArrayList();
+        List<DatasetVersion> retList = new ArrayList<>();
 
         if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
             for (DatasetVersion version : dataset.getVersions()) {
@@ -2567,7 +2567,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
-        List<DatasetVersion> retList = new ArrayList();
+        List<DatasetVersion> retList = new ArrayList<>();
         for (DatasetVersion version : dataset.getVersions()) {
             if (version.isReleased() || version.isArchived()) {
                 retList.add(version);
