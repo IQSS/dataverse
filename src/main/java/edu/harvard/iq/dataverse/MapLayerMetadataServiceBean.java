@@ -26,6 +26,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -49,7 +50,7 @@ public class MapLayerMetadataServiceBean {
         if (pk==null){
             return null;
         }
-        return (MapLayerMetadata) em.find(MapLayerMetadata.class, pk);
+        return em.find(MapLayerMetadata.class, pk);
     }
     
     public MapLayerMetadata save( MapLayerMetadata layer_metadata) {
@@ -133,7 +134,7 @@ public class MapLayerMetadataServiceBean {
         if (dataset == null){
             return null;
         }
-        Query query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset");// order by o.name");
+        TypedQuery<MapLayerMetadata> query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset", MapLayerMetadata.class);// order by o.name");
         query.setParameter("dataset", dataset);
         return query.getResultList();
     }    
