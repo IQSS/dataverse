@@ -12,6 +12,8 @@ Once an idea/feature request has been received by the Dataverse Development Team
 
 A [Functional Requirements Document (FRD for short)] [] is where we outline the use cases, requirements, user interface workflows, and any questions we have before development of a feature begins. All FRDs are publicly available through a link that is added to the github issue for the idea/feature request. Once an FRD has been completed and reviewed, low fidelity mockups are created using [Balsamiq] [] so we know what the user interface and user experience will be once the feature is developed. The mockups are also publicly available through a link added to the github issue for the idea/feature request. Please feel free to comment on any FRDs and mockups!  
 
+To review FRDs for Dataverse, you can access them in this [Functional Requirements Document folder on Google Drive].
+
 See also our [Community and Support][] page.
 
 [#dataverse IRC channel]: http://webchat.freenode.net/?channels=dataverse
@@ -20,6 +22,7 @@ See also our [Community and Support][] page.
 [Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
 [Functional Requirements Document (FRD for short)]: https://docs.google.com/document/d/1PRyAlP6zlUlUuHfgyUezzuaVQ4JnapvgtGWo0o7tLEs/edit?usp=sharing
 [Balsamiq]: https://iqssharvard.mybalsamiq.com/projects
+[Functional Requirements Document folder on Google Drive]: https://drive.google.com/drive/folders/0B3_V6vFxEcx-fl92ek92OG1nTmhQenBRX1Z4OVJBLXpURmh2d2RyX1NZRUp6YktaYUU5YTA
 
 ## Bug Reports/Issues
 
