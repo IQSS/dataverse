@@ -350,9 +350,8 @@ public class SolrSearchResult {
                 .add("is_unpublished_state", this.isUnpublishedState())
                 .add("is_published", this.isPublishedState())
                 .add("is_deaccesioned", this.isDeaccessionedState())
-                .add("date_to_display_on_card", this.dateToDisplayOnCard)
-                .add("user_roles", this.getUserRolesAsJson());
-
+                .add("date_to_display_on_card", this.dateToDisplayOnCard);
+ 
         // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
         //
         if ((this.isDeaccessionedState()) && (this.getPublicationStatuses().size() == 1)) {
@@ -881,6 +880,7 @@ public class SolrSearchResult {
         }
     }
 
+    /*
     public JsonArrayBuilder getUserRolesAsJson() {
 
         JsonArrayBuilder jsonRoleStrings = Json.createArrayBuilder();
@@ -888,7 +888,7 @@ public class SolrSearchResult {
             jsonRoleStrings.add(role);
         }
         return jsonRoleStrings;
-    }
+    }*/
 
     public List<String> getUserRole() {
         return userRole;
@@ -897,5 +897,5 @@ public class SolrSearchResult {
     public void setUserRole(List<String> userRole) {
         this.userRole = userRole;
     }
-
+    
 }
