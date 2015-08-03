@@ -41,7 +41,7 @@ package "Server Side" {
 	}
 
 	database PostgresQL {
-	 frame "data"
+	 frame "tables"
 	}
 
 	database Filesystem {
