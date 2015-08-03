@@ -556,6 +556,15 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
+        boolean disabledForDebugging = false;
+        if (disabledForDebugging) {
+            /**
+             * Performance problems indexing permissions in
+             * https://github.com/IQSS/dataverse/issues/50 and
+             * https://github.com/IQSS/dataverse/issues/2036
+             */
+            return new IndexResponse("permissions indexing disabled for debugging");
+        }
         IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
         return indexResponse;
     }
