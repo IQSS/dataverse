@@ -164,14 +164,14 @@ public class SolrIndexServiceBean {
                         cachedPerms = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
                     }
                     if (cachedPerms != null) {
-                        logger.info("reusing cached perms for file " + dataFile.getId());
+                        logger.fine("reusing cached perms for file " + dataFile.getId());
                         perms = cachedPerms;
                     } else if (datasetVersionFileIsAttachedTo.isReleased()) {
-                        logger.info("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
+                        logger.fine("no cached perms, file is public/discoverable/searchable for file " + dataFile.getId());
                         perms.add(IndexServiceBean.getPublicGroupString());
                     } else {
                         // go to the well (slow)
-                        logger.info("no cached perms, file is not public, finding perms for file " + dataFile.getId());
+                        logger.fine("no cached perms, file is not public, finding perms for file " + dataFile.getId());
                         perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                     }
                 } else {
@@ -366,7 +366,6 @@ public class SolrIndexServiceBean {
      * inheritance
      */
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
-        System.out.println("indexing perms on " + definitionPoint);
         List<DvObject> dvObjectsToReindexPermissionsFor = new ArrayList<>();
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
         /**
