@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
+import static com.jayway.restassured.path.json.JsonPath.with;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -42,6 +43,7 @@ public class SearchIT {
     private static final Logger logger = Logger.getLogger(SearchIT.class.getCanonicalName());
 
     private static final String builtinUserKey = "burrito";
+    private static final String keyString = "X-Dataverse-key";
     private static final String EMPTY_STRING = "";
     private static final String idKey = "id";
     private static final String apiTokenKey = "apiToken";
@@ -49,10 +51,12 @@ public class SearchIT {
     private static final String emailKey = "email";
     private static TestUser homer;
     private static TestUser ned;
+    private static TestUser clancy;
     private static final String categoryTestDataverse = "categoryTestDataverse";
     private static final String dvForPermsTesting = "dvForPermsTesting";
     private static String dataset1;
     private static String dataset2;
+    private static Integer dataset2Id;
     private static long nedAdminOnRootAssignment;
     private static String dataverseToCreateDataset1In = "root";
     private static final boolean disableTestPermsonRootDv = false;
@@ -92,6 +96,15 @@ public class SearchIT {
             // should never reach here: https://github.com/IQSS/dataverse/issues/2418
             ned.setId(nedIdFromDatabase);
         }
+
+        JsonObject clancyJsonObject = createUser(getUserAsJsonString("clancy", "Clancy", "Wiggum"));
+        clancy = new TestUser(clancyJsonObject);
+        int clancyIdFromDatabase = getUserIdFromDatabase(clancy.getUsername());
+        if (clancyIdFromDatabase != clancy.getId()) {
+            // should never reach here: https://github.com/IQSS/dataverse/issues/2418
+            clancy.setId(clancyIdFromDatabase);
+        }
+
     }
 
     @Test
@@ -188,6 +201,7 @@ public class SearchIT {
 
         Integer datasetIdHomerFound = printDatasetId(dataset2, homer);
         assertEquals(true, datasetIdHomerFound != null);
+        dataset2Id = datasetIdHomerFound;
 
         Map<String, String> datasetTimestampsAfterCreate = checkPermissionsOnDvObject(datasetIdHomerFound, homer.apiToken).jsonPath().getMap("data.timestamps", String.class, String.class);
         assertEquals(true, datasetTimestampsAfterCreate.get(Index.contentChanged) != null);
@@ -281,8 +295,69 @@ public class SearchIT {
             for (String perm : perms) {
                 setFoundFromSolr.add(perm);
             }
-            System.out.println(setFoundFromSolr + " found");
+//            System.out.println(setFoundFromSolr + " found");
             assertEquals(expectedSet, setFoundFromSolr);
+
+            Response solrQueryContent = querySolr(SearchFields.ENTITY_ID + ":" + randomFileId);
+//            solrQueryContent.prettyPrint();
+        }
+
+        long rootDataverseId = 1;
+        String rootDataverseAlias = getDataverseAlias(rootDataverseId, homer.getApiToken());
+        Response publishRootDataverseResponse = publishDataverse(rootDataverseAlias, homer.apiToken);
+//        publishRootDataverseResponse.prettyPrint();
+
+        Response publishDataverseResponse = publishDataverse(dvForPermsTesting, homer.apiToken);
+//        publishDataverseResponse.prettyPrint();
+
+        Response publishDatasetResponse = publishDataset(datasetIdHomerFound, homer.apiToken);
+//        publishDatasetResponse.prettyPrint();
+
+        Integer idClancyFoundAfterPublished = printDatasetId(dataset2, clancy);
+        assertEquals(datasetIdHomerFound, idClancyFoundAfterPublished);
+
+        if (!idsOfFilesUploaded.isEmpty()) {
+            Random random = new Random();
+            int randomFileIndex = random.nextInt(numFilesFound);
+            System.out.println("picking random file with index of " + randomFileIndex + " from list of " + numFilesFound);
+
+            int randomFileId = idsOfFilesUploaded.get(randomFileIndex);
+
+            Set<String> expectedSet = new HashSet<>();
+            expectedSet.add(IndexServiceBean.getPublicGroupString());
+
+            Response checkPermsReponse = checkPermissionsOnDvObject(randomFileId, homer.getApiToken());
+//            checkPermsReponse.prettyPrint();
+            // [0] because there's only one "permissions" Solr doc (a published file)
+            List<String> permListFromDebugEndpoint = JsonPath.from(checkPermsReponse.getBody().asString()).get("data.perms[0]." + SearchFields.DISCOVERABLE_BY);
+            Set<String> setFoundFromPermsDebug = new TreeSet<>();
+            for (String perm : permListFromDebugEndpoint) {
+                setFoundFromPermsDebug.add(perm);
+            }
+
+            assertEquals(expectedSet, setFoundFromPermsDebug);
+
+            Response solrQueryPerms = querySolr(SearchFields.DEFINITION_POINT_DVOBJECT_ID + ":" + randomFileId);
+//            solrQueryPerms.prettyPrint();
+
+            Set<String> setFoundFromSolr = new TreeSet<>();
+            String publishedId = IndexServiceBean.solrDocIdentifierFile + randomFileId + IndexServiceBean.discoverabilityPermissionSuffix;
+            List<Map> docs = with(solrQueryPerms.getBody().asString()).param("name", publishedId).get("response.docs.findAll { docs -> docs.id == name }");
+            List<String> permsPublished = with(solrQueryPerms.getBody().asString()).param("name", publishedId).getList("response.docs.findAll { docs -> docs.id == name }[0]." + SearchFields.DISCOVERABLE_BY);
+
+            for (String perm : permsPublished) {
+                setFoundFromSolr.add(perm);
+            }
+            assertEquals(expectedSet, setFoundFromSolr);
+
+            String draftId = IndexServiceBean.solrDocIdentifierFile + randomFileId + IndexServiceBean.draftSuffix + IndexServiceBean.discoverabilityPermissionSuffix;
+            /**
+             * @todo The fact that we're able to find the permissions document
+             * for a file that has been published is a bug. It should be
+             * deleted, ideally, when the dataset goes from draft to published.
+             */
+            List<String> permsFormerDraft = with(solrQueryPerms.getBody().asString()).param("name", draftId).getList("response.docs.findAll { docs -> docs.id == name }[0]." + SearchFields.DISCOVERABLE_BY);
+//            System.out.println("permsDraft: " + permsFormerDraft);
 
             Response solrQueryContent = querySolr(SearchFields.ENTITY_ID + ":" + randomFileId);
 //            solrQueryContent.prettyPrint();
@@ -355,8 +430,8 @@ public class SearchIT {
         }
 
         if (!disableTestPermsOnNewDv) {
-            Response deleteDataset2Response = deleteDataset(dataset2, homer.getApiToken());
-            assertEquals(204, deleteDataset2Response.getStatusCode());
+            Response destroyDatasetResponse = destroyDataset(dataset2Id, homer.getApiToken());
+            assertEquals(200, destroyDatasetResponse.getStatusCode());
         }
 
         if (!disableTestCategory) {
@@ -371,6 +446,7 @@ public class SearchIT {
 
         deleteUser(homer.getUsername());
         deleteUser(ned.getUsername());
+        deleteUser(clancy.getUsername());
     }
 
     private Response enableSetting(SettingsServiceBean.Key settingKey) {
@@ -549,6 +625,12 @@ public class SearchIT {
                 .delete("/dvn/api/data-deposit/v1.1/swordv2/edit/study/" + globalId);
     }
 
+    private static Response destroyDataset(Integer datasetId, String apiToken) {
+        return given()
+                .header(keyString, apiToken)
+                .delete("/api/datasets/" + datasetId + "/destroy");
+    }
+
     private static void deleteUser(String username) {
         Response deleteUserResponse = given().delete("/api/admin/authenticatedUsers/" + username + "/");
         assertEquals(200, deleteUserResponse.getStatusCode());
@@ -568,7 +650,7 @@ public class SearchIT {
 
     private Integer printDatasetId(String dataset1, TestUser user) {
         Integer datasetIdFound = findDatasetIdFromGlobalId(dataset1, user.getApiToken());
-        System.out.println(dataset1 + " id " + datasetIdFound + " found by " + user);
+//        System.out.println(dataset1 + " id " + datasetIdFound + " found by " + user);
         return datasetIdFound;
     }
 
@@ -679,6 +761,24 @@ public class SearchIT {
 
     private Response reindexDataset(int datasetId) {
         return given().get("api/admin/index/datasets/" + datasetId);
+    }
+
+    private Response publishDataverse(String alias, String apiToken) {
+        return given()
+                .header(keyString, apiToken)
+                .urlEncodingEnabled(false)
+                .post("/api/dataverses/" + alias + "/actions/:publish");
+    }
+
+    private Response publishDataset(long datasetId, String apiToken) {
+        /**
+         * This should probably be a POST rather than a GET:
+         * https://github.com/IQSS/dataverse/issues/2431
+         */
+        return given()
+                .header(keyString, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/" + datasetId + "/actions/:publish?type=minor");
     }
 
     private static class TestUser {
