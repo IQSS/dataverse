@@ -64,6 +64,13 @@ d. Install libcurl-devel:
 
 Make sure you have the standard GNU compilers installed (needed for 3rd-party R packages to build themselves). 
 
+**Update**: As of Aug. 4 2015, it appears the following rpms had to be installed: 
+
+``yum install openssl-devel``
+``yum install xml2-devel``
+
+Again, without these rpms, R package devtools was failing to install, silently or with a non-informative error message. 
+Note: this package ``devtools`` has proven to be very flaky; it is being very actively maintained, new dependencies are being constantly added and new bugs introduced... however, it is only needed to install the package ``Zelig``, the main R workhorse behind TwoRavens. It cannot be installed from CRAN, like all the other 3rd party packages we use - becase TwoRavens requires version 5, which is still in beta. So devtools is needed to build it from sources downloaded directly from github. Once Zelig 5 is released, we'll be able to drop the requirement for devtools - and that will make this process much simpler. For now, be prepared for it to be somewhat of an adventure. 
 
 
 1. Set Up R
