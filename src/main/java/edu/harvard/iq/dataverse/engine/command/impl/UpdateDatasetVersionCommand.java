@@ -76,7 +76,7 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         DatasetVersion managed = ctxt.em().merge(edit);
         
         boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().indexDataset(ds, doNormalSolrDocCleanUp);
+        ctxt.index().indexDataset(managed.getDataset(), doNormalSolrDocCleanUp);
         
         return managed;
     }
