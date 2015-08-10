@@ -204,7 +204,7 @@ public abstract class AbstractApiBean {
         return findAuthenticatedUserOrDie(getRequestApiKey());
     }
     
-    protected AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
+    private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
         AuthenticatedUser u = authSvc.lookupUser(key);
         if ( u != null ) {
             return u;

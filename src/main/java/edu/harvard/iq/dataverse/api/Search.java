@@ -53,7 +53,6 @@ public class Search extends AbstractApiBean {
     @GET
     public Response search(
             @QueryParam("q") String query,
-            @QueryParam("key") String key,
             @QueryParam("type") final List<String> types,
             @QueryParam("subtree") String subtreeRequested,
             @QueryParam("sort") String sortField,
@@ -70,7 +69,7 @@ public class Search extends AbstractApiBean {
 
         User user;
         try {
-            user = getUser(key);
+            user = getUser();
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -188,7 +187,7 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private User getUser(String key) throws WrappedResponse {
+    private User getUser() throws WrappedResponse {
         /**
          * @todo support searching as non-guest:
          * https://github.com/IQSS/dataverse/issues/1299
@@ -201,7 +200,7 @@ public class Search extends AbstractApiBean {
          * @todo Check back on https://github.com/IQSS/dataverse/issues/1838 for
          * when/if the Search API is opened up to not require a key.
          */
-        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie(key);
+        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
         if (nonPublicSearchAllowed()) {
             return authenticatedUser;
         } else {
