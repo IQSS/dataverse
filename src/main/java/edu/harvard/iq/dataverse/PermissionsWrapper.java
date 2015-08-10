@@ -29,12 +29,15 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
-    private Map<Long, Map<Class<? extends Command>, Boolean>> commandMap = new HashMap<>();
+    private final Map<Long, Map<Class<? extends Command>, Boolean>> commandMap = new HashMap<>();
 
     // Map to track whether a DvObject has "Permission.DownloadFile" 
     //
-    private Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
+    private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
 
     /**
      * Check if the current Dataset can Issue Commands
@@ -73,7 +76,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         
         boolean canIssueCommand;
-        canIssueCommand = permissionService.userOn(session.getUser(), dvo).canIssue(command);
+        canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
         dvoCommandMap.put(command, canIssueCommand);
         return canIssueCommand;
     }

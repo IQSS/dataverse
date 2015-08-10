@@ -92,6 +92,43 @@ public class PermissionServiceBean {
         public RequestPermissionQuery on( DvObject dvo ) {
             return new RequestPermissionQuery(dvo, request);
         }
+        
+        /**
+         * Tests whether a command of the passed class can be issued over the {@link DvObject}
+         * in the context of the current request. Note that since some commands have dynamic permissions, 
+         * in some cases it's better to instantiate a command object and pass it to {@link #canIssue(edu.harvard.iq.dataverse.engine.command.Command)}.
+         * @param aCmdClass
+         * @return {@code true} iff instances of the command class can be issued in the context of the current request.
+         */
+        public boolean canIssue( Class<? extends Command> aCmdClass ) {
+            Map<String, Set<Permission>> required = CH.permissionsRequired(aCmdClass);
+            if (required.isEmpty() || required.get("") == null) {
+                logger.fine("IsUserAllowedOn: empty-true");
+                return true;
+            } else {
+                Set<Permission> grantedUserPermissions = permissionsFor(request, subject);
+                Set<Permission> requiredPermissionSet = required.get("");
+                return grantedUserPermissions.containsAll(requiredPermissionSet);
+            }
+        }
+        
+        /**
+         * Tests whether the command can be issued over the {@link DvObject}
+         * in the context of the current request. 
+         * @param aCmd
+         * @return {@code true} iff the command can be issued in the context of the current request.
+         */
+        public boolean canIssue( Command<?> aCmd ) {
+            Map<String, Set<Permission>> required = aCmd.getRequiredPermissions();
+            if (required.isEmpty() || required.get("") == null) {
+                logger.fine("IsUserAllowedOn: empty-true");
+                return true;
+            } else {
+                Set<Permission> grantedUserPermissions = permissionsFor(request, subject);
+                Set<Permission> requiredPermissionSet = required.get("");
+                return grantedUserPermissions.containsAll(requiredPermissionSet);
+            }
+        }
     }
     
     /**
@@ -111,17 +148,12 @@ public class PermissionServiceBean {
             return new StaticPermissionQuery(anotherUser, subject);
         }
 
-        @Deprecated
-        public boolean canIssue(Class<? extends Command> cmd) {
-            return isUserAllowedOn(user, cmd, subject);
-        }
-
         /**
          * "Fast and loose" query mechanism, allowing to pass the command class
-         * name. Command is assumed to live in
+         * name, does not take request-level permissions into account. Command is assumed to live in
          * {@code edu.harvard.iq.dataverse.engine.command.impl.}
          *
-         * @deprecated
+         * @deprecated Use DynamicPermissionQuery instead
          * @param commandName
          * @return {@code true} iff the user has the permissions required by the
          * command on the object.
