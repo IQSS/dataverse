@@ -5,9 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -57,13 +55,15 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     private HtmlInputText linkUrlInput;
     private HtmlInputText taglineInput;
  
-      @Inject
+    @Inject
     DataverseSession session;
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
     DataverseServiceBean dataverseServiceBean;
-
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    
     public HtmlInputText getLinkUrlInput() {
         return linkUrlInput;
     }
@@ -260,7 +260,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             uploadedFile=null;
             editDv.setDataverseTheme(null);
         }
-        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, session.getUser());  
+        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
         try {
             dataversePage.setDataverse(commandEngine.submit(cmd));           
             dataversePage.setEditMode(null);

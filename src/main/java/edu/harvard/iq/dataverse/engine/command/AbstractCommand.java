@@ -17,7 +17,7 @@ import java.util.Set;
 public abstract class AbstractCommand<R> implements Command<R> {
 
     private final Map<String, DvObject> affectedDataverses;
-    private final User user;
+    private final DataverseRequest request;
 
     static protected class DvNamePair {
 
@@ -41,12 +41,12 @@ public abstract class AbstractCommand<R> implements Command<R> {
         return new DvNamePair(s, d);
     }
 
-    public AbstractCommand(User aUser, DvObject anAffectedDvObject) {
-        this(aUser, dv("", anAffectedDvObject));
+    public AbstractCommand(DataverseRequest aRequest, DvObject anAffectedDvObject) {
+        this(aRequest, dv("", anAffectedDvObject));
     }
 
-    public AbstractCommand(User aUser, DvNamePair dvp, DvNamePair... more) {
-        user = aUser;
+    public AbstractCommand(DataverseRequest aRequest, DvNamePair dvp, DvNamePair... more) {
+        request = aRequest;
         affectedDataverses = new HashMap<>();
         affectedDataverses.put(dvp.name, dvp.dvObject);
         for (DvNamePair p : more) {
@@ -54,19 +54,19 @@ public abstract class AbstractCommand<R> implements Command<R> {
         }
     }
 
-    public AbstractCommand(User aUser, Map<String, DvObject> someAffectedDvObjects) {
-        user = aUser;
+    public AbstractCommand(DataverseRequest aRequest, Map<String, DvObject> someAffectedDvObjects) {
+        request = aRequest;
         affectedDataverses = someAffectedDvObjects;
     }
-
+    
     @Override
     public Map<String, DvObject> getAffectedDvObjects() {
         return affectedDataverses;
     }
 
     @Override
-    public User getUser() {
-        return user;
+    public DataverseRequest getRequest() {
+        return request;
     }
 
     @Override
@@ -74,4 +74,11 @@ public abstract class AbstractCommand<R> implements Command<R> {
         return CH.permissionsRequired(getClass());
     }
 
+    /**
+     * Convenience method for getting the user requesting this command.
+     * @return the user issuing the command (via the {@link DataverseRequest}).
+     */
+    protected User getUser() {
+       return getRequest().getUser();
+    }
 }

@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -85,6 +84,9 @@ public class LoginPage implements java.io.Serializable {
     @EJB
     SettingsServiceBean settingsService;
     
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    
     private String credentialsAuthProviderId;
     
     private List<FilledCredential> filledCredentials;
@@ -143,7 +145,7 @@ public class LoginPage implements java.io.Serializable {
             }
             authReq.putCredential(fc.getCredential().getTitle(), fc.getValue());
         }
-        authReq.setIpAddress( session.getUser().getRequestMetadata().getIpAddress() );
+        authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());

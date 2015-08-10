@@ -8,11 +8,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -61,31 +62,31 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
             throws SwordError, SwordServerException, SwordAuthException {
 
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        user.setRequestMetadata( new UserRequestMetadata(request) );
+        DataverseRequest dvReq = new DataverseRequest( user, request);
         
         urlManager.processUrl(collectionUri);
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
 
-            logger.fine("attempting deposit into this dataverse alias: " + dvAlias);
+            logger.log(Level.FINE, "attempting deposit into this dataverse alias: {0}", dvAlias);
 
             Dataverse dvThatWillOwnDataset = dataverseService.findByAlias(dvAlias);
 
             if (dvThatWillOwnDataset != null) {
 
-                if (swordAuth.hasAccessToModifyDataverse(user, dvThatWillOwnDataset)) {
+                if (swordAuth.hasAccessToModifyDataverse(dvReq, dvThatWillOwnDataset)) {
 
-                    logger.fine("multipart: " + deposit.isMultipart());
-                    logger.fine("binary only: " + deposit.isBinaryOnly());
-                    logger.fine("entry only: " + deposit.isEntryOnly());
-                    logger.fine("in progress: " + deposit.isInProgress());
-                    logger.fine("metadata relevant: " + deposit.isMetadataRelevant());
+                    logger.log(Level.FINE, "multipart: {0}", deposit.isMultipart());
+                    logger.log(Level.FINE, "binary only: {0}", deposit.isBinaryOnly());
+                    logger.log(Level.FINE, "entry only: {0}", deposit.isEntryOnly());
+                    logger.log(Level.FINE, "in progress: {0}", deposit.isInProgress());
+                    logger.log(Level.FINE, "metadata relevant: {0}", deposit.isMetadataRelevant());
 
                     if (deposit.isEntryOnly()) {
                         // do a sanity check on the XML received
                         try {
                             SwordEntry swordEntry = deposit.getSwordEntry();
-                            logger.fine("deposit XML received by createNew():\n" + swordEntry.toString());
+                            logger.log(Level.FINE, "deposit XML received by createNew():\n{0}", swordEntry.toString());
                         } catch (ParseException ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not create dataset due to malformed Atom entry: " + ex);
                         }
@@ -100,7 +101,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         dataset.setAuthority(authority); 
                         dataset.setDoiSeparator(separator);
                         dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority, separator));
-                        logger.fine("DS Deposit identifier: " + dataset.getIdentifier());
+                        logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 
                         String foreignFormat = SwordUtil.DCTERMS;
@@ -118,7 +119,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         Dataset createdDataset = null;
                         try {
-                            createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, user, false));
+                            createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, dvReq, false));
                         } catch (EJBException | CommandException ex) {
                             Throwable cause = ex;
                             StringBuilder sb = new StringBuilder();

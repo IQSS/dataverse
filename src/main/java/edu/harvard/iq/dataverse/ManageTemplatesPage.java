@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
@@ -12,7 +11,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -52,6 +50,9 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
     private List<Template> templates;
     private Dataverse dataverse;
@@ -108,7 +109,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         templates.add(newOne);
         Template created;
         try {
-            created = engineService.submit(new CreateTemplateCommand(newOne, session.getUser(), dataverse));
+            created = engineService.submit(new CreateTemplateCommand(newOne, dvRequestService.getDataverseRequest(), dataverse));
             saveDataverse("");
             String msg =  "The template has been copied";
             JsfHelper.addFlashMessage(msg);
@@ -132,7 +133,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
             System.out.print("selected template is null");
         }
         try {
-            engineService.submit(new DeleteTemplateCommand(session.getUser(), getDataverse(), selectedTemplate, dataverseWDefaultTemplate  ));
+            engineService.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), getDataverse(), selectedTemplate, dataverseWDefaultTemplate  ));
             JsfHelper.addFlashMessage("The template has been deleted");
         } catch (CommandException ex) {
             String failMessage = "The dataset template cannot be deleted.";
@@ -149,7 +150,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
             successMessage = "Template data updated";
         }
         try {
-            engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser(), null));
+            engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, dvRequestService.getDataverseRequest(), null));
             //JH.addMessage(FacesMessage.SEVERITY_INFO, successMessage);
             JsfHelper.addFlashMessage(successMessage);
         } catch (CommandException ex) {
@@ -235,7 +236,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
                 }
             }
 
-            dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(!isInheritTemplatesValue(), session.getUser(), getDataverse()));
+            dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(!isInheritTemplatesValue(), dvRequestService.getDataverseRequest(), getDataverse()));
             init();
             return "";
         } catch (CommandException ex) {

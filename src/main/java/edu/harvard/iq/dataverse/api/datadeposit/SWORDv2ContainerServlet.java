@@ -36,27 +36,41 @@ public class SWORDv2ContainerServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        setRequest(req);
         this.api.get(req, resp);
+        setRequest(null);
     }
 
     @Override
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        setRequest(req);
         this.api.head(req, resp);
+        setRequest(null);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        setRequest(req);
         this.api.put(req, resp);
+        setRequest(null);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        setRequest(req);
         this.api.post(req, resp);
+        setRequest(null);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        setRequest(req);
         this.api.delete(req, resp);
+        setRequest(null);
     }
-
+    
+    private void setRequest( HttpServletRequest r ) {
+        containerManagerImpl.setHttpRequest(r);
+        statementManagerImpl.setHttpRequest(r);
+    }
 }

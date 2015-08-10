@@ -73,7 +73,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         
         boolean canIssueCommand;
-        canIssueCommand = permissionService.on(dvo).canIssue(command);
+        canIssueCommand = permissionService.userOn(session.getUser(), dvo).canIssue(command);
         dvoCommandMap.put(command, canIssueCommand);
         return canIssueCommand;
     }

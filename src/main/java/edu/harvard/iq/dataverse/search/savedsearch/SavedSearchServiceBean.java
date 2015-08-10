@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -31,6 +32,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
 
 @Stateless
 @Named
@@ -48,7 +51,9 @@ public class SavedSearchServiceBean {
     DataverseLinkingServiceBean dataverseLinkingService;
     @EJB
     EjbDataverseEngine commandEngine;
-
+    @Context
+    HttpServletRequest httpReq;
+    
     private final String resultString = "result";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -138,6 +143,7 @@ public class SavedSearchServiceBean {
                 infoPerHit.add(hitInfo);
                 break;
             }
+            DataverseRequest dvReq = new DataverseRequest(savedSearch.getCreator(), httpReq);
             if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
                 Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
                 if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
@@ -147,7 +153,7 @@ public class SavedSearchServiceBean {
                 } else if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because " + dataverseToLinkTo + " is already part of the subtree for " + savedSearch.getDefinitionPoint());
                 } else {
-                    DataverseLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDataverseCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), dataverseToLinkTo));
+                    DataverseLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDataverseCommand(dvReq, savedSearch.getDefinitionPoint(), dataverseToLinkTo));
                     hitInfo.add(resultString, "Persisted DataverseLinkingDataverse id " + link.getId() + " link of " + dataverseToLinkTo + " to " + savedSearch.getDefinitionPoint());
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
@@ -160,7 +166,7 @@ public class SavedSearchServiceBean {
                 } else if (datasetAncestorAlreadyLinked(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     hitInfo.add(resultString, "FIXME: implement this?");
                 } else {
-                    DatasetLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDatasetCommand(savedSearch.getCreator(), savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                    DatasetLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDatasetCommand(dvReq, savedSearch.getDefinitionPoint(), datasetToLinkTo));
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {

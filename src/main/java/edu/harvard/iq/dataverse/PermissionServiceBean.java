@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -25,8 +24,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
-import java.util.ArrayList;
-import java.util.HashMap;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.LinkedList;
 import javax.persistence.Query;
 
@@ -67,21 +65,53 @@ public class PermissionServiceBean {
     
     @Inject
     DataverseSession session;
+    
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
-    public class PermissionQuery {
-
-        final RoleAssignee user;
+    /**
+     * A request-level permission query (e.g includes IP groups).
+     */
+    public class RequestPermissionQuery {
         final DvObject subject;
+        final DataverseRequest request;
 
-        public PermissionQuery(RoleAssignee user, DvObject subject) {
-            this.user = user;
+        public RequestPermissionQuery(DvObject subject, DataverseRequest request) {
             this.subject = subject;
+            this.request = request;
+        }
+        
+        public Set<Permission> get() {
+            return PermissionServiceBean.this.permissionsFor(request, subject);
         }
 
-        public PermissionQuery user(User anotherUser) {
-            return new PermissionQuery(anotherUser, subject);
+        public boolean has(Permission p) {
+            return get().contains(p);
+        }
+        
+        public RequestPermissionQuery on( DvObject dvo ) {
+            return new RequestPermissionQuery(dvo, request);
+        }
+    }
+    
+    /**
+     * A permission query for a given role assignee. Does not cover request-level permissions.
+     */
+    public class StaticPermissionQuery {
+
+        final DvObject subject;
+        final RoleAssignee user;
+
+        private StaticPermissionQuery(RoleAssignee user, DvObject subject) {
+            this.subject = subject;
+            this.user = user;
         }
 
+        public StaticPermissionQuery user(RoleAssignee anotherUser) {
+            return new StaticPermissionQuery(anotherUser, subject);
+        }
+
+        @Deprecated
         public boolean canIssue(Class<? extends Command> cmd) {
             return isUserAllowedOn(user, cmd, subject);
         }
@@ -123,22 +153,44 @@ public class PermissionServiceBean {
     }
     
     /**
-     * Returns the set of permission a user has over a dataverse object. 
-     * This method takes into consideration group memberships as well.
-     * @param ra The role assignee.
-     * @param d The {@link DvObject} on which the user wants to operate
-     * @return the set of permissions {@code u} has over {@code d}.
+     * Finds all the permissions the {@link User} in {@code req} has over 
+     * {@code dvo}, in the context of {@code req}.
+     * @param req 
+     * @param dvo
+     * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
-    public Set<Permission> permissionsFor(RoleAssignee ra, DvObject d) {
+    public Set<Permission> permissionsFor( DataverseRequest req, DvObject dvo ) {
+        Set<Permission> permissions = EnumSet.noneOf(Permission.class);
+        
+        // Add permissions specifically given to the user
+        permissions.addAll( permissionsForSingleRoleAssignee(req.getUser(),dvo) );
+        Set<Group> groups = groupService.groupsFor(req,dvo);
+        // Add permissions gained from groups
+        for ( Group g : groups ) {
+            permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
+        }
+        
+        return permissions;
+    }
+    
+    /**
+     * Returns the set of permission a user/group has over a dataverse object. 
+     * This method takes into consideration group memberships as well, but does
+     * not look into request-level groups.
+     * @param ra The role assignee.
+     * @param dvo The {@link DvObject} on which the user wants to operate
+     * @return the set of permissions {@code ra} has over {@code dvo}.
+     */
+    public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
 
         Set<Permission> permissions = EnumSet.noneOf(Permission.class);
         
         // Add permissions specifically given to the user
-        permissions.addAll( permissionsForSingleRoleAssignee(ra,d) );
-        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra,d);
+        permissions.addAll( permissionsForSingleRoleAssignee(ra,dvo) );
+        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra,dvo);
         // Add permissions gained from groups
         for ( Group g : groupsRaBelongsTo ) {
-            permissions.addAll( permissionsForSingleRoleAssignee(g,d) );
+            permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
         }
         
         return permissions;
@@ -238,24 +290,35 @@ public class PermissionServiceBean {
         }
     }
 
-    public PermissionQuery userOn(RoleAssignee u, DvObject d) {
+    public StaticPermissionQuery userOn(RoleAssignee u, DvObject d) {
         if (u == null) {
             // get guest user for dataverse d
-            u = new GuestUser();
+            u = GuestUser.get();
         }
-        return new PermissionQuery(u, d);
+        return new StaticPermissionQuery(u, d);
     }
 
-    public PermissionQuery on(DvObject d) {
+    public RequestPermissionQuery on(DvObject d) {
         if (d == null) {
             throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
         }
         if (d.getId() == null) {
             throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
         }
-        return userOn(session.getUser(), d);
+        return requestOn(dvRequestService.getDataverseRequest(), d);
     }
-
+    
+    public RequestPermissionQuery requestOn( DataverseRequest req, DvObject dvo ) {
+        if (dvo.getId() == null) {
+            throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
+        }
+        return new RequestPermissionQuery(dvo, req);
+    }
+    
+    public RequestPermissionQuery request( DataverseRequest req ) {
+        return new RequestPermissionQuery(null, req);
+    }
+    
     /**
      * Go from (User, Permission) to a list of Dataverse objects that the user
      * has the permission on.

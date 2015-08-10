@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -46,32 +47,32 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     private final ImportUtil.ImportType importType;
     private final Template template;
 
-    public CreateDatasetCommand(Dataset theDataset, User user) {
-        super(user, theDataset.getOwner());
+    public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
+        super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = false;
         this.importType=null;
         this.template=null;
     }
 
-    public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired) {
-        super(user, theDataset.getOwner());
+    public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired) {
+        super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=null;
         this.template=null;
     }
     
-    public CreateDatasetCommand(Dataset theDataset, User user, boolean registrationRequired, ImportUtil.ImportType importType) {
-        super(user, theDataset.getOwner());
+    public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType) {
+        super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=importType;
         this.template=null;
     }
     
-    public CreateDatasetCommand(Dataset theDataset, AuthenticatedUser user, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
-        super(user, theDataset.getOwner());
+    public CreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, ImportUtil.ImportType importType, Template template) {
+        super(aRequest, theDataset.getOwner());
         this.theDataset = theDataset;
         this.registrationRequired = registrationRequired;
         this.importType=importType;
@@ -103,8 +104,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             throw new IllegalCommandException(validationFailedString, this);
         }
                 
-        logger.log(Level.FINE, "after validation "  + formatter.format(new Date().getTime())); // TODO remove
-        theDataset.setCreator((AuthenticatedUser) getUser());
+        theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
         
@@ -123,10 +123,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         dsv.setLastUpdateTime(createDate);
         theDataset.setModificationTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
-            dataFile.setCreator((AuthenticatedUser) getUser());
+            dataFile.setCreator((AuthenticatedUser)  getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
-        logger.log(Level.FINE,"after datascrub "  + formatter.format(new Date().getTime()));        
         String nonNullDefaultIfKeyNotFound = "";
         String    protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String    authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
@@ -160,12 +159,12 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         if (registrationRequired && theDataset.getGlobalIdCreateTime() == null) {
             throw new IllegalCommandException("Dataset could not be created.  Registration failed", this);
                }
-        logger.log(Level.FINE,"after doi "  + formatter.format(new Date().getTime()));          
+        logger.log(Level.FINE, "after doi {0}", formatter.format(new Date().getTime()));          
         Dataset savedDataset = ctxt.em().merge(theDataset);
-         logger.log(Level.FINE,"after db update "  + formatter.format(new Date().getTime()));       
+         logger.log(Level.FINE, "after db update {0}", formatter.format(new Date().getTime()));       
         // set the role to be default contributor role for its dataverse
         if (importType==null || importType.equals(ImportType.NEW)) {
-            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(), getUser(), savedDataset));
+            ctxt.roles().save(new RoleAssignment(savedDataset.getOwner().getDefaultContributorRole(),  getRequest().getUser(), savedDataset));
          }
         
         savedDataset.setPermissionModificationTime(new Timestamp(new Date().getTime()));
@@ -180,22 +179,22 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
              * @todo Do something with the result. Did it succeed or fail?
              */
             boolean doNormalSolrDocCleanUp = true;
-            Future<String> indexDatasetFuture = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
-//            logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
+            ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
+
         } catch ( RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
         }
-          logger.log(Level.FINE,"after index "  + formatter.format(new Date().getTime()));      
+          logger.log(Level.FINE, "after index {0}", formatter.format(new Date().getTime()));      
         
         // if we are not migrating, assign the user to this version
         if (importType==null || importType.equals(ImportType.NEW)) {  
             DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();     
-            String id = getUser().getIdentifier();
+            String id =  getRequest().getUser().getIdentifier();
             id = id.startsWith("@") ? id.substring(1) : id;
             AuthenticatedUser au = ctxt.authentication().getAuthenticatedUser(id);
             datasetVersionDataverseUser.setAuthenticatedUser(au);
             datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
-            datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate); 
+            datasetVersionDataverseUser.setLastUpdateDate(createDate); 
             if (savedDataset.getLatestVersion().getId() == null){
                 logger.warning("CreateDatasetCommand: savedDataset version id is null");
             } else {

@@ -31,26 +31,36 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        mediaResourceManagerImpl.setHttpRequest(req);
         this.api.get(req, resp);
+        mediaResourceManagerImpl.setHttpRequest(null);
     }
 
     @Override
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        mediaResourceManagerImpl.setHttpRequest(req);
         this.api.head(req, resp);
+        mediaResourceManagerImpl.setHttpRequest(null);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        mediaResourceManagerImpl.setHttpRequest(req);
         this.api.post(req, resp);
+        mediaResourceManagerImpl.setHttpRequest(null);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        mediaResourceManagerImpl.setHttpRequest(req);
         this.api.put(req, resp);
+        mediaResourceManagerImpl.setHttpRequest(null);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        mediaResourceManagerImpl.setHttpRequest(req);
         this.api.delete(req, resp);
+        mediaResourceManagerImpl.setHttpRequest(null);
     }
 }

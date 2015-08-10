@@ -65,7 +65,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;    
     @EJB
     EjbDataverseEngine commandEngine;
-
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
 
@@ -73,9 +75,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseSession session;
 
     Dataset dataset = new Dataset(); 
-    private Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
-    private Map<DataFile,List<RoleAssignmentRow>> fileMap = new HashMap();
-    private Map<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new HashMap();    
+    private final Map<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new HashMap();
+    private final Map<DataFile,List<RoleAssignmentRow>> fileMap = new HashMap();
+    private final Map<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new HashMap();    
 
     public Dataset getDataset() {
         return dataset;
@@ -246,7 +248,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private void revokeRole(Long roleAssignmentId) {
         try {
             RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
-            commandEngine.submit(new RevokeRoleCommand(ra, session.getUser()));
+            commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
             JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role assignment was not able to be removed.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
@@ -262,7 +264,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
      */
     private List<RoleAssignee> selectedRoleAssignees;
     private List<DataFile> selectedFiles = new ArrayList();
-    private List<RoleAssignee> roleAssigneeList = new ArrayList();
+    private final List<RoleAssignee> roleAssigneeList = new ArrayList();
     private AuthenticatedUser fileRequester;
     
     public List<RoleAssignee> getSelectedRoleAssignees() {
@@ -411,7 +413,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     private boolean assignRole(RoleAssignee ra,  DataFile file, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, file, session.getUser()));
+            commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest()));
             JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + file.getDisplayName() + ".");
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");

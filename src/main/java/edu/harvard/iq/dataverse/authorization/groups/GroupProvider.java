@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.authorization.groups;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Set;
 
 /**
@@ -28,10 +28,20 @@ public interface GroupProvider<T extends Group> {
     public String getGroupProviderInfo();
     
     /**
-     * Looks up the groups this provider has for a role assignee, in the context of a {@link DvObject}.
-     * @param ra The role assignee we
+     * Looks up the groups this provider has for a dataverse request, in the context of a {@link DvObject}.
+     * @param req The request whose group memberships we evaluate
      * @param dvo the DvObject which is the context for the groups. May be {@code null}
      * @return The set of groups the user is member of.
+     */
+    public Set<T> groupsFor( DataverseRequest req, DvObject dvo );
+    
+    /**
+     * Looks up the groups this provider has for a role assignee, in the context of a {@link DvObject}.
+     * This method should be used for group management. Groups for actual requests should be determined
+     * by calling {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.DvObject)}.
+     * @param ra 
+     * @param dvo the DvObject which is the context for the groups. May be {@code null}
+     * @return The set of groups the role assignee is a member of.
      */
     public Set<T> groupsFor( RoleAssignee ra, DvObject dvo );
     

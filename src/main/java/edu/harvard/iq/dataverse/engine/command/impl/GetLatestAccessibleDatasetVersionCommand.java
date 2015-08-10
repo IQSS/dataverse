@@ -8,10 +8,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -24,11 +23,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 @RequiredPermissions({})
 public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
     private final Dataset ds;
-    private final User u;
 
-    public GetLatestAccessibleDatasetVersionCommand(User aUser, Dataset anAffectedDataset) {
-        super(aUser, anAffectedDataset);
-        u = aUser;
+    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
+        super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
     }
 
@@ -37,11 +34,11 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
         DatasetVersion d = null;
         
         try {
-            d = ctxt.engine().submit(new GetDraftDatasetVersionCommand(u, ds));
+            d = ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
         } catch(PermissionException ex) {}
         
         if (d == null || d.getId() == null) {
-            d = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(u,ds));
+            d = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(),ds));
         }
         
         return d;

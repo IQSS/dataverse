@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.builtin;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 
 /**
  * A group containing all the users in the system - including the guest user.
@@ -29,8 +29,8 @@ public final class AllUsers implements Group {
     private AllUsers() {}
         
     @Override
-    public boolean contains(RoleAssignee ra) {
-        return (ra instanceof User);
+    public boolean contains(DataverseRequest ra) {
+        return (ra.getUser() instanceof User);
     }
 
     @Override

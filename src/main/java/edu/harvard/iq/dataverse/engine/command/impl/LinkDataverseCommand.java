@@ -8,9 +8,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.sql.Timestamp;
@@ -26,8 +26,8 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
     private final Dataverse linkedDataverse;
     private final Dataverse linkingDataverse;
     
-    public LinkDataverseCommand(User aUser, Dataverse dataverse, Dataverse linkedDataverse) {
-        super(aUser, dataverse);
+    public LinkDataverseCommand(DataverseRequest aRequest, Dataverse dataverse, Dataverse linkedDataverse) {
+        super(aRequest, dataverse);
         this.linkedDataverse = linkedDataverse;
         this.linkingDataverse = dataverse;
     }

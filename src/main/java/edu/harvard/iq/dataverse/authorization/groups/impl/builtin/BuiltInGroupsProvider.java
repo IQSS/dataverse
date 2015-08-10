@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.Set;
 import org.hibernate.validator.internal.util.CollectionHelper;
@@ -37,12 +38,17 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     }
 
     @Override
-    public Set<Group> groupsFor(RoleAssignee ra, DvObject o) {
+    public Set<Group> groupsFor(DataverseRequest req, DvObject dvo ) {
+        return groupsFor(req.getUser(), dvo );
+    }
+
+    @Override
+    public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
         return (Set<Group>) ((ra instanceof AuthenticatedUser)
                 ? CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get())
                 : Collections.singleton(AllUsers.get()));
     }
-
+    
     @Override
     public Group get(String groupAlias) {
         return groupAlias.equals(AllUsers.get().getAlias()) ? AllUsers.get()

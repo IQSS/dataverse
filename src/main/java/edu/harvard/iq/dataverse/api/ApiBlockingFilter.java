@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
-import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
 import java.util.Map;
@@ -33,7 +33,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     /**
      * A policy that allows all requests.
      */
-    private static final BlockPolicy allow = new BlockPolicy(){
+    private static final BlockPolicy ALLOW = new BlockPolicy(){
         @Override
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
             fc.doFilter(sr, sr1);
@@ -43,7 +43,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     /**
      * A policy that drops blocked requests.
      */
-    private static final BlockPolicy drop = new BlockPolicy(){
+    private static final BlockPolicy DROP = new BlockPolicy(){
         @Override
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
             HttpServletResponse httpResponse = (HttpServletResponse) sr1;
@@ -56,11 +56,11 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     /**
      * Allow only from localhost.
      */
-    private static final BlockPolicy localhostOnly = new BlockPolicy() {
+    private static final BlockPolicy LOCAL_HOST_ONLY = new BlockPolicy() {
 
         @Override
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-            IpAddress origin = new UserRequestMetadata( (HttpServletRequest)sr ).getIpAddress();
+            IpAddress origin = new DataverseRequest( null, (HttpServletRequest)sr ).getSourceAddress();
             if ( origin.isLocalhost() ) {
                 fc.doFilter(sr, sr1);
             } else {
@@ -121,9 +121,9 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
     @Override
     public void init(FilterConfig fc) throws ServletException {
         updateBlockedPoints();
-        policies.put("allow", allow);
-        policies.put("drop", drop);
-        policies.put("localhost-only", localhostOnly);
+        policies.put("allow", ALLOW);
+        policies.put("drop", DROP);
+        policies.put("localhost-only", LOCAL_HOST_ONLY);
         policies.put("unblock-key", unblockKey);
     }
 
@@ -172,7 +172,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
         } else {
             logger.log(Level.WARNING, "Undefined block policy {0}. Available policies are {1}",
                     new Object[]{blockPolicyName, policies.keySet()});
-            return allow;
+            return ALLOW;
         }
     }
     

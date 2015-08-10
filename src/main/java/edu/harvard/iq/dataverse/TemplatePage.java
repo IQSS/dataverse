@@ -42,6 +42,9 @@ public class TemplatePage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
     
     @Inject
+    DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
     DataverseSession session;
 
     public enum EditMode {
@@ -168,23 +171,23 @@ public class TemplatePage implements java.io.Serializable {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
                 dataverse.getTemplates().add(template);
-                cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser(), null);
+                cmd = new UpdateDataverseCommand(dataverse, null, null, dvRequestService.getDataverseRequest(), null);
                 create = true;
                 commandEngine.submit(cmd);
             } else {
-                cmd = new UpdateDataverseTemplateCommand(dataverse, template, session.getUser());
+                cmd = new UpdateDataverseTemplateCommand(dataverse, template, dvRequestService.getDataverseRequest());
                 commandEngine.submit(cmd);
             }
 
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
-            error.append(ex + " ");
-            error.append(ex.getMessage() + " ");
+            error.append(ex).append(" ");
+            error.append(ex.getMessage()).append(" ");
             Throwable cause = ex;
             while (cause.getCause() != null) {
                 cause = cause.getCause();
-                error.append(cause + " ");
-                error.append(cause.getMessage() + " ");
+                error.append(cause).append(" ");
+                error.append(cause.getMessage()).append(" ");
             }
             //
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + error.toString()));

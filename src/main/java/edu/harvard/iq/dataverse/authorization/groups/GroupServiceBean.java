@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvi
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -73,6 +74,23 @@ public class GroupServiceBean {
         return shibGroupProvider;
     }
     
+    public Set<Group> groupsFor( DataverseRequest req, DvObject dvo ) {
+        Set<Group> groups = new HashSet<>();
+         // first, get all groups the user directly belongs to
+        for ( GroupProvider gp : groupProviders.values() ) {
+            groups.addAll( gp.groupsFor(req, dvo) );
+        }
+        
+        return groupTransitiveClosure(groups, dvo);
+    }
+    
+    /**
+     * All the groups a Role assignee belongs to. Does not take request-level groups
+     * (such as IPGroups) into account.
+     * @param ra
+     * @param dvo
+     * @return 
+     */
     public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
         Set<Group> groups = new HashSet<>();
         
@@ -81,6 +99,19 @@ public class GroupServiceBean {
             groups.addAll( gp.groupsFor(ra, dvo) );
         }
         
+        return groupTransitiveClosure(groups, dvo);
+    }
+
+    /**
+     * Given a set of groups and a DV object, return all the groups that are
+     * reachable from the set. Effectively, if the initial set has an {@link ExplicitGroup},
+     * recursively add all the groups it contains.
+     * 
+     * @param groups
+     * @param dvo
+     * @return All the groups included in the groups in {@code groups}.
+     */
+    private Set<Group> groupTransitiveClosure(Set<Group> groups, DvObject dvo) {
         // now, get the explicit group transitive closure.
         Set<ExplicitGroup> perimeter = new HashSet<>();
         Set<ExplicitGroup> visited = new HashSet<>();
@@ -99,8 +130,8 @@ public class GroupServiceBean {
             
             Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
             discovered.removeAll(visited); // Ideally the conjunction is always empty, as we don't allow cycles.
-                                           // Still, coding defensively here, in case someone gets too
-                                           // smart on the SQL console.
+            // Still, coding defensively here, in case someone gets too
+            // smart on the SQL console.
             
             perimeter.addAll(discovered);
             visited.addAll(discovered);

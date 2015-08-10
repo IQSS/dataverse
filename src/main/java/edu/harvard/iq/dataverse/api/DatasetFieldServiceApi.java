@@ -197,7 +197,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             datasetFieldService.findNAControlledVocabularyValue();
             return okResponse("NA value exists.");
             
-        } catch (Exception e) {
+        } catch (javax.persistence.NoResultException e) {
             ControlledVocabularyValue naValue = new ControlledVocabularyValue();
             naValue.setStrValue(DatasetField.NA_VALUE);
             datasetFieldService.save(naValue);

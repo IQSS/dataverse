@@ -7,10 +7,9 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import java.util.Collections;
 
 /**
  * Create a new role in a dataverse.
@@ -22,20 +21,18 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
 
     private final DataverseRole created;
     private final Dataverse dv;
-    private final User user;
 
-    public CreateRoleCommand(DataverseRole aRole, User aUser, Dataverse anAffectedDataverse) {
-        super(aUser, anAffectedDataverse);
+    public CreateRoleCommand(DataverseRole aRole, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
+        super(aRequest, anAffectedDataverse);
         created = aRole;
         dv = anAffectedDataverse;
-        user = aUser;
     }
 
     @Override
     public DataverseRole execute(CommandContext ctxt) throws CommandException {
-
+        User user = getUser();
         //todo: temporary for 4.0 - only superusers can create and edit roles
-        if ((!(user instanceof AuthenticatedUser) || !((AuthenticatedUser) user).isSuperuser())) {
+        if ((!(user instanceof AuthenticatedUser) || !user.isSuperuser())) {
             throw new CommandException("Roles can only be created or edited by superusers.",this);
         }
 

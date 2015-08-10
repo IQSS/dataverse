@@ -4,9 +4,9 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.ArrayList;
@@ -25,8 +25,8 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         private final List<DataverseFieldTypeInputLevel> inputLevelList;
 
 	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
-                    User aUser,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
-		super(aUser, editedDv);
+                    DataverseRequest aRequest,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
+		super(aRequest, editedDv);
 		this.editedDv = editedDv;
                 // add update template uses this command but does not
                 // update facet list or featured dataverses

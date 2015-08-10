@@ -2,13 +2,12 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -23,8 +22,8 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
     private final Dataset doomed;
 
-    public DeleteDatasetVersionCommand(User aUser, Dataset dataset) {
-        super(aUser, dataset);
+    public DeleteDatasetVersionCommand(DataverseRequest aRequest, Dataset dataset) {
+        super(aRequest, dataset);
         this.doomed = dataset;
     }
 
@@ -33,7 +32,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
         // if you are deleting a dataset that only has 1 draft, we are actually destroying the dataset
         if (doomed.getVersions().size() == 1) {
-            ctxt.engine().submit(new DestroyDatasetCommand(doomed, getUser()));
+            ctxt.engine().submit(new DestroyDatasetCommand(doomed, getRequest()));
         } else {
             // we are only deleting a version
             // todo: for now, it's only the latest and if it's a draft
@@ -49,7 +48,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     if (!fmd.getDataFile().isReleased()) {
                         // if file is draft (ie. new to this version, delete
                         // and remove fileMetadata from list (so that it won't try to merge)
-                        ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getUser()));
+                        ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                         fmIt.remove(); 
                     }
                 }

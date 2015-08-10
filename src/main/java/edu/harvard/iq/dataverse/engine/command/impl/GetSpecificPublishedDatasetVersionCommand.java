@@ -8,10 +8,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
@@ -26,8 +25,8 @@ public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<D
     private final long majorVersion;
     private final long minorVersion;
     
-    public GetSpecificPublishedDatasetVersionCommand(User aUser, Dataset anAffectedDataset, long majorVersionNum, long minorVersionNum) {
-        super(aUser, anAffectedDataset);
+    public GetSpecificPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, long majorVersionNum, long minorVersionNum) {
+        super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         majorVersion = majorVersionNum;
         minorVersion = minorVersionNum;

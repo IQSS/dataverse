@@ -205,7 +205,7 @@ public class Search extends AbstractApiBean {
         if (nonPublicSearchAllowed()) {
             return authenticatedUser;
         } else {
-            return new GuestUser();
+            return GuestUser.get();
         }
     }
 

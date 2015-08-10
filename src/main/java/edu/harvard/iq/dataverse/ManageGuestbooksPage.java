@@ -6,15 +6,11 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -59,6 +55,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
     private List<Guestbook> guestbooks;
     private List<GuestbookResponse> responses;
@@ -104,7 +103,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             guestbooks.remove(selectedGuestbook);
             dataverse.getGuestbooks().remove(selectedGuestbook);
             try {
-                engineService.submit(new DeleteGuestbookCommand(session.getUser(), getDataverse(), selectedGuestbook));
+                engineService.submit(new DeleteGuestbookCommand(dvRequestService.getDataverseRequest(), getDataverse(), selectedGuestbook));
                 JsfHelper.addFlashMessage("The guestbook has been deleted");
             } catch (CommandException ex) {
                 String failMessage = "The dataset guestbook cannot be deleted.";
@@ -140,7 +139,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             failureMessage = "dataset.manageGuestbooks.message.editFailure";
         }     
         try {
-            engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser(), null));
+            engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, dvRequestService.getDataverseRequest(), null));
             JsfHelper.addSuccessMessage(JH.localize(successMessage));
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize(failureMessage));
@@ -199,7 +198,10 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     public String updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
-            dataverse = engineService.submit(new UpdateDataverseGuestbookRootCommand(!isInheritGuestbooksValue(), session.getUser(), getDataverse()));
+            dataverse = engineService.submit(
+                    new UpdateDataverseGuestbookRootCommand(!isInheritGuestbooksValue(), 
+                                                            dvRequestService.getDataverseRequest(), 
+                                                            getDataverse()));
             init();
             return "";
         } catch (CommandException ex) {

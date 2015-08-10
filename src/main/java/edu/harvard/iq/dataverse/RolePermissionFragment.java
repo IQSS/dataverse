@@ -56,6 +56,8 @@ public class RolePermissionFragment implements java.io.Serializable {
     AuthenticationServiceBean authenticationService;
     @EJB
     EjbDataverseEngine commandEngine;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -90,8 +92,9 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
             dvObject = commandEngine.submit(
-                    new UpdatePermissionRootCommand(!inheritAssignments, session.getUser(),
-                                                     (Dataverse) dvObject));
+                    new UpdatePermissionRootCommand(!inheritAssignments, 
+                                                    dvRequestService.getDataverseRequest(),
+                                                    (Dataverse) dvObject));
             inheritAssignments = !((DvObjectContainer) dvObject).isPermissionRoot();
         } catch (CommandException ex) {
             Logger.getLogger(RolePermissionFragment.class.getName()).log(Level.SEVERE, null, ex);
@@ -103,7 +106,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     private RoleAssignee assignRoleRoleAssignee; // used if input accepts a RoleAssignee through a converter
     private Long assignRoleRoleId;
 
-    private List<String> identifierList = new ArrayList();
+    private final List<String> identifierList = new ArrayList();
 
     public List<String> completeIdentifier(String query) {
         if (identifierList.isEmpty()) {
@@ -120,7 +123,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         return returnList;
     }
     
-    private List<RoleAssignee> roleAssigneeList = new ArrayList();
+    private final List<RoleAssignee> roleAssigneeList = new ArrayList();
     
     public List<RoleAssignee> completeRoleAssignee(String query) {
         if (roleAssigneeList.isEmpty()) {
@@ -183,7 +186,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, session.getUser()));
+            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest()));
             JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + ra.getDisplayInfo().getTitle() + " on " + dvObject.getDisplayName());
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
@@ -192,7 +195,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public void revokeRole(Long roleAssignmentId) {
         try {
-            commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
+            commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), dvRequestService.getDataverseRequest()));
             JH.addMessage(FacesMessage.SEVERITY_INFO, "Role assignment revoked successfully");
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment - you're missing permission", ex.getRequiredPermissions().toString());
@@ -307,7 +310,7 @@ public class RolePermissionFragment implements java.io.Serializable {
                 role.addPermission(Permission.valueOf(pmsnStr));
             }
             try {
-                setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) role.getOwner())));
+                setRole(commandEngine.submit(new CreateRoleCommand(role, dvRequestService.getDataverseRequest(), (Dataverse) role.getOwner())));
                 JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
             } catch (CommandException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());

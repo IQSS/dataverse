@@ -133,16 +133,18 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetLinkingServiceBean dsLinkingService;
     @Inject
+    DataverseRequestServiceBean dvRequestService;
+    @Inject
     DatasetVersionUI datasetVersionUI;
 
-    private static final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+    private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
-    private List<DataFile> newFiles = new ArrayList();
+    private final List<DataFile> newFiles = new ArrayList();
     private DatasetVersion workingVersion;
     private int releaseRadio = 1;
     private int deaccessionRadio = 0;
@@ -179,8 +181,8 @@ public class DatasetPage implements java.io.Serializable {
 
     
     // Used to store results of permissions checks
-    private Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
-    private Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
+    private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
+    private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean }
 
     private DataFile selectedDownloadFile;
 
@@ -1151,14 +1153,14 @@ public class DatasetPage implements java.io.Serializable {
         try {
             if (this.guestbookResponse != null) {
                 if (!type.equals("multiple")) {
-                    cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
+                    cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), this.guestbookResponse, dataset);
                     commandEngine.submit(cmd);
                 } else {
                     for (FileMetadata fmd : this.selectedFiles) {
                         DataFile df = fmd.getDataFile();
                         if (df != null) {
                             this.guestbookResponse.setDataFile(df);
-                            cmd = new CreateGuestbookResponseCommand(session.getUser(), this.guestbookResponse, dataset);
+                            cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), this.guestbookResponse, dataset);
                             commandEngine.submit(cmd);
                         }
                     }
@@ -1235,7 +1237,7 @@ public class DatasetPage implements java.io.Serializable {
         if (downloadType != null && downloadType.equals("tab")){
             fileDownloadUrl = "/api/access/datafile/" + this.selectedDownloadFile.getId()+ "?format=tab";
         }
-                    logger.fine("Returning file download url: " + fileDownloadUrl);
+        logger.fine("Returning file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
@@ -1353,7 +1355,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         workingVersion.setInReview(false);
         try {
-            cmd = new UpdateDatasetCommand(dataset, session.getUser());
+            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
@@ -1379,7 +1381,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         workingVersion.setInReview(true);
         try {
-            cmd = new UpdateDatasetCommand(dataset, session.getUser());
+            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
@@ -1407,7 +1409,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private void releaseParentDV(){
         if (session.getUser() instanceof AuthenticatedUser) {
-            PublishDataverseCommand cmd = new PublishDataverseCommand((AuthenticatedUser) session.getUser(), dataset.getOwner());
+            PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataset.getOwner());
             try {
                 commandEngine.submit(cmd);
                 JsfHelper.addSuccessMessage(JH.localize("dataverse.publish.success"));
@@ -1430,13 +1432,13 @@ public class DatasetPage implements java.io.Serializable {
             if (selectedDeaccessionVersions == null) {
                 for (DatasetVersion dv : this.dataset.getVersions()) {
                     if (dv.isReleased()) {
-                        cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv), true);
+                        cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(dv), true);
                         DatasetVersion datasetv = commandEngine.submit(cmd);
                     }
                 }
             } else {
                 for (DatasetVersion dv : selectedDeaccessionVersions) {
-                    cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv), false);
+                    cmd = new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), setDatasetVersionDeaccessionReasonAndURL(dv), false);
                     DatasetVersion datasetv = commandEngine.submit(cmd);
                 }
             }
@@ -1490,9 +1492,9 @@ public class DatasetPage implements java.io.Serializable {
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
                 if (editMode == EditMode.CREATE) {
-                    cmd = new PublishDatasetCommand(dataset, (AuthenticatedUser) session.getUser(), minor);
+                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 } else {
-                    cmd = new PublishDatasetCommand(dataset, (AuthenticatedUser) session.getUser(), minor);
+                    cmd = new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor);
                 }
                 dataset = commandEngine.submit(cmd);
                 JsfHelper.addSuccessMessage(JH.localize("dataset.message.publishSuccess"));                        
@@ -1519,7 +1521,7 @@ public class DatasetPage implements java.io.Serializable {
     public String registerDataset() {
         Command<Dataset> cmd;
         try {
-            cmd = new UpdateDatasetCommand(dataset, session.getUser());
+            cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Registration Failed", " - " + ex.toString()));
@@ -1569,7 +1571,7 @@ public class DatasetPage implements java.io.Serializable {
 
         Command cmd;
         try {
-            cmd = new DestroyDatasetCommand(dataset, session.getUser());
+            cmd = new DestroyDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             commandEngine.submit(cmd);
             /* - need to figure out what to do 
              Update notification in Delete Dataset Method
@@ -1587,7 +1589,7 @@ public class DatasetPage implements java.io.Serializable {
     public String deleteDatasetVersion() {
         Command cmd;
         try {
-            cmd = new DeleteDatasetVersionCommand(session.getUser(), dataset);
+            cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);
             JsfHelper.addSuccessMessage(JH.localize("datasetVersion.message.deleteSuccess"));
         } catch (CommandException ex) {
@@ -1627,7 +1629,7 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         linkingDataverse = dataverseService.find(linkingDataverseId);
-        LinkDatasetCommand cmd = new LinkDatasetCommand(session.getUser(), linkingDataverse, dataset);
+        LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataset);
         try {
             commandEngine.submit(cmd);
             //JsfHelper.addFlashMessage(JH.localize("dataset.message.linkSuccess")  + linkingDataverse.getDisplayName());
@@ -1829,17 +1831,17 @@ public class DatasetPage implements java.io.Serializable {
                 workingVersion.setLicense(DatasetVersion.License.CC0);
                 if ( selectedTemplate != null ) {
                     if ( session.getUser().isAuthenticated() ) {
-                        cmd = new CreateDatasetCommand(dataset, (AuthenticatedUser) session.getUser(), false, null, selectedTemplate); 
+                        cmd = new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, null, selectedTemplate); 
                     } else {
                         JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.create.authenticatedUsersOnly"));
                         return null;
                     }
                 } else {
-                   cmd = new CreateDatasetCommand(dataset, session.getUser());
+                   cmd = new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
                 }
                 
             } else {
-                cmd = new UpdateDatasetCommand(dataset, session.getUser(), filesToBeDeleted);
+                cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
@@ -2361,7 +2363,7 @@ public class DatasetPage implements java.io.Serializable {
         Command cmd;
         try {
             if (this.guestbookResponse != null) {
-                cmd = new CreateGuestbookResponseCommand(session.getUser(), guestbookResponse, dataset);
+                cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, dataset);
                 commandEngine.submit(cmd);
             }
         } catch (CommandException ex) {

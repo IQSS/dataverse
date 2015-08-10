@@ -7,9 +7,9 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -143,7 +143,7 @@ public class EjbDataverseEngine {
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
         
         try {
-            logRec.setUserIdentifier( aCommand.getUser().getIdentifier() );
+            logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
             
             // Check permissions - or throw an exception
             Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
@@ -151,7 +151,7 @@ public class EjbDataverseEngine {
                 throw new RuntimeException("Command " + aCommand + " does not define required permissions.");
             }
 
-            User user = aCommand.getUser();
+            DataverseRequest dvReq = aCommand.getRequest();
             
             Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
             logRec.setInfo( describe(affectedDvObjects) );
@@ -162,14 +162,14 @@ public class EjbDataverseEngine {
                 }
                 DvObject dvo = affectedDvObjects.get(dvName);
 
-                Set<Permission> granted = (dvo != null) ? permissionService.permissionsFor(user, dvo)
+                Set<Permission> granted = (dvo != null) ? permissionService.permissionsFor(dvReq, dvo)
                         : EnumSet.allOf(Permission.class);
                 Set<Permission> required = requiredMap.get(dvName);
                 if (!granted.containsAll(required)) {
                     required.removeAll(granted);
                     logRec.setActionResult(ActionLogRecord.Result.PermissionError);
                     throw new PermissionException("Can't execute command " + aCommand
-                            + ", because user " + aCommand.getUser()
+                            + ", because request " + aCommand.getRequest()
                             + " is missing permissions " + required
                             + " on Object " + dvo.accept(DvObject.NamePrinter),
                             aCommand,

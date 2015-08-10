@@ -8,13 +8,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.NotFoundException;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -176,7 +176,7 @@ public class SettingsServiceBean {
      * Values that are considered as "true".
      * @see #isTrue(java.lang.String, boolean) 
      */
-    private static final Set<String> trueValues = Collections.unmodifiableSet(
+    private static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
             new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     /**
@@ -219,7 +219,7 @@ public class SettingsServiceBean {
             long valAsInt = Long.parseLong(val);
             return valAsInt;
         } catch (NumberFormatException ex) {
-            logger.warning("Incorrect setting.  Could not convert \"" + val + "\" from setting " + key.toString() + " to long.");
+            logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long.", new Object[]{val, key.toString()});
             return null;
         }
         
@@ -265,7 +265,7 @@ public class SettingsServiceBean {
      */
     public boolean isTrue( String name, boolean defaultValue ) {
         String val = get(name);
-        return ( val==null ) ? defaultValue : trueValues.contains(val.trim().toLowerCase() );
+        return ( val==null ) ? defaultValue : TRUE_VALUES.contains(val.trim().toLowerCase() );
     }
     
     public boolean isTrueForKey( Key key, boolean defaultValue ) {

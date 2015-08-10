@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -27,8 +26,8 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 
     private final Dataverse doomed;
 
-    public DeleteDataverseCommand(User u, Dataverse aDoomedDataverse) {
-        super(u, dv("doomed", aDoomedDataverse), dv("owner", aDoomedDataverse.getOwner()));
+    public DeleteDataverseCommand(DataverseRequest aRequest, Dataverse aDoomedDataverse) {
+        super(aRequest, dv("doomed", aDoomedDataverse), dv("owner", aDoomedDataverse.getOwner()));
         doomed = aDoomedDataverse;
     }
 

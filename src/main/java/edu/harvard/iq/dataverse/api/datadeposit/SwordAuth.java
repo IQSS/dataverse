@@ -8,7 +8,8 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import org.swordapp.server.AuthCredentials;
@@ -61,7 +62,7 @@ public class SwordAuth extends AbstractApiBean {
      * use more granular permissions rather than the old equivalent of "admin"
      * in DVN 3.x.
      */
-    boolean hasAccessToModifyDataverse(User dataverseUser, Dataverse dataverse) throws SwordError {
+    boolean hasAccessToModifyDataverse(DataverseRequest dataverseRequest, Dataverse dataverse) throws SwordError {
         boolean authorized = false;
 
         /**
@@ -82,7 +83,7 @@ public class SwordAuth extends AbstractApiBean {
 //            }
 //        }
 //
-        for (RoleAssignment roleAssignment : roleService.assignmentsFor(dataverseUser, dataverse).getAssignments()) {
+        for (RoleAssignment roleAssignment : roleService.assignmentsFor(dataverseRequest.getUser(), dataverse).getAssignments()) {
             /**
              * @todo do we want to hard code a check for the string "manager"
              * here? Probably not... for now let's just check for
@@ -99,9 +100,9 @@ public class SwordAuth extends AbstractApiBean {
              * per SWORD commands that map onto permissions like
              * canIssue(CreateDatasetCommand.class)
              */
-            logger.fine(dataverse.getAlias() + ": " + dataverseUser.getIdentifier() + " has role " + roleAssignment.getRole().getAlias());
+            logger.log(Level.FINE, "{0}: {1} has role {2}", new Object[]{dataverse.getAlias(), dataverseRequest.getUser().getIdentifier(), roleAssignment.getRole().getAlias()});
         }
-        if (permissionService.userOn(dataverseUser, dataverse).has(Permission.EditDataverse)) {
+        if (permissionService.requestOn(dataverseRequest, dataverse).has(Permission.EditDataverse)) {
             authorized = true;
             return authorized;
         } else {

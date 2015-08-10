@@ -4,9 +4,9 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.util.Collections;
@@ -23,13 +23,11 @@ import java.util.Set;
 // no annotations here, since permissions are dynamically decided
 public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>> {
 
-    private final User user;
     private final Dataverse dvToList;
 
-    public ListDataverseContentCommand(User aUser, Dataverse anAffectedDataverse) {
-        super(aUser, anAffectedDataverse);
+    public ListDataverseContentCommand(DataverseRequest aRequest, Dataverse anAffectedDataverse) {
+        super(aRequest, anAffectedDataverse);
         dvToList = anAffectedDataverse;
-        user = aUser;
     }
 
     @Override
@@ -37,14 +35,14 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
         LinkedList<DvObject> result = new LinkedList<>();
         for (Dataset ds : ctxt.datasets().findByOwnerId(dvToList.getId())) {
             try {
-                ds = ctxt.engine().submit(new GetDatasetCommand(user, ds));
+                ds = ctxt.engine().submit(new GetDatasetCommand(getRequest(), ds));
                 result.add(ds);
             } catch (PermissionException ex) {
             }
         }
         for (Dataverse dv : ctxt.dataverses().findByOwnerId(dvToList.getId())) {
             try {
-                dv = ctxt.engine().submit(new GetDataverseCommand(user, dv));
+                dv = ctxt.engine().submit(new GetDataverseCommand(getRequest(), dv));
                 result.add(dv);
             } catch (PermissionException ex) {
             }

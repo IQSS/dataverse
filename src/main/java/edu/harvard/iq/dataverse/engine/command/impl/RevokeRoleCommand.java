@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Collections;
 import java.util.Map;
@@ -21,9 +22,9 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
 	
 	private final RoleAssignment toBeRevoked;
 
-	public RevokeRoleCommand(RoleAssignment toBeRevoked, User aUser) {
+	public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseRequest aRequest) {
         // for data file check permission on owning dataset
-        super(aUser, toBeRevoked.getDefinitionPoint() instanceof DataFile ? toBeRevoked.getDefinitionPoint().getOwner() : toBeRevoked.getDefinitionPoint());
+        super(aRequest, toBeRevoked.getDefinitionPoint() instanceof DataFile ? toBeRevoked.getDefinitionPoint().getOwner() : toBeRevoked.getDefinitionPoint());
 		this.toBeRevoked = toBeRevoked;
 	}
 	

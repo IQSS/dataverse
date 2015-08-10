@@ -48,7 +48,7 @@ public class RoleAssigneeServiceBean {
 
     @PostConstruct
     void setup() {
-        GuestUser gu = new GuestUser();
+        GuestUser gu = GuestUser.get();
         predefinedRoleAssignees.put(gu.getIdentifier(), gu);
         predefinedRoleAssignees.put(AuthenticatedUsers.get().getIdentifier(), AuthenticatedUsers.get());
         predefinedRoleAssignees.put(AllUsers.get().getIdentifier(), AllUsers.get());

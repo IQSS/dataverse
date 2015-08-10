@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -160,17 +161,15 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             add( (User)ra );
             
         } else {
-            // validate no circular deps
-            Group g = (Group) ra;
-            if ( g.contains(this) ) {
-                throw new GroupException(this, "A group cannot be added to one of its childs.");
-            }
-            
-            // add
-            if ( g instanceof ExplicitGroup ) {
-                containedExplicitGroups.add( (ExplicitGroup)g );
+            if ( ra instanceof ExplicitGroup ) {
+                // validate no circular deps
+                ExplicitGroup g = (ExplicitGroup) ra;
+                if ( g.contains(this) ) {
+                    throw new GroupException(this, "A group cannot be added to one of its childs.");
+                }
+                containedExplicitGroups.add( g );
             } else {
-                containedRoleAssignees.add( g.getIdentifier() );
+                containedRoleAssignees.add( ra.getIdentifier() );
             }
             
         }
@@ -230,6 +229,10 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
+    public boolean contains(DataverseRequest req) {
+        return contains( req.getUser() );
+    }
+    
     public boolean contains(RoleAssignee ra) {
         return containsDirectly(ra) || containsIndirectly(ra);
     }
@@ -258,8 +261,8 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         for ( String containedRAIdtf : containedRoleAssignees ) {
             RoleAssignee containedRa = provider.findRoleAssignee(containedRAIdtf);
             if ( containedRa != null ) {
-                if ( containedRa instanceof Group ) {
-                    if (((Group)containedRa).contains(ra)) {
+                if ( containedRa instanceof ExplicitGroup ) {
+                    if (((ExplicitGroup)containedRa).contains(ra)) {
                         return true;
                     }
                 }

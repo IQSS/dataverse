@@ -3,9 +3,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -18,8 +18,8 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final Dataverse dataverse;
 
-    public PublishDataverseCommand(AuthenticatedUser dataverseUser, Dataverse dataverse) {
-        super(dataverseUser, dataverse);
+    public PublishDataverseCommand(DataverseRequest aRequest, Dataverse dataverse) {
+        super(aRequest, dataverse);
         this.dataverse = dataverse;
     }
 
