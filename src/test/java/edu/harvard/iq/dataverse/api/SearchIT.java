@@ -859,4 +859,8 @@ public class SearchIT {
         }
 
     }
+    
+    public static void main(String[] args) {
+        
+    }
 }

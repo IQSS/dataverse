@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import javax.ws.rs.core.Response.Status;
 
 @Path("admin/datasetfield")
@@ -193,15 +194,18 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @Path("loadNAControlledVocabularyValue")
     public Response loadNAControlledVocabularyValue() {
         // the find will throw a javax.persistence.NoResultException if no values are in db
-        try {
-            datasetFieldService.findNAControlledVocabularyValue();
-            return okResponse("NA value exists.");
-            
-        } catch (javax.persistence.NoResultException e) {
+//            datasetFieldService.findNAControlledVocabularyValue();
+        TypedQuery<ControlledVocabularyValue> naValueFinder = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
+        naValueFinder.setParameter("strvalue", DatasetField.NA_VALUE);
+        
+        if ( naValueFinder.getResultList().isEmpty() ) {
             ControlledVocabularyValue naValue = new ControlledVocabularyValue();
             naValue.setStrValue(DatasetField.NA_VALUE);
             datasetFieldService.save(naValue);
             return okResponse("NA value created.");
+
+        } else {
+            return okResponse("NA value exists.");
         }
     }
 
