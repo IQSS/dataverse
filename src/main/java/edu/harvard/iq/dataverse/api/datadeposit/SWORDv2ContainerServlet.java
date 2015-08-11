@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +20,9 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     private ContainerManager cm;
     private ContainerAPI api;
     private StatementManager sm;
-
+    private final ReentrantLock lock = new ReentrantLock();
+    
+    
     @Override
     public void init() throws ServletException {
         super.init();
@@ -36,37 +39,62 @@ public class SWORDv2ContainerServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setRequest(req);
-        this.api.get(req, resp);
-        setRequest(null);
+        try {
+            lock.lock();
+            setRequest(req);
+            this.api.get(req, resp);
+            setRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setRequest(req);
-        this.api.head(req, resp);
-        setRequest(null);
+        try {
+            lock.lock();
+            setRequest(req);
+            this.api.head(req, resp);
+            setRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setRequest(req);
-        this.api.put(req, resp);
-        setRequest(null);
+        try {
+            lock.lock();
+            setRequest(req);
+            this.api.put(req, resp);
+            setRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setRequest(req);
-        this.api.post(req, resp);
-        setRequest(null);
+        try {
+            lock.lock();
+            setRequest(req);
+            this.api.post(req, resp);
+            setRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setRequest(req);
-        this.api.delete(req, resp);
-        setRequest(null);
+        try {
+            lock.lock();
+            setRequest(req);
+            this.api.delete(req, resp);
+            setRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
     
     private void setRequest( HttpServletRequest r ) {

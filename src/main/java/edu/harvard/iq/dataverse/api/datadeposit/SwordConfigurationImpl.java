@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.util.Arrays;
@@ -11,8 +10,6 @@ import org.swordapp.server.SwordConfiguration;
 
 public class SwordConfigurationImpl implements SwordConfiguration {
 
-    @EJB
-    SettingsServiceBean settingsService;
     @EJB
     SystemConfig systemConfig;
 
