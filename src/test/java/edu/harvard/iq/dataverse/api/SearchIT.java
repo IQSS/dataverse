@@ -304,7 +304,7 @@ public class SearchIT {
 
         long rootDataverseId = 1;
         String rootDataverseAlias = getDataverseAlias(rootDataverseId, homer.getApiToken());
-        Response publishRootDataverseResponse = publishDataverse(rootDataverseAlias, homer.apiToken);
+        Response publishRootDataverseResponse = publishDataverseAsCreator(rootDataverseId);
 //        publishRootDataverseResponse.prettyPrint();
 
         Response publishDataverseResponse = publishDataverse(dvForPermsTesting, homer.apiToken);
@@ -770,6 +770,11 @@ public class SearchIT {
                 .post("/api/dataverses/" + alias + "/actions/:publish");
     }
 
+    private Response publishDataverseAsCreator(long id) {
+        return given()
+                .post("/api/admin/publishDataverseAsCreator/" + id);
+    }
+
     private Response publishDataset(long datasetId, String apiToken) {
         /**
          * This should probably be a POST rather than a GET:
@@ -859,8 +864,5 @@ public class SearchIT {
         }
 
     }
-    
-    public static void main(String[] args) {
-        
-    }
+
 }
