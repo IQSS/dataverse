@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -132,6 +133,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseLinkingServiceBean dvLinkingService;
     @EJB
     DatasetLinkingServiceBean dsLinkingService;
+    @EJB
+    SearchFilesServiceBean searchFilesService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -3154,4 +3157,9 @@ public class DatasetPage implements java.io.Serializable {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, file.getId());
         }
     }
+
+    public List<String> getFileCards() {
+        return searchFilesService.getFileCards(dataset, session.getUser());
+    }
+
 }
