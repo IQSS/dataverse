@@ -103,4 +103,15 @@ public class SearchUtil {
         return new SortBy(sortField, sortOrder);
     }
 
+    public static String determineFinalQuery(String userSuppliedQuery) {
+        String wildcardQuery = "*";
+        if (userSuppliedQuery == null) {
+            return wildcardQuery;
+        } else if (userSuppliedQuery.isEmpty()) {
+            return wildcardQuery;
+        } else {
+            return userSuppliedQuery;
+        }
+    }
+
 }

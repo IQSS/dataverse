@@ -11,18 +11,22 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.FacetCategory;
+import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -75,6 +79,8 @@ public class Index extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+    @EJB
+    SearchFilesServiceBean searchFilesService;
 
     public static String contentChanged = "contentChanged";
     public static String contentIndexed = "contentIndexed";
@@ -607,6 +613,31 @@ public class Index extends AbstractApiBean {
     public Response deleteTimestamp(@PathParam("dvObjectId") long dvObjectId) {
         int numItemsCleared = dvObjectService.clearIndexTimes(dvObjectId);
         return okResponse("cleared: " + numItemsCleared);
+    }
+
+    @GET
+    @Path("filesearch")
+    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("q") String query) {
+        Dataset dataset = datasetService.findByGlobalId(persistentId);
+        if (dataset == null) {
+            return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
+        }
+        FileView fileView = searchFilesService.getFileView(dataset, GuestUser.get(), query);
+        if (fileView == null) {
+            return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
+        }
+        JsonArrayBuilder cards = Json.createArrayBuilder();
+        for (SolrSearchResult result : fileView.getSolrSearchResults()) {
+            cards.add(result.getNameSort());
+        }
+        JsonArrayBuilder facets = Json.createArrayBuilder();
+        for (FacetCategory facetCategory : fileView.getFacetCategoryList()) {
+            facets.add(facetCategory.getFriendlyName());
+        }
+        JsonObjectBuilder data = Json.createObjectBuilder();
+        data.add("cards", cards);
+        data.add("facets", facets);
+        return okResponse(data);
     }
 
 }

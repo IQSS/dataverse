@@ -271,7 +271,7 @@ public class SearchServiceBean {
                 error += messageFromSolr;
             }
             logger.fine(error);
-            SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse();
+            SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
             exceptionSolrQueryResponse.setError(error);
 
             // we can't show anything because of the search syntax error
@@ -625,7 +625,7 @@ public class SearchServiceBean {
             }
         }
 
-        SolrQueryResponse solrQueryResponse = new SolrQueryResponse();
+        SolrQueryResponse solrQueryResponse = new SolrQueryResponse(solrQuery);
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         solrQueryResponse.setFacetCategoryList(facetCategoryList);

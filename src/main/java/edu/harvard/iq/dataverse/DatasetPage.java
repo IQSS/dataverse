@@ -21,7 +21,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.search.FacetCategory;
+import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -80,6 +83,7 @@ import java.util.logging.Level;
 public class DatasetPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
+    private FileView fileView;
 
     public enum EditMode {
 
@@ -1009,6 +1013,7 @@ public class DatasetPage implements java.io.Serializable {
 
            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
            this.dataset = this.workingVersion.getDataset();
+           fileView = populateFileView();
            
            // end: Set the workingVersion and Dataset
            // ---------------------------------------
@@ -3158,8 +3163,28 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    public List<String> getFileCards() {
-        return searchFilesService.getFileCards(dataset, session.getUser());
+    public FileView populateFileView() {
+        /**
+         * @todo Let user specify a query for files via the dataset page
+         */
+        String query = "*";
+        return searchFilesService.getFileView(dataset, session.getUser(), query);
+    }
+
+    public List<SolrSearchResult> getFileResults() {
+        if (fileView != null) {
+            return fileView.getSolrSearchResults();
+        } else {
+            return null;
+        }
+    }
+
+    public List<FacetCategory> getFacets() {
+        if (fileView != null) {
+            return fileView.getFacetCategoryList();
+        } else {
+            return null;
+        }
     }
 
 }

@@ -94,4 +94,10 @@ public class SearchUtilTest {
         }
     }
 
+    @Test
+    public void testdetermineFinalQuery() {
+        assertEquals("*", SearchUtil.determineFinalQuery(null));
+        assertEquals("*", SearchUtil.determineFinalQuery(""));
+        assertEquals("foo", SearchUtil.determineFinalQuery("foo"));
+    }
 }

@@ -19,13 +19,13 @@ public class SearchFilesServiceBean {
     @EJB
     SearchServiceBean searchService;
 
-    public List<String> getFileCards(Dataset dataset, User user) {
+    public FileView getFileView(Dataset dataset, User user, String userSuppliedQuery) {
         Dataverse dataverse = null;
-        String query = "*";
         List<String> filterQueries = new ArrayList<>();
         filterQueries.add(SearchFields.TYPE + ":" + SearchConstants.FILES);
         filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId());
-        SortBy sortBy = getSortBy();
+        String finalQuery = SearchUtil.determineFinalQuery(userSuppliedQuery);
+        SortBy sortBy = getSortBy(finalQuery);
         String sortField = sortBy.getField();
         String sortOrder = sortBy.getOrder();
         int paginationStart = 0;
@@ -33,23 +33,28 @@ public class SearchFilesServiceBean {
         int numResultsPerPage = 25;
         SolrQueryResponse solrQueryResponse = null;
         try {
-            solrQueryResponse = searchService.search(user, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.search(user, dataverse, finalQuery, filterQueries, sortField, sortOrder, paginationStart, onlyDataRelatedToMe, numResultsPerPage);
         } catch (SearchException ex) {
             logger.info(SearchException.class + " searching for files: " + ex);
+            return null;
         } catch (Exception ex) {
             logger.info(Exception.class + " searching for files: " + ex);
-        }
-        List<String> toReturn = new ArrayList<>();
-        for (SolrSearchResult result : solrQueryResponse.getSolrSearchResults()) {
-            toReturn.add(result.getNameSort());
+            return null;
         }
 
-        return toReturn;
+        return new FileView(
+                solrQueryResponse.getSolrSearchResults(),
+                solrQueryResponse.getFacetCategoryList()
+        );
     }
 
-    private SortBy getSortBy() {
+    public static SortBy getSortBy(String query) {
         try {
-            return SearchUtil.getSortBy(null, null);
+            if (query != null) {
+                return SearchUtil.getSortBy("name", SortBy.ASCENDING);
+            } else {
+                return SearchUtil.getSortBy(null, null);
+            }
         } catch (Exception ex) {
             return null;
         }

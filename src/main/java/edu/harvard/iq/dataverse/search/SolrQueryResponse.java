@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 public class SolrQueryResponse {
@@ -30,6 +31,13 @@ public class SolrQueryResponse {
     public static String DATASETS_COUNT_KEY = "datasets_count";
     public static String FILES_COUNT_KEY = "files_count";
     public static String[] DVOBJECT_COUNT_KEYS = { DATAVERSES_COUNT_KEY, DATASETS_COUNT_KEY, FILES_COUNT_KEY};
+    SolrQuery solrQuery;
+
+    public SolrQueryResponse(SolrQuery solrQuery) {
+        this.solrQuery = solrQuery;
+    }
+
+
     
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
@@ -182,6 +190,10 @@ public class SolrQueryResponse {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public SolrQuery getSolrQuery() {
+        return solrQuery;
     }
 
 }
