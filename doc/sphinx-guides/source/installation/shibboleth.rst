@@ -130,7 +130,7 @@ Configure Shibboleth
 shibboleth2.xml
 ^^^^^^^^^^^^^^^
 
-``/etc/shibboleth/shibboleth2.xml`` should look something like the `sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>`_ below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`client-libraries` will be null and users will be unable to log in.
+``/etc/shibboleth/shibboleth2.xml`` should look something like the `sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>`_ below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
@@ -175,7 +175,7 @@ Enable Shibboleth
 
 After enabling Shibboleth, assuming the ``DiscoFeed`` is working per above, you should see a list of institutions to log into. You will not be able to log in via these institutions, however, until you have exchanged metadata with them.
 
-.. _client-libraries:
+.. _shibboleth-attributes:
 
 Shibboleth Attributes
 ---------------------
