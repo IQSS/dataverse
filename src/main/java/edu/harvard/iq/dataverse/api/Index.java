@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrField;
@@ -629,7 +630,15 @@ public class Index extends AbstractApiBean {
         if (dataset == null) {
             return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
-        FileView fileView = searchFilesService.getFileView(dataset, GuestUser.get(), query);
+        User user = GuestUser.get();
+        try {
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            if (authenticatedUser != null) {
+                user = authenticatedUser;
+            }
+        } catch (WrappedResponse ex) {
+        }
+        FileView fileView = searchFilesService.getFileView(dataset, user, query);
         if (fileView == null) {
             return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
         }
@@ -644,6 +653,8 @@ public class Index extends AbstractApiBean {
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("cards", cards);
         data.add("facets", facets);
+        data.add("user", user.getIdentifier());
+        data.add("persistentID", persistentId);
         return okResponse(data);
     }
 

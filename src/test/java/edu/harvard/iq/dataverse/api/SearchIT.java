@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import static java.lang.Thread.sleep;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -56,11 +57,13 @@ public class SearchIT {
     private static final String dvForPermsTesting = "dvForPermsTesting";
     private static String dataset1;
     private static String dataset2;
+    private static String dataset3;
     private static Integer dataset2Id;
     private static long nedAdminOnRootAssignment;
     private static String dataverseToCreateDataset1In = "root";
     private static final boolean disableTestPermsonRootDv = false;
     private static final boolean disableTestPermsOnNewDv = false;
+    private static final boolean homerPublishesVersion2AfterDeletingFile = false;
     private static final boolean disableTestCategory = false;
     private Stopwatch timer;
     private boolean haveToUseCurlForUpload = true;
@@ -369,6 +372,61 @@ public class SearchIT {
     }
 
     @Test
+    public void homerPublishesVersion2AfterDeletingFile() throws InterruptedException {
+        if (homerPublishesVersion2AfterDeletingFile) {
+            return;
+        }
+        Response enableNonPublicSearch = enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, enableNonPublicSearch.getStatusCode());
+
+        long rootDataverseId = 1;
+        String rootDataverseAlias = getDataverseAlias(rootDataverseId, homer.getApiToken());
+        if (rootDataverseAlias != null) {
+            dataverseToCreateDataset1In = rootDataverseAlias;
+        }
+
+        String xmlIn = getDatasetXml(homer.getUsername(), homer.getUsername(), homer.getUsername());
+        Response createDatasetResponse = createDataset(xmlIn, dataverseToCreateDataset1In, homer.getApiToken());
+//        createDatasetResponse.prettyPrint();
+        assertEquals(201, createDatasetResponse.getStatusCode());
+        dataset3 = getGlobalId(createDatasetResponse);
+        System.out.println("dataset persistent id: " + dataset3);
+
+        String zipFileName = "3files.zip";
+
+        Process uploadZipFileProcess = uploadZipFileWithCurl(dataset3, zipFileName, homer.getApiToken());
+//        printCommandOutput(uploadZipFileProcess);
+
+        sleep(200);
+        Integer datasetIdHomerFound = printDatasetId(dataset3, homer);
+        assertEquals(true, datasetIdHomerFound != null);
+        Integer dataset3Id = datasetIdHomerFound;
+        List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset3, datasetIdHomerFound, homer.getApiToken());
+        System.out.println("file IDs: " + idsOfFilesUploaded);
+
+        Response fileDataResponse = getFileSearchData(dataset3, homer.getApiToken());
+        fileDataResponse.prettyPrint();
+        List<String> files = JsonPath.from(fileDataResponse.body().asString()).getList("data.cards");
+
+        Set<String> actualFiles = new TreeSet<>();
+        for (String file : files) {
+            actualFiles.add(file);
+        }
+        Set<String> expectedFiles = new HashSet<String>() {
+            {
+                add("file1.txt");
+                add("file2.txt");
+                add("file3.txt");
+            }
+        };
+        assertEquals(expectedFiles, actualFiles);
+
+        Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
+        assertEquals(200, disableNonPublicSearch.getStatusCode());
+
+    }
+
+    @Test
     public void dataverseCategory() {
 
         if (disableTestCategory) {
@@ -420,10 +478,12 @@ public class SearchIT {
          *
          * "DELETE FROM roleassignment WHERE assigneeidentifier='@ned';"
          */
-        Response revokeNedAdminOnRoot = revokeRole(dataverseToCreateDataset1In, nedAdminOnRootAssignment, homer.getApiToken());
+//        Response revokeNedAdminOnRoot = revokeRole(dataverseToCreateDataset1In, nedAdminOnRootAssignment, homer.getApiToken());
 //        System.out.println(revokeNedAdminOnRoot.prettyPrint());
-        System.out.println("cleanup - status code revoking admin on root from ned: " + revokeNedAdminOnRoot.getStatusCode());
-
+//        System.out.println("cleanup - status code revoking admin on root from ned: " + revokeNedAdminOnRoot.getStatusCode());
+        /**
+         *
+         */
         if (!disableTestPermsonRootDv) {
             Response deleteDataset1Response = deleteDataset(dataset1, homer.getApiToken());
             assertEquals(204, deleteDataset1Response.getStatusCode());
@@ -432,6 +492,11 @@ public class SearchIT {
         if (!disableTestPermsOnNewDv) {
             Response destroyDatasetResponse = destroyDataset(dataset2Id, homer.getApiToken());
             assertEquals(200, destroyDatasetResponse.getStatusCode());
+        }
+
+        if (!homerPublishesVersion2AfterDeletingFile) {
+            Response deleteDataset = deleteDataset(dataset3, homer.getApiToken());
+            assertEquals(204, deleteDataset.getStatusCode());
         }
 
         if (!disableTestCategory) {
@@ -784,6 +849,12 @@ public class SearchIT {
                 .header(keyString, apiToken)
                 .urlEncodingEnabled(false)
                 .get("/api/datasets/" + datasetId + "/actions/:publish?type=minor");
+    }
+
+    private Response getFileSearchData(String persistentId, String apiToken) {
+        return given()
+                .header(keyString, apiToken)
+                .get("/api/admin/index/filesearch?persistentId=" + persistentId);
     }
 
     private static class TestUser {
