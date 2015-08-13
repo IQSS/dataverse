@@ -609,6 +609,13 @@ public class Index extends AbstractApiBean {
     }
 
     @DELETE
+    @Path("timestamps")
+    public Response deleteAllTimestamps() {
+        int numItemsCleared = dvObjectService.clearAllIndexTimes();
+        return okResponse("cleared: " + numItemsCleared);
+    }
+
+    @DELETE
     @Path("timestamps/{dvObjectId}")
     public Response deleteTimestamp(@PathParam("dvObjectId") long dvObjectId) {
         int numItemsCleared = dvObjectService.clearIndexTimes(dvObjectId);
