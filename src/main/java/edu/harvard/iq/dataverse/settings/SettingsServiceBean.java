@@ -52,6 +52,11 @@ public class SettingsServiceBean {
         SearchApiNonPublicAllowed,
         
         /**
+         * Experimental: Use Solr to power the file listing on the dataset page.
+         */
+        FilesOnDatasetPageFromSolr,
+
+        /**
          * API endpoints that are not accessible. Comma separated list.
          */
         BlockedApiEndpoints,
