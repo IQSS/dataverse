@@ -138,7 +138,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "File id must be a number, not '" + fileIdString + "'. URL was: " + uri);
                     }
                     if (fileIdLong != null) {
-                        logger.info("preparing to delete file id " + fileIdLong);
+                        logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
                             Dataset dataset = fileToDelete.getOwner();
