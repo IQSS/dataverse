@@ -643,8 +643,10 @@ public class Index extends AbstractApiBean {
             return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
         }
         JsonArrayBuilder cards = Json.createArrayBuilder();
+        JsonArrayBuilder fileIds = Json.createArrayBuilder();
         for (SolrSearchResult result : fileView.getSolrSearchResults()) {
             cards.add(result.getNameSort());
+            fileIds.add(result.getEntityId());
         }
         JsonArrayBuilder facets = Json.createArrayBuilder();
         for (FacetCategory facetCategory : fileView.getFacetCategoryList()) {
@@ -652,6 +654,7 @@ public class Index extends AbstractApiBean {
         }
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("cards", cards);
+        data.add("fileIds", fileIds);
         data.add("facets", facets);
         data.add("user", user.getIdentifier());
         data.add("persistentID", persistentId);

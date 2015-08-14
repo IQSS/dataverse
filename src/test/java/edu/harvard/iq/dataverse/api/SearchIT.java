@@ -220,7 +220,7 @@ public class SearchIT {
         timer = Stopwatch.createStarted();
         if (haveToUseCurlForUpload) {
             Process uploadZipFileProcess = uploadZipFileWithCurl(dataset2, zipFileName, homer.getApiToken());
-            printCommandOutput(uploadZipFileProcess);
+//            printCommandOutput(uploadZipFileProcess);
         } else {
             Response uploadZipFileResponse;
             try {
@@ -404,22 +404,50 @@ public class SearchIT {
         List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset3, datasetIdHomerFound, homer.getApiToken());
         System.out.println("file IDs: " + idsOfFilesUploaded);
 
-        Response fileDataResponse = getFileSearchData(dataset3, homer.getApiToken());
-        fileDataResponse.prettyPrint();
-        List<String> files = JsonPath.from(fileDataResponse.body().asString()).getList("data.cards");
+//        List<String> files = getFiles(dataset3, homer.getApiToken());
+        Response fileDataResponse1 = getFileSearchData(dataset3, homer.getApiToken());
+//        fileDataResponse1.prettyPrint();
+        List<String> files1 = JsonPath.from(fileDataResponse1.body().asString()).getList("data.cards");
 
-        Set<String> actualFiles = new TreeSet<>();
-        for (String file : files) {
-            actualFiles.add(file);
+        Set<String> actualInitialFiles = new TreeSet<>();
+        for (String file : files1) {
+            actualInitialFiles.add(file);
         }
-        Set<String> expectedFiles = new HashSet<String>() {
+        Set<String> expectedInitialFiles = new HashSet<String>() {
             {
                 add("file1.txt");
                 add("file2.txt");
                 add("file3.txt");
             }
         };
-        assertEquals(expectedFiles, actualFiles);
+        assertEquals(expectedInitialFiles, actualInitialFiles);
+
+//        getSwordStatement(dataset3, homer.getApiToken()).prettyPrint();
+//        List<String> getfiles = getFileNameFromSearchDebug(dataset3, homer.getApiToken());
+//        System.out.println("some files: " + getfiles);
+        Response datasetFiles = getDatasetFilesEndpoint(dataset3Id, homer.getApiToken());
+//        datasetFiles.prettyPrint();
+        String fileToDelete = "file2.txt";
+
+        int fileId = getFileIdFromDatasetEndpointFileListing(datasetFiles, fileToDelete);
+        Response deleteFileResponse = deleteFile(fileId, homer.getApiToken());
+//        deleteFileResponse.prettyPrint();
+        assertEquals(204, deleteFileResponse.statusCode());
+
+        Response fileDataAfterDelete = getFileSearchData(dataset3, homer.getApiToken());
+        List<String> filesFromSearchAfterDelete = JsonPath.from(fileDataAfterDelete.body().asString()).getList("data.cards");
+
+        Set<String> actualFilesAfterDelete = new TreeSet<>();
+        for (String file : filesFromSearchAfterDelete) {
+            actualFilesAfterDelete.add(file);
+        }
+        Set<String> expectedFilesAfterDelete = new HashSet<String>() {
+            {
+                add("file1.txt");
+                add("file3.txt");
+            }
+        };
+        assertEquals(expectedFilesAfterDelete, actualFilesAfterDelete);
 
         Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
         assertEquals(200, disableNonPublicSearch.getStatusCode());
@@ -800,16 +828,21 @@ public class SearchIT {
 
     private List<Integer> getFilesFromDatasetEndpoint(Integer datasetId, String apiToken) {
         List<Integer> fileList = new ArrayList<>();
-        Response getDatasetFilesResponse = given()
-                .get("api/datasets/" + datasetId + "/versions/:latest/files?key=" + apiToken);
+        Response getDatasetFilesResponse = getDatasetFilesEndpoint(datasetId, apiToken);
 //        getDatasetFilesResponse.prettyPrint();
         JsonPath jsonPath = JsonPath.from(getDatasetFilesResponse.body().asString());
-        List<Map> foo = jsonPath.get("data.datafile");
-        for (Map map : foo) {
+        List<Map> filesMap = jsonPath.get("data.datafile");
+        for (Map map : filesMap) {
             int fileId = (int) map.get("id");
             fileList.add(fileId);
         }
         return fileList;
+    }
+
+    private Response getDatasetFilesEndpoint(Integer datasetId, String apiToken) {
+        Response getDatasetFilesResponse = given()
+                .get("api/datasets/" + datasetId + "/versions/:latest/files?key=" + apiToken);
+        return getDatasetFilesResponse;
     }
 
     private Response checkPermissionsOnDvObject(int dvObjectId, String apiToken) {
@@ -855,6 +888,24 @@ public class SearchIT {
         return given()
                 .header(keyString, apiToken)
                 .get("/api/admin/index/filesearch?persistentId=" + persistentId);
+    }
+
+    private Response deleteFile(int fileId, String apiToken) {
+        return given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .delete("/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/" + fileId);
+    }
+
+    private List<String> getFileNameFromSearchDebug(String datasetPersistentId, String apiToken) {
+        Response fileDataResponse = getFileSearchData(datasetPersistentId, apiToken);
+//        fileDataResponse.prettyPrint();
+        return JsonPath.from(fileDataResponse.body().asString()).getList("data.cards");
+    }
+
+    private int getFileIdFromDatasetEndpointFileListing(Response datasetFiles, String filename) {
+        return with(datasetFiles.getBody().asString())
+                .param("name", filename)
+                .getInt("data.findAll { data -> data.label == name }[0].datafile.id");
     }
 
     private static class TestUser {
