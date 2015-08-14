@@ -59,6 +59,7 @@ public class SearchIT {
     private static String dataset2;
     private static String dataset3;
     private static Integer dataset2Id;
+    private static Integer dataset3Id;
     private static long nedAdminOnRootAssignment;
     private static String dataverseToCreateDataset1In = "root";
     private static final boolean disableTestPermsonRootDv = false;
@@ -400,19 +401,10 @@ public class SearchIT {
         sleep(200);
         Integer datasetIdHomerFound = printDatasetId(dataset3, homer);
         assertEquals(true, datasetIdHomerFound != null);
-        Integer dataset3Id = datasetIdHomerFound;
+        dataset3Id = datasetIdHomerFound;
         List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset3, datasetIdHomerFound, homer.getApiToken());
         System.out.println("file IDs: " + idsOfFilesUploaded);
 
-//        List<String> files = getFiles(dataset3, homer.getApiToken());
-        Response fileDataResponse1 = getFileSearchData(dataset3, homer.getApiToken());
-//        fileDataResponse1.prettyPrint();
-        List<String> files1 = JsonPath.from(fileDataResponse1.body().asString()).getList("data.cards");
-
-        Set<String> actualInitialFiles = new TreeSet<>();
-        for (String file : files1) {
-            actualInitialFiles.add(file);
-        }
         Set<String> expectedInitialFiles = new HashSet<String>() {
             {
                 add("file1.txt");
@@ -420,7 +412,16 @@ public class SearchIT {
                 add("file3.txt");
             }
         };
+        Response fileDataBeforePublishingV1 = getFileSearchData(dataset3, homer.getApiToken());
+        Set<String> actualInitialFiles = getFileData(fileDataBeforePublishingV1);
         assertEquals(expectedInitialFiles, actualInitialFiles);
+
+        Response publishDatasetResponse = publishDataset(dataset3Id, homer.getApiToken());
+//        publishDatasetResponse.prettyPrint();
+
+        Response fileDataAfterPublishingV1 = getFileSearchData(dataset3, homer.getApiToken());
+        Set<String> actualFilesAfterPublishingV1 = getFileData(fileDataAfterPublishingV1);
+        assertEquals(expectedInitialFiles, actualFilesAfterPublishingV1);
 
 //        getSwordStatement(dataset3, homer.getApiToken()).prettyPrint();
 //        List<String> getfiles = getFileNameFromSearchDebug(dataset3, homer.getApiToken());
@@ -434,19 +435,21 @@ public class SearchIT {
 //        deleteFileResponse.prettyPrint();
         assertEquals(204, deleteFileResponse.statusCode());
 
-        Response fileDataAfterDelete = getFileSearchData(dataset3, homer.getApiToken());
-        List<String> filesFromSearchAfterDelete = JsonPath.from(fileDataAfterDelete.body().asString()).getList("data.cards");
-
-        Set<String> actualFilesAfterDelete = new TreeSet<>();
-        for (String file : filesFromSearchAfterDelete) {
-            actualFilesAfterDelete.add(file);
-        }
         Set<String> expectedFilesAfterDelete = new HashSet<String>() {
             {
                 add("file1.txt");
+                /**
+                 * @todo Work more on if we should see file2.txt or not. Is this
+                 * the latest draft or v1 published? Work more on the
+                 * "filesearch" method we call into to get this data.
+                 */
+                add("file2.txt");
                 add("file3.txt");
             }
         };
+        Response fileDataAfterDelete = getFileSearchData(dataset3, homer.getApiToken());
+        fileDataAfterDelete.prettyPrint();
+        Set<String> actualFilesAfterDelete = getFileData(fileDataAfterDelete);
         assertEquals(expectedFilesAfterDelete, actualFilesAfterDelete);
 
         Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
@@ -523,8 +526,8 @@ public class SearchIT {
         }
 
         if (!homerPublishesVersion2AfterDeletingFile) {
-            Response deleteDataset = deleteDataset(dataset3, homer.getApiToken());
-            assertEquals(204, deleteDataset.getStatusCode());
+            Response destroyDataset = destroyDataset(dataset3Id, homer.getApiToken());
+            assertEquals(200, destroyDataset.getStatusCode());
         }
 
         if (!disableTestCategory) {
@@ -906,6 +909,15 @@ public class SearchIT {
         return with(datasetFiles.getBody().asString())
                 .param("name", filename)
                 .getInt("data.findAll { data -> data.label == name }[0].datafile.id");
+    }
+
+    private Set<String> getFileData(Response fileDataResponse) {
+        Set<String> filesFound = new HashSet<>();
+        List<String> files1 = JsonPath.from(fileDataResponse.body().asString()).getList("data.cards");
+        for (String file : files1) {
+            filesFound.add(file);
+        }
+        return filesFound;
     }
 
     private static class TestUser {

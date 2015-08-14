@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.ArrayList;
@@ -19,11 +20,11 @@ public class SearchFilesServiceBean {
     @EJB
     SearchServiceBean searchService;
 
-    public FileView getFileView(Dataset dataset, User user, String userSuppliedQuery) {
+    public FileView getFileView(DatasetVersion datasetVersion, User user, String userSuppliedQuery) {
         Dataverse dataverse = null;
         List<String> filterQueries = new ArrayList<>();
         filterQueries.add(SearchFields.TYPE + ":" + SearchConstants.FILES);
-        filterQueries.add(SearchFields.PARENT_ID + ":" + dataset.getId());
+        filterQueries.add(SearchFields.PARENT_ID + ":" + datasetVersion.getDataset().getId());
         String finalQuery = SearchUtil.determineFinalQuery(userSuppliedQuery);
         SortBy sortBy = getSortBy(finalQuery);
         String sortField = sortBy.getField();
@@ -44,7 +45,9 @@ public class SearchFilesServiceBean {
 
         return new FileView(
                 solrQueryResponse.getSolrSearchResults(),
-                solrQueryResponse.getFacetCategoryList()
+                solrQueryResponse.getFacetCategoryList(),
+                solrQueryResponse.getFilterQueriesActual(),
+                solrQueryResponse.getSolrQuery().getQuery()
         );
     }
 

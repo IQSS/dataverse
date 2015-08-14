@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
@@ -625,7 +626,7 @@ public class Index extends AbstractApiBean {
 
     @GET
     @Path("filesearch")
-    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("q") String query) {
+    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("q") String userSuppliedQuery) {
         Dataset dataset = datasetService.findByGlobalId(persistentId);
         if (dataset == null) {
             return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
@@ -638,7 +639,8 @@ public class Index extends AbstractApiBean {
             }
         } catch (WrappedResponse ex) {
         }
-        FileView fileView = searchFilesService.getFileView(dataset, user, query);
+        DatasetVersion datasetVersion = dataset.getLatestVersion();
+        FileView fileView = searchFilesService.getFileView(datasetVersion, user, userSuppliedQuery);
         if (fileView == null) {
             return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
         }
@@ -652,12 +654,18 @@ public class Index extends AbstractApiBean {
         for (FacetCategory facetCategory : fileView.getFacetCategoryList()) {
             facets.add(facetCategory.getFriendlyName());
         }
+        JsonArrayBuilder filterQueries = Json.createArrayBuilder();
+        for (String filterQuery : fileView.getFilterQueries()) {
+            filterQueries.add(filterQuery);
+        }
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("cards", cards);
         data.add("fileIds", fileIds);
         data.add("facets", facets);
         data.add("user", user.getIdentifier());
         data.add("persistentID", persistentId);
+        data.add("query", fileView.getQuery());
+        data.add("filterQueries", filterQueries);
         return okResponse(data);
     }
 

@@ -3168,7 +3168,7 @@ public class DatasetPage implements java.io.Serializable {
          * @todo Let user specify a query for files via the dataset page
          */
         String query = "*";
-        return searchFilesService.getFileView(dataset, session.getUser(), query);
+        return searchFilesService.getFileView(workingVersion, session.getUser(), query);
     }
 
     public List<SolrSearchResult> getFileResults() {
