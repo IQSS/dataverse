@@ -409,33 +409,40 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                     Long datasetId = Long.parseLong(solrSearchResult.getParent().get("id"));
                     Dataset parentDS = datasetService.find(datasetId);
-                    Dataverse parentDataverse = parentDS.getOwner();
-                    solrSearchResult.setIsInTree(false);
-                    List<Dataverse> dvTree = new ArrayList();
-                    Dataverse testDV = parentDataverse;
-                    dvTree.add(testDV);
                     /**
-                     * @todo Why is a NPE being thrown at this `while
-                     * (testDV.getOwner() != null){` line? An NPE was being
-                     * thrown while browsing the site *after* issuing the
-                     * DestroyDatasetCommand but before a fix was put in to
-                     * remove the dataset "card" from Solr. The ticket tracking
-                     * this that fix is
-                     * https://github.com/IQSS/dataverse/issues/1316 but it's
-                     * unclear why the NPE was thrown. The users see a nasty
-                     * "Internal Server Error - An unexpected error was
-                     * encountered, no more information is available." and
-                     * server.log has a stacktrace with the NPE.
+                     * I didn't write this code below about setIsInTree
+                     * (whatever that is) but I did just add a null check.
+                     * --pdurbin
                      */
-                    if (testDV != null) {
-                        while (testDV.getOwner() != null) {
-                            dvTree.add(testDV.getOwner());
-                            testDV = testDV.getOwner();
+                    if (parentDS != null) {
+                        Dataverse parentDataverse = parentDS.getOwner();
+                        solrSearchResult.setIsInTree(false);
+                        List<Dataverse> dvTree = new ArrayList();
+                        Dataverse testDV = parentDataverse;
+                        dvTree.add(testDV);
+                        /**
+                         * @todo Why is a NPE being thrown at this `while
+                         * (testDV.getOwner() != null){` line? An NPE was being
+                         * thrown while browsing the site *after* issuing the
+                         * DestroyDatasetCommand but before a fix was put in to
+                         * remove the dataset "card" from Solr. The ticket
+                         * tracking this that fix is
+                         * https://github.com/IQSS/dataverse/issues/1316 but
+                         * it's unclear why the NPE was thrown. The users see a
+                         * nasty "Internal Server Error - An unexpected error
+                         * was encountered, no more information is available."
+                         * and server.log has a stacktrace with the NPE.
+                         */
+                        if (testDV != null) {
+                            while (testDV.getOwner() != null) {
+                                dvTree.add(testDV.getOwner());
+                                testDV = testDV.getOwner();
+                            }
                         }
-                    }
 
-                    if (dvTree.contains(dataverse)) {
-                        solrSearchResult.setIsInTree(true);
+                        if (dvTree.contains(dataverse)) {
+                            solrSearchResult.setIsInTree(true);
+                        }
                     }
                     /**
                      * @todo: show DataTable variables
