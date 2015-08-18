@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
@@ -71,6 +73,8 @@ public class Index extends AbstractApiBean {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
     @EJB
     DataFileServiceBean dataFileService;
     @EJB
@@ -626,7 +630,7 @@ public class Index extends AbstractApiBean {
 
     @GET
     @Path("filesearch")
-    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("q") String userSuppliedQuery) {
+    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
         Dataset dataset = datasetService.findByGlobalId(persistentId);
         if (dataset == null) {
             return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
@@ -639,16 +643,27 @@ public class Index extends AbstractApiBean {
             }
         } catch (WrappedResponse ex) {
         }
-        DatasetVersion datasetVersion = dataset.getLatestVersion();
+        RetrieveDatasetVersionResponse datasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, semanticVersion);
+        if (datasetVersionResponse == null) {
+            return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Could not find dataset version based on " + persistentId + " and " + semanticVersion);
+        }
+        DatasetVersion datasetVersion = datasetVersionResponse.getDatasetVersion();
         FileView fileView = searchFilesService.getFileView(datasetVersion, user, userSuppliedQuery);
         if (fileView == null) {
             return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
         }
+        JsonArrayBuilder filesFound = Json.createArrayBuilder();
         JsonArrayBuilder cards = Json.createArrayBuilder();
         JsonArrayBuilder fileIds = Json.createArrayBuilder();
         for (SolrSearchResult result : fileView.getSolrSearchResults()) {
             cards.add(result.getNameSort());
             fileIds.add(result.getEntityId());
+            JsonObjectBuilder fileFound = Json.createObjectBuilder();
+            fileFound.add("name", result.getNameSort());
+            fileFound.add("entityId", result.getEntityId().toString());
+            fileFound.add("datasetVersionId", result.getDatasetVersionId());
+            fileFound.add("datasetId", result.getParent().get(SearchFields.ID));
+            filesFound.add(fileFound);
         }
         JsonArrayBuilder facets = Json.createArrayBuilder();
         for (FacetCategory facetCategory : fileView.getFacetCategoryList()) {
@@ -658,7 +673,12 @@ public class Index extends AbstractApiBean {
         for (String filterQuery : fileView.getFilterQueries()) {
             filterQueries.add(filterQuery);
         }
+        JsonArrayBuilder allDatasetVersionIds = Json.createArrayBuilder();
+        for (DatasetVersion dsVersion : dataset.getVersions()) {
+            allDatasetVersionIds.add(dsVersion.getId());
+        }
         JsonObjectBuilder data = Json.createObjectBuilder();
+        data.add("filesFound", filesFound);
         data.add("cards", cards);
         data.add("fileIds", fileIds);
         data.add("facets", facets);
@@ -666,6 +686,8 @@ public class Index extends AbstractApiBean {
         data.add("persistentID", persistentId);
         data.add("query", fileView.getQuery());
         data.add("filterQueries", filterQueries);
+        data.add("allDataverVersionIds", allDatasetVersionIds);
+        data.add("semanticVersion", datasetVersion.getSemanticVersion());
         return okResponse(data);
     }
 

@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import com.google.common.base.Stopwatch;
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.internal.path.xml.NodeChildrenImpl;
 import com.jayway.restassured.path.json.JsonPath;
 import static com.jayway.restassured.path.json.JsonPath.with;
+import com.jayway.restassured.path.xml.XmlPath;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -62,6 +64,10 @@ public class SearchIT {
     private static Integer dataset3Id;
     private static long nedAdminOnRootAssignment;
     private static String dataverseToCreateDataset1In = "root";
+    /**
+     * @todo Figure out why we sometimes get database deadlocks when all tests
+     * are enabled: https://github.com/IQSS/dataverse/issues/2460
+     */
     private static final boolean disableTestPermsonRootDv = false;
     private static final boolean disableTestPermsOnNewDv = false;
     private static final boolean homerPublishesVersion2AfterDeletingFile = false;
@@ -314,7 +320,7 @@ public class SearchIT {
         Response publishDataverseResponse = publishDataverse(dvForPermsTesting, homer.apiToken);
 //        publishDataverseResponse.prettyPrint();
 
-        Response publishDatasetResponse = publishDataset(datasetIdHomerFound, homer.apiToken);
+        Response publishDatasetResponse = publishDatasetViaNative(datasetIdHomerFound, homer.apiToken);
 //        publishDatasetResponse.prettyPrint();
 
         Integer idClancyFoundAfterPublished = printDatasetId(dataset2, clancy);
@@ -391,7 +397,7 @@ public class SearchIT {
 //        createDatasetResponse.prettyPrint();
         assertEquals(201, createDatasetResponse.getStatusCode());
         dataset3 = getGlobalId(createDatasetResponse);
-        System.out.println("dataset persistent id: " + dataset3);
+//        System.out.println("dataset persistent id: " + dataset3);
 
         String zipFileName = "3files.zip";
 
@@ -403,25 +409,39 @@ public class SearchIT {
         assertEquals(true, datasetIdHomerFound != null);
         dataset3Id = datasetIdHomerFound;
         List<Integer> idsOfFilesUploaded = getIdsOfFilesUploaded(dataset3, datasetIdHomerFound, homer.getApiToken());
-        System.out.println("file IDs: " + idsOfFilesUploaded);
+//        System.out.println("file IDs: " + idsOfFilesUploaded);
 
-        Set<String> expectedInitialFiles = new HashSet<String>() {
+        Set<String> expectedInitialFilesHomer = new HashSet<String>() {
             {
                 add("file1.txt");
                 add("file2.txt");
                 add("file3.txt");
             }
         };
-        Response fileDataBeforePublishingV1 = getFileSearchData(dataset3, homer.getApiToken());
-        Set<String> actualInitialFiles = getFileData(fileDataBeforePublishingV1);
-        assertEquals(expectedInitialFiles, actualInitialFiles);
+        String DRAFT = "DRAFT";
+        Response fileDataBeforePublishingV1Homer = getFileSearchData(dataset3, DRAFT, homer.getApiToken());
+//        System.out.println("Files before publishing 1.0 as seen by creator...");
+//        fileDataBeforePublishingV1Homer.prettyPrint();
+        Set<String> actualInitialFilesHomer = getFileData(fileDataBeforePublishingV1Homer);
+        assertEquals(expectedInitialFilesHomer, actualInitialFilesHomer);
 
-        Response publishDatasetResponse = publishDataset(dataset3Id, homer.getApiToken());
+//        System.out.println("Files before publishing 1.0 as seen by non-creator...");
+        Response fileDataBeforePublishingV1Ned = getFileSearchData(dataset3, DRAFT, ned.getApiToken());
+//        fileDataBeforePublishingV1Ned.prettyPrint();
+        Set<String> actualInitialFilesed = getFileData(fileDataBeforePublishingV1Ned);
+        assertEquals(new HashSet<String>(), actualInitialFilesed);
+
+        Response publishDatasetResponse = publishDatasetViaSword(dataset3, homer.getApiToken());
 //        publishDatasetResponse.prettyPrint();
+        Response datasetAsJson = getDatasetAsJson(dataset3Id, homer.getApiToken());
+//        datasetAsJson.prettyPrint();
 
-        Response fileDataAfterPublishingV1 = getFileSearchData(dataset3, homer.getApiToken());
-        Set<String> actualFilesAfterPublishingV1 = getFileData(fileDataAfterPublishingV1);
-        assertEquals(expectedInitialFiles, actualFilesAfterPublishingV1);
+//        Response fileDataAfterPublishingV1Ned = getFileSearchData(dataset3, ned.getApiToken());
+        Response fileDataAfterPublishingV1Guest = getFileSearchData(dataset3, DRAFT, EMPTY_STRING);
+//        System.out.println("Files after publishing 1.0 as seen by non-creator...");
+//        fileDataAfterPublishingV1Guest.prettyPrint();
+        Set<String> actualFilesAfterPublishingV1Guest = getFileData(fileDataAfterPublishingV1Guest);
+        assertEquals(expectedInitialFilesHomer, actualFilesAfterPublishingV1Guest);
 
 //        getSwordStatement(dataset3, homer.getApiToken()).prettyPrint();
 //        List<String> getfiles = getFileNameFromSearchDebug(dataset3, homer.getApiToken());
@@ -430,27 +450,94 @@ public class SearchIT {
 //        datasetFiles.prettyPrint();
         String fileToDelete = "file2.txt";
 
+//        getSwordStatement(dataset3, homer.getApiToken()).prettyPrint();
+//        System.out.println("### BEFORE TOUCHING PUBLISHED DATASET");
+        Response atomEntryBeforeDeleteReponse = getSwordAtomEntry(dataset3, homer.getApiToken());
+//        atomEntryBeforeDeleteReponse.prettyPrint();
+        /**
+         * @todo The "SWORD: deleting a file from a published version (not a
+         * draft) creates a draft but doesn't delete the file" bug at
+         * https://github.com/IQSS/dataverse/issues/2464 means we must first
+         * create a draft via the "update metadata" endpoint before deleting the
+         * file. Otherwise, the file won't be properly deleted!
+         */
+        System.out.println("Updating metadata before delete because of https://github.com/IQSS/dataverse/issues/2464");
+        Response updateMetadataResponse = updateDatasetMetadataViaSword(dataset3, xmlIn, homer.getApiToken());
+//        updateMetadataResponse.prettyPrint();
+//        System.out.println("### AFTER UPDATING METADATA");
+        Response atomEntryAfterDeleteReponse = getSwordAtomEntry(dataset3, homer.getApiToken());
+//        atomEntryAfterDeleteReponse.prettyPrint();
         int fileId = getFileIdFromDatasetEndpointFileListing(datasetFiles, fileToDelete);
         Response deleteFileResponse = deleteFile(fileId, homer.getApiToken());
 //        deleteFileResponse.prettyPrint();
         assertEquals(204, deleteFileResponse.statusCode());
-
-        Set<String> expectedFilesAfterDelete = new HashSet<String>() {
+//        System.out.println("### AFTER DELETING FILE");
+        Response swordStatementAfterDelete = getSwordStatement(dataset3, homer.getApiToken());
+//        swordStatementAfterDelete.prettyPrint();
+        XmlPath xmlPath = new XmlPath(swordStatementAfterDelete.body().asString());
+        String firstFileName = xmlPath.get("feed.entry[0].id").toString().split("/")[11];
+//        System.out.println("first file name:" + firstFileName);
+        String secondFileName = xmlPath.get("feed.entry[1].id").toString().split("/")[11];
+//        System.out.println("second file name: " + secondFileName);
+        Set<String> filesFoundInSwordStatement = new HashSet<>();
+        filesFoundInSwordStatement.add(firstFileName);
+        filesFoundInSwordStatement.add(secondFileName);
+        Set<String> expectedFilesInSwordStatementAfterDelete = new HashSet<String>() {
             {
                 add("file1.txt");
-                /**
-                 * @todo Work more on if we should see file2.txt or not. Is this
-                 * the latest draft or v1 published? Work more on the
-                 * "filesearch" method we call into to get this data.
-                 */
+                add("file3.txt");
+            }
+        };
+        assertEquals(expectedFilesInSwordStatementAfterDelete, filesFoundInSwordStatement);
+
+        NodeChildrenImpl thirdFileNode = xmlPath.get("feed.entry[2].id");
+        /**
+         * If you get "java.lang.String cannot be cast to
+         * com.jayway.restassured.internal.path.xml.NodeChildrenImpl" here it
+         * means that the third file was found and not deleted! See the note
+         * above about https://github.com/IQSS/dataverse/issues/2464
+         */
+        assertEquals(true, thirdFileNode.isEmpty());
+
+        Set<String> expectedV1FilesAfterDeleteGuest = new HashSet<String>() {
+            {
+                add("file1.txt");
                 add("file2.txt");
                 add("file3.txt");
             }
         };
-        Response fileDataAfterDelete = getFileSearchData(dataset3, homer.getApiToken());
-        fileDataAfterDelete.prettyPrint();
+        String v1dot0 = "1.0";
+        Response fileDataAfterDelete = getFileSearchData(dataset3, v1dot0, EMPTY_STRING);
+//        System.out.println("Files guest sees after Homer deletes a file from 1.0, creating a draft...");
+//        fileDataAfterDelete.prettyPrint();
         Set<String> actualFilesAfterDelete = getFileData(fileDataAfterDelete);
-        assertEquals(expectedFilesAfterDelete, actualFilesAfterDelete);
+        assertEquals(expectedV1FilesAfterDeleteGuest, actualFilesAfterDelete);
+
+        Set<String> expectedDraftFilesAfterDeleteHomerAfterIssue2455Implemented = expectedFilesInSwordStatementAfterDelete;
+        Response fileDataAfterDeleteHomer = getFileSearchData(dataset3, DRAFT, homer.getApiToken());
+//        System.out.println("Files Homer sees in draft after deleting a file from v1.0...");
+//        fileDataAfterDeleteHomer.prettyPrint();
+        Set<String> actualDraftFilesAfterDeleteHomer = getFileData(fileDataAfterDeleteHomer);
+        Response querySolrResponse = querySolr(SearchFields.PARENT_ID + ":" + dataset3Id);
+//        querySolrResponse.prettyPrint();
+        logger.info("files found: " + JsonPath.from(querySolrResponse.asString()).get("response.docs.name").toString());
+
+        /**
+         * @todo In order for this test to pass we'll probably need to change
+         * the indexing rules defined in "Only show draft file card if file has
+         * changed from published version"
+         * https://github.com/IQSS/dataverse/issues/528 . From the "Use Solr for
+         * file listing on dataset page" issue at
+         * https://github.com/IQSS/dataverse/issues/2455 we'd like Homer to be
+         * able to look at a post v1 draft and see that one of his three files
+         * has been deleted in that draft. With current indexing rules, this is
+         * not possible. There are only three files indexed into Solr and they
+         * all belong to the publish v1 dataset. We don't index drafts unless
+         * the content has changed (again per issue 528).
+         */
+        System.out.println(new TreeSet(expectedDraftFilesAfterDeleteHomerAfterIssue2455Implemented) + " expected after issue 2455 implemented");
+        System.out.println(new TreeSet(actualDraftFilesAfterDeleteHomer) + " actual");
+//        assertEquals(expectedDraftFilesAfterDeleteHomer, actualDraftFilesAfterDeleteHomer);
 
         Response disableNonPublicSearch = deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
         assertEquals(200, disableNonPublicSearch.getStatusCode());
@@ -592,6 +679,14 @@ public class SearchIT {
                 .contentType("application/atom+xml")
                 .post("/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/" + dataverseToCreateDatasetIn);
         return createDatasetResponse;
+    }
+
+    private Response updateDatasetMetadataViaSword(String persistentId, String xmlIn, String apiToken) {
+        return given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .body(xmlIn)
+                .contentType("application/atom+xml")
+                .put("/dvn/api/data-deposit/v1.1/swordv2/edit/study/" + persistentId);
     }
 
     private Response querySolr(String query) {
@@ -822,6 +917,13 @@ public class SearchIT {
         return Collections.emptyList();
     }
 
+    private Response getSwordAtomEntry(String persistentId, String apiToken) {
+        Response response = given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .get("/dvn/api/data-deposit/v1.1/swordv2/edit/study/" + persistentId);
+        return response;
+    }
+
     private Response getSwordStatement(String persistentId, String apiToken) {
         Response swordStatementResponse = given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -876,10 +978,28 @@ public class SearchIT {
                 .post("/api/admin/publishDataverseAsCreator/" + id);
     }
 
-    private Response publishDataset(long datasetId, String apiToken) {
+    private Response getDatasetAsJson(long datasetId, String apiToken) {
+        return given()
+                .header(keyString, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/datasets/" + datasetId);
+    }
+
+    private Response publishDatasetViaSword(String persistentId, String apiToken) {
+        return given()
+                .auth().basic(apiToken, EMPTY_STRING)
+                .header("In-Progress", "false")
+                .post("/dvn/api/data-deposit/v1.1/swordv2/edit/study/" + persistentId);
+    }
+
+    private Response publishDatasetViaNative(long datasetId, String apiToken) {
         /**
          * This should probably be a POST rather than a GET:
          * https://github.com/IQSS/dataverse/issues/2431
+         *
+         * Allows version less than v1.0 to be published (i.e. v0.1):
+         * https://github.com/IQSS/dataverse/issues/2461
+         *
          */
         return given()
                 .header(keyString, apiToken)
@@ -887,20 +1007,39 @@ public class SearchIT {
                 .get("/api/datasets/" + datasetId + "/actions/:publish?type=minor");
     }
 
-    private Response getFileSearchData(String persistentId, String apiToken) {
+    private Response getFileSearchData(String persistentId, String semanticVersion, String apiToken) {
+        /**
+         * Note In all commands below, dataset versions can be referred to as:
+         *
+         * :draft the draft version, if any
+         *
+         * :latest either a draft (if exists) or the latest published version.
+         *
+         * :latest-published the latest published version
+         *
+         * x.y a specific version, where x is the major version number and y is
+         * the minor version number.
+         *
+         * x same as x.0
+         *
+         * http://guides.dataverse.org/en/latest/api/native-api.html#datasets
+         */
+//        String semanticVersion = null;
         return given()
                 .header(keyString, apiToken)
-                .get("/api/admin/index/filesearch?persistentId=" + persistentId);
+                .urlEncodingEnabled(false)
+                .get("/api/admin/index/filesearch?persistentId=" + persistentId + "&semanticVersion=" + semanticVersion);
     }
 
     private Response deleteFile(int fileId, String apiToken) {
+//        System.out.println("deleting file id " + fileId);
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
                 .delete("/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/" + fileId);
     }
 
     private List<String> getFileNameFromSearchDebug(String datasetPersistentId, String apiToken) {
-        Response fileDataResponse = getFileSearchData(datasetPersistentId, apiToken);
+        Response fileDataResponse = getFileSearchData(datasetPersistentId, "DRAFT", apiToken);
 //        fileDataResponse.prettyPrint();
         return JsonPath.from(fileDataResponse.body().asString()).getList("data.cards");
     }

@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -25,6 +24,13 @@ public class SearchFilesServiceBean {
         List<String> filterQueries = new ArrayList<>();
         filterQueries.add(SearchFields.TYPE + ":" + SearchConstants.FILES);
         filterQueries.add(SearchFields.PARENT_ID + ":" + datasetVersion.getDataset().getId());
+        /**
+         * @todo In order to support searching for files based on dataset
+         * version for https://github.com/IQSS/dataverse/issues/2455 we're going
+         * to need to make the dataset version id searchable, perhaps as part of
+         * https://github.com/IQSS/dataverse/issues/2038
+         */
+//        filterQueries.add(SearchFields.DATASET_VERSION_ID + ":" + datasetVersion.getId());
         String finalQuery = SearchUtil.determineFinalQuery(userSuppliedQuery);
         SortBy sortBy = getSortBy(finalQuery);
         String sortField = sortBy.getField();
