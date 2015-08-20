@@ -217,7 +217,7 @@ public class SearchServiceBean {
          * last...
          */
         solrQuery.addFacetField(SearchFields.TYPE);
-        solrQuery.addFacetField(SearchFields.FILE_TAGS);
+        solrQuery.addFacetField(SearchFields.FILE_TAG);
         /**
          * @todo: do sanity checking... throw error if negative
          */

@@ -805,7 +805,7 @@ public class IndexServiceBean {
                             filenameCompleteFinal = filenameComplete;
                         }
                         for (String tag : fileMetadata.getCategoriesByName()) {
-                            datafileSolrInputDocument.addField(SearchFields.FILE_TAGS, tag);
+                            datafileSolrInputDocument.addField(SearchFields.FILE_TAG, tag);
                         }
                     }
                     datafileSolrInputDocument.addField(SearchFields.NAME, filenameCompleteFinal);
