@@ -9,6 +9,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +24,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -140,6 +144,20 @@ public class DataFileServiceBean implements java.io.Serializable {
         query.setParameter("studyId", studyId);
         return query.getResultList();
     }  
+
+    public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder) {
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+        if (maxResults < 0) {
+            // return all results if user asks for negative number of results
+            maxResults = 0;
+        }
+        TypedQuery query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortField + " " + sortOrder, FileMetadata.class);
+        query.setParameter("datasetVersionId", datasetVersionId);
+        query.setMaxResults(maxResults);
+        return query.getResultList();
+    }
 
     public List<DataFile> findIngestsInProgress() {
         if ( em.isOpen() ) {

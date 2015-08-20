@@ -399,6 +399,36 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
     }
 
+    /**
+     * Feature flag for "Improving the organization + display of files in
+     * Dataverse" announced at
+     * https://groups.google.com/forum/#!topic/dataverse-community/gtz2npccWjU .
+     *
+     * Here are the main goals:
+     *
+     * - Improve performance in the data set page when we have many files (maybe
+     * paging is sufficient for that, but is there any other overhead with the
+     * current implementation? too many db lookups?). [Also related improve for
+     * Edit files/permissions] https://github.com/IQSS/dataverse/issues/2021
+     *
+     * - Facets/Browsing/Sorting/Finding: In general, easier ways to organize
+     * files, browse (and download) by categories/labels, find a particular
+     * file. https://github.com/IQSS/dataverse/issues/2021
+     *
+     * - Support for more metadata/information per file (not all fits in the
+     * card)
+     *
+     * Enable: curl -X PUT -d true
+     * http://localhost:8080/api/admin/settings/:ImprovedFileListingGoodEnoughToShip
+     *
+     * Disable: curl -X DELETE
+     * http://localhost:8080/api/admin/settings/:ImprovedFileListingGoodEnoughToShip
+     */
+    public boolean isImprovedFileListingGoodEnoughToShip() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrue(":ImprovedFileListingGoodEnoughToShip", safeDefaultIfKeyNotFound);
+    }
+
     public boolean isFilesOnDatasetPageFromSolr() {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);

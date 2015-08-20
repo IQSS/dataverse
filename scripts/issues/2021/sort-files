@@ -1,0 +1,4 @@
+#!/bin/bash -x
+OUT=`curl -s "http://localhost:8080/api/admin/index/filemetadata/50825?maxResults=0&sort=$1&order=$2"`
+echo $OUT
+echo $OUT | jq .

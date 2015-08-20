@@ -25,8 +25,10 @@ import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -194,8 +196,12 @@ public class DatasetPage implements java.io.Serializable {
     private DataFile selectedDownloadFile;
 
     private Long maxFileUploadSizeInBytes = null;
-    
-    
+
+    private boolean betterFileOrgDone;
+    private List<FileMetadata> fileMetadatas;
+    private String fileSortField;
+    private String fileSortOrder;
+
     /*
         Save the setting locally so db isn't hit repeatedly
     
@@ -1014,6 +1020,8 @@ public class DatasetPage implements java.io.Serializable {
            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
            this.dataset = this.workingVersion.getDataset();
            fileView = populateFileView();
+           setBetterFileOrgDone();
+           fileMetadatas = populateFileMetadatas();
            
            // end: Set the workingVersion and Dataset
            // ---------------------------------------
@@ -3185,6 +3193,93 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             return null;
         }
+    }
+
+    public boolean isNewFileListingFeaturesEnabled() {
+        return betterFileOrgDone;
+    }
+
+    public void setBetterFileOrgDone() {
+        this.betterFileOrgDone = systemConfig.isImprovedFileListingGoodEnoughToShip();
+    }
+
+    public boolean isNewFileSearchReady() {
+        return false;
+    }
+
+    public boolean isNewFilePaginationReady() {
+        return false;
+    }
+
+    public void updateFileListing(String fileSortField, String fileSortOrder) {
+        System.out.println("got this: " + fileSortField + ":" + fileSortOrder);
+        this.fileSortField = fileSortField;
+        this.fileSortOrder = fileSortOrder;
+        fileMetadatas = populateFileMetadatas();
+    }
+
+    private List<FileMetadata> populateFileMetadatas() {
+        if (betterFileOrgDone) {
+            List<FileMetadata> fileMetadatasToSet = new ArrayList<>();
+            Long datasetVersion = workingVersion.getId();
+            if (datasetVersion != null) {
+                int unlimited = 0;
+                int maxResults = unlimited;
+                List<FileMetadata> dataFilesNew = datafileService.findFileMetadataByDatasetVersionId(datasetVersion, maxResults, fileSortField, fileSortOrder);
+                fileMetadatasToSet.addAll(dataFilesNew);
+            }
+            return fileMetadatasToSet;
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public String getFileSortField() {
+        return fileSortField;
+    }
+
+    public void setFileSortField(String fileSortField) {
+        this.fileSortField = fileSortField;
+    }
+
+    public String getFileSortOrder() {
+        return fileSortOrder;
+    }
+
+    public void setFileSortOrder(String fileSortOrder) {
+        this.fileSortOrder = fileSortOrder;
+    }
+
+    public List<FileMetadata> getFileMetadatas() {
+        if (betterFileOrgDone) {
+            return fileMetadatas;
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public String getFileSortFieldName() {
+        return FileSortFieldAndOrder.label;
+    }
+
+    public String getFileSortFieldDate() {
+        return FileSortFieldAndOrder.createDate;
+    }
+
+    public String getFileSortFieldSize() {
+        return FileSortFieldAndOrder.size;
+    }
+
+    public String getFileSortFieldType() {
+        return FileSortFieldAndOrder.type;
+    }
+
+    public String getSortByAscending() {
+        return SortBy.ASCENDING;
+    }
+
+    public String getSortByDescending() {
+        return SortBy.DESCENDING;
     }
 
 }

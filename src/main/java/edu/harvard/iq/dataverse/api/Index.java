@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -287,7 +288,19 @@ public class Index extends AbstractApiBean {
         if (dataset != null) {
             boolean doNormalSolrDocCleanUp = true;
             Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-            return okResponse("Reindexed dataset " + persistentId + " (id " + dataset.getId() + ").");
+            JsonObjectBuilder data = Json.createObjectBuilder();
+            data.add("message", "Reindexed dataset " + persistentId);
+            data.add("id", dataset.getId());
+            data.add("persistentId", dataset.getGlobalId());
+            JsonArrayBuilder versions = Json.createArrayBuilder();
+            for (DatasetVersion version : dataset.getVersions()) {
+                JsonObjectBuilder versionObject = Json.createObjectBuilder();
+                versionObject.add("semanticVersion", version.getSemanticVersion());
+                versionObject.add("id", version.getId());
+                versions.add(versionObject);
+            }
+            data.add("versions", versions);
+            return okResponse(data);
         } else {
             return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
@@ -688,6 +701,27 @@ public class Index extends AbstractApiBean {
         data.add("filterQueries", filterQueries);
         data.add("allDataverVersionIds", allDatasetVersionIds);
         data.add("semanticVersion", datasetVersion.getSemanticVersion());
+        return okResponse(data);
+    }
+
+    @GET
+    @Path("filemetadata/{dataset_id}")
+    public Response getFileMetadataByDatasetId(
+            @PathParam("dataset_id") long datasetIdToLookUp,
+            @QueryParam("maxResults") int maxResults,
+            @QueryParam("sort") String sortField,
+            @QueryParam("order") String sortOrder
+    ) {
+        JsonArrayBuilder data = Json.createArrayBuilder();
+        List<FileMetadata> fileMetadatasFound = new ArrayList<>();
+        try {
+            fileMetadatasFound = dataFileService.findFileMetadataByDatasetVersionId(datasetIdToLookUp, maxResults, sortField, sortOrder);
+        } catch (Exception ex) {
+            return errorResponse(Status.BAD_REQUEST, "error: " + ex.getCause().getMessage() + ex);
+        }
+        for (FileMetadata fileMetadata : fileMetadatasFound) {
+            data.add(fileMetadata.getLabel());
+        }
         return okResponse(data);
     }
 
