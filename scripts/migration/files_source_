@@ -29,11 +29,14 @@ open PL, ">packlist.txt";
 
 %STUDYMAP = {};
 %STUDYFILEMAP = {};
+%VERSIONMAP = {}; 
 
 while ( <> )
 {
     chop; 
     my ($globalid, $dsid, $dsvid, $dsvnum) = split("\t", $_); 
+    $STUDYMAP{$globalid} = $dsid;
+    $VERSIONMAP{$globalid . "+++" . $dsvnum} = $dsid . "-" . $dsvid; 
 
     %FILECATEGORIES = {}; # file categories for this dataset.
 
@@ -448,6 +451,149 @@ while ( <> )
     $sth->finish; 
 
 }
+
+# Now, the guestbooks/download activity etc.:
+
+# guest books from the old "studyfile activity" entries:
+
+$sth = $dbh->prepare(qq {SELECT a.downloadcount, a.lastdownloadtime, a.studyfile_id, s.authority, s.studyid, s.protocol FROM studyfileactivity a, study s WHERE a.study_id = s.id AND a.downloadcount > 0}); 
+$sth->execute();
+
+$id = 1000; 
+
+while ( @foo = $sth->fetchrow() )
+{
+    my $acount = $foo[0];
+    my $adownloadtime = $foo[1];
+    $adownloadtime = "TIMESTAMP " . $dbh->quote($adownloadtime) if $adownloadtime;
+    $adownloadtime = "NULL" unless $adownloadtime;
+
+    my $astudyfile_id = $foo[2];
+    my $sauthority = $foo[3];
+    my $sidentifier = $foo[4];
+    my $sprotocol = $foo[5];
+
+    next unless $astudyfile_id; 
+    $astudyfile_id += $dvobjectoffset;
+
+    my $globalid = $sprotocol . ":" . $sauthority . "/" . $sidentifier; 
+
+    unless ($STUDYMAP{$globalid})
+    {
+        next; 
+    }
+    
+    ($dataset_id) = $STUDYMAP{$globalid};
+        
+    for ($i = 0; $i < $acount; $i++)
+    {
+        $id++; 
+
+        if ($i == $acount - 1) 
+        {
+            $downloadtime = $adownloadtime;
+        }
+        else 
+        {
+            $downloadtime = "NULL";
+        }
+
+        print qq {INSERT INTO guestbookresponse (id, email, name, institution, position, responsetime, guestbook_id, datafile_id, authenticateduser_id, downloadtype, sessionid, dataset_id, datasetversion_id) VALUES ($id, NULL, 'unknown', NULL, NULL, $downloadtime, 1, $astudyfile_id, NULL, 'download', NULL, $dataset_id, NULL);} . "\n";
+    }
+
+}
+
+$guestbook_response_id_offset = $id; 
+
+# Migrating guestbooks: 
+
+$sth = $dbh->prepare(qq {SELECT id, emailrequired, enabled, firstnamerequired, lastnamerequired, institutionrequired, positionrequired, vdc_id FROM guestbookquestionnaire}); 
+$sth->execute();
+
+while ( @foo = $sth->fetchrow() )
+{
+    my $gid = $foo[0];
+
+    if ($gid == 1)
+    {
+        print STDERR "found guestbook with id=1!\n";
+        next;
+    }
+
+    my $gemailrequired = $foo[1] ? "TRUE" : "FALSE";
+    my $genabled = $foo[2] ? "TRUE" : "FALSE";
+
+    my $gnamerequired = ($foo[3] || $foo[4]) ? "TRUE" : "FALSE";
+
+    my $ginstitutionrequired = $foo[5] ? "TRUE" : "FALSE";
+    my $gpositionrequired = $foo[6] ? "TRUE" : "FALSE";
+
+    my $gdataverse_id = $foo[7] + 9; 
+
+    print qq {INSERT INTO guestbook (id, createtime, emailrequired, enabled, institutionrequired, name, namerequired, positionrequired, dataverse_id) VALUES ($gid, TIMESTAMP '1970-01-01 00:00:00', $gemailrequired, $genabled, $ginstitutionrequired, '', $gnamerequired, $gpositionrequired, $gdataverse_id);} . "\n";
+
+}
+
+# Finally, migrating guestbook responses:
+
+$sth = $dbh->prepare(qq {SELECT r.id, r.email, r.firstname, r.institution, r.lastname, r.position, r.responsetime, r.guestbookquestionnaire_id, r.studyfile_id, r.vdcuser_id, r.downloadtype, r.sessionid, s.authority, s.studyid, s.protocol, v.versionnumber FROM guestbookresponse r, studyversion v, study s WHERE r.study_id = s.id AND r.studyversion_id = v.id}); 
+$sth->execute();
+
+
+while ( @foo = $sth->fetchrow() )
+{
+    my $rid = $foo[0];
+
+    $rid += $guestbook_response_id_offset;
+
+    my $remail = $dbh->quote($foo[1]);
+    my $rfirstname = $foo[2];
+    my $rinstitution = $dbh->quote($foo[3]);
+    my $rlastname = $foo[4];
+    my $rposition = $dbh->quote($foo[5]);
+    my $rresponsetime = $foo[6];
+    $rresponsetime = "TIMESTAMP " . $dbh->quote($rresponsetime) if $rresponsetime;
+    $rresponsetime = "NULL" unless $rresponsetime;
+    my $rgbqid = $foo[7];
+    my $rstudyfileid = $foo[8];
+    $rstudyfileid+=$dvobjectoffset;
+    my $rvdcuserid = $foo[9] ? $foo[9] : "NULL";
+    my $rdownloadtype = $dbh->quote($foo[10]);
+    my $rsessionid = $dbh->quote($foo[11]);
+
+    my $sauthority = $foo[12];
+    my $sidentifier = $foo[13];
+    my $sprotocol = $foo[14];
+    my $vversionnumber = $foo[15];
+
+
+    my $globalid = $sprotocol . ":" . $sauthority . "/" . $sidentifier; 
+
+    unless ($VERSIONMAP{$globalid . "+++" . $vversionnumber})
+    {
+        print STDERR "WARNING: No entry for " . $globalid .  "+++" . $vversionnumber. "!\n";
+        next; 
+    }
+    
+    ($dataset_id, $datasetversion_id) = split ("\-", $VERSIONMAP{$globalid . "+++" . $vversionnumber});
+        
+    unless ($dataset_id > 0 && $datasetversion_id > 0)
+    {
+        print STDERR "Invalid entry for " . $globalid .  "+++" . $vversionnumber. ": " . $VERSIONMAP{$globalid . "+++" . $vversionnumber} . "!\n";
+        next;
+    }
+    
+    my $name = "";
+    $name = $rfirstname . " " if $rfirstname;
+    $name .= $rlastname if $rlastname; 
+    $name = $dbh->quote($name) if $name; 
+    $name = "NULL" unless $name; 
+    
+    print qq {INSERT INTO guestbookresponse (id, email, name, institution, position, responsetime, guestbook_id, datafile_id, authenticateduser_id, downloadtype, sessionid, dataset_id, datasetversion_id) VALUES ($rid, $remail, $name, $rinstitution, $rposition, $rresponsetime, $rgbqid, $rstudyfileid, $rvdcuserid, $rdownloadtype, $rsessionid, $dataset_id, $datasetversion_id);} . "\n";
+
+}
+
+
 
 $dbh->disconnect; 
 

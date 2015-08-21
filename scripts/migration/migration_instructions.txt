@@ -112,9 +112,6 @@ datafile_pub_date.sql
 
 [how?]
 
-13. Migrate guestbooks and download statistics
-
-[how?]
 __________________________________________________
 
 Not being migrated (verify?):
