@@ -842,6 +842,7 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                         }
+                        datafileSolrInputDocument.addField(SearchFields.ACCESS, datafile.isRestricted() ? "Restricted" : "Public");
                     }
                     if (fileSortByDate == null) {
                         if (datasetSortByDate != null) {

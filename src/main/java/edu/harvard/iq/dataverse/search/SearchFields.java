@@ -136,6 +136,7 @@ public class SearchFields {
     public static final String FILE_MD5 = "fileMd5";
     public static final String FILENAME_WITHOUT_EXTENSION = "fileNameWithoutExtension";
     public static final String FILE_TAG = "fileTags_ss";
+    public static final String ACCESS = "fileRestricted_s";
 
     public static final String SUBTREE = "subtreePaths";
 
