@@ -114,6 +114,7 @@ datafile_pub_date.sql
 
 13. Migrate guestbooks and download statistics
 
+[how?]
 __________________________________________________
 
 Not being migrated (verify?):
@@ -123,4 +124,17 @@ Not being migrated (verify?):
 -- Study locks
 -- VDCNetworkStats (generated data)
 
+
+Post-migration tasks.
+====================
+
+If you have global IDs (handles or DOIs) registered, you may need to
+re-register them.  (Even if your Dataverse 4.0 is staying on the same
+server as your old DVN 3* installation, the URLs of the study pages
+have changed: what used to be /dvn/study?globalId=... is now
+/dataset.xhtml?persistentId=...; this can be taken care of with URL
+rewrite rules, but it may be cleaner to just update the registered
+URLs for all your global identifiers).
+
+Run the following to update your registered handles: 
 
