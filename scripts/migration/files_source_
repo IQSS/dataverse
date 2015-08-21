@@ -1,22 +1,27 @@
 #!/usr/bin/perl
 
-my $dvobjectoffset = shift @ARGV;
-
-unless ($dvobjectoffset > 0)
-{
-    print STDERR "Usage: ./files_source_ <DVOBJECT DB ID OFFSET>\n";
-    exit 1;
-}
-
-my $filecatid = 0; # file categories (this is a new object in 4.0, so there are no 3.6 IDs to reuse)
-# (offset this if adding content content to an already populated db)
-
-use DBI;
-
-my $host = "localhost"; 
+my $host = "localhost";
 my $username = "xxxxx";
 my $database = "xxxxx";
 my $password = "xxxxx";
+
+my $dvobjectoffset = shift @ARGV;
+my $filecatoffset = shift @ARGV;
+
+unless ($dvobjectoffset > 0)
+{
+    print STDERR "Usage: ./files_source_ <DVOBJECT DB ID OFFSET> <FILECATID_OFFSET>\n";
+    exit 1;
+}
+
+unless ($filecatoffset)
+{
+    print STDERR "WARNING! file category offset is set to ZERO.\n";
+}
+
+my $filecatid = $filecatoffset; # file categories (this is a new object in 4.0, so there are no 3.6 IDs to reuse)
+
+use DBI;
 
 my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
 
@@ -48,7 +53,6 @@ while ( <> )
 
     my $sth; 
 
-    #$sth = $dbh->prepare(qq {SELECT s.id, v.id FROM study s, studyversion v WHERE v.study_id = s.id AND s.protocol = '$protocol' AND s.authority='$authority' AND s.studyid = '$identifier' AND v.versionstate = 'RELEASED'}); 
     $sth = $dbh->prepare(qq {SELECT s.id, v.id FROM study s, studyversion v WHERE v.study_id = s.id AND s.protocol = '$protocol' AND s.authority='$authority' AND s.studyid = '$identifier' AND v.versionnumber = $dsvnum}); 
     $sth->execute();
 
@@ -62,7 +66,6 @@ while ( <> )
 	$sid = $foo[0];
 	$svid = $foo[1];
 
-#	print $sid . "\t" . $svid . "\n";
 	$vercount++;
     }
 
@@ -75,8 +78,6 @@ while ( <> )
     }
 
     $sth = $dbh->prepare(qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.subsettable, sf.originalfiletype, sf.unf, sf.id, sf.fileclass, fm.id FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid});
-
-#    print qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.subsettable, sf.originalfiletype, sf.unf FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid} . "\n";
 
     $sth->execute();
 
@@ -99,8 +100,16 @@ while ( <> )
 	}
 	$md5 = $foo[5];
 	$restricted = $foo[6];
+
+	# "restricted" is a boolean:
+	
+	$restricted = 'TRUE' if $restricted;
+	$restricted = 'FALSE' unless $restricted;
+
 	# location of the file, on the old filesystem: 
 	$fslocation = $foo[4];
+	$fslocation = "" unless $fslocation;
+	
 	# additional info for subsettable files: 
 	# (will go into the new datatable)
 	$subsettable = $foo[7]; 
@@ -112,7 +121,6 @@ while ( <> )
 	# (tabular, "other", etc.)
 	$fileclass = $foo[11];
 	$fmid = $foo[12];
-	#print join ("\t", @_) . "\n";
 
 	if ($label =~/[\\\/:\*\?\"\<\>\|;\#]/)
 	{
@@ -141,7 +149,6 @@ while ( <> )
 	    
 	    $newdatafileid = ($dvobjectoffset+$sfid);
 	    $STUDYFILEMAP{$sfid} = $newdatafileid; 
-	    ##$dvobjectoffset++; 
 
 	    $fsname = $fslocation; 
 
@@ -178,8 +185,8 @@ while ( <> )
 	    print qq {INSERT INTO dvobject (id, dtype, owner_id, createdate, modificationtime) VALUES ($newdatafileid, 'DataFile', $dsid, '$fmtime', '$fmtime');} . "\n";
 
 	    # datafile object:
-
-	    print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($newdatafileid, '$type', '$fsname', $fsize, '$md5', TRUE);} . "\n";
+	    $fsname = $dbh->quote($fsname);
+	    print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($newdatafileid, '$type', $fsname, $fsize, '$md5', $restricted);} . "\n";
 	}
 	else 
 	{
@@ -188,8 +195,7 @@ while ( <> )
 	}
 	    
 	# file metadata object:
-	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmid, $description, $label, TRUE, 1, $dsvid, $newdatafileid);} . "\n";
-	##print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmid, $description, $label, TRUE, 1, $dsvid, $dvobjectoffset);} . "\n";
+	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmid, $description, $label, $restricted, 1, $dsvid, $newdatafileid);} . "\n";
 
 	# and the category, if exists:
 
@@ -204,7 +210,6 @@ while ( <> )
 		$filecatid++;
 
 		print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($filecatid, $category, $newdatafileid);} . "\n";
-		#print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($filecatid, $category, $dvobjectoffset);} . "\n";
 
 		$FILECATEGORIES{$category} = $filecatid; 
 	    }
@@ -254,12 +259,10 @@ while ( <> )
 		if ($recordspercase) 
 		{
 		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $newdatafileid);} . "\n";
-		    #print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $dvobjectoffset);} . "\n";
 		}
 		else
 		{
 		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $newdatafileid);} . "\n";
-		    #print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $dvobjectoffset);} . "\n";
 		}
 	    }
 
@@ -417,7 +420,6 @@ while ( <> )
 			    $varcatlabel = $dbh->quote($varcatlabel);
 			    unless ($varcatvalue || ($varcatvalue eq "") || ($varcatvalue == 0))
 			    {
-				#print STDERR "WARNING: empty var cat value (" . $varcatlabel . ")\n";
 				print STDERR qq {INSERT INTO variablecategory (id, label, value, missing, catorder, frequency, datavariable_id) VALUES ($varcatid, $varcatlabel, $varcatvalue, $varcatmissing, $varcatorder, $varcatfreq, $varid);} . "\n";
 			    }
 			    else 
