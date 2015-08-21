@@ -456,9 +456,6 @@
                             </p:socket>
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
-                            <p:tab title="#{bundle.files}" rendered="#{systemConfig.filesOnDatasetPageFromSolr}">
-                                <ui:include src="files.xhtml"/>
-                            </p:tab>
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                 <ui:include src="filesFragment.xhtml"/>
