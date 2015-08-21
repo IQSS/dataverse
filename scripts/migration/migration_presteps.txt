@@ -1,37 +1,53 @@
 ----------------------------------------------
 -- Preparing the DDIs of production studies: 
 ----------------------------------------------
-The DDIs of the released (published) studies are already exported and available
-on disk (but do make sure they are all exported properly, and re-run export-all 
-if necessary). The DDIs for the non-released versions need to be re-exported
-using the DVN DDI export servlet. 
 
-1. The following script goes through the list of the studies in the prod. db, 
-and does the following 2 things:
+All the existing DVN studies need to be re-exported *using the
+specially modified version of the DVN3 DDI Export Servlet*. (This
+version of the servlet exports not just the published, but all the
+versions of each study).
 
-For non-released versions, issues a call to the export servlet and saves the 
-DDI in ddi/<DV alias>/<STUDY ID>-<VERSION NUMBER>.xml
+1. Download the migration version of the servlet from here: 
 
-It also generates a "packing list" of the DDI files for the released versions,
-on the standard output. (this will be packed in the next step)
+http://sourceforge.net/projects/dvn/files/dvn/3.6.2/DDIExportServlet-3.6.3-migration.class/download
 
+put it in place of your existing servlet: 
 
-./versions_source_ "http://<DVN 3.6 HOSTNAME>/dvn/ddi" > DDI_released_packlist.txt
+/bin/mv DDIExportServlet-3.6.3-migration.class <YOUR GLASSFISH DIRECTORY>/domains/domain1/applications/DVN-web/WEB-INF/classes/edu/harvard/iq/dvn/core/web/servlet/DDIExportServlet.class 
 
-2. To pack the released DDIs:
-(this step needs to be run on a system that has access to the production filesystem!)
-
-cat DDI_released_packlist.txt | ./versions_source_step2_
-
-This will copy all the published version DDIs, identified in the previous step, 
-into /tmp/ddi, as
-/tmp/ddi/<DV alias>/<STUDY ID>.xml
-
-The contents of /tmp/ddi/* should now be packaged and mixed with the non-released 
-ddis saved in step 1.
+and restart Glassfish. 
 
 
+2. Run the script ./versions_source_. 
 
+It will go through the list of the studies in the prod. db and issue a
+call to the export servlet.  The resulting DDIs will be saved in the
+directory ./ddi. You will need to give the complete path of this
+directory to the Dataverse 4 import process.
+
+Before you run the script, modify the following 3 lines at the top: 
+
+my $host =     "xxxxx";
+my $database = "xxxxx";
+my $username = "xxxxx";
+my $password = 'xxxxx';
+
+To reflect your DVN 3 database location and credentials. Make sure you
+can access the database from the host on which you'll be running this
+script.
+
+Run it as follows: 
+
+./versions_source_ "http://<DVN 3.6 HOSTNAME>/dvn/ddi" "<YOUR NAME SPACE>"
+
+The 2 arguments the script takes: 
+
+ - the URL of the DVN 3 Export Servlet;
+ - your local name space. 
+
+For example: 
+
+./versions_source_ http://localhost/dvn/ddi 1902.1
 
 ----------------------------------------------
 -- On 3.6 database, run the following to create copies of needed tables
