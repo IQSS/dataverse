@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,19 +35,13 @@ import java.util.TimeZone;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import static org.hamcrest.Matchers.startsWith;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  *
