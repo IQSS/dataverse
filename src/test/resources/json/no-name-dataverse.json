@@ -1,0 +1,11 @@
+{
+    "alias": "testAlias",
+    "affiliation": "Test-Driven University",
+    "dataverseContacts": [
+        {
+            "contactEmail": "test@example.com"
+        }
+    ],
+    "permissionRoot": true,
+    "description": "test Description."
+}
