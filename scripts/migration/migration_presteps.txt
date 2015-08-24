@@ -17,6 +17,25 @@ put it in place of your existing servlet:
 
 and restart Glassfish. 
 
+IMPORTANT: 
+----------
+
+Remote access to the DDI Export servlet is restricted by default.
+Access on the localhost interface is open however. So the easiest way
+to perform the export is to run the script in the next step on the
+same host where the DVN 3.* application is running. (And use
+"http://localhost/dvn/ddi" for the export servlet URL parameter
+there).
+
+If you must run the script on a different system, you can grant that
+host access to the servlet by setting the following JVM option in
+Glassfish 3 where the DVN app is running:
+
+-Dvdc.dsb.host=<REMOTE HOST NAME> 
+
+and restart glassfish.
+
+
 
 2. Run the script ./versions_source_. 
 
