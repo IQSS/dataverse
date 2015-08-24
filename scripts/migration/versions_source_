@@ -3,7 +3,7 @@
 my $url = shift @ARGV;
 my $local_namespace = shift @ARGV; 
 
-unless ( $url ~= /^http:/ && $local_namespace ne "" )
+unless ( $url =~ /^http:/ && $local_namespace ne "" )
 {
     print STDERR "Usage: ./versions_source_ <DDI_EXPORT_SERVLET_URL> <LOCAL_NAME_SPACE>\n";
     exit 1;
