@@ -31,78 +31,78 @@ import javax.persistence.Table;
 /**
  *
  * @author Leonid Andreev
- * 
+ *
  * Largely based on the the DataTable entity from the DVN v2-3;
  * original author: Ellen Kraffmiller (2006).
- * 
+ *
  */
 
 @Entity
 @Table(indexes = {@Index(columnList="datafile_id")})
 public class DataTable implements Serializable {
-    
+
     /** Creates a new instance of DataTable */
     public DataTable() {
     }
-    
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     /**
-     * unf: the Universal Numeric Signature of the 
+     * unf: the Universal Numeric Signature of the
      * data table.
      */
     @Column( nullable = false )
     private String unf;
-    
-    /*
+
+    /**
      * caseQuantity: Number of observations
-     */    
-    private Long caseQuantity; 
-    
-    
-    /*
+     */
+    private Long caseQuantity;
+
+
+    /**
      * varQuantity: Number of variables
      */
     private Long varQuantity;
 
-    /*
+    /**
      * recordsPerCase: this property is specific to fixed-field data files
      * in which rows of observations may represented by *multiple* lines.
-     * The only known use case (so far): the fixed-width data files from 
-     * ICPSR. 
+     * The only known use case (so far): the fixed-width data files from
+     * ICPSR.
      */
-     private Long recordsPerCase;
-     
-     /*
-      * DataFile that stores the data for this DataTable
-      */
-     @ManyToOne
-     @JoinColumn(nullable=false)
-     private DataFile dataFile;
+    private Long recordsPerCase;
 
-     /*
-      * DataVariables in this DataTable:
+    /**
+     * DataFile that stores the data for this DataTable
+     */
+    @ManyToOne
+    @JoinColumn(nullable=false)
+    private DataFile dataFile;
+
+    /**
+     * DataVariables in this DataTable:
      */
     @OneToMany (mappedBy="dataTable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
     @OrderBy ("fileOrder")
     private List<DataVariable> dataVariables;
-    
-    /* 
+
+    /**
      * originalFileType: the format of the file from which this data table was
      * extracted (STATA, SPSS, R, etc.)
-     * Note: this was previously stored in the StudyFile. 
+     * Note: this was previously stored in the StudyFile.
      */
     private String originalFileFormat;
-    
-    /*
+
+    /**
      * originalFormatVersion: the version/release number of the original file
-     * format; for example, STATA 9, SPSS 12, etc. 
+     * format; for example, STATA 9, SPSS 12, etc.
      */
     private String originalFormatVersion;
-    
+
     /*
      * Getter and Setter methods:
      */
@@ -124,20 +124,20 @@ public class DataTable implements Serializable {
 
     public Long getCaseQuantity() {
         return this.caseQuantity;
-    }    
-    
+    }
+
     public void setCaseQuantity(Long caseQuantity) {
         this.caseQuantity = caseQuantity;
     }
-    
+
     public Long getVarQuantity() {
         return this.varQuantity;
     }
 
     public void setVarQuantity(Long varQuantity) {
         this.varQuantity = varQuantity;
-    }   
-    
+    }
+
     public Long getRecordsPerCase() {
         return recordsPerCase;
     }
@@ -145,25 +145,25 @@ public class DataTable implements Serializable {
     public void setRecordsPerCase(Long recordsPerCase) {
         this.recordsPerCase = recordsPerCase;
     }
-    
+
     public DataFile getDataFile() {
         return this.dataFile;
     }
-    
+
     public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
     }
 
-     
+
     public List<DataVariable> getDataVariables() {
         return this.dataVariables;
     }
 
-    
+
     public void setDataVariables(List<DataVariable> dataVariables) {
         this.dataVariables = dataVariables;
-    } 
-    
+    }
+
     public String getOriginalFileFormat() {
         return originalFileFormat;
     }
@@ -172,7 +172,7 @@ public class DataTable implements Serializable {
         this.originalFileFormat = originalFileType;
     }
 
-    
+
     public String getOriginalFormatVersion() {
         return originalFormatVersion;
     }
@@ -180,11 +180,11 @@ public class DataTable implements Serializable {
     public void setOriginalFormatVersion(String originalFormatVersion) {
         this.originalFormatVersion = originalFormatVersion;
     }
-    
-    /* 
+
+    /*
      * Custom overrides for hashCode(), equals() and toString() methods:
      */
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -205,5 +205,5 @@ public class DataTable implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DataTable[ id=" + id + " ]";
     }
-    
+
 }

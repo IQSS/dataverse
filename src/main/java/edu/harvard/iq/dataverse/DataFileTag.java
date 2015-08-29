@@ -81,7 +81,7 @@ public class DataFileTag implements Serializable {
     }
     
     public static List<String> listTags() {
-        List<String> retlist = new ArrayList();
+        List<String> retlist = new ArrayList<>();
         
         for(TagType t : TagType.values()) {
             retlist.add(TagTypeToLabels.get(t));

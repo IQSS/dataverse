@@ -29,7 +29,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName";
 
     public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
-        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id").getResultList();
+        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id", DatasetFieldType.class).getResultList();
     }
 
     public List<DatasetFieldType> findAllFacetableFieldTypes() {
@@ -44,24 +44,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetFieldType> findAllRequiredFields() {
-        return em.createQuery("select object(o) from DatasetFieldType as o where o.required = true order by o.id").getResultList();
+        return em.createQuery("select object(o) from DatasetFieldType as o where o.required = true order by o.id", DatasetFieldType.class).getResultList();
     }
 
     public List<DatasetFieldType> findAllOrderedById() {
-        return em.createQuery("select object(o) from DatasetFieldType as o order by o.id").getResultList();
+        return em.createQuery("select object(o) from DatasetFieldType as o order by o.id", DatasetFieldType.class).getResultList();
     }
 
     public List<DatasetFieldType> findAllOrderedByName() {
-        return em.createQuery("select object(o) from DatasetFieldType as o order by o.name").getResultList();
+        return em.createQuery("select object(o) from DatasetFieldType as o order by o.name", DatasetFieldType.class).getResultList();
     }
 
     public DatasetFieldType find(Object pk) {
-        return (DatasetFieldType) em.find(DatasetFieldType.class, pk);
+        return em.find(DatasetFieldType.class, pk);
     }
 
     public DatasetFieldType findByName(String name) {
         try {
-            return  (DatasetFieldType) em.createQuery(NAME_QUERY).setParameter("fieldName", name).getSingleResult();
+            return em.createQuery(NAME_QUERY, DatasetFieldType.class).setParameter("fieldName", name).getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
@@ -107,7 +107,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
-        return (ControlledVocabularyValue) em.find(ControlledVocabularyValue.class, pk);
+        return em.find(ControlledVocabularyValue.class, pk);
     }
 
     /**
@@ -155,8 +155,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         } catch (NoResultException e) {
             return null;
         } catch (NonUniqueResultException ex){
-           List results = typedQuery.getResultList();
-           return (ControlledVocabAlternate) results.get(0);
+           List<ControlledVocabAlternate> results = typedQuery.getResultList();
+           return results.get(0);
         }
     }
 
