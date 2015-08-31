@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
@@ -136,13 +137,15 @@ public class SwordServiceBean {
     public void setDatasetLicenseAndTermsOfUse(DatasetVersion datasetVersionToMutate, SwordEntry swordEntry) throws SwordError {
         Map<String, List<String>> dcterms = swordEntry.getDublinCore();
         List<String> listOfLicensesProvided = dcterms.get("license");
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        datasetVersionToMutate.setTermsOfUseAndAccess(terms);
         if (listOfLicensesProvided == null) {
-            DatasetVersion.License existingLicense = datasetVersionToMutate.getLicense();
+            TermsOfUseAndAccess.License existingLicense = datasetVersionToMutate.getTermsOfUseAndAccess().getLicense();
             if (existingLicense != null) {
                 // leave the license alone but set terms of use
                 setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense);
             } else {
-                DatasetVersion.License unspecifiedLicense = DatasetVersion.defaultLicense;
+                TermsOfUseAndAccess.License unspecifiedLicense = TermsOfUseAndAccess.defaultLicense;
                 List<String> listOfRights = dcterms.get("rights");
                 if (listOfRights != null) {
                     int numRightsProvided = listOfRights.size();
@@ -150,10 +153,11 @@ public class SwordServiceBean {
                         throw new SwordError("Only one Terms of Use (dcterms:rights) can be provided per dataset, not " + numRightsProvided);
                     } else {
                         // Set to NONE for backwards combatibility. We didn't require a license for SWORD in DVN 3.x.
-                        unspecifiedLicense = DatasetVersion.License.NONE;
+                        unspecifiedLicense = TermsOfUseAndAccess.License.NONE;
                     }
                 }
-                datasetVersionToMutate.setLicense(unspecifiedLicense);
+                terms.setLicense(existingLicense);
+                terms.setLicense(unspecifiedLicense);
                 setTermsOfUse(datasetVersionToMutate, dcterms, unspecifiedLicense);
             }
             return;
@@ -166,19 +170,20 @@ public class SwordServiceBean {
         if (StringUtils.isBlank(licenseProvided)) {
             throw new SwordError("License provided was blank.");
         }
-        DatasetVersion.License licenseToSet;
+        TermsOfUseAndAccess.License licenseToSet;
         try {
-            licenseToSet = DatasetVersion.License.valueOf(licenseProvided);
+            licenseToSet = TermsOfUseAndAccess.License.valueOf(licenseProvided);
         } catch (IllegalArgumentException ex) {
             throw new SwordError("License provided was \"" + licenseProvided + "\" but one " + Arrays.toString(DatasetVersion.License.values()) + " was expected.");
         }
-        datasetVersionToMutate.setLicense(licenseToSet);
+        terms.setLicense(licenseToSet);
         setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet);
+
     }
 
-    private void setTermsOfUse(DatasetVersion datasetVersionToMutate, Map<String, List<String>> dcterms, DatasetVersion.License providedLicense) throws SwordError {
-        if (providedLicense.equals(DatasetVersion.License.CC0)) {
-            String existingTermsOfUse = datasetVersionToMutate.getTermsOfUse();
+    private void setTermsOfUse(DatasetVersion datasetVersionToMutate, Map<String, List<String>> dcterms, TermsOfUseAndAccess.License providedLicense) throws SwordError {
+        if (providedLicense.equals(TermsOfUseAndAccess.License.CC0)) {
+            String existingTermsOfUse = datasetVersionToMutate.getTermsOfUseAndAccess().getTermsOfUse();
             if (existingTermsOfUse != null) {
                 throw new SwordError("Can not change license to \"" + DatasetVersion.License.CC0 + "\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a license of \"" + DatasetVersion.License.NONE + "\'.");
             }
@@ -188,7 +193,7 @@ public class SwordServiceBean {
             int numRightsProvided = listOfRightsProvided.size();
             if (providedLicense.equals(DatasetVersion.License.CC0)) {
                 if (numRightsProvided > 0) {
-                    throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with the license \"" + DatasetVersion.License.CC0 + "\". A license of \"" + DatasetVersion.License.NONE + "\" can be used instead.");
+                    throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with the license \"" + TermsOfUseAndAccess.License.CC0 + "\". A license of \"" + TermsOfUseAndAccess.License.NONE + "\" can be used instead.");
                 }
             } else {
                 if (numRightsProvided != 1) {
@@ -204,7 +209,7 @@ public class SwordServiceBean {
                      */
                     // throw new SwordError("Terms of Use (dcterms:rights) provided was blank.");
                 } else {
-                    datasetVersionToMutate.setTermsOfUse(termsOfUseProvided);
+                    datasetVersionToMutate.getTermsOfUseAndAccess().setTermsOfUse(termsOfUseProvided);
                 }
             }
         }

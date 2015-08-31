@@ -403,14 +403,15 @@
                             <div class="col-sm-10">
                                 <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
                                                  converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
-                                                 valueChangeListener="#{DatasetPage.updateSelectedTemplate}">
+                                                 valueChangeListener="#{DatasetPage.updateSelectedTemplate}"                                                
+                                                 >
                                     <f:selectItem itemLabel="#{bundle['dataset.noTemplate.label']}" itemValue="#{null}" />
                                     <f:selectItems value="#{DatasetPage.dataverseTemplates}"
                                                    var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
                                 </p:selectOneMenu>
                                 <p:commandButton value="Direct" id="updateTemplate"
                                                  style="display:none"
-                                                 update="@form"
+                                                 update=":datasetForm,accessPopup"
                                                  action="#{DatasetPage.handleChangeButton}">
                                 </p:commandButton>
                             </div>
@@ -483,7 +484,11 @@
 
                             <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
                                    rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'LICENSE')}">
-                                <ui:include src="dataset-license-terms.xhtml"></ui:include>
+                                <ui:include src="dataset-license-terms.xhtml">
+                                    <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
+                                    <ui:param name="termsOfUseAndAccess" value="#{DatasetPage.workingVersion.termsOfUseAndAccess}"/>
+                                    <ui:param name="datasetPage" value="true"/>
+                                </ui:include>
                             </p:tab>
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
                                 <ui:include src="dataset-versions.xhtml"></ui:include>                         
@@ -990,26 +995,26 @@
                         </p:fragment>
 
                         <div class="form-horizontal">
-                            <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUse}">
+                            <div class="form-group" jsf:rendered="#{DatasetPage.workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse}">
                                 <label class="col-sm-3 control-label" for="guestbook_tou">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                 </label>
                                 <div class="col-sm-6">
                                     <div class="panel panel-default">
                                         <div class="panel-body read-terms">                                             
-                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUse)}" escape="false" />
+                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse)}" escape="false" />
                                         </div>
                                     </div>   
                                 </div>
                             </div>
-                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
+                            <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}">
                                 <label class="col-sm-3 control-label" for="guestbook_toa">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                 </label>
                                 <div class="col-sm-6">
                                     <div class="panel panel-default">
                                         <div class="panel-body read-terms">                                             
-                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfAccess)}" escape="false" />                                           
+                                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess)}" escape="false" />                                           
                                         </div>  
                                     </div>
                                 </div>
@@ -1213,8 +1218,8 @@
                                             #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
+                                    <div class="col-sm-9">                                       
+                                        <p:inputTextarea value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa" />                                   
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -1223,8 +1228,9 @@
                                             #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{DatasetPage.workingVersion.fileAccessRequest}"/>
+                                    <div class="col-sm-9">  
+                                        <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" 
+                                                                 value="#{DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
                                     </div>
                                 </div>
                             </div>

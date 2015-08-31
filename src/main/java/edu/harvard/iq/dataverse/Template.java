@@ -20,6 +20,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -91,6 +92,18 @@ public class Template implements Serializable {
 
     public String getCreateDate() {
         return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
+    }
+    
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
+    @JoinColumn(name = "termsOfUseAndAccess_id")
+    private TermsOfUseAndAccess termsOfUseAndAccess;
+
+    public TermsOfUseAndAccess getTermsOfUseAndAccess() {
+        return termsOfUseAndAccess;
+    }
+
+    public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        this.termsOfUseAndAccess = termsOfUseAndAccess;
     }
 
     @OneToMany(mappedBy = "template", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -305,6 +318,14 @@ public class Template implements Serializable {
         if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
             newTemplate.setDatasetFields(newTemplate.copyDatasetFields(source.getDatasetFields()));
         }
+        TermsOfUseAndAccess terms;
+        if(source.getTermsOfUseAndAccess() != null){
+            terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+        } else {
+            terms = new TermsOfUseAndAccess();
+            terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+        }
+        newTemplate.setTermsOfUseAndAccess(terms);
         return newTemplate;
     }
 

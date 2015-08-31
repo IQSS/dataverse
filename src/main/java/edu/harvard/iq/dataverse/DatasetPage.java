@@ -1844,7 +1844,6 @@ public class DatasetPage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE) {
-                workingVersion.setLicense(DatasetVersion.License.CC0);
                 if ( selectedTemplate != null ) {
                     if ( session.getUser().isAuthenticated() ) {
                         cmd = new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, null, selectedTemplate); 
@@ -3138,17 +3137,18 @@ public class DatasetPage implements java.io.Serializable {
         if (!workingVersion.isReleased()){
             return false;
         }
-        
         // 1. License and Terms of Use:
-        if (!DatasetVersion.License.CC0.equals(workingVersion.getLicense())
-                && !(workingVersion.getTermsOfUse() == null
-                || workingVersion.getTermsOfUse().equals(""))) {
-            return true;
-        }
+        if (workingVersion.getTermsOfUseAndAccess() != null) {
+            if (!TermsOfUseAndAccess.License.CC0.equals(workingVersion.getTermsOfUseAndAccess().getLicense())
+                    && !(workingVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+                    || workingVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+                return true;
+            }
 
-        // 2. Terms of Access:
-        if (!(workingVersion.getTermsOfAccess() == null) && !workingVersion.getTermsOfAccess().equals("")) {
-            return true;
+            // 2. Terms of Access:
+            if (!(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !workingVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
+                return true;
+            }
         }
 
         // 3. Guest Book: 

@@ -245,8 +245,11 @@
             </ui:fragment>
         </p:column>
         <p:column class="col-file-metadata">
-            <h:outputText id="fileNameOutput" value="#{fileMetadata.label}" style="display:block;font-weight:bold;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
-
+           <ui:fragment rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                <h:outputLink value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
+                    <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
+                </h:outputLink>
+            </ui:fragment>
             <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                 <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                     #{bundle['file.fileName']}

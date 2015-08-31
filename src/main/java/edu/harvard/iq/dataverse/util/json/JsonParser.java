@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
@@ -193,22 +194,25 @@ public class JsonParser {
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
             // Terms of Use related fields
-            dsv.setTermsOfUse(obj.getString("termsOfUse", null));
-            dsv.setTermsOfAccess(obj.getString("termsOfAccess", null));
-            dsv.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
-            dsv.setSpecialPermissions(obj.getString("specialPermissions", null));
-            dsv.setRestrictions(obj.getString("restrictions", null));
-            dsv.setCitationRequirements(obj.getString("citationRequirements", null));
-            dsv.setDepositorRequirements(obj.getString("depositorRequirements", null));
-            dsv.setConditions(obj.getString("conditions", null));
-            dsv.setDisclaimer(obj.getString("disclaimer", null));
-            dsv.setDataAccessPlace(obj.getString("dataAccessPlace", null));
-            dsv.setOriginalArchive(obj.getString("originalArchive", null));
-            dsv.setAvailabilityStatus(obj.getString("availabilityStatus", null));
-            dsv.setContactForAccess(obj.getString("contactForAccess", null));
-            dsv.setSizeOfCollection(obj.getString("sizeOfCollection", null));
-            dsv.setStudyCompletion(obj.getString("studyCompletion", null));
-
+            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            terms.setTermsOfUse(obj.getString("termsOfUse", null));           
+            terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
+            terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+            terms.setSpecialPermissions(obj.getString("specialPermissions", null));
+            terms.setRestrictions(obj.getString("restrictions", null));
+            terms.setCitationRequirements(obj.getString("citationRequirements", null));
+            terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
+            terms.setConditions(obj.getString("conditions", null));
+            terms.setDisclaimer(obj.getString("disclaimer", null));
+            terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
+            terms.setOriginalArchive(obj.getString("originalArchive", null));
+            terms.setAvailabilityStatus(obj.getString("availabilityStatus", null));
+            terms.setContactForAccess(obj.getString("contactForAccess", null));
+            terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
+            terms.setStudyCompletion(obj.getString("studyCompletion", null));
+            /* License???*/
+            dsv.setTermsOfUseAndAccess(terms);
+            
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
             return dsv;

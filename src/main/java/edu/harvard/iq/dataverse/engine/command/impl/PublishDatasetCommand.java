@@ -143,7 +143,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             }
         }
         
-        theDataset.setFileAccessRequest(theDataset.getLatestVersion().isFileAccessRequest());
+        theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         Dataset savedDataset = ctxt.em().merge(theDataset);
 
         boolean doNormalSolrDocCleanUp = true;
