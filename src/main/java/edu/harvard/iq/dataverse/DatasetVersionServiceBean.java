@@ -587,8 +587,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         // Try versionId - release state doesn't matte
         //
-        String identifierClause = " and dv.id = " + versionId;
-        String retrieveSpecifiedDSVQuery = getDatasetVersionBasicQuery(identifierClause, null);
+        String retrieveSpecifiedDSVQuery = "SELECT dv.* FROM DatasetVersion dv WHERE dv.id = " + versionId;
+        
         DatasetVersion chosenVersion = this.getDatasetVersionByQuery(retrieveSpecifiedDSVQuery);
         if (chosenVersion != null) {
             return new RetrieveDatasetVersionResponse(chosenVersion, "");

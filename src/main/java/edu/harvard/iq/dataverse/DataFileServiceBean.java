@@ -158,6 +158,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         query.setMaxResults(maxResults);
         return query.getResultList();
     }
+    
+    public FileMetadata findFileMetadataByFileAndVersionId(Long dataFileId, Long datasetVersionId) {
+        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id = :dataFileId and o.datasetVersion.id = :datasetVersionId");
+        query.setParameter("dataFileId", dataFileId);
+        query.setParameter("datasetVersionId", datasetVersionId);
+        return (FileMetadata)query.getSingleResult();
+    }
 
     public List<DataFile> findIngestsInProgress() {
         if ( em.isOpen() ) {
