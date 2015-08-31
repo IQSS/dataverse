@@ -91,6 +91,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
     private FileView fileView;
 
+    public enum FileEditMode {
+
+        EDIT, UPLOAD
+    };
+    
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -120,9 +125,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
-    private Dataset dataset = null;
+    private Dataset dataset = new Dataset();
     
     private String selectedFileIdsString = null; 
+    private FileEditMode mode = FileEditMode.EDIT; 
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
     private List<FileMetadata> fileMetadatas;
 
@@ -150,6 +156,14 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void setSelectedFileIds(String selectedFileIds) {
         selectedFileIdsString = selectedFileIds;
+    }
+    
+    public FileEditMode getMode() {
+        return mode;
+    }
+    
+    public void setMode(FileEditMode mode) {
+        this.mode = mode;
     }
     
     public List<FileMetadata> getFileMetadatas() {
@@ -298,110 +312,65 @@ public class EditDatafilesPage implements java.io.Serializable {
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
         
-        if (versionId != null) {
-          
-            
-           DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
-           
-            // -------------------------------------------------
-            // Set the workingVersion and Dataset by version id:
-            // -------------------------------------------------
-           
-            
-            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);                     
-               
-            if (retrieveDatasetVersionResponse == null){
-               return "/404.xhtml";
-            }
-
-            DatasetVersion retrievedVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-            if (retrievedVersion != null) {
-                dataset = retrievedVersion.getDataset();
-                if (dataset != null) {
-                    workingVersion = dataset.getEditVersion();
-                }
-            }
-
-            // Is the DatasetVersion or Dataset null?
-            //
-            if (workingVersion == null || dataset == null) {
-                return "/404.xhtml";
-            }
-
-            if (!workingVersion.isWorkingCopy()) {
-                // TODO: should be doing something better than this...
-                return "/404.xhtml";
-            }
-
+        
+        if (dataset.getId() != null){
+            // Set Working Version and Dataset by Datasaet Id and Version
+            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), null);
+            dataset = datasetService.find(dataset.getId());
             // Is the Dataset harvested? (because we don't allow editing of harvested 
             // files!)
-            if (dataset.isHarvested()) {
+            if (dataset == null || dataset.isHarvested()) {
                 return "/404.xhtml";
             }
-
-            // If this is not a draft version, and/or the user doesn't have permission
-            // to edit this version - send them to the login page, or straight to 
-            // 403 - as appropriate: 
-            /*
-             if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
-             if(!session.getUser().isAuthenticated()){
-             return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-             } else {
-             return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
-             }               
-             }
-             */
-           // TODO: still needed?
-           /*
-             if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()){
-             //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
-             JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//JH.localize("dataset.message.metadataSuccess"));
-             }*/
-            ownerId = dataset.getOwner().getId();
-            displayCitation = dataset.getCitation(true, workingVersion);
-
-
         } else {
             return "/404.xhtml";
         }
         
-        if (selectedFileIdsString != null) {
-            String[] ids = selectedFileIdsString.split(",");
-            
-            for (String id : ids) {
-                Long test = null;
-                try {
-                    test = new Long(id);
-                } catch (NumberFormatException nfe) {
-                    // do nothing...
-                    test = null; 
-                }
-                if (test != null) {
-                    selectedFileIdsList.add(test);
+        workingVersion = dataset.getEditVersion();
+
+        if (workingVersion == null) {
+            return "/404.xhtml";
+        }
+        
+        if (mode != FileEditMode.UPLOAD) {
+
+            if (selectedFileIdsString != null) {
+                String[] ids = selectedFileIdsString.split(",");
+
+                for (String id : ids) {
+                    Long test = null;
+                    try {
+                        test = new Long(id);
+                    } catch (NumberFormatException nfe) {
+                        // do nothing...
+                        test = null;
+                    }
+                    if (test != null) {
+                        selectedFileIdsList.add(test);
+                    }
                 }
             }
+
+            if (selectedFileIdsList.size() < 1) {
+                logger.info("No numeric file ids supplied to the page, in the edit mode. Redirecting to the 404 page.");
+                // If no valid file IDs specified, send them to the 404 page...
+                return "/404.xhtml";
+            }
+
+            logger.info("The page is called with " + selectedFileIdsList.size() + " file ids.");
+
+            populateFileMetadatas();
+
+            // and if no filemetadatas can be found for the specified file ids 
+            // and version id - same deal, send them to the "not found" page. 
+            // (at least for now; ideally, we probably want to show them a page 
+            // with a more informative error message; something alonog the lines 
+            // of - could not find the files for the ids specified; or, these 
+            // datafiles are not present in the version specified, etc.
+            if (fileMetadatas.size() < 1) {
+                return "/404.xhtml";
+            }
         }
-        
-        if (selectedFileIdsList.size() < 1) {
-            logger.info("No numeric file ids supplied to the page. Redirecting to the 404 page.");
-            // If no valid file IDs specified, send them to the 404 page...
-            return "/404.xhtml";
-        }
-        
-        logger.info("The page is called with " + selectedFileIdsList.size() + " file ids.");
-        
-        populateFileMetadatas();
-        
-        // and if no filemetadatas can be found for the specified file ids 
-        // and version id - same deal, send them to the "not found" page. 
-        // (at least for now; ideally, we probably want to show them a page 
-        // with a more informative error message; something alonog the lines 
-        // of - could not find the files for the ids specified; or, these 
-        // datafiles are not present in the version specified, etc.
-        
-        if (fileMetadatas.size() < 1) {
-            return "/404.xhtml";
-        } 
 
         return null;
     }
@@ -710,10 +679,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public boolean showFileUploadFileComponent(){
         
-        //if ((this.editMode == this.editMode.FILE) || (this.editMode == this.editMode.CREATE)){
+        if (mode == FileEditMode.UPLOAD) {
            return true;
-        //}
-        //return false;
+        }
+        return false;
     }
     
     
@@ -1416,11 +1385,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     private void populateFileMetadatas() {
         fileMetadatas = new ArrayList<>();
 
-        Long datasetVersionId = workingVersion.getId();
-        if (datasetVersionId != null) {
-            if (selectedFileIdsList != null) {
+        if (selectedFileIdsList != null) {
+
+            Long datasetVersionId = workingVersion.getId();
+
+            if (datasetVersionId != null) {
+            // The version has a database id - this is an existing version, 
+                // that had been saved previously. So we can look up the file metadatas
+                // by the file and version ids:
                 for (Long fileId : selectedFileIdsList) {
-                    logger.info("attempting to retrieve file metadata for version id "+datasetVersionId+" and file id "+fileId);
+                    logger.info("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
                     FileMetadata fileMetadata = datafileService.findFileMetadataByFileAndVersionId(fileId, datasetVersionId);
                     if (fileMetadata != null) {
                         logger.info("Success!");
@@ -1429,9 +1403,26 @@ public class EditDatafilesPage implements java.io.Serializable {
                         logger.info("Failed to find file metadata.");
                     }
                 }
+            } else {
+                logger.info("Brand new edit version - no database id.");
+                for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
+                    for (Long fileId : selectedFileIdsList) {
+                        if (fileId.equals(fileMetadata.getDataFile().getId())) {
+                            logger.info("Success! - found the file id "+fileId+" in the brand new edit version.");
+                            fileMetadatas.add(fileMetadata);
+                            selectedFileIdsList.remove(fileId);
+                            break;
+                        }
+                    }
+                    
+                    // If we've already gone through all the file ids on the list - 
+                    // we can stop going through the filemetadatas:
+                    
+                    if (selectedFileIdsList.size() < 1) {
+                        break;
+                    }
+                }
             }
-        } else {
-            logger.info("Null version id in the populateFileMetadatas()!");
         }
     }
 
