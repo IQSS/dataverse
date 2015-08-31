@@ -20,7 +20,7 @@ specialpermissions, studycompletion, termsofaccess, termsofuse)
 SELECT id,  availabilitystatus, citationrequirements, conditions, confidentialitydeclaration, 
 contactforaccess, depositorrequirements, disclaimer, fileaccessrequest, license, originalarchive, restrictions, sizeofcollection, 
 specialpermissions, studycompletion, termsofaccess, termsofuse
-  FROM datasetversion
+  FROM datasetversion;
 
 update datasetversion set termsofuseandaccess_id = id;
 
