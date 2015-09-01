@@ -216,6 +216,21 @@ public class DataFileServiceBean implements java.io.Serializable {
 				.executeUpdate();
     }
 
+    /* 
+     Convenience methods for merging and removing of individual file metadatas, 
+     without touching the rest of the DataFile object:
+    */
+    
+    FileMetadata mergeFileMetadata(FileMetadata fileMetadata) {
+        return em.merge(fileMetadata);
+    }
+    
+    void removeFileMetadata(FileMetadata fileMetadata) {
+        em.remove(fileMetadata);
+    }
+    
+    /**/
+    
     public void generateStorageIdentifier(DataFile dataFile) {
         dataFile.setStorageIdentifier(generateStorageIdentifier());
     }

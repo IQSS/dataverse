@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
@@ -555,20 +556,68 @@ public class EditDatafilesPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
-               
-
-
-        // One last check before we save the files - go through the newly-uploaded 
-        // ones and modify their names so that there are no duplicates. 
-        // (but should we really be doing it here? - maybe a better approach to do it
-        // in the ingest service bean, when the files get uploaded.)
+        
         // Finally, save the files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
+        
+        Timestamp updateTime = new Timestamp(new Date().getTime());
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+      
+            if (dataFile.getCreateDate() == null) {
+                dataFile.setCreateDate(updateTime);
+                dataFile.setCreator((AuthenticatedUser) session.getUser());
+            }
+            dataFile.setModificationTime(updateTime);
+            
+            logger.info("saving file "+fileMetadata.getLabel()+", ("+fileMetadata.getDescription()+")");
+            
+            dataFile = datafileService.save(dataFile);
+        }
+        
+        // Remove / delete any files that were removed
+        
+        for (FileMetadata fmd : filesToBeDeleted) {              
+            //  check if this file is being used as the default thumbnail
+            if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
+                logger.info("deleting the dataset thumbnail designation");
+                dataset.setThumbnailFile(null);
+            }
+            
+            if (!fmd.getDataFile().isReleased()) {
+                // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
+                try {
+                    commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
+                    dataset.getFiles().remove(fmd.getDataFile());
+                    workingVersion.getFileMetadatas().remove(fmd);
+                    // added this check to handle issue where you could not deleter a file that shared a category with a new file
+                    // the relationship does not seem to cascade, yet somehow it was trying to merge the filemetadata
+                    // todo: clean this up some when we clean the create / update dataset methods
+                    for (DataFileCategory cat : dataset.getCategories()) {
+                        cat.getFileMetadatas().remove(fmd);
+                    }
+                } catch (CommandException cmde) {
+                    // TODO: 
+                    // add diagnostics reporting.
+                }
+            } else {
+                FileMetadata mergedFmd = datafileService.mergeFileMetadata(fmd);
+                datafileService.removeFileMetadata(mergedFmd);
+                fmd.getDataFile().getFileMetadatas().remove(fmd);
+                workingVersion.getFileMetadatas().remove(fmd);
+            }  
+        }
+       
+
+
+        
 
         // Use the API to save the dataset: 
-        Command<Dataset> cmd;
+        // commented-out old API save dataset code from the DatasetPage;
+        // TODO: create a SaveDataFile API command. 
+        // -- L.A. 4.2
+        /*Command<Dataset> cmd;
         try {
-            /* -- ?
             if (editMode == EditMode.CREATE) {
                 workingVersion.setLicense(DatasetVersion.License.CC0);
                 if ( selectedTemplate != null ) {
@@ -582,15 +631,15 @@ public class EditDatafilesPage implements java.io.Serializable {
                    cmd = new CreateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
                 }
                 
-            } else { */
+            } else { 
                 cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
-            /*}*/
+            }
             dataset = commandEngine.submit(cmd);
-            /* if (editMode == EditMode.CREATE) {
+            if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
                 }
-            }*/
+            }
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex).append(" ");
@@ -609,7 +658,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.severe(ex.getMessage());
             populateDatasetUpdateFailureMessage();
             return null;
-        }
+        }*/
+            
         newFiles.clear();
         
         JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
@@ -624,7 +674,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private void populateDatasetUpdateFailureMessage(){
             
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
+        JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.filesFailure"));
     }
     
     
@@ -1390,7 +1440,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             Long datasetVersionId = workingVersion.getId();
 
             if (datasetVersionId != null) {
-            // The version has a database id - this is an existing version, 
+                // The version has a database id - this is an existing version, 
                 // that had been saved previously. So we can look up the file metadatas
                 // by the file and version ids:
                 for (Long fileId : selectedFileIdsList) {
