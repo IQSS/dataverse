@@ -363,6 +363,34 @@ public class RoleTagRetriever {
         return roleNames;
         
     }
+
+    private List<String> getFormattedRoleListForId(Long dvId, 
+                                                boolean withDatasetPerms, 
+                                                boolean withFilePerms){
+        
+        if (dvId==null){
+            return null;
+        }
+        if (!this.idToRoleListHash.containsKey(dvId)){
+            return null;
+        }
+        
+        List<String> roleNames = new ArrayList();
+        for (Long roleId : this.idToRoleListHash.get(dvId) ){
+            if ((withDatasetPerms && this.rolePermissionHelper.hasDatasetPermissions(roleId))
+                || (withFilePerms && this.rolePermissionHelper.hasFilePermissions(roleId)))
+            {
+                String roleName = this.rolePermissionHelper.getRoleName(roleId);
+                if (roleName != null){
+                    roleNames.add(roleName);
+                }
+            }
+        }
+        return roleNames;
+        
+    }
+
+    
     
     public boolean hasRolesForCard(Long dvObjectId){
         if (dvObjectId == null){
@@ -393,6 +421,7 @@ public class RoleTagRetriever {
     }
     
     
+            
     
     /**
      * For the cards, make a dict of { dv object id : [role name, role name, etc ]}
@@ -445,7 +474,7 @@ public class RoleTagRetriever {
             }
             
             // -------------------------------------------------
-            // (d) get parent id
+            // (d) get dtype
             // -------------------------------------------------
             String dtype = this.idToDvObjectType.get(dvIdForCard);
             //msg("dtype: " + dtype);
@@ -457,7 +486,7 @@ public class RoleTagRetriever {
                     // -------------------------------------------------
                     // (d1) May have indirect assignments re: dataverse
                     // -------------------------------------------------
-                    formattedRoleNames = getFormattedRoleListForId(parentId);
+                    formattedRoleNames = getFormattedRoleListForId(parentId, true, true);
                     if (formattedRoleNames != null){
                         finalRoleNames.addAll(formattedRoleNames);
                         //msg("Roles from dataverse: " + finalRoleNames.toString());
@@ -467,7 +496,7 @@ public class RoleTagRetriever {
                     // -------------------------------------------------
                     // (d2) May have indirect assignments re: dataset 
                     // -------------------------------------------------
-                    formattedRoleNames = getFormattedRoleListForId(parentId);
+                    formattedRoleNames = getFormattedRoleListForId(parentId, false, true);
                     if (formattedRoleNames != null){
                         finalRoleNames.addAll(formattedRoleNames);
                         //msg("Roles from dataset: " + formattedRoleNames.toString());
@@ -477,7 +506,7 @@ public class RoleTagRetriever {
                     //
                     if (this.childToParentIdHash.containsKey(parentId)){
                         Long grandparentId = this.childToParentIdHash.get(parentId);
-                        formattedRoleNames = getFormattedRoleListForId(grandparentId);
+                        formattedRoleNames = getFormattedRoleListForId(grandparentId, false, true);
                         if (formattedRoleNames != null){
                             finalRoleNames.addAll(formattedRoleNames);
                             //msg("Roles from dataverse: " + formattedRoleNames.toString());
