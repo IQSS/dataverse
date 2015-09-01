@@ -192,6 +192,13 @@ public class MyDataPage implements java.io.Serializable {
         //this.setUserCountTotals(authUser, rolePermissionHelper);
         return null;
     }
+    
+    public String getAuthUserIdentifier(){
+        if (this.authUser==null){
+            return null;
+        }
+        return MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
+    }
     /*
     private void setUserCountTotals(AuthenticatedUser userForCounts, DataverseRolePermissionHelper rolePermissionHelper){
         if (userForCounts == null){

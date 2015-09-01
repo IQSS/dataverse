@@ -26,7 +26,11 @@
         <ui:fragment rendered="#{MyDataPage.isSuperuser()}">
         <div class="col-xs-4 pull-right text-right" style="margin-right:30px;margin-bottom:0;padding:8px 6px;background:none;">
             Results by Username
-            <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" />
+            <ui:remove>
+                <input type="text" name="userIdentifier" id="userIdentifier" value="dataverseAdmin" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" />
+            </ui:remove>
+            <input type="text" name="userIdentifier" id="userIdentifier" value="#{MyDataPage.getAuthUserIdentifier()}" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" />
+           
         </div>
         </ui:fragment>
     </div>
