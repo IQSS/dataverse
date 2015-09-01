@@ -549,6 +549,10 @@ public class MyDataFinder {
                     }
                     if (this.idsWithFilePermissions.containsKey(dvId)){
                         this.fileGrandparentFileIds.add(dvId); // Grandparent to file
+                        // Also show the Dataset--even though the permissions don't apply directly
+                        //  e.g. The Permissions flows:
+                        //      from the DV -> through the DS -> to the file
+                        this.datasetParentIds.add(dvId);    // Parent to dataset
                     }
                     break;
                 case(DvObject.DATASET_DTYPE_STRING):
