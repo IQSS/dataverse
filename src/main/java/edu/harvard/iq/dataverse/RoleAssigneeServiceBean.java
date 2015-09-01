@@ -183,6 +183,7 @@ public class RoleAssigneeServiceBean {
         
     }
     
+    
     private String getGroupIdentifierClause(String roleAssigneeIdentifier, List<String> userGroups) {
 
         if (userGroups == null) {
@@ -212,8 +213,12 @@ public class RoleAssigneeServiceBean {
             return null;
         }
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
-        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));
+        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));      
+        
         String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
+        if (userGroups != null && !userGroups.isEmpty()){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        } 
         
         
         String qstr = "SELECT r.definitionpoint_id, r.role_id";
