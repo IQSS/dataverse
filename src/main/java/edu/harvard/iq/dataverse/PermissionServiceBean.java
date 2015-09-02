@@ -41,7 +41,17 @@ import javax.persistence.Query;
 public class PermissionServiceBean {
 
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
-
+    
+    private static final EnumSet<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY = EnumSet.noneOf( Permission.class );
+    
+    static {
+        for ( Permission p : Permission.values() ) {
+            if ( p.requiresAuthenticatedUser() ) {
+                PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY.add(p);
+            }
+        }
+    }
+    
     @EJB
     BuiltinUserServiceBean userService;
     
@@ -68,7 +78,7 @@ public class PermissionServiceBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
+    
     /**
      * A request-level permission query (e.g includes IP groups).
      */
@@ -202,6 +212,10 @@ public class PermissionServiceBean {
             permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
         }
         
+        if ( ! req.getUser().isAuthenticated() ) {
+            permissions.removeAll( PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY );
+        }
+        
         return permissions;
     }
     
@@ -219,16 +233,22 @@ public class PermissionServiceBean {
         
         // Add permissions specifically given to the user
         permissions.addAll( permissionsForSingleRoleAssignee(ra,dvo) );
-        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra,dvo);
+        
         // Add permissions gained from groups
+        Set<Group> groupsRaBelongsTo = groupService.groupsFor(ra,dvo);
         for ( Group g : groupsRaBelongsTo ) {
             permissions.addAll( permissionsForSingleRoleAssignee(g,dvo) );
+        }
+        
+        if ( (ra instanceof User) && (! ((User)ra).isAuthenticated()) ) {
+            permissions.removeAll( PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY );
         }
         
         return permissions;
     }
 
-    public Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d) {
+    
+    private Set<Permission> permissionsForSingleRoleAssignee(RoleAssignee ra, DvObject d) {
         // super user check
         // @todo for 4.0, we are allowing superusers all permissions
         // for secure data, we may need to restrict some of the permissions
@@ -246,14 +266,10 @@ public class PermissionServiceBean {
             DataFile df = (DataFile)d;
             
             if (!df.isRestricted()) {
-                //logger.info("restricted? - nope.");
                 if (df.getOwner().getReleasedVersion() != null) {
-                    //logger.info("file belongs to a dataset with a released version.");
                     if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        //logger.info("going through the list of filemetadatas that belong to the released version.");
                         for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
                             if (df.equals(fm.getDataFile())) {
-                                //logger.info("yep, found a match!");
                                 retVal.add(Permission.DownloadFile);
                             }
                         }
@@ -403,36 +419,36 @@ public class PermissionServiceBean {
     */
     
     private String getRolesClause(List<DataverseRole> roles) {
-        String roleString = "";
+        StringBuilder roleStringBld = new StringBuilder();
         if (roles != null && !roles.isEmpty()) {
-            roleString = " and role_id in (";
+            roleStringBld.append(" and role_id in (");
             boolean first = true;
             for (DataverseRole role : roles) {
                 if (!first) {
-                    roleString += ",";
+                    roleStringBld.append(",");
                 }
-                roleString += role.getId();
+                roleStringBld.append(role.getId());
                 first = false;
             }
-            roleString += ")";
+            roleStringBld.append(")");
         }
-        return roleString;
+        return roleStringBld.toString();
     }
 
     private String getTypesClause(List<String> types) {
         boolean firstType = true;
-        String typeString = "";
+        StringBuilder typeStringBld = new StringBuilder();
         if (types != null && !types.isEmpty()) {
-            typeString = " dtype in (";
+            typeStringBld.append(" dtype in (");
             for (String type : types) {
                 if (!firstType) {
-                    typeString += ",";
+                    typeStringBld.append(",");
                 }
-                typeString += "'" + type + "'";
+                typeStringBld.append("'").append(type).append("'");
             }
-            typeString += ") and ";
+            typeStringBld.append(") and ");
         }
-        return typeString;
+        return typeStringBld.toString();
     }
     
        
@@ -461,10 +477,7 @@ public class PermissionServiceBean {
             }
         }
         
-        /*
-        Get child datasets and files
-        */
-
+        // Get child datasets and files
         if (indirect) {
             indirectParentIds += ") ";
             Query nativeQueryIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "

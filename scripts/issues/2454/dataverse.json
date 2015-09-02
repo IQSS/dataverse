@@ -1,0 +1,13 @@
+{
+  "alias": "permissionsTestDv",
+  "name": "PermissionsTest",
+  "affiliation": "Affiliation value",
+  "permissionRoot": true,
+  "description": "A Dataverse where we test permissions",
+  "dataverseContacts": [
+    {
+      "contactEmail": "test.script@mailinator.com"
+    }
+  ],
+    "dataverseSubjects": ["Arts and Humanities"]
+}

@@ -241,7 +241,7 @@ public abstract class AbstractApiBean {
             return findDvo( Long.valueOf(id)) ;
         } else {
             Dataverse d = dataverseSvc.findByAlias(id);
-            return ( d == null ) ?
+            return ( d != null ) ?
                     d : datasetSvc.findByGlobalId(id);
             
         }

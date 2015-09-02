@@ -18,6 +18,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -34,9 +36,7 @@ import org.mindrot.jbcrypt.BCrypt;
 @Stateless
 @Path("test")
 public class TestApi extends AbstractApiBean {
-
-//    @EJB
-//    AuthenticationServiceBean authSvc;
+    private static final Logger logger = Logger.getLogger(TestApi.class.getName());
     @EJB
     BuiltinUserServiceBean builtinUserService;
     @EJB
@@ -50,18 +50,25 @@ public class TestApi extends AbstractApiBean {
     
     @Path("permissions/{dvo}")
     @GET
-    public Response findPermissonsOn(@PathParam("dvo") String dvo,
-            @QueryParam("key") String key) {
-        DvObject dvObj = findDvo(dvo);
-        if (dvObj == null) {
-            return notFound("DvObject " + dvo + " not found");
-        }
+    public Response findPermissonsOn(@PathParam("dvo") String dvo) {
         try {
-            User au = findUserOrDie();
-            return okResponse(json(permissionSvc.permissionsFor(au, dvObj)));
+            DvObject dvObj = findDvo(dvo);
+            if (dvObj == null) {
+                return notFound("DvObject " + dvo + " not found");
+            }
+            try {
+                User aUser = findUserOrDie();
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("user", aUser.getIdentifier() );
+                bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)) );
+                return okResponse(bld);
 
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+        } catch (Exception e) {
+            logger.log( Level.SEVERE, "Error while testing permissions", e );
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

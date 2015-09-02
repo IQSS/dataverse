@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -51,17 +52,21 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
          ctxt.em().remove(merged);
          } */
         
-        //TODO Look at roles upon delete when permissions complete
-        //SEK 10/23/14
         // ASSIGNMENTS
-        for (RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed)) {
+        for ( RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed) ) {
             ctxt.em().remove(ra);
         }
         // ROLES
-        for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
+        for ( DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId()) ) {
             ctxt.em().remove(ra);
         }
-
+        
+        // EXPLICIT GROUPS
+        for ( ExplicitGroup eg : ctxt.em().createNamedQuery("ExplicitGroup.findByOwnerId", ExplicitGroup.class)
+                                          .setParameter("ownerId", doomed.getId())
+                                          .getResultList() ) {
+            ctxt.explicitGroups().removeGroup(eg);
+        }
         // FACETS handled with cascade on dataverse
 
         // Input Level

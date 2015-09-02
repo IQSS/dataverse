@@ -154,8 +154,8 @@ public class DataverseServiceBean implements java.io.Serializable {
         try {
             return (anAlias.toLowerCase().equals(":root"))
 				? findRootDataverse()
-				: em.createQuery("select d from Dataverse d WHERE lower(d.alias)=:alias", Dataverse.class)
-					.setParameter("alias", anAlias.toLowerCase())
+				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+					.setParameter("alias", anAlias)
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
             return null;
