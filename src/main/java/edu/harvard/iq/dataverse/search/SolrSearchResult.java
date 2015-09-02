@@ -661,7 +661,29 @@ public class SolrSearchResult {
     public Map<String, String> getParent() {
         return parent;
     }
+    
+    public Long getParentIdAsLong(){
+        
+        if (this.getParent() == null){
+            return null;
+        }
+        if (!this.getParent().containsKey("id")){
+            return null;
+        }
+        
+        String parentIdString = getParent().get("id");
+        if (parentIdString == null){
+            return null;      
+        }
+    
+        try{
+            return Long.parseLong(parentIdString);
+        }catch (NumberFormatException ex){
+            return null;
+        }        
+    }
 
+    
     public void setParent(Map<String, String> parent) {
         this.parent = parent;
     }

@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Input:  dvObject id, parent Id, and dvObject type (from Solr)
@@ -162,6 +163,14 @@ public class RoleTagRetriever {
         
     }
     
+    /**
+     * Iterate through the Solr Cards and collect
+     *  - DvObject Id + Parent ID
+     *  - Dtype for object and parent
+     *  - Whether a "grandparent id" is needed for a file object
+     * 
+     * @param solrQueryResponse 
+     */
     private void loadInfoFromSolrResponseDocs(SolrQueryResponse solrQueryResponse){
 
         if (solrQueryResponse == null){
@@ -182,6 +191,8 @@ public class RoleTagRetriever {
             finalCardIds.add(doc.getEntityId());
 
             String dtype = doc.getType();
+            Long entityId = doc.getEntityId();
+                        
             if (dtype == null){
                 throw new NullPointerException("The dvobject type cannot be null for SolrSearchResult");
             }
@@ -191,27 +202,27 @@ public class RoleTagRetriever {
             // (b) Populate dict of { dvObject id : dtype } 
             //      e.g. { 3 : 'Dataverse' }
             // -------------------------------------------------
-            this.idToDvObjectType.put(doc.getEntityId(), doc.getType());
+            this.idToDvObjectType.put(entityId, dtype);
 
             // -------------------------------------------------
             // (c) initialize dict of { dvObject id : [ (empty list for role ids) ] } 
             // -------------------------------------------------
-            addIdNeedingRoleRetrieval(doc.getEntityId());
+            addIdNeedingRoleRetrieval(entityId);
             
+            Long parentId = doc.getParentIdAsLong();
+
             // -------------------------------------------------
             // For datasets and files, check parents
             // -------------------------------------------------
-            if (!(dtype.equals(SearchConstants.DATAVERSES))){
+            if (!(dtype.equals(SearchConstants.SOLR_DATAVERSES))){   
 
                 // -------------------------------------------------
                 // (d) Add to the childToParentIdHash  { child id : parent id }
                 // -------------------------------------------------
-                String parentIdString = doc.getParent().get("id");
-                if (parentIdString == null){
+                if (parentId == null){
                     throw new NullPointerException("A dataset or file parent cannot be null for SolrSearchResult");
                 }
 
-                Long parentId = Long.parseLong(parentIdString);
                 logger.fine("\nparentId: " + parentId);
 
                 this.childToParentIdHash.put(doc.getEntityId(), parentId);
@@ -227,26 +238,26 @@ public class RoleTagRetriever {
                 // (f) Add the parent to the DvObject type lookup { dvObject id : dtype } 
                 //          - similar to (b) above
                 // -------------------------------------------------
-                if (doc.getType().equals(SearchConstants.FILES)){
+                if (doc.getType().equals(SearchConstants.SOLR_FILES)){
                     logger.fine("It's a file");
 
                     // -------------------------------------------------
                     // (f1) This is a file, we know the parent is a Dataset
                     // -------------------------------------------------
-                    this.idToDvObjectType.put(parentId, DvObject.DATASET_DTYPE_STRING);
+                    this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATASETS);
                     
                     // -------------------------------------------------
                     // (g) For files, we'll need to get roles from the grandparent--e.g., the dataverse
                     // -------------------------------------------------
                     this.datasetIdsNeedingParentIds.add(parentId);
     
-                }if (dtype.equals(SearchConstants.DATASETS)){
+                }if (dtype.equals(SearchConstants.SOLR_DATASETS)){
                     logger.fine("It's a dataset");
 
                     // -------------------------------------------------
                     // (f2) This is a Dataset, we know the parent is a Dataverse
                     // -------------------------------------------------
-                    this.idToDvObjectType.put(parentId, DvObject.DATAVERSE_DTYPE_STRING);
+                    this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATAVERSES);
                 }
             }
                         
@@ -260,9 +271,27 @@ public class RoleTagRetriever {
         
     }
     
+    /**
+     *  From the Cards, we know the Parent Ids of all the DvObjects
+     * 
+     *  However, for files, the roles may trickle down from the Dataverses
+     * 
+     *      Dataverse (file downloader) -> Dataset (file downloader) -> File (file downloader)
+     *  
+     *      Grandparent -> Parent -> Child
+     * 
+     *  Therefore, we need the File's "grandparent id" -- the Dataverse ID
+     * 
+     *      File (from card) -> Parent (from card) -> Grandparent (NEED TO FIND)
+     * 
+     * 
+     */
     private void findDataverseIdsForFiles(){
         msgt("findDataverseIdsForFiles: " + datasetIdsNeedingParentIds.toString());
         
+        // -------------------------------------
+        // (1) Do we have any dataset Ids where we need to find the parent dataverse?
+        // -------------------------------------
         if (this.datasetIdsNeedingParentIds == null){
             throw new NullPointerException("findDataverseIdsForFiles should not be null");
         }
@@ -272,20 +301,31 @@ public class RoleTagRetriever {
             return;
         }
         
+        // -------------------------------------
+        // (2) Do we have any dataset Ids where we need to find the parent dataverse?
+        // -------------------------------------
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoForMyData(this.datasetIdsNeedingParentIds);
         logger.fine("findDataverseIdsForFiles results count: " + results.size());
        
+        // -------------------------------------
+        // (2a) Nope, return
+        // -------------------------------------
         if (results.isEmpty()){
             return;       
         }
         
+
+        // -------------------------------------
+        // (3) Process the results -- the parent ID is the Dataverse that we're interested in
+        // -------------------------------------
         Integer dvIdAsInteger;
         Long dvId;
         String dtype;
         Long parentId;
         
+        // -------------------------------------
         // Iterate through object list
-        //
+        // -------------------------------------
         for (Object[] ra : results) {
             dvIdAsInteger = (Integer)ra[0];     // ?? Why, should be a Long
             dvId = new Long(dvIdAsInteger);
@@ -295,9 +335,9 @@ public class RoleTagRetriever {
             //msg("result: dvId: " + dvId + " |dtype: " + dtype + " |parentId: " + parentId);
             // Should ALWAYS be a Dataset!
             if (dtype.equals(DvObject.DATASET_DTYPE_STRING)){  
-                this.childToParentIdHash.put(dvId, parentId); // dataset -> dataverse
-                this.addIdNeedingRoleRetrieval(parentId); // dataset -> dataverse
-                this.idToDvObjectType.put(parentId, DvObject.DATAVERSE_DTYPE_STRING);
+                this.childToParentIdHash.put(dvId, parentId); // Store the parent child relation
+                this.addIdNeedingRoleRetrieval(parentId); // We need the roles for this dataverse
+                this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATAVERSES); // store the dv object type
             }
         }
     }
@@ -317,7 +357,7 @@ public class RoleTagRetriever {
         if (dvObjectIdList.isEmpty()){
             return true;
         }
-        //logger.fine("dvObjectIdList: " + dvObjectIdList.toString());
+        //msg("dvObjectIdList: " + dvObjectIdList.toString());
         String assigneeIdentifer = MyDataUtil.formatUserIdentifierAsAssigneeIdentifier(userIdentifier);
         List<Object[]> results = this.roleAssigneeService.getRoleIdsFor(assigneeIdentifer, dvObjectIdList);
         
@@ -339,7 +379,8 @@ public class RoleTagRetriever {
             Long roleId = (Long)ra[1];
             
             this.addRoleIdForHash(dvId, roleId);
-            //logger.fine("dv id: " + dvId + " | roleId: " + roleId);
+            //msg("dv id: " + dvId + "(" + this.idToDvObjectType.get(dvId) + ") | roleId: " 
+            //        + roleId + "(" +  this.rolePermissionHelper.getRoleName(roleId)+")");
         }      
         return true;
     }
@@ -439,8 +480,8 @@ public class RoleTagRetriever {
         List<String> finalRoleNames;
         
         for (Long dvIdForCard : this.finalCardIds) {
-           //msgt("dvIdForCard: " + dvIdForCard);
-
+           //msgt("dvIdForCard: " + dvIdForCard + "(" + this.idToDvObjectType.get(dvIdForCard) + ")");
+           
             // -------------------------------------------------
             // (a) Make a new array with the role names for the card
             // -------------------------------------------------
@@ -453,6 +494,7 @@ public class RoleTagRetriever {
             // (b) Add direct role assignments -- may be empty
             // -------------------------------------------------
             formattedRoleNames = getFormattedRoleListForId(dvIdForCard);
+            //msg("(a) direct assignments: " + StringUtils.join(formattedRoleNames, ", "));
             if (formattedRoleNames != null){
                 finalRoleNames.addAll(formattedRoleNames);
             }
@@ -464,12 +506,12 @@ public class RoleTagRetriever {
             Long parentId = null;
             if (this.childToParentIdHash.containsKey(dvIdForCard)){
                 parentId = this.childToParentIdHash.get(dvIdForCard);
+                //msg("(b) parentId: " + parentId);
             }else{
                 // -------------------------------------------------
                 // No parent!  Store roles and move to next id
                 // -------------------------------------------------
                 finalIdToRolesHash.put(dvIdForCard, this.formatRoleNames(finalRoleNames));
-                //msg("No parent found for id");
                 continue;
             }
             
@@ -477,29 +519,33 @@ public class RoleTagRetriever {
             // (d) get dtype
             // -------------------------------------------------
             String dtype = this.idToDvObjectType.get(dvIdForCard);
-            //msg("dtype: " + dtype);
-
+            
             switch(dtype){                
-                //case(DvObject.DATAVERSE_DTYPE_STRING): // No indirect assignments                   
+                //case(SearchConstants.SOLR_DATAVERSES  // No indirect assignments                   
 
-                case(SearchConstants.DATASETS):
+                case(SearchConstants.SOLR_DATASETS):
+                    
                     // -------------------------------------------------
                     // (d1) May have indirect assignments re: dataverse
                     // -------------------------------------------------
                     formattedRoleNames = getFormattedRoleListForId(parentId, true, true);
                     if (formattedRoleNames != null){
+                        //msg("(d) indirect assignments: " + StringUtils.join(formattedRoleNames, ", "));
+
                         finalRoleNames.addAll(formattedRoleNames);
                         //msg("Roles from dataverse: " + finalRoleNames.toString());
                     }
                     break;
-                case(SearchConstants.FILES):
+                case(SearchConstants.SOLR_FILES):
+                    //msg("(c) FILES");
+
                     // -------------------------------------------------
                     // (d2) May have indirect assignments re: dataset 
                     // -------------------------------------------------
                     formattedRoleNames = getFormattedRoleListForId(parentId, false, true);
                     if (formattedRoleNames != null){
+                        //msg("(d) indirect assignments: " + StringUtils.join(formattedRoleNames, ", "));
                         finalRoleNames.addAll(formattedRoleNames);
-                        //msg("Roles from dataset: " + formattedRoleNames.toString());
 
                     }
                     // May have indirect assignments re: dataverse
@@ -508,9 +554,9 @@ public class RoleTagRetriever {
                         Long grandparentId = this.childToParentIdHash.get(parentId);
                         formattedRoleNames = getFormattedRoleListForId(grandparentId, false, true);
                         if (formattedRoleNames != null){
+                            //msg("(e) 2-step indirect assignments: " + StringUtils.join(formattedRoleNames, ", "));
                             finalRoleNames.addAll(formattedRoleNames);
-                            //msg("Roles from dataverse: " + formattedRoleNames.toString());
-
+                            
                         }
                     }  
                    
@@ -524,7 +570,7 @@ public class RoleTagRetriever {
         }
         
     }
-    
+  
     private List<String> formatRoleNames(List<String> roleNames){
         if (roleNames==null){
             return null;
@@ -557,7 +603,7 @@ public class RoleTagRetriever {
     }
    
     private void msg(String s){
-       // System.out.println(s);
+        //System.out.println(s);
     }
     
     private void msgt(String s){
