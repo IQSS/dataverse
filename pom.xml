@@ -411,6 +411,9 @@
                 <configuration>
                     <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
                     <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
+                    <excludes>
+                        <exclude>**/*AdvancedSearchPage.*</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -427,6 +430,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.0.0</version>
             </plugin>
         </plugins>
     </build>
