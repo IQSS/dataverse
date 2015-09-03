@@ -15,21 +15,19 @@ public class DataverseRequest {
     
     private final User user;
     private final IpAddress sourceAddress;
-    private final HttpServletRequest httpRequest;
 
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
-        httpRequest = aHttpServletRequest;
         String remoteAddressStr = null;
         try {
-            remoteAddressStr = httpRequest.getHeader("X-Forwarded-For");
+            remoteAddressStr = aHttpServletRequest.getHeader("X-Forwarded-For");
         } catch ( NullPointerException _npe ) {
             // ignore
         }
         
         if ( remoteAddressStr == null ) {
             try {
-                remoteAddressStr = httpRequest.getRemoteAddr();
+                remoteAddressStr = aHttpServletRequest.getRemoteAddr();
             } catch ( NullPointerException _npe ) {}
         }
         
