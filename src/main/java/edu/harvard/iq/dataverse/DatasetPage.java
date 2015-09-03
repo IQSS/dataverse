@@ -1626,6 +1626,46 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
     
+    private List<FileMetadata> selectedRestrictedFiles; // = new ArrayList<>();
+
+    public List<FileMetadata> getSelectedRestrictedFiles() {
+        return selectedRestrictedFiles;
+    }
+
+    public void setSelectedRestrictedFiles(List<FileMetadata> selectedRestrictedFiles) {
+        this.selectedRestrictedFiles = selectedRestrictedFiles;
+    }
+    
+    private List<FileMetadata> selectedUnrestrictedFiles; // = new ArrayList<>();
+
+    public List<FileMetadata> getSelectedUnrestrictedFiles() {
+        return selectedUnrestrictedFiles;
+    }
+
+    public void setSelectedUnrestrictedFiles(List<FileMetadata> selectedUnrestrictedFiles) {
+        this.selectedUnrestrictedFiles = selectedUnrestrictedFiles;
+    }
+    
+    private boolean selectAllFiles;
+
+    public boolean isSelectAllFiles() {
+        return selectAllFiles;
+    }
+
+    public void setSelectAllFiles(boolean selectAllFiles) {
+        this.selectAllFiles = selectAllFiles;
+    }
+    
+    public void toggleSelectedFiles(){
+        this.selectedFiles = new ArrayList();
+        if(this.selectAllFiles){
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                this.selectedFiles.add(fmd);
+            }
+        }
+        updateFileCounts();
+    }
+    
     // helper Method
     public String getSelectedFilesIdsString() {        
         String downloadIdString = "";
@@ -1637,6 +1677,18 @@ public class DatasetPage implements java.io.Serializable {
         }
         return downloadIdString;
       
+    }
+    
+    public void updateFileCounts(){
+        setSelectedUnrestrictedFiles(new ArrayList<FileMetadata>());
+        setSelectedRestrictedFiles(new ArrayList<FileMetadata>());
+        for (FileMetadata fmd : this.selectedFiles){
+            if(fmd.isRestricted()){
+                getSelectedRestrictedFiles().add(fmd);
+            } else {
+                getSelectedUnrestrictedFiles().add(fmd);
+            }
+        }
     }
 
     public String saveLinkedDataset() {
@@ -2374,7 +2426,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
    private void createSilentGuestbookEntry(FileMetadata fileMetadata, String format){
-        initGuestbookResponse(fileMetadata, format);
+        initGuestbookResponse(fileMetadata, format, null);
         Command cmd;
         try {
             if (this.guestbookResponse != null) {
@@ -2434,14 +2486,18 @@ public class DatasetPage implements java.io.Serializable {
     
   
    public void initGuestbookResponse(FileMetadata fileMetadata){
-         initGuestbookResponse(fileMetadata, "");
+         initGuestbookResponse(fileMetadata, "", null);
     }
     
     public void initGuestbookMultipleResponse(){
-         initGuestbookResponse(null, "download");
+         initGuestbookResponse(null, "download", null);
+    }
+    
+     public void initGuestbookMultipleResponse(String selectedFileIds){
+         initGuestbookResponse(null, "download", selectedFileIds);
     }
 
-    public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat) {
+    public void initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat, String selectedFileIds) {
         if (fileMetadata != null){
            this.setSelectedDownloadFile(fileMetadata.getDataFile());
         }
@@ -2728,7 +2784,7 @@ public class DatasetPage implements java.io.Serializable {
             if (guestbook.equals("create")) {
                 createSilentGuestbookEntry(fm, "Subset");
             } else {
-                initGuestbookResponse(fm, "Subset");
+                initGuestbookResponse(fm, "Subset", null);
             }
         }
 
@@ -3126,8 +3182,92 @@ public class DatasetPage implements java.io.Serializable {
 
         return "";
     }
-
     
+    public boolean isDownloadButtonAvailable(){
+                for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+            if (canDownloadFile(fmd)){
+                return true;               
+            }
+        }
+        return false;
+    }
+    
+    public boolean isFileAccessRequestMultiButtonRequired(){
+        if (!session.getUser().isAuthenticated()){
+            return false;
+        }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+            if (!canDownloadFile(fmd)){
+                return true;               
+            }
+        }
+        return false;
+    }
+
+    public boolean isFileAccessRequestMultiButtonEnabled(){
+        if (!session.getUser().isAuthenticated()){
+            return false;
+        }
+        if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
+            return false;
+        }
+        for (FileMetadata fmd : this.selectedRestrictedFiles){
+            if (!canDownloadFile(fmd)){
+                return true;               
+            }
+        }
+        return false;
+    } 
+    
+    public boolean isDownloadAllButtonEnabled(){
+
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+            if (!canDownloadFile(fmd)){
+                return false;               
+            }
+        }
+        return true;
+    }
+
+    public boolean isDownloadSelectedButtonEnabled(){
+
+        if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
+            return false;
+        }
+        for (FileMetadata fmd : this.selectedRestrictedFiles){
+            if (!canDownloadFile(fmd)){
+                return false;               
+            }
+        }
+        return true;
+    } 
+    
+    public boolean isFileAccessRequestMultiSignUpButtonRequired(){
+        if (session.getUser().isAuthenticated()){
+            return false;
+        }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+            if (!canDownloadFile(fmd)){
+                return true;               
+            }
+        }
+        return false;
+    }
+
+    public boolean isFileAccessRequestMultiSignUpButtonEnabled(){
+        if (session.getUser().isAuthenticated()){
+            return false;
+        }
+        if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
+            return false;
+        }
+        for (FileMetadata fmd : this.selectedRestrictedFiles){
+            if (!canDownloadFile(fmd)){
+                return true;               
+            }
+        }
+        return false;
+    }
 
     public boolean isDownloadPopupRequired() {
         // Each of these conditions is sufficient reason to have to 
@@ -3158,17 +3298,48 @@ public class DatasetPage implements java.io.Serializable {
 
         return false;
     }
+    
+    public void requestAccessMultipleFiles(String fileIdString) {
+        Long idForNotification = new Long(0);
+        if (fileIdString != null) {
+            String[] ids = fileIdString.split(",");
+            for (String id : ids) {
+                Long test = null;
+                try {
+                    test = new Long(id);
+                } catch (NumberFormatException nfe) {
+                    // do nothing...
+                    test = null;
+                }
+                if (test != null) {
+                    DataFile request = datafileService.find(test);
+                    idForNotification = test;
+                    requestAccess(request, false);
+                }
+            }
+        }
+        if (idForNotification.intValue() > 0) {
+            sendRequestFileAccessNotification(idForNotification);
+        }
+    }
 
-
-
-    public void requestAccess(DataFile file) {
+    public void requestAccess(DataFile file, boolean sendNotification) {
         file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
         datafileService.save(file);
 
         // create notifications
-        for (AuthenticatedUser au : permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset)) {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, file.getId());
+        if (sendNotification) {
+            sendRequestFileAccessNotification(file.getId());
+
         }
+
+    }
+
+    private void sendRequestFileAccessNotification(Long fileId) {
+        for (AuthenticatedUser au : permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset)) {
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId);
+        }
+
     }
 
     public FileView populateFileView() {
