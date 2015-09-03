@@ -1,2 +1,3 @@
 language: java
 script: mvn -DcompilerArgument=-Xlint:unchecked test
+after_success: mvn jacoco:report coveralls:report 
