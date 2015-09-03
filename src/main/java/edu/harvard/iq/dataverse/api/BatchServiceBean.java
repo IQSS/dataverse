@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class BatchServiceBean {
     
 
     @Asynchronous
-    public void processFilePath(String fileDir, String parentIdtf, AuthenticatedUser u, Dataverse owner, ImportUtil.ImportType importType, Boolean createDV)  {
+    public void processFilePath(String fileDir, String parentIdtf, DataverseRequest dataverseRequest, Dataverse owner, ImportUtil.ImportType importType, Boolean createDV)  {
         logger.info("BEGIN IMPORT");
         PrintWriter validationLog = null;
         PrintWriter cleanupLog = null;
@@ -54,13 +55,13 @@ public class BatchServiceBean {
                 if (!file.isHidden()) {
                     if (file.isDirectory()) {
                         try {
-                            status.add(handleDirectory(u, file, importType, validationLog, cleanupLog, createDV));
+                            status.add(handleDirectory(dataverseRequest, file, importType, validationLog, cleanupLog, createDV));
                         } catch (ImportException e) {
                             logger.log(Level.SEVERE, "Exception in handleDirectory() for "+ file.getName(),e);
                         }
                     } else {
                         try {
-                            status.add(importService.handleFile(u, owner, file, importType, validationLog, cleanupLog));
+                            status.add(importService.handleFile(dataverseRequest, owner, file, importType, validationLog, cleanupLog));
                         } catch(ImportException e) {
                              logger.log(Level.SEVERE, "Exception in handleFile() for "+ file.getName(),e);
                         }
@@ -69,7 +70,7 @@ public class BatchServiceBean {
                 }
             }
         } else {
-            status.add(importService.handleFile(u, owner, dir, importType, validationLog, cleanupLog));
+            status.add(importService.handleFile(dataverseRequest, owner, dir, importType, validationLog, cleanupLog));
 
         }
         }
@@ -83,13 +84,13 @@ public class BatchServiceBean {
 
     }
 
-    public JsonArrayBuilder handleDirectory(AuthenticatedUser u, File dir, ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, Boolean createDV) throws ImportException{
+    public JsonArrayBuilder handleDirectory(DataverseRequest dataverseRequest, File dir, ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, Boolean createDV) throws ImportException{
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = dataverseService.findByAlias(dir.getName());
         if (owner == null ) {
             if (createDV) {
                 System.out.println("creating new dataverse: " + dir.getName());
-                owner = importService.createDataverse(dir.getName(), u);
+                owner = importService.createDataverse(dir.getName(), dataverseRequest);
             } else {
                 throw new ImportException("Can't find dataverse with identifier='" + dir.getName() + "'");
             }
@@ -97,7 +98,7 @@ public class BatchServiceBean {
         for (File file : dir.listFiles()) {
             if (!file.isHidden()) {
                 try {
-                    JsonObjectBuilder fileStatus = importService.handleFile(u, owner, file, importType, validationLog, cleanupLog);
+                    JsonObjectBuilder fileStatus = importService.handleFile(dataverseRequest, owner, file, importType, validationLog, cleanupLog);
                     status.add(fileStatus);
                 } catch (ImportException | IOException e) {
                     status.add(Json.createObjectBuilder().add("importStatus", "Exception importing " + file.getName() + ", message = " + e.getMessage()));
