@@ -101,7 +101,7 @@ public class ImportServiceBean {
  * @throws ImportException 
  */
     @TransactionAttribute(REQUIRES_NEW)
-    public Dataverse createDataverse(String dvName, AuthenticatedUser u) throws ImportException {
+    public Dataverse createDataverse(String dvName, DataverseRequest dataverseRequest) throws ImportException {
         Dataverse d = new Dataverse();
         Dataverse root = dataverseService.findByAlias("root");
         d.setOwner(root);
@@ -117,7 +117,7 @@ public class ImportServiceBean {
         dcList.add(dc);
         d.setDataverseContacts(dcList);
         try {
-            d = engineSvc.submit(new CreateDataverseCommand(d, new DataverseRequest(u,httpRequest), null, null));
+            d = engineSvc.submit(new CreateDataverseCommand(d, dataverseRequest, null, null));
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -142,13 +142,13 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public JsonObjectBuilder handleFile(User u, Dataverse owner, File file, ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog) throws ImportException, IOException {
+    public JsonObjectBuilder handleFile(DataverseRequest dataverseRequest, Dataverse owner, File file, ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog) throws ImportException, IOException {
 
         System.out.println("handling file: " + file.getAbsolutePath());
         String ddiXMLToParse;
         try {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
-            JsonObjectBuilder status = doImport(u, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
+            JsonObjectBuilder status = doImport(dataverseRequest, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
             status.add("file", file.getName());
             logger.info("completed doImport " + file.getParentFile().getName() + "/" + file.getName());
             return status;
@@ -188,7 +188,7 @@ public class ImportServiceBean {
         }
     }
 
-    public JsonObjectBuilder doImport(User u, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
+    public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
 
         String status = "";
         Long createdId = null;
@@ -291,8 +291,8 @@ public class ImportServiceBean {
                     if (existingDs.getVersions().size() != 1) {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                     }
-                    engineSvc.submit(new DestroyDatasetCommand(existingDs, new DataverseRequest(u, httpRequest)));
-                    Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, new DataverseRequest(u, httpRequest), false, importType));
+                    engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
+                    Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
                     status = " updated dataset, id=" + managedDs.getId() + ".";
                 } else {
                     // If we are adding a new version to an existing dataset,
@@ -302,13 +302,13 @@ public class ImportServiceBean {
                             throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId());
                         }
                     }
-                    DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(new DataverseRequest(u, httpRequest), existingDs, ds.getVersions().get(0)));
+                    DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
                     status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalId();
                     createdId = dsv.getId();
                 }
 
             } else {
-                Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, new DataverseRequest(u, httpRequest), false, importType));
+                Dataset managedDs = engineSvc.submit(new CreateDatasetCommand(ds, dataverseRequest, false, importType));
                 status = " created dataset, id=" + managedDs.getId() + ".";
                 createdId = managedDs.getId();
             }
