@@ -169,9 +169,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public List<FileMetadata> getFileMetadatas() {
         if (fileMetadatas != null) {
-            logger.info("Returning a list of "+fileMetadatas.size()+" file metadatas.");
+            logger.fine("Returning a list of "+fileMetadatas.size()+" file metadatas.");
         } else {
-            logger.info("File metadatas list hasn't been initialized yet.");
+            logger.fine("File metadatas list hasn't been initialized yet.");
         }
         return fileMetadatas;
     }
@@ -353,12 +353,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             if (selectedFileIdsList.size() < 1) {
-                logger.info("No numeric file ids supplied to the page, in the edit mode. Redirecting to the 404 page.");
+                logger.fine("No numeric file ids supplied to the page, in the edit mode. Redirecting to the 404 page.");
                 // If no valid file IDs specified, send them to the 404 page...
                 return "/404.xhtml";
             }
 
-            logger.info("The page is called with " + selectedFileIdsList.size() + " file ids.");
+            logger.fine("The page is called with " + selectedFileIdsList.size() + " file ids.");
 
             populateFileMetadatas();
 
@@ -549,6 +549,13 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String save() {
         // Validate
+        // TODO: 
+        // Is it actually necessary - to validate for constraint violations, on the 
+        // version? - We are only modifying files on this page. 
+        // -- L.A. 4.2
+        // (yes, there are some funky cases - like when the metadata get extracted
+        // from FITS files and aggregated on the dataset level... still do we 
+        // need to run this validation on every save?)
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
@@ -560,19 +567,20 @@ public class EditDatafilesPage implements java.io.Serializable {
         // Finally, save the files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
         
+        
+        // And update them in the database:
         Timestamp updateTime = new Timestamp(new Date().getTime());
         for (FileMetadata fileMetadata : fileMetadatas) {
-            DataFile dataFile = fileMetadata.getDataFile();
       
-            if (dataFile.getCreateDate() == null) {
-                dataFile.setCreateDate(updateTime);
-                dataFile.setCreator((AuthenticatedUser) session.getUser());
+            if (fileMetadata.getDataFile().getCreateDate() == null) {
+                fileMetadata.getDataFile().setCreateDate(updateTime);
+                fileMetadata.getDataFile().setCreator((AuthenticatedUser) session.getUser());
             }
-            dataFile.setModificationTime(updateTime);
+            fileMetadata.getDataFile().setModificationTime(updateTime);
             
-            logger.info("saving file "+fileMetadata.getLabel()+", ("+fileMetadata.getDescription()+")");
+            logger.fine("saving file "+fileMetadata.getLabel()+", ("+fileMetadata.getDescription()+")");
             
-            dataFile = datafileService.save(dataFile);
+            fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
         }
         
         // Remove / delete any files that were removed
@@ -580,7 +588,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         for (FileMetadata fmd : filesToBeDeleted) {              
             //  check if this file is being used as the default thumbnail
             if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
-                logger.info("deleting the dataset thumbnail designation");
+                logger.fine("deleting the dataset thumbnail designation");
                 dataset.setThumbnailFile(null);
             }
             
@@ -778,7 +786,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      */
     public void handleDropBoxUpload(ActionEvent event) {
         
-        logger.info("handleDropBoxUpload");
+        logger.fine("handleDropBoxUpload");
         // -----------------------------------------------------------
         // Read JSON object from the output of the DropBox Chooser: 
         // -----------------------------------------------------------
@@ -801,7 +809,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             String fileName = dbObject.getString("name");
             int fileSize = dbObject.getInt("bytes");
 
-            logger.info("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
+            logger.fine("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
 
 
             /* ----------------------------
@@ -1133,7 +1141,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // a new image has been designated as such:
         if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
             String successMessage = JH.localize("file.assignedDataverseImage.success");
-            logger.info(successMessage);
+            logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileMetadataSelectedForThumbnailPopup.getLabel());
             JsfHelper.addFlashMessage(successMessage);
         }
@@ -1444,21 +1452,21 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // that had been saved previously. So we can look up the file metadatas
                 // by the file and version ids:
                 for (Long fileId : selectedFileIdsList) {
-                    logger.info("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
+                    logger.fine("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + fileId);
                     FileMetadata fileMetadata = datafileService.findFileMetadataByFileAndVersionId(fileId, datasetVersionId);
                     if (fileMetadata != null) {
-                        logger.info("Success!");
+                        logger.fine("Success!");
                         fileMetadatas.add(fileMetadata);
                     } else {
-                        logger.info("Failed to find file metadata.");
+                        logger.fine("Failed to find file metadata.");
                     }
                 }
             } else {
-                logger.info("Brand new edit version - no database id.");
+                logger.fine("Brand new edit version - no database id.");
                 for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
                     for (Long fileId : selectedFileIdsList) {
                         if (fileId.equals(fileMetadata.getDataFile().getId())) {
-                            logger.info("Success! - found the file id "+fileId+" in the brand new edit version.");
+                            logger.fine("Success! - found the file id "+fileId+" in the brand new edit version.");
                             fileMetadatas.add(fileMetadata);
                             selectedFileIdsList.remove(fileId);
                             break;

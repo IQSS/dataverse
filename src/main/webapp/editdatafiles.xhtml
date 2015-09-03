@@ -534,7 +534,7 @@
                                             #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-9" jsf:rendered="#{!empty EditDatafilesPage.workingVersion.termsOfUseAndAccess}">
                                         <p:inputTextarea value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" />
                                     </div>
                                 </div>
@@ -544,7 +544,7 @@
                                             #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                         </span>
                                     </label>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-9" jsf:rendered="#{!empty EditDatafilesPage.workingVersion.termsOfUseAndAccess}">
                                         <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
                                     </div>
                                 </div>
