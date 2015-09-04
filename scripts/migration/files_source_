@@ -80,7 +80,7 @@ while ( <> )
 	next; 
     }
 
-    $sth = $dbh->prepare(qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.subsettable, sf.originalfiletype, sf.unf, sf.id, sf.fileclass, fm.id FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid});
+    $sth = $dbh->prepare(qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.originalfiletype, sf.unf, sf.id, sf.fileclass, fm.id FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid});
 
     $sth->execute();
 
@@ -115,15 +115,14 @@ while ( <> )
 	
 	# additional info for subsettable files: 
 	# (will go into the new datatable)
-	$subsettable = $foo[7]; 
-	$originalfiletype = $foo[8];
-	$unf = $foo[9]; 
+	$originalfiletype = $foo[7];
+	$unf = $foo[8]; 
 	# id of the existing studyfile: 
-	$sfid = $foo[10];
+	$sfid = $foo[9];
 	# "class" of the existing studyfile: 
 	# (tabular, "other", etc.)
-	$fileclass = $foo[11];
-	$fmid = $foo[12];
+	$fileclass = $foo[10];
+	$fmid = $foo[11];
 
 	if ($label =~/[\\\/:\*\?\"\<\>\|;\#]/)
 	{
@@ -516,7 +515,9 @@ while ( @foo = $sth->fetchrow() )
 
     if ($gid == 1)
     {
-        print STDERR "found guestbook with id=1!\n";
+        # print STDERR "found guestbook with id=1!\n";
+	# This is the default guestbook; we don't need to migrate it, as the 
+	# new Dataverse 4.0 will have its own default guestbook.
         next;
     }
 
