@@ -63,7 +63,7 @@
     </p:selectBooleanCheckbox>
                             
     
-    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? (DatasetPage.newFileListingFeaturesEnabled ? DatasetPage.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas) : (DatasetPage.workingVersion.fileMetadatasSorted)}"
+    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? (DatasetPage.newFileListingFeaturesEnabled ? DatasetPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas) : (DatasetPage.workingVersion.fileMetadatasSorted)}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  emptyMessage="#{bundle['file.notFound.tip']}">
