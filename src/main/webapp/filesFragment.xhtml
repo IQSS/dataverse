@@ -171,7 +171,7 @@
              <ui:fragment rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
                  <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{DatasetPage.selectedFilesIdsString}&#38;datasetId=#{DatasetPage.dataset.id}"
                               disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles}" >
-                    <h:outputText id="editFile-s-Link" value="Leonid #{bundle['file.uploadOrEdit']}" style="display:block;font-weight:bold;"/>
+                    <h:outputText id="editFile-s-Link" value="#{bundle['file.uploadOrEdit']}" style="display:block;font-weight:bold;"/>
                 </h:outputLink>
             </ui:fragment>                  
                     
