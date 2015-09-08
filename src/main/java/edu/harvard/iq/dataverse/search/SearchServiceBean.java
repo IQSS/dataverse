@@ -152,6 +152,7 @@ public class SearchServiceBean {
          * https://redmine.hmdc.harvard.edu/issues/3848
          */
         solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
+        solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, "File Tag");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         for (DatasetFieldType datasetFieldType : datasetFields) {
             String solrField = datasetFieldType.getSolrField().getNameSearchable();
@@ -272,7 +273,7 @@ public class SearchServiceBean {
             } else {
                 error += messageFromSolr;
             }
-            logger.fine(error);
+            logger.info(error);
             SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
             exceptionSolrQueryResponse.setError(error);
 

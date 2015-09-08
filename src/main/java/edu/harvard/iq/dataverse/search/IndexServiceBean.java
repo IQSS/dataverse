@@ -806,6 +806,7 @@ public class IndexServiceBean {
                         }
                         for (String tag : fileMetadata.getCategoriesByName()) {
                             datafileSolrInputDocument.addField(SearchFields.FILE_TAG, tag);
+                            datafileSolrInputDocument.addField(SearchFields.FILE_TAG_SEARCHABLE, tag);
                         }
                     }
                     datafileSolrInputDocument.addField(SearchFields.NAME, filenameCompleteFinal);
