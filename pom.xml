@@ -411,9 +411,6 @@
                 <configuration>
                     <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
                     <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
-                    <excludes>
-                        <exclude>**/*AdvancedSearchPage.*</exclude>
-                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
