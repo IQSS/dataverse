@@ -36,5 +36,7 @@ public class SearchConstants {
     //
     public static final int NUM_SOLR_DOCS_TO_RETRIEVE = 10;
 
+    public static final String PUBLIC = "Public";
+    public static final String RESTRICTED = "Restricted";
 
 }
