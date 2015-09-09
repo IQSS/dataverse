@@ -13,49 +13,8 @@
     >
 
     <!-- Upload -->
-    <ui:fragment rendered="#{DatasetPage.showFileUploadFileComponent()}">
-        <script>
-            function uploadWidgetDropMsg() {
-                var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
-                if ($(fileUpload).children('#dragdropMsg').length) {
-                    // do nothing
-                } else {
-                    $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.fromDropbox.description']}</div>');
-                }
-            }
-            function uploadWidgetDropRemoveMsg() {
-                $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
-            }
-            $(document).ready(function () {
-                uploadWidgetDropMsg();
-            });
-        </script>
-        <p class="help-block">
-            <span class="glyphicon glyphicon-info-sign"/> 
-            <h:outputFormat value=" #{bundle['file.selectToAdd.tip']}" escape="false">
-                <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                <f:param value="#{systemConfig.version}"/>
-            </h:outputFormat>
-        </p>
-
-        <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.showFileUploadFileComponent()}"
-                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                      oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" 
-                      sizeLimit="#{DatasetPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
-        <!-- Dropbox Upload -->
-        <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty DatasetPage.dropBoxKey}">
-            <div class="panel-body">
-                <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                <p:commandButton  id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
-                <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
-            </div>
-            <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
-
-        </div>
-        <p:message for="fileUpload" id="uploadMessage" display="text" />
-    </ui:fragment>
-
+    <!-- (removed - L.A. 4.2 -->
+    
     <!-- Files Table -->
     
     <p:selectBooleanCheckbox   value="#{DatasetPage.selectAllFiles}"  itemLabel="Select All">
@@ -257,12 +216,6 @@
                     <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                 </ui:fragment>
 
-                <!-- Dataset Thumbnail -->
-                <span id="datasetThumbnail" class="bg-info text-info text-center small show"
-                      jsf:rendered="#{DatasetPage.editMode == 'FILE' and DatasetPage.isDesignatedDatasetThumbnail(fileMetadata)}"
-                      data-toggle="tooltip" data-placement="bottom" title="#{bundle['file.selectedThumbnail.tip']}">
-                    #{bundle['file.selectedThumbnail']}
-                </span>
 
                 <!-- Restricted File Icon -->
                 <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(DatasetPage.canDownloadFile(fileMetadata)) )}">
@@ -297,18 +250,6 @@
             </ui:fragment>
         </p:column>
         <p:column class="col-file-metadata">
-           <ui:fragment rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                <h:outputLink value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
-                    <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
-                </h:outputLink>
-            </ui:fragment>
-            <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
-                <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
-                    #{bundle['file.fileName']}
-                </label>
-                <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;"/>
-                <p:message for="fileName"/>
-            </ui:fragment>
 
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
@@ -324,10 +265,6 @@
 
                 <div class="mD5-block">
                     <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
-                    <h:outputText id="duplicateFileMD5" styleClass="text-danger" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal']: bundle['file.MD5']}: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
-                    <ui:fragment rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}">
-                        <div style="display:inline-block;" class="ui-message ui-message-error ui-widget ui-corner-all fileDuplicateWarning"><span class="ui-message-error-detail">#{bundle['file.MD5.exists.tip']}</span></div>
-                    </ui:fragment>
                 </div>
             </div>
             <!-- UNF + Variables, Obsersvations -->
@@ -337,19 +274,11 @@
                 <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
             </div>
 
-            <div class="fileDescription" jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') or !(empty fileMetadata.description)}">
+            <div class="fileDescription" jsf:rendered="#{!(empty fileMetadata.description)}">
                 <h:outputText id="fileDescNonEmpty" styleClass="small" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
-                <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
-                    <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
-                        #{bundle.description}
-                    </label>
-                    <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;"/>
-                    <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
-                    <p:message for="fileDescription"/>
-                </ui:fragment>
             </div>
 
-            <div class="file-tags-block #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags) or (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+            <div class="file-tags-block #{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE' ? 'margin-top-half' : ''}" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags)}">
                 <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                     <ui:repeat value="#{fileMetadata.categories}" var="cat">
                         <h:outputText value="#{cat.name}" styleClass="label label-default"/>
@@ -364,37 +293,6 @@
             <!--DEBUG SORT BY TYPE-->
             <br jsf:rendered="#{false and DatasetPage.newFileListingFeaturesEnabled}"/>
             <h:outputText id="fileTypeOutputContentType" value="#{fileMetadata.dataFile.contentType}" rendered="#{false and DatasetPage.newFileListingFeaturesEnabled}"/>
-        </p:column>
-
-        <p:column class="col-file-action text-right" rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-            <div class="button-block">
-                <p:commandLink id="fileCategoriesButton"
-                               type="button" styleClass="btn btn-default btn-sm"
-                               actionListener="#{DatasetPage.setFileMetadataSelectedForTagsPopup(fileMetadata)}"
-                               update=":datasetForm:fileTagsPopup"
-                               oncomplete="fileTagsPopup.show();bind_bsui_components();">
-                    <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
-                </p:commandLink>
-
-                <p:commandLink id="fileSetThumbnailBtn"
-                               rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}"
-                               type="button" styleClass="btn btn-default"
-                               actionListener="#{DatasetPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
-                               update=":datasetForm:fileSetThumbnail"
-                               oncomplete="fileSetThumbnail.show()">
-                    <span class="glyphicon glyphicon-file"/> #{bundle['file.setThumbnail']}
-                </p:commandLink>
-
-                <p:commandLink id="advancedIngestOptionsButton"
-                               rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
-                                           or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
-                               type="button" styleClass="btn btn-default"
-                               actionListener="#{DatasetPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
-                               update=":datasetForm:fileAdvancedOptions"
-                               oncomplete="fileAdvancedOptions.show()">
-                    <span class="glyphicon glyphicon-cog"/> #{bundle['file.advancedIngestOptions']}
-                </p:commandLink>
-            </div>
         </p:column>
 
         <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
