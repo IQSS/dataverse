@@ -62,7 +62,7 @@ You can attach an image or screenshot by dragging and dropping, selecting them, 
 ## Milestones
   - **In Review**: milestone for issues that are being reviewed for future releases
   - **In Design**: milestone for issues that are being designed (FRDs, mockups, technical specifications, etc happen during this milestone). This is a way to see what we are working on for future releases
-  - **Candidate** candidate for [version]" means that it is only under consideration. A developer works on issues that have been tagged with a particular milestone before dipping into the corresponding "candidate for" milestone. Usually are "nice to have" features or bug fixes for a release if there is time left after the primary work is done.
+  - **Candidate** candidate for [version] means that it is only under consideration. A developer works on issues that have been tagged with a particular milestone before dipping into the corresponding "candidate for" milestone. Usually are "nice to have" features or bug fixes for a release if there is time left after the primary work is done.
 
 ## Documentation
 
