@@ -14,11 +14,36 @@
 
     <!-- Upload -->
     <ui:fragment rendered="#{EditDatafilesPage.showFileUploadFileComponent()}">
+        <script>
+            function uploadWidgetDropMsg() {
+                var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
+                if ($(fileUpload).children('#dragdropMsg').length) {
+                    // do nothing
+                } else {
+                    $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.fromDropbox.description']}</div>');
+                }
+            }
+            function uploadWidgetDropRemoveMsg() {
+                $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
+            }
+            $(document).ready(function () {
+                uploadWidgetDropMsg();
+            });
+        </script>
+        <p class="help-block">
+            <span class="glyphicon glyphicon-info-sign"/> 
+            <h:outputFormat value=" #{bundle['file.selectToAdd.tip']}" escape="false">
+                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                <f:param value="#{systemConfig.version}"/>
+            </h:outputFormat>
+        </p>
 
         <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{EditDatafilesPage.showFileUploadFileComponent()}"
                       fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
-                      oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" 
+                      oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
                       sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
+        <!-- oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();" -->
+
         <!-- Dropbox Upload -->
         <div id="dropboxUploadBlock" class="panel panel-default margin-bottom" jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
             <div class="panel-body">
@@ -34,7 +59,7 @@
     </ui:fragment>
 
     <!-- Files Table -->
-    <p:dataTable id="filesTable" value="#{EditDatafilesPage.mode == 'EDIT' ? EditDatafilesPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas}"
+    <p:dataTable id="filesTable" value="#{EditDatafilesPage.mode != 'CREATE' ? EditDatafilesPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas}"
                  rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset)}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"

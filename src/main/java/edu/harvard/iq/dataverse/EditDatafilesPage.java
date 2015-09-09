@@ -94,7 +94,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public enum FileEditMode {
 
-        EDIT, UPLOAD
+        EDIT, UPLOAD, CREATE
     };
     
     @EJB
@@ -131,7 +131,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String selectedFileIdsString = null; 
     private FileEditMode mode = FileEditMode.EDIT; 
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
-    private List<FileMetadata> fileMetadatas;
+    private List<FileMetadata> fileMetadatas = new ArrayList<>();
 
     
     private Long ownerId;
@@ -309,6 +309,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         
+        
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
@@ -333,7 +334,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return "/404.xhtml";
         }
         
-        if (mode != FileEditMode.UPLOAD) {
+        if (mode == FileEditMode.EDIT) {
 
             if (selectedFileIdsString != null) {
                 String[] ids = selectedFileIdsString.split(",");
@@ -564,11 +565,11 @@ public class EditDatafilesPage implements java.io.Serializable {
             return "";
         }
         
-        // Finally, save the files permanently: 
+        // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
         
         
-        // And update them in the database:
+        // And update the new and/or edited files in the database:
         Timestamp updateTime = new Timestamp(new Date().getTime());
         for (FileMetadata fileMetadata : fileMetadatas) {
       
@@ -737,7 +738,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public boolean showFileUploadFileComponent(){
         
-        if (mode == FileEditMode.UPLOAD) {
+        if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
            return true;
         }
         return false;
@@ -917,7 +918,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      */
     private String processUploadedFileList(List<DataFile> dFileList){
 
-        DataFile dFile = null;
+        DataFile dataFile = null;
         String duplicateFileNames = null;
         boolean multipleFiles = dFileList.size() > 1;
         boolean multipleDupes = false;
@@ -928,34 +929,35 @@ public class EditDatafilesPage implements java.io.Serializable {
         // -----------------------------------------------------------
         if (dFileList != null) {
             for (int i = 0; i < dFileList.size(); i++) {
-                dFile = dFileList.get(i);
+                dataFile = dFileList.get(i);
 
-                //logger.info("dFile: " + dFile);
+                //logger.info("dataFile: " + dataFile);
                 
                 // -----------------------------------------------------------
                 // Check for ingest warnings
                 // -----------------------------------------------------------
-                if (dFile.isIngestProblem()) {
-                    if (dFile.getIngestReportMessage() != null) {
+                if (dataFile.isIngestProblem()) {
+                    if (dataFile.getIngestReportMessage() != null) {
                         if (warningMessage == null) {
-                            warningMessage = dFile.getIngestReportMessage();
+                            warningMessage = dataFile.getIngestReportMessage();
                         } else {
-                            warningMessage = warningMessage.concat("; " + dFile.getIngestReportMessage());
+                            warningMessage = warningMessage.concat("; " + dataFile.getIngestReportMessage());
                         }
                     }
-                    dFile.setIngestDone();
+                    dataFile.setIngestDone();
                 }
 
                 // -----------------------------------------------------------
                 // Check for duplicates -- e.g. file is already in the dataset
                 // -----------------------------------------------------------
-                if (!isDuplicate(dFile.getFileMetadata())) {
-                    newFiles.add(dFile);        // looks good
+                if (!isDuplicate(dataFile.getFileMetadata())) {
+                    newFiles.add(dataFile);        // looks good
+                    fileMetadatas.add(dataFile.getFileMetadata());
                 } else {
                     if (duplicateFileNames == null) {
-                        duplicateFileNames = dFile.getFileMetadata().getLabel();
+                        duplicateFileNames = dataFile.getFileMetadata().getLabel();
                     } else {
-                        duplicateFileNames = duplicateFileNames.concat(", " + dFile.getFileMetadata().getLabel());
+                        duplicateFileNames = duplicateFileNames.concat(", " + dataFile.getFileMetadata().getLabel());
                         multipleDupes = true;
                     }
 
@@ -965,7 +967,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmIt.hasNext()) {
                         FileMetadata fm = fmIt.next();
-                        if (fm.getId() == null && dFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
+                        if (fm.getId() == null && dataFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
                             fmIt.remove();
                             break;
                         }
@@ -974,7 +976,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     Iterator<DataFile> dfIt = dataset.getFiles().iterator();
                     while (dfIt.hasNext()) {
                         DataFile dfn = dfIt.next();
-                        if (dfn.getId() == null && dFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
+                        if (dfn.getId() == null && dataFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
                             dfIt.remove();
                             break;
                         }
@@ -1441,7 +1443,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private void populateFileMetadatas() {
-        fileMetadatas = new ArrayList<>();
 
         if (selectedFileIdsList != null) {
 
