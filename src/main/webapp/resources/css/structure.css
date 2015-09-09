@@ -363,7 +363,7 @@ input.search-input {margin-right:1em; padding:4px; display: inline-block; vertic
  * Off Canvas
  * --------------------------------------------------
  */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767px) {
   .row-offcanvas {
     position: relative;
     -webkit-transition: all 0.25s ease-out;
@@ -371,19 +371,18 @@ input.search-input {margin-right:1em; padding:4px; display: inline-block; vertic
     transition: all 0.25s ease-out;
   }
 
-  .row-offcanvas-left
-  .sidebar-offcanvas {
-    left: -33%;
+  .row-offcanvas-left .sidebar-offcanvas {
+    left: -67%;
   }
 
   .row-offcanvas-left.active {
-    left: 33%;
+    left: 67%;
   }
 
   .sidebar-offcanvas {
     position: absolute;
     top: 0;
-    width: 33%;
+    width: 67%;
     margin-left: 10px;
   }
 }
