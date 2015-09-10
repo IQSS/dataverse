@@ -120,19 +120,26 @@
                                    disabled="#{DatasetPage.locked or  !DatasetPage.fileAccessRequestMultiSignUpButtonEnabled}">                       
                     </p:commandLink>
                     <p:commandLink rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}"
-                                   type="button" styleClass="btn btn-default" title="#{bundle['file.uploadOrEdit']}" actionListener="#{DatasetPage.edit('FILE')}" 
+                                   type="button" styleClass="btn btn-default" title="old upload+edit" actionListener="#{DatasetPage.edit('FILE')}" 
                                    update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" 
-                                   disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles}">
+                                   disabled="true">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                        <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> #{bundle['file.uploadOrEdit']}
+                        <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> old upload + edit
                     </p:commandLink>
                     
-             <ui:fragment rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-                 <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{DatasetPage.selectedFilesIdsString}&#38;datasetId=#{DatasetPage.dataset.id}"
+                    <ui:fragment rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
+                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
+                              disabled="#{DatasetPage.locked}" >
+                            <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}" style="display:block;font-weight:bold;"/>
+                        </h:outputLink>
+                    </ui:fragment>
+                    
+                    <ui:fragment rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
+                        <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{DatasetPage.selectedFilesIdsString}&#38;datasetId=#{DatasetPage.dataset.id}"
                               disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles}" >
-                    <h:outputText id="editFile-s-Link" value="#{bundle['file.uploadOrEdit']}" style="display:block;font-weight:bold;"/>
-                </h:outputLink>
-            </ui:fragment>                  
+                            <h:outputText id="editFile-s-Link" value="#{bundle['file.editFiles']}" style="display:block;font-weight:bold;"/>
+                        </h:outputLink>
+                    </ui:fragment>                  
                     
                     
                 </div>

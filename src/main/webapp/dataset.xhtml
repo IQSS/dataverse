@@ -458,7 +458,7 @@
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
-                                                              (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
+                                                              (empty DatasetPage.editMode)}" >
                                 <ui:include src="filesFragment.xhtml"/>
                             </p:tab>
 
