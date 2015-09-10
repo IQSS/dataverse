@@ -265,12 +265,6 @@ public class MyDataFilterParams {
             valStr = "(" + valStr + ")";
         }
 
-        /**
-         * @todo Support a publicationStatus with a space such as "In Review"
-         * for https://github.com/IQSS/dataverse/issues/2315
-         */
-        logger.fine("valStr:" + valStr);
-
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 

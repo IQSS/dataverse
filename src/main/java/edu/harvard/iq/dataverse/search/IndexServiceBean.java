@@ -96,10 +96,6 @@ public class IndexServiceBean {
     private static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
-    /**
-     * @todo Change this from "InReview" to "In Review" once MyData can handle a
-     * space: https://github.com/IQSS/dataverse/issues/2315
-     */
     private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     private Dataverse rootDataverseCached;
