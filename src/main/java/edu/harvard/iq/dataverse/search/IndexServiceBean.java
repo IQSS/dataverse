@@ -100,7 +100,7 @@ public class IndexServiceBean {
      * @todo Change this from "InReview" to "In Review" once MyData can handle a
      * space: https://github.com/IQSS/dataverse/issues/2315
      */
-    private static final String IN_REVIEW_STRING = "InReview";
+    private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     private Dataverse rootDataverseCached;
 

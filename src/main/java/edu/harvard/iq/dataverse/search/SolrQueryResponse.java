@@ -76,10 +76,14 @@ public class SolrQueryResponse {
         if (this.publicationStatusCounts == null){
             return null;
         }
-        /**
-         * @todo Do we need to add "In Review" here?
-         */
-        String[] requiredVars = { "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
+
+       // requiredVars = If one of these is not returned in the query,
+       //              add it with a count of 0 (zero)
+       //   - e.g. You always want these variable to show up in the JSON,
+       //       even if they're not returned via Solr
+       //
+       String[] requiredVars = { "in_review_count", "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
+
         for (String var : requiredVars){
             if (!publicationStatusCounts.containsKey(var)){
                 publicationStatusCounts.put(var, new Long(0));

@@ -276,8 +276,8 @@ public class MyDataPage implements java.io.Serializable {
 
     
     
-    public List<String> getPublishedStates(){
-        return MyDataFilterParams.defaultPublishedStates;
+    public List<String[]> getPublishedStatesForMyDataPage(){
+        return MyDataFilterParams.getPublishedStatesForMyDataPage();
     }
     
 }
