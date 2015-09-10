@@ -33,11 +33,12 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .dropdown.accountName .logout a:hover, #navbarFixed .dropdown.accountName .logout a:focus {background-color: #E8E8E8; background-image: linear-gradient(to bottom, #F5F5F5 0px, #E8E8E8 100%); background-repeat: repeat-x; color: #262626; outline: 0; text-decoration: none;}
 #navbarFixed li.dropdown.open > span.dropdown-toggle {background-color: #e7e7e7;}
 
-#footer {margin-top:3em; padding-bottom:4em;}
-#footer span.socicon-twitter {color:#55acee; font-size:20px; vertical-align: top;}
-#footer span.socicon-github {color:#000; font-size:20px; vertical-align: top;}
-#footer .poweredbylogo span {color:#808080;font-size:.85em;margin-right:.3em;}
-#footer .version {margin-top:24px;font-size:.85em;color:#808080;}
+#footer {margin-top:3em; padding-bottom:4em; color:#808080;}
+#footer span.socicon-twitter {color:#55acee; font-size:1.3em; vertical-align: top;}
+#footer span.socicon-github {color:#000; font-size:1.3em; vertical-align: top;}
+#footer .poweredbylogo {text-align:right;}
+#footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
+#footer .version {vertical-align:bottom;white-space:nowrap;}
 
 .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
@@ -57,8 +58,6 @@ body .ui-widget {font-size: inherit;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
-
-.no-padding-left-right {padding-left:0;padding-right:0;}
 
 .btn span.glyphicon {margin-right:.3em;}
 .btn span.glyphicon.no-text {margin:0;}
@@ -385,6 +384,8 @@ input.search-input {margin-right:1em; padding:4px; display: inline-block; vertic
     width: 67%;
     margin-left: 10px;
   }
+  
+  #footer .poweredbylogo {text-align:center;}
 }
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
@@ -531,7 +532,6 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 .bg-citation {background:#ECF6FB;}
 #citation, #citation-download, #citation-standards {padding:.5em;}
 #citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
-#metadata-panel label.col-sm-3 {padding-left:0;}
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
@@ -554,6 +554,7 @@ div.panel-group div.panel {margin-bottom:1em;}
 div.panel div.panel-body div.form-group {overflow: hidden;}
 div.edit-field div.ui-message {margin:6px 0;}
 .metadata-logo {max-width:180px;max-height:40px;}
+.metadata-panel-body {padding:15px 0;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
 div.ui-selectonemenu.form-control {padding:0px;}

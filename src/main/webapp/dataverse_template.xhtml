@@ -40,17 +40,23 @@
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>
         </div>
-        <div class="container clearfix" id="footer">
-            <div class="pull-left">
-                <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><span class="socicon socicon-twitter" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><span class="socicon socicon-github" title="#{bundle['footer.dataverseOnGitHub']}"/></a><br/>
-                <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty systemConfig.applicationPrivacyPolicyUrl}">&#160;|&#160; <h:outputLink value="#{systemConfig.applicationPrivacyPolicyUrl}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
-            </div>
-            <div class="pull-right clearfix">
-                <div class="poweredbylogo pull-left">
-                    <span>#{bundle['footer.poweredby']}</span> 
-                    <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
+        <div class="container" id="footer">
+            <div class="row">
+                <div class="col-sm-8 small">
+                    <p>
+                        <h:outputText value="#{bundle['footer.dataScienceIQSS']}" escape="false"/> &#160;|&#160; #{bundle['footer.dataverseProjectOn']} <a href="https://twitter.com/dataverseorg" target="_blank" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"><span class="socicon socicon-twitter" title="#{bundle['footer.dataverseProjectOn']} #{bundle['footer.Twitter']}"/></a> &#160;|&#160; #{bundle['footer.codeAvailable']} <a href="https://github.com/IQSS/dataverse" target="_blank" title="#{bundle['footer.dataverseOnGitHub']}"><span class="socicon socicon-github" title="#{bundle['footer.dataverseOnGitHub']}"/></a>
+                    </p>
+                    <p>
+                        <h:outputText value="#{bundle['footer.copyright']}" escape="false"/> <ui:fragment rendered="#{!empty systemConfig.applicationPrivacyPolicyUrl}">&#160;|&#160; <h:outputLink value="#{systemConfig.applicationPrivacyPolicyUrl}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
+                    </p>
                 </div>
-                <div class="version pull-right">v. #{dataverseServiceBean.applicationVersion}</div>
+                <div class="col-sm-4 text-right">
+                    <div class="poweredbylogo">
+                        <span>#{bundle['footer.poweredby']}</span> 
+                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverseproject_logo.jpg" alt="#{bundle['footer.dataverseProject']}" /></a>
+                        <span class="version">v. #{dataverseServiceBean.applicationVersion}</span>
+                    </div>
+                </div>
             </div>
         </div>
         <p:ajaxStatus id="ajaxStatusPanel">
