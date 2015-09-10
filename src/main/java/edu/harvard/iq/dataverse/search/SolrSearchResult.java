@@ -351,7 +351,7 @@ public class SolrSearchResult {
                 .add("is_published", this.isPublishedState())
                 .add("is_deaccesioned", this.isDeaccessionedState())
                 .add("date_to_display_on_card", this.dateToDisplayOnCard);
- 
+
         // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
         //
         if ((this.isDeaccessionedState()) && (this.getPublicationStatuses().size() == 1)) {
@@ -661,29 +661,28 @@ public class SolrSearchResult {
     public Map<String, String> getParent() {
         return parent;
     }
-    
-    public Long getParentIdAsLong(){
-        
-        if (this.getParent() == null){
+
+    public Long getParentIdAsLong() {
+
+        if (this.getParent() == null) {
             return null;
         }
-        if (!this.getParent().containsKey("id")){
+        if (!this.getParent().containsKey("id")) {
             return null;
         }
-        
+
         String parentIdString = getParent().get("id");
-        if (parentIdString == null){
-            return null;      
-        }
-    
-        try{
-            return Long.parseLong(parentIdString);
-        }catch (NumberFormatException ex){
+        if (parentIdString == null) {
             return null;
-        }        
+        }
+
+        try {
+            return Long.parseLong(parentIdString);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
-    
     public void setParent(Map<String, String> parent) {
         this.parent = parent;
     }
@@ -911,7 +910,6 @@ public class SolrSearchResult {
         }
         return jsonRoleStrings;
     }*/
-
     public List<String> getUserRole() {
         return userRole;
     }
@@ -919,5 +917,5 @@ public class SolrSearchResult {
     public void setUserRole(List<String> userRole) {
         this.userRole = userRole;
     }
-    
+
 }
