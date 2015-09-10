@@ -901,8 +901,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isDebug() {
-        return  (debug && session.getUser().isSuperuser()) ||
-                systemConfig.isDebugEnabled();
+        return (debug && session.getUser().isSuperuser())
+                || systemConfig.isDebugEnabled();
     }
 
     public void setDebug(boolean debug) {
@@ -1098,7 +1098,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public void setDisplayCardValues() {
         for (SolrSearchResult result : searchResultsList) {
             boolean valueSet = false;
-            if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse){
+            if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse) {
                 result.setDisplayImage(dataverseService.isDataverseCardImageAvailable((Dataverse) result.getEntity(), session.getUser()));
                 valueSet = true;
             } else if (result.getType().equals("datasets") && result.getEntity() instanceof Dataset) {
@@ -1111,7 +1111,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             if (!valueSet) {
                 logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
-            }            
+            }
         }
     }
 }
