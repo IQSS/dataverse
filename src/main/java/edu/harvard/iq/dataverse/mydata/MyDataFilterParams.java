@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -29,7 +30,9 @@ import org.primefaces.json.JSONObject;
  * @author rmp553
  */
 public class MyDataFilterParams {
- 
+
+    private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
+
     // -----------------------------------
     // Static Reference objects
     // -----------------------------------
@@ -39,11 +42,14 @@ public class MyDataFilterParams {
     public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
                                                     IndexServiceBean.getDRAFT_STRING(),
+                                                    IndexServiceBean.getIN_REVIEW_STRING(),
                                                     IndexServiceBean.getDEACCESSIONED_STRING());
-    public static final List<String> allPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
+    public static final List<String> allPublishedStates = defaultPublishedStates;
+            /*Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
                                                     IndexServiceBean.getDRAFT_STRING(),
-                                                    IndexServiceBean.getDEACCESSIONED_STRING());
+                                                    IndexServiceBean.getIN_REVIEW_STRING(),
+                                                    IndexServiceBean.getDEACCESSIONED_STRING());*/
             
     public static final HashMap<String, String> sqlToSolrSearchMap ;
     static
@@ -246,11 +252,19 @@ public class MyDataFilterParams {
             throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
         }
 
-        String valStr = StringUtils.join(this.publicationStatuses, " OR ");
+        // Add quotes around each publication status
+        //
+        List<String> solrPublicationStatuses = new ArrayList<>();
+        for (String pubStatus : this.publicationStatuses){
+            solrPublicationStatuses.add("\"" + pubStatus + "\"");
+        }
+        
+        
+        String valStr = StringUtils.join(solrPublicationStatuses, " OR ");
         if (this.publicationStatuses.size() > 1){
             valStr = "(" + valStr + ")";
         }
-        
+
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 
@@ -304,4 +318,20 @@ public class MyDataFilterParams {
     public String getSearchTerm(){
        return this.searchTerm;
    }
+    
+    public static List<String[]> getPublishedStatesForMyDataPage(){
+        if (defaultPublishedStates==null){
+            throw new NullPointerException("defaultPublishedStates cannot be null");
+        }
+        List<String[]> publicationStateInfoList = new ArrayList<String[]>();
+        String stateNameAsVariable;
+        for (String displayState : defaultPublishedStates){
+            stateNameAsVariable = displayState.toLowerCase().replace(" ", "_");
+            String[] singleInfoRow = { displayState, stateNameAsVariable };
+            publicationStateInfoList.add(singleInfoRow);
+        }
+        return publicationStateInfoList;
+    }
+  
+  
 }

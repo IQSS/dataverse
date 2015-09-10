@@ -941,6 +941,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return IndexServiceBean.getDRAFT_STRING();
     }
 
+    public String getIN_REVIEW() {
+        return IndexServiceBean.getIN_REVIEW_STRING();
+    }
+
     public String getDEACCESSIONED() {
         return IndexServiceBean.getDEACCESSIONED_STRING();
     }
