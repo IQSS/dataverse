@@ -281,7 +281,7 @@
                             <div id="title-block" class="row" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                 <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                 <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
+                                <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                 <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                             </div>
