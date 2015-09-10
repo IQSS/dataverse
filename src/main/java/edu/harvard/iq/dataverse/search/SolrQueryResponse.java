@@ -67,7 +67,7 @@ public class SolrQueryResponse {
         }
         
         for (FacetField.Count fcnt :  facetField.getValues()){
-            countMap.put(fcnt.getName().toLowerCase() + "_count", fcnt.getCount());
+            countMap.put(fcnt.getName().toLowerCase().replace(" ", "_") + "_count", fcnt.getCount());
         }
     }
  
@@ -76,6 +76,9 @@ public class SolrQueryResponse {
         if (this.publicationStatusCounts == null){
             return null;
         }
+        /**
+         * @todo Do we need to add "In Review" here?
+         */
         String[] requiredVars = { "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
         for (String var : requiredVars){
             if (!publicationStatusCounts.containsKey(var)){
