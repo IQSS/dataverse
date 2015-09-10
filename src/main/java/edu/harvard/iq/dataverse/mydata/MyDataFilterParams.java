@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -29,7 +30,9 @@ import org.primefaces.json.JSONObject;
  * @author rmp553
  */
 public class MyDataFilterParams {
- 
+
+    private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
+
     // -----------------------------------
     // Static Reference objects
     // -----------------------------------
@@ -39,10 +42,12 @@ public class MyDataFilterParams {
     public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
                                                     IndexServiceBean.getDRAFT_STRING(),
+                                                    IndexServiceBean.getIN_REVIEW_STRING(),
                                                     IndexServiceBean.getDEACCESSIONED_STRING());
     public static final List<String> allPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
                                                     IndexServiceBean.getDRAFT_STRING(),
+                                                    IndexServiceBean.getIN_REVIEW_STRING(),
                                                     IndexServiceBean.getDEACCESSIONED_STRING());
             
     public static final HashMap<String, String> sqlToSolrSearchMap ;
@@ -250,7 +255,13 @@ public class MyDataFilterParams {
         if (this.publicationStatuses.size() > 1){
             valStr = "(" + valStr + ")";
         }
-        
+
+        /**
+         * @todo Support a publicationStatus with a space such as "In Review"
+         * for https://github.com/IQSS/dataverse/issues/2315
+         */
+        logger.fine("valStr:" + valStr);
+
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 

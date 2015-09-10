@@ -27,6 +27,7 @@
  {% endif %}
         <!-- publication status -->
         {#({{ loop.index }})#} {% if card_info.is_draft_state %}<span class="label label-primary">Draft</span> {% endif %}
+        {% if card_info.is_in_review_state %}<span class="label label-success">In Review</span> {% endif %}
         {% if card_info.is_unpublished_state %}<span class="label label-warning">Unpublished</span> {% endif %}
         {% if card_info.is_published %} <span class="label label-warning">Published</span> {% endif %}
         {% if card_info.is_deaccesioned %} <span class="label label-danger">Deaccessioned</span> {% endif %}

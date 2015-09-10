@@ -96,6 +96,11 @@ public class IndexServiceBean {
     private static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
+    /**
+     * @todo Change this from "InReview" to "In Review" once MyData can handle a
+     * space: https://github.com/IQSS/dataverse/issues/2315
+     */
+    private static final String IN_REVIEW_STRING = "InReview";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     private Dataverse rootDataverseCached;
 
@@ -646,6 +651,10 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(true));
 
+            if (datasetVersion.isInReview()) {
+                solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
+            }
+
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
@@ -862,6 +871,10 @@ public class IndexServiceBean {
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
                     }
 
+                    if (datasetVersion.isInReview()) {
+                        datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
+                    }
+
                     String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                     if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                         fileSolrDocId = solrDocIdentifierFile + fileEntityId;
@@ -1017,6 +1030,10 @@ public class IndexServiceBean {
 
     public static String getDRAFT_STRING() {
         return DRAFT_STRING;
+    }
+
+    public static String getIN_REVIEW_STRING() {
+        return IN_REVIEW_STRING;
     }
 
     public static String getDEACCESSIONED_STRING() {

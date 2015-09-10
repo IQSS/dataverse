@@ -78,6 +78,7 @@ public class SolrSearchResult {
     private boolean publishedState = false;
     private boolean unpublishedState = false;
     private boolean draftState = false;
+    private boolean inReviewState = false;
     private boolean deaccessionedState = false;
     private long datasetVersionId;
     private String versionNumberFriendly;
@@ -137,6 +138,9 @@ public class SolrSearchResult {
             } else if (status.equals(IndexServiceBean.getDRAFT_STRING())) {
                 this.setDraftState(true);
 
+            } else if (status.equals(IndexServiceBean.getIN_REVIEW_STRING())) {
+                this.setInReviewState(true);
+
             } else if (status.equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
                 this.setDeaccessionedState(true);
             }
@@ -171,6 +175,14 @@ public class SolrSearchResult {
 
     public void setDraftState(boolean draftState) {
         this.draftState = draftState;
+    }
+
+    public boolean isInReviewState() {
+        return inReviewState;
+    }
+
+    public void setInReviewState(boolean inReviewState) {
+        this.inReviewState = inReviewState;
     }
 
     public boolean isDeaccessionedState() {
@@ -347,6 +359,7 @@ public class SolrSearchResult {
 
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
                 .add("is_draft_state", this.isDraftState())
+                .add("is_in_review_state", this.isInReviewState())
                 .add("is_unpublished_state", this.isUnpublishedState())
                 .add("is_published", this.isPublishedState())
                 .add("is_deaccesioned", this.isDeaccessionedState())
