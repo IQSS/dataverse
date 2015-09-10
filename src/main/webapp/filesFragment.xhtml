@@ -257,7 +257,12 @@
             </ui:fragment>
         </p:column>
         <p:column class="col-file-metadata">
-
+           <ui:fragment>
+                <h:outputLink value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
+                    <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
+                </h:outputLink>
+            </ui:fragment>
+            
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
                 <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>

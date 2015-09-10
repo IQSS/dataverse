@@ -13,7 +13,7 @@
     >
 
     <!-- Upload -->
-    <ui:fragment rendered="#{EditDatafilesPage.showFileUploadFileComponent()}">
+    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' || EditDatafilesPage.showFileUploadFileComponent()}">
         <script>
             function uploadWidgetDropMsg() {
                 var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
@@ -38,7 +38,7 @@
             </h:outputFormat>
         </p>
 
-        <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{EditDatafilesPage.showFileUploadFileComponent()}"
+        <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'CREATE' || EditDatafilesPage.showFileUploadFileComponent()}"
                       fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
                       oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
                       sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
@@ -58,10 +58,10 @@
     </ui:fragment>
 
     <!-- Files Table -->
-    <p:dataTable id="filesTable" value="#{EditDatafilesPage.mode != 'CREATE' ? EditDatafilesPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas}"
-                 rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset)}"
+    <p:dataTable id="filesTable" value="#{DatasetPage.editMode == 'CREATE' ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
+                 rendered="#{dataverseSession.user.authenticated and (DatasetPage.editMode == 'CREATE' ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                 selection="#{EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
+                 selection="#{DatasetPage.editMode == 'CREATE' ? DatasetPage.selectedFiles : EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  emptyMessage="#{bundle['file.notFound.tip']}">
 
         <f:facet name="header">
@@ -177,8 +177,8 @@
                 <p:commandLink id="fileCategoriesButton"
                                type="button" styleClass="btn btn-default btn-sm"
                                actionListener="#{EditDatafilesPage.setFileMetadataSelectedForTagsPopup(fileMetadata)}"
-                               update=":datasetForm:fileTagsPopup"
-                               oncomplete="fileTagsPopup.show();bind_bsui_components();">
+                               update=":datasetForm:editFileTagsPopup"
+                               oncomplete="editFileTagsPopup.show();bind_bsui_components();">
                     <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
                 </p:commandLink>
 
@@ -228,7 +228,7 @@
 
 
     <!-- I'm assuming this needs to stay here: -->
-    <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">
+    <p:dialog id="editFileAccessPopup" header="File Restrictions" widgetVar="editFileAccessPopup" modal="true">
         <ui:fragment>
             <div class="form-horizontal">
                 <div class="form-group">
@@ -248,13 +248,13 @@
                         </span>
                     </label>
                     <div class="col-sm-9" jsf:rendered="#{!empty EditDatafilesPage.workingVersion.termsOfUseAndAccess}">
-                        <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
+                        <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{EditDatafilesPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
                     </div>
                 </div>
             </div>
             <div class="button-block">
-                <p:commandButton value="#{bundle.continue}" onclick="accessPopup.hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.save()}" />
-                <p:commandButton value="#{bundle.cancel}" onclick="accessPopup.hide()" type="button" />
+                <p:commandButton value="#{bundle.continue}" onclick="editFileAccessPopup.hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.save()}" />
+                <p:commandButton value="#{bundle.cancel}" onclick="editFileAccessPopup.hide()" type="button" />
             </div>
         </ui:fragment>
     </p:dialog>
@@ -464,7 +464,7 @@
         </div>
     </p:dialog>
 
-    <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
+    <p:dialog id="editFileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="editFileTagsPopup" modal="true">
         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
         <div class="form-horizontal" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForTagsPopup)}">
             <div class="form-group">
@@ -511,8 +511,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileTagsPopup.hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="fileTagsPopup.hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+            <p:commandButton id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="editFileTagsPopup.hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
+            <p:commandButton id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="editFileTagsPopup.hide()" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
     </p:dialog>
 
@@ -543,7 +543,7 @@
 
                 function checkNewlyRestricted() {
                     if ($('input[id$="showAccessPopup"]').val() == 'true') {
-                        accessPopup.show();
+                        editFileAccessPopup.show();
                     }
                     else {
                         $('button[id$="datasetSave"]').trigger('click');
