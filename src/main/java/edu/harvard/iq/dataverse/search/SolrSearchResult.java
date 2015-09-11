@@ -858,12 +858,15 @@ public class SolrSearchResult {
             }
             return null;
         }
-        String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);
+        
+        return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
+        
+        /*
         if (parentDatasetGlobalId != null) {
             return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
         } else {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
-        }
+        }*/
     }
 
     /**
