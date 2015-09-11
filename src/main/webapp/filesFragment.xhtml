@@ -1,4 +1,4 @@
-<ui:composition 
+<ui:composition
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
@@ -14,134 +14,69 @@
 
     <!-- Upload -->
     <!-- (removed - L.A. 4.2 -->
-    
+
     <!-- Files Table -->
-    
-    <p:selectBooleanCheckbox   value="#{DatasetPage.selectAllFiles}"  itemLabel="Select All">
-            <p:ajax update="filesTable" listener="#{DatasetPage.toggleSelectedFiles}" />
-    </p:selectBooleanCheckbox>
-                            
-    
     <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? (DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas) : (DatasetPage.workingVersion.fileMetadatasSorted)}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  emptyMessage="#{bundle['file.notFound.tip']}">
-        <p:ajax event="rowSelectCheckbox" 
+        <p:ajax event="rowSelectCheckbox"
                 listener="#{DatasetPage.updateFileCounts}"
-                process="filesTable" 
-                update="zipDownloadPanel"
-                >
+                process="filesTable"
+                update="zipDownloadPanel">
         </p:ajax>
-        <p:ajax event="rowUnselectCheckbox" 
+        <p:ajax event="rowUnselectCheckbox"
                 listener="#{DatasetPage.updateFileCounts}"
-                update="zipDownloadPanel" >
+                update="zipDownloadPanel">
         </p:ajax>
         <f:facet name="header">
             <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
             <div id="filesHeaderBlock" class="clearfix margin-bottom">
                 <!-- Files Count -->
                 <div id="filesHeaderCount" class="pull-left text-left">
+                    
+                    <p:selectBooleanCheckbox value="#{DatasetPage.selectAllFiles}" itemLabel="Select All">
+                            <p:ajax update="filesTable" listener="#{DatasetPage.toggleSelectedFiles}" />
+                    </p:selectBooleanCheckbox>
+                    
+                    
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
                         <f:param value="#{DatasetPage.workingVersion.fileMetadatas.size()}"/>
                     </h:outputFormat>
                 </div>
                 <!-- Button Panels -->
                 <div jsf:id="zipDownloadPanel" class="button-block pull-right text-right"
-                     jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') 
-                                     and (permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
+                     jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
+                                     and (permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)
                                      or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                    <ui:fragment rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}" >
-                        <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable }">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
-                            </button> 
-                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">                                                   
-                                
+                    
+                    
+                    
+                    <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
+                                  type="button" styleClass="btn btn-default"
+                                  disabled="#{DatasetPage.locked}" rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
+                        <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                    </h:outputLink>
 
-                                     <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
-                                                       value="Download All"
-                                                       disabled="#{!DatasetPage.downloadAllButtonEnabled}"
-                                                       actionListener="#{DatasetPage.startMultipleFileDownload()}">                                                           
-                                        </h:commandLink> 
-                                        <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
-                                                       action="#{DatasetPage.initGuestbookMultipleResponse()}"
-                                                       value="Download All"
-                                                       disabled="#{!DatasetPage.downloadAllButtonEnabled}"
-                                                       update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">                                                          
-                                        </p:commandLink>
-                                
-                                <ui:fragment>
-                                    <li>
-                                        <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired) }"
-                                                       value="#{bundle.selectedFiles}"
-                                                       disabled="#{!DatasetPage.downloadSelectedButtonEnabled}"
-                                                       actionListener="#{DatasetPage.startMultipleFileDownload()}">                                                           
-                                        </h:commandLink> 
-                                        <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"                                                                       
-                                                       action="#{DatasetPage.initGuestbookMultipleResponse()}"
-                                                       value="#{bundle.selectedFiles}"
-                                                       disabled="#{!DatasetPage.downloadSelectedButtonEnabled}"
-                                                       update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">                                                          
-                                        </p:commandLink>
-                                    </li>
-                                </ui:fragment>
-                            </ul>
-                        </div>
-                    </ui:fragment>
-                    
-                    <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                                   type="button" styleClass="btn btn-default"  value="Request Access"    
-                                   actionListener="#{DatasetPage.requestAccessMultipleFiles(DatasetPage.selectedFilesIdsString)}"
-                                   disabled="#{DatasetPage.locked or  !DatasetPage.fileAccessRequestMultiButtonEnabled}"
-                                   update="filesTable">                       
-                    </p:commandLink>
-                    
-                    <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
-                                   type="button" styleClass="btn btn-default"  value="Sign up for Request Access"   
-                                   onclick="accessSignUpLogIn_popup.show()"
-                                   disabled="#{DatasetPage.locked or  !DatasetPage.fileAccessRequestMultiSignUpButtonEnabled}">                       
-                    </p:commandLink>
-                    <p:commandLink rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}"
-                                   type="button" styleClass="btn btn-default" title="old upload+edit" actionListener="#{DatasetPage.edit('FILE')}" 
-                                   update="@form,:messagePanel" oncomplete="javascript:post_edit_files();" 
-                                   disabled="true">
-                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                        <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> old upload + edit
-                    </p:commandLink>
-                    
-                    <ui:fragment rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                              disabled="#{DatasetPage.locked}" >
-                            <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}" style="display:block;font-weight:bold;"/>
-                        </h:outputLink>
-                    </ui:fragment>
-                    
-                    <ui:fragment rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
-                        <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{DatasetPage.selectedFilesIdsString}&#38;datasetId=#{DatasetPage.dataset.id}"
-                              disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles}" >
-                            <h:outputText id="editFile-s-Link" value="#{bundle['file.editFiles']}" style="display:block;font-weight:bold;"/>
-                        </h:outputLink>
-                    </ui:fragment> 
-                    <ui:fragment rendered="#{dataverseSession.user.authenticated                                              
+                    <ui:fragment rendered="#{dataverseSession.user.authenticated
                                              and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}" >
-                        <div class="btn-group" >
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-pencil"/> #{bundle['file.bulkUpdate']} <span class="caret"></span>
-                            </button> 
-                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">  
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles ? 'disabled' : ''}">
+                                <span class="glyphicon glyphicon-pencil"/> <!-- # {bundle['file.bulkUpdate']} --> Edit Files <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                 <li>
-                                    <p:commandLink 
+                                    <p:commandLink
                                         value="Delete"
                                         disabled="#{empty DatasetPage.selectedFiles}"
-                                        action="#{DatasetPage.deleteFilesAndSave()}">                                                           
-                                    </p:commandLink> 
+                                        action="#{DatasetPage.deleteFilesAndSave()}">
+                                    </p:commandLink>
                                 </li>
                                 <li>
                                     <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{DatasetPage.selectedFilesIdsString}&#38;datasetId=#{DatasetPage.dataset.id}"
                                                   disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles}" >
-                                        <h:outputText id="editFile-Multi-Link" value="Metadata" style="display:block;font-weight:bold;"/>
+                                        <h:outputText id="editFile-Multi-Link" value="Metadata"/>
                                     </h:outputLink>
                                 </li>
                                 <li>
@@ -162,14 +97,73 @@
                                                    actionListener="#{DatasetPage.refreshCategoriesByName()}"
                                                    update=":datasetForm:fileTagsPopup"
                                                    oncomplete="fileTagsPopup.show();bind_bsui_components();">
-                                        <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
+                                        #{bundle['file.editTags']}
                                     </p:commandLink>
                                 </li>
                             </ul>
                         </div>
-                    </ui:fragment>  
+                    </ui:fragment>
                     
                     
+                    
+                    
+                    <ui:fragment rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}" >
+                        <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable }">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                <ui:fragment rendered="#{!(DatasetPage.downloadPopupRequired)}">
+                                    <li>
+                                        <h:commandLink value="Download All"
+                                                       disabled="#{!DatasetPage.downloadAllButtonEnabled}"
+                                                       actionListener="#{DatasetPage.startMultipleFileDownload()}">
+                                        </h:commandLink>
+                                    </li>
+                                </ui:fragment>
+                                
+                                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
+                                    <li class="#{!DatasetPage.downloadAllButtonEnabled ? 'disabled' : ''}">
+                                        <p:commandLink value="Download All"
+                                                       action="#{DatasetPage.initGuestbookMultipleResponse()}"
+                                                       update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
+                                        </p:commandLink>
+                                    </li>
+                                </ui:fragment>
+
+                                <ui:fragment>
+                                    <li class="#{!DatasetPage.downloadSelectedButtonEnabled ? 'disabled' : ''}">
+                                        <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                                       value="#{bundle.selectedFiles}"
+                                                       actionListener="#{DatasetPage.startMultipleFileDownload()}"
+                                                       disabled="#{!DatasetPage.downloadSelectedButtonEnabled}">
+                                        </h:commandLink>
+                                        <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                                       action="#{DatasetPage.initGuestbookMultipleResponse()}"
+                                                       value="#{bundle.selectedFiles}"
+                                                       update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');"
+                                                       disabled="#{!DatasetPage.downloadSelectedButtonEnabled}">
+                                        </p:commandLink>
+                                    </li>
+                                </ui:fragment>
+                            </ul>
+                        </div>
+                    </ui:fragment>
+
+                    <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
+                                   type="button" styleClass="btn btn-default" value="Request Access"
+                                   actionListener="#{DatasetPage.requestAccessMultipleFiles(DatasetPage.selectedFilesIdsString)}"
+                                   disabled="#{DatasetPage.locked or  !DatasetPage.fileAccessRequestMultiButtonEnabled}"
+                                   update="filesTable">
+                    </p:commandLink>
+
+                    <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
+                                   type="button" styleClass="btn btn-default"  value="Sign up for Request Access"
+                                   onclick="accessSignUpLogIn_popup.show()"
+                                   disabled="#{DatasetPage.locked or  !DatasetPage.fileAccessRequestMultiSignUpButtonEnabled}">
+                    </p:commandLink>
                 </div>
                 <!--SORT BUTTON-->
                 <div class="btn-group" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
@@ -290,7 +284,7 @@
                     <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
                 </h:outputLink>
             </ui:fragment>
-            
+
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
                 <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
@@ -350,7 +344,7 @@
                 <h:commandLink rendered="#{!(empty fileMetadata.dataFile.id) and (fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress)
                                            and DatasetPage.canDownloadFile(fileMetadata) and !DatasetPage.downloadPopupRequired}"
                                type="button" styleClass="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                               disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" 
+                               disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
                                actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
                     <span class="glyphicon glyphicon-equalizer"/> <span class="ladda-label">#{bundle.explore}</span>
                 </h:commandLink>
@@ -371,7 +365,7 @@
                         <span class="glyphicon glyphicon-map-marker"/> <span class="ladda-label">#{bundle['file.mapData.viewMap']}</span>
                     </h:outputLink>
                     <!-- WorldMap Map Data -->
-                    <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata)}" 
+                    <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata)}"
                                   type="button" styleClass="btn btn-default" value="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                         <span class="glyphicon glyphicon-map-marker" /> #{bundle['file.mapData']}
                     </h:outputLink>
@@ -390,7 +384,7 @@
                                type="button" styleClass="btn btn-default"
                                actionListener="#{DatasetPage.startFileDownload(fileMetadata, '')}">
                     <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                </p:commandLink> 
+                </p:commandLink>
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                 <p:commandLink rendered="#{ DatasetPage.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and DatasetPage.downloadPopupRequired }"
                                type="button" styleClass="btn btn-default"
@@ -404,7 +398,7 @@
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
                     </button>
-                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">     
+                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <ui:remove>
                             <li>
                                 <p:commandLink styleClass="highlightBold" rendered="#{!(DatasetPage.downloadPopupRequired)}"
@@ -419,7 +413,7 @@
                                 </p:commandLink>
                             </li>
                         </ui:remove>
-                        <li role="presentation" class="divider"></li>                        
+                        <li role="presentation" class="divider"></li>
                         <li>
                             <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                            actionListener="#{DatasetPage.startFileDownload(fileMetadata, 'original')}">
@@ -484,7 +478,7 @@
                             <p:commandLink id="fileDowloadDataSubsetButtonPopupReq" rendered="#{(DatasetPage.downloadPopupRequired)}"
                                            actionListener="#{DatasetPage.setFileMetadataSelected(fileMetadata, 'init')}"
                                            update="@form"
-                                           oncomplete="downloadPopup.show()"                                                                       
+                                           oncomplete="downloadPopup.show()"
                                            value="Data Subset"
                                            disabled="#{empty fileMetadata.dataFile.id}"/>
                         </li>
