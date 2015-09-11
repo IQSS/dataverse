@@ -85,7 +85,6 @@ import java.util.logging.Level;
 public class DatasetPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
-    private FileView fileView;
 
     public enum EditMode {
 
@@ -1019,7 +1018,6 @@ public class DatasetPage implements java.io.Serializable {
 
            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
            this.dataset = this.workingVersion.getDataset();
-           fileView = populateFileView();
            setBetterFileOrgDone();
            fileMetadatas = populateFileMetadatas();
            
@@ -3426,30 +3424,6 @@ public class DatasetPage implements java.io.Serializable {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId);
         }
 
-    }
-
-    public FileView populateFileView() {
-        /**
-         * @todo Let user specify a query for files via the dataset page
-         */
-        String query = "*";
-        return searchFilesService.getFileView(workingVersion, session.getUser(), query);
-    }
-
-    public List<SolrSearchResult> getFileResults() {
-        if (fileView != null) {
-            return fileView.getSolrSearchResults();
-        } else {
-            return null;
-        }
-    }
-
-    public List<FacetCategory> getFacets() {
-        if (fileView != null) {
-            return fileView.getFacetCategoryList();
-        } else {
-            return null;
-        }
     }
 
     public boolean isNewFileListingFeaturesEnabled() {
