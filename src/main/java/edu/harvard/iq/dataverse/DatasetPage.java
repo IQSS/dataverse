@@ -3457,7 +3457,12 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isSortButtonEnabled() {
-        return true;
+        /**
+         * @todo The "Sort" Button seems to stop responding to mouse clicks
+         * after a while so it can't be shipped in 4.2 and will be deferred, to
+         * be picked up in https://github.com/IQSS/dataverse/issues/2506
+         */
+        return false;
     }
 
     public void setBetterFileOrgDone() {
