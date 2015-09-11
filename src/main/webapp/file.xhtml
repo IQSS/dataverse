@@ -120,32 +120,35 @@
 
                 <div id="fileImageTitle" class="row" style="margin-bottom:12px;">
 
-                    <div class="col-xs-5 text-center" style="border:1px solid #999; width:400px;height:400px;">
-                        <!-- Wireframe Placeholder -->
-                        <span class="icon-image text-muted" style="font-size:200px;line-height:400px;"
-                              jsf:rendered="#{false}"/>
-
+                    <div class="col-xs-6 text-center" style="border:1px solid #999;">
                         <!-- Image -->
-                        <p:graphicImage value="/api/access/fileCardImage/#{FilePage.fileId}" rendered="#{true}"/>
+                        <p:graphicImage style="margin:10px auto;" styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)}"/>
                         <!-- Icon -->
                         <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                               jsf:rendered="#{false}"/>
+                        
+                        <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1" 
+                              jsf:rendered="#{(!dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)) 
+                                              or (empty FilePage.fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(FilePage.fileMetadata.dataFile.storageIdentifier, FilePage.fileMetadata.dataFile.contentType))}"/>
                     </div>
 
-                    <div class="col-xs-7">
+                    <div class="col-xs-6">
                         <div class="h3" style="margin-top:0;">
-                             #{FilePage.fileMetadata.label}
+                            <!-- Restricted File Icon -->
+                            <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and ((empty FilePage.fileMetadata.dataFile.id)  )}" />
+                            <span class="icon-unlock text-success" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.id) and FilePage.fileMetadata.restricted  }" />
+                            
+                            <!-- Title/Label -->
+                            #{FilePage.fileMetadata.label}
                         </div>
                         <div>
                              #{FilePage.file.owner.citation}
                         </div>
                         <div>
-                            
                             <div class="text-muted small">
                                 <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
                                 <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                 <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
-
 
                                 <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}">
                                     <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileMetadata.dataFile.id)}"/>
@@ -154,26 +157,26 @@
                                 <div class="mD5-block">
                                     <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{FilePage.file.md5};" 
                                                   rendered="#{!(empty FilePage.file.md5)}"/>
-
                                 </div>
                             </div>
                         </div>
                         <ui:fragment rendered="#{FilePage.fileMetadata.description}">
-                        <div>
-                             #{bundle['file.description.label']}  #{FilePage.fileMetadata.description}
-                        </div>
+                            <div>
+                                 #{bundle['file.description.label']}  #{FilePage.fileMetadata.description}
+                            </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                        <div>
-                            #{bundle['file.tags.label']}
-                            <ui:fragment rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag">
-                                    <h:outputText value="#{tag}  " styleClass="label label-info"/><h:outputText value=" " />
-                                </ui:repeat>
-                            </ui:fragment>
-                        </div>
-                            </ui:fragment>
+                            <div>
+                                #{bundle['file.tags.label']}
+                                <ui:fragment rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
+                                    <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag">
+                                        <h:outputText value="#{tag}  " styleClass="label label-info"/><h:outputText value=" " />
+                                    </ui:repeat>
+                                </ui:fragment>
+                            </div>
+                        </ui:fragment>
                     </div>
+                    
                 </div>
                 <div id="fileMetadata" class="row">
                     <!-- Metadata -->
