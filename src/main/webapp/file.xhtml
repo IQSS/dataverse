@@ -130,13 +130,17 @@
                     </div>
 
                     <div class="col-xs-7">
-                        <div class="h3" style="margin-top:0;">
+                        <div class="" style="margin-top:0;padding:6px 0;">
                             <!-- Restricted File Icon -->
-                            <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and ((empty FilePage.fileMetadata.dataFile.id)  )}" />
-                            <span class="icon-unlock text-success" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.id) and FilePage.fileMetadata.restricted  }" />
+                            <span style="font-size:1.5em;" class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and ((empty FilePage.fileMetadata.dataFile.id)  )}" />
+                            <spans style="font-size:1.5em;" class="icon-unlock text-success" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.id) and FilePage.fileMetadata.restricted  }" />
 
                             <!-- Title/Label -->
-                            #{FilePage.fileMetadata.label}
+                            <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="" style="font-size:1.5em;font-weight:bold;margin-right:.5em;"/>
+                            
+                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{true}"/>
+                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{true}"/>
+                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{true}"/>
                         </div>
                         <div id="citation-block">
                              <div class="col-xs-12">
@@ -144,8 +148,8 @@
                                     <div id="citation" class="col-xs-12"
                                          onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                         <h:outputText value="#{FilePage.file.owner.citation}" escape="false"/>
-                                        <!--<span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="# {!FilePage.file.owner.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="# {bundle['dataset.cite.title.released']}"/>
-                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="# {FilePage.file.owner.released and FilePage.file.owner.workingVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="# {bundle['dataset.cite.title.draft']}"/>-->
+                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{true}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{true}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                     </div>
                                     <!--<div id="citation-download" class="col-sm-4 col-md-3 text-right" jsf:rendered="">
                                     </div>-->
@@ -171,21 +175,14 @@
                                 </div>
                             </div>
                         </div>
-                        <ui:fragment rendered="#{FilePage.fileMetadata.description}">
-                            <div>
-                                 #{bundle['file.description.label']}  #{FilePage.fileMetadata.description}
-                            </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                            <div>
-                                #{bundle['file.tags.label']}
-                                <ui:fragment rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                    <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag">
-                                        <h:outputText value="#{tag}  " styleClass="label label-info"/><h:outputText value=" " />
-                                    </ui:repeat>
-                                </ui:fragment>
-                            </div>
-                        </ui:fragment>
+                        <div jsf:rendered="#{FilePage.fileMetadata.description}">
+                             #{bundle['file.description.label']}  #{FilePage.fileMetadata.description}
+                        </div>
+                        <div jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
+                            <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
+                                <h:outputText value="#{tag}" styleClass="label label-default" style="margin-right: 0.5em;"/>
+                            </ui:repeat>
+                        </div>
                     </div>
 
                 </div>
