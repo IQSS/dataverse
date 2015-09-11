@@ -41,12 +41,8 @@
             <div id="filesHeaderBlock" class="clearfix margin-bottom">
                 <!-- Files Count -->
                 <div id="filesHeaderCount" class="pull-left text-left">
-                    <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold" rendered="#{!DatasetPage.newFileListingFeaturesEnabled or !DatasetPage.newFilePaginationReady}">
+                    <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
                         <f:param value="#{DatasetPage.workingVersion.fileMetadatas.size()}"/>
-                    </h:outputFormat>
-                    <!--PAGINATION-->
-                    <h:outputFormat value="1 to #{bundle['file.count']} of #{bundle['file.count']}" styleClass="highlightBold" rendered="#{DatasetPage.newFileListingFeaturesEnabled and DatasetPage.newFilePaginationReady}">
-                        <f:param value="#{DatasetPage.fileMetadatas.size()}"/>
                     </h:outputFormat>
                 </div>
                 <!-- Button Panels -->
