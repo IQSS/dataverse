@@ -196,7 +196,6 @@ public class DatasetPage implements java.io.Serializable {
 
     private Long maxFileUploadSizeInBytes = null;
 
-    private boolean betterFileOrgDone;
     private List<FileMetadata> fileMetadatas;
     private String fileSortField;
     private String fileSortOrder;
@@ -1018,7 +1017,6 @@ public class DatasetPage implements java.io.Serializable {
 
            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
            this.dataset = this.workingVersion.getDataset();
-           setBetterFileOrgDone();
            fileMetadatas = populateFileMetadatas();
            
            // end: Set the workingVersion and Dataset
@@ -3426,28 +3424,12 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
-    public boolean isNewFileListingFeaturesEnabled() {
-        return betterFileOrgDone;
-    }
-
     public boolean isSortButtonEnabled() {
         /**
          * @todo The "Sort" Button seems to stop responding to mouse clicks
          * after a while so it can't be shipped in 4.2 and will be deferred, to
          * be picked up in https://github.com/IQSS/dataverse/issues/2506
          */
-        return false;
-    }
-
-    public void setBetterFileOrgDone() {
-        this.betterFileOrgDone = systemConfig.isImprovedFileListingGoodEnoughToShip();
-    }
-
-    public boolean isNewFileSearchReady() {
-        return false;
-    }
-
-    public boolean isNewFilePaginationReady() {
         return false;
     }
 
