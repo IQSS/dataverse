@@ -586,8 +586,7 @@
                             </div>
 
                             <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
-
-                            <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                            <a href="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                 <h:outputText value="#{result.parent.get('name')}"/></a>
 
                             <ui:fragment>

@@ -868,6 +868,24 @@ public class SolrSearchResult {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
         }*/
     }
+    
+    public String getFileDatasetUrl() {
+        if (entity != null && entity instanceof DataFile && ((DataFile) entity).isHarvested()) {
+            String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
+            if (remoteArchiveUrl != null) {
+                return remoteArchiveUrl;
+            }
+            return null;
+        }
+               
+        String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);        
+
+        if (parentDatasetGlobalId != null) {
+            return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
+        } else {
+            return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
+        }
+    }
 
     /**
      * @return the dataverseAlias

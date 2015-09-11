@@ -1776,18 +1776,22 @@ public class DatasetPage implements java.io.Serializable {
             }
         }        
         
-        String fileNames = null;
-        for (FileMetadata fmd : this.getSelectedFiles()) {
-            if (restricted && !fmd.isRestricted()) {
+        String fileNames = null;       
+        for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
+            for (FileMetadata fmd : this.getSelectedFiles()) {
+                if (restricted && !fmw.isRestricted()) {
                 // collect the names of the newly-restrticted files, 
-                // to show in the success message:
-                if (fileNames == null) {
-                    fileNames = fmd.getLabel();
-                } else {
-                    fileNames = fileNames.concat(fmd.getLabel());
+                    // to show in the success message:
+                    if (fileNames == null) {
+                        fileNames = fmd.getLabel();
+                    } else {
+                        fileNames = fileNames.concat(fmd.getLabel());
+                    }
+                }
+                if (fmd.getDataFile().equals(fmw.getDataFile())) {
+                    fmw.setRestricted(restricted);
                 }
             }
-            fmd.setRestricted(restricted);
         }
         if (fileNames != null) {
             String successMessage = JH.localize("file.restricted.success");
@@ -3056,11 +3060,21 @@ public class DatasetPage implements java.io.Serializable {
         // page with the FileMetadata.setCategoriesByName() method. 
         // So here we only need to take care of the new, custom category
         // name, if entered: 
-        if (selectedFiles != null && selectedFiles.size() > 0) {
+        if (bulkUpdateCheckVersion()){
+           refreshSelectedFiles(); 
+        }
+        for (FileMetadata fmd: workingVersion.getFileMetadatas()){
+                    if (selectedFiles != null && selectedFiles.size() > 0) {
             for (FileMetadata fm : selectedFiles) {
+                if (fm.getDataFile().equals(fmd.getDataFile())){
+                    fmd.setCategories(new ArrayList());
+                }
                 fm.setCategories(new ArrayList());
             }
         }
+            
+        }
+
         logger.fine("New category name: " + newCategoryName);
 
         if (newCategoryName != null) {
@@ -3104,7 +3118,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         save();
     }
-    
+
     
     /* 
      * Items for the "Advanced (Ingest) Options" popup. 
