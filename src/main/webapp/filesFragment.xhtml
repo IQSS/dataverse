@@ -29,12 +29,12 @@
         <p:ajax event="rowSelectCheckbox" 
                 listener="#{DatasetPage.updateFileCounts}"
                 process="filesTable" 
-                update="@form,filesTable"
+                update="zipDownloadPanel"
                 >
         </p:ajax>
         <p:ajax event="rowUnselectCheckbox" 
                 listener="#{DatasetPage.updateFileCounts}"
-                update="@form,filesTable" >
+                update="zipDownloadPanel" >
         </p:ajax>
         <f:facet name="header">
             <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
@@ -139,7 +139,51 @@
                               disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles}" >
                             <h:outputText id="editFile-s-Link" value="#{bundle['file.editFiles']}" style="display:block;font-weight:bold;"/>
                         </h:outputLink>
-                    </ui:fragment>                  
+                    </ui:fragment> 
+                    <ui:fragment rendered="#{dataverseSession.user.authenticated                                              
+                                             and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}" >
+                        <div class="btn-group" >
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-pencil"/> #{bundle['file.bulkUpdate']} <span class="caret"></span>
+                            </button> 
+                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">  
+                                <li>
+                                    <p:commandLink 
+                                        value="Delete"
+                                        disabled="#{empty DatasetPage.selectedFiles}"
+                                        action="#{DatasetPage.deleteFilesAndSave()}">                                                           
+                                    </p:commandLink> 
+                                </li>
+                                <li>
+                                    <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{DatasetPage.selectedFilesIdsString}&#38;datasetId=#{DatasetPage.dataset.id}"
+                                                  disabled="#{DatasetPage.locked or empty DatasetPage.selectedFiles}" >
+                                        <h:outputText id="editFile-Multi-Link" value="Metadata" style="display:block;font-weight:bold;"/>
+                                    </h:outputLink>
+                                </li>
+                                <li>
+                                    <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictSelectedFiles(true)}"
+                                                   disabled="#{empty DatasetPage.selectedUnrestrictedFiles}">
+                                        <h:outputText value="#{bundle['file.restrict']}"/>
+                                    </p:commandLink>
+                                </li>
+                                <li>
+                                    <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictSelectedFiles(false)}"
+                                                   disabled="#{empty DatasetPage.selectedRestrictedFiles}">
+                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                    </p:commandLink>
+                                </li>
+                                <li>
+                                    <p:commandLink id="fileCategoriesLink"
+                                                   disabled="#{empty DatasetPage.selectedFiles}"
+                                                   actionListener="#{DatasetPage.refreshCategoriesByName()}"
+                                                   update=":datasetForm:fileTagsPopup"
+                                                   oncomplete="fileTagsPopup.show();bind_bsui_components();">
+                                        <span class="glyphicon glyphicon-tag"/> #{bundle['file.editTags']}
+                                    </p:commandLink>
+                                </li>
+                            </ul>
+                        </div>
+                    </ui:fragment>  
                     
                     
                 </div>

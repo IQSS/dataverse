@@ -1333,6 +1333,27 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
+    
+    private boolean bulkUpdateCheckVersion(){
+        return workingVersion.isReleased();
+    }
+    
+    private void refreshSelectedFiles(){
+        workingVersion = dataset.getEditVersion();
+        List <FileMetadata> newSelectedFiles = new ArrayList();
+        for (FileMetadata fmd : selectedFiles){
+            for (FileMetadata fmdn: workingVersion.getFileMetadatas()){
+                if (fmd.getDataFile().equals(fmdn.getDataFile())){
+                    newSelectedFiles.add(fmdn);
+                }
+            }
+        }
+        
+        selectedFiles.clear();
+        for (FileMetadata fmdn : newSelectedFiles ){
+            selectedFiles.add(fmdn);
+        }
+    }
 
     public void edit(EditMode editMode) {
         this.editMode = editMode;
@@ -1738,7 +1759,14 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
-
+    
+    public String restrictSelectedFiles(boolean restricted){     
+        if (bulkUpdateCheckVersion()){
+           refreshSelectedFiles(); 
+        }
+        restrictFiles(restricted);        
+        return save();
+    }
 
     public void restrictFiles(boolean restricted) {
         // since we are restricted files, first set the previously restricted file list, so we can compare for
@@ -1785,7 +1813,15 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList();
-
+    
+    public String  deleteFilesAndSave(){
+        if (bulkUpdateCheckVersion()){
+           refreshSelectedFiles(); 
+        }
+        deleteFiles();
+        return save();       
+    }
+    
     public void deleteFiles() {
 
         String fileNames = null;
@@ -1936,7 +1972,8 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
         newFiles.clear();
-        if(editMode.equals(EditMode.CREATE)){
+        if (editMode != null){
+                    if(editMode.equals(EditMode.CREATE)){
             JsfHelper.addSuccessMessage(JH.localize("dataset.message.createSuccess"));
         }
         if(editMode.equals(EditMode.METADATA)){
@@ -1948,6 +1985,11 @@ public class DatasetPage implements java.io.Serializable {
         if(editMode.equals(EditMode.FILE)){
             JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
         }
+            
+        } else {
+             JsfHelper.addSuccessMessage(JH.localize("dataset.message.bulkFileUpdateSuccess"));
+        }
+
         editMode = null;
 
         // Call Ingest Service one more time, to 
@@ -2899,6 +2941,10 @@ public class DatasetPage implements java.io.Serializable {
      *
      */
     private FileMetadata fileMetadataSelectedForTagsPopup = null; 
+    
+    public void  setFileMetadataSelectedForTagsPopup(){
+
+    }
 
     public void  setFileMetadataSelectedForTagsPopup(FileMetadata fm){
        fileMetadataSelectedForTagsPopup = fm; 
@@ -2910,6 +2956,46 @@ public class DatasetPage implements java.io.Serializable {
     
     public void clearFileMetadataSelectedForTagsPopup() {
         fileMetadataSelectedForTagsPopup = null;
+    }
+    
+    public List <FileMetadata> getListFileMetadataSelectedForTagsPopup(){
+        List<FileMetadata> retList = new ArrayList();
+        for (FileMetadata fm : selectedFiles){
+            retList.add(fm);
+        }
+        return retList;       
+    }
+    
+    private List<String> categoriesByName;
+    
+    public void setCategoriesByName(List<String>  dummy){
+        categoriesByName = dummy;
+    }
+    
+    public void refreshCategoriesByName(){
+        System.out.print(bulkUpdateCheckVersion());
+        if (bulkUpdateCheckVersion()){
+           refreshSelectedFiles(); 
+        }
+        
+        categoriesByName= new ArrayList<>();
+        for (FileMetadata fm : selectedFiles) {
+            if (fm.getCategories() != null) {
+                for (int i = 0; i < fm.getCategories().size(); i++) {
+                    if (!categoriesByName.contains(fm.getCategories().get(i).getName())) {
+                        categoriesByName.add(fm.getCategories().get(i).getName());
+                    }
+                }
+            }
+        }
+        refreshSelectedTags();
+    }
+    
+    
+    
+    
+    public List<String> getCategoriesByName() {
+            return categoriesByName;
     }
     
     /*
@@ -2930,24 +3016,19 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String[] selectedTags = {};
-
-    public String[] getSelectedTags() {
-
+    
+    private void refreshSelectedTags() {
         selectedTags = null;
         selectedTags = new String[0];
-
-        if (fileMetadataSelectedForTagsPopup != null) {
-            if (fileMetadataSelectedForTagsPopup.getDataFile() != null
-                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags() != null
-                    && fileMetadataSelectedForTagsPopup.getDataFile().getTags().size() > 0) {
-
-                selectedTags = new String[fileMetadataSelectedForTagsPopup.getDataFile().getTags().size()];
-
-                for (int i = 0; i < fileMetadataSelectedForTagsPopup.getDataFile().getTags().size(); i++) {
-                    selectedTags[i] = fileMetadataSelectedForTagsPopup.getDataFile().getTags().get(i).getTypeLabel();
-                }
+        if (categoriesByName.size() > 0) {
+            selectedTags = new String[categoriesByName.size()];
+            for (int i = 0; i < categoriesByName.size(); i++) {
+                selectedTags[i] = categoriesByName.get(i);
             }
         }
+    }
+
+    public String[] getSelectedTags() {           
         return selectedTags;
     }
 
@@ -2973,18 +3054,27 @@ public class DatasetPage implements java.io.Serializable {
      * "file categories" (which are also considered "tags" in 4.0)
     */
     public void saveFileTagsAndCategories() {
-        // 1. File categories:
-        // we don't need to do anything for the file categories that the user
+        // 1. New Category name:
+        // With we don't need to do anything for the file categories that the user
         // selected from the pull down list; that was done directly from the 
         // page with the FileMetadata.setCategoriesByName() method. 
         // So here we only need to take care of the new, custom category
         // name, if entered: 
-        
+        if (selectedFiles != null && selectedFiles.size() > 0) {
+            for (FileMetadata fm : selectedFiles) {
+                fm.setCategories(new ArrayList());
+            }
+        }
         logger.fine("New category name: " + newCategoryName);
 
-        if (fileMetadataSelectedForTagsPopup != null && newCategoryName != null) {
-            logger.fine("Adding new category, for file " + fileMetadataSelectedForTagsPopup.getLabel());
-            fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
+        if (newCategoryName != null) {
+            if (selectedFiles != null && selectedFiles.size() > 0) {
+                for (FileMetadata fm : selectedFiles) {
+                    if (newCategoryName != null) {
+                        fm.addCategoryByName(newCategoryName);
+                    }
+                }
+            }
         } else {
             logger.fine("No FileMetadata selected, or no category specified!");
         }
@@ -2993,34 +3083,30 @@ public class DatasetPage implements java.io.Serializable {
         // 2. Tabular DataFile Tags: 
 
         if (selectedTags != null) {
-        
-            if (fileMetadataSelectedForTagsPopup != null && fileMetadataSelectedForTagsPopup.getDataFile() != null) {
-                fileMetadataSelectedForTagsPopup.getDataFile().setTags(null);
+            if (selectedFiles != null && selectedFiles.size() > 0) {
+                for (FileMetadata fm : selectedFiles){
+                if (newCategoryName != null){
+                    fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
+                }
                 for (int i = 0; i < selectedTags.length; i++) {
-                    
-                    DataFileTag tag = new DataFileTag();
+
                     try {
-                        tag.setTypeByLabel(selectedTags[i]);
-                        tag.setDataFile(fileMetadataSelectedForTagsPopup.getDataFile());
-                        fileMetadataSelectedForTagsPopup.getDataFile().addTag(tag);
-                        
+                        fm.addCategoryByName(selectedTags[i]);
                     } catch (IllegalArgumentException iax) {
                         // ignore 
                     }
-                }
-                
+                }                    
+                }               
                 // success message: 
                 String successMessage = JH.localize("file.assignedTabFileTags.success");
                 logger.fine(successMessage);
-                successMessage = successMessage.replace("{0}", fileMetadataSelectedForTagsPopup.getLabel());
+                successMessage = successMessage.replace("{0}", "Selected Files");
                 JsfHelper.addFlashMessage(successMessage);
             }
             // reset:
             selectedTags = null;
         }
-        
-        fileMetadataSelectedForTagsPopup = null;
-
+        save();
     }
     
     
@@ -3184,9 +3270,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isDownloadButtonAvailable(){
-                for (FileMetadata fmd : workingVersion.getFileMetadatas()){
-            if (canDownloadFile(fmd)){
-                return true;               
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (canDownloadFile(fmd)) {
+                return true;
             }
         }
         return false;

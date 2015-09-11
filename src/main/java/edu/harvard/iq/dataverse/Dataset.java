@@ -300,7 +300,6 @@ public class Dataset extends DvObjectContainer {
     }
 
     public DatasetVersion getCreateVersion() {
-        System.out.print("in create version - no template");
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);

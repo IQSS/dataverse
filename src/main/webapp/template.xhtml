@@ -59,7 +59,7 @@
                                 </ui:include>
                             </p:tab>
                                 <p:tab id="termsTab" title="#{bundle['file.dataFilesTab.terms.header']}"
-                                   rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'LICENSE'}">
+                                   rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}}">
                                 <ui:include src="dataset-license-terms.xhtml"></ui:include>
                             </p:tab>
                         </p:tabView>
@@ -95,7 +95,8 @@
                                 <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
                             </ui:include>  
                         </ui:fragment>
-                        <ui:fragment rendered="#{TemplatePage.editMode == 'LICENSE'}">
+                        
+                        <ui:fragment rendered="#{TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
                             <ui:include src="dataset-license-terms.xhtml" >
 
                                 <ui:param name="datasetPage" value="false"/>
@@ -110,31 +111,22 @@
                     <ui:fragment rendered="#{TemplatePage.editMode == 'CREATE'}" >
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
 
-                        <p:commandLink id="deleteDataset" onclick="addTerms.show()" styleClass="btn btn-default">
-                            <h:outputText value="#{bundle['dataset.manageTemplates.createBtn']}" />
-                        </p:commandLink>
+                        <p:commandButton  styleClass="btn btn-default" value="#{bundle['dataset.create.add.terms'] }"  action="#{TemplatePage.save('Terms')}" />
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
                     </ui:fragment>
-                    <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE'}" >
+                    <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}" >
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
                         <h:commandButton styleClass="btn btn-default" type="submit" action="#{TemplatePage.save('')}" 
-                                         value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : bundle.saveChanges}">
+                                         value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}">
                             <f:ajax onerror="window.scrollTo(0, 0);" />
                         </h:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
                     </ui:fragment>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.template.popup.create.title']}" widgetVar="addTerms" modal="true">
-                        <p ><span /> #{bundle['dataset.template.popup.create.text']}</p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle['dataset.manageTemplates.createBtn']}" onclick="addTerms.hide()" action="#{TemplatePage.save('')}" />
-                            <p:commandButton value="#{bundle['dataset.create.add.terms'] }" onclick="addTerms.hide()" action="#{TemplatePage.save('Terms')}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="addTerms.hide()" type="button" />
-                        </div>
-                    </p:dialog>
+
                 </h:form>
             </ui:define>
         </ui:composition>

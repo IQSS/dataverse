@@ -50,7 +50,7 @@ public class TemplatePage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, METADATA, LICENSE
+        CREATE, METADATA, LICENSE, LICENSEADD
     };
 
     private Template template;
@@ -239,7 +239,7 @@ public class TemplatePage implements java.io.Serializable {
         JsfHelper.addFlashMessage(msg);
         String retString = "";   
         if (!redirectPage.isEmpty() && createdId.intValue() > 0) {
-            retString = "/template.xhtml?id=" + createdId + "&ownerId=" + dataverse.getId() + "&editMode=LICENSE&faces-redirect=true";
+            retString = "/template.xhtml?id=" + createdId + "&ownerId=" + dataverse.getId() + "&editMode=LICENSEADD&faces-redirect=true";
         } else {
             retString = "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";           
         }
