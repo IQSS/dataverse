@@ -22,7 +22,7 @@
     </p:selectBooleanCheckbox>
                             
     
-    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? (DatasetPage.newFileListingFeaturesEnabled ? DatasetPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas) : (DatasetPage.workingVersion.fileMetadatasSorted)}"
+    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? (DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas) : (DatasetPage.workingVersion.fileMetadatasSorted)}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  emptyMessage="#{bundle['file.notFound.tip']}">
@@ -39,19 +39,7 @@
         <f:facet name="header">
             <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
             <div id="filesHeaderBlock" class="clearfix margin-bottom">
-                <div class="pull-left text-left" jsf:rendered="#{DatasetPage.newFileListingFeaturesEnabled and DatasetPage.newFileSearchReady}">
-                    <input type="text" name="searchFilesInput" placeholder="#{bundle['file.search.placeholder']}" size="40" value="" class="pull-left text-left normal-text"/>
-                    <div class="btn">
-                        <button type="button" class="btn btn-default pull-left text-left">
-                            <span class="glyphicon glyphicon-search"/> #{bundle['find']}
-                        </button>
-                    </div>
-                </div>
-                <br jsf:rendered="#{DatasetPage.newFileListingFeaturesEnabled and DatasetPage.newFileSearchReady}"/>
-                <br jsf:rendered="#{DatasetPage.newFileListingFeaturesEnabled and DatasetPage.newFileSearchReady}"/>
-                <br jsf:rendered="#{DatasetPage.newFileListingFeaturesEnabled and DatasetPage.newFileSearchReady}"/>
                 <!-- Files Count -->
-                <input type="checkbox" class="pull-left" jsf:rendered="#{false and DatasetPage.newFileListingFeaturesEnabled}"/>
                 <div id="filesHeaderCount" class="pull-left text-left">
                     <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold" rendered="#{!DatasetPage.newFileListingFeaturesEnabled or !DatasetPage.newFilePaginationReady}">
                         <f:param value="#{DatasetPage.workingVersion.fileMetadatas.size()}"/>
@@ -188,7 +176,7 @@
                     
                 </div>
                 <!--SORT BUTTON-->
-                <div class="btn-group" jsf:rendered="#{DatasetPage.newFileListingFeaturesEnabled and DatasetPage.fileMetadatas.size() gt 1}">
+                <div class="btn-group" jsf:rendered="#{DatasetPage.sortButtonEnabled and DatasetPage.fileMetadatas.size() gt 1}">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                         <span class="glyphicon glyphicon-sort"/> #{bundle['file.results.btn.sort']} <span class="caret"></span>
                     </button>
@@ -346,9 +334,6 @@
                     </ui:repeat>
                 </ui:fragment>
             </div>
-            <!--DEBUG SORT BY TYPE-->
-            <br jsf:rendered="#{false and DatasetPage.newFileListingFeaturesEnabled}"/>
-            <h:outputText id="fileTypeOutputContentType" value="#{fileMetadata.dataFile.contentType}" rendered="#{false and DatasetPage.newFileListingFeaturesEnabled}"/>
         </p:column>
 
         <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">

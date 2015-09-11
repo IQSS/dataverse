@@ -3456,6 +3456,10 @@ public class DatasetPage implements java.io.Serializable {
         return betterFileOrgDone;
     }
 
+    public boolean isSortButtonEnabled() {
+        return true;
+    }
+
     public void setBetterFileOrgDone() {
         this.betterFileOrgDone = systemConfig.isImprovedFileListingGoodEnoughToShip();
     }
@@ -3476,7 +3480,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> populateFileMetadatas() {
-        if (betterFileOrgDone) {
+        if (isSortButtonEnabled()) {
             List<FileMetadata> fileMetadatasToSet = new ArrayList<>();
             Long datasetVersion = workingVersion.getId();
             if (datasetVersion != null) {
@@ -3508,7 +3512,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public List<FileMetadata> getFileMetadatas() {
-        if (betterFileOrgDone) {
+        if (isSortButtonEnabled()) {
             return fileMetadatas;
         } else {
             return new ArrayList<>();
