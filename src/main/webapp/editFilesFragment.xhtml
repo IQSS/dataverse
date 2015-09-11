@@ -13,7 +13,7 @@
     >
 
     <!-- Upload -->
-    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' || EditDatafilesPage.showFileUploadFileComponent()}">
+    <ui:fragment rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}">
         <script>
             function uploadWidgetDropMsg() {
                 var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
@@ -38,7 +38,7 @@
             </h:outputFormat>
         </p>
 
-        <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'CREATE' || EditDatafilesPage.showFileUploadFileComponent()}"
+        <p:fileUpload id="fileUpload" styleClass="margin-bottom" dragDropSupport="true" auto="true" multiple="true" rendered="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent()}"
                       fileUploadListener="#{EditDatafilesPage.handleFileUpload}" process="filesTable" update="filesTable,uploadMessage" label="#{bundle['file.selectToAddBtn']}"
                       oncomplete="javascript:dataset_fileupload_rebind();uploadWidgetDropMsg();" onstart="javascript:uploadWidgetDropRemoveMsg();"
                       sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}" invalidSizeMessage="File exceeds our limits. Please contact support. " />
@@ -58,10 +58,12 @@
     </ui:fragment>
 
     <!-- Files Table -->
-    <p:dataTable id="filesTable" value="#{DatasetPage.editMode == 'CREATE' ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
-                 rendered="#{dataverseSession.user.authenticated and (DatasetPage.editMode == 'CREATE' ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}"
+    <!-- _{dataverseSession.user.authenticated and ( ? permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) : permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" -->
+                 
+    <p:dataTable id="filesTable" value="#{datasetPage ? DatasetPage.workingVersion.fileMetadatas : EditDatafilesPage.fileMetadatas}"
+                 rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" 
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                 selection="#{DatasetPage.editMode == 'CREATE' ? DatasetPage.selectedFiles : EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
+                 selection="#{datasetPage ? DatasetPage.selectedFiles : EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  emptyMessage="#{bundle['file.notFound.tip']}">
 
         <f:facet name="header">

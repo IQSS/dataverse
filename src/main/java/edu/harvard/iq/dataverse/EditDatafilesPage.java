@@ -142,9 +142,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String displayCitation;
     
     private String persistentId;
+    /*
     private String protocol = "";
     private String authority = "";
     private String separator = "";
+    */
 
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
@@ -305,15 +307,30 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionId = versionId;
     }
 
+    public String initCreateMode(DatasetVersion version) {
+        logger.info("Initializing Edit Files page in CREATE mode;");
+        if (version == null) {
+            return "/404.xhtml";
+        }
+        
+        workingVersion = version; 
+        dataset = version.getDataset();
+        mode = FileEditMode.CREATE;
+        
+        logger.info("done");
+        
+        return null; 
+    }
+    
     public String init() {
-        String nonNullDefaultIfKeyNotFound = "";
+        //String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         
-        
+        /*
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
-        
+        */
         
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
