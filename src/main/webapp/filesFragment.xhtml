@@ -9,8 +9,7 @@
     xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
-    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
-    >
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!-- Upload -->
     <!-- (removed - L.A. 4.2 -->
@@ -31,19 +30,8 @@
         </p:ajax>
         <f:facet name="header">
             <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
-            <div id="filesHeaderBlock" class="clearfix margin-bottom">
-                <!-- Files Count -->
-                <div id="filesHeaderCount" class="pull-left text-left">
-                    
-                    <p:selectBooleanCheckbox value="#{DatasetPage.selectAllFiles}" itemLabel="Select All">
-                            <p:ajax update="filesTable" listener="#{DatasetPage.toggleSelectedFiles}" />
-                    </p:selectBooleanCheckbox>
-                    
-                    
-                    <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold">
-                        <f:param value="#{DatasetPage.workingVersion.fileMetadatas.size()}"/>
-                    </h:outputFormat>
-                </div>
+            <div id="filesHeaderBlock" class="clearfix margin-bottom" style="margin-bottom:0;">
+                
                 <!-- Button Panels -->
                 <div jsf:id="zipDownloadPanel" class="button-block pull-right text-right"
                      jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
@@ -227,8 +215,25 @@
                     </p:commandLink>
                 </div>
             </div>
+            <div class="" style="overflow:hidden;">
+                <div style="width:36px;padding:4px 10px;float:left;">
+                    <span class="bootstrap-button-tooltip" style="display:inline-block;" title="Select All">
+                        <p:selectBooleanCheckbox value="#{DatasetPage.selectAllFiles}" style="margin:0 0 2px 0;">
+                                <p:ajax update="filesTable" listener="#{DatasetPage.toggleSelectedFiles}" />
+                        </p:selectBooleanCheckbox>
+                    </span>
+                </div>
+                <div style="float:left;padding:4px 10px;">
+                    <!-- Files Count -->
+                    <div id="filesHeaderCount" class="text-left">
+                        <h:outputFormat value="#{bundle['file.count']}" styleClass="highlightBold" style="padding:0;line-height:1.65;">
+                            <f:param value="#{DatasetPage.workingVersion.fileMetadatas.size()}"/>
+                        </h:outputFormat>
+                    </div>
+                </div>
+            </div>
         </f:facet>
-        <p:column selectionMode="multiple" class="col-select-width text-center"     />
+        <p:column selectionMode="multiple" class="col-select-width text-center" />
         <p:column class="col-file-thumb text-center">
             <div class="thumbnail-block">
                 <!-- Thumbnail Preview -->
