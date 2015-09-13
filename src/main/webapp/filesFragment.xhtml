@@ -67,13 +67,13 @@
                                         <h:outputText id="editFile-Multi-Link" value="Metadata"/>
                                     </h:outputLink>
                                 </li>
-                                <li>
+                                <li class="#{empty DatasetPage.selectedUnrestrictedFiles ? 'disabled' : ''}">
                                     <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictSelectedFiles(true)}"
                                                    disabled="#{empty DatasetPage.selectedUnrestrictedFiles}">
                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                     </p:commandLink>
                                 </li>
-                                <li>
+                                <li class="#{empty DatasetPage.selectedRestrictedFiles ? 'disabled' : ''}">
                                     <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictSelectedFiles(false)}"
                                                    disabled="#{empty DatasetPage.selectedRestrictedFiles}">
                                         <h:outputText value="#{bundle['file.unrestrict']}"/>
@@ -219,7 +219,7 @@
                 <div style="width:36px;padding:4px 10px;float:left;">
                     <span class="bootstrap-button-tooltip" style="display:inline-block;" title="Select All">
                         <p:selectBooleanCheckbox value="#{DatasetPage.selectAllFiles}" style="margin:0 0 2px 0;">
-                                <p:ajax update="filesTable" listener="#{DatasetPage.toggleSelectedFiles}" />
+                            <p:ajax update="filesTable" listener="#{DatasetPage.toggleSelectedFiles}" oncomplete="bind_bsui_components();" />
                         </p:selectBooleanCheckbox>
                     </span>
                 </div>

@@ -38,7 +38,7 @@
                             <ul class="dropdown-menu pull-right text-left" role="menu">
                                 <li>
                                     <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}">
-                                        <h:outputText id="editFile-Multi-Link" value="Metadata" style="display:block;font-weight:bold;"/>
+                                        <h:outputText id="editFile-Multi-Link" value="Metadata"/>
                                     </h:outputLink>
                                 </li>
                             </ul>
@@ -143,9 +143,9 @@
                             <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{true}"/>
                         </div>
                         <div id="citation-block">
-                             <div class="col-xs-12">
-                                <div class="row bg-citation">
-                                    <div id="citation" class="col-xs-12"
+                             <div class="">
+                                <div class="bg-citation">
+                                    <div id="citation" class=""
                                          onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                         <h:outputText value="#{FilePage.file.owner.citation}" escape="false"/>
                                         <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{true}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
@@ -154,13 +154,13 @@
                                     <!--<div id="citation-download" class="col-sm-4 col-md-3 text-right" jsf:rendered="">
                                     </div>-->
                                 </div>
-                                <div class="row bg-muted" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                    <div id="citation-standards" class="col-xs-12 text-muted small"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                                <div class="bg-muted" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                                    <div id="citation-standards" class="text-muted small"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <div class="text-muted small">
+                        <div style="margin-top:1em;">
+                            <div class="text-muted">
                                 <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
                                 <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                 <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
