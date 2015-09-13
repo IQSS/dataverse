@@ -3060,62 +3060,39 @@ public class DatasetPage implements java.io.Serializable {
         // page with the FileMetadata.setCategoriesByName() method. 
         // So here we only need to take care of the new, custom category
         // name, if entered: 
-        if (bulkUpdateCheckVersion()){
-           refreshSelectedFiles(); 
+        if (bulkUpdateCheckVersion()) {
+            refreshSelectedFiles();
         }
-        for (FileMetadata fmd: workingVersion.getFileMetadatas()){
-                    if (selectedFiles != null && selectedFiles.size() > 0) {
-            for (FileMetadata fm : selectedFiles) {
-                if (fm.getDataFile().equals(fmd.getDataFile())){
-                    fmd.setCategories(new ArrayList());
-                }
-                fm.setCategories(new ArrayList());
-            }
-        }
-            
-        }
-
-        logger.fine("New category name: " + newCategoryName);
-
-        if (newCategoryName != null) {
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (selectedFiles != null && selectedFiles.size() > 0) {
                 for (FileMetadata fm : selectedFiles) {
-                    if (newCategoryName != null) {
-                        fm.addCategoryByName(newCategoryName);
+                    if (fm.getDataFile().equals(fmd.getDataFile())) {
+                        fmd.setCategories(new ArrayList());
+                        if (newCategoryName != null) {
+                            fmd.addCategoryByName(newCategoryName);
+                        }
+                        // 2. Tabular DataFile Tags: 
+                        if (selectedTags != null) {
+                            for (int i = 0; i < selectedTags.length; i++) {
+                                    fmd.addCategoryByName(selectedTags[i]);
+                            }
+                        }
                     }
                 }
             }
-        } else {
-            logger.fine("No FileMetadata selected, or no category specified!");
-        }
-        newCategoryName = null;
-        
-        // 2. Tabular DataFile Tags: 
-
-        if (selectedTags != null) {
-            if (selectedFiles != null && selectedFiles.size() > 0) {
-                for (FileMetadata fm : selectedFiles){
-                if (newCategoryName != null){
-                    fileMetadataSelectedForTagsPopup.addCategoryByName(newCategoryName);
-                }
-                for (int i = 0; i < selectedTags.length; i++) {
-
-                    try {
-                        fm.addCategoryByName(selectedTags[i]);
-                    } catch (IllegalArgumentException iax) {
-                        // ignore 
-                    }
-                }                    
-                }               
+        }                 
                 // success message: 
                 String successMessage = JH.localize("file.assignedTabFileTags.success");
                 logger.fine(successMessage);
                 successMessage = successMessage.replace("{0}", "Selected Files");
                 JsfHelper.addFlashMessage(successMessage);
-            }
-            // reset:
-            selectedTags = null;
-        }
+         selectedTags = null;
+
+        logger.fine("New category name: " + newCategoryName);
+
+        newCategoryName = null;
+        
+
         save();
     }
 
