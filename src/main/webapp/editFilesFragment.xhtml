@@ -64,7 +64,7 @@
                  rendered="#{datasetPage or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(EditDatafilesPage.dataset))}" 
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{datasetPage ? DatasetPage.selectedFiles : EditDatafilesPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
-                 emptyMessage="#{bundle['file.notFound.tip']}">
+                 emptyMessage="#{datasetPage ? bundle['file.notFound.tip'] : ''}">
 
         <f:facet name="header">
             <div id="filesHeaderBlock" class="clearfix margin-bottom">                

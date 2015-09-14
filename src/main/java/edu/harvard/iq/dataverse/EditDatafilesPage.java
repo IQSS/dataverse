@@ -94,7 +94,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public enum FileEditMode {
 
-        EDIT, UPLOAD, CREATE
+        EDIT, UPLOAD, CREATE, SINGLE
     };
     
     @EJB
@@ -351,7 +351,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return "/404.xhtml";
         }
         
-        if (mode == FileEditMode.EDIT) {
+        if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
 
             if (selectedFileIdsString != null) {
                 String[] ids = selectedFileIdsString.split(",");
@@ -710,6 +710,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
+        if (mode == FileEditMode.SINGLE && fileMetadatas.size() > 0) {
+            // If this was a "single file edit", i.e. an edit request sent from 
+            // the individual File Landing page, we want to redirect back to 
+            // the landing page. BUT ONLY if the file still exists - i.e., if 
+            // the user hasn't just deleted it!
+            return returnToFileLandingPage(fileMetadatas.get(0).getId());
+        }
+        
         return returnToDraftVersion();
     }
     
@@ -727,6 +735,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalId()  +  "&faces-redirect=true";       
+    }
+    
+    private String returnToFileLandingPage(Long fileId) {
+        return "/file.xhtml?fileId=" + fileId  + "&datasetVersionId=" + workingVersion.getId() + "&faces-redirect=true";
     }
     
     public String cancel() {
