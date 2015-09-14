@@ -226,7 +226,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public void removeFileMetadata(FileMetadata fileMetadata) {
-        em.remove(fileMetadata);
+        FileMetadata mergedFM = em.merge(fileMetadata);
+        em.remove(mergedFM);
     }
     
     /**/

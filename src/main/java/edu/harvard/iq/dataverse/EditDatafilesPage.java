@@ -428,7 +428,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     
-    /* what are these for? */
     List<FileMetadata> previouslyRestrictedFiles = null;
     
 
@@ -494,14 +493,26 @@ public class EditDatafilesPage implements java.io.Serializable {
         for (FileMetadata markedForDelete : selectedFiles) {
             if (markedForDelete.getId() != null) {
                 // the file already exists as part of this dataset
-                // so all we remove is the file from the fileMetadatas (for display)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
+                // so all we remove is the file from the fileMetadatas (from the 
+                // file metadatas attached to the editVersion, and from the
+                // display list of file metadatas that are being edited)
+                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list:
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                fileMetadatas.remove(markedForDelete);
                 filesToBeDeleted.add(markedForDelete);
             } else {
                 // the file was just added during this step, so in addition to 
-                // removing it from the fileMetadatas (for display), we also remove it from 
-                // the newFiles list and the dataset's files, so it won't get uploaded at all
+                // removing it from the fileMetadatas list, we also remove it from 
+                // the newFiles list and the dataset's files, so it never gets saved.
+                
+                if (mode != FileEditMode.CREATE) {
+                    // If the bean is in the 'CREATE' mode, the page is using
+                    // dataset.getEditVersion().getFileMetadatas() directly, 
+                    // so there's no need to delete this meta from the local
+                    // fileMetadatas list. 
+                    fileMetadatas.remove(markedForDelete);
+                }
+                
                 Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
                 while (fmit.hasNext()) {
                     FileMetadata fmd = (FileMetadata) fmit.next();
@@ -588,6 +599,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // And update the new and/or edited files in the database:
         Timestamp updateTime = new Timestamp(new Date().getTime());
+        
+        workingVersion.setLastUpdateTime(updateTime);
+        dataset.setModificationTime(updateTime);
+        
+        
         for (FileMetadata fileMetadata : fileMetadatas) {
       
             if (fileMetadata.getDataFile().getCreateDate() == null) {
@@ -627,8 +643,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // add diagnostics reporting.
                 }
             } else {
-                FileMetadata mergedFmd = datafileService.mergeFileMetadata(fmd);
-                datafileService.removeFileMetadata(mergedFmd);
+                datafileService.removeFileMetadata(fmd);
                 fmd.getDataFile().getFileMetadatas().remove(fmd);
                 workingVersion.getFileMetadatas().remove(fmd);
             }  
@@ -695,7 +710,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
 
-        return returnToDatasetOnly();
+        return returnToDraftVersion();
     }
     
     private void populateDatasetUpdateFailureMessage(){
@@ -705,7 +720,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     
     
-    
+    private String returnToDraftVersion(){      
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId() + "&version=DRAFT" + "&faces-redirect=true";    
+    }
     
     private String returnToDatasetOnly(){
          dataset = datasetService.find(dataset.getId());

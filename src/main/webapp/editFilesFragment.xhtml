@@ -71,10 +71,24 @@
 
                 <!-- Button Panels -->
 
-                <div jsf:id="deletePanel" class="button-block pull-right text-right"
+                <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
                      jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                     <div class="btn-group">
-
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                            <li>
+                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
+                                    <h:outputText value="#{bundle['file.restrict']}"/>
+                                </p:commandLink>
+                            </li>
+                            <li>
+                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
+                                    <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                </p:commandLink>
+                            </li>
+                        </ul>
                     </div>
                     <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
                         <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
