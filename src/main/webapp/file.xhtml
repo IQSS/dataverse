@@ -145,11 +145,11 @@
 
                 <div id="fileImageTitle" class="row" style="margin-bottom:12px;">
 
-                    <div class="col-xs-5 text-center">
+                    <div id="file-preview-icon-block" class="col-xs-5 text-center">
                         <!-- Image -->
                         <p:graphicImage style="margin:10px;" styleClass="img-responsive img-thumbnail" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" rendered="#{dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user)}"/>
                         <!-- Icon -->
-                        <span style="font-size:380px;" class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h1"
+                        <span class="icon-#{dataFileServiceBean.getFileClass(FilePage.fileMetadata.dataFile)} text-muted h1"
                               jsf:rendered="#{(!dataFileServiceBean.isThumbnailAvailable(FilePage.fileMetadata.dataFile, dataverseSession.user))
                                               or (empty FilePage.fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(FilePage.fileMetadata.dataFile.storageIdentifier, FilePage.fileMetadata.dataFile.contentType))}"/>
                     </div>

@@ -645,6 +645,17 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 
+/* FILE */
+#file-preview-icon-block span[class^='icon-'] {font-size:4em;}
+
+@media screen and (max-width: 999px) {
+    #file-preview-icon-block span[class^='icon-'] {font-size:35vw;}
+}
+
+@media screen and (min-width: 1000px) {
+    #file-preview-icon-block span[class^='icon-'] {font-size:28em;}
+}
+
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 .ui-widget-overlay {background:#CCC;}
