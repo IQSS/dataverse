@@ -403,6 +403,11 @@ public class SystemConfig {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
     }
+    
+    public boolean isFileLandingPageAvailable() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShowFileLandingPage, safeDefaultIfKeyNotFound);
+    }
 
     public Long getMaxFileUploadSize(){
 

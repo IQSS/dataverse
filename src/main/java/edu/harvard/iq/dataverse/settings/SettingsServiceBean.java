@@ -156,6 +156,9 @@ public class SettingsServiceBean {
         StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
+        /* whether file landing page is available
+        for 4.2 development */
+        ShowFileLandingPage,
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
         case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}

@@ -285,10 +285,13 @@
             </ui:fragment>
         </p:column>
         <p:column class="col-file-metadata">
-           <ui:fragment>
+            <ui:fragment rendered="#{systemConfig.fileLandingPageAvailable == true}" >
                 <h:outputLink value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
                     <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
                 </h:outputLink>
+            </ui:fragment>
+            <ui:fragment rendered="#{systemConfig.fileLandingPageAvailable == false}" >                
+                <h:outputText id="fileName" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
             </ui:fragment>
 
             <!-- TYPE + SIZE + DATE + MD5 -->

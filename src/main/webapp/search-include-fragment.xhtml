@@ -565,17 +565,24 @@
 
                                 <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
                                 <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
-
+                                <ui:fragment rendered="#{systemConfig.fileLandingPageAvailable == true}">
                                 <a href="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                     <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                     <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                     <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{systemConfig.fileLandingPageAvailable == false}">
+                                    <a href="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
+                                </ui:fragment>
                                 <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                 <h:outputText value="#{SearchIncludeFragment.IN_REVIEW}" styleClass="label label-success" rendered="#{result.inReviewState}"/> 
                                 <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                 <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                             </div>
-
+                            <ui:fragment rendered="#{systemConfig.fileLandingPageAvailable == true}">
                             <div class="card-preview-icon-block text-center">
                                 <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
                                               rendered="#{result.displayImage}">
@@ -584,7 +591,17 @@
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                                       jsf:rendered="#{!result.displayImage}"/>
                             </div>
-
+                            </ui:fragment>
+                            <ui:fragment rendered="#{systemConfig.fileLandingPageAvailable == false}">
+                            <div class="card-preview-icon-block text-center">
+                                <h:outputLink value="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}"
+                                              rendered="#{result.displayImage}">
+                                    <p:graphicImage value="/api/access/fileCardImage/#{result.entityId}" />
+                                </h:outputLink>
+                                <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
+                                      jsf:rendered="#{!result.displayImage}"/>
+                            </div>
+                            </ui:fragment>
                             <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
                             <a href="#{result.fileDatasetUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
                                 <h:outputText value="#{result.parent.get('name')}"/></a>
