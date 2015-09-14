@@ -3304,15 +3304,15 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isDownloadSelectedButtonEnabled(){
 
-        if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
+        if( this.selectedFiles == null || this.selectedFiles.isEmpty() ){
             return false;
         }
-        for (FileMetadata fmd : this.selectedRestrictedFiles){
-            if (!canDownloadFile(fmd)){
-                return false;               
+        for (FileMetadata fmd : this.selectedFiles){
+            if (canDownloadFile(fmd)){
+                return true;               
             }
         }
-        return true;
+        return false;
     } 
     
     public boolean isFileAccessRequestMultiSignUpButtonRequired(){

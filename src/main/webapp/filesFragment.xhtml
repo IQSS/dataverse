@@ -98,46 +98,20 @@
                     
                     <ui:fragment rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1)}" >
                         <div class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable }">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                <ui:fragment rendered="#{!(DatasetPage.downloadPopupRequired)}">
-                                    <li>
-                                        <h:commandLink value="Download All"
-                                                       disabled="#{!DatasetPage.downloadAllButtonEnabled}"
-                                                       actionListener="#{DatasetPage.startMultipleFileDownload()}">
-                                        </h:commandLink>
-                                    </li>
-                                </ui:fragment>
-                                
-                                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
-                                    <li class="#{!DatasetPage.downloadAllButtonEnabled ? 'disabled' : ''}">
-                                        <p:commandLink value="Download All"
-                                                       action="#{DatasetPage.initGuestbookMultipleResponse()}"
-                                                       update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
-                                        </p:commandLink>
-                                    </li>
-                                </ui:fragment>
-
-                                <ui:fragment>
-                                    <li class="#{!DatasetPage.downloadSelectedButtonEnabled ? 'disabled' : ''}">
-                                        <h:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
-                                                       value="#{bundle.selectedFiles}"
-                                                       actionListener="#{DatasetPage.startMultipleFileDownload()}"
-                                                       disabled="#{!DatasetPage.downloadSelectedButtonEnabled}">
-                                        </h:commandLink>
-                                        <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                        <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                                       action="#{DatasetPage.initGuestbookMultipleResponse()}"
-                                                       value="#{bundle.selectedFiles}"
-                                                       update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');"
-                                                       disabled="#{!DatasetPage.downloadSelectedButtonEnabled}">
-                                        </p:commandLink>
-                                    </li>
-                                </ui:fragment>
-                            </ul>
+                            <p:commandLink rendered="#{ !(DatasetPage.downloadPopupRequired) }"
+                                           type="button" styleClass="btn btn-default"
+                                           disabled="#{!DatasetPage.downloadSelectedButtonEnabled}"
+                                           actionListener="#{DatasetPage.startMultipleFileDownload()}">
+                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                            </p:commandLink>
+                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired }"
+                                           type="button" styleClass="btn btn-default"
+                                           disabled="#{!DatasetPage.downloadSelectedButtonEnabled}"
+                                           action="#{DatasetPage.initGuestbookMultipleResponse()}"
+                                           update="@form" oncomplete="downloadPopup.show();handleResizeDialog('downloadPopup');">
+                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                            </p:commandLink>
                         </div>
                     </ui:fragment>
 
