@@ -195,9 +195,15 @@
                                     <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileMetadata.dataFile.id)}"/>
                                 </h:outputFormat>
 
-                                <div class="mD5-block">
+                                <div class="mD5-block" jsf:rendered="#{!FilePage.file.tabularData}">
                                     <h:outputText id="fileMD5" value="#{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{FilePage.file.md5};"
                                                   rendered="#{!(empty FilePage.file.md5)}"/>
+                                </div>
+                                
+                                <div class="text-muted" jsf:rendered="#{FilePage.file.tabularData}">
+                                    <h:outputText id="fileNumVars" value="#{FilePage.file.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{FilePage.file.tabularData}"/>
+                                    <h:outputText id="fileNumObs" value="#{FilePage.file.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty FilePage.file.unf ? ' - ' : ''}" rendered="#{FilePage.file.tabularData}"/>
+                                    <h:outputText id="fileUNF" value="#{FilePage.file.unf}" rendered="#{!empty FilePage.file.unf}"/>
                                 </div>
                             </div>
                         </div>
@@ -234,7 +240,7 @@
                                         </ui:remove>
                                         <div class="form-group" jsf:rendered="#{!(empty FilePage.file.md5)}">
                                             <label class="col-sm-3 control-label" for="metadata_md5">
-                                               #{bundle['file.metadataTab.fileMetadata.md5.label']}
+                                               #{FilePage.file.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}
                                             </label>
                                             <div class="col-sm-9">
                                                 <h:outputText value="#{FilePage.file.md5}"/>
@@ -262,6 +268,22 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <h:outputText value="#{FilePage.file.friendlyType}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.varQuantity)}">
+                                            <label class="col-sm-3 control-label" for="metadata_variables">
+                                               #{bundle['file.metaData.dataFile.dataTab.variables']}
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <h:outputText value="#{FilePage.file.dataTable.varQuantity}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.caseQuantity)}">
+                                            <label class="col-sm-3 control-label" for="metadata_observations">
+                                               #{bundle['file.metaData.dataFile.dataTab.observations']}
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <h:outputText value="#{FilePage.file.dataTable.caseQuantity}"/>
                                             </div>
                                         </div>
                                         <div class="form-group" jsf:rendered="#{!(empty FilePage.file.description)}">

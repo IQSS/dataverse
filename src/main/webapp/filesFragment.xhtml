@@ -86,7 +86,7 @@
                                                    actionListener="#{DatasetPage.refreshCategoriesByName()}"
                                                    update=":datasetForm:fileTagsPopup"
                                                    oncomplete="fileTagsPopup.show();bind_bsui_components();">
-                                        #{bundle['file.editTags']}
+                                        Tags
                                     </p:commandLink>
                                 </li>
                             </ul>
@@ -303,13 +303,13 @@
                     <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
                 </h:outputFormat>
 
-                <div class="mD5-block">
-                    <h:outputText id="fileMD5" value="#{fileMetadata.dataFile.tabularData ? bundle['file.MD5.origal'] : bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                <div class="mD5-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
+                    <h:outputText id="fileMD5" value="#{bundle['file.MD5']}: #{fileMetadata.dataFile.md5};" rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
                 </div>
             </div>
             <!-- UNF + Variables, Obsersvations -->
             <div class="text-muted small" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
-                <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']} " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{fileMetadata.dataFile.tabularData}"/>
                 <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                 <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
             </div>
