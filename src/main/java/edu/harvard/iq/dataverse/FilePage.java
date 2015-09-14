@@ -92,6 +92,7 @@ public class FilePage implements java.io.Serializable {
            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
            //  > Go to the Login page
            //
+            
            if ( !permissionService.on(file).has(Permission.DownloadFile)) {
                if(!session.getUser().isAuthenticated()){
                    return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
@@ -161,12 +162,13 @@ public class FilePage implements java.io.Serializable {
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);    
         }        
-        return save();
+        save();
+        return returnToDraftVersion();
     }
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList();
 
-    public void deleteFile() {
+    public String deleteFile() {
 
         String fileNames = this.getFileMetadata().getLabel();
 
@@ -175,20 +177,30 @@ public class FilePage implements java.io.Serializable {
         FileMetadata markedForDelete = null;
         
         for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas() ){
-            if (fmd.getDataFile().equals(this.getFile())){
+            
+            if (fmd.getDataFile().getId().equals(this.getFile().getId())){
                 markedForDelete = fmd;
             }
         }
-        
+
             if (markedForDelete.getId() != null) {
                 // the file already exists as part of this dataset
                 // so all we remove is the file from the fileMetadatas (for display)
                 // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
                 editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
                 filesToBeDeleted.add(markedForDelete);
+                
+            } else {
+                 List<FileMetadata> filesToKeep = new ArrayList();
+                 for (FileMetadata fmo: editDataset.getEditVersion().getFileMetadatas()){
+                      if (!fmo.getDataFile().getId().equals(this.getFile().getId())){
+                          filesToKeep.add(fmo);
+                      }
+                 }
+                 editDataset.getEditVersion().setFileMetadatas(filesToKeep);
             }
 
-        
+    
 
      
         if (fileNames != null) {
@@ -196,6 +208,9 @@ public class FilePage implements java.io.Serializable {
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
         }
+        
+        save();
+        return returnToDatasetOnly();
         
     }
     
@@ -212,6 +227,7 @@ public class FilePage implements java.io.Serializable {
 
         Command<Dataset> cmd;
         try {
+            System.out.print(filesToBeDeleted.size());
             cmd = new UpdateDatasetCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
              commandEngine.submit(cmd);
 
@@ -239,6 +255,16 @@ public class FilePage implements java.io.Serializable {
 
            setDatasetVersionId(editDataset.getEditVersion().getId());
         return "";
+    }
+    
+    private String returnToDatasetOnly(){
+        
+         return "/dataset.xhtml?persistentId=" + editDataset.getGlobalId()  + "&version=DRAFT" + "&faces-redirect=true";   
+    }
+    
+    private String returnToDraftVersion(){ 
+
+         return "/file.xhtml?fileId=" + fileId + "&datasetVersionId=" + editDataset.getEditVersion().getId() + "&faces-redirect=true";    
     }
     
 }
