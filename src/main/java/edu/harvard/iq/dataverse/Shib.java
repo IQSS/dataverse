@@ -474,6 +474,7 @@ public class Shib implements java.io.Serializable {
         TESTSHIB1,
         HARVARD1,
         HARVARD2,
+        TWO_EMAILS,
     };
 
     private DevShibAccountType getDevShibAccountType() {
@@ -531,6 +532,10 @@ public class Shib implements java.io.Serializable {
 
             case HARVARD2:
                 mutateRequestForDevConstantHarvard2();
+                break;
+
+            case TWO_EMAILS:
+                mutateRequestForDevConstantTwoEmails();
                 break;
 
             default:
@@ -900,6 +905,15 @@ public class Shib implements java.io.Serializable {
         request.setAttribute(lastNameAttribute, "Hopper");
         request.setAttribute(emailAttribute, "ghopper@mailinator.com");
         request.setAttribute(usernameAttribute, "ghopper");
+    }
+
+    private void mutateRequestForDevConstantTwoEmails() {
+        request.setAttribute(shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(uniquePersistentIdentifier, "twoEmails");
+        request.setAttribute(firstNameAttribute, "Eric");
+        request.setAttribute(lastNameAttribute, "Allman");
+        request.setAttribute(emailAttribute, "eric1@mailinator.com;eric2@mailinator.com");
+        request.setAttribute(usernameAttribute, "eallman");
     }
 
 }
