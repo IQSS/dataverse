@@ -56,9 +56,10 @@
                             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                 <li>
                                     <p:commandLink
-                                        value="Delete"
+                                        
                                         disabled="#{empty DatasetPage.selectedFiles}"
-                                        action="#{DatasetPage.deleteFilesAndSave()}">
+                                        onclick="deleteSelectedFileConfirmation.show()"> 
+                                        <h:outputText value="#{bundle['file.delete']}"/>
                                     </p:commandLink>
                                 </li>
                                 <li>

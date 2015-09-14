@@ -6,12 +6,30 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.ConstraintViolation;
 
 /**
  *
@@ -28,6 +46,8 @@ public class FilePage implements java.io.Serializable {
     private Long datasetVersionId;
     private DataFile file;
 
+    private Dataset editDataset;
+    
     @EJB
     DataFileServiceBean datafileService;
 
@@ -36,9 +56,14 @@ public class FilePage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+        @EJB
+    EjbDataverseEngine commandEngine;
+    
+        @Inject
+    DataverseRequestServiceBean dvRequestService;
 
     public String init() {
-        // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes        
+       
         
         if ( fileId != null ) { 
            
@@ -115,6 +140,105 @@ public class FilePage implements java.io.Serializable {
 
     public void setDatasetVersionId(Long datasetVersionId) {
         this.datasetVersionId = datasetVersionId;
+    }
+    
+    public String restrictFile(boolean restricted){     
+
+            String fileNames = null;   
+            
+        editDataset = this.file.getOwner();
+
+                
+                for (FileMetadata fmw: editDataset.getEditVersion().getFileMetadatas()){
+                    if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())){
+                        
+                        fmw.setRestricted(restricted);
+                    }
+                }
+
+        if (fileNames != null) {
+            String successMessage = JH.localize("file.restricted.success");
+            successMessage = successMessage.replace("{0}", fileNames);
+            JsfHelper.addFlashMessage(successMessage);    
+        }        
+        return save();
+    }
+    
+    private List<FileMetadata> filesToBeDeleted = new ArrayList();
+
+    public void deleteFile() {
+
+        String fileNames = this.getFileMetadata().getLabel();
+
+        editDataset = this.getFileMetadata().getDataFile().getOwner();
+        
+        FileMetadata markedForDelete = null;
+        
+        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas() ){
+            if (fmd.getDataFile().equals(this.getFile())){
+                markedForDelete = fmd;
+            }
+        }
+        
+            if (markedForDelete.getId() != null) {
+                // the file already exists as part of this dataset
+                // so all we remove is the file from the fileMetadatas (for display)
+                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
+                editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                filesToBeDeleted.add(markedForDelete);
+            }
+
+        
+
+     
+        if (fileNames != null) {
+            String successMessage = JH.localize("file.deleted.success");
+            successMessage = successMessage.replace("{0}", fileNames);
+            JsfHelper.addFlashMessage(successMessage);
+        }
+        
+    }
+    
+    public String save() {
+        // Validate
+        Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
+        if (!constraintViolations.isEmpty()) {
+             //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+            return "";
+        }
+               
+
+        Command<Dataset> cmd;
+        try {
+            cmd = new UpdateDatasetCommand(editDataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+             commandEngine.submit(cmd);
+
+        } catch (EJBException ex) {
+            
+            StringBuilder error = new StringBuilder();
+            error.append(ex).append(" ");
+            error.append(ex.getMessage()).append(" ");
+            
+            
+            Throwable cause = ex;
+            while (cause.getCause()!= null) {
+                cause = cause.getCause();
+                error.append(cause).append(" ");
+                error.append(cause.getMessage()).append(" ");
+            }
+            return null;
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+            return null;
+        }
+
+
+            JsfHelper.addSuccessMessage(JH.localize("dataset.message.filesSuccess"));
+
+           setDatasetVersionId(editDataset.getEditVersion().getId());
+        return "";
     }
     
 }

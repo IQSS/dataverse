@@ -25,12 +25,14 @@
                     <f:viewAction action="#{FilePage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(FilePage.file)}"/>
                 </f:metadata>
-
+                <h:form id="fileForm">
                 <div id="topDatasetBlock" class="row">
 
                     <div id="actionButtonBlock" class="button-block clearfix">
                         <!-- Edit Button Group -->
                         <!-- Edit Button -->
+                        <ui:fragment rendered="#{dataverseSession.user.authenticated
+                                                 and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)}">
                         <div class="btn-group pull-right" jsf:rendered="#{true}">
                             <button type="button" id="editFile" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                 <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']} <span class="caret"></span>
@@ -41,8 +43,32 @@
                                         <h:outputText id="editFile-Multi-Link" value="Metadata"/>
                                     </h:outputLink>
                                 </li>
+                                <li>
+                                    <ui:fragment rendered="#{!FilePage.fileMetadata.restricted}">
+                                        <li >
+                                            <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(true)}"
+                                                           >
+                                                <h:outputText value="#{bundle['file.restrict']}"/>
+                                            </p:commandLink>
+                                        </li>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{FilePage.fileMetadata.restricted}">
+                                        <li >
+                                            <p:commandLink update="@form"  actionListener="#{FilePage.restrictFile(false)}"
+                                                           >
+                                                <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                            </p:commandLink>
+                                        </li>
+                                    </ui:fragment>     
+                                </li>
+                                <li>
+                                    <p:commandLink   title="#{bundle['file.delete']}" onclick="deleteFileConfirmation.show();">
+                                        <h:outputText value= "#{bundle['file.delete']}"/>
+                                    </p:commandLink>
+                                </li>
                             </ul>
                         </div>
+                        </ui:fragment>
                         <!-- END: Edit Button -->
                         <!-- END: Edit Button Group -->
 
@@ -138,9 +164,10 @@
                             <!-- Title/Label -->
                             <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="" style="font-size:1.5em;font-weight:bold;margin-right:.5em;"/>
                             
-                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{true}"/>
-                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{true}"/>
-                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{true}"/>
+                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
+                            <h:outputText style="margin-right:.5em;vertical-align: text-top;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>
+                                                            
                         </div>
                         <div id="citation-block">
                              <div class="">
@@ -148,8 +175,8 @@
                                     <div id="citation" class=""
                                          onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                         <h:outputText value="#{FilePage.file.owner.citation}" escape="false"/>
-                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{true}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{true}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                     </div>
                                     <!--<div id="citation-download" class="col-sm-4 col-md-3 text-right" jsf:rendered="">
                                     </div>-->
@@ -279,9 +306,23 @@
 
                     </p:tabView>
                 </div>
-
+                
+                <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+                    <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
+                    <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.owner.released}">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+                    </ui:fragment>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle['file.delete']}" onclick="deleteFileConfirmation.hide()" 
+                                         action="#{FilePage.deleteFile()}" />
+                        <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
+                    </div>
+                </p:dialog>
+        </h:form>
             </ui:define>
         </ui:composition>
+
     </h:body>
+
 </html>
 

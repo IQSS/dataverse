@@ -562,6 +562,17 @@
                             <p:commandButton value="#{bundle.cancel}" onclick="deleteFileConfirmation.hide()" type="button" />
                         </div>
                     </p:dialog>
+                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteSelectedFileConfirmation" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.multiple.immediate']}</p>
+                        <ui:fragment rendered="#{DatasetPage.dataset.released}">
+                            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+                        </ui:fragment>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle['file.delete']}" onclick="deleteSelectedFileConfirmation.hide()" 
+                                             action="#{DatasetPage.deleteFilesAndSave()}" />
+                            <p:commandButton value="#{bundle.cancel}" onclick="deleteSelectedFileConfirmation.hide()" type="button" />
+                        </div>
+                    </p:dialog>
                     <p:dialog id="deaccessionBlock" header="#{bundle['dataset.editBtn.itemLabel.deaccession']}" widgetVar="deaccessionBlock" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deaccessionDialog.tip']}</p>
                         <div class="form-group" jsf:rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
