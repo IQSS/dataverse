@@ -152,7 +152,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
-    private final List<DataFile> newFiles = new ArrayList();
+    private List<DataFile> newFiles = new ArrayList();
     private DatasetVersion workingVersion;
     private int releaseRadio = 1;
     private int deaccessionRadio = 0;
@@ -224,6 +224,15 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedDownloadFile(DataFile selectedDownloadFile) {
         this.selectedDownloadFile = selectedDownloadFile;
     }
+    
+    public List<DataFile> getNewFiles() {
+        return newFiles;
+    }
+    
+    public void setNewFiles(List<DataFile> newFiles) {
+        this.newFiles = newFiles;
+    }
+    
     public Dataverse getLinkingDataverse() {
         return linkingDataverse;
     }
@@ -1891,8 +1900,6 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
                 
-                
-
                 Iterator<DataFile> nfIt = newFiles.iterator();
                 while (nfIt.hasNext()) {
                     DataFile dfn = nfIt.next();
@@ -2083,284 +2090,6 @@ public class DatasetPage implements java.io.Serializable {
         // cache the http client? -- L.A. 4.0 alpha
         return new HttpClient();
     }
-
-    public boolean showFileUploadFileComponent(){
-        
-        if ((this.editMode == this.editMode.FILE) || (this.editMode == this.editMode.CREATE)){
-           return true;
-        }
-        return false;
-    }
-    
-    
-
-    /**
-     * Download a file from drop box
-     * 
-     * @param fileLink
-     * @return 
-     */
-    private InputStream getDropBoxInputStream(String fileLink, GetMethod dropBoxMethod){
-        
-        if (fileLink == null){
-            return null;
-        }
-        
-        // -----------------------------------------------------------
-        // Make http call, download the file: 
-        // -----------------------------------------------------------
-        int status = 0;
-        //InputStream dropBoxStream = null;
-
-        try {
-            status = getClient().executeMethod(dropBoxMethod);
-            if (status == 200) {
-                return dropBoxMethod.getResponseBodyAsStream();
-            }
-        } catch (IOException ex) {
-            logger.log(Level.WARNING, "Failed to access DropBox url: {0}!", fileLink);
-            return null;
-        } 
-
-        logger.log(Level.WARNING, "Failed to get DropBox InputStream for file: {0}", fileLink);
-        return null;
-    } // end: getDropBoxInputStream
-                  
-    
-    /**
-     * Using information from the DropBox choose, ingest the chosen files
-     *  https://www.dropbox.com/developers/dropins/chooser/js
-     * 
-     * @param e 
-     */
-    public void handleDropBoxUpload(ActionEvent event) {
-        
-        logger.info("handleDropBoxUpload");
-        // -----------------------------------------------------------
-        // Read JSON object from the output of the DropBox Chooser: 
-        // -----------------------------------------------------------
-        JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection));
-        JsonArray dbArray = dbJsonReader.readArray();
-        dbJsonReader.close();
-
-        // -----------------------------------------------------------
-        // Iterate through the Dropbox file information (JSON)
-        // -----------------------------------------------------------
-        DataFile dFile = null;
-        GetMethod dropBoxMethod = null;
-        for (int i = 0; i < dbArray.size(); i++) {
-            JsonObject dbObject = dbArray.getJsonObject(i);
-
-            // -----------------------------------------------------------
-            // Parse information for a single file
-            // -----------------------------------------------------------
-            String fileLink = dbObject.getString("link");
-            String fileName = dbObject.getString("name");
-            int fileSize = dbObject.getInt("bytes");
-
-            logger.info("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
-
-
-            /* ----------------------------
-                Check file size
-                - Max size NOT specified in db: default is unlimited
-                - Max size specified in db: check too make sure file is within limits
-            // ---------------------------- */
-            if ((!this.isUnlimitedUploadFileSize())&&(fileSize > this.getMaxFileUploadSizeInBytes())){
-                String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
-                //msg(warningMessage);
-                FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-                continue; // skip to next file, and add error mesage
-            }
-
-            
-            dFile = null;
-            dropBoxMethod = new GetMethod(fileLink);
-
-            // -----------------------------------------------------------
-            // Download the file
-            // -----------------------------------------------------------
-            InputStream dropBoxStream = this.getDropBoxInputStream(fileLink, dropBoxMethod);
-            if (dropBoxStream==null){
-                logger.severe("Could not retrieve dropgox input stream for: " + fileLink);
-                continue;  // Error skip this file
-            }
-            
-            List<DataFile> datafiles = new ArrayList<DataFile>(); 
-            
-            // -----------------------------------------------------------
-            // Send it through the ingest service
-            // -----------------------------------------------------------
-            try {
-                // Note: A single file may be unzipped into multiple files
-                datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");     
-                
-            } catch (IOException ex) {
-                this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
-                continue;
-            }finally {
-                // -----------------------------------------------------------
-                // release connection for dropBoxMethod
-                // -----------------------------------------------------------
-                
-                if (dropBoxMethod != null) {
-                    dropBoxMethod.releaseConnection();
-                }
-                
-                // -----------------------------------------------------------
-                // close the  dropBoxStream
-                // -----------------------------------------------------------
-                try {
-                    dropBoxStream.close();
-                } catch (Exception ex) {
-                    logger.log(Level.WARNING, "Failed to close the dropBoxStream for file: {0}", fileLink);
-                }
-            }
-            
-            if (datafiles == null){
-                this.logger.log(Level.SEVERE, "Failed to create DataFile for DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
-                continue;
-            }else{    
-                // -----------------------------------------------------------
-                // Check if there are duplicate files or ingest warnings
-                // -----------------------------------------------------------
-                String warningMessage = processUploadedFileList(datafiles);
-                logger.info("Warning message during upload: " + warningMessage);
-                if (warningMessage != null){
-                     logger.fine("trying to send faces message to " + event.getComponent().getClientId());
-                     FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-                }
-            }
-        }
-    }
-
-    
-    
-    public void handleFileUpload(FileUploadEvent event) {
-        UploadedFile uFile = event.getFile();
-        List<DataFile> dFileList = null;
-
-        
-        try {
-            // Note: A single file may be unzipped into multiple files
-            dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
-        } catch (IOException ioex) {
-            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
-            return;
-        }
-
-        // -----------------------------------------------------------
-        // Check if there are duplicate files or ingest warnings
-        // -----------------------------------------------------------
-        String warningMessage = processUploadedFileList(dFileList);
-        if (warningMessage != null){
-            logger.fine("trying to send faces message to " + event.getComponent().getClientId());
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-        }
-    }
-
-    /**
-     *  After uploading via the site or Dropbox, 
-     *  check the list of DataFile objects
-     * @param dFileList 
-     */
-    private String processUploadedFileList(List<DataFile> dFileList){
-
-        DataFile dFile = null;
-        String duplicateFileNames = null;
-        boolean multipleFiles = dFileList.size() > 1;
-        boolean multipleDupes = false;
-        String warningMessage = null;
-
-        // -----------------------------------------------------------
-        // Iterate through list of DataFile objects
-        // -----------------------------------------------------------
-        if (dFileList != null) {
-            for (int i = 0; i < dFileList.size(); i++) {
-                dFile = dFileList.get(i);
-
-                //logger.info("dFile: " + dFile);
-                
-                // -----------------------------------------------------------
-                // Check for ingest warnings
-                // -----------------------------------------------------------
-                if (dFile.isIngestProblem()) {
-                    if (dFile.getIngestReportMessage() != null) {
-                        if (warningMessage == null) {
-                            warningMessage = dFile.getIngestReportMessage();
-                        } else {
-                            warningMessage = warningMessage.concat("; " + dFile.getIngestReportMessage());
-                        }
-                    }
-                    dFile.setIngestDone();
-                }
-
-                // -----------------------------------------------------------
-                // Check for duplicates -- e.g. file is already in the dataset
-                // -----------------------------------------------------------
-                if (!isDuplicate(dFile.getFileMetadata())) {
-                    newFiles.add(dFile);        // looks good
-                } else {
-                    if (duplicateFileNames == null) {
-                        duplicateFileNames = dFile.getFileMetadata().getLabel();
-                    } else {
-                        duplicateFileNames = duplicateFileNames.concat(", " + dFile.getFileMetadata().getLabel());
-                        multipleDupes = true;
-                    }
-
-                    // remove the file from the dataset (since createDataFiles has already linked
-                    // it to the dataset!
-                    // first, through the filemetadata list, then through tht datafiles list:
-                    Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
-                    while (fmIt.hasNext()) {
-                        FileMetadata fm = fmIt.next();
-                        if (fm.getId() == null && dFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
-                            fmIt.remove();
-                            break;
-                        }
-                    }
-
-                    Iterator<DataFile> dfIt = dataset.getFiles().iterator();
-                    while (dfIt.hasNext()) {
-                        DataFile dfn = dfIt.next();
-                        if (dfn.getId() == null && dFile.getStorageIdentifier().equals(dfn.getStorageIdentifier())) {
-                            dfIt.remove();
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        // -----------------------------------------------------------
-        // Formate error message for duplicate files
-        // -----------------------------------------------------------
-        if (duplicateFileNames != null) {
-            String duplicateFilesErrorMessage = null;
-            if (multipleDupes) {
-                duplicateFilesErrorMessage = "The following files already exist in the dataset: " + duplicateFileNames;
-            } else {
-                if (multipleFiles) {
-                    duplicateFilesErrorMessage = "The following file already exists in the dataset: " + duplicateFileNames;
-                } else {
-                    duplicateFilesErrorMessage = "This file already exists in this dataset. Please upload another file.";
-                }
-            }
-            if (warningMessage == null) {
-                warningMessage = duplicateFilesErrorMessage;
-            } else {
-                warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
-            }
-        }
-        
-        if (warningMessage != null) {
-            logger.severe(warningMessage);
-            return warningMessage;     // there's an issue return error message
-        } else {
-            return null;    // looks good, return null
-        }
-    }
-    
 
     public boolean isLocked() {
         if (dataset != null) {

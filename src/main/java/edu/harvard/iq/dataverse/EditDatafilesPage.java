@@ -136,7 +136,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private Long ownerId;
     private Long versionId;
-    private final List<DataFile> newFiles = new ArrayList();
+    private List<DataFile> newFiles = new ArrayList();
     private DatasetVersion workingVersion;
     private String dropBoxSelection = "";
     private String displayCitation;
@@ -307,7 +307,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionId = versionId;
     }
 
-    public String initCreateMode(DatasetVersion version) {
+    public String initCreateMode(DatasetVersion version, List<DataFile> newFilesList) {
         logger.fine("Initializing Edit Files page in CREATE mode;");
         if (version == null) {
             return "/404.xhtml";
@@ -316,6 +316,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
+        newFiles = newFilesList;
         
         logger.fine("done");
         
@@ -645,7 +646,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
+            logger.info("Constraint violation detected on SAVE: "+constraintViolations.toString());
              JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
+             
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
