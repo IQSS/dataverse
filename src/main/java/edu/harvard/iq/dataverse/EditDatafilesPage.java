@@ -308,7 +308,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String initCreateMode(DatasetVersion version) {
-        logger.info("Initializing Edit Files page in CREATE mode;");
+        logger.fine("Initializing Edit Files page in CREATE mode;");
         if (version == null) {
             return "/404.xhtml";
         }
@@ -317,7 +317,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
         
-        logger.info("done");
+        logger.fine("done");
         
         return null; 
     }
@@ -491,16 +491,62 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         for (FileMetadata markedForDelete : selectedFiles) {
-            if (markedForDelete.getId() != null) {
+            logger.fine("delete requested on file "+markedForDelete.getLabel());
+            logger.fine("file metadata id: "+markedForDelete.getId());
+            logger.fine("datafile id: "+markedForDelete.getDataFile().getId());
+            logger.fine("page is in edit mode "+mode.name());
+            
+            // TODO: 
+            // some duplicated code below... needs to be refactored as follows: 
+            // 1. check if the filemetadata has the id; if not - remove 
+            // from the appropriate lists using the iterators; 
+            // then 2. check if the file has the id; if not - remove it quietly 
+            // (as specified below; otherwise - do the quick .remoove() of the 
+            // filemetadata from the appropriate lists, and add the file to the
+            // "filestobedeleted" list... as it is now, the code for step 1. 
+            // is duplicated in 2 places below. I just don't have time to 
+            // rewrite it now. -- L.A. Sep. 15, 4.2
+            
+            if (markedForDelete.getDataFile().getId() != null) {
+                logger.fine("this is an existing (saved) file.");
                 // the file already exists as part of this dataset
                 // so all we remove is the file from the fileMetadatas (from the 
                 // file metadatas attached to the editVersion, and from the
                 // display list of file metadatas that are being edited)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list:
-                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                fileMetadatas.remove(markedForDelete);
-                filesToBeDeleted.add(markedForDelete);
+                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list):
+                
+                // has this filemetadata been saved already? (or is it a brand new
+                // filemetadata, created as part of a brand new version, created when 
+                // the user clicked 'delete', that hasn't been saved in the db yet?)
+                if (markedForDelete.getId() != null) {
+                    logger.fine("this is a filemetadata from an existing draft version");
+                    dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                    fileMetadatas.remove(markedForDelete);
+                    filesToBeDeleted.add(markedForDelete);
+                } else {
+                    logger.fine("this is a brand-new (unsaved) filemetadata");
+                    // ok, this is a brand-new DRAFT version. 
+                    // 1. delete the filemetadata from the local display list: 
+                    Iterator fmit = fileMetadatas.iterator();
+                    while (fmit.hasNext()) {
+                        FileMetadata fmd = (FileMetadata) fmit.next();
+                        if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                            fmit.remove();
+                            break;
+                        }
+                    }
+                    // 2. delete the filemetadata from the version: 
+                    fmit = dataset.getEditVersion().getFileMetadatas().iterator();
+                    while (fmit.hasNext()) {
+                        FileMetadata fmd = (FileMetadata) fmit.next();
+                        if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                            fmit.remove();
+                            break;
+                        }
+                    }
+                }
             } else {
+                logger.fine("this is a brand new file.");
                 // the file was just added during this step, so in addition to 
                 // removing it from the fileMetadatas list, we also remove it from 
                 // the newFiles list and the dataset's files, so it never gets saved.
@@ -510,7 +556,19 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // dataset.getEditVersion().getFileMetadatas() directly, 
                     // so there's no need to delete this meta from the local
                     // fileMetadatas list. 
-                    fileMetadatas.remove(markedForDelete);
+                    
+                    // (we can't just do 
+                    // fileMetadatas.remove(markedForDelete);
+                    // - because the filemetadata doesn't have the id yet!)
+                    
+                    Iterator fmit = fileMetadatas.iterator();
+                    while (fmit.hasNext()) {
+                        FileMetadata fmd = (FileMetadata) fmit.next();
+                        if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                            fmit.remove();
+                            break;
+                        }
+                    }
                 }
                 
                 Iterator fmit = dataset.getEditVersion().getFileMetadatas().iterator();
@@ -923,7 +981,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // Check if there are duplicate files or ingest warnings
                 // -----------------------------------------------------------
                 String warningMessage = processUploadedFileList(datafiles);
-                logger.info("Warning message during upload: " + warningMessage);
+                logger.fine("Warning message during upload: " + warningMessage);
                 if (warningMessage != null){
                      logger.fine("trying to send faces message to " + event.getComponent().getClientId());
                      FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
@@ -1376,7 +1434,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             try {
                 uploadStream = file.getInputstream();
             } catch (IOException ioex) {
-                logger.warning("the file " + file.getFileName() + " failed to upload!");
+                logger.info("the file " + file.getFileName() + " failed to upload!");
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "upload failure", "the file " + file.getFileName() + " failed to upload!");
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 return;

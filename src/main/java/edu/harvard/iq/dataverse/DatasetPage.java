@@ -1826,7 +1826,7 @@ public class DatasetPage implements java.io.Serializable {
 
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
-                // collect the names of the newly-restrticted files, 
+            // collect the names of the newly-restrticted files, 
             // to show in the success message:
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
@@ -1836,10 +1836,14 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         for (FileMetadata markedForDelete : selectedFiles) {
+            // TODO: 
+            // the code below needs to be rewritten: 
+            // markedForDelete.getId() == null DOES NOT mean that this file 
+            // has just been uploaded! (markedForDelete is a FileMetadata, not 
+            // a DataFile!! so this maybe an existing file, but a brand new
+            // DRAFT version and a brand new filemetadata that hasn't been saved 
+            // yet) -- L.A. 4.2, Sep. 15 
             if (markedForDelete.getId() != null) {
-                // the file already exists as part of this dataset
-                // so all we remove is the file from the fileMetadatas (for display)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
                 filesToBeDeleted.add(markedForDelete);
             } else {
