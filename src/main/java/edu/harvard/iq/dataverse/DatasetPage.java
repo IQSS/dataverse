@@ -1358,7 +1358,7 @@ public class DatasetPage implements java.io.Serializable {
         if (editMode == EditMode.INFO) {
             // ?
         } else if (editMode == EditMode.FILE) {
-            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editFiles"));
+            // JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editFiles"));
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);

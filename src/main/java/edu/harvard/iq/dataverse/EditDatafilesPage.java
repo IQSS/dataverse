@@ -399,8 +399,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         workingVersion = dataset.getEditVersion();
 
-        JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editFiles"));
-            // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
+        JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.uploadFiles"));
 
     }
 
