@@ -2492,11 +2492,13 @@ public class DatasetPage implements java.io.Serializable {
             return;
         }
         
-        for (FileMetadata fmd : this.selectedFiles){
-            DataFile df = fmd.getDataFile();
+        for (FileMetadata fmd : this.selectedFiles) {
+            if (canDownloadFile(fmd)) {
+                DataFile df = fmd.getDataFile();
             // todo: cleanup this: "create" method doesn't necessarily
-            // mean a response wikk be created (e.g. when dataset in draft)
-            createSilentGuestbookEntry(df.getFileMetadata(), "");
+                // mean a response wikk be created (e.g. when dataset in draft)
+                createSilentGuestbookEntry(df.getFileMetadata(), "");
+            }
         }
 
         //return 

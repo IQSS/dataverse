@@ -110,8 +110,10 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <ui:fragment rendered="#{TemplatePage.editMode == 'CREATE'}" >
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-
-                        <p:commandButton  styleClass="btn btn-default" value="#{bundle['dataset.create.add.terms'] }"  action="#{TemplatePage.save('Terms')}" />
+                        <h:commandButton styleClass="btn btn-default" type="submit" action="#{TemplatePage.save('Terms')}" 
+                                         value="#{bundle['dataset.create.add.terms'] }">
+                            <f:ajax onerror="window.scrollTo(0, 0);" />
+                        </h:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
