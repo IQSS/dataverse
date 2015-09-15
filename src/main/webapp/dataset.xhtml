@@ -461,8 +461,7 @@
                         </ui:fragment>
                         
                         <ui:fragment id="uploadFilesOnCreateTab" rendered="#{!DatasetPage.workingVersion.deaccessioned and
-                                                              (DatasetPage.editMode == 'CREATE')}" >
-                            <span class="glyphicon glyphicon-pencil"/>#{bundle.files} 
+                                                              (DatasetPage.editMode == 'CREATE')}">
                             <ui:include src="editFilesFragment.xhtml">
                                 <ui:param name="datasetPage" value="true"/>
                                 <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
@@ -475,9 +474,9 @@
                             </f:metadata>
                         </ui:fragment>
                         
-                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
+                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
-                                                              (empty DatasetPage.editMode)}" >
+                                                              (empty DatasetPage.editMode)}">
                                 <ui:include src="filesFragment.xhtml"/>
                             </p:tab>
 
