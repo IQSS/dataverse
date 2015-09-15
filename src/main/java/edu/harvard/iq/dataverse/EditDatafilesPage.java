@@ -392,17 +392,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
 
+        if (mode == FileEditMode.UPLOAD) {
+            JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.uploadFiles"));
+        }
         return null;
     }
     
- 
-    public void edit() { /* TODO: is it needed? */
-
-        workingVersion = dataset.getEditVersion();
-
-        JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.uploadFiles"));
-
-    }
 
     private List<FileMetadata> selectedFiles; // = new ArrayList<>();
 
