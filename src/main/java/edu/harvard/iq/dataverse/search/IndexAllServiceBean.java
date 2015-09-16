@@ -77,7 +77,7 @@ public class IndexAllServiceBean {
         String status;
 
         String resultOfClearingIndexTimes;
-        if (numPartitions == 1) {
+        if (numPartitions == 1 && !skipIndexed) {
             SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
             logger.info("attempting to delete all Solr documents before a complete re-index");
             try {
