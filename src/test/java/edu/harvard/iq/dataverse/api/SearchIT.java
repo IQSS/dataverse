@@ -259,13 +259,7 @@ public class SearchIT {
         reindexDataset(datasetIdHomerFound);
         Map<String, String> datasetTimestampsAfterReindex = checkPermissionsOnDvObject(datasetIdHomerFound, homer.apiToken).jsonPath().getMap("data.timestamps", String.class, String.class);
         assertEquals(true, datasetTimestampsAfterReindex.get(Index.contentChanged) != null);
-        /**
-         * @todo Fix this and change to true. After reindexing the timestamp for
-         * content being indexed should be updated for dataverses and datasets
-         * (and we should consider updating it for files). See
-         * https://github.com/IQSS/dataverse/issues/2421
-         */
-        assertEquals(false, datasetTimestampsAfterReindex.get(Index.contentIndexed) != null);
+        assertEquals(true, datasetTimestampsAfterReindex.get(Index.contentIndexed) != null);
         assertEquals(true, datasetTimestampsAfterReindex.get(Index.permsChanged) != null);
         assertEquals(true, datasetTimestampsAfterReindex.get(Index.permsIndexed) != null);
 
@@ -953,6 +947,7 @@ public class SearchIT {
     private Response checkPermissionsOnDvObject(int dvObjectId, String apiToken) {
         Response debugPermsResponse = given()
                 .get("api/admin/index/permsDebug/?id=" + dvObjectId + "&key=" + apiToken);
+//        debugPermsResponse.prettyPrint();
         return debugPermsResponse;
     }
 
