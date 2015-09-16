@@ -316,6 +316,7 @@ td.col-file-action > .button-block, td.col-manage-action > .button-block,
 div.ui-datatable-header > .button-block, #filesHeaderBlock > .button-block {margin-top:0;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group {margin-right:1em;}
+.button-block span.ingest-warning {margin-right:.5em;}
 .button-block div.btn-group div.btn-group {margin-right:0;}
 .button-block button.pull-right:first-child, .button-block a.btn.pull-right:first-child, .button-block div.btn-group.pull-right:first-child, 
 .button-block div.btn-group button, .button-block div.btn-group a.btn {margin-right:0;}
@@ -613,7 +614,10 @@ div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
-div[id$="filesTable"] #filesHeaderCount span.highlightBold {display:block; padding: 8px 0;}
+div[id$="filesTable"] #filesHeaderSelectAll {width:36px; padding:4px 10px;}
+div[id$="filesTable"] #filesHeaderSelectAll .ui-chkbox.ui-widget {margin:0 0 2px 0;}
+div[id$="filesTable"] #filesHeaderCount {padding:4px 10px;}
+div[id$="filesTable"] #filesHeaderCount span.highlightBold {display:block; padding:0; line-height:1.65;}
 div[id$="filesTable"] td.col-file-thumb {width:64px; border-right:0;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
@@ -664,3 +668,4 @@ button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14p
 .ui-messages-info-detail, .ui-messages-warn-detail, .ui-messages-error-detail, .ui-messages-fatal-detail, .ui-message-info-detail, .ui-message-warn-detail, .ui-message-error-detail, .ui-message-fatal-detail {
     margin-left: 0px;
 }
+.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {background: #e0e0e0; border-color: #ccc; opacity: 0.65;}
