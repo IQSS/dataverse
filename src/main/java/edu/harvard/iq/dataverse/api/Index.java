@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.apache.solr.client.solrj.SolrServerException;
 
 @Path("admin/index")
 public class Index extends AbstractApiBean {
@@ -197,6 +199,17 @@ public class Index extends AbstractApiBean {
             } else {
                 return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
             }
+        }
+    }
+
+    @GET
+    @Path("clear")
+    public Response clearSolrIndex() {
+        try {
+            JsonObjectBuilder response = SolrIndexService.deleteAllFromSolrAndResetIndexTimes();
+            return okResponse(response);
+        } catch (SolrServerException | IOException ex) {
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }
 

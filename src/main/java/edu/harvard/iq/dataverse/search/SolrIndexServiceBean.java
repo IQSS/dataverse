@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -50,6 +52,9 @@ public class SolrIndexServiceBean {
     DataverseRoleServiceBean rolesSvc;
     @EJB
     IndexServiceBean indexService;
+
+    public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
+    public static String messageString = "message";
 
     /**
      * @deprecated Now that MyData has shipped in 4.1 we have no plans to change
@@ -510,6 +515,18 @@ public class SolrIndexServiceBean {
             return new IndexResponse("problem committing deletion of the following documents from Solr: " + solrIdsToDelete);
         }
         return new IndexResponse("no known problem deleting the following documents from Solr:" + solrIdsToDelete);
+    }
+
+    public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        logger.info("attempting to delete all Solr documents before a complete re-index");
+        server.deleteByQuery("*:*");
+        server.commit();
+        int numRowsAffected = dvObjectService.clearAllIndexTimes();
+        response.add(numRowsClearedByClearAllIndexTimes, numRowsAffected);
+        response.add(messageString, "Solr index and database index timestamps cleared.");
+        return response;
     }
 
     /**
