@@ -124,6 +124,7 @@ public class IndexServiceBean {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField(SearchFields.ID, solrDocIdentifierDataverse + dataverse.getId());
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataverse.getId());
+        solrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, systemConfig.getVersion());
         solrInputDocument.addField(SearchFields.IDENTIFIER, dataverse.getAlias());
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
@@ -596,6 +597,8 @@ public class IndexServiceBean {
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
+        String dataverseVersion = systemConfig.getVersion();
+        solrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
         solrInputDocument.addField(SearchFields.IDENTIFIER, dataset.getGlobalId());
         solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
@@ -783,6 +786,7 @@ public class IndexServiceBean {
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
                     Long fileEntityId = fileMetadata.getDataFile().getId();
                     datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
+                    datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");

@@ -53,6 +53,11 @@ public class SearchFields {
     // standard fields from example/solr/collection1/conf/schema.xml
     // (but we are getting away from these...)
     public static final String ID = "id";
+    /**
+     * Determine which DvObjects you might want to target for reindexing after
+     * an upgrade such as between Dataverse 4.2 and 4.3.
+     */
+    public static final String DATAVERSE_VERSION_INDEXED_BY = "dataverseVersionIndexedBy_s";
     public static final String NAME = "name";
     /**
      * @todo Do we want to support finding dataverses, datasets, and files with
