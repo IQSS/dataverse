@@ -307,7 +307,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionId = versionId;
     }
 
-    public String initCreateMode(DatasetVersion version, List<DataFile> newFilesList) {
+    public String initCreateMode(DatasetVersion version, List<DataFile> newFilesList, List<FileMetadata> selectedFileMetadatasList) {
         logger.fine("Initializing Edit Files page in CREATE mode;");
         if (version == null) {
             return "/404.xhtml";
@@ -317,6 +317,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
         newFiles = newFilesList;
+        selectedFiles = selectedFileMetadatasList;
         
         logger.fine("done");
         

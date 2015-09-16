@@ -1642,7 +1642,7 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
-    private List<FileMetadata> selectedFiles; // = new ArrayList<>();
+    private List<FileMetadata> selectedFiles = new ArrayList<>();
 
     public List<FileMetadata> getSelectedFiles() {
         return selectedFiles;
