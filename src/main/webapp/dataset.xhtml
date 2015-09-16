@@ -1017,8 +1017,7 @@
                         </div>
                     </p:dialog>
 
-                    <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup"
-                              rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}" modal="true">
+                   <p:dialog id="accessPopup" header="File Restrictions" widgetVar="accessPopup" modal="true">
                         <ui:fragment>
                             <div class="form-horizontal">
                                 <div class="form-group">
@@ -1044,7 +1043,7 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton value="#{bundle.continue}" onclick="accessPopup.hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.save()}" />
+                                <p:commandButton value="#{bundle.continue}" onclick="accessPopup.hide()" update=":datasetForm,:messagePanel" action="#{DatasetPage.restrictSelectedFiles(true)}" />
                                 <p:commandButton value="#{bundle.cancel}" onclick="accessPopup.hide()" type="button" />
                             </div>
                         </ui:fragment>
