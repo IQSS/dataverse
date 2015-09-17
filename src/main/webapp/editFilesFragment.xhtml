@@ -78,6 +78,7 @@
                              emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
 
                     <f:facet name="header">
+                        <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
                         <div id="filesHeaderBlock" class="clearfix margin-bottom">                
 
                             <!-- Button Panels -->
