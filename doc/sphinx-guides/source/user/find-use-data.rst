@@ -77,5 +77,4 @@ Within the Files tab on a dataset page, a user can either Explore the file using
 Explore Data
 ------------------
 
-Link to Explore Data guide.
-
+Please see the :doc:`/user/data-exploration/index`.
