@@ -20,6 +20,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -33,7 +34,7 @@ public class GuestbookResponseServiceBean {
     private EntityManager em;
 
     public List<GuestbookResponse> findAll() {
-        return em.createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc").getResultList();
+        return em.createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc", GuestbookResponse.class).getResultList();
     }
 
     public List<Long> findAllIds() {
@@ -42,16 +43,16 @@ public class GuestbookResponseServiceBean {
 
     public List<Long> findAllIds(Long dataverseId) {
         if (dataverseId == null) {
-            return em.createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc").getResultList();
+            return em.createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc", Long.class).getResultList();
         }
-        return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc").getResultList();
+        return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
     }
 
     public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
 
         if (guestbookId == null) {
         } else {
-            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc").getResultList();
+            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
         }
         return null;
     }
@@ -64,7 +65,7 @@ public class GuestbookResponseServiceBean {
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();
         }
-        return new Long(0);
+        return 0L;
     }
 
     public List<Long> findAllIds30Days() {
@@ -88,9 +89,8 @@ public class GuestbookResponseServiceBean {
         queryString += " o.responseTime >='" + beginTime + "'";
         queryString += " and o.responseTime<='" + endTime + "'";
         queryString += "  order by o.responseTime desc";
-        Query query = em.createQuery(queryString);
 
-        return query.getResultList();
+        return em.createQuery(queryString, Long.class).getResultList();
     }
 
     public Long findCount30Days() {
@@ -134,7 +134,7 @@ public class GuestbookResponseServiceBean {
     }
 
     public List<GuestbookResponse> findAllByDataverse(Long dataverseId) {
-        return em.createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc").getResultList();
+        return em.createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
     }
 
     public List<GuestbookResponse> findAllWithin30Days() {
@@ -158,7 +158,7 @@ public class GuestbookResponseServiceBean {
         queryString += " o.responseTime >='" + beginTime + "'";
         queryString += " and o.responseTime<='" + endTime + "'";
         queryString += "  order by o.responseTime desc";
-        Query query = em.createQuery(queryString);
+        TypedQuery<GuestbookResponse> query = em.createQuery(queryString, GuestbookResponse.class);
 
         return query.getResultList();
     }
@@ -180,12 +180,12 @@ public class GuestbookResponseServiceBean {
         return "select tempid from tempid";
     }
 
-    private String generateIDsforTempInsert(List idList) {
+    private String generateIDsforTempInsert(List<Long> idList) {
         int count = 0;
         StringBuffer sb = new StringBuffer();
-        Iterator iter = idList.iterator();
+        Iterator<Long> iter = idList.iterator();
         while (iter.hasNext()) {
-            Long id = (Long) iter.next();
+            Long id = iter.next();
             sb.append("(").append(id).append(",").append(count++).append(")");
             if (iter.hasNext()) {
                 sb.append(",");
@@ -218,7 +218,7 @@ public class GuestbookResponseServiceBean {
                 + " vdc.name, s.protocol, s.authority, m.title, fmd.label, gbr.responsetime, gbr.position, gbr.study_id, gbr.id, s.id, gbr.downloadType  "
                 + "order by s.id, gbr.id";
         System.out.print(gbrDownloadQueryString);
-        Query query = em.createNativeQuery(gbrDownloadQueryString);
+        TypedQuery<Object[]> query = em.createQuery(gbrDownloadQueryString, Object[].class);
 
         return convertIntegerToLong(query.getResultList(), 14);
     }
@@ -231,7 +231,7 @@ public class GuestbookResponseServiceBean {
                 + " and gbr.id = cqr.guestbookresponse_id "
                 + "and cq.id = cqr.customquestion_id "
                 + " and cqr.guestbookresponse_id =  " + gbrId;
-        Query query = em.createNativeQuery(gbrCustomQuestionQueryString);
+        TypedQuery<Object[]> query = em.createQuery(gbrCustomQuestionQueryString, Object[].class);
 
         return convertIntegerToLong(query.getResultList(), 1);
     }
@@ -239,11 +239,10 @@ public class GuestbookResponseServiceBean {
     private Guestbook findDefaultGuestbook() {
         Guestbook guestbook = new Guestbook();
         String queryStr = "SELECT object(o) FROM Guestbook as o WHERE o.dataverse.id = null";
-        Query query = em.createQuery(queryStr);
-        List resultList = query.getResultList();
+        List<Guestbook> resultList = em.createQuery(queryStr, Guestbook.class).getResultList();
 
         if (resultList.size() >= 1) {
-            guestbook = (Guestbook) resultList.get(0);
+            guestbook = resultList.get(0);
         }
         return guestbook;
 
