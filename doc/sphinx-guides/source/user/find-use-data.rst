@@ -51,7 +51,8 @@ In Dataverse, browsing happens when a user hasn't entered a search term or query
 
 Saved Search
 --------------------
-Coming soon!
+
+Saved Search is currently an experimental feature only available to superusers. Please see the :doc:`/api/native-api` section of the API Guide for more information.
 
 Using Data
 =============
