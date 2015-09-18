@@ -700,14 +700,21 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
-        
-        
+                
         // And update the new and/or edited files in the database:
         Timestamp updateTime = new Timestamp(new Date().getTime());
         
         workingVersion.setLastUpdateTime(updateTime);
         dataset.setModificationTime(updateTime);
         
+        // First, set the mandatory Create and Modification time stamps on 
+        // *all* the files that we need to save:
+        
+        // TODO: 
+        // refactor the save-in-the-db code below: use the save dataset 
+        // command on a brand new version (workingVersion.getId() == null);
+        // and save the files individually if it's an existig draft (add 
+        // a "save datafile" command in 4.3) -- L.A. 4.2
         
         for (FileMetadata fileMetadata : fileMetadatas) {
       
@@ -716,10 +723,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                 fileMetadata.getDataFile().setCreator((AuthenticatedUser) session.getUser());
             }
             fileMetadata.getDataFile().setModificationTime(updateTime);
-            
-            logger.fine("saving file "+fileMetadata.getLabel()+", ("+fileMetadata.getDescription()+")");
-            
-            fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
+        }
+        
+        // Then save them in the DB:
+       
+        if (workingVersion.getId() != null) { 
+            for (FileMetadata fileMetadata : fileMetadatas) {    
+                fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
+            }
+        } else if (fileMetadatas.size() > 0) {
+            datafileService.mergeFileMetadata(fileMetadatas.get(0));
         }
         
         // Remove / delete any files that were removed
