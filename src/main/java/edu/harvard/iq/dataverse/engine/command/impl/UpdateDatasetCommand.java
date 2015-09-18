@@ -40,6 +40,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
     private final Dataset theDataset;
     private final List<FileMetadata> filesToDelete;
+    private boolean validateLenient = false;
     
     public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -67,6 +68,16 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         }
     }    
 
+    public boolean isValidateLenient() {
+        return validateLenient;
+    }
+
+    public void setValidateLenient(boolean validateLenient) {
+        this.validateLenient = validateLenient;
+    }
+    
+    
+
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         // first validate
@@ -75,11 +86,21 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.getEditVersion().setDatasetFields(theDataset.getEditVersion().initDatasetFields());
         Set<ConstraintViolation> constraintViolations = theDataset.getEditVersion().validate();        
         if (!constraintViolations.isEmpty()) {
-            String validationFailedString = "Validation failed:";
-            for (ConstraintViolation constraintViolation : constraintViolations) {
-                validationFailedString += " " + constraintViolation.getMessage();
+
+            if (validateLenient) {
+                // for some edits, we allow required fields to be blank, so we set them to N/A to pass validation
+                // for example, saving files, shouldn't validate metadata
+                for (ConstraintViolation v : constraintViolations) {
+                    DatasetField f = ((DatasetField) v.getRootBean());
+                     f.setSingleValue(DatasetField.NA_VALUE);
+                }
+            } else {
+                String validationFailedString = "Validation failed:";
+                for (ConstraintViolation constraintViolation : constraintViolations) {
+                    validationFailedString += " " + constraintViolation.getMessage();
+                }
+                throw new IllegalCommandException(validationFailedString, this);
             }
-            throw new IllegalCommandException(validationFailedString, this);
         }
         
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
