@@ -1402,6 +1402,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion.setInReview(false);
         try {
             cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
+            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
@@ -1428,6 +1429,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion.setInReview(true);
         try {
             cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
+            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Submission Failed", " - " + ex.toString()));
@@ -1568,6 +1570,7 @@ public class DatasetPage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest());
+            ((UpdateDatasetCommand) cmd).setValidateLenient(true); 
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Dataset Registration Failed", " - " + ex.toString()));
@@ -1961,6 +1964,7 @@ public class DatasetPage implements java.io.Serializable {
                 
             } else {
                 cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                ((UpdateDatasetCommand) cmd).setValidateLenient(true);  
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
