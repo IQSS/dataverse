@@ -772,7 +772,7 @@
 
                         </div>
                         <div class="button-block">
-                            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileTagsPopup.hide()" update=":datasetForm:tabView:filesTable" actionListener="#{DatasetPage.saveFileTagsAndCategories()}"/>
+                            <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileTagsPopup.hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
                             <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="fileTagsPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>

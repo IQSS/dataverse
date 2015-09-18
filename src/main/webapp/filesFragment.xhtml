@@ -67,7 +67,7 @@
                                 </p:commandLink>
                             </li>
                             <li class="#{empty DatasetPage.selectedRestrictedFiles ? 'disabled' : ''}">
-                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{DatasetPage.restrictSelectedFiles(false)}"
+                                <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" action="#{DatasetPage.restrictSelectedFiles(false)}"
                                                disabled="#{empty DatasetPage.selectedRestrictedFiles}">
                                     <h:outputText value="#{bundle['file.unrestrict']}"/>
                                 </p:commandLink>

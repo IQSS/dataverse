@@ -1774,7 +1774,8 @@ public class DatasetPage implements java.io.Serializable {
            refreshSelectedFiles(); 
         }
         restrictFiles(restricted);        
-        return save();
+        save();
+        return  returnToDraftVersion();
     }
 
     public void restrictFiles(boolean restricted) {
@@ -2792,7 +2793,7 @@ public class DatasetPage implements java.io.Serializable {
     /* This method handles saving both "tabular file tags" and 
      * "file categories" (which are also considered "tags" in 4.0)
     */
-    public void saveFileTagsAndCategories() {
+    public String saveFileTagsAndCategories() {
         // 1. New Category name:
         // With we don't need to do anything for the file categories that the user
         // selected from the pull down list; that was done directly from the 
@@ -2833,6 +2834,7 @@ public class DatasetPage implements java.io.Serializable {
         
 
         save();
+                return  returnToDraftVersion();
     }
 
     
