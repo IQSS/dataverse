@@ -101,8 +101,8 @@
                         </p:commandLink>
                     </div>
                     <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                                   type="button" styleClass="btn btn-default"
-                                   update="filesTable" actionListener="#{DatasetPage.requestAccessMultipleFiles(DatasetPage.selectedFilesIdsString)}"
+                                   type="button" styleClass="btn btn-default"                                   
+                                   update="@form" action="#{DatasetPage.requestAccessMultipleFiles(DatasetPage.selectedFilesIdsString)}"
                                    disabled="#{DatasetPage.locked or !DatasetPage.fileAccessRequestMultiButtonEnabled}">
                         <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                     </p:commandLink>

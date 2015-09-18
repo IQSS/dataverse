@@ -3114,7 +3114,7 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
-    public void requestAccessMultipleFiles(String fileIdString) {
+   public String requestAccessMultipleFiles(String fileIdString) {
         Long idForNotification = new Long(0);
         if (fileIdString != null) {
             String[] ids = fileIdString.split(",");
@@ -3136,18 +3136,20 @@ public class DatasetPage implements java.io.Serializable {
         if (idForNotification.intValue() > 0) {
             sendRequestFileAccessNotification(idForNotification);
         }
+        return returnToDatasetOnly();
     }
 
-    public void requestAccess(DataFile file, boolean sendNotification) {
-        file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
-        datafileService.save(file);
+    public void requestAccess(DataFile file, boolean sendNotification) {       
+        if (!file.getFileAccessRequesters().contains((AuthenticatedUser) session.getUser())) {
+            file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+            datafileService.save(file);
 
-        // create notifications
-        if (sendNotification) {
-            sendRequestFileAccessNotification(file.getId());
+            // create notifications
+            if (sendNotification) {
+                sendRequestFileAccessNotification(file.getId());
 
+            }
         }
-
     }
 
     private void sendRequestFileAccessNotification(Long fileId) {
