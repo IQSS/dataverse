@@ -1344,7 +1344,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void refreshSelectedFiles(){
+        String termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
+        boolean requestAccess = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
         workingVersion = dataset.getEditVersion();
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(requestAccess);
         List <FileMetadata> newSelectedFiles = new ArrayList();
         for (FileMetadata fmd : selectedFiles){
             for (FileMetadata fmdn: workingVersion.getFileMetadatas()){
@@ -3003,6 +3007,9 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isFileAccessRequestMultiButtonRequired(){
         if (!session.getUser().isAuthenticated()){
             return false;
+        }
+        if (!workingVersion.getTermsOfUseAndAccess().isFileAccessRequest()){
+           // return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
             if (!canDownloadFile(fmd)){
