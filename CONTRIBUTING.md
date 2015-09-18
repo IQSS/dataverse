@@ -22,7 +22,7 @@ See also our [Community and Support][] page.
 [Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
 [Functional Requirements Document (FRD for short)]: https://docs.google.com/document/d/1PRyAlP6zlUlUuHfgyUezzuaVQ4JnapvgtGWo0o7tLEs/edit?usp=sharing
 [Balsamiq]: https://iqssharvard.mybalsamiq.com/projects
-[Functional Requirements Document folder on Google Drive]: https://drive.google.com/drive/folders/0B3_V6vFxEcx-fl92ek92OG1nTmhQenBRX1Z4OVJBLXpURmh2d2RyX1NZRUp6YktaYUU5YTA
+[Functional Requirements Document folder on Google Drive]: https://drive.google.com/folderview?id=0B3_V6vFxEcx-fl92ek92OG1nTmhQenBRX1Z4OVJBLXpURmh2d2RyX1NZRUp6YktaYUU5YTA&usp=sharing
 
 ## Bug Reports/Issues
 
