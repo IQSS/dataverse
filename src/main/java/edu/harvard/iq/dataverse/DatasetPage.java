@@ -1004,6 +1004,7 @@ public class DatasetPage implements java.io.Serializable {
             // Set the workingVersion and Dataset
             // ---------------------------------------           
             if (persistentId != null) {
+                logger.fine("initializing DatasetPage with persistent ID "+persistentId);
                 // Set Working Version and Dataset by PersistentID
                retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);                     
 
@@ -1025,6 +1026,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 
            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+           logger.fine("retreived version: id: "+workingVersion.getId()+", state: "+this.workingVersion.getVersionState());
            this.dataset = this.workingVersion.getDataset();
            fileMetadatas = populateFileMetadatas();
            

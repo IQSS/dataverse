@@ -307,8 +307,19 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionId = versionId;
     }
 
-    public String initCreateMode(DatasetVersion version, List<DataFile> newFilesList, List<FileMetadata> selectedFileMetadatasList) {
+    public String initCreateMode(String modeToken, DatasetVersion version, List<DataFile> newFilesList, List<FileMetadata> selectedFileMetadatasList) {
+        if (modeToken == null) {
+            logger.fine("Request to initialize Edit Files page with null token (aborting).");
+            return null;
+        }
+        
+        if (!modeToken.equals("CREATE")) {
+            logger.fine("Request to initialize Edit Files page with token " + modeToken + " (aborting).");
+            return null; 
+        }
+        
         logger.fine("Initializing Edit Files page in CREATE mode;");
+        
         if (version == null) {
             return "/404.xhtml";
         }
@@ -540,6 +551,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.fine("file metadata id: "+markedForDelete.getId());
             logger.fine("datafile id: "+markedForDelete.getDataFile().getId());
             logger.fine("page is in edit mode "+mode.name());
+            
             
             // TODO: 
             // some duplicated code below... needs to be refactored as follows: 
@@ -834,6 +846,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (dataset.getId() != null) {
                 dataset = datasetService.find(dataset.getId());
                 ingestService.startIngestJobs(dataset, (AuthenticatedUser) session.getUser());
+                
+                workingVersion = dataset.getEditVersion();
+                logger.fine("working version id: "+workingVersion.getId());
             }
         }
 

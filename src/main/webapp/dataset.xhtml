@@ -32,7 +32,7 @@
                     <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
-                    <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.selectedFiles)}" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
+                    <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.selectedFiles)}"/>
                     
                 </f:metadata>
                 <h:form id="datasetForm">
@@ -466,11 +466,8 @@
                                 <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
                                 <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
                                 <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
-                                <!-- ui:param name="showMessagePanel" value="#{true}"/ -->
                             </ui:include>
-                            <f:metadata>
-                                <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.workingVersion)}" />
-                            </f:metadata>
+
                         </ui:fragment>
                         
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">

@@ -15,9 +15,10 @@
     <!-- (removed - L.A. 4.2 -->
 
     <!-- Files Table -->
-    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? (DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatas) : (DatasetPage.workingVersion.fileMetadatasSorted)}"
+    <p:dataTable id="filesTable" value="#{DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.workingVersion.fileMetadatasSorted}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
+                 rendered="#{empty DatasetPage.editMode}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <p:ajax event="rowSelectCheckbox"
                 listener="#{DatasetPage.updateFileCounts}"
