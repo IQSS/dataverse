@@ -120,11 +120,11 @@ Edit Dataset
 
 Go to the dataset you would like to edit where you will see the listing of files. Select the files you would like to edit by using either the Select All checkbox or individually selecting files. Next, click on the Edit button above the files and select if you would like to:
 
- - Delete the selected files
- - Edit the file metadata (file name, description) for the selected files
- - Restrict the selected files
- - Unrestrict the selected files (only if the selected files are restricted)
- - Add tags to the selected files
+- Delete the selected files
+- Edit the file metadata (file name, description) for the selected files
+- Restrict the selected files
+- Unrestrict the selected files (only if the selected files are restricted)
+- Add tags to the selected files
 
 All of these actions, besides editing file metadata, will happen within this page and not bring you to another page. If you restrict files, you will also be asked to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them.
 
