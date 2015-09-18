@@ -869,6 +869,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public String cancel() {
+        if (workingVersion.getId() != null) {
+            return returnToDraftVersion();
+        }
         return  returnToDatasetOnly();
     }
 
