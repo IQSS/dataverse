@@ -2030,8 +2030,6 @@ public class DatasetPage implements java.io.Serializable {
             }
     }
     
-    
-    
     private String returnToLatestVersion(){
          dataset = datasetService.find(dataset.getId());
          workingVersion = dataset.getLatestVersion();
