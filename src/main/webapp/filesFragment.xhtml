@@ -76,7 +76,7 @@
                             <li class="#{empty DatasetPage.selectedFiles ? 'disabled' : ''}">
                                 <p:commandLink id="fileCategoriesLink"
                                                disabled="#{empty DatasetPage.selectedFiles}"
-                                               actionListener="#{DatasetPage.refreshCategoriesByName()}"
+                                               actionListener="#{DatasetPage.refreshTagsPopUp()}"
                                                update=":datasetForm:fileTagsPopup"
                                                oncomplete="fileTagsPopup.show();bind_bsui_components();">
                                     #{bundle['file.tags']}

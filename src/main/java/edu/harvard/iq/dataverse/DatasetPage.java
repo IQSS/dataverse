@@ -1716,11 +1716,15 @@ public class DatasetPage implements java.io.Serializable {
     public void updateFileCounts(){
         setSelectedUnrestrictedFiles(new ArrayList<FileMetadata>());
         setSelectedRestrictedFiles(new ArrayList<FileMetadata>());
+        setTabularDataSelected(false);
         for (FileMetadata fmd : this.selectedFiles){
             if(fmd.isRestricted()){
                 getSelectedRestrictedFiles().add(fmd);
             } else {
                 getSelectedUnrestrictedFiles().add(fmd);
+            }
+            if(fmd.getDataFile().isTabularData()){
+                setTabularDataSelected(true);
             }
         }
     }
@@ -2715,12 +2719,26 @@ public class DatasetPage implements java.io.Serializable {
         categoriesByName = dummy;
     }
     
-    public void refreshCategoriesByName(){
-        System.out.print(bulkUpdateCheckVersion());
+    public void refreshTagsPopUp(){
         if (bulkUpdateCheckVersion()){
            refreshSelectedFiles(); 
-        }
-        
+        }      
+        refreshCategoriesByName();
+        refreshTabFileTagsByName();
+    }
+    
+    private List<String> tabFileTagsByName;
+
+    public List<String> getTabFileTagsByName() {
+        return tabFileTagsByName;
+    }
+
+    public void setTabFileTagsByName(List<String> tabFileTagsByName) {
+        this.tabFileTagsByName = tabFileTagsByName;
+    }
+    
+    private void refreshCategoriesByName(){
+
         categoriesByName= new ArrayList<>();
         for (FileMetadata fm : selectedFiles) {
             if (fm.getCategories() != null) {
@@ -2757,6 +2775,16 @@ public class DatasetPage implements java.io.Serializable {
     public void setTabFileTags(List<String> tabFileTags) {
         this.tabFileTags = tabFileTags;
     }
+    
+    private String[] selectedTabFileTags = {};
+
+    public String[] getSelectedTabFileTags() {
+        return selectedTabFileTags;
+    }
+
+    public void setSelectedTabFileTags(String[] selectedTabFileTags) {
+        this.selectedTabFileTags = selectedTabFileTags;
+    }
 
     private String[] selectedTags = {};
     
@@ -2769,6 +2797,42 @@ public class DatasetPage implements java.io.Serializable {
                 selectedTags[i] = categoriesByName.get(i);
             }
         }
+    }
+    
+    private void refreshTabFileTagsByName(){
+        
+        tabFileTagsByName= new ArrayList<>();
+        for (FileMetadata fm : selectedFiles) {
+            if (fm.getDataFile().getTags() != null) {
+                for (int i = 0; i < fm.getDataFile().getTags().size(); i++) {
+                    if (!tabFileTagsByName.contains(fm.getDataFile().getTags().get(i).getTypeLabel())) {
+                        tabFileTagsByName.add(fm.getDataFile().getTags().get(i).getTypeLabel());
+                    }
+                }
+            }
+        }
+        refreshSelectedTabFileTags();
+    }
+    
+    private void refreshSelectedTabFileTags() {
+        selectedTabFileTags = null;
+        selectedTabFileTags = new String[0];
+        if (tabFileTagsByName.size() > 0) {
+            selectedTabFileTags = new String[tabFileTagsByName.size()];
+            for (int i = 0; i < tabFileTagsByName.size(); i++) {
+                selectedTabFileTags[i] = tabFileTagsByName.get(i);
+            }
+        }
+    }
+    
+    private boolean tabularDataSelected = false;
+
+    public boolean isTabularDataSelected() {
+        return tabularDataSelected;
+    }
+
+    public void setTabularDataSelected(boolean tabularDataSelected) {
+        this.tabularDataSelected = tabularDataSelected;
     }
 
     public String[] getSelectedTags() {           
@@ -2817,14 +2881,29 @@ public class DatasetPage implements java.io.Serializable {
                         // 2. Tabular DataFile Tags: 
                         if (selectedTags != null) {
                             for (int i = 0; i < selectedTags.length; i++) {
-                                    fmd.addCategoryByName(selectedTags[i]);
+                                fmd.addCategoryByName(selectedTags[i]);
+                            }
+                        }
+                        if (fmd.getDataFile().isTabularData()) {
+                            fmd.getDataFile().setTags(null);
+                            for (int i = 0; i < selectedTabFileTags.length; i++) {
+
+                                DataFileTag tag = new DataFileTag();
+                                try {
+                                    tag.setTypeByLabel(selectedTabFileTags[i]);
+                                    tag.setDataFile(fmd.getDataFile());
+                                    fmd.getDataFile().addTag(tag);
+
+                                } catch (IllegalArgumentException iax) {
+                                    // ignore 
+                                }
                             }
                         }
                     }
                 }
             }
-        }                 
-                // success message: 
+        }
+               // success message: 
                 String successMessage = JH.localize("file.assignedTabFileTags.success");
                 logger.fine(successMessage);
                 successMessage = successMessage.replace("{0}", "Selected Files");

@@ -767,6 +767,22 @@
                             </div>
 
                         </div>
+                        <div class="form-group" jsf:rendered="#{DatasetPage.tabularDataSelected}">
+                            <label for="tabularDataTagsDsPAge" class="col-sm-3 control-label">
+                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.tabularDataTags.title']}">
+                        #{bundle['file.tabularDataTags']}
+                                </span>
+                            </label>
+                            <div class="col-sm-8">
+                                <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
+                                <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
+                                                      value="#{DatasetPage.selectedTabFileTags}" label="#{bundle.select}"
+                                                      filter="false">
+                                    <f:selectItems value="#{DatasetPage.tabFileTags}" />
+                                </p:selectCheckboxMenu>
+                                <p:message for="tabularDataTagsDSPage" display="text" />
+                            </div>
+                        </div>
                         <div class="button-block">
                             <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="fileTagsPopup.hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
                             <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="fileTagsPopup.hide()" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
