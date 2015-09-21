@@ -229,7 +229,11 @@
            </div>
        </div>
 
-       <div class="panel panel-default">
+       <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and (!empty termsOfUseAndAccess.termsOfAccess
+                                                        or !empty termsOfUseAndAccess.dataAccessPlace 
+                                        or !empty termsOfUseAndAccess.originalArchive or !empty termsOfUseAndAccess.availabilityStatus 
+                                        or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
+                                        or !empty termsOfUseAndAccess.studyCompletion)}" >
            <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
