@@ -148,11 +148,11 @@ each of the calls.
 
 Generates a new user. Data about the user are posted via JSON. *Note that the password is passed as a parameter in the query*. ::
 
-  POST http://$SERVER/api/bulitin-users?password=$password&key=$key
+  POST http://$SERVER/api/builtin-users?password=$password&key=$key
 
 Gets the API token of the user, given the password. ::
 
-  GET http://$SERVER/api/bulitin-users/$username/api-token?password=$password
+  GET http://$SERVER/api/builtin-users/$username/api-token?password=$password
 
 Roles
 ~~~~~
