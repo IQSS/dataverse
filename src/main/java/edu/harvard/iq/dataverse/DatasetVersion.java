@@ -208,8 +208,15 @@ public class DatasetVersion implements Serializable {
         this.inReview = inReview;
     }
 
+    /**
+     * The only time a dataset can be in review is when it is in draft.
+     */
     public boolean isInReview() {
-        return inReview;
+        if (versionState != null && versionState.equals(VersionState.DRAFT)) {
+            return inReview;
+        } else {
+            return false;
+        }
     }
 
 
