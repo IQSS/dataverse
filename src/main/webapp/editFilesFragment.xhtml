@@ -107,6 +107,21 @@
                                 </p:commandLink>
                             </div>
                         </div>
+                        <div class="clearfix">
+                            <div id="filesHeaderSelectAll" class="pull-left">
+                                <span class="bootstrap-button-tooltip" title="Select All">
+                                    <p:selectBooleanCheckbox value="#{EditDatafilesPage.selectAllFiles}" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                        <p:ajax update="filesTable" listener="#{EditDatafilesPage.toggleSelectedFiles}" oncomplete="bind_bsui_components();" />
+                                    </p:selectBooleanCheckbox>
+                                </span>
+                            </div>
+                            <div id="filesHeaderCount" class="pull-left text-left">
+                                <!-- Files Count -->
+                                <h:outputFormat value="#{datasetPage ? bundle['file.count'] : bundle['file.count.selected']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                    <f:param value="#{EditDatafilesPage.fileMetadatas.size()}"/>
+                                </h:outputFormat>
+                            </div>
+                        </div>
                     </f:facet>
 
                     <!-- TODO: do we still need the selection at all?? or is it all going to be handled on the "view" page?? -->

@@ -422,7 +422,31 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.selectedFiles = selectedFiles;
     }
     
-    // helper Method
+    private boolean selectAllFiles;
+
+    public boolean isSelectAllFiles() {
+        return selectAllFiles;
+    }
+
+    public void setSelectAllFiles(boolean selectAllFiles) {
+        this.selectAllFiles = selectAllFiles;
+    }
+    
+    public void toggleSelectedFiles(){
+        this.selectedFiles = new ArrayList();
+        if(this.selectAllFiles){
+            if (mode == FileEditMode.CREATE) {
+                for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                    this.selectedFiles.add(fmd);
+                }
+            } else {
+                for (FileMetadata fmd : fileMetadatas) {
+                    this.selectedFiles.add(fmd);
+                }
+            }
+        }
+    }
+    
     public String getSelectedFilesIdsString() {        
         String downloadIdString = "";
         for (FileMetadata fmd : this.selectedFiles){
@@ -435,6 +459,19 @@ public class EditDatafilesPage implements java.io.Serializable {
       
     }
 
+    /*
+    public void updateFileCounts(){
+        
+        setSelectedUnrestrictedFiles(new ArrayList<FileMetadata>());
+        setSelectedRestrictedFiles(new ArrayList<FileMetadata>());
+        for (FileMetadata fmd : this.selectedFiles){
+            if(fmd.isRestricted()){
+                getSelectedRestrictedFiles().add(fmd);
+            } else {
+                getSelectedUnrestrictedFiles().add(fmd);
+            }
+        }
+    }*/
     
     List<FileMetadata> previouslyRestrictedFiles = null;
     
