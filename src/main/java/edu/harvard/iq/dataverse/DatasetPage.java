@@ -1591,31 +1591,30 @@ public class DatasetPage implements java.io.Serializable {
     
     public void refresh() { // String flashmessage) { 
         logger.fine("refreshing");
-        
+
         //if (flashmessage != null) {
         //    logger.info("flash message: "+flashmessage);
         //}
-        
         // refresh the working copy of the Dataset and DatasetVersion:
         dataset = datasetService.find(dataset.getId());
 
         logger.fine("refreshing working version");
-        if (versionId == null) {
-            if (editMode == EditMode.FILE) {
-                workingVersion = dataset.getEditVersion();
-            } else {
-                if (!dataset.isReleased()) {
-                    workingVersion = dataset.getLatestVersion();
-                } else {
-                    workingVersion = dataset.getReleasedVersion();
-                }
-            }
-        } else {
-            logger.fine("refreshing working version, from version id.");
-            workingVersion = datasetVersionService.find(versionId);
+
+        DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
+
+        if (persistentId != null) {
+            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
+        } else if (versionId != null) {
+            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+        } else if (dataset.getId() != null) {
+            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
         }
+
+        if (retrieveDatasetVersionResponse != null) {
+            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+        }
+
         displayCitation = dataset.getCitation(false, workingVersion);
-        JsfHelper.addSuccessMessage(JH.localize("dataset.message.files.ingestSuccess"));
     }
 
     public String deleteDataset() {
