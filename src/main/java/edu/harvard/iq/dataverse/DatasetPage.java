@@ -1539,6 +1539,8 @@ public class DatasetPage implements java.io.Serializable {
 
     private String releaseDataset(boolean minor) {
         Command<Dataset> cmd;
+        //SEK we want to notify concerned users if a DS in review has been published.
+        boolean notifyPublish = workingVersion.isInReview();
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
                 if (editMode == EditMode.CREATE) {
@@ -1548,7 +1550,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 dataset = commandEngine.submit(cmd);
                 JsfHelper.addSuccessMessage(JH.localize("dataset.message.publishSuccess"));                        
-                if (workingVersion.isInReview()) {
+                if (notifyPublish) {
                     List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
                     List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
                     for (AuthenticatedUser au : authUsers) {
