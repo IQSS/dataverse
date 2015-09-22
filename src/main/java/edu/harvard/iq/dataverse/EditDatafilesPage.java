@@ -354,13 +354,26 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return "/404.xhtml";
             }
         } else {
+            // It could be better to show an error page of some sort, explaining
+            // that the dataset id is mandatory... But 404 will do for now.
             return "/404.xhtml";
         }
         
         workingVersion = dataset.getEditVersion();
 
-        if (workingVersion == null) {
+        if (workingVersion == null || !workingVersion.isDraft()) {
+            // Sorry, we couldn't find/obtain a draft version for this dataset!
             return "/404.xhtml";
+        }
+        
+        // Check if they have permission to modify this dataset: 
+        
+        if (!permissionService.on(dataset).has(Permission.EditDataset)) {
+            if (!session.getUser().isAuthenticated()) {
+                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
+            } else {
+                return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+            }
         }
         
         if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
