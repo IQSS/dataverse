@@ -772,7 +772,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String saveWithTermsOfUse() {
-        logger.info("saving terms of use, and the dataset version");
+        logger.fine("saving terms of use, and the dataset version");
         datasetUpdateRequired = true; 
         return save();
     }
@@ -813,11 +813,24 @@ public class EditDatafilesPage implements java.io.Serializable {
         //boolean newDraftVersion = false; 
          
         if (workingVersion.getId() == null  || datasetUpdateRequired) {
-            logger.fine("issuing the dataset update command");
+            logger.info("issuing the dataset update command");
             // We are creating a new draft version; 
             // We'll use an Update command for this: 
             
             //newDraftVersion = true;
+            
+            if (datasetUpdateRequired) {
+                for (int i = 0; i < workingVersion.getFileMetadatas().size(); i++) {
+                    for (FileMetadata fileMetadata : fileMetadatas) {
+                        if (fileMetadata.getDataFile().getStorageIdentifier() != null) {
+                            if (fileMetadata.getDataFile().getStorageIdentifier().equals(workingVersion.getFileMetadatas().get(i).getDataFile().getStorageIdentifier())) {
+                                workingVersion.getFileMetadatas().set(i, fileMetadata);
+                            }
+                        }
+                    }
+                }
+            }
+            
             
             Command<Dataset> cmd;
             try {
@@ -1763,6 +1776,5 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-   
-
+    
 }

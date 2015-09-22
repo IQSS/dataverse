@@ -143,6 +143,11 @@
                                 <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                             </ui:fragment>
+                            <!-- Restricted File Icon -->
+                
+                            <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted}">
+                                <span class="icon-unlock text-success"/>
+                            </div>
 
                             <!-- Dataset Thumbnail -->
                             <span id="datasetThumbnail" class="bg-info text-info text-center small show"
