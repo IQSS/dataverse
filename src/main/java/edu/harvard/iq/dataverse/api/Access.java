@@ -753,30 +753,30 @@ public class Access extends AbstractApiBean {
         // Either a session, or an API token is *always* required. 
         // Even if it's a totally public object. 
         // So, checking for that first:
-        logger.info("checking if either a session or a token supplied.");
+        logger.fine("checking if either a session or a token supplied.");
         if (session == null || session.getUser() == null) { 
-            logger.info("session is null, or unauthenticated.");
+            logger.fine("session is null, or unauthenticated.");
             if (apiToken == null || findUserByApiToken(apiToken) == null) {
-                logger.info("token null or not supplied.");
+                logger.fine("token null or not supplied.");
                 throw new WebApplicationException(Response.Status.UNAUTHORIZED);
             }
         } else {
-            logger.info("session not null.");
+            logger.fine("session not null.");
         }
 
         // We don't even need to check permissions on files that are 
         // from released Dataset versions and not restricted: 
         
-        //logger.info("checking if file is restricted:");
+        //logger.fine("checking if file is restricted:");
         if (!df.isRestricted()) {
-            //logger.info("nope.");
+            //logger.fine("nope.");
             if (df.getOwner().getReleasedVersion() != null) {
-                //logger.info("file belongs to a dataset with a released version.");
+                //logger.fine("file belongs to a dataset with a released version.");
                 if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                    //logger.info("going through the list of filemetadatas that belong to the released version.");
+                    //logger.fine("going through the list of filemetadatas that belong to the released version.");
                     for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
                         if (df.equals(fm.getDataFile())) {
-                            //logger.info("found a match!");
+                            //logger.fine("found a match!");
                             return;
                         }
                     }

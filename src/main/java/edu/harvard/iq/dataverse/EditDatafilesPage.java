@@ -138,10 +138,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private List<DataFile> newFiles = new ArrayList();
-    private Set<Long> updatedFileIds = new HashSet<Long>();
     private DatasetVersion workingVersion;
     private String dropBoxSelection = "";
     private String displayCitation;
+    private boolean datasetUpdateRequired = false; 
     
     private String persistentId;
     
@@ -771,6 +771,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
+    public String saveWithTermsOfUse() {
+        logger.info("saving terms of use, and the dataset version");
+        datasetUpdateRequired = true; 
+        return save();
+    }
+    
     public String save() {
         // Validate
         // TODO: 
@@ -783,7 +789,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
-            logger.info("Constraint violation detected on SAVE: "+constraintViolations.toString());
+            logger.fine("Constraint violation detected on SAVE: "+constraintViolations.toString());
              JH.addMessage(FacesMessage.SEVERITY_ERROR, JH.localize("dataset.message.validationError"));
              
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
@@ -806,7 +812,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         ingestService.addFiles(workingVersion, newFiles);
         //boolean newDraftVersion = false; 
          
-        if (workingVersion.getId() == null) {
+        if (workingVersion.getId() == null  || datasetUpdateRequired) {
+            logger.fine("issuing the dataset update command");
             // We are creating a new draft version; 
             // We'll use an Update command for this: 
             
@@ -836,6 +843,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 populateDatasetUpdateFailureMessage();
                 return null;
             }
+            datasetUpdateRequired = false;
         } else {
             // This is an existing Draft version. We'll try to update 
             // only the filemetadatas and/or files affected, and not the 
@@ -857,10 +865,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 fileMetadata.getDataFile().setModificationTime(updateTime);
                 try {
-                    if (fileMetadata.getDataFile().getId() != null && updatedFileIds.contains(fileMetadata.getDataFile().getId())) {
-                        logger.fine("tabular tags have been edited for this file - we have to save the DataFile object, not just the metadata.");
-                        DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
-                    }
+                    //DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
@@ -926,7 +931,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
            
         newFiles.clear();
-        updatedFileIds.clear();
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
@@ -1355,11 +1359,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (fileMetadata != null) {
             if (fileMetadata.getDataFile() != null) {
                 if (fileMetadata.getDataFile().getId() != null) {
-                    if (fileMetadata.getDataFile().getOwner() != null) {
-                        if (fileMetadata.getDataFile().equals(fileMetadata.getDataFile().getOwner().getThumbnailFile())) {
+                    //if (fileMetadata.getDataFile().getOwner() != null) {
+                        if (fileMetadata.getDataFile().equals(dataset.getThumbnailFile())) {
                             return true;
                         }
-                    }
+                    //}
                 }
             }
         }
@@ -1390,39 +1394,23 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public boolean getUseAsDatasetThumbnail() {
 
-        if (fileMetadataSelectedForThumbnailPopup != null) {
-            if (fileMetadataSelectedForThumbnailPopup.getDataFile() != null) {
-                if (fileMetadataSelectedForThumbnailPopup.getDataFile().getId() != null) {
-                    if (fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner() != null) {
-                        if (fileMetadataSelectedForThumbnailPopup.getDataFile().equals(fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner().getThumbnailFile())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return isDesignatedDatasetThumbnail(fileMetadataSelectedForThumbnailPopup);
     }
 
-    
-    
     public void setUseAsDatasetThumbnail(boolean useAsThumbnail) {
         if (fileMetadataSelectedForThumbnailPopup != null) {
             if (fileMetadataSelectedForThumbnailPopup.getDataFile() != null) {
-                if (fileMetadataSelectedForThumbnailPopup.getDataFile().getId() != null) { // ?
-                    if (fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner() != null) {
-                        if (useAsThumbnail) {
-                            fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner().setThumbnailFile(fileMetadataSelectedForThumbnailPopup.getDataFile());
-                        } else if (getUseAsDatasetThumbnail()) {
-                            fileMetadataSelectedForThumbnailPopup.getDataFile().getOwner().setThumbnailFile(null);
-                        }
-                    }
+                if (useAsThumbnail) {
+                    dataset.setThumbnailFile(fileMetadataSelectedForThumbnailPopup.getDataFile());
+                } else if (getUseAsDatasetThumbnail()) {
+                    dataset.setThumbnailFile(null);
                 }
             }
         }
     }
 
     public void saveAsDesignatedThumbnail() {
+        logger.fine("saving as the designated thumbnail");
         // We don't need to do anything specific to save this setting, because
         // the setUseAsDatasetThumbnail() method, above, has already updated the
         // file object appropriately. 
@@ -1433,13 +1421,14 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileMetadataSelectedForThumbnailPopup.getLabel());
             JsfHelper.addFlashMessage(successMessage);
+
+            datasetUpdateRequired = true;
         }
-        
+
         // And reset the selected fileMetadata:
-        
         fileMetadataSelectedForThumbnailPopup = null;
     }
-    
+
     /* 
      * Items for the "Tags (Categories)" popup.
      *
@@ -1555,12 +1544,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     }
                 }
                 
-                if (fileMetadataSelectedForTagsPopup.getDataFile().getId() != null) {
-                    // If we are assigning "tabular tags" to this file, it means 
-                    // it's already ingested... which means it must have a non-null
-                    // id... but just in case. 
-                    updatedFileIds.add(fileMetadataSelectedForTagsPopup.getDataFile().getId());
-                }
+                datasetUpdateRequired = true;
                 
                 // success message: 
                 String successMessage = JH.localize("file.assignedTabFileTags.success");
