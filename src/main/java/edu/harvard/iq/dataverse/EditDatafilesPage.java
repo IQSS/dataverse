@@ -78,6 +78,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
+import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 
@@ -137,6 +138,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private List<DataFile> newFiles = new ArrayList();
+    private Set<Long> updatedFileIds = new HashSet<Long>();
     private DatasetVersion workingVersion;
     private String dropBoxSelection = "";
     private String displayCitation;
@@ -372,7 +374,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (!session.getUser().isAuthenticated()) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             } else {
-                return "/403.xhtml"; //SEK need a new landing page if user is already logged in but lacks permission
+                return "/403.xhtml"; 
             }
         }
         
@@ -835,8 +837,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return null;
             }
         } else {
-        
-            // And update the new and/or edited files in the database:
+            // This is an existing Draft version. We'll try to update 
+            // only the filemetadatas and/or files affected, and not the 
+            // entire version. 
+            // TODO: in 4.3, create SaveDataFileCommand!
+            // -- L.A. Sep. 21 2015, 4.2
             Timestamp updateTime = new Timestamp(new Date().getTime());
         
             workingVersion.setLastUpdateTime(updateTime);
@@ -852,6 +857,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 fileMetadata.getDataFile().setModificationTime(updateTime);
                 try {
+                    if (fileMetadata.getDataFile().getId() != null && updatedFileIds.contains(fileMetadata.getDataFile().getId())) {
+                        logger.fine("tabular tags have been edited for this file - we have to save the DataFile object, not just the metadata.");
+                        DataFile savedDatafile = datafileService.save(fileMetadata.getDataFile());
+                    }
                     fileMetadata = datafileService.mergeFileMetadata(fileMetadata);
                 } catch (EJBException ex) {
                     saveError.append(ex).append(" ");
@@ -917,6 +926,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
            
         newFiles.clear();
+        updatedFileIds.clear();
                 
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
@@ -1543,6 +1553,13 @@ public class EditDatafilesPage implements java.io.Serializable {
                     } catch (IllegalArgumentException iax) {
                         // ignore 
                     }
+                }
+                
+                if (fileMetadataSelectedForTagsPopup.getDataFile().getId() != null) {
+                    // If we are assigning "tabular tags" to this file, it means 
+                    // it's already ingested... which means it must have a non-null
+                    // id... but just in case. 
+                    updatedFileIds.add(fileMetadataSelectedForTagsPopup.getDataFile().getId());
                 }
                 
                 // success message: 

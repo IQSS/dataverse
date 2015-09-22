@@ -2703,7 +2703,7 @@ public class DatasetPage implements java.io.Serializable {
         // a new image has been designated as such:
         if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
             String successMessage = JH.localize("file.assignedDataverseImage.success");
-            logger.info(successMessage);
+            logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileMetadataSelectedForThumbnailPopup.getLabel());
             JsfHelper.addFlashMessage(successMessage);
         }
