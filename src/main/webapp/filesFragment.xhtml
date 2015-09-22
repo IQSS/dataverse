@@ -153,7 +153,7 @@
                     </ul>
                 </div>
                 <div jsf:id="restrictDeletePanel" class="button-block pull-right text-right"
-                     jsf:rendered="#{(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
+                     jsf:rendered="#{DatasetPage.editMode == 'CREATE' and !empty DatasetPage.dataset.latestVersion.fileMetadatas}">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>

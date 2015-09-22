@@ -1766,10 +1766,27 @@ public class DatasetPage implements java.io.Serializable {
     List<FileMetadata> previouslyRestrictedFiles = null;
     
     public boolean isShowAccessPopup() {
-        if (previouslyRestrictedFiles != null) {
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (fmd.isRestricted() && !previouslyRestrictedFiles.contains(fmd)) {
-                    return true;
+        
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            //System.out.print("restricted :" + fmd.isRestricted());
+            //System.out.print("file id :" + fmd.getDataFile().getId());
+            
+            if (fmd.isRestricted()) {
+            
+                if (editMode == EditMode.CREATE) {
+                    // if this is a brand new file, it's definitely not 
+                    // of a previously restricted kind!
+                    return true; 
+                }
+            
+                if (previouslyRestrictedFiles != null) {
+                    // We've already checked whether we are in the CREATE mode, 
+                    // above; and that means we can safely assume this filemetadata
+                    // has an existing db id. So it is safe to use the .contains()
+                    // method below:
+                    if (!previouslyRestrictedFiles.contains(fmd)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -1779,51 +1796,62 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
     
-    public String restrictSelectedFiles(boolean restricted){     
-        if (bulkUpdateCheckVersion()){
-           refreshSelectedFiles(); 
+    public String restrictSelectedFiles(boolean restricted){
+
+        if (editMode != EditMode.CREATE) {
+            if (bulkUpdateCheckVersion()){
+                refreshSelectedFiles(); 
+            }
+            restrictFiles(restricted);
         }
-        restrictFiles(restricted);        
         save();
         return  returnToDraftVersion();
     }
 
     public void restrictFiles(boolean restricted) {
-        // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determinin whether to show the access popup
-        if (previouslyRestrictedFiles == null) {
+
+        //if (previouslyRestrictedFiles == null) {
+        // we don't need to buther with this "previously restricted" business 
+        // when in Create mode... because all the files are new, so none could 
+        // have been restricted previously;
+        // (well, it looks like the code below should never be called in the 
+        // CREATE mode in the first place... the edit files fragment uses
+        // its own restrictFiles() method there; also, the fmd.getDataFile().equals(fmw.getDataFile()))
+        // line is not going to work on a new file... so be mindful of all this
+        // when the code between the 2 beans is merged in 4.3.
+        if (editMode != EditMode.CREATE) {
             previouslyRestrictedFiles = new ArrayList();
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 if (fmd.isRestricted()) {
                     previouslyRestrictedFiles.add(fmd);
                 }
             }
-        }        
-        
-        String fileNames = null;       
-        for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-            for (FileMetadata fmd : this.getSelectedFiles()) {
-                if (restricted && !fmw.isRestricted()) {
-                // collect the names of the newly-restrticted files, 
-                    // to show in the success message:
-                    if (fileNames == null) {
-                        fileNames = fmd.getLabel();
-                    } else {
-                        fileNames = fileNames.concat(fmd.getLabel());
+
+            String fileNames = null;
+            for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
+                for (FileMetadata fmd : this.getSelectedFiles()) {
+                    if (restricted && !fmw.isRestricted()) {
+                    // collect the names of the newly-restrticted files, 
+                        // to show in the success message:
+                        if (fileNames == null) {
+                            fileNames = fmd.getLabel();
+                        } else {
+                            fileNames = fileNames.concat(fmd.getLabel());
+                        }
+                    }
+                    if (fmd.getDataFile().equals(fmw.getDataFile())) {
+                        fmw.setRestricted(restricted);
                     }
                 }
-                if (fmd.getDataFile().equals(fmw.getDataFile())) {
-                    fmw.setRestricted(restricted);
-                }
+            }
+            if (fileNames != null) {
+                String successMessage = JH.localize("file.restricted.success");
+                logger.fine(successMessage);
+                successMessage = successMessage.replace("{0}", fileNames);
+                JsfHelper.addFlashMessage(successMessage);
             }
         }
-        if (fileNames != null) {
-            String successMessage = JH.localize("file.restricted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);    
-        }
-    } 
+    }
 
     public int getRestrictedFileCount() {
         int restrictedFileCount = 0;

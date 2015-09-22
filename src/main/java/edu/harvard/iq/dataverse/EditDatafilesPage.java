@@ -475,52 +475,41 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     List<FileMetadata> previouslyRestrictedFiles = null;
     
-    
-    
     public boolean isShowAccessPopup() {
-         System.out.print("in get show access popup");
-        if (previouslyRestrictedFiles != null) {
-            System.out.print("previously restricted :" + previouslyRestrictedFiles);
-            for (FileMetadata fmd : this.fileMetadatas) {
-                System.out.print("restricted :" + fmd.isRestricted());
-                System.out.print("file id :" + fmd.getDataFile().getId());
-                if (fmd.isRestricted() && !previouslyRestrictedFiles.contains(fmd)) {
-                    System.out.print("returning true");
-                    return true;
+        //System.out.print("in get show access popup");
+        //System.out.print("previously restricted :" + previouslyRestrictedFiles);
+        for (FileMetadata fmd : this.fileMetadatas) {
+            //System.out.print("restricted :" + fmd.isRestricted());
+            //System.out.print("file id :" + fmd.getDataFile().getId());
+            
+            if (fmd.isRestricted()) {
+            
+                if (fmd.getDataFile().getId() == null) {
+                    // if this is a brand new file, it's definitely not 
+                    // of a previously restricted kind!
+                    return true; 
                 }
-            }
-        }
-        System.out.print("returning false");
-        return false;
-        /*
-        if (previouslyRestrictedFiles != null) {     
-                    System.out.print("in get val " + previouslyRestrictedFiles.size());
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                boolean contains = false;
-                System.out.print("fmd datafile id " + fmd.getDataFile().getId());
-                System.out.print("fmd.isRestricted() " + fmd.isRestricted());
-                if (fmd.isRestricted()) {                    
-                    for (FileMetadata fmp : previouslyRestrictedFiles){
-                         System.out.print("fmp datafile id " + fmp.getDataFile().getId());
-                            System.out.print("fmp.isRestricted() " + fmp.isRestricted());
-                        if (fmp.getDataFile().equals(fmd.getDataFile())){
+            
+                if (previouslyRestrictedFiles != null) {
+                    boolean contains = false;
+                    for (FileMetadata fmp : previouslyRestrictedFiles) {
+                        // OK, we've already checked if it's a brand new file - 
+                        // above. So we can safely assume that this datafile
+                        // has a valid db id... so it is safe to use the 
+                        // equals() method:
+                        if (fmp.getDataFile().equals(fmd.getDataFile())) {
                             contains = true;
                             break;
                         }
-                    }  
-                     System.out.print("contains " + contains);
-                    if (!contains) return true;
+                    }
+                    if (!contains) {
+                        return true;
+                    }
                 }
-
-                if (fmd.isRestricted() && !previouslyRestrictedFiles.contains(fmd)) {
-                    System.out.print("returning true");
-                    return true;
-                }
-               
             }
         }
+        //System.out.print("returning false");
         return false;
-        */
     }
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
@@ -528,16 +517,17 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void restrictFiles(boolean restricted) {
         // since we are restricted files, first set the previously restricted file list, so we can compare for
         // determinin whether to show the access popup
-        if (previouslyRestrictedFiles == null) {
-            previouslyRestrictedFiles = new ArrayList();
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (fmd.isRestricted()) {
-                    previouslyRestrictedFiles.add(fmd);
-                }
+        previouslyRestrictedFiles = new ArrayList();
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (fmd.isRestricted()) {
+                previouslyRestrictedFiles.add(fmd);
             }
-        }  
-        System.out.print(previouslyRestrictedFiles.size());
+        }
+
+        //System.out.print(previouslyRestrictedFiles.size());
+        
         String fileNames = null;
+        
         for (FileMetadata fmd : this.getSelectedFiles()) {
             if (restricted && !fmd.isRestricted()) {
                 // collect the names of the newly-restrticted files, 
@@ -558,6 +548,43 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     } 
 
+    public void restrictFilesDP(boolean restricted) {
+        // since we are restricted files, first set the previously restricted file list, so we can compare for
+        // determinin whether to show the access popup
+        if (previouslyRestrictedFiles == null) {
+            previouslyRestrictedFiles = new ArrayList();
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                if (fmd.isRestricted()) {
+                    previouslyRestrictedFiles.add(fmd);
+                }
+            }
+        }        
+        
+        String fileNames = null;       
+        for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
+            for (FileMetadata fmd : this.getSelectedFiles()) {
+                if (restricted && !fmw.isRestricted()) {
+                // collect the names of the newly-restrticted files, 
+                    // to show in the success message:
+                    if (fileNames == null) {
+                        fileNames = fmd.getLabel();
+                    } else {
+                        fileNames = fileNames.concat(fmd.getLabel());
+                    }
+                }
+                if (fmd.getDataFile().equals(fmw.getDataFile())) {
+                    fmw.setRestricted(restricted);
+                }
+            }
+        }
+        if (fileNames != null) {
+            String successMessage = JH.localize("file.restricted.success");
+            logger.fine(successMessage);
+            successMessage = successMessage.replace("{0}", fileNames);
+            JsfHelper.addFlashMessage(successMessage);    
+        }
+    } 
+    
     public int getRestrictedFileCount() {
         int restrictedFileCount = 0;
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
