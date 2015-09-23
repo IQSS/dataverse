@@ -348,12 +348,24 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
         //See if it already exists
         /*
-        
-        NOTE - In the future we will change the search to Identifier - so that we can update the string(display to user) value        
-        
+         Matching relies on assumption that only one cv value will exist for a given identifier or display value
+        If the lookup queries return multiple matches then retval is null 
         */
+        //First see if cvv exists based on display name
         ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsv, values[2], true);
         
+        //then see if there's a match on identifier
+        ControlledVocabularyValue cvvi = null;
+        if (values[3] != null && !values[3].trim().isEmpty()){
+            cvvi = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndIdentifier(dsv, values[3]);
+        }
+        
+        //if there's a match on identifier use it
+        if (cvvi != null){
+            cvv = cvvi;
+        }
+
+        //if there's no match create a new one
         if (cvv == null) {
             cvv = new ControlledVocabularyValue();
             cvv.setDatasetFieldType(dsv);
@@ -365,7 +377,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 alt.setStrValue(values[i]);
                 cvv.getControlledVocabAlternates().add(alt);
             }
-        }        
+        }         
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
