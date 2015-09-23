@@ -660,6 +660,9 @@ div.dvnDifferanceTable .diffDetailBlock {display:block;}
     #file-preview-icon-block span[class^='icon-'] {font-size:28em;}
 }
 
+/* BLOCK UI */
+.ui-blockui.ui-widget-overlay {background:#fff; opacity:.6;}
+
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 .ui-widget-overlay {background:#CCC;}

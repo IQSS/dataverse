@@ -402,11 +402,14 @@
                                     #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
                                 </span>
                             </label>
-                            <div class="col-sm-10">
+                            <div class="col-sm-6">
+                                <p class="help-block">
+                                    <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.template.tip']}
+                                </p>
                                 <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
                                                  converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
                                                  valueChangeListener="#{DatasetPage.updateSelectedTemplate}"                                                
-                                                 >
+                                                 style="width:auto !important; max-width:100%; min-width:200px;">
                                     <f:selectItem itemLabel="#{bundle['dataset.noTemplate.label']}" itemValue="#{null}" />
                                     <f:selectItems value="#{DatasetPage.dataverseTemplates}"
                                                    var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
@@ -437,7 +440,7 @@
 
                     <!-- Edit editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();" />
+                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();blockDatasetForm.show();" />
                         <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -518,7 +521,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();" />
+                        <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();blockDatasetForm.show();" />
                         <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -530,6 +533,8 @@
                                          action="#{DatasetPage.save}" />
                     </div>
                     <!-- END: Create/Save Dataset Button Panel -->
+                    
+                    <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
 
                     <!-- Popups -->
                     <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
