@@ -111,7 +111,7 @@
                             <div id="filesHeaderSelectAll" class="pull-left">
                                 <span class="bootstrap-button-tooltip" title="Select All">
                                     <p:selectBooleanCheckbox value="#{EditDatafilesPage.selectAllFiles}" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                        <p:ajax update="filesTable" listener="#{EditDatafilesPage.toggleSelectedFiles}" oncomplete="bind_bsui_components();" />
+                                        <p:ajax update="filesTable" process="filesTable" listener="#{EditDatafilesPage.toggleSelectedFiles}" oncomplete="bind_bsui_components();" />
                                     </p:selectBooleanCheckbox>
                                 </span>
                             </div>
