@@ -778,14 +778,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public String save() {
+        
+        /*
         // Validate
-        // TODO: 
-        // Is it actually necessary - to validate for constraint violations, on the 
-        // version? - We are only modifying files on this page. 
-        // -- L.A. 4.2
-        // (yes, there are some funky cases - like when the metadata get extracted
-        // from FITS files and aggregated on the dataset level... still do we 
-        // need to run this validation on every save?)
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
@@ -795,8 +790,9 @@ public class EditDatafilesPage implements java.io.Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
             return "";
         }
+        }*/
         
-        // Once the version passes the validation, we'll only allow the user 
+        // Once all the filemetadatas pass the validation, we'll only allow the user 
         // to try to save once; (this it to prevent them from creating multiple
         // DRAFT versions, if the page gets stuck in that state where it 
         // successfully creates a new version, but can't complete the remaining
@@ -805,8 +801,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!saveEnabled) {
             return "";
         }
-        
-        saveEnabled = false; 
         
         // Save the NEW files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
@@ -835,6 +829,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             Command<Dataset> cmd;
             try {
                 cmd = new UpdateDatasetCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
+                ((UpdateDatasetCommand) cmd).setValidateLenient(true);
                 dataset = commandEngine.submit(cmd);
             
             } catch (EJBException ex) {
@@ -857,6 +852,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return null;
             }
             datasetUpdateRequired = false;
+            saveEnabled = false; 
         } else {
             // This is an existing Draft version. We'll try to update 
             // only the filemetadatas and/or files affected, and not the 
