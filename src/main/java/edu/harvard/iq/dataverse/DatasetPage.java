@@ -1201,6 +1201,9 @@ public class DatasetPage implements java.io.Serializable {
        
         if ((type.equals("download") || type.isEmpty())) {
             //return callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
+            if(type.isEmpty()){
+                downloadFormat = "download";
+            }
             callDownloadServlet(downloadFormat, this.selectedDownloadFile.getId());
         }
 
@@ -2306,6 +2309,10 @@ public class DatasetPage implements java.io.Serializable {
   
    public void initGuestbookResponse(FileMetadata fileMetadata){
          initGuestbookResponse(fileMetadata, "", null);
+    }
+   
+    public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType){
+         initGuestbookResponse(fileMetadata, downloadType, null);
     }
     
     public void initGuestbookMultipleResponse(){
