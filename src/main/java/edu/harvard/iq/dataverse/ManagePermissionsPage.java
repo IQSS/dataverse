@@ -183,7 +183,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject != null && dvObject.getId() != null) {
             return roleService.findByOwnerId(dvObject.getId());
         }
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     public void createNewRole(ActionEvent e) {
@@ -332,7 +332,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         }
         roleAssigneeList.addAll( explicitGroupService.findAvailableFor(dvObject) );
         
-        List<RoleAssignee> filteredList = new LinkedList();
+        List<RoleAssignee> filteredList = new LinkedList<>();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
             // @todo maybe add some solr/lucene style searching, did-you-mean style?

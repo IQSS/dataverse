@@ -191,7 +191,7 @@ public class TemplatePage implements java.io.Serializable {
             return "";
         }
         boolean create = false;
-        Command cmd;
+        Command<Void> cmd;
         Long createdId = new Long(0);
         Template created;
         try {
