@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Dataverse! We welcome contributio
 
 ## Ideas/Feature Requests
 
-Your idea or feature request might already be captured in the [Dataverse issues in GitHub] but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mention [@dataverseorg][] on Twitter.
+Your idea or feature request might already be captured in the collection of [Dataverse issues] but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][]. You're also welcome make some noise in the [#dataverse IRC channel][] or cram your idea into 140 characters and mention [@dataverseorg][] on Twitter.
 
 Once an idea/feature request has been received by the Dataverse Development Team the process outlined in the image below happens.
 
@@ -17,7 +17,7 @@ To review FRDs for Dataverse, you can access them in this [Functional Requiremen
 See also our [Community and Support][] page.
 
 [#dataverse IRC channel]: http://webchat.freenode.net/?channels=dataverse
-[Dataverse issues in GitHub]: https://github.com/IQSS/dataverse/issues
+[Dataverse issues]: https://github.com/IQSS/dataverse/issues
 [@dataverseorg]: http://twitter.com/dataverseorg
 [Community and Support]: http://datascience.iq.harvard.edu/dataverse/support
 [Functional Requirements Document (FRD for short)]: https://docs.google.com/document/d/1PRyAlP6zlUlUuHfgyUezzuaVQ4JnapvgtGWo0o7tLEs/edit?usp=sharing
