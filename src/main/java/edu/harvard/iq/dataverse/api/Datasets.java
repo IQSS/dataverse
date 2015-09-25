@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.ByteArrayOutputStream;
@@ -416,7 +417,7 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("ddi")
     @Produces({"application/xml", "application/json"})
-    public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId) {
+    public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
         boolean disabled = true;
         if (disabled) {
             return errorResponse(Response.Status.FORBIDDEN, "Disabled");
@@ -427,16 +428,22 @@ public class Datasets extends AbstractApiBean {
                 return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
             }
 
-            logger.info("looking up " + persistentId);
+            logger.fine("looking up " + persistentId);
             Dataset dataset = datasetService.findByGlobalId(persistentId);
             if (dataset == null) {
                 return errorResponse(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
 
-            OutputStream outputStream = new ByteArrayOutputStream();
-            ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);
-            String xml = outputStream.toString();
-            logger.info("xml to return: " + xml);
+            String xml = "<codeBook>XML_BEING_COOKED</codeBook>";
+            if (dto) {
+                final JsonObjectBuilder jsonbuilder = json(dataset.getLatestVersion());
+                xml = DdiExportUtil.json2ddi(jsonbuilder.build().toString());
+            } else {
+                OutputStream outputStream = new ByteArrayOutputStream();
+                ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);
+                xml = outputStream.toString();
+            }
+            logger.fine("xml to return: " + xml);
 
             return Response.ok()
                     .entity(xml)
@@ -446,6 +453,5 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-
 
 }
