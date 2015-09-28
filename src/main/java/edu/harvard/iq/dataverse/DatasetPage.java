@@ -657,10 +657,30 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void updateSelectedTemplate(ValueChangeEvent event) {
-
+        
         selectedTemplate = (Template) event.getNewValue();
         if (selectedTemplate != null) {
+            /*
+            If the user added files to the dataset prior to 
+            changing versions we want to capture them and 
+            reattach to the new version
+            */
+            //First get files from current version
+            List<FileMetadata> addedFiles = new ArrayList();
+            if (!workingVersion.getFileMetadatas().isEmpty()){
+                for (FileMetadata fmd: workingVersion.getFileMetadatas() ){
+                    addedFiles.add(fmd);
+                }
+            }
+            //then create new working version from the selected template
             workingVersion = dataset.getEditVersion(selectedTemplate);
+            //Finally reattach the files to the new working version
+            if(!addedFiles.isEmpty()){
+                for(FileMetadata fmd : addedFiles){
+                    workingVersion.getFileMetadatas().add(fmd);
+                    fmd.setDatasetVersion(workingVersion);
+                }
+            }
             updateDatasetFieldInputLevels();
         } else {
             dataset = new Dataset();
