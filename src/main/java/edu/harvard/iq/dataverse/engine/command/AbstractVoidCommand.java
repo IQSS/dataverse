@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Map;
 
@@ -13,16 +12,16 @@ import java.util.Map;
  */
 public abstract class AbstractVoidCommand extends AbstractCommand<Void> {
     
-	public AbstractVoidCommand(User aUser, DvObject dvObject) {
-		super(aUser, dvObject);
+	public AbstractVoidCommand(DataverseRequest aRequest, DvObject dvObject) {
+		super(aRequest, dvObject);
 	}
 
-	public AbstractVoidCommand(User aUser, DvNamePair dvp, DvNamePair... more) {
-		super(aUser, dvp, more);
+	public AbstractVoidCommand(DataverseRequest aRequest, DvNamePair dvp, DvNamePair... more) {
+		super(aRequest, dvp, more);
 	}
 
-	public AbstractVoidCommand(User aUser, Map<String, DvObject> someAffectedDataversae) {
-		super(aUser, someAffectedDataversae);
+	public AbstractVoidCommand(DataverseRequest aRequest, Map<String, DvObject> someAffectedDataversae) {
+		super(aRequest, someAffectedDataversae);
 	}
 
 	@Override

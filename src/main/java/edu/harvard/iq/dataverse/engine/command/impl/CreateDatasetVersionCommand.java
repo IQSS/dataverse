@@ -6,9 +6,9 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -33,8 +33,8 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     final DatasetVersion newVersion;
     final Dataset dataset;
     
-    public CreateDatasetVersionCommand(User aUser, Dataset theDataset, DatasetVersion aVersion) {
-        super(aUser, theDataset);
+    public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion) {
+        super(aRequest, theDataset);
         dataset = theDataset;
         newVersion = aVersion;
     }

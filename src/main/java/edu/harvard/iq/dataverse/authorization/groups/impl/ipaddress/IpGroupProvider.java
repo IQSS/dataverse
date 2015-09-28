@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,24 +36,13 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
 
     @Override
     public Set<IpGroup> groupsFor(RoleAssignee ra, DvObject o) {
-        if ( ra instanceof User ) { 
-            // only users can be members of IP groups.
-            User u = (User) ra;
-    //        Un-comment below lines if request metadata is null to get a workaround. Then open a bug and assign to @michbarsinai
-            /**
-             * @todo Per above, uncommenting the lines below and assigning a new
-             * ticket to @michbarsinai: IP Groups: can no longer upload files via
-             * SWORD - https://github.com/IQSS/dataverse/issues/1360
-             *
-             * What other SWORD operation may not be working? They are documented at
-             * http://guides.dataverse.org/en/latest/api/sword.html
-             */
-            UserRequestMetadata userRequestMetadata = u.getRequestMetadata();
-            if (userRequestMetadata == null) {
-                return Collections.EMPTY_SET;
-            }
-            return updateProvider(ipGroupsService.findAllIncludingIp(u.getRequestMetadata().getIpAddress()));
-            
+        return Collections.emptySet();
+    }
+    
+    @Override
+    public Set<IpGroup> groupsFor( DataverseRequest req, DvObject dvo ) {
+        if ( req.getSourceAddress() != null ) {
+            return updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
         } else {
             return Collections.emptySet();
         }
@@ -70,7 +59,7 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     
     @Override
     public Set<IpGroup> findGlobalGroups() {
-        return updateProvider( new HashSet<>(ipGroupsService.findAll()));
+        return updateProvider( new HashSet<>(ipGroupsService.findAll()) );
     }
     
     private IpGroup setProvider( IpGroup g ) {

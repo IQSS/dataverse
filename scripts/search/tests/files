@@ -1,0 +1,3 @@
+#!/bin/sh
+OUT=`curl -s "http://localhost:8080/api/admin/index/filesearch?persistentId=$1&q=$2"`
+echo $OUT | jq .

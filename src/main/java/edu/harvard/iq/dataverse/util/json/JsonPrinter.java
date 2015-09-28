@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import java.util.Set;
@@ -67,6 +68,18 @@ public class JsonPrinter {
                 .add("displayInfo", jsonObjectBuilder()
                            .add("Title", displayInfo.getTitle())
                            .add("email", displayInfo.getEmailAddress()));
+    }
+
+    /**
+     * @todo Rename this to just "json" to match the other methods once "json(
+     * Dataverse dv )" is reviewed since in calls the "json( User u )" version
+     * and we want to keep it that way rather than calling this method.
+     */
+    public static JsonObjectBuilder jsonForAuthUser(AuthenticatedUser authenticatedUser) {
+        return jsonObjectBuilder()
+                .add("identifier", authenticatedUser.getIdentifier())
+                .add("id", authenticatedUser.getId()
+                );
     }
     
     public static JsonObjectBuilder json( RoleAssignment ra ) {

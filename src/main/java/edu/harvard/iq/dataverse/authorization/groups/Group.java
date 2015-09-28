@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.authorization.groups;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 
 
 /**
@@ -42,14 +43,15 @@ public interface Group extends RoleAssignee {
     public String getDescription();
     
     /**
-     * Tests to see whether {@code anAssignee} is a part of {@code this} group.
+     * Tests to see whether {@code aRequest} is a part of {@code this} group. Inclusion
+     * in groups is not just a matter of user, as it can be specified also by, e.g. IP addresses.
      * The containment may not always be present in the DB - for example, 
      * some groups may determine membership based on request properties, such as IP address.
      * 
-     * @param anAssignee The user whose inclusion we test 
+     * @param aRequest The request whose inclusion we test 
      * @return {@code true} iff {@code anAssignee} is in this group; {@code false} otherwise.
      */
-    public boolean contains( RoleAssignee anAssignee );
+    public boolean contains( DataverseRequest aRequest );
     
     public boolean isEditable();
     

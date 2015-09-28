@@ -1,2 +1,6 @@
 #!/bin/bash
-curl -s "http://localhost:8080/api/admin/index?numPartitions=$1&partitionIdToProcess=$2&previewOnly=$3"
+# curl -s "http://localhost:8080/api/admin/index?numPartitions=$1&partitionIdToProcess=$2&previewOnly=$3"
+scripts/search/clear
+curl -s -X DELETE http://localhost:8080/api/admin/index/timestamps
+curl -s "http://localhost:8080/api/admin/index/continue?numPartitions=1&partitionIdToProcess=0&previewOnly=true" | jq .data.previewOfPartitionWorkload.dvContainerIds.dataverses[] | while read j; do curl http://localhost:8080/api/admin/index/dataverses/$j; done
+curl -s "http://localhost:8080/api/admin/index/continue?numPartitions=1&partitionIdToProcess=0&previewOnly=true" | jq .data.previewOfPartitionWorkload.dvContainerIds.datasets[] | while read i; do curl http://localhost:8080/api/admin/index/datasets/$i; done

@@ -1,12 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
@@ -20,8 +19,8 @@ public class UpdateDataverseTemplateCommand extends AbstractVoidCommand {
     private final Dataverse editedDv;
     private final Template template;
 
-    public UpdateDataverseTemplateCommand(Dataverse editedDv, Template template, User aUser) {
-        super(aUser, editedDv);
+    public UpdateDataverseTemplateCommand(Dataverse editedDv, Template template, DataverseRequest aRequest) {
+        super(aRequest, editedDv);
         this.editedDv = editedDv;
         this.template = template;
     }

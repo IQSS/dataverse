@@ -9,9 +9,9 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.sql.Timestamp;
@@ -27,8 +27,8 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
     private final Dataset linkedDataset;
     private final Dataverse linkingDataverse;
     
-    public LinkDatasetCommand(User aUser, Dataverse dataverse, Dataset linkedDataset) {
-        super(aUser, dataverse);
+    public LinkDatasetCommand(DataverseRequest aRequest, Dataverse dataverse, Dataset linkedDataset) {
+        super(aRequest, dataverse);
         this.linkedDataset = linkedDataset;
         this.linkingDataverse = dataverse;
     }

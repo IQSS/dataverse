@@ -1074,7 +1074,7 @@ for my $script ( "setup-all.sh" ) {
 chdir($cwd);
 
 print "\n\nYou should now have a running DVN instance at\n";
-print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "[:YOURPORT]\n";
+print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "[:8080]\n";
 
 # (going to skip the Rserve check, for now)
 

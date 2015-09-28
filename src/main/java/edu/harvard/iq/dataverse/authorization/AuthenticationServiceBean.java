@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;

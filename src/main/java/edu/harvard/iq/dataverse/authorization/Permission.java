@@ -12,60 +12,59 @@ import java.util.Set;
  * All the permissions in the system are implemented as enum constants in this
  * class.
  *
- * KEEP THIS UNDER 64, or update the permission storage that currently use
- * bit-field
+ * KEEP THIS UNDER 64, or update the permission storage that currently uses a bit-field.
  *
  * @author michael
  */
 public enum Permission implements java.io.Serializable {
     
     // Create
-    AddDataverse("Add a dataverse within another dataverse", Dataverse.class),
-    AddDataset("Add a dataset to a dataverse", Dataverse.class),     
+    AddDataverse("Add a dataverse within another dataverse", true, Dataverse.class),
+    AddDataset("Add a dataset to a dataverse", true, Dataverse.class),     
     // Read
-    ViewUnpublishedDataverse("View an unpublished dataverse", Dataverse.class),
-    ViewUnpublishedDataset("View an unpublished dataset and its files", Dataset.class),    
-    DownloadFile("Download a file", DataFile.class),
+    ViewUnpublishedDataverse("View an unpublished dataverse", false, Dataverse.class),
+    ViewUnpublishedDataset("View an unpublished dataset and its files", false, Dataset.class),    
+    DownloadFile("Download a file", false, DataFile.class),
     // Update
-    EditDataverse("Edit a dataverse's metadata, facets, customization, and templates ", Dataverse.class),
-    EditDataset("Edit a dataset's metadata", Dataset.class),
-    ManageDataversePermissions("Manage permissions for a dataverse", Dataverse.class),
-    ManageDatasetPermissions("Manage permissions for a dataset", Dataset.class), 
-    PublishDataverse("Publish a dataverse", Dataverse.class),
-    PublishDataset("Publish a dataset", Dataset.class),     
+    EditDataverse("Edit a dataverse's metadata, facets, customization, and templates ", true, Dataverse.class),
+    EditDataset("Edit a dataset's metadata", true, Dataset.class),
+    ManageDataversePermissions("Manage permissions for a dataverse", true, Dataverse.class),
+    ManageDatasetPermissions("Manage permissions for a dataset", true, Dataset.class), 
+    PublishDataverse("Publish a dataverse", true, Dataverse.class),
+    PublishDataset("Publish a dataset", true, Dataset.class),     
     // Delete
-    DeleteDataverse("Delete an unpublished dataverse", Dataverse.class),    
-    DeleteDatasetDraft("Delete a dataset draft", Dataset.class);
+    DeleteDataverse("Delete an unpublished dataverse", true, Dataverse.class),    
+    DeleteDatasetDraft("Delete a dataset draft", true, Dataset.class);
 
     // FUTURE:
     //RestrictMetadata("Mark metadata as restricted", DvObject.class),
     //AccessRestrictedMetadata("Access metadata marked as\"restricted\"", DvObject.class),
-
-
+    
+    /**
+     * A human readable name for the permission.
+     */
     private final String humanName;
 
+    /**
+     * Which types of {@link DvObject}s this permission applies to.
+     */
     private final Set<Class<? extends DvObject>> appliesTo;
+    
+    /**
+     * Can this permission be applied only to {@link AuthenticatedUser}s, or to any user?
+     */
+    private final boolean requiresAuthenticatedUser;
 
-    Permission(String aHumanName, Class<? extends DvObject>... appliesToList) {
+    Permission(String aHumanName, boolean authenticatedUserRequired, Class<? extends DvObject>... appliesToList) {
         humanName = aHumanName;
         appliesTo = new HashSet<>(Arrays.asList(appliesToList));
+        requiresAuthenticatedUser = authenticatedUserRequired;
     }
 
     public String getHumanName() {
         return humanName;
     }
 
-    /*
-    RMP - need to test
-    public static boolean isViewUnpublishedPermission(Permission perm){
-        
-        if ((perm == ViewUnpublishedDataverse)||(perm == ViewUnpublishedDataset)){
-            return true;
-        }
-        return false;
-    }
-    */
-    
     public boolean appliesTo(Class<? extends DvObject> aClass) {
         for (Class c : appliesTo) {
             if (c.isAssignableFrom(aClass)) {
@@ -74,4 +73,10 @@ public enum Permission implements java.io.Serializable {
         }
         return false;
     }
+
+    public boolean requiresAuthenticatedUser() {
+        return requiresAuthenticatedUser;
+    }
+    
+   
 }

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.i18n.iri.IRISyntaxException;
 import org.apache.abdera.model.AtomDate;
@@ -38,7 +40,9 @@ public class StatementManagerImpl implements StatementManager {
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
-
+    
+    private HttpServletRequest httpRequest;
+    
     @Override
     public Statement getStatement(String editUri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
 
@@ -54,7 +58,7 @@ public class StatementManagerImpl implements StatementManager {
             }
 
             Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (swordAuth.hasAccessToModifyDataverse(user, dvThatOwnsDataset)) {
+            if (swordAuth.hasAccessToModifyDataverse( new DataverseRequest(user, httpRequest), dvThatOwnsDataset)) {
                 String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
                 String author = dataset.getLatestVersion().getAuthorsStr();
                 String title = dataset.getLatestVersion().getTitle();
@@ -142,4 +146,8 @@ public class StatementManagerImpl implements StatementManager {
         }
     }
 
+    public void setHttpRequest(HttpServletRequest httpRequest) {
+        this.httpRequest = httpRequest;
+    }
+    
 }

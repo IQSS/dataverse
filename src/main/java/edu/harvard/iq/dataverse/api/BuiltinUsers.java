@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.logging.Level;
@@ -24,6 +23,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * REST API bean for managing {@link BuiltinUser}s.

@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.*;
@@ -34,13 +33,13 @@ public interface Command<R> {
 	
 	
 	/**
-	 * @return The user on which behalf the command is being executed.
+	 * @return The request under which this command is being executed.
 	 */
-	public User getUser();
+	public DataverseRequest getRequest();
         
 	/**
 	 * @return A map of the permissions required for this command
 	 */        
-        Map<String,Set<Permission>> getRequiredPermissions();
+    Map<String,Set<Permission>> getRequiredPermissions();
 	
 }

@@ -109,7 +109,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
         return (ControlledVocabularyValue) em.find(ControlledVocabularyValue.class, pk);
     }
-
+   
     /**
      * @param dsft The DatasetFieldType in which to look up a
      * ControlledVocabularyValue.
@@ -157,6 +157,26 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         } catch (NonUniqueResultException ex){
            List results = typedQuery.getResultList();
            return (ControlledVocabAlternate) results.get(0);
+        }
+    }
+    
+    /**
+     * @param dsft The DatasetFieldType in which to look up a
+     * ControlledVocabularyValue.
+     * @param strIdentiifer String Identifier that may exist in a controlled vocabulary of
+     * the provided DatasetFieldType.
+     *
+     * @return The ControlledVocabularyValue found or null.
+     */
+    public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndIdentifier (DatasetFieldType dsft, String identifier)  {
+        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.identifier = :identifier AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);       
+        typedQuery.setParameter("identifier", identifier);
+        typedQuery.setParameter("dsft", dsft);
+        try {
+            ControlledVocabularyValue cvv = typedQuery.getSingleResult();
+            return cvv;
+        } catch (NoResultException | NonUniqueResultException ex) {
+                return null;
         }
     }
 

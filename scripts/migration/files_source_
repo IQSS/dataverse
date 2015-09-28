@@ -1,22 +1,27 @@
 #!/usr/bin/perl
 
-my $dvobjectoffset = shift @ARGV;
-
-unless ($dvobjectoffset > 0)
-{
-    print STDERR "Usage: ./files_source_ <DVOBJECT DB ID OFFSET>\n";
-    exit 1;
-}
-
-my $filecatid = 0; # file categories (this is a new object in 4.0, so there are no 3.6 IDs to reuse)
-# (offset this if adding content content to an already populated db)
-
-use DBI;
-
-my $host = "localhost"; 
+my $host = "localhost";
 my $username = "xxxxx";
 my $database = "xxxxx";
 my $password = "xxxxx";
+
+my $dvobjectoffset = shift @ARGV;
+my $filecatoffset = shift @ARGV;
+
+unless ($dvobjectoffset > 0)
+{
+    print STDERR "Usage: ./files_source_ <DVOBJECT DB ID OFFSET> <FILECATID_OFFSET>\n";
+    exit 1;
+}
+
+unless ($filecatoffset)
+{
+    print STDERR "WARNING! file category offset is set to ZERO.\n";
+}
+
+my $filecatid = $filecatoffset; # file categories (this is a new object in 4.0, so there are no 3.6 IDs to reuse)
+
+use DBI;
 
 my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
 
@@ -24,11 +29,14 @@ open PL, ">packlist.txt";
 
 %STUDYMAP = {};
 %STUDYFILEMAP = {};
+%VERSIONMAP = {}; 
 
 while ( <> )
 {
     chop; 
     my ($globalid, $dsid, $dsvid, $dsvnum) = split("\t", $_); 
+    $STUDYMAP{$globalid} = $dsid;
+    $VERSIONMAP{$globalid . "+++" . $dsvnum} = $dsid . "-" . $dsvid; 
 
     %FILECATEGORIES = {}; # file categories for this dataset.
 
@@ -48,7 +56,6 @@ while ( <> )
 
     my $sth; 
 
-    #$sth = $dbh->prepare(qq {SELECT s.id, v.id FROM study s, studyversion v WHERE v.study_id = s.id AND s.protocol = '$protocol' AND s.authority='$authority' AND s.studyid = '$identifier' AND v.versionstate = 'RELEASED'}); 
     $sth = $dbh->prepare(qq {SELECT s.id, v.id FROM study s, studyversion v WHERE v.study_id = s.id AND s.protocol = '$protocol' AND s.authority='$authority' AND s.studyid = '$identifier' AND v.versionnumber = $dsvnum}); 
     $sth->execute();
 
@@ -62,7 +69,6 @@ while ( <> )
 	$sid = $foo[0];
 	$svid = $foo[1];
 
-#	print $sid . "\t" . $svid . "\n";
 	$vercount++;
     }
 
@@ -74,9 +80,7 @@ while ( <> )
 	next; 
     }
 
-    $sth = $dbh->prepare(qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.subsettable, sf.originalfiletype, sf.unf, sf.id, sf.fileclass, fm.id FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid});
-
-#    print qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.subsettable, sf.originalfiletype, sf.unf FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid} . "\n";
+    $sth = $dbh->prepare(qq {SELECT fm.label, fm.category, fm.description, sf.filetype, sf.filesystemlocation, sf.md5, sf.restricted, sf.originalfiletype, sf.unf, sf.id, sf.fileclass, fm.id FROM filemetadata fm, studyfile sf WHERE fm.studyfile_id = sf.id AND fm.studyversion_id = $svid});
 
     $sth->execute();
 
@@ -99,20 +103,26 @@ while ( <> )
 	}
 	$md5 = $foo[5];
 	$restricted = $foo[6];
+
+	# "restricted" is a boolean:
+	
+	$restricted = 'TRUE' if $restricted;
+	$restricted = 'FALSE' unless $restricted;
+
 	# location of the file, on the old filesystem: 
 	$fslocation = $foo[4];
+	$fslocation = "" unless $fslocation;
+	
 	# additional info for subsettable files: 
 	# (will go into the new datatable)
-	$subsettable = $foo[7]; 
-	$originalfiletype = $foo[8];
-	$unf = $foo[9]; 
+	$originalfiletype = $foo[7];
+	$unf = $foo[8]; 
 	# id of the existing studyfile: 
-	$sfid = $foo[10];
+	$sfid = $foo[9];
 	# "class" of the existing studyfile: 
 	# (tabular, "other", etc.)
-	$fileclass = $foo[11];
-	$fmid = $foo[12];
-	#print join ("\t", @_) . "\n";
+	$fileclass = $foo[10];
+	$fmid = $foo[11];
 
 	if ($label =~/[\\\/:\*\?\"\<\>\|;\#]/)
 	{
@@ -141,7 +151,6 @@ while ( <> )
 	    
 	    $newdatafileid = ($dvobjectoffset+$sfid);
 	    $STUDYFILEMAP{$sfid} = $newdatafileid; 
-	    ##$dvobjectoffset++; 
 
 	    $fsname = $fslocation; 
 
@@ -178,8 +187,8 @@ while ( <> )
 	    print qq {INSERT INTO dvobject (id, dtype, owner_id, createdate, modificationtime) VALUES ($newdatafileid, 'DataFile', $dsid, '$fmtime', '$fmtime');} . "\n";
 
 	    # datafile object:
-
-	    print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($newdatafileid, '$type', '$fsname', $fsize, '$md5', TRUE);} . "\n";
+	    $fsname = $dbh->quote($fsname);
+	    print qq {INSERT INTO datafile (id, contenttype, filesystemname, filesize, md5, restricted) VALUES ($newdatafileid, '$type', $fsname, $fsize, '$md5', $restricted);} . "\n";
 	}
 	else 
 	{
@@ -188,8 +197,7 @@ while ( <> )
 	}
 	    
 	# file metadata object:
-	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmid, $description, $label, TRUE, 1, $dsvid, $newdatafileid);} . "\n";
-	##print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmid, $description, $label, TRUE, 1, $dsvid, $dvobjectoffset);} . "\n";
+	print qq {INSERT INTO filemetadata (id, description, label, restricted, version, datasetversion_id, datafile_id) VALUES ($fmid, $description, $label, $restricted, 1, $dsvid, $newdatafileid);} . "\n";
 
 	# and the category, if exists:
 
@@ -204,7 +212,6 @@ while ( <> )
 		$filecatid++;
 
 		print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($filecatid, $category, $newdatafileid);} . "\n";
-		#print qq{INSERT INTO datafilecategory (id, name, dataset_id) VALUES ($filecatid, $category, $dvobjectoffset);} . "\n";
 
 		$FILECATEGORIES{$category} = $filecatid; 
 	    }
@@ -254,12 +261,10 @@ while ( <> )
 		if ($recordspercase) 
 		{
 		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $newdatafileid);} . "\n";
-		    #print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, recordspercase, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $recordspercase, $dvobjectoffset);} . "\n";
 		}
 		else
 		{
 		    print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $newdatafileid);} . "\n";
-		    #print qq {INSERT INTO datatable (id, varquantity, casequantity, unf, originalfileformat, datafile_id) VALUES ($dtid, $varquantity, $casequantity, '$unf', '$originalfiletype', $dvobjectoffset);} . "\n";
 		}
 	    }
 
@@ -417,7 +422,6 @@ while ( <> )
 			    $varcatlabel = $dbh->quote($varcatlabel);
 			    unless ($varcatvalue || ($varcatvalue eq "") || ($varcatvalue == 0))
 			    {
-				#print STDERR "WARNING: empty var cat value (" . $varcatlabel . ")\n";
 				print STDERR qq {INSERT INTO variablecategory (id, label, value, missing, catorder, frequency, datavariable_id) VALUES ($varcatid, $varcatlabel, $varcatvalue, $varcatmissing, $varcatorder, $varcatfreq, $varid);} . "\n";
 			    }
 			    else 
@@ -446,6 +450,151 @@ while ( <> )
     $sth->finish; 
 
 }
+
+# Now, the guestbooks/download activity etc.:
+
+# guest books from the old "studyfile activity" entries:
+
+$sth = $dbh->prepare(qq {SELECT a.downloadcount, a.lastdownloadtime, a.studyfile_id, s.authority, s.studyid, s.protocol FROM studyfileactivity a, study s WHERE a.study_id = s.id AND a.downloadcount > 0}); 
+$sth->execute();
+
+$id = 1000; 
+
+while ( @foo = $sth->fetchrow() )
+{
+    my $acount = $foo[0];
+    my $adownloadtime = $foo[1];
+    $adownloadtime = "TIMESTAMP " . $dbh->quote($adownloadtime) if $adownloadtime;
+    $adownloadtime = "NULL" unless $adownloadtime;
+
+    my $astudyfile_id = $foo[2];
+    my $sauthority = $foo[3];
+    my $sidentifier = $foo[4];
+    my $sprotocol = $foo[5];
+
+    next unless $astudyfile_id; 
+    $astudyfile_id += $dvobjectoffset;
+
+    my $globalid = $sprotocol . ":" . $sauthority . "/" . $sidentifier; 
+
+    unless ($STUDYMAP{$globalid})
+    {
+        next; 
+    }
+    
+    ($dataset_id) = $STUDYMAP{$globalid};
+        
+    for ($i = 0; $i < $acount; $i++)
+    {
+        $id++; 
+
+        if ($i == $acount - 1) 
+        {
+            $downloadtime = $adownloadtime;
+        }
+        else 
+        {
+            $downloadtime = "NULL";
+        }
+
+        print qq {INSERT INTO guestbookresponse (id, email, name, institution, position, responsetime, guestbook_id, datafile_id, authenticateduser_id, downloadtype, sessionid, dataset_id, datasetversion_id) VALUES ($id, NULL, 'unknown', NULL, NULL, $downloadtime, 1, $astudyfile_id, NULL, 'download', NULL, $dataset_id, NULL);} . "\n";
+    }
+
+}
+
+$guestbook_response_id_offset = $id; 
+
+# Migrating guestbooks: 
+
+$sth = $dbh->prepare(qq {SELECT id, emailrequired, enabled, firstnamerequired, lastnamerequired, institutionrequired, positionrequired, vdc_id FROM guestbookquestionnaire}); 
+$sth->execute();
+
+while ( @foo = $sth->fetchrow() )
+{
+    my $gid = $foo[0];
+
+    if ($gid == 1)
+    {
+        # print STDERR "found guestbook with id=1!\n";
+	# This is the default guestbook; we don't need to migrate it, as the 
+	# new Dataverse 4.0 will have its own default guestbook.
+        next;
+    }
+
+    my $gemailrequired = $foo[1] ? "TRUE" : "FALSE";
+    my $genabled = $foo[2] ? "TRUE" : "FALSE";
+
+    my $gnamerequired = ($foo[3] || $foo[4]) ? "TRUE" : "FALSE";
+
+    my $ginstitutionrequired = $foo[5] ? "TRUE" : "FALSE";
+    my $gpositionrequired = $foo[6] ? "TRUE" : "FALSE";
+
+    my $gdataverse_id = $foo[7] + 9; 
+
+    print qq {INSERT INTO guestbook (id, createtime, emailrequired, enabled, institutionrequired, name, namerequired, positionrequired, dataverse_id) VALUES ($gid, TIMESTAMP '1970-01-01 00:00:00', $gemailrequired, $genabled, $ginstitutionrequired, '', $gnamerequired, $gpositionrequired, $gdataverse_id);} . "\n";
+
+}
+
+# Finally, migrating guestbook responses:
+
+$sth = $dbh->prepare(qq {SELECT r.id, r.email, r.firstname, r.institution, r.lastname, r.position, r.responsetime, r.guestbookquestionnaire_id, r.studyfile_id, r.vdcuser_id, r.downloadtype, r.sessionid, s.authority, s.studyid, s.protocol, v.versionnumber FROM guestbookresponse r, studyversion v, study s WHERE r.study_id = s.id AND r.studyversion_id = v.id}); 
+$sth->execute();
+
+
+while ( @foo = $sth->fetchrow() )
+{
+    my $rid = $foo[0];
+
+    $rid += $guestbook_response_id_offset;
+
+    my $remail = $dbh->quote($foo[1]);
+    my $rfirstname = $foo[2];
+    my $rinstitution = $dbh->quote($foo[3]);
+    my $rlastname = $foo[4];
+    my $rposition = $dbh->quote($foo[5]);
+    my $rresponsetime = $foo[6];
+    $rresponsetime = "TIMESTAMP " . $dbh->quote($rresponsetime) if $rresponsetime;
+    $rresponsetime = "NULL" unless $rresponsetime;
+    my $rgbqid = $foo[7];
+    my $rstudyfileid = $foo[8];
+    $rstudyfileid+=$dvobjectoffset;
+    my $rvdcuserid = $foo[9] ? $foo[9] : "NULL";
+    my $rdownloadtype = $dbh->quote($foo[10]);
+    my $rsessionid = $dbh->quote($foo[11]);
+
+    my $sauthority = $foo[12];
+    my $sidentifier = $foo[13];
+    my $sprotocol = $foo[14];
+    my $vversionnumber = $foo[15];
+
+
+    my $globalid = $sprotocol . ":" . $sauthority . "/" . $sidentifier; 
+
+    unless ($VERSIONMAP{$globalid . "+++" . $vversionnumber})
+    {
+        print STDERR "WARNING: No entry for " . $globalid .  "+++" . $vversionnumber. "!\n";
+        next; 
+    }
+    
+    ($dataset_id, $datasetversion_id) = split ("\-", $VERSIONMAP{$globalid . "+++" . $vversionnumber});
+        
+    unless ($dataset_id > 0 && $datasetversion_id > 0)
+    {
+        print STDERR "Invalid entry for " . $globalid .  "+++" . $vversionnumber. ": " . $VERSIONMAP{$globalid . "+++" . $vversionnumber} . "!\n";
+        next;
+    }
+    
+    my $name = "";
+    $name = $rfirstname . " " if $rfirstname;
+    $name .= $rlastname if $rlastname; 
+    $name = $dbh->quote($name) if $name; 
+    $name = "NULL" unless $name; 
+    
+    print qq {INSERT INTO guestbookresponse (id, email, name, institution, position, responsetime, guestbook_id, datafile_id, authenticateduser_id, downloadtype, sessionid, dataset_id, datasetversion_id) VALUES ($rid, $remail, $name, $rinstitution, $rposition, $rresponsetime, $rgbqid, $rstudyfileid, $rvdcuserid, $rdownloadtype, $rsessionid, $dataset_id, $datasetversion_id);} . "\n";
+
+}
+
+
 
 $dbh->disconnect; 
 

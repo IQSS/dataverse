@@ -34,48 +34,83 @@ Migration:
     in the Glassfish logs directory.
 
 5. run migrate_datasets.sql script (post migration scrubbing)
-6. run files script: 
+
+6. Run file migration scripts: 
+
+Before you can run these scripts, edit the files
+files_destination_step1_ and files_source, and modify the following
+lines at the top to be able to access your new (4.*) and old (3.*)
+databases, respectively:
+
+my $host = "localhost";
+my $username = "xxxxx";
+my $database = "xxxxx";
+my $password = "xxxxx";
 
 a. On the *destination* (4.0) server, step 1
 run the script, and save the output:
 
 ./files_destination_step1_ > migrated_datasets.txt
 
+The script will also print the following message on 
+the stderr output (for example): 
+
+last ID in DVOBJECT table: 12345
+
+- you will need to use this number as a parameter in the
+next step, below. 
+
 b. On the *source* (3.6) server - 
 run the script on the input produced in a., 
 save the sql output: 
 
-./files_source_ < migrated_datasets.txt > files_import.sql
+cat migrated_datasets.txt | ./files_source_ <OFFSET> > files_import.sql
 
-(the script will also produce the output file packlist.txt, 
-to be used in step d., copying of physical files)
+where <OFFSET> is the "last ID ..." from step a. 
+
+This script may produce a lot of stderr output, that you may want to save. 
+You can do that by running it as 
+
+cat migrated_datasets.txt | ./files_source_ <OFFSET> > files_import.sql 2>datafiles.sql.out
+
+(bash shell assumed)
+
+The script will also produce the output file packlist.txt, 
+that you *may* need to use in step d., below.
 
 c. On the destination server, import the sql produced in b.:
 
-psql <... params ...> -f files_import.sql
+psql -d <DBNAME> -U <DBUSER> -f files_import.sql
 
-d. Package the files on the source server:
+d. [OPTIONAL] You can continue using your existing, DVN 3* files
+driectory. In this case, this step can be omitted. But if you want to
+preserve the DVN 3* directory and copy the files to the new Dataverse
+4 server, you'll need to package the files on the source server, using
+the files packlist.txt created in the step b.:
 
-[TODO: there will be a script for this too]
+tar cvzf packedfiles.tgz `cat packlist.txt`
 
-as of now - can be done manually, by tarring the files listed 
-in packlist.txt
+e. [OPTIONAL] If you are moving the files, unpack the files packaged
+in the step d. on the destination server:
 
-e. Unpack the files packaged above in the files directory on 
-the destination server.
+cd <YOUR NEW FILES DIRECTORY>
+tar xvzf packedfiles.tgz
 
 7. run migrate_permissions.sql script (may need to delete some duplicates)
+
 8. run migrate_links.sql script
 
-10. reset sequences
+10. reset sequences: 
 
-11. (when ready for users to log in) add user passwords
+sequence_script.sql 
 
-__________________________________________________
+11. Add publication dates to the migrated datafiles: 
 
-Still to be migrated:
-- Guestbook / stats
+datafile_pub_date.sql
 
+12. (when ready for users to log in) add user passwords
+
+[how?]
 
 __________________________________________________
 
@@ -85,5 +120,46 @@ Not being migrated (verify?):
 -- Classifications
 -- Study locks
 -- VDCNetworkStats (generated data)
+
+
+Post-migration tasks.
+====================
+
+If you have global IDs (handles or DOIs) registered, you may need to
+re-register them.  (Even if your Dataverse 4.0 is staying on the same
+server as your old DVN 3* installation, the URLs of the study pages
+have changed: what used to be /dvn/study?globalId=... is now
+/dataset.xhtml?persistentId=...; this can be taken care of with URL
+rewrite rules, but it may be cleaner to just update the registered
+URLs for all your global identifiers).
+
+To update your registered handles: 
+
+Generate the list of the database IDs of all your *released* datasets
+with Handle global ids, and/or *all* your datasets with DOI ids.
+(exercise for the reader).
+
+Use the modifyRegistration API call to update the registration for these datasets. 
+You can do something like 
+
+cat list_of_db_ids.txt | while read dbid
+do
+    curl 'http://localhost:8080/api/datasets/'$dbid'/modifyRegistration?key=<ADMIN_API_KEY>'
+    echo
+done 
+
+TODO: 
+
+script the above; make it less of an exercise for the reader. 
+
+TODO: 
+
+explain how to transfer the Handles configuration from DVN 3 to Dataverse 4. 
+
+TODO: 
+
+check with Steve and Raman if the above is actually going to work for DOIs. 
+(or if anything special needs to be done first...)
+
 
 

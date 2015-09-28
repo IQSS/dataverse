@@ -1,16 +1,20 @@
 #!/usr/bin/perl
 
-# TODO: 
-# the script still has the namespaces "1902.1" and "10.7910" hard-coded, 
-# to identifies the "local" studies. 
-
 my $url = shift @ARGV;
+my $local_namespace = shift @ARGV; 
+
+unless ( $url =~ /^http:/ && $local_namespace ne "" )
+{
+    print STDERR "Usage: ./versions_source_ <DDI_EXPORT_SERVLET_URL> <LOCAL_NAME_SPACE>\n";
+    exit 1;
+}
 
 use DBI;
 
+my $host =     "xxxxx";
+my $database = "xxxxx";
 my $username = "xxxxx";
 my $password = 'xxxxx';
-my $database = "xxxxx";
 
 my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host",$username,$password); 
 
@@ -28,6 +32,7 @@ $sth->execute();
 my $sid; 
 
 $studycounter = 0; 
+$releasedcounter = 0; 
 $extraversioncounter = 0; 
 $versioncounter = 0; 
 
@@ -38,7 +43,8 @@ while ( @foo = $sth->fetchrow() )
     $studyid = $foo[2];
     $dvalias = $foo[3];
     
-    unless ($authority eq "1902.1" || $authority =~/^10\.7910/ ) {
+
+    unless ($authority eq $local_namespace ) {
 	next;
     }
 
@@ -47,6 +53,7 @@ while ( @foo = $sth->fetchrow() )
 	mkdir "ddi/$dvalias"; 
     }
 
+	
     my $sth1; 
 
     $sth1 = $dbh->prepare(qq {SELECT versionnumber,versionstate FROM studyversion v WHERE study_id=$sid}); 
@@ -63,7 +70,11 @@ while ( @foo = $sth->fetchrow() )
 
 	if ($vstate eq "RELEASED")
 	{
-	    print $dvalias . "\t" . $sid . "\t" . $authority . "/" . $studyid . "/export_ddi.xml\n";
+	    print STDERR "executing: wget -O ddi/" . $dvalias . "/" . $sid . ".xml '" . $url . "?studyId=" . $sid . "&versionNumber=" . $vn . "'\n";
+	    system "wget -O ddi/" . $dvalias . "/" . $sid . ".xml '" . $url . "?studyId=" . $sid . "&versionNumber=" . $vn . "'\n";
+	    $versioncounter++; 
+	    $releasedcounter++;
+
 	}
 	else
 	{
@@ -73,7 +84,6 @@ while ( @foo = $sth->fetchrow() )
 	    $localcounter++;
 	}
     }
-
     $sth1->finish; 
     $studycounter++; 
     $extraversioncounter++ if $localcounter;
@@ -81,10 +91,17 @@ while ( @foo = $sth->fetchrow() )
     unless ($studycounter % 1000) 
     {
 	print STDERR "\n" . $studycounter . " studies processed.\n";
+	print STDERR $releasedcounter . " released versions;\n";
 	print STDERR $extraversioncounter . " had versions other than released;\n";
 	print STDERR "Total " . $versioncounter . " versions processed.\n";
     }
 } 
+
+print STDERR "\n" . $studycounter . " studies processed.\n";
+print STDERR $releasedcounter . " released versions;\n";
+print STDERR $extraversioncounter . " had versions other than released;\n";
+print STDERR "Total " . $versioncounter . " versions processed.\n";
+
 
 $sth->finish;
 

@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.IndexServiceBean;
 
 public class IndexableDataset extends IndexableObject {
 

@@ -97,7 +97,7 @@
                                     <div class="btn-group" role="group">
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
-                                                       oncomplete="viewGuestbook.show()"
+                                                       oncomplete="viewGuestbook.show();bind_bsui_components();"
                                                        update=":manageGuestbooksForm"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open"></span>
@@ -116,7 +116,7 @@
                                         <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}"
                                                        rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}"
-                                                       oncomplete="deleteConfirmation.show()"
+                                                       oncomplete="deleteConfirmation.show();bind_bsui_components();"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash"></span>
                                         </p:commandLink>

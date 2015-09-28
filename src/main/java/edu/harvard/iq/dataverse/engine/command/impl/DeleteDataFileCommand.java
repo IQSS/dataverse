@@ -1,15 +1,13 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataFileIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
@@ -21,7 +19,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
@@ -36,17 +33,15 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(DeleteDataFileCommand.class.getCanonicalName());
 
     private final DataFile doomed;
-    private final User user;
     private final boolean destroy;
 
-    public DeleteDataFileCommand(DataFile doomed, User aUser) {
-        this(doomed, aUser, false);
+    public DeleteDataFileCommand(DataFile doomed, DataverseRequest aRequest) {
+        this(doomed, aRequest, false);
     }
     
-    public DeleteDataFileCommand(DataFile doomed, User aUser, boolean destroy) {
-        super(aUser, doomed.getOwner());
+    public DeleteDataFileCommand(DataFile doomed, DataverseRequest aRequest, boolean destroy) {
+        super(aRequest, doomed.getOwner());
         this.doomed = doomed;
-        this.user = aUser;
         this.destroy = destroy;
     }    
 
@@ -55,7 +50,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         if (destroy) {
             //todo: clean this logic up!
             //for now, if called as destroy, will check for superuser acess
-            if ( doomed.getOwner().isReleased() && (!(user instanceof AuthenticatedUser) || !user.isSuperuser() ) ) {      
+            if ( doomed.getOwner().isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
                 throw new PermissionException("Destroy can only be called by superusers.",
                     this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
             }            

@@ -6,25 +6,38 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.SearchServiceBean;
-import edu.harvard.iq.dataverse.SolrField;
-import edu.harvard.iq.dataverse.SolrQueryResponse;
-import edu.harvard.iq.dataverse.SolrSearchResult;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.search.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.FacetCategory;
+import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexUtil;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,12 +52,14 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.apache.solr.client.solrj.SolrServerException;
 
 @Path("admin/index")
 public class Index extends AbstractApiBean {
@@ -62,6 +77,8 @@ public class Index extends AbstractApiBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
     DataFileServiceBean dataFileService;
     @EJB
     DvObjectServiceBean dvObjectService;
@@ -71,19 +88,26 @@ public class Index extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+    @EJB
+    SearchFilesServiceBean searchFilesService;
+
+    public static String contentChanged = "contentChanged";
+    public static String contentIndexed = "contentIndexed";
+    public static String permsChanged = "permsChanged";
+    public static String permsIndexed = "permsIndexed";
 
     @GET
     public Response indexAllOrSubset(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
-        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, false, previewOnly); 
+        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, false, previewOnly);
     }
-    
+
     @GET
     @Path("continue")
     public Response indexAllOrSubsetContinue(@QueryParam("numPartitions") Long numPartitionsSelected, @QueryParam("partitionIdToProcess") Long partitionIdToProcess, @QueryParam("previewOnly") boolean previewOnly) {
-        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, true, previewOnly); 
+        return indexAllOrSubset(numPartitionsSelected, partitionIdToProcess, true, previewOnly);
     }
-    
-    private Response indexAllOrSubset(Long numPartitionsSelected, Long partitionIdToProcess, boolean skipIndexed, boolean previewOnly) {          
+
+    private Response indexAllOrSubset(Long numPartitionsSelected, Long partitionIdToProcess, boolean skipIndexed, boolean previewOnly) {
         try {
             long numPartitions = 1;
             if (numPartitionsSelected != null) {
@@ -177,7 +201,18 @@ public class Index extends AbstractApiBean {
             }
         }
     }
-    
+
+    @GET
+    @Path("clear")
+    public Response clearSolrIndex() {
+        try {
+            JsonObjectBuilder response = SolrIndexService.deleteAllFromSolrAndResetIndexTimes();
+            return okResponse(response);
+        } catch (SolrServerException | IOException ex) {
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
+        }
+    }
+
     @GET
     @Path("{type}/{id}")
     public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
@@ -248,6 +283,39 @@ public class Index extends AbstractApiBean {
                 }
             }
             return errorResponse(Status.INTERNAL_SERVER_ERROR, sb.toString());
+        }
+    }
+
+    @GET
+    @Path("dataset")
+    public Response indexDatasetByPersistentId(@QueryParam("persistentId") String persistentId) {
+        if (persistentId == null) {
+            return errorResponse(Status.BAD_REQUEST, "No persistent id given.");
+        }
+        Dataset dataset = null;
+        try {
+            dataset = datasetService.findByGlobalId(persistentId);
+        } catch (Exception ex) {
+            return errorResponse(Status.BAD_REQUEST, "Problem looking up dataset with persistent id \"" + persistentId + "\". Error: " + ex.getMessage());
+        }
+        if (dataset != null) {
+            boolean doNormalSolrDocCleanUp = true;
+            Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
+            JsonObjectBuilder data = Json.createObjectBuilder();
+            data.add("message", "Reindexed dataset " + persistentId);
+            data.add("id", dataset.getId());
+            data.add("persistentId", dataset.getGlobalId());
+            JsonArrayBuilder versions = Json.createArrayBuilder();
+            for (DatasetVersion version : dataset.getVersions()) {
+                JsonObjectBuilder versionObject = Json.createObjectBuilder();
+                versionObject.add("semanticVersion", version.getSemanticVersion());
+                versionObject.add("id", version.getId());
+                versions.add(versionObject);
+            }
+            data.add("versions", versions);
+            return okResponse(data);
+        } else {
+            return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
     }
 
@@ -472,15 +540,14 @@ public class Index extends AbstractApiBean {
         return sb.toString();
     }
 
-    static String error( String message ) {
-		JsonObjectBuilder response = Json.createObjectBuilder();
-		response.add("status", "ERROR");
-		response.add("message", message);
-		
-		return "{\n\t\"status\":\"ERROR\"\n\t\"message\":\"" + message.replaceAll("\"", "\\\\\"").replaceAll("\n","\\\\n") + "\"\n}" ;
-	}
+    static String error(String message) {
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        response.add("status", "ERROR");
+        response.add("message", message);
 
-    
+        return "{\n\t\"status\":\"ERROR\"\n\t\"message\":\"" + message.replaceAll("\"", "\\\\\"").replaceAll("\n", "\\\\n") + "\"\n}";
+    }
+
     /**
      * This method is for integration tests of search.
      */
@@ -557,13 +624,117 @@ public class Index extends AbstractApiBean {
         data.add("perms", permissionsData);
 
         DvObject dvObject = dvObjectService.findDvObject(dvObjectId);
+        NullSafeJsonBuilder timestamps = jsonObjectBuilder();
+        timestamps.add(contentChanged, SearchUtil.getTimestampOrNull(dvObject.getModificationTime()));
+        timestamps.add(contentIndexed, SearchUtil.getTimestampOrNull(dvObject.getIndexTime()));
+        timestamps.add(permsChanged, SearchUtil.getTimestampOrNull(dvObject.getPermissionModificationTime()));
+        timestamps.add(permsIndexed, SearchUtil.getTimestampOrNull(dvObject.getPermissionIndexTime()));
         Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
         JsonArrayBuilder roleAssignmentsData = Json.createArrayBuilder();
         for (RoleAssignment roleAssignment : roleAssignments) {
             roleAssignmentsData.add(roleAssignment.getRole() + " has been granted to " + roleAssignment.getAssigneeIdentifier() + " on " + roleAssignment.getDefinitionPoint());
         }
+        data.add("timestamps", timestamps);
         data.add("roleAssignments", roleAssignmentsData);
 
+        return okResponse(data);
+    }
+
+    @DELETE
+    @Path("timestamps")
+    public Response deleteAllTimestamps() {
+        int numItemsCleared = dvObjectService.clearAllIndexTimes();
+        return okResponse("cleared: " + numItemsCleared);
+    }
+
+    @DELETE
+    @Path("timestamps/{dvObjectId}")
+    public Response deleteTimestamp(@PathParam("dvObjectId") long dvObjectId) {
+        int numItemsCleared = dvObjectService.clearIndexTimes(dvObjectId);
+        return okResponse("cleared: " + numItemsCleared);
+    }
+
+    @GET
+    @Path("filesearch")
+    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
+        Dataset dataset = datasetService.findByGlobalId(persistentId);
+        if (dataset == null) {
+            return errorResponse(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
+        }
+        User user = GuestUser.get();
+        try {
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            if (authenticatedUser != null) {
+                user = authenticatedUser;
+            }
+        } catch (WrappedResponse ex) {
+        }
+        RetrieveDatasetVersionResponse datasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, semanticVersion);
+        if (datasetVersionResponse == null) {
+            return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Could not find dataset version based on " + persistentId + " and " + semanticVersion);
+        }
+        DatasetVersion datasetVersion = datasetVersionResponse.getDatasetVersion();
+        FileView fileView = searchFilesService.getFileView(datasetVersion, user, userSuppliedQuery);
+        if (fileView == null) {
+            return errorResponse(Status.BAD_REQUEST, "Problem searching for files. Null returned from getFileView.");
+        }
+        JsonArrayBuilder filesFound = Json.createArrayBuilder();
+        JsonArrayBuilder cards = Json.createArrayBuilder();
+        JsonArrayBuilder fileIds = Json.createArrayBuilder();
+        for (SolrSearchResult result : fileView.getSolrSearchResults()) {
+            cards.add(result.getNameSort());
+            fileIds.add(result.getEntityId());
+            JsonObjectBuilder fileFound = Json.createObjectBuilder();
+            fileFound.add("name", result.getNameSort());
+            fileFound.add("entityId", result.getEntityId().toString());
+            fileFound.add("datasetVersionId", result.getDatasetVersionId());
+            fileFound.add("datasetId", result.getParent().get(SearchFields.ID));
+            filesFound.add(fileFound);
+        }
+        JsonArrayBuilder facets = Json.createArrayBuilder();
+        for (FacetCategory facetCategory : fileView.getFacetCategoryList()) {
+            facets.add(facetCategory.getFriendlyName());
+        }
+        JsonArrayBuilder filterQueries = Json.createArrayBuilder();
+        for (String filterQuery : fileView.getFilterQueries()) {
+            filterQueries.add(filterQuery);
+        }
+        JsonArrayBuilder allDatasetVersionIds = Json.createArrayBuilder();
+        for (DatasetVersion dsVersion : dataset.getVersions()) {
+            allDatasetVersionIds.add(dsVersion.getId());
+        }
+        JsonObjectBuilder data = Json.createObjectBuilder();
+        data.add("filesFound", filesFound);
+        data.add("cards", cards);
+        data.add("fileIds", fileIds);
+        data.add("facets", facets);
+        data.add("user", user.getIdentifier());
+        data.add("persistentID", persistentId);
+        data.add("query", fileView.getQuery());
+        data.add("filterQueries", filterQueries);
+        data.add("allDataverVersionIds", allDatasetVersionIds);
+        data.add("semanticVersion", datasetVersion.getSemanticVersion());
+        return okResponse(data);
+    }
+
+    @GET
+    @Path("filemetadata/{dataset_id}")
+    public Response getFileMetadataByDatasetId(
+            @PathParam("dataset_id") long datasetIdToLookUp,
+            @QueryParam("maxResults") int maxResults,
+            @QueryParam("sort") String sortField,
+            @QueryParam("order") String sortOrder
+    ) {
+        JsonArrayBuilder data = Json.createArrayBuilder();
+        List<FileMetadata> fileMetadatasFound = new ArrayList<>();
+        try {
+            fileMetadatasFound = dataFileService.findFileMetadataByDatasetVersionId(datasetIdToLookUp, maxResults, sortField, sortOrder);
+        } catch (Exception ex) {
+            return errorResponse(Status.BAD_REQUEST, "error: " + ex.getCause().getMessage() + ex);
+        }
+        for (FileMetadata fileMetadata : fileMetadatasFound) {
+            data.add(fileMetadata.getLabel());
+        }
         return okResponse(data);
     }
 

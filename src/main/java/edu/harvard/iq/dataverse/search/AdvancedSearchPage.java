@@ -1,6 +1,12 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -76,11 +82,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
         queryStrings.add(constructFileQuery());
 
         String returnString = "/dataverse.xhtml?q=";
-        returnString += URLEncoder.encode(constructQuery(queryStrings, false, false), "UTF-8");       
+        returnString += URLEncoder.encode(constructQuery(queryStrings, false, false), "UTF-8");
         returnString += "&alias=" + dataverse.getAlias() + "&faces-redirect=true";
 
-        
-        logger.fine(returnString);        
+        logger.fine(returnString);
         return returnString;
     }
 
@@ -129,8 +134,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
             queryStrings.add(constructQuery(listQueryStrings, false));
         }
 
-            return constructQuery(queryStrings, true);
-        }
+        return constructQuery(queryStrings, true);
+    }
 
     private String constructFileQuery() {
         List queryStrings = new ArrayList();

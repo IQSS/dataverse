@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.io.File;
@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Update an existing dataverse.
@@ -25,8 +24,8 @@ public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
     private final File uploadedFile;
     private final Path logoPath = Paths.get("../docroot/logos");
 
-    public UpdateDataverseThemeCommand(Dataverse editedDv, File uploadedFile, User aUser) {
-        super(aUser, editedDv);
+    public UpdateDataverseThemeCommand(Dataverse editedDv, File uploadedFile, DataverseRequest aRequest) {
+        super(aRequest, editedDv);
         this.uploadedFile = uploadedFile;
         this.editedDv = editedDv;
 

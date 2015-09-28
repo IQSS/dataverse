@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +17,8 @@ public class SWORDv2CollectionServlet extends SwordServlet {
     CollectionListManagerImpl collectionListManagerImpl;
     protected CollectionAPI api;
 
+    private final ReentrantLock lock = new ReentrantLock();
+
     @Override
     public void init() throws ServletException {
         super.init();
@@ -24,19 +27,29 @@ public class SWORDv2CollectionServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setRequest(req);
-        this.api.get(req, resp);
-        setRequest(null);
+        try {
+            lock.lock();
+            setRequest(req);
+            this.api.get(req, resp);
+            setRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setRequest(req);
-        this.api.post(req, resp);
-        setRequest(null);
+        try {
+            lock.lock();
+            setRequest(req);
+            this.api.post(req, resp);
+            setRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
-    
-    private void setRequest( HttpServletRequest r ) {
+
+    private void setRequest(HttpServletRequest r) {
         collectionDepositManagerImpl.setRequest(r);
         collectionListManagerImpl.setRequest(r);
     }

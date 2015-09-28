@@ -4,9 +4,9 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -25,8 +25,8 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     
     final DatasetVersion newVersion;
     
-    public UpdateDatasetVersionCommand(User aUser, DatasetVersion theNewVersion) {
-        super(aUser, theNewVersion.getDataset());
+    public UpdateDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion theNewVersion) {
+        super(aRequest, theNewVersion.getDataset());
         newVersion = theNewVersion;
     }
     
@@ -76,7 +76,7 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         DatasetVersion managed = ctxt.em().merge(edit);
         
         boolean doNormalSolrDocCleanUp = true;
-        ctxt.index().indexDataset(ds, doNormalSolrDocCleanUp);
+        ctxt.index().indexDataset(managed.getDataset(), doNormalSolrDocCleanUp);
         
         return managed;
     }

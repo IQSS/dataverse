@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
 import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.ArrayList;
 import java.util.HashSet;

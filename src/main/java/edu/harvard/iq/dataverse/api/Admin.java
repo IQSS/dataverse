@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -8,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupExcep
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -188,7 +190,17 @@ public class Admin extends AbstractApiBean {
             + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : ""));
     }
-    
+
+    @GET
+    @Path("authenticatedUsers/{identifier}/")
+    public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
+        if (authenticatedUser != null) {
+            return okResponse(jsonForAuthUser(authenticatedUser));
+        }
+        return errorResponse(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+
     @DELETE
     @Path("authenticatedUsers/{identifier}/")
     public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
@@ -198,6 +210,22 @@ public class Admin extends AbstractApiBean {
             return okResponse("AuthenticatedUser " +identifier + " deleted. ");
         }
         return errorResponse(Response.Status.BAD_REQUEST, "User "+ identifier+" not found.");
+    }
+
+    @POST
+    @Path("publishDataverseAsCreator/{id}")
+    public Response publishDataverseAsCreator(@PathParam("id") long id) {
+        try {
+            Dataverse dataverse = dataverseSvc.find(id);
+            if (dataverse != null) {
+                AuthenticatedUser authenticatedUser = dataverse.getCreator();
+                return okResponse(json(execCommand(new PublishDataverseCommand(createDataverseRequest(authenticatedUser), dataverse))));
+            } else {
+                return errorResponse(Status.BAD_REQUEST, "Could not find dataverse with id " + id);
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     @DELETE

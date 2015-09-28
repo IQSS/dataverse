@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,8 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
     SwordConfigurationImpl swordConfigurationImpl;
 
     protected MediaResourceAPI api;
+    
+    private final ReentrantLock lock = new ReentrantLock();
 
     @Override
     public void init() throws ServletException {
@@ -31,26 +34,61 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.api.get(req, resp);
+        try {
+            lock.lock();
+            mediaResourceManagerImpl.setHttpRequest(req);
+            this.api.get(req, resp);
+            mediaResourceManagerImpl.setHttpRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.api.head(req, resp);
+        try {
+            lock.lock();
+            mediaResourceManagerImpl.setHttpRequest(req);
+            this.api.head(req, resp);
+            mediaResourceManagerImpl.setHttpRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.api.post(req, resp);
+        try {
+            lock.lock();
+            mediaResourceManagerImpl.setHttpRequest(req);
+            this.api.post(req, resp);
+            mediaResourceManagerImpl.setHttpRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.api.put(req, resp);
+        try {
+            lock.lock();
+            mediaResourceManagerImpl.setHttpRequest(req);
+            this.api.put(req, resp);
+            mediaResourceManagerImpl.setHttpRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.api.delete(req, resp);
+        try {
+            lock.lock();
+            mediaResourceManagerImpl.setHttpRequest(req);
+            this.api.delete(req, resp);
+            mediaResourceManagerImpl.setHttpRequest(null);
+        } finally {
+            lock.unlock();
+        }
     }
 }

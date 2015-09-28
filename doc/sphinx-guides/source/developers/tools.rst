@@ -4,6 +4,8 @@ Tools
 
 These are handy tools for your :doc:`/developers/dev-environment/`.
 
+.. contents:: :local:
+
 Netbeans Connector Chrome Extension
 +++++++++++++++++++++++++++++++++++
 
@@ -54,3 +56,15 @@ Please note that before running ``vagrant up`` for the first time,
 you'll need to ensure that required software (GlassFish, Solr, etc.)
 is available within Vagrant. If you type ``cd downloads`` and
 ``./download.sh`` the software should be properly downloaded.
+
+MSV
++++
+
+`MSV (Multi Schema Validator) <http://msv.java.net>`_ can be used from the command line to validate an XML document against a schema. Download the latest version from https://java.net/downloads/msv/releases/ (msv.20090415.zip as of this writing), extract it, and run it like this:
+
+.. code-block:: bash
+
+    $ java -jar /tmp/msv-20090415/msv.jar Version2-0.xsd ddi.xml 
+    start parsing a grammar.
+    validating ddi.xml
+    the document is valid.

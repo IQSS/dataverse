@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -42,11 +43,14 @@ public class TemplatePage implements java.io.Serializable {
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
     
     @Inject
+    DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
     DataverseSession session;
 
     public enum EditMode {
 
-        CREATE, METADATA
+        CREATE, METADATA, LICENSE, LICENSEADD
     };
 
     private Template template;
@@ -94,6 +98,16 @@ public class TemplatePage implements java.io.Serializable {
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
+    
+    private int selectedTabIndex;
+
+    public int getSelectedTabIndex() {
+        return selectedTabIndex;
+    }
+
+    public void setSelectedTabIndex(int selectedTabIndex) {
+        this.selectedTabIndex = selectedTabIndex;
+    }
 
     public void init() {
         if (templateId != null) { // edit or view existing for a template  
@@ -101,12 +115,26 @@ public class TemplatePage implements java.io.Serializable {
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
+            
+            if (template.getTermsOfUseAndAccess() != null) {
+
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setTemplate(template);
+                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                template.setTermsOfUseAndAccess(terms);
+            }
+
             updateDatasetFieldInputLevels();
         } else if (ownerId != null) {
             // create mode for a new template
             dataverse = dataverseService.find(ownerId);
             editMode = TemplatePage.EditMode.CREATE;
             template = new Template(this.dataverse);
+            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            terms.setTemplate(template);
+            terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            template.setTermsOfUseAndAccess(terms);
             updateDatasetFieldInputLevels();
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
@@ -133,9 +161,10 @@ public class TemplatePage implements java.io.Serializable {
         this.editMode = editMode;
     }
 
-    public String save() {
+    public String save(String redirectPage) {
         
         boolean dontSave = false;
+        /*
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         for (DatasetField dsf : template.getFlatDatasetFields()) {
@@ -157,34 +186,38 @@ public class TemplatePage implements java.io.Serializable {
                     break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
                 }
             }
-        }
+        }*/
         if (dontSave) {
             return "";
         }
         boolean create = false;
         Command cmd;
+        Long createdId = new Long(0);
+        Template created;
         try {
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
                 dataverse.getTemplates().add(template);
-                cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser(), null);
+                created = commandEngine.submit(new CreateTemplateCommand(template, dvRequestService.getDataverseRequest(), dataverse));
+                createdId = created.getId();
+                //cmd = new UpdateDataverseCommand(dataverse, null, null, dvRequestService.getDataverseRequest(), null);
                 create = true;
-                commandEngine.submit(cmd);
+                //commandEngine.submit(cmd);
             } else {
-                cmd = new UpdateDataverseTemplateCommand(dataverse, template, session.getUser());
+                cmd = new UpdateDataverseTemplateCommand(dataverse, template, dvRequestService.getDataverseRequest());
                 commandEngine.submit(cmd);
             }
 
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
-            error.append(ex + " ");
-            error.append(ex.getMessage() + " ");
+            error.append(ex).append(" ");
+            error.append(ex.getMessage()).append(" ");
             Throwable cause = ex;
             while (cause.getCause() != null) {
                 cause = cause.getCause();
-                error.append(cause + " ");
-                error.append(cause.getMessage() + " ");
+                error.append(cause).append(" ");
+                error.append(cause.getMessage()).append(" ");
             }
             //
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + error.toString()));
@@ -201,10 +234,16 @@ public class TemplatePage implements java.io.Serializable {
             return null;
             //logger.severe(ex.getMessage());
         }
-        editMode = null;
+        editMode = null;       
         String msg = (create)? "Template has been created.": "Template has been edited and saved.";
         JsfHelper.addFlashMessage(msg);
-        return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
+        String retString = "";   
+        if (!redirectPage.isEmpty() && createdId.intValue() > 0) {
+            retString = "/template.xhtml?id=" + createdId + "&ownerId=" + dataverse.getId() + "&editMode=LICENSEADD&faces-redirect=true";
+        } else {
+            retString = "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";           
+        }
+        return retString;
     }
 
     public void cancel() {

@@ -1,9 +1,3 @@
-/*
- *  (C) Michael Bar-Sinai
- *//*
- *  (C) Michael Bar-Sinai
- */
-
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;

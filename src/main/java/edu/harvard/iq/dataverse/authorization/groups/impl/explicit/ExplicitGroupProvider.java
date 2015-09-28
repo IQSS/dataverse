@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -36,13 +37,20 @@ public class ExplicitGroupProvider implements GroupProvider {
     }
     
     /**
-     * Returns all the groups the role assignee belongs to in the context of 
-     * {@code o}. This includes groups defined on {@code o}'s parents as well.
+     * Returns all the groups role assignee belongs to in the context of 
+     * {@code o} and {@code req}. This includes groups defined on {@code o}'s parents as well,
+     * but not on the groups descendants - only groups directly containing the users are
+     * included in the list.
      * 
-     * @param ra The user
+     * @param req The request
      * @param o The DvObject over which the groups are defined.
      * @return The groups the user belongs to in the context of {@code o}.
      */
+    @Override
+    public Set<ExplicitGroup> groupsFor(DataverseRequest req, DvObject o) {
+        return explicitGroupSvc.findGroups(req.getUser(), o);
+    }
+    
     @Override
     public Set<ExplicitGroup> groupsFor(RoleAssignee ra, DvObject o) {
         return explicitGroupSvc.findGroups(ra, o);

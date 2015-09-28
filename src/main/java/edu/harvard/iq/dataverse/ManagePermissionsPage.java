@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
@@ -15,7 +14,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
@@ -32,12 +30,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -74,6 +68,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -167,7 +163,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     // internal method used by removeRoleAssignment and saveConfiguration
     private void revokeRole(RoleAssignment ra) {
         try {
-            commandEngine.submit(new RevokeRoleCommand(ra, session.getUser()));
+            commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
             JsfHelper.addSuccessMessage(ra.getRole().getName() + " role for " + roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle() + " was removed.");
             RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
             notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE);
@@ -282,7 +278,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             DataverseRole defaultRole = roleService.findBuiltinRoleByAlias(defaultContributorRoleAlias);
             if (!defaultRole.equals(dv.getDefaultContributorRole())) {
                 try {
-                    commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, session.getUser(), dv));
+                    commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, dvRequestService.getDataverseRequest(), dv));
                     JsfHelper.addSuccessMessage("The default permissions for this dataverse have been updated.");
                 } catch (PermissionException ex) {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot assign default permissions.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
@@ -419,7 +415,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, session.getUser()));
+            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest()));
             JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + dvObject.getDisplayName() + ".");
             notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
         } catch (PermissionException ex) {
@@ -476,7 +472,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             }
             try {
                 String roleState = role.getId() != null ? "updated" : "created";
-                setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) role.getOwner())));
+                setRole(commandEngine.submit(new CreateRoleCommand(role, dvRequestService.getDataverseRequest(), (Dataverse) role.getOwner())));
                 JsfHelper.addSuccessMessage("The role was " + roleState + ". To assign it to a user and/or group, click on the Assign Roles to Users/Groups button in the Users/Groups section of this page.");
             } catch (PermissionException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be saved.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");

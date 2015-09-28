@@ -1,0 +1,84 @@
+@startuml
+
+' A much-simplified diagram showing how the data "flows" (is transmitted) between the 
+' users/clients and various components of the Dataverse.
+' to render, do something like 
+' $ java -jar ~/lib/plantuml.jar -graphvizdot /usr/local/bin/dot -tpng dataflow.uml
+
+package "Client Side" {
+	package "Web Users and API Clients" {
+		component "User" as webuser
+	}
+}
+
+package "Server Side" {
+
+	node "Dataverse Application" {
+     	     component "Data/Service Component" {
+     	       interface "TCP/IP" as DataServiceTCPIP
+	       interface "Java IO" as DataServiceNIO 
+	       interface "https" as DataServiceHTTPS
+     	     } 
+     	     component "Index and Search Component" { 
+     	       interface "TCP/IP" as IndexComponent
+	       interface "https" as IndexComponentHTTPS
+     	     } 
+     	     component "Ingest Component" { 
+     	       interface "TCP/IP" as IngestComponentTCPIP
+	       interface "Java IO" as IngestComponentNIO
+	       interface "https" as IngestComponentHTTPS
+     	     }    
+	}
+
+	node R {
+     	     component "rApache" {
+     	     	       interface "https" as rApacheInterface
+      	     }
+
+	     component "RServe" {
+     	     	       interface "TCP/IP" as RServeInterface
+             }    
+	}
+
+	database PostgresQL {
+	 frame "tables"
+	}
+
+	database Filesystem {
+	 frame "files"
+	}
+
+	database Solr {
+	 frame "index"
+	}
+}
+
+rApacheInterface -up-> webuser
+
+DataServiceHTTPS -up-> webuser
+DataServiceHTTPS .right.> rApacheInterface
+
+
+webuser -down-> IngestComponentHTTPS
+
+PostgresQL -[#orange]-> DataServiceTCPIP
+Filesystem -[#orange]-> DataServiceNIO
+
+Solr -[#3CB371]-> IndexComponent
+IndexComponent -[#3CB371]-> Solr
+
+IndexComponent -[#3CB371]-> PostgresQL
+PostgresQL -[#3CB371]-> IndexComponent
+
+IndexComponentHTTPS -up-> webuser
+
+DataServiceTCPIP .right.> RServeInterface
+RServeInterface .left.> DataServiceTCPIP
+
+IngestComponentNIO -[#4169E1]down-> Filesystem
+Filesystem -[#4169E1]up-> IngestComponentNIO
+
+IngestComponentTCPIP -[#4169E1]-> PostgresQL
+
+
+@enduml

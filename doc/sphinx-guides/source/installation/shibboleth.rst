@@ -100,14 +100,14 @@ Edit Apache Config Files
 ^^^^^^^^^^^^^^^^^^^^^^^^
 ``/etc/httpd/conf.d/ssl.conf`` should contain the FQDN of your hostname like this: ``ServerName shibtest.dataverse.org:443``
 
-At the bottom of ``/etc/httpd/conf.d/ssl.conf`` add the following:
+Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</VirtualHost>`` directive add the following:
 
 .. code-block:: text
 
     # don't pass paths used by rApache and TwoRavens to Glassfish
     ProxyPassMatch ^/RApacheInfo$ !
     ProxyPassMatch ^/custom !
-    ProxyPassMatch ^/rookzelig !
+    ProxyPassMatch ^/dataexplore !
     # don't pass paths used by Shibboleth to Glassfish
     ProxyPassMatch ^/Shibboleth.sso !
     ProxyPassMatch ^/shibboleth-ds !
@@ -130,9 +130,7 @@ Configure Shibboleth
 shibboleth2.xml
 ^^^^^^^^^^^^^^^
 
-``/etc/shibboleth/shibboleth2.xml`` should look something like the following, substituting your hostname for in the entityID.
-
-You can download this `sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>`_.
+``/etc/shibboleth/shibboleth2.xml`` should look something like the `sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>`_ below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
@@ -176,6 +174,8 @@ Enable Shibboleth
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibEnabled``
 
 After enabling Shibboleth, assuming the ``DiscoFeed`` is working per above, you should see a list of institutions to log into. You will not be able to log in via these institutions, however, until you have exchanged metadata with them.
+
+.. _shibboleth-attributes:
 
 Shibboleth Attributes
 ---------------------

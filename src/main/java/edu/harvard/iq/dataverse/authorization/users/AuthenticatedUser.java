@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -47,9 +48,11 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable = false, unique=true)
     private String userIdentifier;
 
-    private String name;
-
-
+    /**
+     * @todo Uncomment the ValidateEmail annotation below for consistency with
+     * the annotation on BuiltinUser.
+     */
+//    @ValidateEmail(message = "Please enter a valid email address.")
     @NotNull
     @Column(nullable = false, unique=true)
     private String email;
@@ -64,10 +67,6 @@ public class AuthenticatedUser implements User, Serializable {
      * the modification times of users but now we don't index users at all.
      */
     private Timestamp modificationTime;
-
-
-    @Transient
-    private UserRequestMetadata requestMetadata;
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -133,10 +132,6 @@ public class AuthenticatedUser implements User, Serializable {
 
     public String getName() {
         return firstName + " " + lastName;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getEmail() {
@@ -228,15 +223,6 @@ public class AuthenticatedUser implements User, Serializable {
         AuthenticatedUser other = (AuthenticatedUser) object;
         return Objects.equals(getId(), other.getId());
     }    
-
-    @Override
-    public UserRequestMetadata getRequestMetadata() {
-        return requestMetadata;
-    }
-
-    public void setRequestMetadata(UserRequestMetadata requestMetadata) {
-        this.requestMetadata = requestMetadata;
-    }
 
     public String getShibIdentityProvider() {
         return shibIdentityProvider;

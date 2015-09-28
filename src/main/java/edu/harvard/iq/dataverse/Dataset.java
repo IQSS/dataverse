@@ -225,29 +225,33 @@ public class Dataset extends DvObjectContainer {
         if (!(template == null)) {
             if (!template.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(template.getDatasetFields()));
+            }           
+            if (template.getTermsOfUseAndAccess() != null){
+                TermsOfUseAndAccess terms= template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                dsv.setTermsOfUseAndAccess(terms);
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                terms.setDatasetVersion(dsv);
+                dsv.setTermsOfUseAndAccess(terms);
             }
-            dsv.setLicense(DatasetVersion.License.CC0);
+
         } else {
             latestVersion = getLatestVersionForCopy();
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
             }
-            dsv.setFileAccessRequest(latestVersion.isFileAccessRequest());
-            dsv.setTermsOfUse(latestVersion.getTermsOfUse());
-            dsv.setTermsOfAccess(latestVersion.getTermsOfAccess());
-            dsv.setConfidentialityDeclaration(latestVersion.getConfidentialityDeclaration());
-            dsv.setSpecialPermissions(latestVersion.getSpecialPermissions());
-            dsv.setRestrictions(latestVersion.getRestrictions());
-            dsv.setCitationRequirements(latestVersion.getCitationRequirements());
-            dsv.setDepositorRequirements(latestVersion.getDepositorRequirements());
-            dsv.setConditions(latestVersion.getConditions());
-            dsv.setDisclaimer(latestVersion.getDisclaimer());
-            dsv.setDataAccessPlace(latestVersion.getDataAccessPlace());
-            dsv.setOriginalArchive(latestVersion.getOriginalArchive());
-            dsv.setAvailabilityStatus(latestVersion.getAvailabilityStatus());
-            dsv.setContactForAccess(latestVersion.getContactForAccess());
-            dsv.setSizeOfCollection(latestVersion.getSizeOfCollection());
-            dsv.setStudyCompletion(latestVersion.getStudyCompletion());
+            
+            if (latestVersion.getTermsOfUseAndAccess()!= null){
+                dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                dsv.setTermsOfUseAndAccess(terms);
+            }
 
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
@@ -265,7 +269,6 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDatasetVersion(dsv);
                 dsv.getFileMetadatas().add(newFm);
             }
-            dsv.setLicense(latestVersion.getLicense());
         }
 
         // I'm adding the version to the list so it will be persisted when
@@ -300,9 +303,13 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
-        dsv.setDatasetFields(dsv.initDatasetFields());;
+        dsv.setDatasetFields(dsv.initDatasetFields());
         dsv.setFileMetadatas(new ArrayList());
-
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setDatasetVersion(dsv);
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        terms.setTermsOfAccess("");
+        dsv.setTermsOfUseAndAccess(terms);
         this.setVersions(new ArrayList());
         getVersions().add(0, dsv);
 

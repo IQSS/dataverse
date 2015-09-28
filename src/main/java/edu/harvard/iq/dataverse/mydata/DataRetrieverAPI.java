@@ -8,12 +8,10 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.FacetCategory;
-import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.SearchServiceBean;
-import edu.harvard.iq.dataverse.SolrQueryResponse;
-import edu.harvard.iq.dataverse.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -24,11 +22,9 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -274,7 +270,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("role_ids") List<Long> roleIds, 
             @QueryParam("userIdentifier") String userIdentifier) { //String myDataParams) {
 
-        msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
+        //msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         boolean DEBUG_MODE = false;
         boolean OTHER_USER = false;
 
@@ -323,7 +319,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (published_states != null){
             pub_states = published_states;
         }
-        msgt(">>>roleIds: " + roleIds);
         
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
@@ -360,16 +355,16 @@ public class DataRetrieverAPI extends AbstractApiBean {
             searchUser = authUser;
         }
 
-        msg("search with user: " + searchUser.getIdentifier());
+        //msg("search with user: " + searchUser.getIdentifier());
 
         List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
         if (filterQueries==null){
-            msg("No ids found for this search");
+            logger.fine("No ids found for this search");
             return this.getJSONErrorString(DataRetrieverAPI.MSG_NO_RESULTS_FOUND, null);
         }
-        msgt("myDataFinder.getSolrFilterQueries(): " + myDataFinder.getSolrFilterQueries().toString());
+        //msgt("myDataFinder.getSolrFilterQueries(): " + myDataFinder.getSolrFilterQueries().toString());
         
-        msg("Selected paginationStart: " + paginationStart);
+        //msg("Selected paginationStart: " + paginationStart);
 
         try {
                 solrQueryResponse = searchService.search(
@@ -416,12 +411,16 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, 
                                 paginationStart);
         
+        RoleTagRetriever roleTagRetriever = new RoleTagRetriever(this.rolePermissionHelper, this.roleAssigneeSvc, this.dvObjectServiceBean);
+        roleTagRetriever.loadRoles(searchUser.getIdentifier(), solrQueryResponse);
+
                 
         jsonData.add(DataRetrieverAPI.JSON_SUCCESS_FIELD_NAME, true)
                 .add(DataRetrieverAPI.JSON_DATA_FIELD_NAME,        
                         Json.createObjectBuilder()
                                 .add("pagination", pager.asJsonObjectBuilder())
-                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
+                                //.add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, filterParams, this.myDataFinder))
+                                .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
                                 .add("search_term",  filterParams.getSearchTerm())
@@ -462,8 +461,52 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return solrResponse.getPublicationStatusCountsAsJSON();
     }
     
-    //private JsonObjectBuilder formatSolrDocs(SolrQueryResponse solrResponse){
-    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, MyDataFilterParams filterParams, MyDataFinder finder ){
+    /**
+     * Using RoleTagRetriever to find role names for each card
+     * Trying to minimize extra queries
+     * 
+     * @param solrResponse
+     * @param roleTagRetriever
+     * @return 
+     */
+    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, RoleTagRetriever roleTagRetriever ){
+        if (solrResponse == null){
+            throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  solrResponse should not be null");     
+        }
+        if(roleTagRetriever==null){
+            throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  roleTagRetriever should not be null");     
+        }
+
+        JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
+
+        JsonObjectBuilder myDataCardInfo;
+        JsonArrayBuilder rolesForCard;
+        
+        for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
+            // -------------------------------------------
+            // (a) Get core card data from solr
+            // -------------------------------------------
+            myDataCardInfo = doc.getJsonForMyData();
+            
+            // -------------------------------------------
+            // (b) Add role info
+            // -------------------------------------------
+            rolesForCard = roleTagRetriever.getRolesForCardAsJSON(doc.getEntityId());
+            if (rolesForCard!=null){
+                myDataCardInfo.add("user_roles", rolesForCard);
+            }
+            
+            // -------------------------------------------
+            // (c) Add final MyData JSON to array
+            // -------------------------------------------
+            jsonSolrDocsArrayBuilder.add(myDataCardInfo);
+        }
+        return jsonSolrDocsArrayBuilder;
+        
+    }
+    
+
+    /*private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, MyDataFilterParams filterParams, MyDataFinder finder ){
         
         if (solrResponse == null){
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: formatSolrDocs should not be null");
@@ -481,6 +524,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return jsonSolrDocsArrayBuilder;
         
     }
+    */
     /*
     @Path("test-it")
     @Produces({"application/json"})

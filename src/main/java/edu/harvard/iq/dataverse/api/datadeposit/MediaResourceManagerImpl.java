@@ -7,11 +7,10 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.ByteArrayInputStream;
@@ -24,6 +23,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import org.swordapp.server.AuthCredentials;
@@ -52,11 +52,14 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
+    
+    private HttpServletRequest httpRequest;
 
     @Override
     public MediaResource getMediaResourceRepresentation(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
 
         AuthenticatedUser user = swordAuth.auth(authCredentials);
+        DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
@@ -74,7 +77,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 boolean getMediaResourceRepresentationSupported = false;
                 if (getMediaResourceRepresentationSupported) {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(user, dvThatOwnsDataset)) {
+                    if (swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
                         /**
                          * @todo Zip file download is being implemented in
                          * https://github.com/IQSS/dataverse/issues/338
@@ -120,6 +123,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @Override
     public void deleteMediaResource(String uri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
+        DataverseRequest dvReq = new DataverseRequest(user, httpRequest); 
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         String fileId = urlManager.getTargetIdentifier();
@@ -134,14 +138,14 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "File id must be a number, not '" + fileIdString + "'. URL was: " + uri);
                     }
                     if (fileIdLong != null) {
-                        logger.info("preparing to delete file id " + fileIdLong);
+                        logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
                             Dataset dataset = fileToDelete.getOwner();
                             SwordUtil.datasetLockCheck(dataset);
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
-                            if (swordAuth.hasAccessToModifyDataverse(user, dataverseThatOwnsFile)) {
+                            if (swordAuth.hasAccessToModifyDataverse(dvReq, dataverseThatOwnsFile)) {
                                 try {
                                     /**
                                      * @todo with only one command, should we be
@@ -152,7 +156,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                      * suspenders and do our normal sword auth
                                      * check.
                                      */
-                                    commandEngine.submit(new UpdateDatasetCommand(dataset, user, fileToDelete));
+                                    commandEngine.submit(new UpdateDatasetCommand(dataset, dvReq, fileToDelete));
                                 } catch (CommandException ex) {
                                     throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                                 }
@@ -184,7 +188,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
     DepositReceipt replaceOrAddFiles(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration, boolean shouldReplace) throws SwordError, SwordAuthException, SwordServerException {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-
+        DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
+        
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
@@ -195,7 +200,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
             SwordUtil.datasetLockCheck(dataset);
             Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (!swordAuth.hasAccessToModifyDataverse(user, dvThatOwnsDataset)) {
+            if (!swordAuth.hasAccessToModifyDataverse(dvReq, dvThatOwnsDataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
 
@@ -279,7 +284,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
 
             Command<Dataset> cmd;
-            cmd = new UpdateDatasetCommand(dataset, user);
+            cmd = new UpdateDatasetCommand(dataset, dvReq);
             try {
                 dataset = commandEngine.submit(cmd);
             } catch (CommandException ex) {
@@ -332,4 +337,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         swordError.setStackTrace(emptyStackTrace);
         return swordError;
     }
+
+    public void setHttpRequest(HttpServletRequest httpRequest) {
+        this.httpRequest = httpRequest;
+    }
+    
+    
 }

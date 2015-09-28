@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Address;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv4Range;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IPv6Range;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.CascadeType;
@@ -44,13 +45,14 @@ public class IpGroup extends PersistedGlobalGroup {
     }
     
     @Override
-    public boolean contains(RoleAssignee ra) {
-        if ( ra instanceof User ) {
-            User aUser = (User) ra;
-            IpAddress userAddress = aUser.getRequestMetadata().getIpAddress();
-            for ( IpAddressRange r : ipv6Ranges ) {
-                if ( r.contains(userAddress).equals(Boolean.TRUE) ) return true;
-            }
+    public boolean contains(DataverseRequest rq) {
+        IpAddress addr = rq.getSourceAddress();
+        for ( IpAddressRange r : ((addr instanceof IPv4Address) ? ipv4Ranges : ipv6Ranges) ) {
+           Boolean containment =  r.contains(addr);
+           if ( (containment != null) && containment ) {
+               return true;
+           }
+               
         }
         return false;
     }
@@ -68,12 +70,9 @@ public class IpGroup extends PersistedGlobalGroup {
         return range;
     }
     
+    @SuppressWarnings("element-type-mismatch")
     public void remove( IpAddressRange range ) {
-        if ( range instanceof IPv4Range ) {
-            ipv4Ranges.remove((IPv4Range) range);
-        } else {
-            ipv6Ranges.remove((IPv6Range) range);
-        }
+        ( (range instanceof IPv4Range) ? ipv4Ranges : ipv6Ranges ).remove(range);
     }
     
     @Override

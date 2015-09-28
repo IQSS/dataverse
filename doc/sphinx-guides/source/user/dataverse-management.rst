@@ -97,14 +97,15 @@ This roles can be removed at any time.
 
 Dataset Templates
 ======================
-Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in. In Dataverse 4.0, templates are created at the dataverse level, can be deleted (so it does not show for future datasets), set to default (not required), and can be copied so you do not have to start over when creating a new template with similiar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
+Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in or want to use a custom set of Terms of Use and Access for multiple datasets in a dataverse. In Dataverse 4.0, templates are created at the dataverse level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similiar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
 
 How do you create a template? 
 
 #. Navigate to your dataverse, click on the Edit Dataverse button and select Dataset Templates. 
 #. Once you have clicked on Dataset Templates, you will be brought to the Dataset Templates page. On this page, you can 1) decide to use the dataset templates from your parent dataverse 2) create a new dataset template or 3) do both.
 #. Click on the Create Dataset Template to get started. You will see that the template is the same as the create dataset page with an additional field at the top of the page to add a name for the template.
-#. After adding information into the metadata fields you have information for and clicking save, you will be brought back to the Manage Dataset Templates page and should see your template listed there now with several options. 
+#. After adding information into the metadata fields you have information for and clicking Save and Add Terms, you will be brought to the page where you can add custom Terms of Use and Access. If you do not need custom Terms of Use and Access, click the Save Dataset Template, and only the metadata fields will be saved.
+#. After clicking Save Dataset Template, you will be brought back to the Manage Dataset Templates page and should see your template listed there now with the make default, edit, view, or delete options. 
 #. A dataverse does not have to have a default template and users can select which template they would like to use while on the Create Dataset page. 
 #. You can also click on the View button on the Manage Dataset Templates page to see what metadata fields have information filled in.
 
@@ -147,7 +148,6 @@ Note: Featured Dataverses can only be used with published dataverses.
 
 Linked Dataverses + Linked Datasets
 ======================================================
-Coming soon!
 
 Currently, the ability to link a dataverse to another dataverse or a dataset to a dataverse is a super user only feature. 
 

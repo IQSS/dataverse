@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -13,8 +12,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchFilterQuery;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -32,7 +34,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -95,7 +96,8 @@ public class DataversePage implements java.io.Serializable {
     @EJB DataverseRoleServiceBean dataverseRoleServiceBean;
     @Inject
     SearchIncludeFragment searchIncludeFragment;
-
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
     @EJB
     DataverseLinkingServiceBean linkingService;
 
@@ -611,17 +613,17 @@ public class DataversePage implements java.io.Serializable {
             if (session.getUser().isAuthenticated()) {
                 dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
                 create = Boolean.TRUE;
-                cmd = new CreateDataverseCommand(dataverse, (AuthenticatedUser) session.getUser(), facets.getTarget(), listDFTIL);
+                cmd = new CreateDataverseCommand(dataverse, dvRequestService.getDataverseRequest(), facets.getTarget(), listDFTIL);
             } else {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.create.authenticatedUsersOnly"));
                 return null;
             }
         } else {
             create = Boolean.FALSE;
-            if (editMode != null && editMode.equals(editMode.FEATURED)) {
-                cmd = new UpdateDataverseCommand(dataverse, null, featuredDataverses.getTarget(), session.getUser(), null);
+            if (editMode != null && editMode.equals(EditMode.FEATURED)) {
+                cmd = new UpdateDataverseCommand(dataverse, null, featuredDataverses.getTarget(), dvRequestService.getDataverseRequest(), null);
             } else {
-                cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), null, session.getUser(), listDFTIL);                
+                cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), null, dvRequestService.getDataverseRequest(), listDFTIL);                
             }
         }
 
@@ -633,8 +635,8 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         
-            String message = "";
-            if (editMode != null && editMode.equals(editMode.FEATURED)) {
+            String message;
+            if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 message = "The featured dataverses for this dataverse have been updated.";
             } else {
                 message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
@@ -740,13 +742,13 @@ public class DataversePage implements java.io.Serializable {
 
         linkingDataverse = dataverseService.find(linkingDataverseId);
 
-        LinkDataverseCommand cmd = new LinkDataverseCommand(session.getUser(), linkingDataverse, dataverse);
+        LinkDataverseCommand cmd = new LinkDataverseCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataverse);
         //LinkDvObjectCommand cmd = new LinkDvObjectCommand (session.getUser(), linkingDataverse, dataverse);
         try {
             commandEngine.submit(cmd);
         } catch (CommandException ex) {
             String msg = "Unable to link " + dataverse.getDisplayName() + " to " + linkingDataverse.getDisplayName() + ". An internal error occurred.";
-            logger.severe(msg + " " + ex);
+            logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
             JsfHelper.addErrorMessage(msg);
             return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
         }
@@ -776,7 +778,7 @@ public class DataversePage implements java.io.Serializable {
                 arguments.add(linkingDataverse.getDisplayName());
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.linked.internalerror", arguments));
                 String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
-                logger.severe(msg + " " + ex);
+                logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
                 //JsfHelper.addErrorMessage(msg);
                 return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
             }
@@ -846,7 +848,7 @@ public class DataversePage implements java.io.Serializable {
                 savedSearch.getSavedSearchFilterQueries().add(ssfq);
             }
         }
-        CreateSavedSearchCommand cmd = new CreateSavedSearchCommand(session.getUser(), linkingDataverse, savedSearch);
+        CreateSavedSearchCommand cmd = new CreateSavedSearchCommand(dvRequestService.getDataverseRequest(), linkingDataverse, savedSearch);
         try {
             commandEngine.submit(cmd);
 
@@ -875,7 +877,7 @@ public class DataversePage implements java.io.Serializable {
 
     public String releaseDataverse() {
         if (session.getUser() instanceof AuthenticatedUser) {
-            PublishDataverseCommand cmd = new PublishDataverseCommand((AuthenticatedUser) session.getUser(), dataverse);
+            PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataverse);
             try {
                 commandEngine.submit(cmd);
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
@@ -893,7 +895,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String deleteDataverse() {
-        DeleteDataverseCommand cmd = new DeleteDataverseCommand(session.getUser(), dataverse);
+        DeleteDataverseCommand cmd = new DeleteDataverseCommand(dvRequestService.getDataverseRequest(), dataverse);
         try {
             commandEngine.submit(cmd);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.delete.success"));

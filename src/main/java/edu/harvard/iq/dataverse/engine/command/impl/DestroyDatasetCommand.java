@@ -2,18 +2,16 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -22,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -39,19 +37,17 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(DestroyDatasetCommand.class.getCanonicalName());
 
     private final Dataset doomed;
-    private final User user;
 
-    public DestroyDatasetCommand(Dataset doomed, User aUser) {
-        super(aUser, doomed);
+    public DestroyDatasetCommand(Dataset doomed, DataverseRequest aRequest) {
+        super(aRequest, doomed);
         this.doomed = doomed;
-        this.user = aUser;
     }
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
         // first check if dataset is released, and if so, if user is a superuser
-        if ( doomed.isReleased() && (!(user instanceof AuthenticatedUser) || !((AuthenticatedUser) user).isSuperuser() ) ) {      
+        if ( doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
             throw new PermissionException("Destroy can only be called by superusers.",
                 this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
@@ -70,7 +66,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             datasetAndFileSolrIdsToDelete.add(solrIdOfPublishedFile);
             String solrIdOfDraftFile = IndexServiceBean.solrDocIdentifierFile + df.getId() + IndexServiceBean.draftSuffix;
             datasetAndFileSolrIdsToDelete.add(solrIdOfDraftFile);
-            ctxt.engine().submit(new DeleteDataFileCommand(df, getUser(), true));
+            ctxt.engine().submit(new DeleteDataFileCommand(df, getRequest(), true));
             dfIt.remove();
         }
         
@@ -97,7 +93,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         String solrIdOfDeaccessionedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.deaccessionedSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDeaccessionedDatasetVersion);
         IndexResponse resultOfSolrDeletionAttempt = ctxt.solrIndex().deleteMultipleSolrIds(datasetAndFileSolrIdsToDelete);
-        logger.fine("Result of attempt to delete dataset and file IDs from the search index: " + resultOfSolrDeletionAttempt.getMessage());
+        logger.log(Level.FINE, "Result of attempt to delete dataset and file IDs from the search index: {0}", resultOfSolrDeletionAttempt.getMessage());
 
         ctxt.index().indexDataverse(toReIndex);
     }

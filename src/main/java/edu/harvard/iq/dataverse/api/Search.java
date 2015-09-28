@@ -4,16 +4,17 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.FacetCategory;
-import edu.harvard.iq.dataverse.FacetLabel;
-import edu.harvard.iq.dataverse.SolrSearchResult;
-import edu.harvard.iq.dataverse.SearchServiceBean;
-import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.FacetCategory;
+import edu.harvard.iq.dataverse.search.FacetLabel;
+import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -53,7 +54,6 @@ public class Search extends AbstractApiBean {
     @GET
     public Response search(
             @QueryParam("q") String query,
-            @QueryParam("key") String key,
             @QueryParam("type") final List<String> types,
             @QueryParam("subtree") String subtreeRequested,
             @QueryParam("sort") String sortField,
@@ -70,7 +70,7 @@ public class Search extends AbstractApiBean {
 
         User user;
         try {
-            user = getUser(key);
+            user = getUser();
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -85,7 +85,7 @@ public class Search extends AbstractApiBean {
                 if (!types.isEmpty()) {
                     filterQueries.add(getFilterQueryFromTypes(types));
                 }
-                sortBy = getSortBy(sortField, sortOrder);
+                sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
                 subtree = getSubtree(subtreeRequested);
                 if (!subtree.equals(dataverseService.findRootDataverse())) {
@@ -188,7 +188,7 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private User getUser(String key) throws WrappedResponse {
+    private User getUser() throws WrappedResponse {
         /**
          * @todo support searching as non-guest:
          * https://github.com/IQSS/dataverse/issues/1299
@@ -201,11 +201,11 @@ public class Search extends AbstractApiBean {
          * @todo Check back on https://github.com/IQSS/dataverse/issues/1838 for
          * when/if the Search API is opened up to not require a key.
          */
-        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie(key);
+        AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
         if (nonPublicSearchAllowed()) {
             return authenticatedUser;
         } else {
-            return new GuestUser();
+            return GuestUser.get();
         }
     }
 
@@ -255,44 +255,6 @@ public class Search extends AbstractApiBean {
             // ok, fine, you get what you asked for
             return numResultsPerPage;
         }
-    }
-
-    private SortBy getSortBy(String sortField, String sortOrder) throws Exception {
-
-        if (StringUtils.isBlank(sortField)) {
-            sortField = SearchFields.RELEVANCE;
-        } else if (sortField.equals("name")) {
-            // "name" sounds better than "name_sort" so we convert it here so users don't have to pass in "name_sort"
-            sortField = SearchFields.NAME_SORT;
-        } else if (sortField.equals("date")) {
-            // "date" sounds better than "release_or_create_date_dt"
-            sortField = SearchFields.RELEASE_OR_CREATE_DATE;
-        }
-
-        if (StringUtils.isBlank(sortOrder)) {
-            if (StringUtils.isNotBlank(sortField)) {
-                // default sorting per field if not specified
-                if (sortField.equals(SearchFields.RELEVANCE)) {
-                    sortOrder = SortBy.DESCENDING;
-                } else if (sortField.equals(SearchFields.NAME_SORT)) {
-                    sortOrder = SortBy.ASCENDING;
-                } else if (sortField.equals(SearchFields.RELEASE_OR_CREATE_DATE)) {
-                    sortOrder = SortBy.DESCENDING;
-                } else {
-                    // asc for alphabetical by default despite GitHub using desc by default:
-                    // "The sort order if sort parameter is provided. One of asc or desc. Default: desc"
-                    // http://developer.github.com/v3/search/
-                    sortOrder = SortBy.ASCENDING;
-                }
-            }
-        }
-
-        List<String> allowedSortOrderValues = SortBy.allowedOrderStrings();
-        if (!allowedSortOrderValues.contains(sortOrder)) {
-            throw new Exception("The 'order' parameter was '" + sortOrder + "' but expected one of " + allowedSortOrderValues + ". (The 'sort' parameter was/became '" + sortField + "'.)");
-        }
-
-        return new SortBy(sortField, sortOrder);
     }
 
     private String getFilterQueryFromTypes(List<String> types) throws Exception {

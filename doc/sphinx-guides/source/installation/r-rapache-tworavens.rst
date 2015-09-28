@@ -64,6 +64,13 @@ d. Install libcurl-devel:
 
 Make sure you have the standard GNU compilers installed (needed for 3rd-party R packages to build themselves). 
 
+**Update**: As of Aug. 4 2015, it appears the following rpms had to be installed: 
+
+``yum install openssl-devel``
+``yum install xml2-devel``
+
+Again, without these rpms, R package devtools was failing to install, silently or with a non-informative error message. 
+Note: this package ``devtools`` has proven to be very flaky; it is being very actively maintained, new dependencies are being constantly added and new bugs introduced... however, it is only needed to install the package ``Zelig``, the main R workhorse behind TwoRavens. It cannot be installed from CRAN, like all the other 3rd party packages we use - becase TwoRavens requires version 5, which is still in beta. So devtools is needed to build it from sources downloaded directly from github. Once Zelig 5 is released, we'll be able to drop the requirement for devtools - and that will make this process much simpler. For now, be prepared for it to be somewhat of an adventure. 
 
 
 1. Set Up R
@@ -140,7 +147,22 @@ This configuration may be the easiest to set up if you are simply trying out/tes
 
 Furthermore, while the default setup assumes http as the default protocol for both the Dataverse and TwoRavens, https is strongly recommended for a real production system. Again, this will be your responsibility, to configure https in both Glassfish and Apache. Glassfih comes pre-configured to run https on port 8181, with a *self-signed certificiate*. For a production system, you will most certainly will want to obtain a properly signed certificate and configure Glassfish to use it. Apache does not use https out of the box at all. Again, it is the responsibility of the installing user, to configure Apache to run https, and, providing you are planning to run rApache on the same host as the Dataverse, use the same SSL certificate as your Glassfish instance. Again, it will need to be done before you run the installer script above. All of this may involve some non-trivial steps and will most likely require help from your local network administrator - unless you happen to be your local sysadmin. Unfortunately, we cannot provide step-by-step instructions for these tasks. As the actual steps required will likely depend on the specifics of how your institution obtains signed SSL certificates, the format in which you receive these certificates, etc. **Good luck!**
 
-Finally... If you would like to have your Dataverse support secure Shibboleth authentication, this would require a server configuration more complex still. That would involve having your Glassfish instance "hidden" behind Apache; with the latter accepting and proxying the incoming connections to Glassfish, running on a high local port unaccessible from the outside. This would involve some changes in the TwoRavens configuration as well. All of this will eventually be described in the Shibboleth configuration guide. 
+Finally: If you choose to have your Dataverse support secure
+**Shibboleth authentication**, it will require a server and port
+configuration that is different still. Under this arrangement
+Glassfish instance is running on a high local port unaccessible from
+the outside, and is "hidden" behind Apache. With the latter running on
+the default https port, accepting and proxying the incoming
+connections to the former. This is described in the `Shibboleth <shibboleth.html>`_
+section of the Installation Guide (please note that, at the moment,
+this functionality is offered as "experimental"). With this proxying
+setup in place, the TwoRavens and rApache configuration actually
+becomes simpler. As both the Dataverse and TwoRavens will be served on
+the same port - 443 (the default port for https). So when running the
+installer script above, and providing you are planning to run both on
+the same server, enter "https", your host name and "443" for the
+rApache protocol, host and port, respectively. The base URL of the
+Dataverse app will be simply https://{your host name}/.
 
 
 Appendix

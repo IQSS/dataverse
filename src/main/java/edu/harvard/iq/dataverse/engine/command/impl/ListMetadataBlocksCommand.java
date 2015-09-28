@@ -3,10 +3,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Collections;
 import java.util.List;
@@ -23,8 +22,8 @@ public class ListMetadataBlocksCommand extends AbstractCommand<List<MetadataBloc
     
     private final Dataverse dv;
     
-    public ListMetadataBlocksCommand(User aUser, Dataverse aDataverse) {
-        super(aUser, aDataverse);
+    public ListMetadataBlocksCommand(DataverseRequest aRequest, Dataverse aDataverse) {
+        super(aRequest, aDataverse);
         dv = aDataverse;
     }
 

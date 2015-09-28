@@ -10,9 +10,9 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Collections;
 import java.util.Map;
@@ -34,11 +34,11 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
      * @param anAssignee The user being granted the role
      * @param aRole the role being granted to the user
      * @param assignmentPoint the dataverse on which the role is granted.
-     * @param issuingUser the user issuing the command.
+     * @param aRequest
      */
-    public AssignRoleCommand(RoleAssignee anAssignee, DataverseRole aRole, DvObject assignmentPoint, User issuingUser) {
+    public AssignRoleCommand(RoleAssignee anAssignee, DataverseRole aRole, DvObject assignmentPoint, DataverseRequest aRequest) {
         // for data file check permission on owning dataset
-        super(issuingUser, assignmentPoint instanceof DataFile ? assignmentPoint.getOwner() : assignmentPoint);
+        super(aRequest, assignmentPoint instanceof DataFile ? assignmentPoint.getOwner() : assignmentPoint);
         role = aRole;
         grantee = anAssignee;
         defPoint = assignmentPoint;

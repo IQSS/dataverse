@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.search;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FacetField;
 
 public class SolrQueryResponse {
@@ -30,6 +31,13 @@ public class SolrQueryResponse {
     public static String DATASETS_COUNT_KEY = "datasets_count";
     public static String FILES_COUNT_KEY = "files_count";
     public static String[] DVOBJECT_COUNT_KEYS = { DATAVERSES_COUNT_KEY, DATASETS_COUNT_KEY, FILES_COUNT_KEY};
+    SolrQuery solrQuery;
+
+    public SolrQueryResponse(SolrQuery solrQuery) {
+        this.solrQuery = solrQuery;
+    }
+
+
     
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
@@ -59,7 +67,7 @@ public class SolrQueryResponse {
         }
         
         for (FacetField.Count fcnt :  facetField.getValues()){
-            countMap.put(fcnt.getName().toLowerCase() + "_count", fcnt.getCount());
+            countMap.put(fcnt.getName().toLowerCase().replace(" ", "_") + "_count", fcnt.getCount());
         }
     }
  
@@ -68,7 +76,14 @@ public class SolrQueryResponse {
         if (this.publicationStatusCounts == null){
             return null;
         }
-        String[] requiredVars = { "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
+
+       // requiredVars = If one of these is not returned in the query,
+       //              add it with a count of 0 (zero)
+       //   - e.g. You always want these variable to show up in the JSON,
+       //       even if they're not returned via Solr
+       //
+       String[] requiredVars = { "in_review_count", "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
+
         for (String var : requiredVars){
             if (!publicationStatusCounts.containsKey(var)){
                 publicationStatusCounts.put(var, new Long(0));
@@ -182,6 +197,10 @@ public class SolrQueryResponse {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public SolrQuery getSolrQuery() {
+        return solrQuery;
     }
 
 }

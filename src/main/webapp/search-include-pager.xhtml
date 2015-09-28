@@ -1,0 +1,94 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui"
+     xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+         
+    
+    <!-- PAGINATOR -->
+        <ui:fragment rendered="#{SearchIncludeFragment.totalPages != 1}">
+            <o:importFunctions type="java.lang.Math" />
+            <div class="results-sort-pagination results-bottom text-center">
+            <!--<div class="pagination pull-right">-->
+                <ul class="pagination">
+                    <!--should take you to page 1-->
+                    <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
+                        <h:outputLink>
+                            <h:outputText value="&#171;"/>
+                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                            </c:forEach>
+                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                            <f:param name="page" value="1"/>
+                        </h:outputLink>
+                    </li>
+                    <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
+                        <h:outputLink>
+                            <h:outputText value="&lt; #{bundle.previous}"/>
+                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                            </c:forEach>
+                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                            <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
+                        </h:outputLink>
+                    </li>
+                    <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
+                               end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
+                               varStatus="pageStatus">
+                        <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
+                            <h:outputLink>
+                                <h:outputText value="#{pageStatus.index}">
+                                    <f:convertNumber pattern="###,###" />
+                                </h:outputText>
+                                <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
+                                    <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
+                                </span>
+                                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                </c:forEach>
+                                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                <f:param name="page" value="#{pageStatus.index}"/>
+                            </h:outputLink>
+                        </li>
+                    </c:forEach>
+                    <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
+                        <h:outputLink>
+                            <h:outputText value="#{bundle.next} &gt;"/>
+                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                            </c:forEach>
+                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                            <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
+                        </h:outputLink>
+                    </li>
+                    <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
+                        <h:outputLink>
+                            <h:outputText value="&#187;"/>
+                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                            </c:forEach>
+                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                            <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
+                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                        </h:outputLink>
+                    </li>
+                </ul>
+            </div>
+        </ui:fragment>
+</ui:composition>

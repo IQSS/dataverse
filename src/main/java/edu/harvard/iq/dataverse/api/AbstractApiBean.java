@@ -21,8 +21,8 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -42,7 +42,6 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -140,7 +139,7 @@ public abstract class AbstractApiBean {
 	protected EntityManager em;
     
     @Context
-    HttpServletRequest request;
+    HttpServletRequest httpRequest;
 	
     /**
      * For pretty printing (indenting) of JSON output.
@@ -172,8 +171,8 @@ public abstract class AbstractApiBean {
     }
     
     protected String getRequestApiKey() {
-        String headerParamApiKey = request.getHeader(DATAVERSE_KEY_HEADER_NAME);
-        String queryParamApiKey = request.getParameter("key");
+        String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
+        String queryParamApiKey = httpRequest.getParameter("key");
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
     
@@ -185,7 +184,7 @@ public abstract class AbstractApiBean {
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
         return ( requestApiKey == null )
-                ? new GuestUser()
+                ? GuestUser.get()
                 : findAuthenticatedUserOrDie(requestApiKey);
     }
     
@@ -205,16 +204,19 @@ public abstract class AbstractApiBean {
         return findAuthenticatedUserOrDie(getRequestApiKey());
     }
     
-    protected AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
+    private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
         AuthenticatedUser u = authSvc.lookupUser(key);
         if ( u != null ) {
-            u.setRequestMetadata( new UserRequestMetadata(request) );
             return u;
         }
         throw new WrappedResponse( badApiKey(key) );
     }
     
     
+    
+    protected DataverseRequest createDataverseRequest( User u )  {
+        return new DataverseRequest(u, httpRequest);
+    }
     
 	protected Dataverse findDataverse( String idtf ) {
 		return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
@@ -239,7 +241,7 @@ public abstract class AbstractApiBean {
             return findDvo( Long.valueOf(id)) ;
         } else {
             Dataverse d = dataverseSvc.findByAlias(id);
-            return ( d == null ) ?
+            return ( d != null ) ?
                     d : datasetSvc.findByGlobalId(id);
             
         }
@@ -271,7 +273,7 @@ public abstract class AbstractApiBean {
           
         } catch (PermissionException ex) {
             throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, 
-                                                    "User " + cmd.getUser().getIdentifier() + " is not permitted to perform requested action.") );
+                                                    "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
             
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);

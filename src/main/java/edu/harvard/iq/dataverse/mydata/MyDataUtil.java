@@ -21,4 +21,18 @@ public class MyDataUtil {
         }
         return "@" + userIdentifier;
     }
+    
+    public static String formatUserIdentifierForMyDataForm(String userIdentifier){
+        if (userIdentifier == null){
+            return null;
+        }
+        if (userIdentifier.startsWith("@")){
+            if (userIdentifier.length() == 1){
+                return null;
+            }
+            return userIdentifier.substring(1);
+        }else{
+            return userIdentifier;
+        }
+    }
 }

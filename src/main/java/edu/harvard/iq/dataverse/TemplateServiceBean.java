@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -29,12 +30,14 @@ public class TemplateServiceBean {
     }
 
     public Template save(Template template) {
-        if (template.getId() == null) {
+        /*
+                if (template.getId() == null) {
             em.persist(template);
             return template;
         } else {
             return em.merge(template);
-        }
+        } */
+        return em.merge(template);
     }
 
     public Template findByDeafultTemplateOwnerId(Long ownerId) {

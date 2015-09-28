@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -31,8 +32,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     private final List<DatasetFieldType> facetList;
 
     public CreateDataverseCommand(Dataverse created,
-            AuthenticatedUser aUser, List<DatasetFieldType> facetList, List<DataverseFieldTypeInputLevel> inputLevelList) {
-        super(aUser, created.getOwner());
+            DataverseRequest aRequest, List<DatasetFieldType> facetList, List<DataverseFieldTypeInputLevel> inputLevelList) {
+        super(aRequest, created.getOwner());
         this.created = created;
         if (facetList != null) {
             this.facetList = new ArrayList<>(facetList);
@@ -60,7 +61,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
         
         if (created.getCreator() == null) {
-			created.setCreator((AuthenticatedUser) getUser());
+			created.setCreator((AuthenticatedUser) getRequest().getUser());
         }
 
         if (created.getDataverseType() == null) {
@@ -85,7 +86,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 
         // Find the built in admin role (currently by alias)
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
-        ctxt.roles().save(new RoleAssignment(adminRole, getUser(), managedDv));
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv));
 
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         managedDv = ctxt.dataverses().save(managedDv);

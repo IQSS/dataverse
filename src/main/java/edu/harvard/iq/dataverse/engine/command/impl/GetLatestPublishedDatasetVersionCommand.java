@@ -2,10 +2,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
@@ -18,8 +17,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class GetLatestPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
     private final Dataset ds;
     
-    public GetLatestPublishedDatasetVersionCommand(User aUser, Dataset anAffectedDataset) {
-        super(aUser, anAffectedDataset);
+    public GetLatestPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
+        super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
     }
 

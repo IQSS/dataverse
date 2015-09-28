@@ -48,7 +48,7 @@ public class RoleAssigneeServiceBean {
 
     @PostConstruct
     void setup() {
-        GuestUser gu = new GuestUser();
+        GuestUser gu = GuestUser.get();
         predefinedRoleAssignees.put(gu.getIdentifier(), gu);
         predefinedRoleAssignees.put(AuthenticatedUsers.get().getIdentifier(), AuthenticatedUsers.get());
         predefinedRoleAssignees.put(AllUsers.get().getIdentifier(), AllUsers.get());
@@ -183,6 +183,7 @@ public class RoleAssigneeServiceBean {
         
     }
     
+    
     private String getGroupIdentifierClause(String roleAssigneeIdentifier, List<String> userGroups) {
 
         if (userGroups == null) {
@@ -203,6 +204,53 @@ public class RoleAssigneeServiceBean {
     }
 
 
+    public List<Object[]> getRoleIdsFor(String roleAssigneeIdentifier, List<Long> dvObjectIdList){
+
+        if (roleAssigneeIdentifier==null){
+            return null;
+        }
+        if ((dvObjectIdList==null)||(dvObjectIdList.isEmpty())){
+            return null;
+        }
+        roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s","");   // remove spaces from string
+        List<String> userGroups = getUserGroups(roleAssigneeIdentifier.replace("@", ""));      
+        
+        String identifierClause = " WHERE r.assigneeIdentifier= '" + roleAssigneeIdentifier + "'";
+        if (userGroups != null && !userGroups.isEmpty()){
+            identifierClause = getGroupIdentifierClause(roleAssigneeIdentifier, userGroups);
+        } 
+        
+        
+        String qstr = "SELECT r.definitionpoint_id, r.role_id";
+        qstr += " FROM RoleAssignment r";
+        qstr += identifierClause;
+        qstr += getDvObjectIdListClause(dvObjectIdList);
+        qstr += ";";
+        //msg("qstr: " + qstr);
+
+        return em.createNativeQuery(qstr)
+                        .getResultList();
+        
+    }
+    
+    
+    private String getDvObjectIdListClause(List<Long> dvObjectIdList){
+        if (dvObjectIdList == null){
+            return "";
+        }
+        List<String> outputList = new ArrayList<>();
+        
+        for(Long r : dvObjectIdList){
+            if (r != null){
+                outputList.add(r.toString());
+            }
+        }
+        if (outputList.isEmpty()){
+            return "";
+        }        
+        return " AND r.definitionpoint_id IN (" + StringUtils.join(outputList, ",") + ")";        
+    }
+    
     
     private List<String> getUserGroups(String roleAssigneeIdentifier){
         
@@ -211,7 +259,7 @@ public class RoleAssigneeServiceBean {
         qstr += " (select explicitgroup_id from explicitgroup_authenticateduser where containedauthenticatedusers_id = ";
         qstr += " (select id from authenticateduser where useridentifier ='" + roleAssigneeIdentifier + "'";
         qstr += "));";
-        msg("qstr: " + qstr);
+        //msg("qstr: " + qstr);
 
         return em.createNativeQuery(qstr)
                         .getResultList();  

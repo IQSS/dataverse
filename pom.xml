@@ -4,7 +4,7 @@
 
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.1</version>
+    <version>4.2</version>
     <packaging>war</packaging>
 
     <name>dataverse</name>
@@ -312,6 +312,11 @@
             <version>2.4.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.7.5.201505241946</version>
+        </dependency>
         
     </dependencies>
 
@@ -398,6 +403,35 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.5.201505241946</version>
+                <configuration>
+                    <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
+                    <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.0.0</version>
             </plugin>
         </plugins>
     </build>

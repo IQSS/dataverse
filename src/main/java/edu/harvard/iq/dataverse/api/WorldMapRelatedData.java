@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -233,7 +232,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // Does this user have permission to edit metadata for this file?    
-        if (!permissionService.on(dfile.getOwner()).user(dvUser).has(Permission.EditDataset)){
+        if (!permissionService.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)){
            String errMsg = "The user does not have permission to edit metadata for this file.";
            return errorResponse(Response.Status.FORBIDDEN, errMsg);
         }
@@ -574,7 +573,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
          }
 
         // check permissions!
-        if (!permissionService.on(dfile.getOwner()).user(dvUser).has(Permission.EditDataset)){
+        if (!permissionService.request( createDataverseRequest(dvUser) ).on(dfile.getOwner()).has(Permission.EditDataset)){
            String errMsg = "The user does not have permission to edit metadata for this file. (MapLayerMetadata)";
            return errorResponse(Response.Status.FORBIDDEN, errMsg);
         }

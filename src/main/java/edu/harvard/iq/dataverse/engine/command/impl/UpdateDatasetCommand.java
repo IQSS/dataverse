@@ -13,10 +13,9 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -41,21 +40,22 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
     private final Dataset theDataset;
     private final List<FileMetadata> filesToDelete;
+    private boolean validateLenient = false;
     
-    public UpdateDatasetCommand(Dataset theDataset, User user) {
-        super(user, theDataset);
+    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
+        super(aRequest, theDataset);
         this.theDataset = theDataset;
         this.filesToDelete = new ArrayList();
     }    
     
-    public UpdateDatasetCommand(Dataset theDataset, User user, List<FileMetadata> filesToDelete) {
-        super(user, theDataset);
+    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
+        super(aRequest, theDataset);
         this.theDataset = theDataset;
         this.filesToDelete = filesToDelete;
     }
     
-    public UpdateDatasetCommand(Dataset theDataset, User user, DataFile fileToDelete) {
-        super(user, theDataset);
+    public UpdateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
+        super(aRequest, theDataset);
         this.theDataset = theDataset;
         
         // get the latest file metadata for the file; ensuring that it is a draft version
@@ -68,6 +68,16 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         }
     }    
 
+    public boolean isValidateLenient() {
+        return validateLenient;
+    }
+
+    public void setValidateLenient(boolean validateLenient) {
+        this.validateLenient = validateLenient;
+    }
+    
+    
+
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         // first validate
@@ -76,11 +86,21 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.getEditVersion().setDatasetFields(theDataset.getEditVersion().initDatasetFields());
         Set<ConstraintViolation> constraintViolations = theDataset.getEditVersion().validate();        
         if (!constraintViolations.isEmpty()) {
-            String validationFailedString = "Validation failed:";
-            for (ConstraintViolation constraintViolation : constraintViolations) {
-                validationFailedString += " " + constraintViolation.getMessage();
+
+            if (validateLenient) {
+                // for some edits, we allow required fields to be blank, so we set them to N/A to pass validation
+                // for example, saving files, shouldn't validate metadata
+                for (ConstraintViolation v : constraintViolations) {
+                    DatasetField f = ((DatasetField) v.getRootBean());
+                     f.setSingleValue(DatasetField.NA_VALUE);
+                }
+            } else {
+                String validationFailedString = "Validation failed:";
+                for (ConstraintViolation constraintViolation : constraintViolations) {
+                    validationFailedString += " " + constraintViolation.getMessage();
+                }
+                throw new IllegalCommandException(validationFailedString, this);
             }
-            throw new IllegalCommandException(validationFailedString, this);
         }
         
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
@@ -126,7 +146,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
             
             if (!fmd.getDataFile().isReleased()) {
                 // if file is draft (ie. new to this version, delete; otherwise just remove filemetadata object)
-                ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getUser()));
+                ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                 theDataset.getFiles().remove(fmd.getDataFile());
                 theDataset.getEditVersion().getFileMetadatas().remove(fmd);
                 // added this check to handle issue where you could not deleter a file that shared a category with a new file

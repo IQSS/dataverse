@@ -1,8 +1,17 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.search.SearchException;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
@@ -400,33 +409,40 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                     Long datasetId = Long.parseLong(solrSearchResult.getParent().get("id"));
                     Dataset parentDS = datasetService.find(datasetId);
-                    Dataverse parentDataverse = parentDS.getOwner();
-                    solrSearchResult.setIsInTree(false);
-                    List<Dataverse> dvTree = new ArrayList();
-                    Dataverse testDV = parentDataverse;
-                    dvTree.add(testDV);
                     /**
-                     * @todo Why is a NPE being thrown at this `while
-                     * (testDV.getOwner() != null){` line? An NPE was being
-                     * thrown while browsing the site *after* issuing the
-                     * DestroyDatasetCommand but before a fix was put in to
-                     * remove the dataset "card" from Solr. The ticket tracking
-                     * this that fix is
-                     * https://github.com/IQSS/dataverse/issues/1316 but it's
-                     * unclear why the NPE was thrown. The users see a nasty
-                     * "Internal Server Error - An unexpected error was
-                     * encountered, no more information is available." and
-                     * server.log has a stacktrace with the NPE.
+                     * I didn't write this code below about setIsInTree
+                     * (whatever that is) but I did just add a null check.
+                     * --pdurbin
                      */
-                    if (testDV != null) {
-                        while (testDV.getOwner() != null) {
-                            dvTree.add(testDV.getOwner());
-                            testDV = testDV.getOwner();
+                    if (parentDS != null) {
+                        Dataverse parentDataverse = parentDS.getOwner();
+                        solrSearchResult.setIsInTree(false);
+                        List<Dataverse> dvTree = new ArrayList();
+                        Dataverse testDV = parentDataverse;
+                        dvTree.add(testDV);
+                        /**
+                         * @todo Why is a NPE being thrown at this `while
+                         * (testDV.getOwner() != null){` line? An NPE was being
+                         * thrown while browsing the site *after* issuing the
+                         * DestroyDatasetCommand but before a fix was put in to
+                         * remove the dataset "card" from Solr. The ticket
+                         * tracking this that fix is
+                         * https://github.com/IQSS/dataverse/issues/1316 but
+                         * it's unclear why the NPE was thrown. The users see a
+                         * nasty "Internal Server Error - An unexpected error
+                         * was encountered, no more information is available."
+                         * and server.log has a stacktrace with the NPE.
+                         */
+                        if (testDV != null) {
+                            while (testDV.getOwner() != null) {
+                                dvTree.add(testDV.getOwner());
+                                testDV = testDV.getOwner();
+                            }
                         }
-                    }
 
-                    if (dvTree.contains(dataverse)) {
-                        solrSearchResult.setIsInTree(true);
+                        if (dvTree.contains(dataverse)) {
+                            solrSearchResult.setIsInTree(true);
+                        }
                     }
                     /**
                      * @todo: show DataTable variables
@@ -885,8 +901,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isDebug() {
-        return  (debug && session.getUser().isSuperuser()) ||
-                systemConfig.isDebugEnabled();
+        return (debug && session.getUser().isSuperuser())
+                || systemConfig.isDebugEnabled();
     }
 
     public void setDebug(boolean debug) {
@@ -923,6 +939,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public String getDRAFT() {
         return IndexServiceBean.getDRAFT_STRING();
+    }
+
+    public String getIN_REVIEW() {
+        return IndexServiceBean.getIN_REVIEW_STRING();
     }
 
     public String getDEACCESSIONED() {
@@ -1082,7 +1102,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public void setDisplayCardValues() {
         for (SolrSearchResult result : searchResultsList) {
             boolean valueSet = false;
-            if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse){
+            if (result.getType().equals("dataverses") && result.getEntity() instanceof Dataverse) {
                 result.setDisplayImage(dataverseService.isDataverseCardImageAvailable((Dataverse) result.getEntity(), session.getUser()));
                 valueSet = true;
             } else if (result.getType().equals("datasets") && result.getEntity() instanceof Dataset) {
@@ -1095,7 +1115,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             if (!valueSet) {
                 logger.warning("Index result / entity mismatch (id:resultType) - " + result.getId() + ":" + result.getType());
-            }            
+            }
         }
     }
 }

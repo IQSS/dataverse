@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -399,8 +398,17 @@ public class SystemConfig {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.Debug, safeDefaultIfKeyNotFound);
     }
+
+    public boolean isFilesOnDatasetPageFromSolr() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
+    }
     
-    
+    public boolean isFileLandingPageAvailable() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShowFileLandingPage, safeDefaultIfKeyNotFound);
+    }
+
     public Long getMaxFileUploadSize(){
 
          return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);

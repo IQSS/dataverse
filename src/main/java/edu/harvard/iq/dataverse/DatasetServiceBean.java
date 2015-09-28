@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -124,12 +125,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         int index2 = globalId.indexOf(separator, index1 + 1);
         int index3 = 0;
         if (index1 == -1) {            
-            throw new EJBException("Error parsing identifier: " + globalId + ". ':' not found in string");
+            logger.info("Error parsing identifier: " + globalId + ". ':' not found in string");
+            return null;
         } else {
             protocol = globalId.substring(0, index1);
         }
         if (index2 == -1 ) {
-            throw new EJBException("Error parsing identifier: " + globalId + ". Second separator not found in string");
+            logger.info("Error parsing identifier: " + globalId + ". Second separator not found in string");
+            return null;
         } else {
             if (index2 != -1) {
                 authority = globalId.substring(index1 + 1, index2);

@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
@@ -44,7 +45,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlock
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -78,6 +78,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * A REST API for dataverses.
@@ -125,7 +126,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = findAuthenticatedUserOrDie();
-            d = execCommand( new CreateDataverseCommand(d, u, null, null) );
+            d = execCommand( new CreateDataverseCommand(d, createDataverseRequest(u), null, null) );
 			return createdResponse( "/dataverses/"+d.getAlias(), json(d) );
         } catch ( WrappedResponse ww ) {
             return ww.getResponse();
@@ -201,7 +202,7 @@ public class Dataverses extends AbstractApiBean {
                 return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing datasetVersion: " + e.getMessage() );
             }
             
-            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u));
+            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, createDataverseRequest(u)));
             return createdResponse( "/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder().add("id", managedDs.getId()) );
                 
@@ -214,7 +215,7 @@ public class Dataverses extends AbstractApiBean {
 	@Path("{identifier}")
 	public Response viewDataverse( @PathParam("identifier") String idtf ) {
         try {
-			Dataverse retrieved = execCommand( new GetDataverseCommand( findUserOrDie(), findDataverseOrDie(idtf)) );
+			Dataverse retrieved = execCommand( new GetDataverseCommand( createDataverseRequest(findUserOrDie()), findDataverseOrDie(idtf)) );
 			return okResponse( json(retrieved) );
 		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
@@ -225,7 +226,7 @@ public class Dataverses extends AbstractApiBean {
 	@Path("{identifier}")
 	public Response deleteDataverse( @PathParam("identifier") String idtf ) {
 		try {
-			execCommand( new DeleteDataverseCommand(findUserOrDie(), findDataverseOrDie(idtf))  );
+			execCommand( new DeleteDataverseCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(idtf))  );
 			return okResponse( "Dataverse " + idtf  +" deleted");
 		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
@@ -237,7 +238,7 @@ public class Dataverses extends AbstractApiBean {
 	public Response listMetadataBlocks( @PathParam("identifier") String dvIdtf ) {
         try {
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            for ( MetadataBlock blk : execCommand( new ListMetadataBlocksCommand(findUserOrDie(), findDataverseOrDie(dvIdtf)) )){
+            for ( MetadataBlock blk : execCommand( new ListMetadataBlocksCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)) )){
                 jab.add( brief.json(blk) );
             }
             
@@ -269,7 +270,7 @@ public class Dataverses extends AbstractApiBean {
         }
         
         try {
-            execCommand( new UpdateDataverseMetadataBlocksCommand.SetBlocks(findUserOrDie(), findDataverseOrDie(dvIdtf), blocks));
+            execCommand( new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf), blocks));
             return okResponse("Metadata blocks of dataverse " + dvIdtf + " updated.");
             
         } catch (WrappedResponse ex) {
@@ -284,7 +285,9 @@ public class Dataverses extends AbstractApiBean {
         
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            if ( permissionSvc.on(dataverse).user(findUserOrDie()).has(Permission.EditDataverse) ) {
+            if ( permissionSvc.request( createDataverseRequest(findUserOrDie()) )
+                                .on(dataverse)
+                                  .has(Permission.EditDataverse) ) {
                 return okResponseWithValue( dataverse.isMetadataBlockRoot() );
             } else {
                 return errorResponse( Status.FORBIDDEN, "Not authorized" );
@@ -307,7 +310,7 @@ public class Dataverses extends AbstractApiBean {
         
         try {
     		Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            execute(new UpdateDataverseMetadataBlocksCommand.SetRoot(findUserOrDie(), dataverse, root));
+            execute(new UpdateDataverseMetadataBlocksCommand.SetRoot(createDataverseRequest(findUserOrDie()), dataverse, root));
             return okResponseWithValue("Dataverse " + dataverse.getName() + " is now a metadata root");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -319,7 +322,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/facets/")
     public Response listFacets( @PathParam("identifier") String dvIdtf ) {
         try {
-            return okResponse( json(execCommand(new ListFacetsCommand(findUserOrDie(), findDataverseOrDie(dvIdtf)) )));
+            return okResponse( json(execCommand(new ListFacetsCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)) )));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -344,7 +347,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
-            execCommand( new UpdateDataverseCommand(dataverse, facets, null, findUserOrDie(), null) );
+            execCommand( new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(findUserOrDie()), null) );
             return okResponse("Facets of dataverse " + dvIdtf + " updated.");
             
         } catch (WrappedResponse ex) {
@@ -381,7 +384,7 @@ public class Dataverses extends AbstractApiBean {
 		try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
-			for ( DvObject o : execCommand(new ListDataverseContentCommand(findUserOrDie(), dataverse)) ) {
+			for ( DvObject o : execCommand(new ListDataverseContentCommand(createDataverseRequest(findUserOrDie()), dataverse)) ) {
 				o.accept(ser);
 			}
             return okResponse(jab);
@@ -397,7 +400,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse d = findDataverseOrDie(dvIdtf);
             JsonArrayBuilder jab = Json.createArrayBuilder();
-            for ( DataverseRole r : execCommand( new ListRolesCommand(findUserOrDie(), d)) ){
+            for ( DataverseRole r : execCommand( new ListRolesCommand(createDataverseRequest(findUserOrDie()), d)) ){
                 jab.add( json(r) );
             }
             return okResponse(jab);
@@ -411,7 +414,7 @@ public class Dataverses extends AbstractApiBean {
 	public Response createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf ) {
 		try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-			return okResponse( json(execCommand(new CreateRoleCommand(roleDto.asRole(), findUserOrDie(), dataverse))));
+			return okResponse( json(execCommand(new CreateRoleCommand(roleDto.asRole(), createDataverseRequest(findUserOrDie()), dataverse))));
         } catch ( WrappedResponse ce ) {
 			return ce.getResponse();
 		}
@@ -422,7 +425,7 @@ public class Dataverses extends AbstractApiBean {
 	public Response listAssignments( @PathParam("identifier") String dvIdtf) {
 		try {
 			JsonArrayBuilder jab = Json.createArrayBuilder();
-			for ( RoleAssignment ra : execCommand(new ListRoleAssignments(findUserOrDie(), findDataverseOrDie(dvIdtf))) ){
+			for ( RoleAssignment ra : execCommand(new ListRoleAssignments(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf))) ){
 				jab.add( json(ra) );
 			}
 			return okResponse(jab);
@@ -462,7 +465,7 @@ public class Dataverses extends AbstractApiBean {
 
 			return okResponse(
                     json(
-                       execCommand( new AssignRoleCommand(assignee, theRole, dataverse, findUserOrDie()))));
+                       execCommand( new AssignRoleCommand(assignee, theRole, dataverse, createDataverseRequest(findUserOrDie())))));
 			
 		} catch (WrappedResponse ex) {
 			LOGGER.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
@@ -477,7 +480,7 @@ public class Dataverses extends AbstractApiBean {
 		if ( ra != null ) {
             try {
                 findDataverseOrDie(dvIdtf);
-                execCommand( new RevokeRoleCommand(ra, findUserOrDie()));
+                execCommand( new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
                 return okResponse("Role " + ra.getRole().getName() 
                                             + " revoked for assignee " + ra.getAssigneeIdentifier()
                                             + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter) );
@@ -494,7 +497,7 @@ public class Dataverses extends AbstractApiBean {
     public Response publishDataverse( @PathParam("identifier") String dvIdtf ) {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            return okResponse( json(execCommand( new PublishDataverseCommand(findAuthenticatedUserOrDie(), dv))) );
+            return okResponse( json(execCommand( new PublishDataverseCommand(createDataverseRequest(findAuthenticatedUserOrDie()), dv))) );
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -520,7 +523,7 @@ public class Dataverses extends AbstractApiBean {
             ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
             ExplicitGroup newGroup = dto.apply(prv.makeGroup());
             
-            newGroup = execCommand( new CreateExplicitGroupCommand(findUserOrDie(), findDataverseOrDie(dvIdtf), newGroup));
+            newGroup = execCommand( new CreateExplicitGroupCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf), newGroup));
             
             String groupUri = String.format("%s/groups/%s", dvIdtf, newGroup.getGroupAliasInOwner());
             return createdResponse( groupUri, json(newGroup) );
@@ -534,7 +537,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/groups/") 
     public Response listGroups( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
         try {
-            return okResponse( json(execCommand(new ListExplicitGroupsCommand(findUserOrDie(), findDataverseOrDie(dvIdtf)) )));
+            return okResponse( json(execCommand(new ListExplicitGroupsCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)) )));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -547,7 +550,7 @@ public class Dataverses extends AbstractApiBean {
     {
         try {
             ExplicitGroup eg = findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
-                                                      findUserOrDie(),
+                                                      createDataverseRequest(findUserOrDie()),
                                                       grpAliasInOwner);
             
             return (eg!=null) ? okResponse( json(eg) ) : notFound("Can't find " + grpAliasInOwner + " in dataverse " + dvIdtf);
@@ -564,12 +567,12 @@ public class Dataverses extends AbstractApiBean {
                                 @PathParam("aliasInOwner") String grpAliasInOwner )
     {
         try {
-            final User user = findUserOrDie();
+            final DataverseRequest request = createDataverseRequest(findUserOrDie());
             return okResponse( 
                     json(
                       execCommand( 
-                             new UpdateExplicitGroupCommand(user,
-                                     groupDto.apply( findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner))))));
+                             new UpdateExplicitGroupCommand(request,
+                                     groupDto.apply( findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), request, grpAliasInOwner))))));
             
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -582,9 +585,9 @@ public class Dataverses extends AbstractApiBean {
                                 @PathParam("aliasInOwner") String grpAliasInOwner )
     {
         try {
-            final User user = findUserOrDie();
-            execCommand( new DeleteExplicitGroupCommand(user,
-                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner)) );
+            final DataverseRequest req = createDataverseRequest(findUserOrDie());
+            execCommand( new DeleteExplicitGroupCommand(req,
+                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)) );
             
             return okResponse( "Group " + dvIdtf + "/" + grpAliasInOwner + " deleted" );
         
@@ -600,12 +603,12 @@ public class Dataverses extends AbstractApiBean {
                                 @PathParam("aliasInOwner") String grpAliasInOwner)
     {
         try {
-            final User user = findUserOrDie();
+            final DataverseRequest req = createDataverseRequest(findUserOrDie());
             return okResponse( 
                     json(
                       execCommand( 
-                              new AddRoleAssigneesToExplicitGroupCommand(user, 
-                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner),
+                              new AddRoleAssigneesToExplicitGroupCommand(req, 
+                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
                                       new TreeSet<>(roleAssingeeIdentifiers)))));
         } catch (WrappedResponse wr) {
             return wr.refineResponse( "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner );
@@ -627,20 +630,20 @@ public class Dataverses extends AbstractApiBean {
                                         @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier ) {
         
         try {
-            final User user = findUserOrDie();
+            final DataverseRequest req = createDataverseRequest(findUserOrDie());
             return okResponse( 
                     json(
                       execCommand( 
-                              new RemoveRoleAssigneesFromExplicitGroupCommand(user, 
-                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), user, grpAliasInOwner),
+                              new RemoveRoleAssigneesFromExplicitGroupCommand(req, 
+                                      findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
                                       Collections.singleton(roleAssigneeIdentifier)))));
         } catch (WrappedResponse wr) {
             return wr.refineResponse( "Adding role assignees to group " + dvIdtf + "/" + grpAliasInOwner );
         }
     }
     
-    private ExplicitGroup findExplicitGroupOrDie( DvObject dv, User u, String groupIdtf ) throws WrappedResponse {
-        ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(u, dv, groupIdtf) );
+    private ExplicitGroup findExplicitGroupOrDie( DvObject dv, DataverseRequest req, String groupIdtf ) throws WrappedResponse {
+        ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(req, dv, groupIdtf) );
         if ( eg == null ) throw new WrappedResponse( notFound("Can't find " + groupIdtf + " in dataverse " + dv.getId()));
         return eg;
     }

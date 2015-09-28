@@ -4,13 +4,11 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
 /**
  * A command that creates an explicit group in the context of a {@link Dataverse}.
@@ -39,8 +37,8 @@ public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup>{
     private final ExplicitGroup eg;
     private final Dataverse dv;
     
-    public CreateExplicitGroupCommand(User aUser, Dataverse aDataverse, ExplicitGroup anExplicitGroup) {
-        super(aUser, aDataverse);
+    public CreateExplicitGroupCommand(DataverseRequest aRequest, Dataverse aDataverse, ExplicitGroup anExplicitGroup) {
+        super(aRequest, aDataverse);
         dv = aDataverse;
         eg = anExplicitGroup;
     }

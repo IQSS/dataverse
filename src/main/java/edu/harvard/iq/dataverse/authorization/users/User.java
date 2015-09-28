@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import java.io.Serializable;
 
 /**
- * @todo make into an abstract class to override getIdentifier method (prepend
- * "u:").
+ * A user of the dataverse system. Intuitively a single real person in real life, but
+ * some corner cases exist (e.g. {@link GuestUser}, who stands for many people).
  */
 public interface User extends RoleAssignee, Serializable {
 
@@ -18,8 +18,4 @@ public interface User extends RoleAssignee, Serializable {
     
     public boolean isSuperuser();
 
-    // TODO remove when we reverse the UserRequest and User composition.
-    public UserRequestMetadata getRequestMetadata();
-    
-    public void setRequestMetadata( UserRequestMetadata mtd );
 }

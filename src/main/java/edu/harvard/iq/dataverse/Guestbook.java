@@ -152,7 +152,7 @@ public class Guestbook implements Serializable {
         newGuestbook.setNameRequired(source.isNameRequired());
         newGuestbook.setPositionRequired(source.isPositionRequired());
         newGuestbook.setInstitutionRequired(source.isInstitutionRequired());
-        newGuestbook.setCustomQuestions(new ArrayList());
+        newGuestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
         if (!source.getCustomQuestions().isEmpty()) {
             for (CustomQuestion sq: source.getCustomQuestions()){
                 CustomQuestion target = new CustomQuestion();
@@ -163,7 +163,7 @@ public class Guestbook implements Serializable {
                 target.setDisplayOrder(sq.getDisplayOrder());
                 target.setQuestionString(sq.getQuestionString());
                 if(!sq.getCustomQuestionValues().isEmpty()){
-                    target.setCustomQuestionValues(new ArrayList());
+                    target.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
                     for (CustomQuestionValue scqv: sq.getCustomQuestionValues()){
                         CustomQuestionValue newVal = new CustomQuestionValue();
                         newVal.setValueString(scqv.getValueString());

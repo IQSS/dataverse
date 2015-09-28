@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.List;
@@ -18,10 +17,9 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
 
 @Named
 @Stateless
@@ -31,6 +29,8 @@ public class IndexAllServiceBean {
 
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    SolrIndexServiceBean solrIndexService;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -78,26 +78,29 @@ public class IndexAllServiceBean {
         String status;
 
         String resultOfClearingIndexTimes;
-        if (numPartitions == 1) {
-            SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+        /**
+         * @todo Should we allow sysadmins to request that the Solr index and
+         * related timestamps in the database be cleared as part of "index all"?
+         * If so, we can make this boolean a parameter that's passed into this
+         * method. A method to do this clearing has been added as a separate API
+         * endpoint.
+         */
+        boolean clearSolrAndTimestamps = false;
+        /**
+         * We only allow clearing of Solr and database index timestamps if we
+         * are operating on the entire index ("index all") and if we are not
+         * running in "continue" mode.
+         */
+        if (numPartitions == 1 && !skipIndexed && clearSolrAndTimestamps) {
             logger.info("attempting to delete all Solr documents before a complete re-index");
             try {
-                server.deleteByQuery("*:*");// CAUTION: deletes everything!
+                JsonObject response = solrIndexService.deleteAllFromSolrAndResetIndexTimes().build();
+                String message = response.getString(SolrIndexServiceBean.messageString);
+                int numRowsCleared = response.getInt(SolrIndexServiceBean.numRowsClearedByClearAllIndexTimes);
+                resultOfClearingIndexTimes = message + " Database rows from which index timestamps were cleared: " + numRowsCleared;
             } catch (SolrServerException | IOException ex) {
-                status = ex.toString();
-                logger.info(status);
-                return new AsyncResult<>(status);
+                resultOfClearingIndexTimes = "Solr index and database timestamps were not cleared: " + ex;
             }
-            try {
-                server.commit();
-            } catch (SolrServerException | IOException ex) {
-                status = ex.toString();
-                logger.info(status);
-                return new AsyncResult<>(status);
-            }
-
-            int numRowsAffected = dvObjectService.clearAllIndexTimes();
-            resultOfClearingIndexTimes = "Number of rows affected by clearAllIndexTimes: " + numRowsAffected + ".";
         } else {
             resultOfClearingIndexTimes = "Solr index was not cleared before indexing.";
         }
@@ -106,7 +109,7 @@ public class IndexAllServiceBean {
         int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
             dataverseIndexCount++;
-            logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size());
+            logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ")");
             Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
         }
 
@@ -114,7 +117,7 @@ public class IndexAllServiceBean {
         List<Dataset> datasets = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Dataset dataset : datasets) {
             datasetIndexCount++;
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size());
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + " (id=" + dataset.getId() + ", persistentId=" + dataset.getGlobalId() + ")");
             Future<String> result = indexService.indexDatasetInNewTransaction(dataset);
         }
 //        logger.info("advanced search fields: " + advancedSearchFields);

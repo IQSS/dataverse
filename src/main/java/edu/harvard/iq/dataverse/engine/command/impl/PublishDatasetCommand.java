@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -45,8 +46,8 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
      * to use this command to create a published "V0" version. For details, see
      * https://github.com/IQSS/dataverse/issues/1392
      */
-    public PublishDatasetCommand(Dataset datasetIn, AuthenticatedUser user, boolean minor) {
-        super(user, datasetIn);
+    public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
+        super(aRequest, datasetIn);
         minorRelease = minor;
         theDataset = datasetIn;
     }
@@ -118,6 +119,8 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.getEditVersion().setReleaseTime(updateTime);
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.setModificationTime(updateTime);
+        //set inReview to False because it is now published
+        theDataset.getEditVersion().setInReview(false);
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
 
         for (DataFile dataFile : theDataset.getFiles()) {
@@ -141,8 +144,8 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setRestricted(dataFile.getFileMetadata().isRestricted());
             }
         }
-        
-        theDataset.setFileAccessRequest(theDataset.getLatestVersion().isFileAccessRequest());
+
+        theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         Dataset savedDataset = ctxt.em().merge(theDataset);
 
         boolean doNormalSolrDocCleanUp = true;

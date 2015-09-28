@@ -51,11 +51,18 @@
                 </div>
             </p:panel>
             <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="#{bundle['dataverse.permissions.roles.roleList.header']}">
+                <p class="help-block">
+                    <span class="text-info"><i class="glyphicon glyphicon glyphicon-info-sign"></i> #{bundle['dataverse.permissions.roles.roleList.authorizedUserOnly']}</span>
+                </p>
+                <c:set var="authOnlyRemark">
+                    <i class="glyphicon glyphicon glyphicon-info-sign text-info"></i>
+                </c:set>
                 <h:selectManyCheckbox value="#{managePermissionsPage.selectedPermissions}"
                                       layout="pageDirection" styleClass="selectManyCheckboxBlock">
                     <f:selectItems value="#{managePermissionsPage.permissions}" var="pmsn"
-                                   itemLabel="#{pmsn.humanName} &#160; &#60;span class=&#34;label label-default&#34;&#62;#{pmsn.name()}&#60;/span&#62;"
-                                   itemValue="#{pmsn.name()}" itemLabelEscaped="false"/>
+                                   itemLabel="#{pmsn.humanName} &#160; &#60;span class=&#34;label label-default&#34;&#62;#{pmsn.name()}&#60;/span&#62; #{not(pmsn.requiresAuthenticatedUser()) ? authOnlyRemark : '' }"
+                                   itemValue="#{pmsn.name()}"
+                                   itemLabelEscaped="false"/>
                 </h:selectManyCheckbox>
             </p:panel>
             <div id="editRoleButtonPanel" class="button-block">

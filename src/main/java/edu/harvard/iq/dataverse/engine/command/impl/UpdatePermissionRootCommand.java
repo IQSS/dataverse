@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Collections;
 import java.util.Map;
@@ -20,8 +20,8 @@ public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
 	private final boolean newValue;
 	private final Dataverse dvoc;
     
-	public UpdatePermissionRootCommand(boolean newValue, User aUser, Dataverse anAffectedDataverse) {
-		super(aUser, anAffectedDataverse);
+	public UpdatePermissionRootCommand(boolean newValue, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
+		super(aRequest, anAffectedDataverse);
 		this.newValue = newValue;
 		dvoc = anAffectedDataverse;
 	}

@@ -1,19 +1,16 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean.PermissionQuery;
+import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -36,12 +33,9 @@ public class DataverseSession implements Serializable{
     
     public User getUser() {
         if ( user == null ) {
-            user = new GuestUser();
+            user = GuestUser.get();
         }
-        
-        if (FacesContext.getCurrentInstance() != null) {
-            user.setRequestMetadata( new UserRequestMetadata((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()) );
-        }
+ 
         return user;
     }
 
@@ -53,7 +47,7 @@ public class DataverseSession implements Serializable{
         this.user = aUser;
     }
 
-	public PermissionQuery on( Dataverse d ) {
+	public StaticPermissionQuery on( Dataverse d ) {
 		return permissionsService.userOn(user, d);
 	}
 

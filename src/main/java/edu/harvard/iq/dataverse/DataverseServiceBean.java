@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.FileInputStream;
@@ -153,8 +154,8 @@ public class DataverseServiceBean implements java.io.Serializable {
         try {
             return (anAlias.toLowerCase().equals(":root"))
 				? findRootDataverse()
-				: em.createQuery("select d from Dataverse d WHERE lower(d.alias)=:alias", Dataverse.class)
-					.setParameter("alias", anAlias.toLowerCase())
+				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+					.setParameter("alias", anAlias)
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
             return null;

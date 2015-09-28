@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.UserRequestMetadata;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -42,7 +42,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
     @Override
     public Feed listCollectionContents(IRI iri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordAuthException, SwordError {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        user.setRequestMetadata(new UserRequestMetadata(request));
+        DataverseRequest dvReq = new DataverseRequest(user, request);
         urlManager.processUrl(iri.toString());
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
@@ -50,7 +50,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
             Dataverse dv = dataverseService.findByAlias(dvAlias);
 
             if (dv != null) {
-                if (swordAuth.hasAccessToModifyDataverse(user, dv)) {
+                if (swordAuth.hasAccessToModifyDataverse(dvReq, dv)) {
                     Abdera abdera = new Abdera();
                     Feed feed = abdera.newFeed();
                     feed.setTitle(dv.getName());

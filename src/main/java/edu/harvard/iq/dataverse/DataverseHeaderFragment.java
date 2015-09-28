@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -186,10 +187,10 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
     }
 
-    public String getSignupUrl() {
+    public String getSignupUrl(String loginRedirect) {
         String nonNullDefaultIfKeyNotFound = "";
         String signUpUrl = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
-        return signUpUrl;
+        return signUpUrl + (signUpUrl.indexOf("?") == -1 ? loginRedirect : loginRedirect.replace("?", "&"));
     }
 
     public String getLoginRedirectPage() {
@@ -216,7 +217,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             // that we don't want, so we filter through a list of paramters we do allow
             // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
             List acceptableParameters = new ArrayList();
-            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId"));
+            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode"));
 
             if (req.getParameterMap() != null) {
                 StringBuilder queryString = new StringBuilder();

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -28,26 +29,22 @@ import java.util.HashMap;
 public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
 
     private final Dataset target;
-    private final User user;
     
-    public UpdateDatasetTargetURLCommand( Dataset target, User user) {
-        super(user, target);
+    public UpdateDatasetTargetURLCommand( Dataset target, DataverseRequest aRequest) {
+        super(aRequest, target);
         this.target = target;
-        this.user = user;
     }
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
-        HashMap<String, String> metadata = new HashMap<String, String>();
-        System.out.print(user);
-        if ( !(user instanceof AuthenticatedUser) || !((AuthenticatedUser) user).isSuperuser()  ) {      
+        if ( !(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()  ) {      
             throw new PermissionException("Update Target URL can only be called by superusers.",
                 this,  Collections.singleton(Permission.EditDataset), target);                
         }
         
         if (target.getProtocol().equals("doi")){
-            metadata = ctxt.doiEZId().getMetadataFromDatasetForTargetURL(target);
+            HashMap<String, String> metadata = ctxt.doiEZId().getMetadataFromDatasetForTargetURL(target);
             String doiRetString = ctxt.doiEZId().modifyIdentifier(target, metadata);
             if (doiRetString.contains(target.getIdentifier())) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
@@ -65,6 +62,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
             ctxt.em().merge(target);
             ctxt.em().flush();
         } else {
+            // TODO why not throw an IllegalCommandException?
             throw new UnsupportedOperationException("UpdateDatasetTargetURLCommand only supported for doi protocol."); //To change body of generated methods, choose Tools | Templates.  
         }
                           

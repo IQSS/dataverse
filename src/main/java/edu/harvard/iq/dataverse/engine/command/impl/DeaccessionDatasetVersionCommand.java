@@ -9,10 +9,10 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
@@ -27,8 +27,8 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
    final DatasetVersion theVersion;
    final boolean deleteDOIIdentifier;
     
-    public DeaccessionDatasetVersionCommand(User aUser, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
-        super(aUser, deaccessionVersion.getDataset());
+    public DeaccessionDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
+        super(aRequest, deaccessionVersion.getDataset());
         theVersion = deaccessionVersion;
         deleteDOIIdentifier = deleteDOIIdentifierIn;
     }

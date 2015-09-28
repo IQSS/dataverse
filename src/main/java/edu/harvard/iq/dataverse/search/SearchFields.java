@@ -50,11 +50,14 @@ public class SearchFields {
      * @todo: consider making various dynamic fields (_s) static in schema.xml
      * instead. Should they be stored in the database?
      */
-
-    
     // standard fields from example/solr/collection1/conf/schema.xml
     // (but we are getting away from these...)
     public static final String ID = "id";
+    /**
+     * Determine which DvObjects you might want to target for reindexing after
+     * an upgrade such as between Dataverse 4.2 and 4.3.
+     */
+    public static final String DATAVERSE_VERSION_INDEXED_BY = "dataverseVersionIndexedBy_s";
     public static final String NAME = "name";
     /**
      * @todo Do we want to support finding dataverses, datasets, and files with
@@ -137,6 +140,15 @@ public class SearchFields {
     public static final String FILE_SIZE_IN_BYTES = "fileSizeInBytes";
     public static final String FILE_MD5 = "fileMd5";
     public static final String FILENAME_WITHOUT_EXTENSION = "fileNameWithoutExtension";
+    /**
+     * Indexed as a string so we can facet on it.
+     */
+    public static final String FILE_TAG = "fileTag";
+    /**
+     * Indexed as text_en so it's searchable by lower case etc.
+     */
+    public static final String FILE_TAG_SEARCHABLE = "fileTags";
+    public static final String ACCESS = "fileAccess";
 
     public static final String SUBTREE = "subtreePaths";
 

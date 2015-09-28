@@ -11,9 +11,8 @@ import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
 import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.SearchServiceBean;
-import edu.harvard.iq.dataverse.SolrQueryResponse;
-import edu.harvard.iq.dataverse.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
@@ -193,6 +192,13 @@ public class MyDataPage implements java.io.Serializable {
         //this.setUserCountTotals(authUser, rolePermissionHelper);
         return null;
     }
+    
+    public String getAuthUserIdentifier(){
+        if (this.authUser==null){
+            return null;
+        }
+        return MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
+    }
     /*
     private void setUserCountTotals(AuthenticatedUser userForCounts, DataverseRolePermissionHelper rolePermissionHelper){
         if (userForCounts == null){
@@ -270,8 +276,8 @@ public class MyDataPage implements java.io.Serializable {
 
     
     
-    public List<String> getPublishedStates(){
-        return MyDataFilterParams.defaultPublishedStates;
+    public List<String[]> getPublishedStatesForMyDataPage(){
+        return MyDataFilterParams.getPublishedStatesForMyDataPage();
     }
     
 }

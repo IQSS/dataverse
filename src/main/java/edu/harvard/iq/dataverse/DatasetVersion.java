@@ -21,8 +21,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -68,16 +70,11 @@ public class DatasetVersion implements Serializable {
 
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
     };
-    
+
     public enum License {
         NONE, CC0
     }
 
-    /**
-     * @todo What does the GUI use for a default license? What does the "native"
-     * API use? See also https://github.com/IQSS/dataverse/issues/1385
-     */
-    public static DatasetVersion.License defaultLicense = DatasetVersion.License.CC0;
 
     public DatasetVersion() {
 
@@ -128,17 +125,7 @@ public class DatasetVersion implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private VersionState versionState;
-    
-    @Enumerated(EnumType.STRING)
-    private License license;
 
-    public License getLicense() {
-        return license;
-    }
-
-    public void setLicense(License license) {
-        this.license = license;
-    }
 
     @ManyToOne
     private Dataset dataset;
@@ -158,6 +145,19 @@ public class DatasetVersion implements Serializable {
 
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;
+    }
+    
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @JoinColumn(name = "termsOfUseAndAccess_id")
+    private TermsOfUseAndAccess termsOfUseAndAccess;
+
+
+    public TermsOfUseAndAccess getTermsOfUseAndAccess() {
+        return termsOfUseAndAccess;
+    }
+
+    public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
+        this.termsOfUseAndAccess = termsOfUseAndAccess;
     }
 
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -199,82 +199,27 @@ public class DatasetVersion implements Serializable {
     private String archiveNote;
     private String deaccessionLink;
     
-    @Column(columnDefinition="TEXT")      
-    private String termsOfUse;
-    
-    @Column(columnDefinition="TEXT") 
-    private String termsOfAccess;
-    
-    @Column(columnDefinition="TEXT") 
-    private String confidentialityDeclaration;
-    
-    @Column(columnDefinition="TEXT") 
-    private String specialPermissions;
-    
-    @Column(columnDefinition="TEXT") 
-    private String restrictions;
-    
-    @Column(columnDefinition="TEXT") 
-    private String citationRequirements;
-    
-    @Column(columnDefinition="TEXT") 
-    private String depositorRequirements;
-    
-    @Column(columnDefinition="TEXT") 
-    private String conditions;
-    
-    @Column(columnDefinition="TEXT") 
-    private String disclaimer;
-    
-    @Column(columnDefinition="TEXT") 
-    private String dataAccessPlace;
-    
-    @Column(columnDefinition="TEXT") 
-    private String originalArchive;
-    
-    @Column(columnDefinition="TEXT") 
-    private String availabilityStatus;
-    
-    @Column(columnDefinition="TEXT") 
-    private String contactForAccess;
-    
-    @Column(columnDefinition="TEXT") 
-    private String sizeOfCollection;
-    
-    @Column(columnDefinition="TEXT") 
-    private String studyCompletion;
-    
-    private boolean fileAccessRequest;
 
-    public boolean isFileAccessRequest() {
-        return fileAccessRequest;
-    }
+    
 
-    public void setFileAccessRequest(boolean fileAccessRequest) {
-        this.fileAccessRequest = fileAccessRequest;
-    }
     
     private boolean inReview;
     public void setInReview(boolean inReview){
         this.inReview = inReview;
     }
 
+    /**
+     * The only time a dataset can be in review is when it is in draft.
+     */
     public boolean isInReview() {
-        return inReview;
+        if (versionState != null && versionState.equals(VersionState.DRAFT)) {
+            return inReview;
+        } else {
+            return false;
+        }
     }
 
-    public String getStudyCompletion() {
-        return studyCompletion;
-    }
 
-    public void setStudyCompletion(String studyCompletion) {
-        this.studyCompletion = studyCompletion;
-    }
-        
-    
-    public String getTermsOfUse() {
-        return termsOfUse;
-    }
     
     /**
      * Quick hack to disable <script> tags
@@ -295,115 +240,6 @@ public class DatasetVersion implements Serializable {
         str = str.replaceAll("(?i)<script\\b", "");
 
         return str;
-    }
-
-    public void setTermsOfUse(String termsOfUse) {
-        this.termsOfUse = termsOfUse;
-    }
-
-    public String getTermsOfAccess() {
-        return termsOfAccess;
-    }
-
-    public void setTermsOfAccess(String termsOfAccess) {
-        this.termsOfAccess = termsOfAccess;
-    }
-    
-        
-    public String getConfidentialityDeclaration() {
-        return confidentialityDeclaration;
-    }
-
-    public void setConfidentialityDeclaration(String confidentialityDeclaration) {
-        this.confidentialityDeclaration = confidentialityDeclaration;
-    }
-
-    public String getSpecialPermissions() {
-        return specialPermissions;
-    }
-
-    public void setSpecialPermissions(String specialPermissions) {
-        this.specialPermissions = specialPermissions;
-    }
-
-    public String getRestrictions() {
-        return restrictions;
-    }
-
-    public void setRestrictions(String restrictions) {
-        this.restrictions = restrictions;
-    }
-
-    public String getCitationRequirements() {
-        return citationRequirements;
-    }
-
-    public void setCitationRequirements(String citationRequirements) {
-        this.citationRequirements = citationRequirements;
-    }
-
-    public String getDepositorRequirements() {
-        return depositorRequirements;
-    }
-
-    public void setDepositorRequirements(String depositorRequirements) {
-        this.depositorRequirements = depositorRequirements;
-    }
-
-    public String getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(String conditions) {
-        this.conditions = conditions;
-    }
-
-    public String getDisclaimer() {
-        return disclaimer;
-    }
-
-    public void setDisclaimer(String disclaimer) {
-        this.disclaimer = disclaimer;
-    }
-
-    public String getDataAccessPlace() {
-        return dataAccessPlace;
-    }
-
-    public void setDataAccessPlace(String dataAccessPlace) {
-        this.dataAccessPlace = dataAccessPlace;
-    }
-
-    public String getOriginalArchive() {
-        return originalArchive;
-    }
-
-    public void setOriginalArchive(String originalArchive) {
-        this.originalArchive = originalArchive;
-    }
-
-    public String getAvailabilityStatus() {
-        return availabilityStatus;
-    }
-
-    public void setAvailabilityStatus(String availabilityStatus) {
-        this.availabilityStatus = availabilityStatus;
-    }
-
-    public String getContactForAccess() {
-        return contactForAccess;
-    }
-
-    public void setContactForAccess(String contactForAccess) {
-        this.contactForAccess = contactForAccess;
-    }
-
-    public String getSizeOfCollection() {
-        return sizeOfCollection;
-    }
-
-    public void setSizeOfCollection(String sizeOfCollection) {
-        this.sizeOfCollection = sizeOfCollection;
     }
 
 
@@ -1094,6 +930,7 @@ public class DatasetVersion implements Serializable {
 
         return retList;
     }
+
 
     public List<DatasetField> getFlatDatasetFields() {
         return getFlatDatasetFields(getDatasetFields());

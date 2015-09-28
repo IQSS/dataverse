@@ -75,8 +75,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
          * dvObject before we try to set this timestamp? See
          * https://github.com/IQSS/dataverse/commit/6ad0ebb272c8cb46368cb76784b55dbf33eea947
          */
-        dvObject.setPermissionIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObject);
+        DvObject dvObjectToModify = findDvObject(dvObject.getId());
+        dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
+        DvObject savedDvObject = em.merge(dvObjectToModify);
         return savedDvObject;
     }
 
@@ -87,6 +88,12 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return numRowsUpdated;
     }
 
+    public int clearIndexTimes(long dvObjectId) {
+        Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL WHERE o.id =:dvObjectId");
+        clearIndexTimes.setParameter("dvObjectId", dvObjectId);
+        int numRowsUpdated = clearIndexTimes.executeUpdate();
+        return numRowsUpdated;
+    }
     
     private String getDvObjectIdListClause(List<Long> dvObjectIdList){
         if (dvObjectIdList == null){

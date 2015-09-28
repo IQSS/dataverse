@@ -9,6 +9,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +24,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -141,6 +145,36 @@ public class DataFileServiceBean implements java.io.Serializable {
         return query.getResultList();
     }  
 
+    public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder) {
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+        if (maxResults < 0) {
+            // return all results if user asks for negative number of results
+            maxResults = 0;
+        }
+        TypedQuery query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortField + " " + sortOrder, FileMetadata.class);
+        query.setParameter("datasetVersionId", datasetVersionId);
+        query.setMaxResults(maxResults);
+        return query.getResultList();
+    }
+    
+    public FileMetadata findFileMetadataByFileAndVersionId(Long dataFileId, Long datasetVersionId) {
+        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id = :dataFileId and o.datasetVersion.id = :datasetVersionId");
+        query.setParameter("dataFileId", dataFileId);
+        query.setParameter("datasetVersionId", datasetVersionId);
+        return (FileMetadata)query.getSingleResult();
+    }
+    
+    public FileMetadata findFileMetadataByDatasetVersionIdAndDataFileId(Long datasetVersionId, Long dataFileId) {
+
+        Query query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId  and o.dataFile.id = :dataFileId");
+        query.setParameter("datasetVersionId", datasetVersionId);
+        query.setParameter("dataFileId", dataFileId);
+
+        return (FileMetadata) query.getSingleResult();
+    }
+
     public List<DataFile> findIngestsInProgress() {
         if ( em.isOpen() ) {
             Query query = em.createQuery("select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id");
@@ -182,6 +216,22 @@ public class DataFileServiceBean implements java.io.Serializable {
 				.executeUpdate();
     }
 
+    /* 
+     Convenience methods for merging and removing of individual file metadatas, 
+     without touching the rest of the DataFile object:
+    */
+    
+    public FileMetadata mergeFileMetadata(FileMetadata fileMetadata) {
+        return em.merge(fileMetadata);
+    }
+    
+    public void removeFileMetadata(FileMetadata fileMetadata) {
+        FileMetadata mergedFM = em.merge(fileMetadata);
+        em.remove(mergedFM);
+    }
+    
+    /**/
+    
     public void generateStorageIdentifier(DataFile dataFile) {
         dataFile.setStorageIdentifier(generateStorageIdentifier());
     }

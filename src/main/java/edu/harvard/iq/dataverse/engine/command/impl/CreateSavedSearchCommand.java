@@ -2,14 +2,15 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObjectBuilder;
 
@@ -20,8 +21,8 @@ public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
 
     private final SavedSearch savedSearchToCreate;
 
-    public CreateSavedSearchCommand(User aUser, DvObject anAffectedDvObject, SavedSearch savedSearch) {
-        super(aUser, anAffectedDvObject);
+    public CreateSavedSearchCommand(DataverseRequest aRequest, DvObject anAffectedDvObject, SavedSearch savedSearch) {
+        super(aRequest, anAffectedDvObject);
         this.savedSearchToCreate = savedSearch;
     }
 
@@ -41,7 +42,7 @@ public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
         if (persistedSavedSearch != null) {
             try {
                 JsonObjectBuilder result = ctxt.savedSearches().makeLinksForSingleSavedSearch(persistedSavedSearch, true);
-                logger.info("result from attempt to make links from saved search: " + result.build().toString());
+                logger.log(Level.INFO, "result from attempt to make links from saved search: {0}", result.build().toString());
             } catch (SearchException ex) {
                 logger.info(ex.getLocalizedMessage());
             }

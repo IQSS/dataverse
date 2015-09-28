@@ -63,6 +63,8 @@ public class ManageGroupsPage implements java.io.Serializable {
     AuthenticationServiceBean authenticationService;
     @EJB
     GroupServiceBean groupService;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -132,14 +134,14 @@ public class ManageGroupsPage implements java.io.Serializable {
         if (selectedGroup != null) {
             explicitGroups.remove(selectedGroup);
             try {
-                engineService.submit(new DeleteExplicitGroupCommand(session.getUser(), selectedGroup));
+                engineService.submit(new DeleteExplicitGroupCommand(dvRequestService.getDataverseRequest(), selectedGroup));
                 JsfHelper.addFlashMessage("The group has been deleted.");
             } catch (CommandException ex) {
                 String failMessage = "The explicit group cannot be deleted.";
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
-            System.out.print("Selected group is null");
+            logger.info("Selected group is null");
         }
     }
 
@@ -331,13 +333,11 @@ public class ManageGroupsPage implements java.io.Serializable {
             }
         }
         try {
-            logger.info( "Attempting to create group " + eg.getGroupAliasInOwner() ); // TODO MBS remove
-            eg = engineService.submit( new CreateExplicitGroupCommand(session.getUser(), this.dataverse, eg));
+            eg = engineService.submit( new CreateExplicitGroupCommand(dvRequestService.getDataverseRequest(), this.dataverse, eg));
             explicitGroups.add(eg);
             JsfHelper.addSuccessMessage("Succesfully created group " + eg.getDisplayName() + ". Refresh to update your page.");
 
         } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
-            logger.info( "Got me then message " + gaee.getMessage() ); // TODO MBS remove
             explicitGroupIdentifierField.setValid( false );
             FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
                            new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));
@@ -356,14 +356,10 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     public void saveExplicitGroup(ActionEvent ae) {
         ExplicitGroup eg = selectedGroup;
-            System.out.println("1111111111");
 
         if ( getSelectedGroupAddRoleAssignees() != null ) {
-            System.out.println("is this shit empty thos");
-
             try {
                 for ( RoleAssignee ra : getSelectedGroupAddRoleAssignees() ) {
-                    System.out.println("some stuff yo that's been added");
                     eg.add( ra );
                 }
             } catch ( GroupException ge ) {
@@ -375,7 +371,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
 
         try {
-            eg = engineService.submit( new UpdateExplicitGroupCommand(session.getUser(), eg));
+            eg = engineService.submit( new UpdateExplicitGroupCommand(dvRequestService.getDataverseRequest(), eg));
             JsfHelper.addSuccessMessage("Succesfully saved group " + eg.getDisplayName());
 
         } catch (CommandException ex) {

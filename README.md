@@ -15,3 +15,5 @@ The Dataverse code is *open-source* and *free*.
 Dataverse releases are available for download from https://github.com/IQSS/dataverse/releases and installation instructions can be found in the [Installation Guide](http://guides.dataverse.org/en/latest/installation/).
 
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg?raw=true "Dataverse Project")](http://dataverse.org)
+
+[![Build Status](https://travis-ci.org/IQSS/dataverse.svg?branch=master)](https://travis-ci.org/IQSS/dataverse) [![Coverage Status](https://coveralls.io/repos/IQSS/dataverse/badge.svg?branch=master&service=github)](https://coveralls.io/github/IQSS/dataverse?branch=master)
