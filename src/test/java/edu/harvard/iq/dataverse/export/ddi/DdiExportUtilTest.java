@@ -33,7 +33,7 @@ public class DdiExportUtilTest {
         logger.info(datasetAsDdi);
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.info(result);
-        boolean filesMinimallySupported = false;
+        boolean filesMinimallySupported = true;
         if (filesMinimallySupported) {
             assertEquals(datasetAsDdi, result);
         }

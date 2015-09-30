@@ -41,6 +41,7 @@ public class DatasetVersionDTO {
     
     Map<String,MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
+    List<FileDTO> files;
 
     public boolean isInReview() {
         return inReview;
@@ -194,8 +195,14 @@ public class DatasetVersionDTO {
         this.fileMetadatas = fileMetadatas;
     }
 
-    
-    
+    public List<FileDTO> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<FileDTO> files) {
+        this.files = files;
+    }
+
     public String getArchiveNote() {
         return archiveNote;
     }

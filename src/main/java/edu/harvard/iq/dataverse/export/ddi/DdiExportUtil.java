@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +46,7 @@ public class DdiExportUtil {
         xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
         writeAttribute(xmlw, "version", "2.0");
         createStdyDscr(xmlw, datasetDto);
+        createdataDscr(xmlw, datasetDto.getDatasetVersion().getFiles());
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
         String xml = outputStream.toString();
@@ -97,6 +100,29 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // citation
         xmlw.writeEndElement(); // stdyDscr
 
+    }
+
+    /**
+     * @todo Create a full dataDscr and otherMat sections of the DDI. This stub
+     * adapted from the minimal DDIExportServiceBean example.
+     */
+    private static void createdataDscr(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
+        if (fileDtos.isEmpty()) {
+            return;
+        }
+        xmlw.writeStartElement("dataDscr");
+        xmlw.writeEndElement(); // dataDscr
+        for (FileDTO fileDTo : fileDtos) {
+            xmlw.writeStartElement("otherMat");
+            writeAttribute(xmlw, "ID", "f" + fileDTo.getDatafile().getId());
+            xmlw.writeStartElement("labl");
+            xmlw.writeCharacters(fileDTo.getDatafile().getName());
+            xmlw.writeEndElement(); // labl
+            xmlw.writeStartElement("txt");
+            xmlw.writeCharacters(fileDTo.getDatafile().getDescription());
+            xmlw.writeEndElement(); // txt
+            xmlw.writeEndElement(); // otherMat
+        }
     }
 
     private static String dto2title(DatasetVersionDTO datasetVersionDTO) {
