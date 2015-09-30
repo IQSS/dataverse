@@ -36,6 +36,7 @@ public class DatasetVersionDTO {
     String contactForAccess;
     String sizeOfCollection;
     String studyCompletion; 
+    String citation;
     boolean inReview;
     
     Map<String,MetadataBlockDTO> metadataBlocks;
@@ -167,6 +168,14 @@ public class DatasetVersionDTO {
 
     public void setStudyCompletion(String studyCompletion) {
         this.studyCompletion = studyCompletion;
+    }
+
+    public String getCitation() {
+        return citation;
+    }
+
+    public void setCitation(String citation) {
+        this.citation = citation;
     }
 
     public String getUNF() {

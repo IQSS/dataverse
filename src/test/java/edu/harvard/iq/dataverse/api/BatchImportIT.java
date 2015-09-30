@@ -28,6 +28,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import static junit.framework.Assert.assertEquals;
+import org.junit.Ignore;
 
 public class BatchImportIT {
 
@@ -88,7 +89,7 @@ public class BatchImportIT {
         }
 
         Response destroyDatasetResponse = destroyDataset(datasetId, apiToken1);
-//        destroyDatasetResponse.prettyPrint();
+        destroyDatasetResponse.prettyPrint();
 //        assertEquals(200, destroyDatasetResponse.getStatusCode());
 
         Response deleteDataverseResponse = deleteDataverse(dataverseAlias, apiToken1);
@@ -138,12 +139,23 @@ public class BatchImportIT {
             logger.info(title + " - " + persistentUrl);
             boolean ddiFromDto = false;
             Response datasetAsDdi = getDatasetAsDdi(persistentIdentifier, ddiFromDto, apiToken1);
-//            datasetAsDdi.prettyPrint();
+            String minimalDdiMethod = datasetAsDdi.prettyPrint();
 
             ddiFromDto = true;
             Response datasetAsDdiFromDto = getDatasetAsDdi(persistentIdentifier, ddiFromDto, apiToken1);
-//            datasetAsDdiFromDto.prettyPrint();
+            String fromDto = datasetAsDdiFromDto.prettyPrint();
 
+            /**
+             * Parity with the minimal DDI export is a step along the way. It
+             * demonstrates that we are producing valid DDI according to
+             * http://guides.dataverse.org/en/latest/developers/tools.html#msv
+             * but the next step will be producing a full DDI similar to what is
+             * being imported in this round trip test.
+             */
+            boolean parityWithMinimalDdiExport = false;
+            if (parityWithMinimalDdiExport) {
+                assertEquals(minimalDdiMethod, fromDto);
+            }
 //            File originalFile = new File(absoluteDirectoryPath).listFiles()[0];
 //            String originalPretty = prettyFormat(new String(Files.readAllBytes(Paths.get(originalFile.getAbsolutePath()))));
 //            String exportedPretty = prettyFormat(datasetAsDdi.body().asString());

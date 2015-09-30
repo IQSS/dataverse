@@ -436,8 +436,12 @@ public class Datasets extends AbstractApiBean {
 
             String xml = "<codeBook>XML_BEING_COOKED</codeBook>";
             if (dto) {
-                final JsonObjectBuilder jsonbuilder = json(dataset.getLatestVersion());
-                xml = DdiExportUtil.json2ddi(jsonbuilder.build().toString());
+                /**
+                 * @todo We can only assume that this should not be hard-coded
+                 * to getLatestVersion
+                 */
+                final JsonObjectBuilder datasetAsJson = jsonAsDatasetDto(dataset.getLatestVersion());
+                xml = DdiExportUtil.datasetDtoAsJson2ddi(datasetAsJson.build().toString());
             } else {
                 OutputStream outputStream = new ByteArrayOutputStream();
                 ddiExportService.exportDataset(dataset.getId(), outputStream, null, null);

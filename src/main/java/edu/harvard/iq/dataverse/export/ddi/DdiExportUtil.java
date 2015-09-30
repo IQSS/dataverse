@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export.ddi;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
@@ -24,25 +25,25 @@ public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
 
-    public static String json2ddi(String datasetVersionAsJson) {
-        logger.fine(datasetVersionAsJson);
+    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
+        logger.fine(datasetDtoAsJson);
         Gson gson = new Gson();
-        DatasetVersionDTO dto = gson.fromJson(datasetVersionAsJson, DatasetVersionDTO.class);
+        DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
         try {
-            return dto2ddi(dto);
+            return dto2ddi(datasetDto);
         } catch (XMLStreamException ex) {
             Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
 
-    private static String dto2ddi(DatasetVersionDTO dto) throws XMLStreamException {
+    private static String dto2ddi(DatasetDTO datasetDto) throws XMLStreamException {
         OutputStream outputStream = new ByteArrayOutputStream();
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
         writeAttribute(xmlw, "version", "2.0");
-        createStdyDscr(xmlw, dto);
+        createStdyDscr(xmlw, datasetDto);
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
         String xml = outputStream.toString();
@@ -56,16 +57,17 @@ public class DdiExportUtil {
      * incomplete and will be worked on as part of
      * https://github.com/IQSS/dataverse/issues/2579 . We'll want to reference
      * the DVN 3.x code for creating a complete DDI.
+     *
+     * @todo Rename this from "study" to "dataset".
      */
-    private static void createStdyDscr(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+    private static void createStdyDscr(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
+        String title = dto2title(datasetDto.getDatasetVersion());
+        String authors = dto2authors(datasetDto.getDatasetVersion());
+        String persistentAgency = datasetDto.getProtocol();
+        String persistentAuthority = datasetDto.getAuthority();
+        String persistentId = datasetDto.getIdentifier();
 
-        String title = dto2title(datasetVersionDTO);
-        String authors = dto2authors(datasetVersionDTO);
-//        String persistentAgency = "FIXME";
-//        String persistentAuthority = "FIXME";
-//        String persistentId = "FIXME";
-
-//        String citation = "FIXME";
+        String citation = datasetDto.getDatasetVersion().getCitation();
         xmlw.writeStartElement("stdyDscr");
         xmlw.writeStartElement("citation");
 
@@ -75,10 +77,10 @@ public class DdiExportUtil {
         xmlw.writeCharacters(title);
         xmlw.writeEndElement(); // titl
 
-//        xmlw.writeStartElement("IDNo");
-//        writeAttribute(xmlw, "agency", persistentAgency);
-//        xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
-//        xmlw.writeEndElement(); // IDNo
+        xmlw.writeStartElement("IDNo");
+        writeAttribute(xmlw, "agency", persistentAgency);
+        xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
+        xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
 
         xmlw.writeStartElement("rspStmt");
@@ -89,9 +91,9 @@ public class DdiExportUtil {
 
         xmlw.writeEndElement(); // rspStmt
 
-//        xmlw.writeStartElement("biblCit");
-//        xmlw.writeCharacters(citation);
-//        xmlw.writeEndElement(); // biblCit
+        xmlw.writeStartElement("biblCit");
+        xmlw.writeCharacters(citation);
+        xmlw.writeEndElement(); // biblCit
         xmlw.writeEndElement(); // citation
         xmlw.writeEndElement(); // stdyDscr
 

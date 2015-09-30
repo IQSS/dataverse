@@ -228,7 +228,39 @@ public class JsonPrinter {
 		
 		return bld;
 	}
-    
+
+    /**
+     * Export formats such as DDI require the citation to be included. See
+     * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
+     *
+     * @todo Instead of having this separate method, should "citation" be added
+     * to the regular `json` method for DatasetVersion? Will anything break?
+     * Unit tests for that method could not be found.
+     */
+    public static JsonObjectBuilder jsonWithCitation(DatasetVersion dsv) {
+        JsonObjectBuilder dsvWithCitation = json(dsv);
+        dsvWithCitation.add("citation", dsv.getCitation());
+        return dsvWithCitation;
+    }
+
+    /**
+     * Export formats such as DDI require the persistent identifier components
+     * such as "protocol", "authority" and "identifier" to be included so we
+     * create a JSON object we can convert to a DatasetDTO which can include a
+     * DatasetVersionDTO, which has all the metadata fields we need to export.
+     * See https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
+     *
+     * @todo Instead of having this separate method, should "datasetVersion" be
+     * added to the regular `json` method for Dataset? Will anything break? Unit
+     * tests for that method could not be found. If we keep this method as-is
+     * should the method be renamed?
+     */
+    public static JsonObjectBuilder jsonAsDatasetDto(DatasetVersion dsv) {
+        JsonObjectBuilder datasetDtoAsJson = json(dsv.getDataset());
+        datasetDtoAsJson.add("datasetVersion", jsonWithCitation(dsv));
+        return datasetDtoAsJson;
+    }
+
     public static JsonArrayBuilder jsonFileMetadatas( Collection<FileMetadata> fmds ) {
         JsonArrayBuilder filesArr = Json.createArrayBuilder();
         for ( FileMetadata fmd : fmds ) {

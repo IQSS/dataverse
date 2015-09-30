@@ -5,24 +5,36 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class DdiExportUtilTest {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtilTest.class.getCanonicalName());
 
     @Test
-    public void testJson2ddi() throws Exception {
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/datasetversion-finch1.json");
+    public void testJson2DdiNoFiles() throws Exception {
+        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
-        logger.fine(datasetAsDdi);
-        String result = DdiExportUtil.json2ddi(datasetVersionAsJson);
-        logger.fine(result);
-        boolean doneWithIssue2579 = false;
-        if (doneWithIssue2579) {
+        logger.info(datasetAsDdi);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        logger.info(result);
+        assertEquals(datasetAsDdi, result);
+    }
+
+    @Test
+    public void testJson2ddiHasFiles() throws Exception {
+        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.json");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
+        logger.info(datasetAsDdi);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        logger.info(result);
+        boolean filesMinimallySupported = false;
+        if (filesMinimallySupported) {
             assertEquals(datasetAsDdi, result);
         }
     }
