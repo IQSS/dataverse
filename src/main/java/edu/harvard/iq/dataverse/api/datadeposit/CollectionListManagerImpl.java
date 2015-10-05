@@ -32,6 +32,8 @@ public class CollectionListManagerImpl implements CollectionListManager {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    SwordServiceBean swordService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -79,7 +81,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
                         String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalId();
                         Entry entry = feed.addEntry();
                         entry.setId(editUri);
-                        entry.setTitle(dataset.getLatestVersion().getTitle());
+                        entry.setTitle(swordService.getTitleFromLastestVersion(dataset.getId()));
                         entry.setBaseUri(new IRI(editUri));
                         entry.addLink(editMediaUri, "edit-media");
                         feed.addEntry(entry);
