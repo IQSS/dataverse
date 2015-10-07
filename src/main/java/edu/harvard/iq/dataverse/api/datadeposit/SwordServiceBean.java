@@ -16,8 +16,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.swordapp.server.SwordEntry;
 import org.swordapp.server.SwordError;
@@ -30,9 +28,6 @@ public class SwordServiceBean {
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
 
     /**
      * Mutate the dataset version, adding a datasetContact (email address) from
@@ -217,34 +212,6 @@ public class SwordServiceBean {
                     datasetVersionToMutate.getTermsOfUseAndAccess().setTermsOfUse(termsOfUseProvided);
                 }
             }
-        }
-    }
-
-    /**
-     * This native query was written in response to
-     * https://github.com/IQSS/dataverse/issues/2599 where it was taking over
-     * two and a half minutes to get the titles of the latest version of a list
-     * of almost 4000 datasets via SWORD. This version takes around five
-     * seconds.
-     *
-     * It should be safe to return null because it will result in
-     * "<title type="text"/>" when called from CollectionListManagerImpl.
-     *
-     * We use the same order by clauses found on the Dataset object:
-     *
-     * @OrderBy("versionNumber DESC, minorVersionNumber DESC")
-     */
-    public String getTitleFromLastestVersion(Long datasetId) {
-        if (datasetId == null) {
-            logger.info("Dataset id passed in was null. Unable to retrieve title");
-            return null;
-        }
-        try {
-            String query = "select value from datasetfieldvalue where datasetfield_id = (select id from datasetfield where datasetversion_id = (select id from datasetversion where dataset_id = " + datasetId + "order by versionnumber desc, minorVersionNumber desc limit 1) and datasetfieldtype_id = (select id from datasetfieldtype where name = '" + DatasetFieldConstant.title + "'));";
-            return (String) em.createNativeQuery(query).getSingleResult();
-        } catch (Exception ex) {
-            logger.info("exception trying to get title from latest version: " + ex);
-            return null;
         }
     }
 
