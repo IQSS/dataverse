@@ -446,6 +446,46 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
+    /*
+    getTitleFromLatestVersion methods use native query to return a dataset title
+    
+        There are two versions:
+     1) The version with datasetId param only will return the title regardless of version state
+     2)The version with the param 'includeDraft' boolean  will return the most recently published title if the param is set to false
+    If no Title found return empty string - protects against calling with
+    include draft = false with no published version
+    */
+    
+    public String getTitleFromLatestVersion(Long datasetId){
+        return getTitleFromLatestVersion(datasetId, true);
+    }
+    
+    public String getTitleFromLatestVersion(Long datasetId, boolean includeDraft){
+
+        String whereDraft = "";
+        //This clause will exclude draft versions from the select
+        if (!includeDraft) {
+            whereDraft = " and v.versionstate !='DRAFT' ";
+        }
+        
+        try {
+            return (String) em.createNativeQuery("select dfv.value  from dataset d "
+                + " join datasetversion v on d.id = v.dataset_id "
+                + " join datasetfield df on v.id = df.datasetversion_id "
+                + " join datasetfieldvalue dfv on df.id = dfv.datasetfield_id "
+                + " join datasetfieldtype dft on df.datasetfieldtype_id  = dft.id "
+                + " where dft.name = '" + DatasetFieldConstant.title + "' and  v.dataset_id =" + datasetId
+                + whereDraft
+                + " order by v.versionnumber desc, v.minorVersionNumber desc limit 1 "
+                + ";").getSingleResult();
+
+        } catch (Exception ex) {
+            logger.info("exception trying to get title from latest version: " + ex);
+            return "";
+        }
+
+    }
+    
     
     public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
         if (datasetVersion == null) {
