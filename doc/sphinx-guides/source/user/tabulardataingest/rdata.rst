@@ -123,7 +123,7 @@ representations such as "Sep-23-2013 14:57:21" are allowed; note that
 in the absence of an explicitly defined time zone, this value cannot
 be mapped to an exact point in real time.  R handles times in the
 "Unix-style" way: the value is converted to the
-"seconds-since-the-Epoch" Greenwitch time (GMT or UTC) and the
+"seconds-since-the-Epoch" Greenwich time (GMT or UTC) and the
 resulting numeric value is stored in the data file; time zone
 adjustments are made in real time as needed.
 
@@ -185,7 +185,7 @@ algorithm works, the same date/time values with and without the
 timezone (e.g. "12:45" vs. "12:45 EST") **produce different
 UNFs**. Considering that time values in Stata/SPSS do not have time
 zones, but ALL time values in R do (yes, they all do - if the timezone
-wasn't defined explicitely, it implicitly becomes a time value in the
+wasn't defined explicitly, it implicitly becomes a time value in the
 "UTC" zone!), this means that it is **impossible** to have 2 time
 value vectors, in Stata/SPSS and R, that produce the same UNF.
 
