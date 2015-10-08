@@ -5,17 +5,13 @@
 All the existing DVN studies need to be re-exported *using the
 specially modified version of the DVN3 DDI Export Servlet*. (This
 version of the servlet exports not just the published, but all the
-versions of each study).
+versions of each study). This servlet is NOT available in the DVN
+v3.6.2, the last officially-released version. So please download the
+specially-patched version of the DVN 3.6 war file:
 
-1. Download the migration version of the servlet from here: 
+http://sourceforge.net/projects/dvn/files/dvn/3.6.2/DVN-web_v3_6_3_MIGRATION.war/download
 
-http://sourceforge.net/projects/dvn/files/dvn/3.6.2/DDIExportServlet-3.6.3-migration.class/download
-
-put it in place of your existing servlet: 
-
-/bin/mv DDIExportServlet-3.6.3-migration.class <YOUR GLASSFISH DIRECTORY>/domains/domain1/applications/DVN-web/WEB-INF/classes/edu/harvard/iq/dvn/core/web/servlet/DDIExportServlet.class 
-
-and restart Glassfish. 
+and deploy it on your DVN server (instead of the version 3.6.2 you are currently running). 
 
 IMPORTANT: 
 ----------
