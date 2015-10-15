@@ -70,3 +70,4 @@ def uniq(filename):
 highwater(data1, 'numconnused')
 highwater(data1, 'connrequestwaittime')
 count(data1, 'numconnacquired')
+count(data1, 'numconnreleased')
