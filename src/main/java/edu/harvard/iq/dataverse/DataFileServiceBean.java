@@ -125,6 +125,8 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (DataFile) em.find(DataFile.class, pk);
     }   
     
+    
+    
     /*public DataFile findByMD5(String md5Value){
         if (md5Value == null){
             return null;
@@ -157,6 +159,57 @@ public class DataFileServiceBean implements java.io.Serializable {
         query.setParameter("datasetVersionId", datasetVersionId);
         query.setMaxResults(maxResults);
         return query.getResultList();
+    }
+    
+    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+        String searchClause = "";
+        if(searchTerm != null && !searchTerm.isEmpty()){
+            searchClause = " and o.label like '%" + searchTerm + "%'" ;
+        }
+        
+        Query query = em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
+                + searchClause
+                + " order by o." + sortField + " " + sortOrder);
+        System.out.print(query.toString());
+
+
+        List <FileMetadata> retList = new ArrayList();
+        for (Object o : query.getResultList()){
+            Long pk = new Long(o.toString());
+           retList.add( (FileMetadata) em.find(FileMetadata.class, pk));
+        }
+        return retList;
+
+        
+    }
+    
+    public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
+        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+        String sortField = sortFieldAndOrder.getSortField();
+        String sortOrder = sortFieldAndOrder.getSortOrder();
+
+        if (maxResults < 0) {
+            // return all results if user asks for negative number of results
+            maxResults = 0;
+        }
+        TypedQuery query = em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortField + " " + sortOrder, FileMetadata.class);
+        query.setParameter("datasetVersionId", datasetVersionId);
+        query.setMaxResults(maxResults);
+
+        query.setFirstResult(firstResult);
+
+        List retList = query.getResultList();
+        return retList;
+    }
+    
+    public Long findCountByDatasetVersionId(Long datasetVersionId){
+        return (Long) em.createNativeQuery("select count(*)  from FileMetadata fmd "
+                + " where fmd.datasetVersion_id = " + datasetVersionId
+                + ";").getSingleResult();
     }
     
     public FileMetadata findFileMetadataByFileAndVersionId(Long dataFileId, Long datasetVersionId) {

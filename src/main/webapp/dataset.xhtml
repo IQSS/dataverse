@@ -88,7 +88,7 @@
                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
-                                            <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">
+                                            <p:commandLink id="deleteDataset" onclick="PF('deleteConfirmation').show()">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDataset']}" />
                                             </p:commandLink>
                                         </li>
@@ -96,7 +96,7 @@
                                     <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
-                                            <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">
+                                            <p:commandLink id="deleteVersion" onclick="PF('deleteVersionConfirmation').show()">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}" />
                                             </p:commandLink>
                                         </li>
@@ -104,7 +104,7 @@
                                     <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                         <li class="divider"></li>
                                         <li>
-                                            <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">
+                                            <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()">
                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                             </p:commandLink>
                                         </li>
@@ -120,27 +120,27 @@
                                                                                            and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)
                                                                                            and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
                                 <!-- Publish Buttons -->
-                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="publishConfirm.show()"
+                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
                                                rendered="#{!DatasetPage.dataset.released
                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                 </p:commandLink>
 
-                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="releaseDraft.show()"
+                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
                                                rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                 </p:commandLink>
 
-                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="mayNotRelease.show()"
+                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
                                                rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
                                                            and !permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')}">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                 </p:commandLink>
 
-                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="publishParent.show()"
+                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('publishParent').show()"
                                                rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                            and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
                                                            and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
@@ -153,13 +153,13 @@
                                                            and permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse')
                                                            and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
-                                               onclick="maynotPublishParent.show()">
+                                               onclick="PF('maynotPublishParent').show()">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                 </p:commandLink>
                                 <!-- END: Publish Buttons -->
 
                                 <!-- Return to Author Button -->
-                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="sendBackToContributor.show()"
+                                <p:commandLink type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'disabled' : ''}" onclick="PF('sendBackToContributor').show()"
                                                rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                                #{bundle['dataset.rejectBtn']}
@@ -167,7 +167,7 @@
                                 <!-- END: Return to Author Button -->
 
                                 <!-- Submit for Review Button -->
-                                <button type="button" class="btn btn-default #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="inreview.show()"
+                                <button type="button" class="btn btn-default #{DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('inreview').show()"
                                         jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)
@@ -181,7 +181,7 @@
                             <!-- Email/Link/Share Button Group -->
                             <div class="btn-group pull-right" id="datasetButtonBar" role="group">
                                 <p:commandLink class="btn btn-default bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
-                                               update=":contactDialog" oncomplete="contactForm.show()" actionListener="#{sendFeedbackDialog.initUserInput}">                                     
+                                               update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">                                     
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -197,7 +197,7 @@
                                 </p:commandLink>
                                 <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                title="#{bundle['dataset.share.datasetShare']}"
-                                               oncomplete="shareDialog.show();sharrre();">
+                                               oncomplete="PF('shareDialog').show();sharrre();">
                                     <span class="glyphicon glyphicon-share no-text"/>
                                 </p:commandLink>
                             </div>
@@ -440,7 +440,7 @@
 
                     <!-- Edit editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();blockDatasetForm.show();" />
+                        <p:commandButton id="saveTop" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
                         <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -521,7 +521,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();blockDatasetForm.show();" />
+                        <p:commandButton tabindex="1000" id="save" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();" />
                         <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -741,6 +741,28 @@
                         </div>
                     </p:dialog>
                     
+                    <p:dialog id="selectFilesForDownload" styleClass="smallPopUp" 
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal ="true">
+                        #{bundle['dataset.noSelectedFilesForDownload']}
+                    </p:dialog> 
+                    
+                    <p:dialog id="selectFilesForRequestAccess" styleClass="smallPopUp" 
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRequestAccess" modal ="true">
+                        #{bundle['dataset.noSelectedFilesForRequestAccess']}
+                    </p:dialog> 
+                    
+                    <p:dialog id="selectFilesForDelete" styleClass="smallPopUp" 
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal ="true">
+                        #{bundle['dataset.noSelectedFilesForDelete']}
+                    </p:dialog> 
+                    
+                    <p:dialog id="selectFilesForEditMetadata" styleClass="smallPopUp" 
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditMetadata" modal ="true">
+                        #{bundle['dataset.noSelectedFilesForMetadataEdit']}
+                    </p:dialog> 
+                    
+                     <p:remoteCommand name="openEditFilesPageCommand" action="#{DatasetPage.editFileMetadata()}"  />
+                     
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
@@ -944,7 +966,7 @@
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                                            rendered="#{DatasetPage.downloadType=='subset'}"
                                            actionListener="#{DatasetPage.saveGuestbookResponse('subset')}"
-                                           update="@([id$=Messages])" oncomplete="if (args === undefined)  downloadPopup.hide();  downloadDataSubsetPopup.show()">
+                                           update="@([id$=Messages])" oncomplete="if (args === undefined)  downloadPopup.hide();  PF('downloadDataSubsetPopup').show()">
                                 <f:param name="DO_GB_VALIDATION" value="true"/>
                             </p:commandLink>
                             <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.acceptTerms}"
@@ -958,7 +980,7 @@
                                                  actionListener="#{DatasetPage.saveGuestbookResponse('download')}" />
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" rendered="#{DatasetPage.downloadType=='multiple'}"
                                                  actionListener="#{DatasetPage.saveGuestbookResponse('multiple')}" />
-                                <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide();downloadDataSubsetPopup.show()"
+                                <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide();PF('downloadDataSubsetPopup').show()"
                                                  update="downloadDataSubsetPopup" actionListener="#{DatasetPage.saveGuestbookResponse('subset')}" rendered="#{DatasetPage.downloadType=='subset'}" />
 
                                 <p:commandButton value="#{bundle.submit}" oncomplete="downloadPopup.hide()" 
@@ -1177,23 +1199,58 @@
                         </div>
                     </p:dialog>
                     <!-- END: Publish/Submit for Review Dialogs -->
+
                 </h:form>
                 <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
                 <script type="text/javascript">
 
                                 function openDialog() {
-                                    details.show();
+                                    PF('details').show();
                                 }
                                 function openCompareTwo() {
-                                    compareTwo.show();
+                                    PF('compareTwo').show();
                                 }
+                                
                                 function testCheckBoxes() {
                                     var count = versionsTable.getSelectedRowsCount();
                                     if (count !== 2) {
-                                        compareTwo.show();
+                                        PF('compareTwo').show();
                                     } else {
                                         $('button[id$="compareVersions"]').trigger('click');
                                     }
+                                }
+                                
+                                function testFilesSelectedForDelete(){
+                                    var count = filesTable.getSelectedRowsCount();
+                                    if (count === 0) {
+                                        PF('selectFilesForDelete').show();                                      
+                                    } else {
+                                        PF('deleteSelectedFileConfirmation').show();
+                                    }                                   
+                                }
+                                
+                                
+                                
+                                function turnOffScroll(){
+                                    
+                                    var $filesTable = $('#filesTable');
+                                    alert($filesTable.attr("scrollable"));
+                                    alert("just");
+                                        alert($filesTable.);
+                                            $('dataTable[id$="filesTable"]').attr( 'scrollable', false );
+                                            $('#filesTable').attr( 'liveScroll', false );
+                                           
+                                            alert('done');
+                                }
+
+                                function testFilesSelectedForEditMetadata(){
+                                    var count = filesTable.getSelectedRowsCount();
+                                    if (count === 0) {
+                                        PF('selectFilesForEditMetadata').show();                                       
+                                    } else {
+                                        openEditFilesPageCommand();
+                                        
+                                    }                                   
                                 }
 
                                 function updateTemplate() {
@@ -1207,13 +1264,13 @@
                                 function checkFilesSelected() {
                                     var count = filesTable.getSelectedRowsCount();
                                     if (count > 0) {
-                                        deleteFileConfirmation.show();
+                                        PF('deleteFileConfirmation').show();
                                     }
                                 }
 
                                 function checkNewlyRestricted() {
-                                    if ($('input[id$="showAccessPopup"]').val() == 'true') {
-                                        accessPopup.show();
+                                    if ($('input[id$="showAccessPopup"]').val() === 'true') {
+                                        PF('accessPopup').show();
                                     }
                                     else {
                                         $('button[id$="datasetSave"]').trigger('click');
@@ -1235,34 +1292,34 @@
 
                                     if (validateURL(urlEntry) === false) {
                                         valid = false;
-                                        enterForwardUrl.show();
+                                        PF('enterForwardUrl').show();
                                     }
                                     if (valid === true) {
                                         if ($("select[id$='reasonOptions'] option:selected").val() === '7') {
                                             if (deaccessionText === '') {
                                                 valid = false;
-                                                enterOtherReason.show();
+                                                PF('enterOtherReason').show();
                                             }
                                         }
                                     }
                                     if (deaccessionText.length >= 1001) {
                                         valid = false;
-                                        reasonTooManyCharacters.show();
+                                        PF('reasonTooManyCharacters').show();
                                     }
                                     if (valid === true) {
                                         if ($("select[id$='reasonOptions'] option:selected").val() === '0') {
                                             valid = false;
-                                            selectDeaccessionReason.show();
+                                            PF('selectDeaccessionReason').show();
                                         }
                                     }
                                     if (valid === true) {
                                         if (testVersion === false) {
-                                            deaccessionAllConfirmation.show();
+                                            PF('deaccessionAllConfirmation').show();
                                         } else {
                                             if (count === 0) {
-                                                selectDeaccessionVersion.show();
+                                                PF('selectDeaccessionVersion').show();
                                             } else {
-                                                deaccessionConfirmation.show();
+                                                PF('deaccessionConfirmation').show();
                                             }
                                         }
                                     }

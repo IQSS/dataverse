@@ -73,8 +73,11 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
+import java.util.LinkedHashMap;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.SortOrder;
 
 /**
  *
@@ -199,7 +202,43 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> fileMetadatas;
     private String fileSortField;
     private String fileSortOrder;
+    
+    private LazyFileMetadataDataModel lazyModel;
 
+    public LazyFileMetadataDataModel getLazyModel() {
+        return lazyModel;
+    }
+
+    public void setLazyModel(LazyFileMetadataDataModel lazyModel) {
+        this.lazyModel = lazyModel;
+    }
+    
+    private String fileLabelSearchTerm;
+
+    public String getFileLabelSearchTerm() {
+        return fileLabelSearchTerm;
+    }
+
+    public void setFileLabelSearchTerm(String fileLabelSearchTerm) {
+        this.fileLabelSearchTerm = fileLabelSearchTerm;
+    }
+    
+    private List<FileMetadata> fileMetadatasSearch;
+
+    public List<FileMetadata> getFileMetadatasSearch() {
+        return fileMetadatasSearch;
+    }
+
+    public void setFileMetadatasSearch(List<FileMetadata> fileMetadatasSearch) {
+        this.fileMetadatasSearch = fileMetadatasSearch;
+    }
+    
+    public void updateFileSearch(){       
+        this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
+    }
+    
+    
+    
     /*
         Save the setting locally so db isn't hit repeatedly
     
@@ -331,7 +370,6 @@ public class DatasetPage implements java.io.Serializable {
      * @return boolean
      */
     public boolean canDownloadFile(FileMetadata fileMetadata){
-      
         if (fileMetadata == null){
             return false;
         }
@@ -655,7 +693,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
     }
-
+    
     public void updateSelectedTemplate(ValueChangeEvent event) {
         
         selectedTemplate = (Template) event.getNewValue();
@@ -1005,12 +1043,23 @@ public class DatasetPage implements java.io.Serializable {
 
     }// A DataFile may have a related MapLayerMetadata object
 
+
+    
+    private List<FileMetadata> displayFileMetadata;
+
+    public List<FileMetadata> getDisplayFileMetadata() {
+        return displayFileMetadata;
+    }
+
+    public void setDisplayFileMetadata(List<FileMetadata> displayFileMetadata) {
+        this.displayFileMetadata = displayFileMetadata;
+    }
     
    public String init() {
         // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
-        
+
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
@@ -1089,7 +1138,9 @@ public class DatasetPage implements java.io.Serializable {
             displayCitation = dataset.getCitation(true, workingVersion);
             setVersionTabList(resetVersionTabList());  
             setReleasedVersionTabList(resetReleasedVersionTabList());
-
+            //SEK - lazymodel may be needed for datascroller in future release
+           // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
+            fileMetadatasSearch = dataset.getLatestVersion().getFileMetadatasSorted();
             // populate MapLayerMetadata
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
 
@@ -1388,7 +1439,7 @@ public class DatasetPage implements java.io.Serializable {
             selectedFiles.add(fmdn);
         }
     }
-
+    
     public void edit(EditMode editMode) {
         this.editMode = editMode;
         workingVersion = dataset.getEditVersion();
@@ -1660,6 +1711,10 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(JH.localize("dataset.message.deleteSuccess"));
         return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";
     }
+    
+    public String editFileMetadata(){
+        return "/editdatafiles.xhtml?selectedFileIds=" + getSelectedFilesIdsString() + "&datasetId=" + dataset.getId() +"&faces-redirect=true";
+    }
 
     public String deleteDatasetVersion() {
         Command cmd;
@@ -1716,14 +1771,31 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void toggleSelectedFiles(){
+        //method for when user clicks (de-)select all files
         this.selectedFiles = new ArrayList();
         if(this.selectAllFiles){
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 this.selectedFiles.add(fmd);
+                fmd.setSelected(true);
             }
+        } else {
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                fmd.setSelected(false);
+            }           
         }
         updateFileCounts();
     }
+       
+    
+    public void updateSelectedFiles(FileMetadata fmd){
+        if(fmd.isSelected()){
+            this.selectedFiles.add(fmd);
+        } else{
+            this.selectedFiles.remove(fmd);
+        }
+        updateFileCounts();
+    }
+    
     
     // helper Method
     public String getSelectedFilesIdsString() {        
@@ -2282,7 +2354,9 @@ public class DatasetPage implements java.io.Serializable {
     
     //public String startMultipleFileDownload (){
     public void startMultipleFileDownload (){
-        if (this.selectedFiles.isEmpty() ){
+        if (this.selectedFiles.isEmpty()) {
+            RequestContext requestContext = RequestContext.getCurrentInstance();
+            requestContext.execute("selectFilesForDownload.show()");
             return;
         }
         
@@ -2294,7 +2368,7 @@ public class DatasetPage implements java.io.Serializable {
                 createSilentGuestbookEntry(df.getFileMetadata(), "");
             }
         }
-
+        
         //return 
         callDownloadServlet(getSelectedFilesIdsString());
 
@@ -2336,7 +2410,15 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void initGuestbookMultipleResponse(){
+        if (this.selectedFiles.isEmpty()) {
+            RequestContext requestContext = RequestContext.getCurrentInstance();
+            requestContext.execute("selectFilesForDownload.show()");
+            return;
+        }
+        
          initGuestbookResponse(null, "download", null);
+                     RequestContext requestContext = RequestContext.getCurrentInstance();
+            requestContext.execute("downloadPopup.show();handleResizeDialog('downloadPopup');");
     }
     
      public void initGuestbookMultipleResponse(String selectedFileIds){
@@ -2779,6 +2861,7 @@ public class DatasetPage implements java.io.Serializable {
     public void refreshTagsPopUp(){
         if (bulkUpdateCheckVersion()){
            refreshSelectedFiles(); 
+           updateFileCounts();
         }      
         refreshCategoriesByName();
         refreshTabFileTagsByName();
@@ -3173,16 +3256,22 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return false;
-    } 
+    }
     
-    public boolean isDownloadAllButtonEnabled(){
+    private Boolean downloadButtonAllEnabled = null;
 
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
-            if (!canDownloadFile(fmd)){
-                return false;               
+    public boolean isDownloadAllButtonEnabled() {
+
+        if (downloadButtonAllEnabled == null) {
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                if (!canDownloadFile(fmd)) {
+                    downloadButtonAllEnabled = false;
+                    break;
+                }
             }
+            downloadButtonAllEnabled = true;
         }
-        return true;
+        return downloadButtonAllEnabled;
     }
 
     public boolean isDownloadSelectedButtonEnabled(){
@@ -3199,7 +3288,12 @@ public class DatasetPage implements java.io.Serializable {
     } 
     
     public boolean isFileAccessRequestMultiSignUpButtonRequired(){
+
         if (session.getUser().isAuthenticated()){
+            return false;
+        }
+        // only show button if dataset allows an access request
+        if (!dataset.isFileAccessRequest()){
             return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
@@ -3211,10 +3305,15 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isFileAccessRequestMultiSignUpButtonEnabled(){
+
         if (session.getUser().isAuthenticated()){
             return false;
         }
         if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
+            return false;
+        }
+        // only show button if dataset allows an access request
+        if (!dataset.isFileAccessRequest()){
             return false;
         }
         for (FileMetadata fmd : this.selectedRestrictedFiles){
@@ -3256,6 +3355,12 @@ public class DatasetPage implements java.io.Serializable {
     }
     
    public String requestAccessMultipleFiles(String fileIdString) {
+            if (fileIdString.isEmpty()) {
+            RequestContext requestContext = RequestContext.getCurrentInstance();
+            requestContext.execute("selectFilesForRequestAccess.show()");
+            return "";
+        }   
+       
         Long idForNotification = new Long(0);
         if (fileIdString != null) {
             String[] ids = fileIdString.split(",");
@@ -3310,7 +3415,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void updateFileListing(String fileSortField, String fileSortOrder) {
-        System.out.println("got this: " + fileSortField + ":" + fileSortOrder);
         this.fileSortField = fileSortField;
         this.fileSortOrder = fileSortOrder;
         fileMetadatas = populateFileMetadatas();
