@@ -640,7 +640,9 @@ public class SearchServiceBean {
         String[] filterQueriesArray = solrQuery.getFilterQueries();
         if (filterQueriesArray != null) {
             // null check added because these tests were failing: mvn test -Dtest=SearchIT
-            solrQueryResponse.setFilterQueriesActual(Arrays.asList(filterQueriesArray));
+            List<String> actualFilterQueries = Arrays.asList(filterQueriesArray);
+            logger.fine("actual filter queries: " + actualFilterQueries);
+            solrQueryResponse.setFilterQueriesActual(actualFilterQueries);
         } else {
             // how often is this null?
             logger.info("solrQuery.getFilterQueries() was null");
@@ -730,7 +732,12 @@ public class SearchServiceBean {
         //          the filterqueries given to search
         // ----------------------------------------------------    
         if (onlyDatatRelatedToMe == true) {
-            return dangerZoneNoSolrJoin;
+            if (systemConfig.myDataDoesNotUsePermissionDocs()) {
+                logger.fine("old 4.2 behavior: MyData is not using Solr permission docs");
+                return dangerZoneNoSolrJoin;
+            } else {
+                logger.fine("new post-4.2 behavior: MyData is using Solr permission docs");
+            }
         }
 
         // ----------------------------------------------------
