@@ -56,9 +56,6 @@
                                 <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile"> 
                                     <h:outputText value="#{bundle['file.metadata']}"/>
                                 </p:commandLink>
-                                <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{DatasetPage.selectedFilesIdsString}&#38;datasetId=#{DatasetPage.dataset.id}">
-                                    <h:outputText id="editFile-Multi-Link" value="#{bundle['file.metadata']} x"/>
-                                </h:outputLink>
                             </li>
                             <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
                                 <p:commandLink oncomplete="toggle_dropdown();" 
