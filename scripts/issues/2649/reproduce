@@ -1,0 +1,6 @@
+#!/bin/sh
+# "File Downloader" role has already been assigned to "finch" to one of:
+# - trees.png file
+# - Spruce Goose dataset
+# - Spruce dataverse
+curl -s 'http://localhost:8080/api/mydata/retrieve?selected_page=1&dvobject_types=DataFile&published_states=Published&published_states=Unpublished&published_states=Draft&published_states=In+Review&published_states=Deaccessioned&role_ids=1&role_ids=2&role_ids=6&mydata_search_term=&userIdentifier=finch' | jq .
