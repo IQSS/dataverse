@@ -40,6 +40,11 @@ import org.apache.commons.lang.StringUtils;
 /**
  *
  * @author rmp553
+ * 
+ *  The primary method here is this API endpoint: retrieveMyDataAsJsonString
+ *
+ *  - This method validates the current logged in user
+ * 
  */
 @Path("mydata")
 public class DataRetrieverAPI extends AbstractApiBean {
@@ -268,8 +273,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("selected_page") Integer selectedPage, 
             @QueryParam("mydata_search_term") String searchTerm,             
             @QueryParam("role_ids") List<Long> roleIds, 
-            @QueryParam("userIdentifier") String userIdentifier) { //String myDataParams) {
-
+            @QueryParam("userIdentifier") String userIdentifier,
+            @QueryParam("key") String apiToken) { //String myDataParams) {
+        //System.out.println("_YE_OLDE_QUERY_COUNTER_");
         //msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         boolean DEBUG_MODE = false;
         boolean OTHER_USER = false;
@@ -286,8 +292,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             if (authUser == null){
                 return this.getJSONErrorString("Requires authentication", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
             }
-            
-        }else if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
+        } else if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
              authUser = (AuthenticatedUser)session.getUser();
        
              // If person is a superuser, see if a userIdentifier has been specified 
@@ -301,7 +306,27 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);              
                  }
              }       
-        }else{
+        } else if (apiToken != null) {      // Is this being accessed by an API Token?
+            
+            authUser = findUserByApiToken(apiToken);
+            if (authUser == null){
+                return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
+            }else{
+                // If person is a superuser, see if a userIdentifier has been specified 
+                // and use that instead
+                if ((authUser.isSuperuser())&&(userIdentifier != null)&&(!userIdentifier.isEmpty())){
+                    searchUser = getUserFromIdentifier(userIdentifier);
+                    if (searchUser != null){
+                        authUser = searchUser;
+                        OTHER_USER = true;
+                    }else{
+                        return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);              
+                    }
+                }       
+
+            }
+                    
+        } else{
             return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
         }
                      
