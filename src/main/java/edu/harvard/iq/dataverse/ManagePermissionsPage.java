@@ -417,7 +417,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         try {
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest()));
             JsfHelper.addSuccessMessage(r.getName() + " role assigned to " + ra.getDisplayInfo().getTitle() + " for " + dvObject.getDisplayName() + ".");
-            notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
+            // don't notify if role = file downloader and object is not released
+            if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased()) ){
+                            notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
+            }
+
         } catch (PermissionException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "The role was not able to be assigned.", "Permissions " + ex.getRequiredPermissions().toString() + " missing.");
         } catch (CommandException ex) {
