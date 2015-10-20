@@ -335,7 +335,6 @@ public class MailServiceBean implements java.io.Serializable {
                         messageText += MessageFormat.format(pattern, paramArrayAssignRoleDV);
                     }                   
                 }
-                System.out.print(messageText);
                 return messageText;
             case REVOKEROLE:
                 dvObj = (DvObject) targetObject;
