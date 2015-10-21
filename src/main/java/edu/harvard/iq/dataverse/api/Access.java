@@ -859,6 +859,42 @@ public class Access extends AbstractApiBean {
             if (!permissionService.userOn(user, df).has(Permission.DownloadFile)) { 
                 logger.fine("API token-based auth: User "+user.getName()+" is not authorized to access the datafile.");
                 throw new WebApplicationException(Response.Status.FORBIDDEN);
+            } else {
+                /**
+                 * We want the DownloadFile permission to only apply to
+                 * *published* files. This is a change/desire that is being
+                 * introduced in 4.2.1. If the file has not been published yet,
+                 * assigning the DownloadFile permission should have no effect.
+                 * See https://github.com/IQSS/dataverse/issues/2648 for
+                 * details. This is also why we don't show it in MyData and
+                 * defer notifications until the dataset is published. See
+                 * https://github.com/IQSS/dataverse/issues/2645 for more
+                 * discussion about the change.
+                 */
+                if (!df.isReleased()) {
+                    logger.fine("API token-based auth: User " + user.getName() + " is not authorized to access the datafile. The DownloadFile permission has been granted but the file/dataset has not been published.");
+                    /**
+                     * Throwing "forbidden" is commented out because if we throw
+                     * forbidden here it fixed the bug at
+                     * https://github.com/IQSS/dataverse/issues/2648 (see note
+                     * above) but introduces a regression in which the user who
+                     * uploaded the file in the first place can no longer
+                     * download the file. See scripts/issues/2648/reproduce for
+                     * some tests to exercise this code. Can we safely comment
+                     * out the throwing of "forbidden" below if we only throw
+                     * "forbidden" if the user is not the owner of the file?
+                     * Should we check some other permission that will serve as
+                     * a proxy to mean that the user is the owner of the file?
+                     *
+                     * It has been suggested that all of this logic might exist
+                     * in the canDownloadFile method in DatasetPage or perhaps
+                     * the hasDownloadFilePermission method in
+                     * PermissionsWrapper. Probably all of business rules should
+                     * be consolidated into one place so there is only one code
+                     * path to troubleshoot.
+                     */
+//                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                }
             }
             
             logger.fine("API token-based auth: User "+user.getName()+" has rights to access the datafile.");
