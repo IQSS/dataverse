@@ -1,5 +1,5 @@
 #metadataBlock	name	dataverseAlias	displayName												
-	custom_hbgdki		HBGDki Custom Metadata												
+	custom_hbgdki	HBGDki	HBGDki Custom Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	hbgdki_study_name	Name of Study	Name of the study.	Limit to 20 characters.	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		custom_hbgdki
 	hbgdki_study_registry	Study Registry	ICTRP number or DOI number for study publication.		none	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		custom_hbgdki
