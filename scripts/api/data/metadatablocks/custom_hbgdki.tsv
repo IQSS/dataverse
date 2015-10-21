@@ -1,10 +1,10 @@
 #metadataBlock	name	dataverseAlias	displayName												
-	custom_hbgdki		HBGDki Custom Metadata												
+	custom_hbgdki	HBGDki	HBGDki Custom Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	hbgdkiStudyName	Name of Study	Name of the study.	Limit to 20 characters.	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		custom_hbgdki
 	hbgdkiStudyRegistry	Study Registry	ICTRP number or DOI number for study publication.		none	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiStudyRegistryType	ID Type	Study ID Type: ICTRP or DOI.		text	2		TRUE	TRUE	FALSE	FALSE	TRUE	TRUE	hbgdki_study_registry	custom_hbgdki
-	hbgdkiStudyRegistryNumber	ID Number	Study ID Number: ICTRP number or DOI number		text	3		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	hbgdki_study_registry	custom_hbgdki
+	hbgdkiStudyRegistryType	ID Type	Study ID Type: ICTRP or DOI.		text	2		TRUE	TRUE	FALSE	FALSE	TRUE	TRUE	hbgdkiStudyRegistry	custom_hbgdki
+	hbgdkiStudyRegistryNumber	ID Number	Study ID Number: ICTRP number or DOI number		text	3		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	hbgdkiStudyRegistry	custom_hbgdki
 	hbgdkiStudyType	Type of study	Type of study.		text	4		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		custom_hbgdki
 	hbgdkiIntervention	Intervention	If an interventional study, describe the interventions.		textbox	5		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
 	hbgdkiLowerLimitAge	Lower limit of age at enrollment	Lower limit of age at enrollment.		int	6		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
