@@ -494,9 +494,9 @@ public class DatasetPage implements java.io.Serializable {
      * every time; it doesn't do any new db lookups. 
     */
     public boolean isSessionUserAuthenticated() {
-        logger.info("entering isSessionUserAuthenticated;");
+        logger.fine("entering isSessionUserAuthenticated;");
         if (sessionUserAuthenticated != null) {
-            logger.info("using cached isSessionUserAuthenticated;");
+            logger.fine("using cached isSessionUserAuthenticated;");
             
             return sessionUserAuthenticated;
         }
