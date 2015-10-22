@@ -313,7 +313,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 .form-group > .button-block, 
 .panel-body > .button-block, 
 td.col-file-action > .button-block, td.col-manage-action > .button-block,
-div.ui-datatable-header > .button-block, #filesHeaderBlock > .button-block {margin-top:0;}
+div.ui-datatable-header > .button-block, div[id$="filesHeaderBlock"] > div.col-xs-6 > .button-block {margin-top:0;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled {margin-right:1em;}
 .button-block span.ingest-warning {margin-right:.5em;}
@@ -610,13 +610,13 @@ div.popover.fade.top.in {max-width: none;}
 div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}
 span.text-info.popoverHTML {display:inline-block;}
 
-div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
+/*div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}*/
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
 div[id$="filesTable"] #filesHeaderSelectAll {width:36px; padding:4px 10px;}
 div[id$="filesTable"] #filesHeaderSelectAll .ui-chkbox.ui-widget {margin:0 0 2px 0;}
-div[id$="filesTable"] #filesHeaderCount {padding:4px 10px;}
+div[id$="filesTable"] #filesHeaderCount {padding:10px 10px 4px 10px;}
 div[id$="filesTable"] #filesHeaderCount span.highlightBold {display:block; padding:0; line-height:1.65;}
 div[id$="filesTable"] td.col-file-thumb {width:64px; border-right:0;}
 div[id$="filesTable"] td.col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
@@ -628,6 +628,22 @@ div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
 div[id$="filesTable"] div.file-tags-block span.label, div[id$="filesTable"] div.file-tags-block a.ui-commandlink {margin-right:.5em;}
 div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:0;}
+
+div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0 10px;}
+div[id$="filesHeaderBlock"] {margin-bottom:10px;}
+
+div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead th.ui-state-default {border:0; box-shadow:none; border-radius:0; background-image:none; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6;}
+div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead th.ui-state-default:first-of-type {border-left:1px solid #e6e6e6; border-top-left-radius:4px;}
+div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead th.ui-state-default:last-of-type {border-right: 1px solid #e6e6e6; border-top-right-radius: 4px;}
+
+div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead tr {background-color: #f5f5f5; background-image: -moz-linear-gradient(center top , #ffffff, #e6e6e6); background-repeat: repeat-x;}
+
+div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(1) {width:40px !important;}
+div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(2) {width:83px !important;}
+div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(4) {width:380px !important;}
+
+div[id$="filesTable"] div.ui-datatable-scrollable-header-box th.ui-selection-column {width:45px !important;}
+div[id$="filesTable"] div.ui-datatable-scrollable-header-box th.ui-selection-column .ui-chkbox-box.ui-widget {margin-top:0 !important;}
 
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 
