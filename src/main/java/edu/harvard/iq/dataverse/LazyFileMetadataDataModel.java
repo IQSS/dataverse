@@ -31,8 +31,8 @@ public class LazyFileMetadataDataModel extends LazyDataModel<FileMetadata> {
     public List<FileMetadata> load(int first, int pageSize, String sortField,
             SortOrder sortOrder, Map<String, String> filters) {
 
-        List<FileMetadata>  listFileMetadata = fileServiceBean.findFileMetadataByDatasetVersionIdLazy(datasetVersionId, pageSize, sortField, sortField, first);
-        this.setRowCount(fileServiceBean.findCountByDatasetVersionId(datasetVersionId).intValue());
+        List<FileMetadata>  listFileMetadata = null; //fileServiceBean.findFileMetadataByDatasetVersionIdLazy(datasetVersionId, pageSize, sortField, sortField, first);
+        //this.setRowCount(fileServiceBean.findCountByDatasetVersionId(datasetVersionId).intValue());
         return listFileMetadata;
     }
     

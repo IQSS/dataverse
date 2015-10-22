@@ -443,6 +443,10 @@ public class DataFile extends DvObject {
         // generate thumbnails and previews for them)
         return (contentType != null && (contentType.startsWith("image/") || contentType.equalsIgnoreCase("application/pdf")));
     }
+
+    public void setIngestStatus(char ingestStatus) {
+        this.ingestStatus = ingestStatus; 
+    }    
    
     public boolean isIngestScheduled() {
         return (ingestStatus == INGEST_STATUS_SCHEDULED);

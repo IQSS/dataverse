@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -60,6 +61,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean fileService; 
+    
+    @EJB
+    PermissionServiceBean permissionService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -509,7 +513,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             
-            if (fileService.isThumbnailAvailable(dataFile, user)) {
+            // TODO: use permissionsWrapper here - ? 
+            // (we are looking up these download permissions on individual files, 
+            // true, and those are unique... but the wrapper may be able to save 
+            // us some queries when it determines the download permission on the
+            // dataset as a whole? -- L.A. 4.2.1
+            
+            if (fileService.isThumbnailAvailable(dataFile) && permissionService.userOn(user, dataFile).has(Permission.DownloadFile)) { //, user)) {
                 return true;
             }
  

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
@@ -1131,7 +1132,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 result.setDisplayImage(datasetService.isDatasetCardImageAvailable(datasetVersionService.find(result.getDatasetVersionId()), session.getUser()));
                 valueSet = true;
             } else if (result.getType().equals("files") && result.getEntity() instanceof DataFile) {
-                result.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile) result.getEntity(), session.getUser()));
+                // TODO: 
+                // use permissionsWrapper?  -- L.A. 4.2.1
+                result.setDisplayImage(dataFileService.isThumbnailAvailable((DataFile) result.getEntity()) && permissionService.userOn(this.session.getUser(), (DataFile) result.getEntity()).has(Permission.DownloadFile));
                 valueSet = true;
             }
 
