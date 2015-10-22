@@ -447,8 +447,8 @@
    <field name="hbgdkiSocioeconomicChar" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="hbgdkiStudyName" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="hbgdkiStudyRegistry" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="hbgdkiStudyRegistryNumber" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="hbgdkiStudyRegistryType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistryNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="hbgdkiStudyRegistryType" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="hbgdkiStudyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="hbgdkiUnitsLowerLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="hbgdkiUnitsUpperLimitAge" type="text_en" multiValued="false" stored="true" indexed="true"/>
