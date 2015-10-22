@@ -232,10 +232,17 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (FileMetadata) query.getSingleResult();
     }
 
-    public List<FileMetadata> findFileMetadataByDatasetAndVersionExperimental(Dataset owner, DatasetVersion version) {
+    /* 
+     * This is an experimental method for populating the versions of 
+     * the datafile with the filemetadatas, optimized for making as few db 
+     * queries as possible. 
+     * It should only be used to retrieve filemetadata for the DatasetPage!
+     * It is not guaranteed to adequately perform anywhere else. 
+    */
+    public void findFileMetadataOptimizedExperimental(Dataset owner) { //, DatasetVersion version) {
         List<DataFile> dataFiles = new ArrayList<>();
         List<DataTable> dataTables = new ArrayList<>();
-        List<FileMetadata> retList = new ArrayList<>(); 
+        //List<FileMetadata> retList = new ArrayList<>(); 
         
         Map<Long, AuthenticatedUser> userMap = new HashMap<>(); 
         Map<Long, Integer> filesMap = new HashMap<>();
@@ -373,7 +380,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         fileResults = null; 
         
         // and now, file metadatas: 
-        
+        /*
         List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED from FileMetadata where datasetversion_id = "+version.getId()).getResultList();
         
         for (Object[] result : metadataResults) {
@@ -422,23 +429,22 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         metadataResults = null; 
+        */
 
-        // TODO: 
-        // combine the 2 queries above - do it all in one step... (or not??)
-        
-        for (DatasetVersion otherVersion : owner.getVersions()) {
-            if (otherVersion.getId().equals(version.getId())) {
-                continue; 
-            }
+        i = 0; 
+        for (DatasetVersion version : owner.getVersions()) {
+            //if (otherVersion.getId().equals(version.getId())) {
+            //    continue; 
+            //}
             
             // otherwise: 
             
-            otherVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, otherVersion, filesMap));
+            version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap));
             
         }
         
         
-        return retList; 
+        //return retList; 
     }
     
     private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, Map<Long, Integer> filesMap) {
@@ -488,6 +494,8 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         metadataResults = null;
+        
+        Collections.sort(retList, FileMetadata.compareByLabel);
         
         return retList; 
     }

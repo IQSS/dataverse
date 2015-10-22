@@ -234,8 +234,9 @@ public class DatasetPage implements java.io.Serializable {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
     
-    public void updateFileSearch(){       
-        this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
+    public void updateFileSearch(){    
+        // temporarily disabling the search functionality: 
+        //this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
     }
     
     
@@ -905,8 +906,8 @@ public class DatasetPage implements java.io.Serializable {
      }
 
     public void handleChange() {
-        logger.info("handle change");
-        logger.info("new value " + selectedTemplate.getId());
+        logger.fine("handle change");
+        logger.fine("new value " + selectedTemplate.getId());
     }
 
     public void handleChangeButton() {
@@ -1165,15 +1166,27 @@ public class DatasetPage implements java.io.Serializable {
             if (persistentId != null) {
                 logger.fine("initializing DatasetPage with persistent ID " + persistentId);
                 // Set Working Version and Dataset by PersistentID
-                retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
+                dataset = datasetService.findByGlobalId(persistentId);
+                if (dataset != null) {
+                    logger.info("retrived dataset, id="+dataset.getId());
+                }
+                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
+                this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (dataset.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
-                retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
+                dataset = datasetService.find(dataset.getId());
+                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
+                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+                this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (versionId != null) {
+                // TODO: 4.2.1 - this method is broken as of now!
                 // Set Working Version and Dataset by DatasaetVersion Id
-                retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
             } else if (retrieveDatasetVersionResponse == null) {
                 return "/404.xhtml";
@@ -1183,9 +1196,8 @@ public class DatasetPage implements java.io.Serializable {
                 return "/404.xhtml";
             }
 
-            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-            logger.fine("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
-            this.dataset = this.workingVersion.getDataset();
+            
+            //this.dataset = this.workingVersion.getDataset();
 
             // end: Set the workingVersion and Dataset
             // ---------------------------------------
@@ -1223,8 +1235,8 @@ public class DatasetPage implements java.io.Serializable {
             // an attempt to retreive both the filemetadatas and datafiles early on, so that 
             // we don't have to do so later (possibly, many more times than necessary):
            
-            workingVersion.setFileMetadatas(datafileService.findFileMetadataByDatasetAndVersionExperimental(dataset, workingVersion));
-
+            datafileService.findFileMetadataOptimizedExperimental(dataset);
+            
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
             datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
@@ -1235,7 +1247,7 @@ public class DatasetPage implements java.io.Serializable {
             setReleasedVersionTabList(resetReleasedVersionTabList());
             //SEK - lazymodel may be needed for datascroller in future release
             // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
-            fileMetadatasSearch = dataset.getLatestVersion().getFileMetadatasSorted();
+            fileMetadatasSearch = workingVersion.getFileMetadatas(); // no need to call getFileMetadatasSorted() - the datafileService method already sorted it for us. -- 4.2.1
             // populate MapLayerMetadata
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
 
@@ -2488,8 +2500,11 @@ public class DatasetPage implements java.io.Serializable {
     
     //public String startFileDownload(FileMetadata fileMetadata, String format) {
     public void startFileDownload(FileMetadata fileMetadata, String format) {
+        logger.fine("starting file download for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
         createSilentGuestbookEntry(fileMetadata, format);
+        logger.fine("created guestbook entry for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
         callDownloadServlet(format, fileMetadata.getDataFile().getId());
+        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
     private String downloadFormat;
