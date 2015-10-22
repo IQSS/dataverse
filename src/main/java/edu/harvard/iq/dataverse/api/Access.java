@@ -764,6 +764,10 @@ public class Access extends AbstractApiBean {
         // TODO: 
         // this very likely creates a ton of queries; put some thought into 
         // optimizing this stuff? -- 4.2.1
+        // 
+        // update: it appears that we can finally trust the dvObject.isReleased()
+        // method; so all this monstrous crawling through the filemetadatas, 
+        // below, may not be necessary anymore! - need to verify... L.A. 10.21.2015
         
         if (df.getOwner().getReleasedVersion() != null) {
             //logger.fine("file belongs to a dataset with a released version.");
