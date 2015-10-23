@@ -280,7 +280,7 @@
                         <h:outputText value="#{cat.name}" styleClass="label label-default"/>
                     </ui:repeat>
                 </ui:fragment>
-                <ui:fragment rendered="#{!(empty fileMetadata.dataFile.tags)}">
+                <ui:fragment >
                     <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
                         <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
                     </ui:repeat>

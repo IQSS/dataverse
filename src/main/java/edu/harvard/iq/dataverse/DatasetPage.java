@@ -1258,6 +1258,8 @@ public class DatasetPage implements java.io.Serializable {
                 fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
             } 
             // populate MapLayerMetadata
+            refreshCategoriesByName();
+            refreshTabFileTagsByName();
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
 
         } else if (ownerId != null) {
@@ -3023,9 +3025,9 @@ public class DatasetPage implements java.io.Serializable {
     
     public void refreshTagsPopUp(){
         if (bulkUpdateCheckVersion()){
-           refreshSelectedFiles(); 
-           updateFileCounts();
-        }      
+           refreshSelectedFiles();           
+        }  
+        updateFileCounts();
         refreshCategoriesByName();
         refreshTabFileTagsByName();
     }
