@@ -346,7 +346,6 @@ public class DataFileServiceBean implements java.io.Serializable {
             if (result[12] != null) {
                 String ingestStatusString = (String) result[12];
                 dataFile.setIngestStatus(ingestStatusString.charAt(0));
-                logger.info("Ingest Status: "+dataFile.getIngestStatus()+" (file id: "+dataFile.getId()+")");
             }
             
             String md5 = (String) result[13]; 
@@ -378,73 +377,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         owner.setFiles(dataFiles);
         fileResults = null; 
-        
-        // and now, file metadatas: 
-        /*
-        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED from FileMetadata where datasetversion_id = "+version.getId()).getResultList();
-        
-        for (Object[] result : metadataResults) {
-            Integer filemeta_id = (Integer) result[0];
-            
-            if (filemeta_id == null) {
-                continue;
-            }
-            
-            Long file_id = (Long) result[1];
-            if (file_id == null) {
-                continue;
-            }
-            
-            Integer file_list_id = filesMap.get(file_id);
-            if (file_list_id == null) {
-                continue;
-            }
-            FileMetadata fileMetadata = new FileMetadata();
-            fileMetadata.setId(filemeta_id.longValue());
-            fileMetadata.setDatasetVersion(version);
-            //version.getFileMetadatas().add(fileMetadata);
-            
-            fileMetadata.setDataFile(owner.getFiles().get(file_list_id));
-            //owner.getFiles().get(file_list_id).getFileMetadatas().add(fileMetadata);
-            //
-            
-            String description = (String) result[2]; 
-            
-            if (description != null) {
-                fileMetadata.setDescription(description);
-            }
-            
-            String label = (String) result[3];
-            
-            if (label != null) {
-                fileMetadata.setLabel(label);
-            }
-                        
-            Boolean restricted = (Boolean) result[4];
-            if (restricted != null) {
-                fileMetadata.setRestricted(restricted);
-            }
-            
-            retList.add(fileMetadata);
-        }
-        
-        metadataResults = null; 
-        */
 
-        i = 0; 
         for (DatasetVersion version : owner.getVersions()) {
-            //if (otherVersion.getId().equals(version.getId())) {
-            //    continue; 
-            //}
-            
-            // otherwise: 
-            
             version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap));
-            
         }
-        
-        
-        //return retList; 
     }
     
     private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, Map<Long, Integer> filesMap) {
@@ -542,7 +478,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     /* 
-     Convenience methods for merging and removing of individual file metadatas, 
+     Convenience methods for merging and removingindividual file metadatas, 
      without touching the rest of the DataFile object:
     */
     

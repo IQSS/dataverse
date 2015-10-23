@@ -2256,6 +2256,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void populateDatasetUpdateFailureMessage(){
+            // null check would help here. :) -- L.A. 
+            if (editMode == null) {
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, "mystery failure");
+                return;
+            }
             if (editMode.equals(EditMode.CREATE)) {
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize("dataset.message.createFailure"));
             }
