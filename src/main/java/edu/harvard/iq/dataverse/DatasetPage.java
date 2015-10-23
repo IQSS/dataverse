@@ -235,11 +235,10 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void updateFileSearch(){    
-        // temporarily disabling the search functionality: 
-        //this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
+        if (!readOnly) {
+            this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
+        }
     }
-    
-    
     
     /*
         Save the setting locally so db isn't hit repeatedly
@@ -1147,6 +1146,8 @@ public class DatasetPage implements java.io.Serializable {
         this.displayFileMetadata = displayFileMetadata;
     }
     
+    private boolean readOnly = true; 
+    
     public String init() {
         // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
@@ -1232,10 +1233,14 @@ public class DatasetPage implements java.io.Serializable {
 
             //fileMetadatas = populateFileMetadatas();
 
-            // an attempt to retreive both the filemetadatas and datafiles early on, so that 
-            // we don't have to do so later (possibly, many more times than necessary):
+            if (workingVersion.isDraft() && canUpdateDataset()) {
+                readOnly = false;
+            } else {
+                // an attempt to retreive both the filemetadatas and datafiles early on, so that 
+                // we don't have to do so later (possibly, many more times than necessary):
            
-            datafileService.findFileMetadataOptimizedExperimental(dataset);
+                datafileService.findFileMetadataOptimizedExperimental(dataset);
+            }
             
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
@@ -1247,12 +1252,17 @@ public class DatasetPage implements java.io.Serializable {
             setReleasedVersionTabList(resetReleasedVersionTabList());
             //SEK - lazymodel may be needed for datascroller in future release
             // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
-            fileMetadatasSearch = workingVersion.getFileMetadatas(); // no need to call getFileMetadatasSorted() - the datafileService method already sorted it for us. -- 4.2.1
+            if (readOnly) {
+                fileMetadatasSearch = workingVersion.getFileMetadatas(); 
+            } else {
+                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+            } 
             // populate MapLayerMetadata
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
 
         } else if (ownerId != null) {
             // create mode for a new child dataset
+            readOnly = false; 
             editMode = EditMode.CREATE;
             dataset.setOwner(dataverseService.find(ownerId));
             dataset.setProtocol(protocol);
@@ -1527,6 +1537,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void refreshSelectedFiles(){
+        if (readOnly) {
+            dataset = datasetService.find(dataset.getId());
+        }
         String termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
         boolean requestAccess = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
         workingVersion = dataset.getEditVersion();
@@ -1545,10 +1558,14 @@ public class DatasetPage implements java.io.Serializable {
         for (FileMetadata fmdn : newSelectedFiles ){
             selectedFiles.add(fmdn);
         }
+        readOnly = false;
     }
 
     public void edit(EditMode editMode) {
         this.editMode = editMode;
+        if (this.readOnly) {
+            dataset = datasetService.find(dataset.getId());
+        }
         workingVersion = dataset.getEditVersion();
 
         if (editMode == EditMode.INFO) {
@@ -1565,6 +1582,7 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_INFO, JH.localize("dataset.message.editTerms"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
+        this.readOnly = false;
     }
 
     public String releaseDraft() {
@@ -1775,26 +1793,36 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh() { // String flashmessage) { 
         logger.fine("refreshing");
 
-        //if (flashmessage != null) {
-        //    logger.info("flash message: "+flashmessage);
-        //}
-        // refresh the working copy of the Dataset and DatasetVersion:
         dataset = datasetService.find(dataset.getId());
 
         logger.fine("refreshing working version");
 
         DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
-
+        
         if (persistentId != null) {
-            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
+            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
+            dataset = datasetService.findByGlobalId(persistentId);
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
         } else if (versionId != null) {
             retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
         } else if (dataset.getId() != null) {
-            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
+            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
+            dataset = datasetService.find(dataset.getId());
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
         }
 
-        if (retrieveDatasetVersionResponse != null) {
-            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+        if (retrieveDatasetVersionResponse == null) {
+            return;
+        }
+        this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+
+        
+        
+        if (readOnly) {
+            datafileService.findFileMetadataOptimizedExperimental(dataset);
+            fileMetadatasSearch = workingVersion.getFileMetadatas();
+        } else {
+            fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
         }
 
         displayCitation = dataset.getCitation(false, workingVersion);
@@ -2034,6 +2062,9 @@ public class DatasetPage implements java.io.Serializable {
                     if (restricted && !fmw.isRestricted()) {
                     // collect the names of the newly-restrticted files, 
                         // to show in the success message:
+                        // I don't think this does the right thing: 
+                        // (adds too many files to the message; good thing this 
+                        // message isn't used, normally)
                         if (fileNames == null) {
                             fileNames = fmd.getLabel();
                         } else {

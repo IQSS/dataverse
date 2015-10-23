@@ -556,7 +556,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         
         for (DatasetVersion version : versions) {
-            DatasetVersion chosenVersion;
 
             if (this.isVersionAskingForDraft(versionTag)) {
 
@@ -573,20 +572,32 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     return new RetrieveDatasetVersionResponse(version, versionTag);
                 }
                 //
-            } else {
-                
-                if (version.isReleased()) {
-                    // grab the first  released version: 
-                    return new RetrieveDatasetVersionResponse(version, versionTag);
-                } else if (version.isDeaccessioned()) {
-                    // grab the first (latest!) deaccessioned version
-                    return new RetrieveDatasetVersionResponse(version, versionTag);
-                } else if (version.isDraft()) {
-                    // draft is the last choice:
-                    return new RetrieveDatasetVersionResponse(version, versionTag);
-                }
-            }        
+            }
         }
+        
+        // second pass - grab the first  released version:
+        
+        for (DatasetVersion version : versions) {
+            if (version.isReleased()) {
+                return new RetrieveDatasetVersionResponse(version, versionTag);
+            }
+        }
+        
+        // third pass - grab the first (latest!) deaccessioned version
+        
+        for (DatasetVersion version : versions) {
+            if (version.isDeaccessioned()) {
+                return new RetrieveDatasetVersionResponse(version, versionTag);
+            }
+        }
+            
+        // fourth pass -  draft is the last choice:
+        
+        for (DatasetVersion version : versions) {
+            if (version.isDraft()) {
+                return new RetrieveDatasetVersionResponse(version, versionTag);
+            }
+        }    
         
         return null; 
     }
