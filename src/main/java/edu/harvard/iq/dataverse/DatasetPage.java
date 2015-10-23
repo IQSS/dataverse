@@ -235,9 +235,8 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void updateFileSearch(){    
-        if (!readOnly) {
+        //Allow File search to happen for users who cannot edit the dataset
             this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
-        }
     }
     
     /*
@@ -1257,9 +1256,9 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
             } 
+            refreshTableTags(fileMetadatasSearch);
+            
             // populate MapLayerMetadata
-            refreshCategoriesByName();
-            refreshTabFileTagsByName();
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
 
         } else if (ownerId != null) {
@@ -3089,6 +3088,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setSelectedTabFileTags(String[] selectedTabFileTags) {
         this.selectedTabFileTags = selectedTabFileTags;
+    }
+    
+    private void refreshTableTags (List <FileMetadata> inList){
+        for (FileMetadata fmd : inList){
+            if(fmd.getDataFile().isTabularData()){
+                fmd.getDataFile().getTags();
+            }
+        }
     }
 
     private String[] selectedTags = {};
