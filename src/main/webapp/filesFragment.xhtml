@@ -17,7 +17,7 @@
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  scrollRows="25" scrollable="true" liveScroll="true"
-                 scrollHeight="92%" style="margin-bottom:0"
+                 scrollHeight="92%"
                  value="#{DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
@@ -187,7 +187,7 @@
             </div>
         </f:facet>
         <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
-        <p:column class="col-file-thumb text-center" style="width:63px !important;padding:4px 10px;">
+        <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;">
             <div class="thumbnail-block">
                 <!-- Thumbnail Preview -->
                 <!-- 4.2.1 optimization: replaced dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user) with DatasetPage.isThumbnailAvailable(fileMetadata); see comments in the bean -->

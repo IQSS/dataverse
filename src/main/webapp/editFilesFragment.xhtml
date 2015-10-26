@@ -78,56 +78,47 @@
                              emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFileComponent() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
 
                     <f:facet name="header">
-                        <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
-                        <div id="filesHeaderBlock" class="clearfix margin-bottom">                
-
-                            <!-- Button Panels -->
-
-                            <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
-                                 jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                        <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                        <li>
-                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
-                                                <h:outputText value="#{bundle['file.restrict']}"/>
-                                            </p:commandLink>
-                                        </li>
-                                        <li>
-                                            <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
-                                                <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                            </p:commandLink>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
-                                    <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
-                                </p:commandLink>
-                            </div>
-                        </div>
-                        <div class="clearfix">
-                            <div id="filesHeaderSelectAll" class="pull-left">
-                                <span class="bootstrap-button-tooltip" title="Select All">
-                                    <p:selectBooleanCheckbox value="#{EditDatafilesPage.selectAllFiles}" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
-                                        <p:ajax update="filesTable" process="filesTable" listener="#{EditDatafilesPage.toggleSelectedFiles}" oncomplete="bind_bsui_components();" />
-                                    </p:selectBooleanCheckbox>
-                                </span>
-                            </div>
-                            <div id="filesHeaderCount" class="pull-left text-left">
+                        <div jsf:id="filesHeaderBlock" class="row">
+                            <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
+                            <div id="filesHeaderCount" class="col-xs-6 text-left">
                                 <!-- Files Count -->
                                 <h:outputFormat value="#{datasetPage ? bundle['file.count'] : bundle['file.count.selected']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
                                     <f:param value="#{EditDatafilesPage.fileMetadatas.size()}"/>
                                 </h:outputFormat>
                             </div>
+                            <div class="col-xs-6">                
+                                <!-- Button Panels -->
+                                <div jsf:id="editFilesRestrictDeletePanel" class="button-block pull-right text-right"
+                                     jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas}">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="glyphicon glyphicon-lock"/> #{bundle['file.restrict']} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                            <li>
+                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
+                                                    <h:outputText value="#{bundle['file.restrict']}"/>
+                                                </p:commandLink>
+                                            </li>
+                                            <li>
+                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
+                                                    <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                                </p:commandLink>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <p:commandLink type="button" styleClass="btn btn-default" title="#{bundle['file.delete']}" onclick="checkFilesSelected();">
+                                        <span class="glyphicon glyphicon-remove"/> #{bundle['file.delete']}
+                                    </p:commandLink>
+                                </div>
+                            </div>
                         </div>
                     </f:facet>
 
                     <!-- TODO: do we still need the selection at all?? or is it all going to be handled on the "view" page?? -->
-                    <p:column selectionMode="multiple" class="col-select-width text-center" />
+                    <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
 
-                    <p:column class="col-file-thumb text-center">
+                    <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;">
                         <div class="thumbnail-block">
 
                             <!-- Thumbnail Preview -->

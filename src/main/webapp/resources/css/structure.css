@@ -613,6 +613,7 @@ span.text-info.popoverHTML {display:inline-block;}
 /*div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}*/
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
+div[id$="filesTable"].ui-datatable.ui-widget {margin-bottom:20px;}
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0; background:none; border:0;}
 div[id$="filesTable"] #filesHeaderSelectAll {width:36px; padding:4px 10px;}
 div[id$="filesTable"] #filesHeaderSelectAll .ui-chkbox.ui-widget {margin:0 0 2px 0;}
@@ -632,18 +633,16 @@ div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0 10px;}
 div[id$="filesHeaderBlock"] {margin-bottom:10px;}
 
-div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead th.ui-state-default {border:0; box-shadow:none; border-radius:0; background-image:none; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6;}
-div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead th.ui-state-default:first-of-type {border-left:1px solid #e6e6e6; border-top-left-radius:4px;}
-div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead th.ui-state-default:last-of-type {border-right: 1px solid #e6e6e6; border-top-right-radius: 4px;}
-
-div[id$="filesTable"] div.ui-widget-header.ui-datatable-scrollable-header table thead tr {background-color: #f5f5f5; background-image: -moz-linear-gradient(center top , #ffffff, #e6e6e6); background-repeat: repeat-x;}
+div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default {border:0; box-shadow:none; border-radius:0; background-image:none; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6;}
+div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default:first-of-type {border-left:1px solid #e6e6e6; border-top-left-radius:4px;}
+div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-state-default:last-of-type {border-right: 1px solid #e6e6e6; border-top-right-radius: 4px;}
+div[id$="filesTable"] thead[id$="filesTable_head"] tr {background-color: #f5f5f5; background-image: -moz-linear-gradient(center top , #ffffff, #e6e6e6); background-repeat: repeat-x;}
 
 div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(1) {width:40px !important;}
-div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(2) {width:83px !important;}
+div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(2) {width:73px !important;}
 div[id$="filesTable"] div.ui-datatable-scrollable-body table colgroup col:nth-child(4) {width:380px !important;}
 
-div[id$="filesTable"] div.ui-datatable-scrollable-header-box th.ui-selection-column {width:45px !important;}
-div[id$="filesTable"] div.ui-datatable-scrollable-header-box th.ui-selection-column .ui-chkbox-box.ui-widget {margin-top:0 !important;}
+div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-chkbox-box.ui-widget {margin-top:0 !important;}
 
 span.ingest-warning {display:inline-block; font-size:30px; line-height:1.42857; vertical-align: middle;}
 span.ingest-warning span.glyphicon {top:5px;} 
