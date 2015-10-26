@@ -254,6 +254,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         Map<Long, Integer> filesMap = new HashMap<>();
         Map<Long, Integer> datatableMap = new HashMap<>();
         Map<Long, Integer> categoryMap = new HashMap<>();
+        Map<Long, Set<Integer>> fileTagMap = new HashMap<>();
+        
+        List<String> fileTagLabels = DataFileTag.listTags();
         
         
         int i = 0; 
@@ -277,6 +280,18 @@ public class DataFileServiceBean implements java.io.Serializable {
             
         }
         dataTableResults = null; 
+        
+        List<Object[]> dataTagsResults = em.createNativeQuery("SELECT t0.DATAFILE_ID, t0.TYPE FROM DataFileTag t0, dvObject t1 WHERE (t1.ID = t0.DATAFILE_ID) AND (t1.OWNER_ID="+ owner.getId() + ")").getResultList();
+        for (Object[] result : dataTagsResults) {
+            Long datafile_id = (Long) result[0];
+            Integer tagtype_id = (Integer) result[1];
+            if (fileTagMap.get(datafile_id) == null) {
+                fileTagMap.put(datafile_id, new HashSet<Integer>());
+            }
+            fileTagMap.get(datafile_id).add(tagtype_id);
+        }
+        dataTagsResults = null;
+        
         i = 0; 
         
         List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t1.FILESYSTEMNAME, t1.FILESIZE, t1.INGESTSTATUS, t1.MD5, t1.RESTRICTED FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile')))").getResultList(); 
@@ -376,8 +391,16 @@ public class DataFileServiceBean implements java.io.Serializable {
                 dataTables.get(datatableMap.get(dataFile.getId())).setDataFile(dataFile);
                 dataFile.setDataTable(dataTables.get(datatableMap.get(dataFile.getId())));
                 
+            }            
+
+            if (fileTagMap.get(dataFile.getId()) != null) {
+                for (Integer tag_id : fileTagMap.get(dataFile.getId())) {
+                    DataFileTag tag = new DataFileTag();
+                    tag.setTypeByLabel(fileTagLabels.get(tag_id));
+                    tag.setDataFile(dataFile);
+                    dataFile.addTag(tag);
+                }
             }
-            
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
         } 
