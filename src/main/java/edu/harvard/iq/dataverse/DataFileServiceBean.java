@@ -175,7 +175,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
         if(searchTerm != null && !searchTerm.isEmpty()){
-            searchClause = " and  lower(o.label) like '%" + searchTerm.toLowerCase() + "%'" ;
+            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
         
         Query query = em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
