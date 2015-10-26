@@ -1,0 +1,18 @@
+#!/bin/sh
+NUM_FILES=10
+if [ ! -z "$1" ]; then
+  NUM_FILES=$1
+fi
+TMP="/tmp"
+DIR_NAME="$TMP/${NUM_FILES}files"
+TMP_DIR="$DIR_NAME"
+rm -rf $TMP_DIR
+mkdir $TMP_DIR
+cd $TMP_DIR
+for i in `seq -f "%04g" $NUM_FILES`; do
+  echo $i > $i.txt
+done
+cd $TMP
+ZIP=${DIR_NAME}.zip
+ls $DIR_NAME/*
+zip $ZIP $DIR_NAME/*
