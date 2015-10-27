@@ -1592,11 +1592,9 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             releasedVersionTabList = new ArrayList();
             versionTabList = new ArrayList();
-            if (readOnly) {
-                fileMetadatasSearch = workingVersion.getFileMetadatas(); 
-            } else {
-                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-            } 
+            if(this.activeTabIndex == 0) {
+                 init();
+            }          
         }
     }
 
