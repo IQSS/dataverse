@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class DdiExportUtil {
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
-        logger.fine(datasetDtoAsJson);
+        logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
         try {
@@ -118,11 +119,18 @@ public class DdiExportUtil {
             xmlw.writeStartElement("labl");
             xmlw.writeCharacters(fileDTo.getDatafile().getName());
             xmlw.writeEndElement(); // labl
-            xmlw.writeStartElement("txt");
-            xmlw.writeCharacters(fileDTo.getDatafile().getDescription());
-            xmlw.writeEndElement(); // txt
+            writeFileDescription(xmlw, fileDTo);
             xmlw.writeEndElement(); // otherMat
         }
+    }
+
+    private static void writeFileDescription(XMLStreamWriter xmlw, FileDTO fileDTo) throws XMLStreamException {
+        xmlw.writeStartElement("txt");
+        String description = fileDTo.getDatafile().getDescription();
+        if (description != null) {
+            xmlw.writeCharacters(description);
+        }
+        xmlw.writeEndElement(); // txt
     }
 
     private static String dto2title(DatasetVersionDTO datasetVersionDTO) {
