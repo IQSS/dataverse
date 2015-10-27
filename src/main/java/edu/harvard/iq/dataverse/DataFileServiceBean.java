@@ -169,6 +169,17 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+        
+        List <FileMetadata> retList = new ArrayList();
+        for (Integer id : findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(datasetVersionId, searchTerm, userSuppliedSortField, userSuppliedSortOrder)){
+           retList.add( (FileMetadata) em.find(FileMetadata.class, id.longValue()));
+        }
+        return retList;
+
+        
+    }
+    
+    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
 
         String sortField = sortFieldAndOrder.getSortField();
@@ -182,17 +193,10 @@ public class DataFileServiceBean implements java.io.Serializable {
                 + searchClause
                 + " order by o." + sortField + " " + sortOrder);
         System.out.print(query.toString());
-
-
-        List <FileMetadata> retList = new ArrayList();
-        for (Object o : query.getResultList()){
-            Long pk = new Long(o.toString());
-           retList.add( (FileMetadata) em.find(FileMetadata.class, pk));
-        }
-        return retList;
-
         
+        return query.getResultList();
     }
+        
     
     public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);

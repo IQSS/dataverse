@@ -73,6 +73,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
 import java.text.DateFormat;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
@@ -241,8 +242,35 @@ public class DatasetPage implements java.io.Serializable {
     
     public void updateFileSearch(){  
         logger.info("updading file search list");
-        //Allow File search to happen for users who cannot edit the dataset
-            this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
+        if (readOnly) {
+            this.fileMetadatasSearch = selectFileMetadatasForDisplay(this.fileLabelSearchTerm); 
+        } else {
+            this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), this.fileLabelSearchTerm, "", "");
+        }
+    }
+    
+    private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
+        Set<Long> searchResultsIdSet = null; 
+        
+        if (searchTerm != null && !searchTerm.equals("")) {
+            List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
+            if (searchResultsIdList != null && searchResultsIdList.size() > 0) {
+                searchResultsIdSet = new HashSet<>(); 
+                for (Integer id : searchResultsIdList) {
+                    searchResultsIdSet.add(id.longValue());
+                }
+            }
+        }
+        
+        List<FileMetadata> retList = new ArrayList<>(); 
+        
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
+            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
+                retList.add(fileMetadata);
+            }
+        }
+        
+        return retList;
     }
     
     /*
