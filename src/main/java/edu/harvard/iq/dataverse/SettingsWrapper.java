@@ -62,6 +62,26 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
 
+    private String guidesBaseUrl = null; 
+    
+    public String getGuidesBaseUrl() {
+        if (guidesBaseUrl == null) {
+            String saneDefault = "http://guides.dataverse.org";
+        
+            String guidesBaseUrl = get(":GuidesBaseUrl");
+            if (guidesBaseUrl == null) {
+                guidesBaseUrl = saneDefault + "/en"; 
+            } else {
+                guidesBaseUrl = guidesBaseUrl + "/en";
+            }
+            // TODO: 
+            // hard-coded "en"; will need to be configuratble once 
+            // we have support for other languages. 
+            // TODO: 
+            // remove a duplicate of this method from SystemConfig
+        }
+        return guidesBaseUrl;
+    }
 
 }
 

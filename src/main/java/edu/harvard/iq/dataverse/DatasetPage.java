@@ -199,6 +199,9 @@ public class DatasetPage implements java.io.Serializable {
     private DataFile selectedDownloadFile;
 
     private Long maxFileUploadSizeInBytes = null;
+    
+    private String dataverseSiteUrl = ""; 
+    
 
     private List<FileMetadata> fileMetadatas;
     private String fileSortField;
@@ -254,6 +257,14 @@ public class DatasetPage implements java.io.Serializable {
             return true;
         }
         return false;
+    }
+    
+    public String getDataverseSiteUrl() {
+        return this.dataverseSiteUrl;
+    }
+    
+    public void setDataverseSiteUrl(String dataverseSiteUrl) {
+        this.dataverseSiteUrl = dataverseSiteUrl;
     }
     
     public DataFile getSelectedDownloadFile() {
@@ -1151,6 +1162,7 @@ public class DatasetPage implements java.io.Serializable {
         // logger.fine("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         String nonNullDefaultIfKeyNotFound = "";
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
+        setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();
         protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
@@ -1973,7 +1985,7 @@ public class DatasetPage implements java.io.Serializable {
             //JsfHelper.addFlashMessage(JH.localize("dataset.message.linkSuccess")  + linkingDataverse.getDisplayName());
             List<String> arguments = new ArrayList();
             arguments.add(dataset.getDisplayName());
-            arguments.add(systemConfig.getDataverseSiteUrl());
+            arguments.add(getDataverseSiteUrl());
             arguments.add(linkingDataverse.getAlias());
             arguments.add(linkingDataverse.getDisplayName());
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.linkSuccess", arguments));
@@ -2852,14 +2864,14 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getVariableMetadataURL(Long fileid) {
-        String myHostURL = systemConfig.getDataverseSiteUrl();
+        String myHostURL = getDataverseSiteUrl();
         String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
 
         return metaURL;
     }
 
     public String getTabularDataFileURL(Long fileid) {
-        String myHostURL = systemConfig.getDataverseSiteUrl();;
+        String myHostURL = getDataverseSiteUrl();;
         String dataURL = myHostURL + "/api/access/datafile/" + fileid;
 
         return dataURL;

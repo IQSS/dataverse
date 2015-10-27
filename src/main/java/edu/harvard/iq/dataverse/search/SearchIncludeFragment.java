@@ -12,9 +12,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -46,12 +45,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
-    @EJB
-    SettingsServiceBean settingsService;
-    @EJB
-    SystemConfig systemConfig;
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -930,7 +927,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public boolean isDebug() {
         return (debug && session.getUser().isSuperuser())
-                || systemConfig.isDebugEnabled();
+                || settingsWrapper.isTrueForKey(":Debug", false);
     }
 
     public void setDebug(boolean debug) {
