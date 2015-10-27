@@ -782,13 +782,35 @@ public class Access extends AbstractApiBean {
             }
         }
         
+        // TODO: (IMPORTANT!)
+        // Business logic like this should NOT be maintained in individual 
+        // application fragments. 
+        // At the moment it is duplicated here, and inside the Dataset page.
+        // There are also stubs for file-level permission lookups and caching
+        // inside Gustavo's view-scoped PermissionsWrapper. 
+        // All this logic needs to be moved to the PermissionServiceBean where it will be 
+        // centrally maintained; with the PermissionsWrapper providing 
+        // efficient cached lookups to the pages (that often need to make 
+        // repeated lookups on the same files). Care will need to be taken 
+        // to preserve the slight differences in logic utilized by the page and 
+        // this Access call (the page checks the restriction flag on the
+        // filemetadata, not the datafile - as it needs to reflect the permission 
+        // status of the file in the version history).  
+        // I will open a 4.[34] ticket. 
+        //
+        // -- L.A. 4.2.1
+        
+        
         // We don't need to check permissions on files that are 
         // from released Dataset versions and not restricted: 
         
-        //logger.fine("checking if file is restricted:");
-        if (published && (!df.isRestricted())) {
-            //logger.fine("published, non-restricted file.");
-            return true;
+        if (!df.isRestricted()) {
+            // And if they are not published, they can still be downloaded, if the user
+            // has the permission to view unpublished versions:
+            if (published || permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                return true;
+            }
+            return false;
         }
         
         AuthenticatedUser user = null;
