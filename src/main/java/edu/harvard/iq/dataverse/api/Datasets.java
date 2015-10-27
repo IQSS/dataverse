@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.ByteArrayOutputStream;
@@ -66,6 +67,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DDIExportServiceBean ddiExportService;
+
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -418,8 +422,8 @@ public class Datasets extends AbstractApiBean {
     @Path("ddi")
     @Produces({"application/xml", "application/json"})
     public Response getDdi(@QueryParam("id") long id, @QueryParam("persistentId") String persistentId, @QueryParam("dto") boolean dto) {
-        boolean disabled = true;
-        if (disabled) {
+        boolean ddiExportEnabled = systemConfig.isDdiExportEnabled();
+        if (!ddiExportEnabled) {
             return errorResponse(Response.Status.FORBIDDEN, "Disabled");
         }
         try {

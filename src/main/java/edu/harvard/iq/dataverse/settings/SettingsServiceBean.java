@@ -123,6 +123,10 @@ public class SettingsServiceBean {
         SolrHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
+        /**
+         * Experimental: Key for if DDI export is enabled or disabled.
+         */
+        DdiExportEnabled,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
         /** Key for if Shibboleth is enabled or disabled. */
