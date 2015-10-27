@@ -11,13 +11,11 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <!-- Upload -->
-    <!-- (removed - L.A. 4.2 -->
-
+    <!-- Upload (removed - L.A. 4.2) -->
     <!-- Files Table -->
     <p:dataTable id="filesTable" 
                  scrollRows="25" scrollable="true" liveScroll="true"
-                 scrollHeight="92%"
+                 scrollHeight="92%" scrollWidth="100%"
                  value="#{DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
@@ -186,9 +184,9 @@
                 </div>
             </div>
         </f:facet>
-        <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
-        <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;">
-            <div class="thumbnail-block">
+        <p:column selectionMode="multiple" class="text-center"/>
+        <p:column class="col-file-thumb">
+            <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
                 <!-- 4.2.1 optimization: replaced dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile, dataverseSession.user) with DatasetPage.isThumbnailAvailable(fileMetadata); see comments in the bean -->
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and DatasetPage.isThumbnailAvailable(fileMetadata)}"
@@ -203,7 +201,6 @@
                     <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                     <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info text-center show"/>
                 </ui:fragment>
-
 
                 <!-- Restricted File Icon -->
                 <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and ((empty fileMetadata.dataFile.id) or !(DatasetPage.canDownloadFile(fileMetadata)) )}">
@@ -237,16 +234,13 @@
                 <a data-target="#map-modal-#{fileMetadata.id}" data-toggle="modal"><small>Preview</small></a>
             </ui:fragment>
         </p:column>
-                    <p:column class="col-file-metadata">
-            <ui:fragment rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}" >
-                <h:outputLink value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
-                    <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
-                </h:outputLink>
-            </ui:fragment>
-            <ui:fragment rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage',  false)}" >                
-                <h:outputText id="fileName" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
-            </ui:fragment>
-
+        <p:column class="col-file-metadata">
+            <h:outputLink rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}"
+                            value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
+                <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
+            </h:outputLink>              
+            <h:outputText id="fileName" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"
+                          rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage',  false)}"/>
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
                 <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
@@ -287,7 +281,7 @@
                 </ui:fragment>
             </div>
         </p:column>
-            <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+        <p:column class="col-file-action text-right" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
             <!-- Ingest in progress... -->
             <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                 #{bundle['file.ingestInproGress']}
@@ -339,7 +333,6 @@
                         </button>
                     </ui:fragment>
                 </div>
-
 
                 <!-- non-tabular data file: -->
                 <!-- no guest book/terms of use/etc. - straight to the download API url: -->
@@ -480,5 +473,4 @@
             <!-- END: button-block -->
         </p:column>
     </p:dataTable>
- 
 </ui:composition>
