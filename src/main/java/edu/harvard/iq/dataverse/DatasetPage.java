@@ -237,7 +237,8 @@ public class DatasetPage implements java.io.Serializable {
         this.fileMetadatasSearch = fileMetadatasSearch;
     }
     
-    public void updateFileSearch(){    
+    public void updateFileSearch(){  
+        logger.info("updading file search list");
         //Allow File search to happen for users who cannot edit the dataset
             this.fileMetadatasSearch = datafileService.findFileMetadataByDatasetVersionIdLabelSearchTerm(dataset.getLatestVersion().getId(), this.fileLabelSearchTerm, "", "");
     }
@@ -1246,11 +1247,13 @@ public class DatasetPage implements java.io.Serializable {
 
             if (workingVersion.isDraft() && canUpdateDataset()) {
                 readOnly = false;
+                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
             } else {
                 // an attempt to retreive both the filemetadatas and datafiles early on, so that 
                 // we don't have to do so later (possibly, many more times than necessary):
            
                 datafileService.findFileMetadataOptimizedExperimental(dataset);
+                fileMetadatasSearch = workingVersion.getFileMetadatas();
             }
             
             ownerId = dataset.getOwner().getId();
@@ -1263,13 +1266,6 @@ public class DatasetPage implements java.io.Serializable {
             setReleasedVersionTabList(resetReleasedVersionTabList());
             //SEK - lazymodel may be needed for datascroller in future release
             // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
-            if (readOnly) {
-                fileMetadatasSearch = workingVersion.getFileMetadatas(); 
-            } else {
-                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-            } 
-            refreshTableTags(fileMetadatasSearch);
-            
             // populate MapLayerMetadata
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
 
@@ -1804,7 +1800,7 @@ public class DatasetPage implements java.io.Serializable {
     // some experimental code below - commented out, for now;
     
     public void refresh() { // String flashmessage) { 
-        logger.fine("refreshing");
+        logger.info("refreshing");
 
         dataset = datasetService.find(dataset.getId());
 
@@ -3100,14 +3096,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setSelectedTabFileTags(String[] selectedTabFileTags) {
         this.selectedTabFileTags = selectedTabFileTags;
-    }
-    
-    private void refreshTableTags (List <FileMetadata> inList){
-        for (FileMetadata fmd : inList){
-            if(fmd.getDataFile().isTabularData()){
-                fmd.getDataFile().getTags();
-            }
-        }
     }
 
     private String[] selectedTags = {};
