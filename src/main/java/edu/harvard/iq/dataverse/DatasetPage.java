@@ -254,11 +254,9 @@ public class DatasetPage implements java.io.Serializable {
         
         if (searchTerm != null && !searchTerm.equals("")) {
             List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, "", "");
-            if (searchResultsIdList != null && searchResultsIdList.size() > 0) {
-                searchResultsIdSet = new HashSet<>(); 
-                for (Integer id : searchResultsIdList) {
-                    searchResultsIdSet.add(id.longValue());
-                }
+            searchResultsIdSet = new HashSet<>();
+            for (Integer id : searchResultsIdList) {
+                searchResultsIdSet.add(id.longValue());
             }
         }
         

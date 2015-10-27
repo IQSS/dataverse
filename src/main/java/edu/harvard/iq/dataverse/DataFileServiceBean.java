@@ -431,7 +431,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         for (DatasetVersion version : owner.getVersions()) {
             version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap, categoryMap));
-            logger.info("Retrieved "+i+" filemetadatas for the version "+version.getId());
+            logger.info("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
         }
     }
     
