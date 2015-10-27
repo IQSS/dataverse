@@ -76,6 +76,8 @@ import java.text.DateFormat;
 import java.util.LinkedHashMap;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -1262,8 +1264,9 @@ public class DatasetPage implements java.io.Serializable {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
             updateDatasetFieldInputLevels();
             displayCitation = dataset.getCitation(true, workingVersion);
-            setVersionTabList(resetVersionTabList());
-            setReleasedVersionTabList(resetReleasedVersionTabList());
+            //moving setVersionTabList to tab change event
+            //setVersionTabList(resetVersionTabList());
+            //setReleasedVersionTabList(resetReleasedVersionTabList());
             //SEK - lazymodel may be needed for datascroller in future release
             // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
             // populate MapLayerMetadata
@@ -1568,6 +1571,33 @@ public class DatasetPage implements java.io.Serializable {
             selectedFiles.add(fmdn);
         }
         readOnly = false;
+    }
+    
+     private int activeTabIndex;
+
+    public int getActiveTabIndex() {
+        return activeTabIndex;
+    }
+
+    public void setActiveTabIndex(int activeTabIndex) {
+        this.activeTabIndex = activeTabIndex;
+    }
+    
+    public void tabChanged(TabChangeEvent event) {
+        TabView tv = (TabView) event.getComponent();
+        this.activeTabIndex = tv.getActiveIndex();
+        if (this.activeTabIndex == 3) {
+            setVersionTabList(resetVersionTabList());
+            setReleasedVersionTabList(resetReleasedVersionTabList());
+        } else {
+            releasedVersionTabList = new ArrayList();
+            versionTabList = new ArrayList();
+            if (readOnly) {
+                fileMetadatasSearch = workingVersion.getFileMetadatas(); 
+            } else {
+                fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+            } 
+        }
     }
 
     public void edit(EditMode editMode) {

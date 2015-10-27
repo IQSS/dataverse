@@ -406,7 +406,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                     tag.setDataFile(dataFile);
                     dataFile.addTag(tag);
                 }
-            }
+            }            
+            dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
         } 
@@ -428,6 +429,22 @@ public class DataFileServiceBean implements java.io.Serializable {
             version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, filesMap, categoryMap));
             logger.info("Retrieved "+i+" filemetadatas for the version "+version.getId());
         }
+    }
+    
+     private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn){
+        List<AuthenticatedUser> retList = new ArrayList<>();
+        
+        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
+        
+        for (Object userIdObj : requesters){
+            Long userId = (Long) userIdObj;
+            AuthenticatedUser user = userService.find(userId);
+            if (user != null){
+                retList.add(user);
+            }
+        }
+        
+        return retList;
     }
     
     private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
