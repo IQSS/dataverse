@@ -2145,6 +2145,12 @@ public class DatasetPage implements java.io.Serializable {
                     }
                     if (fmd.getDataFile().equals(fmw.getDataFile())) {
                         fmw.setRestricted(restricted);
+                        if (workingVersion.isDraft() && !fmw.getDataFile().isReleased()) {
+                            // We do not really need to check that the working version is 
+                            // a draft here - it must be a draft, if we've gotten this
+                            // far. But just in case. -- L.A. 4.2.1
+                            fmw.getDataFile().setRestricted(true);
+                        }
                     }
                 }
             }
