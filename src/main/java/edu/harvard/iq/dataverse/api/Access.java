@@ -807,7 +807,17 @@ public class Access extends AbstractApiBean {
         if (!df.isRestricted()) {
             // And if they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions:
-            if (published || permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+            if (published) { 
+                return true;
+            }
+            // The additional check for !df.getFileMetadata().isRestricted() is there 
+            // to make sure unauthorized users cannot download restricted files 
+            // that exist in Draft versions only (i.e., new, yet unpublished files).
+            // Up until 4.2.1 restricting unpublished files was only restricting them 
+            // in their Draft version fileMetadata, but not in the DataFile object. 
+            // (DataFile.getFileMetadata() will always return the Draft metadata, if 
+            // available) -- L.A. 4.2.1 
+            if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset) && !df.getFileMetadata().isRestricted()) {
                 return true;
             }
             return false;
