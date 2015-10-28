@@ -249,6 +249,20 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
+        private Long numberOfFilesToShow = new Long(25);
+
+    public Long getNumberOfFilesToShow() {
+        return numberOfFilesToShow;
+    }
+
+    public void setNumberOfFilesToShow(Long numberOfFilesToShow) {
+        this.numberOfFilesToShow = numberOfFilesToShow;
+    }
+    
+    public void showAll(){
+        setNumberOfFilesToShow(new Long(fileMetadatasSearch.size()));
+    }
+    
     private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
         Set<Long> searchResultsIdSet = null; 
         
