@@ -769,7 +769,9 @@
                         #{bundle['dataset.noSelectedFilesForMetadataEdit']}
                     </p:dialog> 
                     
-                     <p:remoteCommand name="openEditFilesPageCommand" action="#{DatasetPage.editFileMetadata()}"  />
+                    <!-- We no longer need this remoteCommand; see my comments in the javascript method testFilesSelectedForEditMetadata() -->
+                    <!-- for more info. - L.A. 4.2.1 --> 
+                    <!-- p:remoteCommand  name="openEditFilesPageCommand" action=" {DatasetPage.editFileMetadata()}"  / -->
                      
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
@@ -1242,10 +1244,22 @@
                                     var count = filesTable.getSelectedRowsCount();
                                     if (count === 0) {
                                         PF('selectFilesForEditMetadata').show();                                       
-                                    } else {
-                                        openEditFilesPageCommand();
-                                        
-                                    }                                   
+                                    } //else {
+                                      // I commented out the code below; if there's 
+                                      // 1 or more file selected, I don't want this 
+                                      // method to activate the p:remoteCommand that 
+                                      // issues the redirect to the edit page (or 
+                                      // do anything else for that matter). Doing 
+                                      // it this way was, for some reason, causing 
+                                      // this page to still try to render (??), in 
+                                      // some partial, half-baked state - with no
+                                      // workingVersion present, etc. - that resulted 
+                                      // in some NULL pointers in the logs... So, 
+                                      // instead, the redirect will be done by the 
+                                      // direct action= attribute in the original 
+                                      // commandButton. -- L.A. 4.2.1
+                                        //openEditFilesPageCommand();
+                                    //}                                   
                                 }
 
                                 function updateTemplate() {

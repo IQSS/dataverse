@@ -19,7 +19,7 @@
                  value="#{DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
-                 rendered="#{empty DatasetPage.editMode}"
+                 rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
             <div jsf:id="filesHeaderBlock" class="row">
@@ -64,7 +64,7 @@
                                     </p:commandLink>
                                 </li>
                                 <li class="#{DatasetPage.locked ? 'disabled' : ''}">
-                                    <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile"> 
+                                    <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
                                         <h:outputText value="#{bundle['file.metadata']}"/>
                                     </p:commandLink>
                                 </li>
@@ -89,6 +89,7 @@
                                     </p:commandLink>    
                                 </li>
                             </ul>
+                            <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                         </div>
                         <div jsf:id="downloadButtonBlock" class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                                                and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable}">
@@ -473,4 +474,17 @@
             <!-- END: button-block -->
         </p:column>
     </p:dataTable>
+    <script type="text/javascript">
+        function testFilesSelectedForEditMetadata2(){
+                                    var count = filesTable.getSelectedRowsCount();
+                                    if (count === 0) {
+                                        PF('selectFilesForEditMetadata').show();                                       
+                                    } else {
+                                        //window.location.href = '/editdatafiles.xhtml?datasetId=2481&amp;selectedFileIds='+fileIds;
+                                        //openEditFilesPageCommand2();
+                                        //$('button[id$="openEditFilesPageCommand"]').trigger('click');
+                                    }                                   
+                                }
+    </script>
+    
 </ui:composition>

@@ -1911,6 +1911,15 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String editFileMetadata(){
+        // If there are no files selected, return an empty string - which 
+        // means, do nothing, don't redirect anywhere, stay on this page. 
+        // The dialogue telling the user to select at least one file will 
+        // be shown to them by an onclick javascript method attached to the 
+        // filemetadata edit button on the page.
+        // -- L.A. 4.2.1
+        if (this.selectedFiles == null || this.selectedFiles.size() < 1) {
+            return "";
+        } 
         return "/editdatafiles.xhtml?selectedFileIds=" + getSelectedFilesIdsString() + "&datasetId=" + dataset.getId() +"&faces-redirect=true";
     }
 
@@ -3456,6 +3465,9 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean isFileAccessRequestMultiButtonRequired(){
         if (!isSessionUserAuthenticated()){
+            return false;
+        }
+        if (workingVersion == null) {
             return false;
         }
         if (!workingVersion.getTermsOfUseAndAccess().isFileAccessRequest()){
