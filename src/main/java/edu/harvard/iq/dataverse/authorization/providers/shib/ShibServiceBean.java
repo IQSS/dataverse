@@ -84,7 +84,7 @@ public class ShibServiceBean {
          * @todo Look for the entityId (i.e.
          * "https://idp.testshib.org/idp/shibboleth") for find "TestShib Test
          * IdP" in (for example)
-         * https://dataverse-demo.iq.harvard.edu/Shibboleth.sso/DiscoFeed
+         * https://demo.dataverse.org/Shibboleth.sso/DiscoFeed
          *
          * It looks something like this: [ { "entityID":
          * "https://idp.testshib.org/idp/shibboleth", "DisplayNames": [ {
