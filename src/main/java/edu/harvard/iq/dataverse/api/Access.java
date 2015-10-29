@@ -768,6 +768,9 @@ public class Access extends AbstractApiBean {
         // update: it appears that we can finally trust the dvObject.isReleased()
         // method; so all this monstrous crawling through the filemetadatas, 
         // below, may not be necessary anymore! - need to verify... L.A. 10.21.2015
+        // update: NO! we still can't just trust .isReleased(), for these purposes!
+        // TODO: explain why. L.A. 10.29.2015
+        
         
         if (df.getOwner().getReleasedVersion() != null) {
             //logger.fine("file belongs to a dataset with a released version.");
@@ -804,20 +807,43 @@ public class Access extends AbstractApiBean {
         // We don't need to check permissions on files that are 
         // from released Dataset versions and not restricted: 
         
-        if (!df.isRestricted()) {
+        boolean restricted = false; 
+        
+        if (df.isRestricted()) {
+            restricted = true;
+        } else {
+        
+        // There is also a special case of a restricted file that only exists 
+        // in a draft version (i.e., a new file, that hasn't been published yet).
+        // Such files must be considered restricted, for access purposes. I.e., 
+        // users with no download access to this particular file, but with the 
+        // permission to ViewUnpublished on the dataset, should NOT be allowed 
+        // to download it. 
+        // Up until 4.2.1 restricting unpublished files was only restricting them 
+        // in their Draft version fileMetadata, but not in the DataFile object. 
+        // (this is what we still want to do for published files; restricting those
+        // only restricts them in the new draft FileMetadata; until it becomes the 
+        // published version, the restriction flag on the DataFile is what governs
+        // the download authorization).
+        
+            //if (!published && df.getOwner().getVersions().size() == 1 && df.getOwner().getLatestVersion().isDraft()) {
+            // !df.isReleased() really means just this: new file, only exists in a Draft version!
+            if (!df.isReleased()) {
+                if (df.getFileMetadata().isRestricted()) {
+                    restricted = true;
+                }
+            }
+        }
+        
+        
+        if (!restricted) {
             // And if they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions:
             if (published) { 
                 return true;
             }
-            // The additional check for !df.getFileMetadata().isRestricted() is there 
-            // to make sure unauthorized users cannot download restricted files 
-            // that exist in Draft versions only (i.e., new, yet unpublished files).
-            // Up until 4.2.1 restricting unpublished files was only restricting them 
-            // in their Draft version fileMetadata, but not in the DataFile object. 
-            // (DataFile.getFileMetadata() will always return the Draft metadata, if 
-            // available) -- L.A. 4.2.1 
-            if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset) && !df.getFileMetadata().isRestricted()) {
+         
+            if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                 return true;
             }
             return false;

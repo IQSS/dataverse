@@ -2163,7 +2163,7 @@ public class DatasetPage implements java.io.Serializable {
                             // We do not really need to check that the working version is 
                             // a draft here - it must be a draft, if we've gotten this
                             // far. But just in case. -- L.A. 4.2.1
-                            fmw.getDataFile().setRestricted(true);
+                            fmw.getDataFile().setRestricted(restricted);
                         }
                     }
                 }
